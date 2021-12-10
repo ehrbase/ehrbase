@@ -20,7 +20,7 @@ package org.ehrbase.service;
 
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.configuration.CacheConfiguration;
+import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.opt.query.TemplateTestData;
 import org.junit.rules.TemporaryFolder;
 
@@ -42,7 +42,7 @@ public class KnowledgeCacheHelper {
 
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheConfiguration());
+        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
         knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
         return knowledgeCacheService;
     }
@@ -89,6 +89,11 @@ public class KnowledgeCacheHelper {
             @Override
             public void setUseJsQuery(boolean b) {
                 this.useJsQuery = b;
+            }
+
+            @Override
+            public boolean isDisableStrictValidation() {
+                return false;
             }
         };
     }

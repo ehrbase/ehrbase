@@ -22,10 +22,10 @@
 
 package org.ehrbase.aql.definition;
 
-import org.jooq.Record;
-import org.jooq.Table;
+import org.jooq.DataType;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a AQL Select Variable
@@ -38,7 +38,15 @@ public interface I_VariableDefinition extends Cloneable {
 
     String getIdentifier();
 
-    void setLateralJoinTable(String templateId, Table<Record> lateralJoinTable);
+    LateralJoinDefinition getLateralJoinDefinition(String templateId, int index);
+
+    int getLateralJoinsSize(String templateId);
+
+    boolean isLateralJoinsEmpty(String templateId);
+
+    LateralJoinDefinition getLastLateralJoin(String templateId);
+
+    void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition);
 
     boolean isDistinct();
 
@@ -66,5 +74,20 @@ public interface I_VariableDefinition extends Cloneable {
 
     boolean isLateralJoin(String templateId);
 
-    Table<Record> getLateralJoinTable(String templateId);
+    Set<LateralJoinDefinition> getLateralJoinDefinitions(String templateId);
+
+    PredicateDefinition getPredicateDefinition();
+
+    void setSubstituteFieldVariable(String variableAlias);
+
+    String getSubstituteFieldVariable();
+
+    void setSelectType(DataType castTypeAs);
+
+    DataType getSelectType();
+
+    boolean isVoidAlias();
+
+    void setVoidAlias(boolean isVoidAlias);
+
 }

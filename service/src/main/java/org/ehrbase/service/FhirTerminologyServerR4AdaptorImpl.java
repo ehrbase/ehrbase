@@ -22,7 +22,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
-import net.minidev.json.JSONArray;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -123,7 +122,7 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
     public Boolean validate(final DvCodedText concept, final String valueSetId) {
         // TODO Auto-generated method stub
         logger.debug("inside the validate method of R4 implementation");
-        return null;
+        return false;
     }
 
     @Override
@@ -146,7 +145,9 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
         }
 
         DocumentContext jsonContext = JsonPath.parse(response);
-        return (Boolean) ((JSONArray) jsonContext.read(props.getValidationResultPath()/* "$.parameter[:1].valueBoolean" */)).get(0);
+        JsonPath jsonPath = JsonPath.compile(props.getValidationResultPath());
+        List<Boolean> result = jsonContext.read(jsonPath);
+        return !result.isEmpty() && result.get(0);
     }
 
     private String internalGet(String url) throws IOException {

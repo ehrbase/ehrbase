@@ -206,19 +206,17 @@ public class IdentifierMapper {
 
     public boolean requiresTemplateWhereClause() {
         boolean resolveTemplateRequired = false;
-        boolean hasNonCompositionNode = false;
+
         for (Map.Entry map: mapper.entrySet()){
             Mapper mapper1 = (Mapper)map.getValue();
             if (mapper1.getContainer() instanceof Containment){
                 Containment containment = (Containment)mapper1.getContainer();
                 //check if this containment specifies an archetype (triggering a template resolution)
                 //f.e. COMPOSITION a [openEHR-EHR-COMPOSITION.report-result.v1] contains OBSERVATION
-                if (!containment.getClassName().equals(COMPOSITION))
-                    hasNonCompositionNode = true;
-
-                if (hasNonCompositionNode)
-                    resolveTemplateRequired = true;
-
+                if (!containment.getClassName().equals(COMPOSITION) || containment.getArchetypeId() != null) {
+                    resolveTemplateRequired = true; //a composition node constrained with an archetype
+                    break;
+                }
             }
         }
         return resolveTemplateRequired;

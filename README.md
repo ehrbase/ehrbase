@@ -7,6 +7,11 @@ EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a stand
   <summary><h2>Release Notes</h2> (click to expand)</summary>
 
 Please check the [CHANGELOG](https://github.com/ehrbase/ehrbase/blob/develop/CHANGELOG.md) and/or   [EHRbase Documentation](https://ehrbase.readthedocs.io/en/latest/) for more details.
+  
+##### WIP: 2021, XYZ 00
+v?.?.? - (...)
+
+**Important:** Please note that this release introduces [Archie's](https://github.com/openEHR/archie) new strict invariant checks. Depending on existing data and clients this might be a breaking change. Please carefully check the EHRbase output and update your input data if EHRbase rejects it. The strict validation can also be deactivated via configuration, but caution in advised!
 
 ##### 2021, Sep 9
 v0.17.2 - **beta** release. Bug fixes, enhancements, automatic Docker Hub deployments via Github Actions.
@@ -122,8 +127,11 @@ Environment variable `SECURITY_AUTHTYPE=OAUTH` is enabling OAuth2 authentication
 Additionally, setting the following variable to point to the existing OAuth2 server and realm is necessary:
 `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase`
 
-In the given OAuth2 server configuration the roles `user` and `admin` are expected to be configured. 
-Users should have their roles assigned accordingly.
+
+Two roles are available: a user role, and admin role. By default, these roles are expected to be named `USER` and
+`ADMIN`. The names of these roles can be customised through the `SECURITY_OAUTH2USERROLE` and `SECURITY_OAUTH2ADMINROLE`
+environment variables. Users should have their roles assigned accordingly, either in the `realm_access.roles` or `scope`
+claim of the JWT used for authentication.
 
 ## Running the tests
 

@@ -18,6 +18,7 @@
 
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
@@ -49,22 +50,10 @@ public interface I_FolderAccess extends I_VersionedCRUD {
     Map<UUID, I_FolderAccess>  getSubfoldersList();
 
     /**
-     * Set the details stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
-     * @param details
-     */
-    void setDetails(ItemStructure details);
-
-    /**
-     * Get the details  stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
-     * @return details of the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
-     */
-    ItemStructure getDetails();
-
-    /**
      * Get the items references stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
      * @return items of the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
      */
-    List<ObjectRef> getItems();
+    List<ObjectRef<? extends ObjectId>> getItems();
 
     /**
      * Builds the {@link I_FolderAccess} for persisting the {@link  com.nedap.archie.rm.directory.Folder} provided as param.

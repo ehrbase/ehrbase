@@ -11454,7 +11454,7 @@ Status is used to denote whether this is the initial request, or a follow-up req
                             <term_definitions code="at0001">
                               <items id="text">Medication name</items>
                               <items id="description">Mandatory medication name coded using a SNOMEDCT/dm+d term where possible, allowing plain text for historical/patient reported items , extemporaneous preparations or those not registered in dm+d.</items>
-                              <items id="comment">e.g.“Citalopram tab 20mg�?, "Trimethoprim"</items>
+                              <items id="comment">e.g.“Citalopram tab 20mg�?, "Trimethoprim"</items>
                             </term_definitions>
                             <term_definitions code="at0002">
                               <items id="text">Route</items>
@@ -11464,17 +11464,17 @@ Status is used to denote whether this is the initial request, or a follow-up req
                             <term_definitions code="at0003">
                               <items id="text">Dose directions description</items>
                               <items id="description">A single plain text phrase describing the entire medication dosage and administration directions, including dose quantity and medication frequency.</items>
-                              <items id="comment">e.g. “I tablet at night�? or “20mg at 10pm�?</items>
+                              <items id="comment">e.g. “I tablet at night�? or “20mg at 10pm�?</items>
                             </term_definitions>
                             <term_definitions code="at0004">
                               <items id="text">Dispensing instruction</items>
                               <items id="description">Multiple plain text to record complex dispensing arrangements, particularly for Controlled Drug instalment dispensing.</items>
-                              <items id="comment">e.g. “Dispense weekly�?</items>
+                              <items id="comment">e.g. “Dispense weekly�?</items>
                             </term_definitions>
                             <term_definitions code="at0005">
                               <items id="text">Additional instruction</items>
                               <items id="description">Additional multiple dosage or administration instructions as plain text. This may include guidance to the prescriber, patient or person administering the medication.</items>
-                              <items id="comment">e.g. “Omit morning dose on day of procedure�?</items>
+                              <items id="comment">e.g. “Omit morning dose on day of procedure�?</items>
                             </term_definitions>
                             <term_definitions code="at0019">
                               <items id="text">Dose directions</items>
@@ -12179,7 +12179,7 @@ Status is used to denote whether this is the initial request, or a follow-up req
                                 <term_definitions code="at0004">
                                   <items id="text">Prescription endorsement</items>
                                   <items id="description">A coded value describing the kind of 'contract' in place under which the medication was supplied. Multiple endorsements / contracts are allowed.</items>
-                                  <items id="comment">e.g."ACBS" or “Private�?
+                                  <items id="comment">e.g."ACBS" or “Private�?
 Assume "Standard" as default</items>
                                 </term_definitions>
                                 <term_definitions code="at0033">
@@ -13930,7 +13930,7 @@ Source: GP systems</items>
                             <term_definitions code="at0001">
                               <items id="text">Medication name</items>
                               <items id="description">Mandatory medication name coded using a SNOMEDCT/dm+d term where possible, allowing plain text for historical/patient reported items , extemporaneous preparations or those not registered in dm+d.</items>
-                              <items id="comment">e.g.“Citalopram tab 20mg�?, "Trimethoprim"</items>
+                              <items id="comment">e.g.“Citalopram tab 20mg�?, "Trimethoprim"</items>
                             </term_definitions>
                             <term_definitions code="at0002">
                               <items id="text">Route</items>
@@ -13940,17 +13940,17 @@ Source: GP systems</items>
                             <term_definitions code="at0003">
                               <items id="text">Dose directions description</items>
                               <items id="description">A single plain text phrase describing the entire medication dosage and administration directions, including dose quantity and medication frequency.</items>
-                              <items id="comment">e.g. “I tablet at night�? or “20mg at 10pm�?</items>
+                              <items id="comment">e.g. “I tablet at night�? or “20mg at 10pm�?</items>
                             </term_definitions>
                             <term_definitions code="at0004">
                               <items id="text">Dispensing instruction</items>
                               <items id="description">Multiple plain text to record complex dispensing arrangements, particularly for Controlled Drug instalment dispensing.</items>
-                              <items id="comment">e.g. “Dispense weekly�?</items>
+                              <items id="comment">e.g. “Dispense weekly�?</items>
                             </term_definitions>
                             <term_definitions code="at0005">
                               <items id="text">Additional instruction</items>
                               <items id="description">Additional multiple dosage or administration instructions as plain text. This may include guidance to the prescriber, patient or person administering the medication.</items>
-                              <items id="comment">e.g. “Omit morning dose on day of procedure�?</items>
+                              <items id="comment">e.g. “Omit morning dose on day of procedure�?</items>
                             </term_definitions>
                             <term_definitions code="at0019">
                               <items id="text">Dose directions</items>
@@ -14655,7 +14655,7 @@ Source: GP systems</items>
                                 <term_definitions code="at0004">
                                   <items id="text">Prescription endorsement</items>
                                   <items id="description">A coded value describing the kind of 'contract' in place under which the medication was supplied. Multiple endorsements / contracts are allowed.</items>
-                                  <items id="comment">e.g."ACBS" or “Private�?
+                                  <items id="comment">e.g."ACBS" or “Private�?
 Assume "Standard" as default</items>
                                 </term_definitions>
                                 <term_definitions code="at0033">
@@ -15898,7 +15898,7 @@ Source: GP systems</items>
                             <term_definitions code="at0001">
                               <items id="text">Medication name</items>
                               <items id="description">Mandatory medication name coded using a SNOMEDCT/dm+d term where possible, allowing plain text for historical/patient reported items , extemporaneous preparations or those not registered in dm+d.</items>
-                              <items id="comment">e.g.“Citalopram tab 20mg�?, "Trimethoprim"</items>
+                              <items id="comment">e.g.“Citalopram tab 20mg�?, "Trimethoprim"</items>
                             </term_definitions>
                             <term_definitions code="at0002">
                               <items id="text">Route</items>
@@ -15908,17 +15908,17 @@ Source: GP systems</items>
                             <term_definitions code="at0003">
                               <items id="text">Dose directions description</items>
                               <items id="description">A single plain text phrase describing the entire medication dosage and administration directions, including dose quantity and medication frequency.</items>
-                              <items id="comment">e.g. “I tablet at night�? or “20mg at 10pm�?</items>
+                              <items id="comment">e.g. “I tablet at night�? or “20mg at 10pm�?</items>
                             </term_definitions>
                             <term_definitions code="at0004">
                               <items id="text">Dispensing instruction</items>
                               <items id="description">Multiple plain text to record complex dispensing arrangements, particularly for Controlled Drug instalment dispensing.</items>
-                              <items id="comment">e.g. “Dispense weekly�?</items>
+                              <items id="comment">e.g. “Dispense weekly�?</items>
                             </term_definitions>
                             <term_definitions code="at0005">
                               <items id="text">Additional instruction</items>
                               <items id="description">Additional multiple dosage or administration instructions as plain text. This may include guidance to the prescriber, patient or person administering the medication.</items>
-                              <items id="comment">e.g. “Omit morning dose on day of procedure�?</items>
+                              <items id="comment">e.g. “Omit morning dose on day of procedure�?</items>
                             </term_definitions>
                             <term_definitions code="at0019">
                               <items id="text">Dose directions</items>
@@ -16623,7 +16623,7 @@ Source: GP systems</items>
                                 <term_definitions code="at0004">
                                   <items id="text">Prescription endorsement</items>
                                   <items id="description">A coded value describing the kind of 'contract' in place under which the medication was supplied. Multiple endorsements / contracts are allowed.</items>
-                                  <items id="comment">e.g."ACBS" or “Private�?
+                                  <items id="comment">e.g."ACBS" or “Private�?
 Assume "Standard" as default</items>
                                 </term_definitions>
                                 <term_definitions code="at0033">
@@ -21965,33 +21965,6 @@ The exact subset definitions have not yet been agreed and may change prior to fu
                                       </children>
                                     </attributes>
                                     <attributes xsi:type="C_SINGLE_ATTRIBUTE">
-                                      <rm_attribute_name>is_integral</rm_attribute_name>
-                                      <existence>
-                                        <lower_included>true</lower_included>
-                                        <upper_included>true</upper_included>
-                                        <lower_unbounded>false</lower_unbounded>
-                                        <upper_unbounded>false</upper_unbounded>
-                                        <lower>1</lower>
-                                        <upper>1</upper>
-                                      </existence>
-                                      <children xsi:type="C_PRIMITIVE_OBJECT">
-                                        <rm_type_name>BOOLEAN</rm_type_name>
-                                        <occurrences>
-                                          <lower_included>true</lower_included>
-                                          <upper_included>true</upper_included>
-                                          <lower_unbounded>false</lower_unbounded>
-                                          <upper_unbounded>false</upper_unbounded>
-                                          <lower>1</lower>
-                                          <upper>1</upper>
-                                        </occurrences>
-                                        <node_id/>
-                                        <item xsi:type="C_BOOLEAN">
-                                          <true_valid>false</true_valid>
-                                          <false_valid>true</false_valid>
-                                        </item>
-                                      </children>
-                                    </attributes>
-                                    <attributes xsi:type="C_SINGLE_ATTRIBUTE">
                                       <rm_attribute_name>type</rm_attribute_name>
                                       <existence>
                                         <lower_included>true</lower_included>
@@ -22278,33 +22251,6 @@ The exact subset definitions have not yet been agreed and may change prior to fu
                                                 <upper>100</upper>
                                               </range>
                                               <assumed_value>21</assumed_value>
-                                            </item>
-                                          </children>
-                                        </attributes>
-                                        <attributes xsi:type="C_SINGLE_ATTRIBUTE">
-                                          <rm_attribute_name>is_integral</rm_attribute_name>
-                                          <existence>
-                                            <lower_included>true</lower_included>
-                                            <upper_included>true</upper_included>
-                                            <lower_unbounded>false</lower_unbounded>
-                                            <upper_unbounded>false</upper_unbounded>
-                                            <lower>1</lower>
-                                            <upper>1</upper>
-                                          </existence>
-                                          <children xsi:type="C_PRIMITIVE_OBJECT">
-                                            <rm_type_name>BOOLEAN</rm_type_name>
-                                            <occurrences>
-                                              <lower_included>true</lower_included>
-                                              <upper_included>true</upper_included>
-                                              <lower_unbounded>false</lower_unbounded>
-                                              <upper_unbounded>false</upper_unbounded>
-                                              <lower>1</lower>
-                                              <upper>1</upper>
-                                            </occurrences>
-                                            <node_id/>
-                                            <item xsi:type="C_BOOLEAN">
-                                              <true_valid>false</true_valid>
-                                              <false_valid>true</false_valid>
                                             </item>
                                           </children>
                                         </attributes>

@@ -17,7 +17,12 @@
  */
 package org.ehrbase.rest.admin;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
@@ -36,10 +41,10 @@ import java.util.UUID;
  * Admin API controller for Contribution related data. Provides endpoints to update and remove Contributions in
  * database physically.
  */
-@Api(tags = {"Admin", "Contribution"})
+@Tag(name = "Admin - Contribution")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/admin/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "${admin-api.context-path:/rest/admin}/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminContributionController extends BaseController {
 
     private final EhrService ehrService;
@@ -54,34 +59,34 @@ public class AdminContributionController extends BaseController {
     @PutMapping(path = "/{ehr_id}/contribution/{contribution_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "Contribution has been updated successfully.",
-                    responseHeaders = {
-                            @ResponseHeader(
+                    responseCode = "200",
+                    description = "Contribution has been updated successfully.",
+                    headers = {
+                            @Header(
                                     name = CONTENT_TYPE,
                                     description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
+                                    schema = @Schema(implementation = MediaType.class)
                             )
                     }
             ),
             @ApiResponse(
-                    code = 401,
-                    message = "Client credentials invalid or have expired."
+                    responseCode = "401",
+                    description = "Client credentials invalid or have expired."
             ),
             @ApiResponse(
-                    code = 403,
-                    message = "Client does not have permission to access since admin role is missing."
+                    responseCode = "403",
+                    description = "Client does not have permission to access since admin role is missing."
             ),
             @ApiResponse(
-                    code = 404,
-                    message = "EHR or Contribution could not be found."
+                    responseCode = "404",
+                    description = "EHR or Contribution could not be found."
             )
     })
     public ResponseEntity<AdminUpdateResponseData> updateContribution(
-            @ApiParam(value = "Target EHR id to update contribution inside.", required = true)
+            @Parameter(description = "Target EHR id to update contribution inside.", required = true)
             @PathVariable(value = "ehr_id")
                     String ehrId,
-            @ApiParam(value = "Target Contribution id to update", required = true)
+            @Parameter(description = "Target Contribution id to update", required = true)
             @PathVariable(value = "contribution_id")
                     String contributionId
     ) {
@@ -104,34 +109,34 @@ public class AdminContributionController extends BaseController {
     @DeleteMapping(path = "/{ehr_id}/contribution/{contribution_id}")
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "Contribution has been deleted successfully.",
-                    responseHeaders = {
-                            @ResponseHeader(
+                    responseCode = "200",
+                    description = "Contribution has been deleted successfully.",
+                    headers = {
+                            @Header(
                                     name = CONTENT_TYPE,
                                     description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
+                                    schema = @Schema(implementation = MediaType.class)
                             )
                     }
             ),
             @ApiResponse(
-                    code = 401,
-                    message = "Client credentials invalid or have expired."
+                    responseCode = "401",
+                    description = "Client credentials invalid or have expired."
             ),
             @ApiResponse(
-                    code = 403,
-                    message = "Client does not have permission to access since admin role is missing."
+                    responseCode = "403",
+                    description = "Client does not have permission to access since admin role is missing."
             ),
             @ApiResponse(
-                    code = 404,
-                    message = "EHR or Contribution could not be found."
+                    responseCode = "404",
+                    description = "EHR or Contribution could not be found."
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteContribution(
-            @ApiParam(value = "Target EHR id to update contribution inside.", required = true)
+            @Parameter(description = "Target EHR id to update contribution inside.", required = true)
             @PathVariable(value = "ehr_id")
                     String ehrId,
-            @ApiParam(value = "Target Contribution id to update", required = true)
+            @Parameter(description = "Target Contribution id to update", required = true)
             @PathVariable(value = "contribution_id")
                     String contributionId
     ) {

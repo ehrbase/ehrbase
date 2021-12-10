@@ -28,9 +28,9 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonReader;
 import java.io.StringReader;
 
 /**

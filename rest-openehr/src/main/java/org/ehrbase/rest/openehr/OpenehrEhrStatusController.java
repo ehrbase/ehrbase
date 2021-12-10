@@ -20,7 +20,8 @@ package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -28,29 +29,39 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrStatusResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
-import org.ehrbase.rest.util.OperationNotesResourcesReaderOpenehr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
  * Controller for /ehr/{ehrId}/ehr_status resource of openEHR REST API
  */
-@Api(tags = {"EHR_STATUS"})
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/ehr/{ehr_id}/ehr_status", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrEhrStatusController extends BaseController {
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/ehr_status", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+public class OpenehrEhrStatusController extends BaseController implements EhrStatusApiSpecification {
 
     private final EhrService ehrService;
 
@@ -62,23 +73,12 @@ public class OpenehrEhrStatusController extends BaseController {
     @GetMapping
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, "
-        + "@ehrService.getSubjectExtRef(#ehrIdString))")
-    @ApiOperation(value = "Retrieves the version of the EHR_STATUS associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the version extant at specified time, otherwise retrieves the latest EHR_STATUS version.", response = EhrStatusResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested EHR_STATUS resource is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = String.class)
-                    }),
-            @ApiResponse(code = 400, message = "Bad Request - the request has invalid content such as an invalid version_at_time format."),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or a version of an EHR_STATUS resource does not exist at the specified version_at_time."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+            + "@ehrService.getSubjectExtRef(#ehrIdString))")
+    @Override
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusByTime(
-            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "Timestamp in the extended ISO8601 format, e.g. 2015-01-20T19:30:22.765+01:00") @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
@@ -102,22 +102,12 @@ public class OpenehrEhrStatusController extends BaseController {
     @GetMapping(path = "/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, "
-        + "@ehrService.getSubjectExtRef(#ehrIdString))")
-    @ApiOperation(value = "Retrieves a particular version of the EHR_STATUS identified by version_uid and associated with the EHR identified by ehr_id.", response = EhrStatusResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested EHR_STATUS is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = String.class)
-                    }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or when an EHR_STATUS with version_uid does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+            + "@ehrService.getSubjectExtRef(#ehrIdString))")
+    @Override
     public ResponseEntity<EhrStatusResponseData> retrieveEhrStatusById(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
-            @ApiParam(value = "User supplied version UID of EHR_STATUS", required = true) @PathVariable(value = "version_uid") String versionUid) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @PathVariable(value = "version_uid") String versionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
@@ -146,29 +136,15 @@ public class OpenehrEhrStatusController extends BaseController {
     @PutMapping
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, "
-        + "@ehrService.getSubjectExtRef(#ehrIdString))")
-    @ApiOperation(value = "Updates EHR_STATUS associated with the EHR identified by ehr_id. The existing latest version_uid of EHR_STATUS resource (i.e the preceding_version_uid) must be specified in the If-Match header. The response will contain the updated EHR_STATUS resource when the Prefer header has a value of return=representation")
-    @OperationNotesResourcesReaderOpenehr.ApiNotes("ehrStatusPut.md")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - EHR_STATUS is successfully updated and the updated resource is returned in the body when Prefer header value is return=representation.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class),
-                            @ResponseHeader(name = LAST_MODIFIED, description = RESP_LAST_MODIFIED_DESC, response = long.class),
-                            @ResponseHeader(name = ETAG, description = RESP_ETAG_DESC, response = String.class),
-                            @ResponseHeader(name = LOCATION, description = RESP_LOCATION_DESC, response = String.class)
-                    }),
-            @ApiResponse(code = 204, message = "Not Content - Prefer header is missing or is set to return=minimal."),
-            @ApiResponse(code = 400, message = "Bad Request - request has invalid content."),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist."),
-            @ApiResponse(code = 412, message = "Precondition Failed - If-Match request header doesn’t match the latest version on the service side. Returns also latest version_uid in the Location and ETag headers."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+            + "@ehrService.getSubjectExtRef(#ehrIdString))")
+    @Override
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
-            @ApiParam(value = REQ_ACCEPT) @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = REQ_CONTENT_TYPE_BODY) @RequestHeader(value = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
-            @ApiParam(value = REQ_PREFER) @RequestHeader(value = PREFER, required = false) String prefer,
-            @ApiParam(value = "{preceding_version_uid}", required = true) @RequestHeader(value = IF_MATCH) String ifMatch,
-            @ApiParam(value = "EHR ID", required = true) @PathVariable("ehr_id") String ehrIdString,
-            @ApiParam(value = "EHR status.", required = true) @RequestBody() EhrStatus ehrStatus) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @RequestHeader(value = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
+            @RequestHeader(value = PREFER, required = false) String prefer,
+            @RequestHeader(value = IF_MATCH) String ifMatch,
+            @PathVariable("ehr_id") String ehrIdString,
+            @RequestBody() EhrStatus ehrStatus) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE))
@@ -188,7 +164,7 @@ public class OpenehrEhrStatusController extends BaseController {
         String[] split = latestVersionUid.split("::");
         if (latestVersionUid.equals(newLatestVersionUid) || split.length != 3)
             throw new InvalidApiParameterException("Update of EHR_STATUS failed");
-        int version = Integer.parseInt(split[split.length-1]) + 1;
+        int version = Integer.parseInt(split[split.length - 1]) + 1;
 
         List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);   // whatever is required by REST spec
         Optional<InternalResponse<EhrStatusResponseData>> respData;   // variable to overload with more specific object if requested
@@ -206,13 +182,13 @@ public class OpenehrEhrStatusController extends BaseController {
     /**
      * Builder method to prepare appropriate HTTP response. Flexible to either allow minimal or full representation of resource.
      *
-     * @param factory       Lambda function to constructor of desired object
-     * @param ehrId         Ehr reference
-     * @param ehrStatusId   EhrStatus versioned object ID
-     * @param version       EhrStatus version number
-     * @param accept        Requested content format
-     * @param headerList    Requested headers that need to be set
-     * @param <T>           Either only header response or specific class EhrStatusResponseData
+     * @param factory     Lambda function to constructor of desired object
+     * @param ehrId       Ehr reference
+     * @param ehrStatusId EhrStatus versioned object ID
+     * @param version     EhrStatus version number
+     * @param accept      Requested content format
+     * @param headerList  Requested headers that need to be set
+     * @param <T>         Either only header response or specific class EhrStatusResponseData
      * @return
      */
     private <T extends EhrStatusResponseData> Optional<InternalResponse<T>> buildEhrStatusResponseData(Supplier<T> factory, UUID ehrId, UUID ehrStatusId, int version, String accept, List<String> headerList) {

@@ -84,7 +84,7 @@ commit invalid composition (JSON)
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
 
@@ -103,7 +103,7 @@ commit invalid composition (XML)
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
 
@@ -117,7 +117,7 @@ commit composition - no referenced OPT
                         # TODO: FIX ME! Rename KW properly
                         get valid OPT file  ${composition}
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session       ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         # log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   422
 
@@ -133,7 +133,7 @@ commit composition - no referenced EHR
 
                         prepare new request session    XML    Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -152,7 +152,7 @@ commit composition (JSON)
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   201
 
@@ -182,7 +182,7 @@ commit composition without accept header
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   201
 
@@ -216,7 +216,7 @@ commit composition (XML)
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   201
 
@@ -259,7 +259,7 @@ commit same composition again
 
         TRACE GITHUB ISSUE  125  bug
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
 
@@ -271,10 +271,12 @@ commit composition
     ...
     ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
     ...
-    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, RAW_JSON, RAW_XML
+    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, CANONICAL_JSON, CANONICAL_XML
 
     @{template}=        Split String    ${composition}   __
     ${template}=        Get From List   ${template}      0
+
+    Set Suite Variable    ${template_id}    ${template}
 
     ${file}=           Get File   ${COMPO DATA SETS}/${format}/${composition}
 
@@ -285,24 +287,35 @@ commit composition
         Set To Dictionary   ${headers}   openEHR-TEMPLATE_ID=${template}
     END
 
-    IF   '${format}'=='RAW_JSON'
+    IF   '${format}'=='CANONICAL_JSON'
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json    
-    ELSE IF   '${format}'=='RAW_XML'
+    ELSE IF   '${format}'=='CANONICAL_XML'
         Set To Dictionary   ${headers}   Content-Type=application/xml
         Set To Dictionary   ${headers}   Accept=application/xml
     ELSE IF   '${format}'=='FLAT'
-        Set To Dictionary   ${headers}   Content-Type=application/openehr.wt.flat+json
-        Set To Dictionary   ${headers}   Accept=application/openehr.wt.flat+json
+        Set To Dictionary   ${headers}   Content-Type=application/json
+        Set To Dictionary   ${headers}   Accept=application/json
+        &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
+        Create Session      ${SUT}    ${ECISURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
     ELSE IF   '${format}'=='TDD'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/openehr.tds2+xml
         Set To Dictionary   ${headers}   Accept=application/openehr.tds2+xml
     ELSE IF   '${format}'=='STRUCTURED'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/openehr.wt.structured+json
         Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
     END
 
-    ${resp}=            Post Request        ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+    IF   '${format}'=='FLAT'
+    ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
+    ELSE
+    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
+    END
 
     Set Test Variable   ${response}     ${resp}
     Set Test Variable   ${format}       ${format}
@@ -322,14 +335,14 @@ check the successful result of commit composition
     ${Location}   Set Variable    ${response.headers}[Location]
     ${ETag}       Get Substring   ${response.headers}[ETag]    1    -1
 
-    IF  '${format}' == 'RAW_JSON'
+    IF  '${format}' == 'CANONICAL_JSON'
         ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
         ${template_id}=       Set Variable   ${response.json()}[archetype_details][template_id][value]
         ${composer}           Set Variable   ${response.json()}[composer][name]
         # @ndanilin: EhrBase don't return context for persistent composition.
         #            It seems to us that it's wrong so a setting check is disabled yet.
         # ${setting}            Set variable   ${response.json()}[context][setting][value]
-    ELSE IF   '${format}' == 'RAW_XML'
+    ELSE IF   '${format}' == 'CANONICAL_XML'
         ${xresp}=             Parse Xml             ${response.text}
         ${composition_uid}=   Get Element Text      ${xresp}   uid/value
         ${template_id}=       Get Element Text      ${xresp}   archetype_details/template_id/value
@@ -387,7 +400,7 @@ update composition (JSON)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
                         Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
@@ -416,7 +429,7 @@ update composition - invalid opt reference (JSON)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
                         Log To Console      \nRESPONSE:\n${resp.content}
                         Set Test Variable   ${response}    ${resp}
@@ -434,7 +447,7 @@ update composition - invalid opt reference (XML)
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         Log To Console      \nREQUEST HEADERS:\n${resp.request.headers}
                         Log To Console      \nRESPONSE:\n${resp.content}
                         Set Test Variable   ${response}    ${resp}
@@ -472,7 +485,7 @@ update composition (XML)
                         ...                 Accept=application/xml
                         ...                 Prefer=return=representation
                         ...                 If-Match=${preceding_version_uid}   # TODO: must be ${preceding_version_uid} - has same format as `version_uid`
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
 
     # compo.uid.value has the version_uid
@@ -513,7 +526,7 @@ update non-existent composition (JSON)
                         ...                 Prefer=return=representation
 
                         ...                 If-Match=${preceding_version_uid}
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   expected_status=anything    headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -531,7 +544,7 @@ update non-existent composition (XML)
                         ...                 Prefer=return=representation
 
                         ...                 If-Match=${preceding_version_uid}
-    ${resp}=            Put Request         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   headers=${headers}
+    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${versioned_object_uid}   data=${file}   expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -547,7 +560,7 @@ get composition by composition_uid
     # the uid param in the doc is verioned_object.uid but is really the version.uid,
     # because the response from the create compo has this endpoint in the Location header
 
-    ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/composition/${uid}    headers=${headers}
+    ${resp}=            GET On Session         ${SUT}    /ehr/${ehr_id}/composition/${uid}    expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
@@ -562,7 +575,7 @@ get versioned composition by uid
 
                         prepare new request session    ${format}
 
-    ${resp}=            Get Request         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    headers=${headers}
+    ${resp}=            GET On Session         ${SUT}    /ehr/${ehr_id}/versioned_composition/${uid}    expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
@@ -669,7 +682,7 @@ get composition - latest version
     ...                 format: JSON or XML for accept/content headers
 
                         prepare new request session    ${format}    Prefer=return=representation
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    headers=${headers}
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version    expected_status=anything   headers=${headers}
                         log to console        ${resp.text}
                         Set Test Variable     ${response}    ${resp}
 
@@ -722,7 +735,7 @@ get versioned composition - version at time
 
     # Get version at time 1, should exist and be COMPO 1
     &{params}=          Create Dictionary     version_at_time=${time_x}
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   expected_status=anything
                         ...                   params=${params}
 
                         log to console        ${resp.content}
@@ -740,7 +753,7 @@ get composition - version at time (XML)
 
     &{params}=          Create Dictionary     version_at_time=${time_x}
     &{headers}=         Create Dictionary     Accept=application/xml
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/versioned_composition/${versioned_object_uid}/version   expected_status=anything
                         ...                   params=${params}   headers=${headers}
 
                         log to console        ${resp.content}
@@ -827,7 +840,7 @@ delete composition
     [Arguments]         ${uid}
     [Documentation]     :uid: preceding_version_uid (format of version_uid)
 
-    ${resp}=            Delete Request          ${SUT}   /ehr/${ehr_id}/composition/${uid}
+    ${resp}=            Delete On Session       ${SUT}   /ehr/${ehr_id}/composition/${uid}   expected_status=anything
                         log to console          ${resp.headers}
                         log to console          ${resp.content}
 
@@ -843,7 +856,7 @@ get deleted composition
     [Documentation]     The deleted compo should not exist
     ...                 204 is the code for deleted - as per openEHR REST spec
 
-    ${resp}=            Get Request           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}
+    ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}   expected_status=anything
                         log to console        ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   204
 
@@ -852,7 +865,7 @@ delete non-existent composition
     [Documentation]     DEPENDENCY `prepare new request session`, `generate random composition_uid`
 
                         prepare new request session
-    ${resp}=            Delete Request        ${SUT}   /ehr/${ehr_id}/composition/${preceding_version_uid}
+    ${resp}=            Delete On Session      ${SUT}   /ehr/${ehr_id}/composition/${preceding_version_uid}   expected_status=anything
                         log to console    ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   404
 
@@ -899,16 +912,21 @@ capture time before first commit
 
 capture point in time
     [Arguments]         ${point_in_time}
-    [Documentation]     :point_in_time: integer [0, 1, 2]
-    ...                 exposes to test level scope a variable e.g. `${time_1}`
-    ...                 which's value is a given time in the extended ISO8601 format
+    [Documentation]     :point_in_time: integer (0, 1, 2) or string (i.e. initial_version, first_version, etc.)
+    ...                 Gets the current date/time when this keyword is called and
+    ...                 exposes it as a variable to test level scope with whatever name was given
+    ...                 to point_in_time parameter, i.e. ${time_0}, ${time_initial_version}, etc.
+    ...
+    ...                 The value of the exposed variable is a timestamp in extended ISO8601 format
     ...                 e.g. 2015-01-20T19:30:22.765+01:00
     ...                 s. http://robotframework.org/robotframework/latest/libraries/DateTime.html
     ...                 for DateTime Library docs
+                        Sleep    1   # gives DB some time to finish it's operation
+    ${zone}=            Set Suite Variable    ${time_zone}    ${{ tzlocal.get_localzone() }}
+    ${time}=            Set Variable    ${{ datetime.datetime.now(tz=tzlocal.get_localzone()).isoformat() }}
+    ${offset}=          Set Suite Variable    ${utc_offset}    ${time}[-6:]
+                        Set Suite Variable   ${time_${point_in_time}}   ${time}
 
-    ${time}=            Get Current Date    result_format=%Y-%m-%dT%H:%M:%S.%f
-                        Set Suite Variable   ${time_${point_in_time}}   ${time}+00:00
-                        Sleep               1
 
 
 create EHR and commit a composition for versioned composition tests
@@ -952,7 +970,7 @@ update a composition for versioned composition tests
 #
 #     ${file}=            Get File           ${CURDIR}/../test_data_sets/xml_compositions/${xml_composition}
 #     &{headers}=         Create Dictionary  Content-Type=application/xml  Prefer=return=representation  Accept=application/xml
-#     ${resp}=            Post Request       ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
+#     ${resp}=            POST On Session       ${SUT}   /ehr/${ehr_id}/composition   data=${file}   headers=${headers}
 #                         Should Be Equal As Strings   ${resp.status_code}   201
 #
 #     ${xresp}=           Parse Xml          ${resp.text}
@@ -970,7 +988,7 @@ update a composition for versioned composition tests
 #     # because the response from the create compo has this endpoint in the Location header
 #
 #     &{headers}=         Create Dictionary   Content-Type=application/xml   Accept=application/xml    Prefer=return=representation
-#     ${resp}=            Get Request         ${SUT}   /ehr/${ehr_id}/composition/${uid}    headers=${headers}
+#     ${resp}=            GET On Session         ${SUT}   /ehr/${ehr_id}/composition/${uid}    headers=${headers}
 #                         log to console      ${resp.content}
 #                         Set Test Variable   ${response}    ${resp}
 

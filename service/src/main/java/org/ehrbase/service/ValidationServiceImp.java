@@ -23,54 +23,63 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.terminology.openehr.TerminologyService;
 import org.ehrbase.validation.Validator;
 import org.ehrbase.validation.constraints.terminology.ExternalTerminologyValidationSupport;
 import org.ehrbase.validation.terminology.ItemStructureVisitor;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static org.ehrbase.configuration.CacheConfiguration.VALIDATOR_CACHE;
-
 @Service
 public class ValidationServiceImp implements ValidationService {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
-    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance());
+    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance(),s -> null);
 
     private final I_KnowledgeCache knowledgeCache;
 
     private final TerminologyService terminologyService;
 
-    private final Cache<UUID, Validator> validatorCache;
+    private final Cache validatorCache;
 
     private ExternalTerminologyValidationSupport externalTerminologyValidator;
 
     @Autowired
-    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService) {
-        this.validatorCache = cacheManager.getCache(VALIDATOR_CACHE, UUID.class, Validator.class);
+    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService, ServerConfig serverConfig) {
+        this.validatorCache = cacheManager.getCache(CacheOptions.VALIDATOR_CACHE);
         this.knowledgeCache = knowledgeCache;
         this.terminologyService = terminologyService;
+
+        if (serverConfig.isDisableStrictValidation()) {
+            logger.warn("Disabling strict invariant validation. Caution is advised.");
+            RM_OBJECT_VALIDATOR.setRunInvariantChecks(false);
+        }
     }
 
     @Override
     public void check(UUID templateUUID, Composition composition) throws Exception {
 
         //check if a validator is already in the cache
-        Validator validator = validatorCache.get(templateUUID);
+        Validator validator = validatorCache.get(templateUUID, Validator.class);
 
         if (validator == null) {
             //create a new one for template
@@ -176,7 +185,7 @@ public class ValidationServiceImp implements ValidationService {
 
     @Override
     public void invalidate() {
-        validatorCache.removeAll();
+        validatorCache.invalidate();
     }
 
     @Autowired(required = false)

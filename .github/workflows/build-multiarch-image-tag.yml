@@ -1,9 +1,13 @@
-name: Build & Deploy Docker Image (latest)
+name: Build & Deploy Docker Image (version-tag)
 
 on:
   push:
     branches:
       - 'release/**'
+    paths-ignore:
+      - '**/*.md'
+      - 'doc/**'
+      - 'tests/**'
 
 jobs:
   build-docker:

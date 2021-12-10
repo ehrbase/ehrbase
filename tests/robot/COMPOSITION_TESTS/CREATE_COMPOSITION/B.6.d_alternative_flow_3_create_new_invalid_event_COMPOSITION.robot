@@ -30,19 +30,20 @@ Suite Teardown  restart SUT
 
 *** Test Cases ***
 Alternative flow 3 create new invalid event COMPOSITION RAW_JSON
-    commit composition   format=RAW_JSON
+    commit composition   format=CANONICAL_JSON
     ...                  composition=nested.en.v1__invalid_wrong_structure.json
     check status_code of commit composition    400
 
 Alternative flow 3 create new invalid event COMPOSITION RAW_XML
-    commit composition   format=RAW_XML
+    commit composition   format=CANONICAL_XML
     ...                  composition=nested.en.v1__invalid_wrong_structure.xml
     check status_code of commit composition    400
 
 Alternative flow 3 create new invalid event COMPOSITION FLAT
-    [Tags]    future
+    [Tags]      596  not-ready  bug
     commit composition   format=FLAT
     ...                  composition=nested.en.v1__invalid_wrong_structure.json
+    TRACE GITHUB ISSUE  596  bug
     check status_code of commit composition    400
 
 Alternative flow 3 create new invalid event COMPOSITION TDD

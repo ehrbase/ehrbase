@@ -17,6 +17,13 @@
 
 
 *** Settings ***
+Metadata    Version    0.1.0
+Metadata    Authors    *Wladislaw Wagner, Pablo Pazos*
+Metadata    Created    2019
+Metadata    Updated    2021.10.05
+Metadata    TOP_TEST_SUITE    AQL
+Metadata    Command    robot -d results -L TRACE -i AQL_loaded_db robot/QUERY_SERVICE_TESTS
+
 Documentation   Main flow: execute ad-hoc QUERY where data exists
 ...
 ...     Preconditions:
@@ -28,7 +35,6 @@ Documentation   Main flow: execute ad-hoc QUERY where data exists
 ...
 ...     Postconditions:
 ...         None (system state is not altered)
-Metadata        TOP_TEST_SUITE    AQL
 
 Resource       ../../_resources/keywords/aql_query_keywords.robot
 
@@ -74,24 +80,31 @@ A-103 Execute Ad-Hoc Query - Get EHRs
 
 
 A-105 Execute Ad-Hoc Query - Get EHRs
+    [Documentation]     Execute AQL query\n\n
+    ...                 SELECT e/ehr_id, e/time_created, e/system_id FROM EHR e
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              
     A/105_get_ehrs.json    A/105.tmp.json
+
+
+A-106 Execute Ad-Hoc Query - Get EHRs
+    [Documentation]     Execute AQL query\n\n
+    ...                 SELECT e/ehr_id, e/time_created, e/system_id, e/ehr_status FROM EHR e
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              
     A/106_get_ehrs.json    A/106.tmp.json
 
 
 A-107 Execute Ad-Hoc Query - Get EHRs (filtered: top 5)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              
     A/107_get_ehrs_top_5.json    A/107.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  103  not-ready_test-issue
 
 
 A-108 Execute Ad-Hoc Query - Get EHRs (ordered by: time-created)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
-    A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  118  not-ready_test-issue
+    [Tags]              
+    A/108_get_ehrs_orderby_time-created.json    A/108.tmp.json    ignore_order=${FALSE}
 
 
 A-109 Execute Ad-Hoc Query - Get EHRs (filtered: timewindow)
@@ -148,23 +161,16 @@ A-600 Execute Ad-Hoc Query - Get EHRs Which Have Compositions
 
 B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              not-ready    not-ready_test-issue
-    # comment: note-ready_test-issue because huge payloads to compare,
-    #          it's nearly impossible to get the diff to zero
+    [Tags]              586    not-ready
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-
-
-B-101 Execute Ad-Hoc Query - Get Compositions (filtered: top 5)
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO   # @WLAD will be replaced by B-104/105
-    B/101_get_compositions_top_5.json    B/101.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-102 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              586    not-ready
     B/102_get_compositions_orderby_name.json    B/102.tmp.json
-    ## comment: check SMOKE test suite
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-103 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
@@ -175,75 +181,86 @@ B-103 Execute Ad-Hoc Query - Get Compositions (filtered: timewindow)
 
 B-104 Get Compositions (filtered: top 5, ordered by: start_time ASC)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              635    586
     B/104_get_compositions_top_5_ordered_by_starttime_asc.json    B/104.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  635
 
 
 B-105 Get Compositions (filtered: top 5, ordered by: start_time DESC)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              586
     B/105_get_compositions_top_5_ordered_by_starttime_desc.json    B/105.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
+
+
+B-106 Get Compositions (filtered: top 5, ordered by: start_time value ASC)
+    [Template]          execute ad-hoc query and check result (loaded DB)
+    [Tags]              586
+    B/106_get_compositions_top_5_ordered_by_starttimevalue_asc.json    B/106.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-200 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              357    not-ready
+    [Tags]              586    not-ready
     B/200_query.tmp.json    B/200.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  357  bug
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-300 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              357    not-ready
+    [Tags]              586    not-ready
     B/300_get_compositions_with_archetype_from_all_ehrs.json    B/300.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  357  bug
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     Test w/ "all_types.composition.json" commit
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              463    not-ready
+    [Tags]              586    587    not-ready
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  463  bug
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-500 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              357    not-ready
+    [Tags]              586    not-ready
     B/500_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/500.tmp.json
     B/501_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  357  bug
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-502 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              357    not-ready
+    [Tags]              586    not-ready
     B/502_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/502.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  357  bug
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-503 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              357    not-ready
+    [Tags]              586    not-ready
     B/503_get_compositions_by_contains_entry_of_type_from_all_ehrs.json    B/503.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  357  bug
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-600 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO    not-ready_test-issue
+    [Tags]              586    not-ready
     B/600_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/600.tmp.json
     B/601_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/601.tmp.json
     B/602_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/602.tmp.json
     B/603_get_compositions_by_contains_entry_with_archetype_from_all_ehrs.json    B/603.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-700 Execute Ad-Hoc Query - Get Composition(s)
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO    not-ready_test-issue
+    [Tags]              586    not-ready
     B/700_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/700.tmp.json
     B/701_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/701.tmp.json
     B/702_get_compositions_by_contains_entry_with_archetype_and_condition_from_all_ehrs.json    B/702.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-800 Execute Ad-Hoc Query - Get Compositions By UID
@@ -260,9 +277,10 @@ B-802 Execute Ad-Hoc Query - Get Compositions By UID
     [Documentation]     B/802: SELECT c FROM COMPOSITION c WHERE c/uid/value='123::node.name.com::1'
     ...                 B/803: SELECT c FROM COMPOSITION c WHERE c/uid/value=$uid
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO
+    [Tags]              [Tags]              586    not-ready
     B/802_query.tmp.json    B/802.tmp.json
     B/803_query.tmp.json    B/803.tmp.json
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 D-200 Execute Ad-HOc Query - Get Data
@@ -356,9 +374,10 @@ D-311 Execute Ad-HOc Query - Get Data
 
 
 D-312 Execute Ad-HOc Query - Get Data
-    [Documentation]     Get Data related query.
+    [Documentation]     Get Data related query. \n\n
+    ...                 select TOP 5 e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1]
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO  # @WLAD implement a flow w/ TOP5 + ORDERED BY time_created
+    [Tags]              
     D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
 
 
@@ -407,42 +426,40 @@ D-405 Execute Ad-HOc Query - Get Data
 D-500 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
+    [Tags]              628    not-ready
     D/500_query.tmp.json    D/500.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
+    [Teardown]          TRACE GITHUB ISSUE  628  bug
 
 
 D-501 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
+    [Tags]              628    not-ready
     D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
+    [Teardown]          TRACE GITHUB ISSUE  628  bug
 
 
 D-502 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
+    [Tags]              628    not-ready
     D/502_query.tmp.json    D/502.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
+    [Teardown]          TRACE GITHUB ISSUE  628  bug
 
 
 D-503 Execute Ad-HOc Query - Get Data
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
+    [Tags]              628    not-ready
     D/503_query.tmp.json    D/503.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
+    [Teardown]          TRACE GITHUB ISSUE  628  bug
 
 
 D-504 Execute Ad-HOc Query - Get archetype_details
     [Documentation]     Get Data related query.
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              464    not-ready
+    [Tags]              
     D/504_query.tmp.json    D/504.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  464  bug
-
 
 
 
@@ -517,6 +534,37 @@ C-500 Execute Ad-Hoc Query - Get Entries from EHR
 
 
 
+# SPECIAL CASES / REGRESSION TEST (RT) QUERIES
+
+RT-001 - Query For Not-Existing Composition Should Return Empty Result
+    [Tags]    
+    Query For Not-Existing Composition Name
+
+    # comment: validate response
+    Integer    response status    200
+    Array      $.rows    []
+
+
+
+
+
+*** Keywords ***
+Query For Not-Existing Composition Name
+        # comment: create AQL string and execute AQL query
+        ${query1}=    Catenate
+        ...           SELECT
+        ...             c/uid/value, c/name/value, c/archetype_node_id, c/composer/name
+        ...           FROM
+        ...             EHR e
+        ...           CONTAINS
+        ...             COMPOSITION c [openEHR-EHR-COMPOSITION.asdfsomegibberish.v1]
+        Set Test Variable    ${payload}    {"q": "${query1}"}
+        POST /query/aql (REST)     JSON
+
+
+
+
+
 
 
 
@@ -567,7 +615,6 @@ C-500 Execute Ad-Hoc Query - Get Entries from EHR
 
 #     # COMPOSITIONs
 #     B/100_get_compositions_from_all_ehrs.json
-#     B/101_get_compositions_top_5.json
 #     B/102_get_compositions_orderby_name.json
 #     B/103_get_compositions_within_timewindow.json
 #     B/200_get_compositions_from_ehr_by_id.json

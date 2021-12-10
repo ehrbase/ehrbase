@@ -62,11 +62,12 @@ public class SuperQuery {
         List<Field> fields = new ArrayList<>();
         Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
 
+        //check if the list of variable contains at least ONE distinct statement
+        if (!variableDefinitions.hasDistinctOperator())
+            return fields;
+
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
-            if (!variableDefinition.isDistinct()) {
-                continue;
-            }
             if (variableDefinition instanceof FunctionDefinition) {
                 StringBuilder stringBuilder = new StringBuilder();
                 for (FuncParameter funcParameter : variableDefinition.getFuncParameters()) {

@@ -52,8 +52,12 @@ public class ContextualAttribute {
             for (Iterator<QualifiedAqlField> qualifiedAqlFieldIterator = fields.iterator(); qualifiedAqlFieldIterator.hasNext();) {
                 QualifiedAqlField field = qualifiedAqlFieldIterator.next();
                 variableDefinition.setPath(originalPath);
-                if (originalPath != null)
-                    field.setField(field.getSQLField().as("/" + originalPath));
+                if (originalPath != null) {
+                    if (variableDefinition.getAlias() != null)
+                        field.setField(field.getSQLField().as(variableDefinition.getAlias()));
+                    else
+                        field.setField(field.getSQLField().as("/" + originalPath));
+                }
                 else
                     field.setField(field.getSQLField().as(variableDefinition.getIdentifier()));
             }

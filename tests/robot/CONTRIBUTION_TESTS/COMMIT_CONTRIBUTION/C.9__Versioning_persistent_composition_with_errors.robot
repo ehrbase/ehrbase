@@ -54,7 +54,7 @@ Force Tags    refactor
 
 *** Test Cases ***
 Alternative flow 8: commit CONTRIBUTIONS for versioning a persistent COMPOSITION, but second commit has change type creation
-    [Tags]              72
+    [Tags]     
 
     upload OPT    minimal_persistent/persistent_minimal.opt
 

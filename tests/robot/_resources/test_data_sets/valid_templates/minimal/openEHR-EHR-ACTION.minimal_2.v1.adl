@@ -5,6 +5,14 @@ concept
 	[at0000]	-- Minimal 2
 language
 	original_language = <[ISO_639-1::es]>
+	translations = <
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			author = <
+				["name"] = <"?">
+			>
+		>
+	>
 description
 	original_author = <
 		["name"] = <"">
@@ -17,24 +25,30 @@ description
 			misuse = <"">
 			copyright = <"">
 		>
+		["en"] = <
+			language = <[ISO_639-1::en]>
+			purpose = <"">
+			use = <"">
+			misuse = <"">
+			copyright = <"">
+		>
 	>
 	lifecycle_state = <"0">
 	other_contributors = <>
 	other_details = <
-		["MD5-CAM-1.0.1"] = <"32429DCE4602B060448866679D6C7613">
+		["MD5-CAM-1.0.1"] = <"36F436CF630F4E9D89C3F1532A1E990E">
 	>
 
 definition
 	ACTION[at0000] matches {	-- Minimal 2
 		description matches {
-			ITEM_TREE[at0001] matches {	-- Arbol
+			ITEM_TREE[at0001] matches {	-- Tree
 				items cardinality matches {0..*; unordered} matches {
 					ELEMENT[at0002] occurrences matches {0..1} matches {	-- Proportion
 						value matches {
 							DV_PROPORTION matches {
 								numerator matches {|>=0.0|}
 								denominator matches {|>0.0|}
-								is_integral matches {False}
 								type matches {3, 4}
 							}
 						}
@@ -59,6 +73,22 @@ ontology
 				["at0002"] = <
 					text = <"Proportion">
 					description = <"*">
+				>
+			>
+		>
+		["en"] = <
+			items = <
+				["at0000"] = <
+					text = <"Minimal 2">
+					description = <"">
+				>
+				["at0001"] = <
+					text = <"Tree">
+					description = <"@ internal @">
+				>
+				["at0002"] = <
+					text = <"Proportion">
+					description = <"">
 				>
 			>
 		>

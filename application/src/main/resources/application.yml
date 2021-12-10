@@ -32,6 +32,11 @@
 spring:
   application:
     name: ehrbase
+
+  cache:
+    jcache:
+      config: classpath:ehcache.xml
+
   security:
     oauth2:
       resourceserver:
@@ -54,6 +59,8 @@ security:
   authPassword: SuperSecretPassword
   authAdminUser: ehrbase-admin
   authAdminPassword: EvenMoreSecretPassword
+  oauth2UserRole: USER
+  oauth2AdminRole: ADMIN
 
 # Attribute Based Access Control
 abac:
@@ -91,19 +98,19 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  config-path: '/ehcache.xml'
-  enabled: true
+  init-on-startup: true
   pre-build-queries: true
   pre-build-queries-depth: 4
-
-
 
 system:
   allow-template-overwrite: false
 
+openehr-api:
+  context-path: /rest/openehr
 admin-api:
   active: false
   allowDeleteAll: false
+  context-path: /rest/admin
 
 logging:
   level:
@@ -124,6 +131,9 @@ server:
     ignoreIterativeNodeList: 'activities,content'
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
     iterationScanDepth: 2
+
+  # Option to disable strict invariant validation.
+  # disable-strict-validation: true
 
 
 terminology-server:
@@ -191,3 +201,7 @@ validation:
 client:
   ssl:
     enabled: false
+
+# JavaMelody
+javamelody:
+  enabled: false

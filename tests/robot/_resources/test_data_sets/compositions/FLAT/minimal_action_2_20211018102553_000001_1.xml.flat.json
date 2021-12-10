@@ -1,0 +1,21 @@
+{
+  "minimal/language|code" : "en",
+  "minimal/language|terminology" : "ISO_639-1",
+  "minimal/territory|code" : "UY",
+  "minimal/territory|terminology" : "ISO_3166-1",
+  "minimal/minimal_2:0/proportion|numerator" : 272.0,
+  "minimal/minimal_2:0/proportion|denominator" : 652.0,
+  "minimal/minimal_2:0/proportion|type" : 3,
+  "minimal/minimal_2:0/proportion" : 0.41717792,
+  "minimal/minimal_2:0/time" : "2021-10-18T22:25:53.94-03:00",
+  "minimal/minimal_2:0/language|code" : "en",
+  "minimal/minimal_2:0/language|terminology" : "ISO_639-1",
+  "minimal/minimal_2:0/encoding|code" : "UTF-8",
+  "minimal/minimal_2:0/encoding|terminology" : "IANA_character-sets",
+  "minimal/category|code" : "433",
+  "minimal/category|value" : "event",
+  "minimal/category|terminology" : "openehr",
+  "minimal/composer|id" : "52ee0e05-8fb1-459d-b828-b62e48eb82f0",
+  "minimal/composer|id_namespace" : "DEMOGRAPHIC",
+  "minimal/composer|name" : "Dr. Yamamoto"
+}

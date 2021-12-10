@@ -23,8 +23,6 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.QueryResponseData;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,9 +46,8 @@ public class QueryController extends BaseController {
     }
 
     @PostMapping
-    @ApiOperation(value = "Execute query")
-    public ResponseEntity<QueryResponseData> query(@ApiParam(value = "Request to return the generated SQL (boolean).") @RequestParam(value = "explain", defaultValue = "false") Boolean explain,
-                                                   @ApiParam(value = "Query") @RequestBody() String content) {
+    public ResponseEntity<QueryResponseData> query(@RequestParam(value = "explain", defaultValue = "false") Boolean explain,
+                                                   @RequestBody() String content) {
 
         Map<String, String> kvPairs = extractQuery(new String(content.getBytes()));
 

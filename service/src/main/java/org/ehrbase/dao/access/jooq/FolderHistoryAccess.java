@@ -55,10 +55,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
     private static final Logger log = LogManager.getLogger(FolderHistoryAccess.class);
 
-    // TODO: Check how to remove this unused details for confusion prevention
-    private ItemStructure details;
-
-    private List<ObjectRef> items = new ArrayList<>();
+    private List<ObjectRef<? extends ObjectId>> items = new ArrayList<>();
     private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<>();
     private I_ContributionAccess contributionAccess;
     private UUID ehrId;
@@ -227,7 +224,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
      * @param domainAccess connection DB data.
      * @return
      */
-    private static List<ObjectRef> retrieveItemsByFolderAndContributionId(UUID folderId, UUID in_contribution, I_DomainAccess domainAccess){
+    private static List<ObjectRef<?>> retrieveItemsByFolderAndContributionId(UUID folderId, UUID in_contribution, I_DomainAccess domainAccess){
 
         Table<?> table_items_and_objref = table(
                 select(FOLDER_ITEMS.FOLDER_ID, FOLDER_ITEMS.OBJECT_REF_ID.as("item_object_ref_id"), FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"), FOLDER_ITEMS.SYS_TRANSACTION, FOLDER_ITEMS.SYS_PERIOD, OBJECT_REF.ID_NAMESPACE, OBJECT_REF.TYPE, OBJECT_REF.ID.as("obj_ref_id"),  OBJECT_REF.IN_CONTRIBUTION.as("obj_ref_in_cont"), OBJECT_REF.SYS_TRANSACTION.as("objRefSysTran"), OBJECT_REF.SYS_PERIOD.as("oref_sysperiod"))
@@ -260,7 +257,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         Result<Record> retrievedRecords = domainAccess.getContext().select().from(table_all_items_and_objref).fetch();
 
 
-        List<ObjectRef> result = new ArrayList<>();
+        List<ObjectRef<?>> result = new ArrayList<>();
         for(Record recordRecord : retrievedRecords){
             Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>  recordParam =  (Record11<UUID, UUID, UUID, Timestamp, Timestamp, String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>) recordRecord;
             ObjectRefRecord objectRef = new ObjectRefRecord();
@@ -360,15 +357,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         return this.subfoldersList;
     }
 
-    public  void setDetails(final ItemStructure details){
-        this.details = details;}
-
-    @Override
-    public ItemStructure getDetails() {
-        return null;
-    }
-
-    public  List<ObjectRef> getItems(){
+    public  List<ObjectRef<? extends ObjectId>> getItems(){
         return this.items;
     }
 

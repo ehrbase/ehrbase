@@ -96,7 +96,7 @@ upload OPT file
     [Documentation]     Uploads OPT file which was obtained with one of the Keywords
     ...                 `get valid OPT file` or `get invalid OPT file`
 
-    ${resp}=            Post Request         ${SUT}    /definition/template/adl1.4
+    ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
                         Set Suite Variable    ${response}    ${resp}
                         # Log To Console      ${resp.content}
@@ -164,7 +164,7 @@ retrieve OPT by template_id
     [Arguments]         ${template_id}
     [Documentation]     Gets OPT from server with provided template_id
 
-    ${resp}=            Get Request          ${SUT}    /definition/template/adl1.4/${template_id}
+    ${resp}=            GET On Session          ${SUT}    /definition/template/adl1.4/${template_id}   expected_status=anything
                         ...                  headers=${headers}
                         Log    ${resp.text}
                         # Log    ${resp.content}
@@ -240,7 +240,7 @@ upload valid template (XML)
     Create Session  ethlocal  ${baseurl}
     ${file}=  Get File  ${VALID DATA SETS}${template}
     &{headers}=  Create Dictionary  Content-Type=application/xml
-    ${resp}=  Post Request  ethlocal  /template  data=${file}  headers=${headers}
+    ${resp}=  POST On Session  ethlocal  /template  data=${file}  headers=${headers}   expected_status=anything
     Log  ${resp.json()}
     Run Keyword If   ${resp.status_code} != 201  Log  Wrong Status Code  WARN
     Run Keyword If   ${resp.status_code} != 201  Set Tags  not-ready
@@ -289,7 +289,7 @@ upload valid template (XML)
 # retrieve list of uploaded OPTs (request lib example)
 #     [Documentation]    List all available operational templates on the system.
 #
-#     ${resp}=           Get Request          ${SUT}    /definition/template/adl1.4
+#     ${resp}=           GET On Session          ${SUT}    /definition/template/adl1.4
 #                        ...                  headers=${headers}
 #                        Should Be Equal As Strings   ${resp.status_code}   200
 #                        Log    ${resp.content}

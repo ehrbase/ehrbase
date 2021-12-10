@@ -23,16 +23,13 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -44,6 +41,7 @@ import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.response.openehr.RevisionHistoryResponseData;
 import org.ehrbase.response.openehr.VersionedObjectResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.specification.VersionedCompositionApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -60,10 +58,10 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
-@Api
 @RestController
-@RequestMapping(path = "/rest/openehr/v1/ehr/{ehr_id}/versioned_composition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class OpenehrVersionedCompositionController extends BaseController {
+@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_composition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+public class OpenehrVersionedCompositionController extends BaseController
+        implements VersionedCompositionApiSpecification {
 
     private final EhrService ehrService;
     private final CompositionService compositionService;
@@ -77,17 +75,10 @@ public class OpenehrVersionedCompositionController extends BaseController {
     }
 
     @GetMapping(path = "/{versioned_object_uid}")
-    @ApiOperation(value = "Retrieves a VERSIONED_Composition associated with an EHR identified by ehr_id.", response = VersionedObjectResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested VERSIONED_COMPOSITION is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or VERSIONED_COMPOSITION with versioned_object_uid does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+    @Override
     public ResponseEntity<VersionedObjectResponseData<Composition>> retrieveVersionedCompositionByVersionedObjectUid(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -107,17 +98,10 @@ public class OpenehrVersionedCompositionController extends BaseController {
     }
 
     @GetMapping(path = "/{versioned_object_uid}/revision_history")
-    @ApiOperation(value = "Retrieves a VERSIONED_COMPOSITION associated with an EHR identified by ehr_id.", response = RevisionHistoryResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested VERSIONED_COMPOSITION is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-            @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or VERSIONED_COMPOSITION with versioned_object_uid does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+    @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -139,20 +123,13 @@ public class OpenehrVersionedCompositionController extends BaseController {
     @GetMapping(path = "/{versioned_object_uid}/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
-        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
-    @ApiOperation(value = "Retrieves a VERSION identified by version_uid of a VERSIONED_COMPOSITION identified by versioned_object_uid and associated with the EHR identified by ehr_id.", response = OriginalVersionResponseData.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",
-            responseHeaders = {
-                @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-            }),
-        @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or a VERSIONED_COMPOSITION with versioned_object_uid does not exist or a VERSION with version_uid does not exist."),
-        @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+            + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
+    @Override
     public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByVersionUid(
-        @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+        @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+        @PathVariable(value = "ehr_id") String ehrIdString,
         @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-        @ApiParam(value = "User supplied VERSION identifier", required = true) @PathVariable(value = "version_uid") String versionUid) {
+        @PathVariable(value = "version_uid") String versionUid) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -183,20 +160,13 @@ public class OpenehrVersionedCompositionController extends BaseController {
     @GetMapping(path = "/{versioned_object_uid}/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
-        + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
-    @ApiOperation(value = "Retrieves a VERSION of a VERSIONED_COMPOSITION identified by versioned_object_uid and associated with the EHR identified by ehr_id. If version_at_time is supplied, retrieves the VERSION extant at specified time, otherwise retrieves the latest VERSION.", response = OriginalVersionResponseData.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok - requested VERSION is successfully retrieved.",
-                    responseHeaders = {
-                            @ResponseHeader(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, response = MediaType.class)
-                    }),
-        @ApiResponse(code = 404, message = "Not Found - EHR with ehr_id does not exist or a VERSIONED_COMPOSITION with versioned_object_uid does not exist or a VERSION with version_uid does not exist."),
-            @ApiResponse(code = 406, message = "Not Acceptable - Service can not fulfil requested Accept format.")})
+            + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
+    @Override
     public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByTime(
-            @ApiParam(value = "Client should specify expected response format") @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @ApiParam(value = "User supplied EHR ID", required = true) @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-            @ApiParam(value = "A timestamp in the ISO8601 format", hidden = true) @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
+            @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);

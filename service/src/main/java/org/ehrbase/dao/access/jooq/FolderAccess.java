@@ -71,10 +71,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     public static final String CHILD_FOLDER = "child_folder";
     public static final String CALLED_INVALID_ACCESS_LAYER_METHOD = "Called invalid access layer method.";
 
-    // TODO: Check how to remove this unused details for confusion prevention
-    private ItemStructure details;
-
-    private List<ObjectRef> items = new ArrayList<>();
+    private List<ObjectRef<? extends ObjectId>> items = new ArrayList<>();
     private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<>();
     private I_ContributionAccess contributionAccess;
     private I_AuditDetailsAccess auditDetailsAccess;  // audit associated with this folder version
@@ -762,7 +759,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
      * @param domainAccess    connection DB data.
      * @return
      */
-    private static List<ObjectRef> retrieveItemsByFolderAndContributionId(UUID folderId, UUID in_contribution, I_DomainAccess domainAccess) {
+    private static List<ObjectRef<?>> retrieveItemsByFolderAndContributionId(UUID folderId, UUID in_contribution, I_DomainAccess domainAccess) {
         Result<Record> retrievedRecords = domainAccess.getContext().with("folderItemsSelect").as(
                 select(FOLDER_ITEMS.OBJECT_REF_ID.as("object_ref_id"), FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"))
                         .from(FOLDER_ITEMS)
@@ -774,7 +771,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                         .and(field(name("item_in_contribution"), FOLDER_ITEMS.IN_CONTRIBUTION.getType()).eq(OBJECT_REF.IN_CONTRIBUTION))).fetch();
 
 
-        List<ObjectRef> result = new ArrayList<>();
+        List<ObjectRef<?>> result = new ArrayList<>();
         for (Record recordRecord : retrievedRecords) {
             Record8<String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>, UUID, UUID> recordParam = (Record8<String, String, UUID, UUID, Timestamp, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>, UUID, UUID>) recordRecord;
             ObjectRefRecord objectRef = new ObjectRefRecord();
@@ -1046,17 +1043,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
 
     @Override
-    public void setDetails(final ItemStructure details) {
-        this.details = details;
-    }
-
-    @Override
-    public ItemStructure getDetails() {
-        return null;
-    }
-
-    @Override
-    public List<ObjectRef> getItems() {
+    public List<ObjectRef<? extends ObjectId>> getItems() {
         return this.items;
     }
 

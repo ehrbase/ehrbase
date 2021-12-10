@@ -1,223 +1,138 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<composition xmlns="http://schemas.openehr.org/v1" archetype_node_id="openEHR-EHR-COMPOSITION.minimal.v1">
-	<name>
-		<value>Minimal</value>
-	</name>
-	<uid xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="OBJECT_VERSION_ID">
-		<value>acc2e8a0-146a-466c-a943-8b0ce7b5471f::piri.ehrscape.com::1</value>
-	</uid>
-	<archetype_details>
-		<archetype_id>
-			<value>openEHR-EHR-COMPOSITION.minimal.v1</value>
-		</archetype_id>
-		<template_id>
-			<value>minimal_instruction.en.v1</value>
-		</template_id>
-		<rm_version>1.0.2</rm_version>
-	</archetype_details>
-	<language>
-		<terminology_id>
-			<value>ISO_639-1</value>
-		</terminology_id>
-		<code_string>en</code_string>
-	</language>
-	<territory>
-		<terminology_id>
-			<value>ISO_3166-1</value>
-		</terminology_id>
-		<code_string>US</code_string>
-	</territory>
-	<category>
-		<value>event</value>
-		<defining_code>
-			<terminology_id>
-				<value>openehr</value>
-			</terminology_id>
-			<code_string>433</code_string>
-		</defining_code>
-	</category>
-	<composer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="PARTY_IDENTIFIED">
-		<name>Silvia Blake</name>
-	</composer>
-	<context>
-		<start_time>
-			<value>2019-06-27T11:46:07.87+02:00</value>
-		</start_time>
-		<setting>
-			<value>other care</value>
-			<defining_code>
-				<terminology_id>
-					<value>openehr</value>
-				</terminology_id>
-				<code_string>238</code_string>
-			</defining_code>
-		</setting>
-		<health_care_facility>
-			<external_ref>
-				<id xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GENERIC_ID">
-					<value>9091</value>
-					<scheme>HOSPITAL-NS</scheme>
-				</id>
-				<namespace>HOSPITAL-NS</namespace>
-				<type>PARTY</type>
-			</external_ref>
-			<name>Hospital</name>
-		</health_care_facility>
-		<participations>
-			<function>
-				<value>requester</value>
-			</function>
-			<performer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="PARTY_IDENTIFIED">
-				<external_ref>
-					<id xsi:type="GENERIC_ID">
-						<value>199</value>
-						<scheme>HOSPITAL-NS</scheme>
-					</id>
-					<namespace>HOSPITAL-NS</namespace>
-					<type>ANY</type>
-				</external_ref>
-				<name>Dr. Marcus Johnson</name>
-			</performer>
-			<mode>
-				<value>face-to-face communication</value>
-				<defining_code>
-					<terminology_id>
-						<value>openehr</value>
-					</terminology_id>
-					<code_string>216</code_string>
-				</defining_code>
-			</mode>
-		</participations>
-		<participations>
-			<function>
-				<value>performer</value>
-			</function>
-			<performer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="PARTY_IDENTIFIED">
-				<external_ref>
-					<id xsi:type="GENERIC_ID">
-						<value>198</value>
-						<scheme>HOSPITAL-NS</scheme>
-					</id>
-					<namespace>HOSPITAL-NS</namespace>
-					<type>ANY</type>
-				</external_ref>
-				<name>Lara Markham</name>
-			</performer>
-			<mode>
-				<value>not specified</value>
-				<defining_code>
-					<terminology_id>
-						<value>openehr</value>
-					</terminology_id>
-					<code_string>193</code_string>
-				</defining_code>
-			</mode>
-		</participations>
-	</context>
-	<content xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="INSTRUCTION" archetype_node_id="openEHR-EHR-INSTRUCTION.minimal.v1">
-		<name>
-			<value>Minimal</value>
-		</name>
-		<uid xsi:type="HIER_OBJECT_ID">
-			<value>6183abe7-d2fc-411f-af89-8e142939d035</value>
-		</uid>
-		<archetype_details>
-			<archetype_id>
-				<value>openEHR-EHR-INSTRUCTION.minimal.v1</value>
-			</archetype_id>
-			<rm_version>1.0.2</rm_version>
-		</archetype_details>
-		<language>
-			<terminology_id>
-				<value>ISO_639-1</value>
-			</terminology_id>
-			<code_string>en</code_string>
-		</language>
-		<encoding>
-			<terminology_id>
-				<value>IANA_character-sets</value>
-			</terminology_id>
-			<code_string>UTF-8</code_string>
-		</encoding>
-		<subject xsi:type="PARTY_SELF"/>
-		<other_participations>
-			<function>
-				<value>requester</value>
-			</function>
-			<performer xsi:type="PARTY_IDENTIFIED">
-				<external_ref>
-					<id xsi:type="GENERIC_ID">
-						<value>199</value>
-						<scheme>HOSPITAL-NS</scheme>
-					</id>
-					<namespace>HOSPITAL-NS</namespace>
-					<type>ANY</type>
-				</external_ref>
-				<name>Dr. Marcus Johnson</name>
-			</performer>
-			<mode>
-				<value>face-to-face communication</value>
-				<defining_code>
-					<terminology_id>
-						<value>openehr</value>
-					</terminology_id>
-					<code_string>216</code_string>
-				</defining_code>
-			</mode>
-		</other_participations>
-		<other_participations>
-			<function>
-				<value>performer</value>
-			</function>
-			<performer xsi:type="PARTY_IDENTIFIED">
-				<external_ref>
-					<id xsi:type="GENERIC_ID">
-						<value>198</value>
-						<scheme>HOSPITAL-NS</scheme>
-					</id>
-					<namespace>HOSPITAL-NS</namespace>
-					<type>ANY</type>
-				</external_ref>
-				<name>Lara Markham</name>
-			</performer>
-			<mode>
-				<value>not specified</value>
-				<defining_code>
-					<terminology_id>
-						<value>openehr</value>
-					</terminology_id>
-					<code_string>193</code_string>
-				</defining_code>
-			</mode>
-		</other_participations>
-		<narrative>
-			<value>Human readable instruction narrative</value>
-		</narrative>
-		<expiry_time>
-			<value>2019-03-22T22:34:38.638+01:00</value>
-		</expiry_time>
-		<activities archetype_node_id="at0001">
-			<name>
-				<value>Current Activity</value>
-			</name>
-			<description xsi:type="ITEM_TREE" archetype_node_id="at0002">
-				<name>
-					<value>Arbol</value>
-				</name>
-				<items xsi:type="ELEMENT" archetype_node_id="at0003">
-					<name>
-						<value>duration</value>
-					</name>
-					<value xsi:type="DV_DURATION">
-						<value>P1DT1H</value>
-					</value>
-				</items>
-			</description>
-			<timing>
-				<value>R5/2019-03-22T22:00:00+01:00/P3M</value>
-				<formalism>timing</formalism>
-			</timing>
-			<action_archetype_id>openEHR-EHR-ACTION\.minimal\.v1</action_archetype_id>
-		</activities>
-	</content>
+<composition xmlns="http://schemas.openehr.org/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="COMPOSITION" archetype_node_id="openEHR-EHR-COMPOSITION.minimal.v1">
+  <name xsi:type="DV_TEXT">
+    <value>Minimal</value>
+  </name>
+  <archetype_details>
+    <archetype_id>
+      <value>openEHR-EHR-COMPOSITION.minimal.v1</value>
+    </archetype_id>
+    <template_id>
+      <value>minimal_instruction.en.v1</value>
+    </template_id>
+    <rm_version>1.0.2</rm_version>
+  </archetype_details>
+  <language>
+    <terminology_id>
+      <value>ISO_639-1</value>
+    </terminology_id>
+    <code_string>en</code_string>
+  </language>
+  <territory>
+    <terminology_id>
+      <value>ISO_3166-1</value>
+    </terminology_id>
+    <code_string>UY</code_string>
+  </territory>
+  <category>
+    <value>event</value>
+    <defining_code>
+      <terminology_id>
+        <value>openehr</value>
+      </terminology_id>
+      <code_string>433</code_string>
+    </defining_code>
+  </category>
+  <composer xsi:type="PARTY_IDENTIFIED">
+    <external_ref>
+      <id xsi:type="HIER_OBJECT_ID">
+        <value>ca197f10-da1d-4877-b859-f84bd9d61f2c</value>
+      </id>
+      <namespace>DEMOGRAPHIC</namespace>
+      <type>PERSON</type>
+    </external_ref>
+    <name>Dr. Yamamoto</name>
+  </composer>
+  <context>
+    <start_time>
+      <value>2021-09-29T16:15:23.221-03:00</value>
+    </start_time>
+    <setting>
+      <value>primary medical care</value>
+      <defining_code>
+        <terminology_id>
+          <value>openehr</value>
+        </terminology_id>
+        <code_string>228</code_string>
+      </defining_code>
+    </setting>
+    <participations>
+      <function xsi:type="DV_TEXT">
+        <value>legal guardian consent author</value>
+      </function>
+      <performer xsi:type="PARTY_RELATED">
+        <name>Charles Connor</name>
+        <relationship>
+          <value>father</value>
+          <defining_code>
+            <terminology_id>
+              <value>openehr</value>
+            </terminology_id>
+            <code_string>9</code_string>
+          </defining_code>
+        </relationship>
+      </performer>
+      <mode>
+        <value>not specified</value>
+        <defining_code>
+          <terminology_id>
+            <value>openehr</value>
+          </terminology_id>
+          <code_string>193</code_string>
+        </defining_code>
+      </mode>
+    </participations>
+  </context>
+  <content xsi:type="INSTRUCTION" archetype_node_id="openEHR-EHR-INSTRUCTION.minimal.v1">
+    <name xsi:type="DV_TEXT">
+      <value>Minimal</value>
+    </name>
+    <archetype_details>
+      <archetype_id>
+        <value>openEHR-EHR-INSTRUCTION.minimal.v1</value>
+      </archetype_id>
+      <template_id>
+        <value>minimal_instruction.en.v1</value>
+      </template_id>
+      <rm_version>1.0.2</rm_version>
+    </archetype_details>
+    <language>
+      <terminology_id>
+        <value>ISO_639-1</value>
+      </terminology_id>
+      <code_string>en</code_string>
+    </language>
+    <encoding>
+      <terminology_id>
+        <value>IANA_character-sets</value>
+      </terminology_id>
+      <code_string>UTF-8</code_string>
+    </encoding>
+    <subject xsi:type="PARTY_SELF" />
+    <narrative>
+      <value>Human readable instruction narrative</value>
+    </narrative>
+    <activities archetype_node_id="at0001">
+      <name xsi:type="DV_TEXT">
+        <value>Current Activity</value>
+      </name>
+      <description xsi:type="ITEM_TREE" archetype_node_id="at0002">
+        <name xsi:type="DV_TEXT">
+          <value>Arbol</value>
+        </name>
+        <items xsi:type="ELEMENT" archetype_node_id="at0003">
+          <name xsi:type="DV_TEXT">
+            <value>duration</value>
+          </name>
+          <value xsi:type="DV_DURATION">
+            <value>PT13M</value>
+          </value>
+        </items>
+      </description>
+      <timing>
+        <value>P1D</value>
+        <formalism>ISO8601</formalism>
+      </timing>
+      <action_archetype_id>openEHR-EHR-ACTION\.minimal\.v1</action_archetype_id>
+    </activities>
+  </content>
 </composition>

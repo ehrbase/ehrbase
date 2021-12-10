@@ -5,7 +5,7 @@
     <terminology_id>
       <value>ISO_639-1</value>
     </terminology_id>
-    <code_string>es</code_string>
+    <code_string>en</code_string>
   </language>
   <description>
     <original_author id="Original Author">Not Specified</original_author>
@@ -27,7 +27,7 @@
         <terminology_id>
           <value>ISO_639-1</value>
         </terminology_id>
-        <code_string>es</code_string>
+        <code_string>en</code_string>
       </language>
       <purpose>Not Specified</purpose>
     </details>
@@ -36,7 +36,7 @@
     <value>cb5aa21f-82d9-440d-908d-9fa4087263a9</value>
   </uid>
   <template_id>
-    <value>Minimal action 2</value>
+    <value>minimal_action_2</value>
   </template_id>
   <concept>Minimal action 2</concept>
   <definition>
@@ -245,33 +245,6 @@
                       </children>
                     </attributes>
                     <attributes xsi:type="C_SINGLE_ATTRIBUTE">
-                      <rm_attribute_name>is_integral</rm_attribute_name>
-                      <existence>
-                        <lower_included>true</lower_included>
-                        <upper_included>true</upper_included>
-                        <lower_unbounded>false</lower_unbounded>
-                        <upper_unbounded>false</upper_unbounded>
-                        <lower>1</lower>
-                        <upper>1</upper>
-                      </existence>
-                      <children xsi:type="C_PRIMITIVE_OBJECT">
-                        <rm_type_name>BOOLEAN</rm_type_name>
-                        <occurrences>
-                          <lower_included>true</lower_included>
-                          <upper_included>true</upper_included>
-                          <lower_unbounded>false</lower_unbounded>
-                          <upper_unbounded>false</upper_unbounded>
-                          <lower>1</lower>
-                          <upper>1</upper>
-                        </occurrences>
-                        <node_id />
-                        <item xsi:type="C_BOOLEAN">
-                          <true_valid>false</true_valid>
-                          <false_valid>true</false_valid>
-                        </item>
-                      </children>
-                    </attributes>
-                    <attributes xsi:type="C_SINGLE_ATTRIBUTE">
                       <rm_attribute_name>type</rm_attribute_name>
                       <existence>
                         <lower_included>true</lower_included>
@@ -318,12 +291,12 @@
           <value>openEHR-EHR-ACTION.minimal_2.v1</value>
         </archetype_id>
         <term_definitions code="at0000">
-          <items id="description">unknown</items>
+          <items id="description">*</items>
           <items id="text">Minimal 2</items>
         </term_definitions>
         <term_definitions code="at0001">
           <items id="description">@ internal @</items>
-          <items id="text">Arbol</items>
+          <items id="text">Tree</items>
         </term_definitions>
         <term_definitions code="at0002">
           <items id="description">*</items>
@@ -345,7 +318,7 @@
       <value>openEHR-EHR-COMPOSITION.minimal.v1</value>
     </archetype_id>
     <template_id>
-      <value>Minimal action 2</value>
+      <value>minimal_action_2</value>
     </template_id>
     <term_definitions code="at0000">
       <items id="description">unknown</items>

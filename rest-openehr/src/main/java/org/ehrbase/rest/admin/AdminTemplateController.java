@@ -17,7 +17,12 @@
  */
 package org.ehrbase.rest.admin;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
@@ -33,10 +38,10 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Admin API controller for Templates. Provides endpoints to update (replace) and delete templates.
  */
-@Api(tags = {"Admin", "Template"})
+@Tag(name = "Admin - Template")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "/rest/admin/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = "${admin-api.context-path:/rest/admin}/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminTemplateController extends BaseController {
 
     TemplateService templateService;
@@ -57,44 +62,44 @@ public class AdminTemplateController extends BaseController {
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "Template has been updated successfully.",
-                    responseHeaders = {
-                            @ResponseHeader(
+                    responseCode = "200",
+                    description = "Template has been updated successfully.",
+                    headers = {
+                            @Header(
                                     name = CONTENT_TYPE,
                                     description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
+                                    schema = @Schema(implementation = MediaType.class)
                             )
                     }
             ),
             @ApiResponse(
-                    code = 401,
-                    message = "Client credentials are invalid or have expired."
+                    responseCode = "401",
+                    description = "Client credentials are invalid or have expired."
             ),
             @ApiResponse(
-                    code = 403,
-                    message = "Client has no access permission since admin role is missing."
+                    responseCode = "403",
+                    description = "Client has no access permission since admin role is missing."
             ),
             @ApiResponse(
-                    code = 404,
-                    message = "Template could not be found."
+                    responseCode = "404",
+                    description = "Template could not be found."
             ),
             @ApiResponse(
-                    code = 422,
-                    message = "Template could not be replaced since it is used in at least one Composition."
+                    responseCode = "422",
+                    description = "Template could not be replaced since it is used in at least one Composition."
             )
     })
     public ResponseEntity<String> updateTemplate(
-            @ApiParam(value = REQ_ACCEPT)
+            @Parameter(description = REQ_ACCEPT)
             @RequestHeader(value = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_XML_VALUE)
                     String accept,
-            @ApiParam(value = REQ_CONTENT_TYPE)
+            @Parameter(description = REQ_CONTENT_TYPE)
             @RequestHeader(value = CONTENT_TYPE)
                     String contentType,
-            @ApiParam(value = "Target template id to update. The value comes from the 'template_id' property.")
+            @Parameter(description = "Target template id to update. The value comes from the 'template_id' property.")
             @PathVariable(value = "template_id")
                     String templateId,
-            @ApiParam(value = "New template content to replace old one with")
+            @Parameter(description = "New template content to replace old one with")
             @RequestBody() String content
     ) {
 
@@ -110,28 +115,28 @@ public class AdminTemplateController extends BaseController {
     @DeleteMapping(path = "/{template_id}")
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 202,
-                    message = "Template has been deleted successfully."
+                    responseCode = "202",
+                    description = "Template has been deleted successfully."
             ),
             @ApiResponse(
-                    code = 401,
-                    message = "Client credentials are invalid or have expired."
+                    responseCode = "401",
+                    description = "Client credentials are invalid or have expired."
             ),
             @ApiResponse(
-                    code = 403,
-                    message = "Client has no access permission since admin role is missing."
+                    responseCode = "403",
+                    description = "Client has no access permission since admin role is missing."
             ),
             @ApiResponse(
-                    code = 404,
-                    message = "Template could not be found."
+                    responseCode = "404",
+                    description = "Template could not be found."
             ),
             @ApiResponse(
-                    code = 422,
-                    message = "The template is still used by compositions and cannot be deleted."
+                    responseCode = "422",
+                    description = "The template is still used by compositions and cannot be deleted."
             )
     })
     public ResponseEntity<AdminDeleteResponseData> deleteTemplate(
-            @ApiParam(value = "Target template id to delete. The value comes from the 'template_id' property.")
+            @Parameter(description = "Target template id to delete. The value comes from the 'template_id' property.")
             @PathVariable(value = "template_id")
                     String templateId
     ) {
@@ -144,31 +149,31 @@ public class AdminTemplateController extends BaseController {
     @DeleteMapping(path = "/all")
     @ApiResponses(value = {
             @ApiResponse(
-                    code = 200,
-                    message = "All templates have been removed successfully",
-                    responseHeaders = {
-                            @ResponseHeader(
+                    responseCode = "200",
+                    description = "All templates have been removed successfully",
+                    headers = {
+                            @Header(
                                     name = CONTENT_TYPE,
                                     description = RESP_CONTENT_TYPE_DESC,
-                                    response = MediaType.class
+                                    schema = @Schema(implementation = MediaType.class)
                             )
                     }
             ),
             @ApiResponse(
-                    code = 401,
-                    message = "Client credentials are invalid or have expired."
+                    responseCode = "401",
+                    description = "Client credentials are invalid or have expired."
             ),
             @ApiResponse(
-                    code = 403,
-                    message = "Client has no access permission since admin role is missing."
+                    responseCode = "403",
+                    description = "Client has no access permission since admin role is missing."
             ),
             @ApiResponse(
-                    code = 404,
-                    message = "Template could not be found."
+                    responseCode = "404",
+                    description = "Template could not be found."
             ),
             @ApiResponse(
-                    code = 422,
-                    message = "There are templates that are used by compositions and cannot be removed."
+                    responseCode = "422",
+                    description = "There are templates that are used by compositions and cannot be removed."
             )
     })
     public ResponseEntity<?> deleteAllTemplates() {

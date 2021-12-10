@@ -29,20 +29,21 @@ Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Alternative flow 4 create new invalid persistent COMPOSITION RAW_JSON
-    commit composition   format=RAW_JSON
+Alternative flow 4 create new invalid persistent COMPOSITION CANONICAL_JSON
+    commit composition   format=CANONICAL_JSON
     ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.json
     check status_code of commit composition    400
 
-Alternative flow 4 create new invalid persistent COMPOSITION RAW_XML
-    commit composition   format=RAW_XML
+Alternative flow 4 create new invalid persistent COMPOSITION CANONICAL_XML
+    commit composition   format=CANONICAL_XML
     ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.xml
     check status_code of commit composition    400
 
 Alternative flow 4 create new invalid persistent COMPOSITION FLAT
-    [Tags]    future
+    [Tags]      597  not-ready  bug
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.json
+    TRACE GITHUB ISSUE  597  bug
     check status_code of commit composition    400
 
 Alternative flow 4 create new invalid persistent COMPOSITION TDD

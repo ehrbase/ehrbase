@@ -79,6 +79,60 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - COMPOSITION-tests-6:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-7:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-8:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-9:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-10:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-11:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-12:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-13:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - COMPOSITION-tests-14:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -142,6 +196,16 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
+            - COMPOSITION-tests-6
+            - COMPOSITION-tests-7
+            - COMPOSITION-tests-8
+            - COMPOSITION-tests-9
+            - COMPOSITION-tests-10
+            - COMPOSITION-tests-11
+            - COMPOSITION-tests-12
+            - COMPOSITION-tests-13
+            - COMPOSITION-tests-14
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -222,6 +286,60 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - COMPOSITION-tests-6:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-7:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-8:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-9:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-10:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-11:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-12:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-13:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - COMPOSITION-tests-14:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -279,6 +397,16 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
+            - COMPOSITION-tests-6
+            - COMPOSITION-tests-7
+            - COMPOSITION-tests-8
+            - COMPOSITION-tests-9
+            - COMPOSITION-tests-10
+            - COMPOSITION-tests-11
+            - COMPOSITION-tests-12
+            - COMPOSITION-tests-13
+            - COMPOSITION-tests-14
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -420,6 +548,42 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-6:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-7:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-8:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-9:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-10:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-11:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-12:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-13:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
+      - COMPOSITION-tests-14:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -463,6 +627,16 @@ workflows:
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
             - COMPOSITION-tests-4
+            - COMPOSITION-tests-5
+            - COMPOSITION-tests-6
+            - COMPOSITION-tests-7
+            - COMPOSITION-tests-8
+            - COMPOSITION-tests-9
+            - COMPOSITION-tests-10
+            - COMPOSITION-tests-11
+            - COMPOSITION-tests-12
+            - COMPOSITION-tests-13
+            - COMPOSITION-tests-14
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -623,6 +797,105 @@ jobs:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_5"
+
+  COMPOSITION-tests-6:
+    executor: docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_BERLIN_POSTGRES_TIMEZONE_BERLIN"
+
+  COMPOSITION-tests-7:
+    executor: docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-utc
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_BERLIN_POSTGRES_TIMEZONE_UTC"
+
+  COMPOSITION-tests-8:
+    executor: docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-shanghai
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_BERLIN_POSTGRES_TIMEZONE_SHANGHAI"
+
+  COMPOSITION-tests-9:
+    executor: docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-berlin
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_UTC_POSTGRES_TIMEZONE_BERLIN"
+
+  COMPOSITION-tests-10:
+    executor: docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-utc
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_UTC_POSTGRES_TIMEZONE_UTC"
+
+  COMPOSITION-tests-11:
+    executor: docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-shanghai
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_UTC_POSTGRES_TIMEZONE_SHANGHAI"
+
+  COMPOSITION-tests-12:
+    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-berlin
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_BERLIN"
+
+  COMPOSITION-tests-13:
+    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-utc
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_UTC"
+
+  COMPOSITION-tests-14:
+    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_dtz"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_SHANGHAI"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
@@ -1505,7 +1778,7 @@ commands:
                         -e POSTGRES_USER=$POSTGRES_USER \
                         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
                         -e DISABLE_SECURITY=true \
-                        -p 5432:5432 ehrbase/ehrbase-postgres:13.3
+                        -p 5432:5432 ehrbase/ehrbase-postgres:13.4
 
 
   setup-file-repo:
@@ -1733,7 +2006,7 @@ commands:
     description: Save all caches in building artifacts job
     steps:
       - save_cache:
-          key: job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+          key: job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
           paths:
             - ~/.m2/repository
 
@@ -1742,8 +2015,8 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - job-build-ehrbase-v1-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
-            - job-build-ehrbase-v1-mvn-dependencies
+            - job-build-ehrbase-v2-mvn-dependencies-{{ checksum "~/projects/pom.xml" }}
+            - job-build-ehrbase-v2-mvn-dependencies
 
   save-sonar-analysis-job-caches:
     description: Save all caches in dependency check job
@@ -1842,13 +2115,203 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-      - image: ehrbase/ehrbase-postgres:13.3
+      - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+
+  docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "Europe/Berlin"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "Europe/Berlin"
+
+  docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-utc:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "Europe/Berlin"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "UTC"
+
+  docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-shanghai:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "Europe/Berlin"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "Asia/Shanghai"
+
+  docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-berlin:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "UTC"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "Europe/Berlin"
+
+  docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-utc:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "UTC"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "UTC"
+
+  docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-shanghai:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "UTC"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "Asia/Shanghai"
+
+  docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-berlin:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "Asia/Shanghai"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "Europe/Berlin"
+
+  docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-utc:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "Asia/Shanghai"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "UTC"
+
+  docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai:
+    working_directory: ~/projects
+    docker:
+      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  circleci/python:3.8.5-buster-node-browsers
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          TZ: "Asia/Shanghai"
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+          TZ: "Asia/Shanghai"
 
   machine-ubuntu-1604:
     description: |
