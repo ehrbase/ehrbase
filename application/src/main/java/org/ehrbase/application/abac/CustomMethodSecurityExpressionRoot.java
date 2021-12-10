@@ -295,7 +295,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 
     // in all other cases just handle the one String "subject" variable
     // check if matches (to block accessing patient X with token from patient Y) OR null reference
-    if (tokenPatient.equals(subject) || subject != null) {
+    if (tokenPatient.equals(subject) || subject == null) {
       // matches OR EHR's external ref is null, so add our subject from token
       requestMap.put(PATIENT, tokenPatient);
     } else {
