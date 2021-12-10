@@ -541,7 +541,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-
             <!-- sdk -->
             <dependency>
                 <groupId>org.ehrbase.openehr.sdk</groupId>
