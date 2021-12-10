@@ -71,6 +71,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     }
 
     @GetMapping("/aql{?q, offset, fetch, query_parameter}")
+    @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
     @Override
     public ResponseEntity<QueryResponseData> getAdhocQuery(@RequestHeader(value = ACCEPT, required = false) String accept,
                                                            @RequestParam(value = "q") String query,

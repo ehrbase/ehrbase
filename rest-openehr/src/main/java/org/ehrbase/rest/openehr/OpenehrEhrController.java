@@ -38,6 +38,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -158,6 +159,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
      * Returns EHR by ID
      */
     @GetMapping(path = "/{ehr_id}")
+    @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     @Override
     public ResponseEntity<EhrResponseData> retrieveEhrById(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                            @PathVariable(value = "ehr_id") String ehrIdString,
@@ -176,6 +178,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
      * Returns EHR by subject (id and namespace)
      */
     @GetMapping(params = {"subject_id", "subject_namespace"})
+    @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     @Override
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(@RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
                                                                 @RequestParam(value = "subject_id") String subjectId,
