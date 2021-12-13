@@ -109,10 +109,7 @@ Note the constraints for each attribute are all checked, so the errors are accum
 Internally DV_STATE is constrained by a C_COMPLEX_OBJECT for it's value: DV_CODED_TEXT attribute and by a C_BOOLEAN constraint for it's is_terminal attribute. At the same time, the DV_CODED_TEXT has a C_CODE_PHRASE constraint.
 -->
 
-TODO: need to test this since there is also a C_DV_STATE constraint in the archetype profile spect but not sure if the AE/TD support it.
-
-NOTE: I have tested in AE and LinkEHR and this DV is not supported. Also asked on the forum to verify https://discourse.openehr.org/t/is-dv-state-and-its-profile-constraint-c-dv-state-used-anywhere-in-the-specs/2026
-
+NOTE: this datatype is not used and not supported by modeling tools. See https://discourse.openehr.org/t/is-dv-state-and-its-profile-constraint-c-dv-state-used-anywhere-in-the-specs/2026
 
 
 # 2. text
@@ -208,7 +205,7 @@ In this case the DV_CODED_TEXT is constrained by a CONSTRAINT_REF. For the CONST
 
 ## 2.4. text.DV_PARAGRAPH
 
-// TBD
+// TBD: see https://discourse.openehr.org/t/is-dv-paragraph-used/2187
 
 
 # 3. quantity
@@ -251,6 +248,8 @@ This case is when the ADL has `DV_ORDINAL matches {*}`
 ## 3.3. quantity.DV_SCALE
 
 DV_SCALE was introduced to the RM 1.1.0 (https://openehr.atlassian.net/browse/SPECRM-19), it is analogous to DV_ORDINAL with a Real value. So test cases for DV_SCALE and DV_ORDINAL are similar.
+
+NOTE: if this specification is implemented on a system that supports an RM < 1.1.0, then these tests shouldn't run against the system.
 
 ### 3.3.1. Test case DV_SCALE open constraint
 
@@ -620,21 +619,52 @@ TBD: this will use the test cases and data sets defined for the DV_DATE_TIME tes
 
 ### 3.9.2. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are validity kind
 
-TBD
 
 ### 3.9.3. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are range
 
 TBD
 
 
+
+
 ## 3.10. quantity.DV_INTERVAL<DV_DATE>
 
 TBD: this will use the test cases and data sets defined for the DV_DATE tests.
+
+### 3.10.1. Test case DV_INTERVAL<DV_DATE> open constraint
+
+### 3.10.2. Test case DV_INTERVAL<DV_DATE> validity kind constraint
+
+
+| lower      | upper    | lower_unbounded | upper_unbounded | lower_included | upper_included | month_validity (lower) | day_validity (lower) | month_validity (upper) | day_validity (upper) | expected | constraints violated  |
+|:----------:|:--------:|-----------------|-----------------|----------------|----------------|------------------------|---------------------|------------------------|----------------------|----------|-----------------------|
+| 2021       | 2021       | mandatory      | mandatory      | mandatory      | mandatory      | rejected | month_validity, day_validity  |
+| 2021       | 2021       | mandatory      | optional       | mandatory      | optional       | rejected | month_validity                |
+| 2021       | 2021       | optional       | optional       | optional       | optional       | accepted |                               |
+| 2021       | 2021       | mandatory      | prohibited     | mandatory      | prohibited     | rejected | month_validity                |
+| 2021       | 2021       | prohibited     | prohibited     | prohibited     | prohibited     | accepted |                               |
+| 2021-10    | 2021-10    | mandatory      | mandatory      | mandatory      | mandatory      | rejected | day_validity                  |
+| 2021-10    | 2021-10    | mandatory      | optional       | mandatory      | optional       | accepted |                               |
+| 2021-10    | 2021-10    | optional       | optional       | optional       | optional       | accepted |                               |
+| 2021-10    | 2021-10    | mandatory      | prohibited     | mandatory      | prohibited     | accepted |                               |
+| 2021-10    | 2021-10    | prohibited     | prohibited     | prohibited     | prohibited     | rejected | month_validity                |
+| 2021-10-24 | 2021-10-24 | mandatory      | mandatory      | mandatory      | mandatory      | accepted |                               |
+| 2021-10-24 | 2021-10-24 | mandatory      | optional       | mandatory      | optional       | accepted |                               |
+| 2021-10-24 | 2021-10-24 | optional       | optional       | optional       | optional       | accepted |                               |
+| 2021-10-24 | 2021-10-24 | mandatory      | prohibited     | mandatory      | prohibited     | rejected | day_validity                  |
+| 2021-10-24 | 2021-10-24 | prohibited     | prohibited     | prohibited     | prohibited     | rejected | month_validity, day_validity  |
+
+TBD: there are missing combinations between lower and upper constraints
+
+### 3.10.3. Test case DV_INTERVAL<DV_DATE> validity range constraint
+
+
 
 
 ## 3.11. quantity.DV_INTERVAL<DV_TIME>
 
 TBD: this will use the test cases and data sets defined for the DV_TIME tests.
+
 
 
 ## 3.12. quantity.DV_INTERVAL<DV_DURATION>
@@ -1080,7 +1110,7 @@ DV_DATE constraints are defined by C_DATE, which specifies two types of constrai
 
 
 
-### 4.4.3. Test Case DV_DATE validity range
+### 4.4.3. Test Case DV_DATE validity range constraint
 
 The C_DATE.range constraint is an Interval<Date>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
 
