@@ -13,6 +13,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+## [0.18.1]
+
+### Fixed
+- Fix deployment issue with Flyway migration V62__add_entry_history_missing_columns.sql
+
 ## [0.18.0]
 
 ### Added

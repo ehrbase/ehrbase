@@ -18,7 +18,7 @@
  */
 
 ALTER TABLE ehr.entry_history
-    ADD COLUMN rm_version TEXT NOT NULL;
+    ADD COLUMN rm_version TEXT;
 
 ALTER TABLE ehr.entry_history
-    ADD COLUMN name ehr.dv_coded_text NOT NULL;
+    ADD COLUMN name ehr.dv_coded_text;
