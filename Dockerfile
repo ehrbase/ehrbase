@@ -50,7 +50,10 @@ COPY ./jooq-pq/pom.xml ./jooq-pq/pom.xml
 COPY ./rest-ehr-scape/pom.xml ./rest-ehr-scape/pom.xml
 COPY ./rest-openehr/pom.xml ./rest-openehr/pom.xml
 COPY ./service/pom.xml ./service/pom.xml
-COPY ./test-coverage/pom.xml ./test-coverage/pom.xml 
+COPY ./test-coverage/pom.xml ./test-coverage/pom.xml
+RUN mvn dependency:go-offline -B
+
+# COPY SOURCEFILES
 COPY ./api/src ./api/src
 COPY ./application/src ./application/src
 COPY ./base/src ./base/src
