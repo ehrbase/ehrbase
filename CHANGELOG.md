@@ -21,7 +21,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   see: https://github.com/ehrbase/ehrbase/pull/570)
 - Support Structured format on ecis composition endpoints (see https://github.com/ehrbase/ehrbase/pull/648)
 - Add new configuration options to customise user/admin role names when using OAuth authentication
-(see https://github.com/ehrbase/ehrbase/pull/667)
+  (see https://github.com/ehrbase/ehrbase/pull/667)
+- Add configuration properties to customize CORS configuration (see https://github.com/ehrbase/ehrbase/pull/697)
 
 ### Changed
 
@@ -201,9 +202,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
 - Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (
   see https://github.com/ehrbase/ehrbase/pull/248)
--
-  - fix support of mandatory attributes in ENTRY specialization including rm_version (
-    see https://github.com/ehrbase/ehrbase/pull/247)
+- fix support of mandatory attributes in ENTRY specialization including rm_version (
+  see https://github.com/ehrbase/ehrbase/pull/247)
 
 #### DIRECTORY
 
