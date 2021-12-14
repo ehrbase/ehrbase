@@ -24,8 +24,6 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 
 Force Tags
 
-
-
 *** Test Cases ***
 Main flow has existing COMPOSITION (FLAT)
     [Tags]
@@ -38,14 +36,23 @@ Main flow has existing COMPOSITION (FLAT)
 
     [Teardown]    restart SUT
 
-Compare content of compositions with the Original (FLAT)
+Data driven tests for Compare content of compositions with the Original (FLAT)
     [Tags]
-    upload OPT    all_types/ehrn_vital_signs.v2.opt
+    [Template]    Create and compare content of flat compositions
+
+    #template_file_name            flat_composition_file_name
+    ehrn_vital_signs.v2.opt        ehrn_vital_signs.v2__.json
+
+[Teardown]    restart SUT
+
+*** Keywords ***
+Create and compare content of flat compositions
+    [Arguments]    ${template_file_name}          ${flat_composition_file_name}
+    upload OPT    all_types/${template_file_name}
     create EHR
     commit composition   format=FLAT
-    ...                  composition=ehrn_vital_signs.v2__.json
+    ...                  composition=${flat_composition_file_name}
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
-    Compare content of compositions with the Original (FLAT)  ${COMPO DATA SETS}/FLAT/ehrn_vital_signs.v2__.json
+    Compare content of compositions with the Original (FLAT)  ${COMPO DATA SETS}/FLAT/${flat_composition_file_name}
 
-    [Teardown]    restart SUT
