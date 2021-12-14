@@ -725,10 +725,10 @@ Compare content of compositions with the Original (FLAT)
                         Set Test Variable      ${expected_result}    ${file}
                         Log To Console  \n/////////// EXPECTED //////////////////////////////
                         Output    ${expected result}
-                        Set Test Variable  ${xresp}   ${response.json()}
+                        Set Test Variable  ${actual_response}   ${response.json()}
                         Log To Console  \n/////////// ACTUAL  //////////////////////////////
-                        Output    ${xresp}
-    &{diff}=            compare_jsons_ignoring_properties  ${xresp["composition"]}  ${expected result}  ${template_id}/_uid
+                        Output    ${actual_response}
+    &{diff}=            compare_jsons_ignoring_properties  ${actual_response["composition"]}  ${expected result}  ${template_id}/_uid
                         Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
 
