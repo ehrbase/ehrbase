@@ -155,7 +155,7 @@
         <prometheus.version>1.6.1</prometheus.version>
         <antlr4.version>4.9.1</antlr4.version>
         <javamelody.version>1.88.0</javamelody.version>
-        <log4j.version>2.15.0</log4j.version>
+        <log4j.version>2.16.0</log4j.version>
         <json-api.version>2.0.0</json-api.version>
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
