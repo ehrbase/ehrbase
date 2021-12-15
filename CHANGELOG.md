@@ -11,6 +11,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- removed log4j (see https://github.com/ehrbase/ehrbase/pull/711)
+
 ### Fixed
 
 ## [0.18.2]

@@ -27,9 +27,6 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.time.LocalDateTime;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -41,7 +38,10 @@ import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
+import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
+import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
 import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
@@ -50,12 +50,16 @@ import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
-import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.max;
 
 /**
  * operations on the static part of Compositions (eg. non archetyped attributes)
@@ -64,7 +68,7 @@ import static org.jooq.impl.DSL.*;
  */
 public class CompositionAccess extends DataAccess implements I_CompositionAccess {
 
-    private static final Logger log = LogManager.getLogger(CompositionAccess.class);
+  private static final Logger log = LoggerFactory.getLogger(CompositionAccess.class);
     public static final String COMPOSITION_LITERAL = "composition";
     // List of Entry DAOs and therefore provides access to all entries of the composition
     private List<I_EntryAccess> content = new ArrayList<>();

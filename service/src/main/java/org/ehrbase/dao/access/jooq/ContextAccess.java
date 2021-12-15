@@ -34,8 +34,6 @@ import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
@@ -55,6 +53,8 @@ import org.ehrbase.service.RecordedDvDateTime;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.*;
 import org.jooq.exception.DataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     private static final String DB_INCONSISTENCY = "DB inconsistency";
-    private static Logger log = LogManager.getLogger(ContextAccess.class);
+  private static Logger log = LoggerFactory.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
     private List<ParticipationRecord> participations = new ArrayList<>();
 
