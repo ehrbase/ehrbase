@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.ehrbase.application.config;
+package org.ehrbase.application.config.web;
 
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
@@ -25,6 +25,7 @@ import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.EhrAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
 import org.openehealth.ipf.commons.audit.AuditContext;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.lang.NonNull;
@@ -32,8 +33,14 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
-public class WebMvcConfig implements WebMvcConfigurer {
+/**
+ * {@link Configuration} from Spring Web MVC.
+ */
+@Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(CorsProperties.class)
+public class WebConfiguration implements WebMvcConfigurer {
+
+    private final CorsProperties properties;
 
     private final AuditContext auditContext;
 
@@ -41,7 +48,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final CompositionService compositionService;
 
-    public WebMvcConfig(AuditContext auditContext, EhrService ehrService, CompositionService compositionService) {
+    public WebConfiguration(CorsProperties properties, AuditContext auditContext,
+                            EhrService ehrService, CompositionService compositionService) {
+        this.properties = properties;
         this.auditContext = auditContext;
         this.ehrService = ehrService;
         this.compositionService = compositionService;
@@ -52,10 +61,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addConverter(new IsoDateTimeConverter()); // Converter for version_at_time and other ISO date params
     }
 
-    // enables CORS requests from any origin to any endpoint (see: https://www.baeldung.com/spring-cors)
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**");
+        registry.addMapping("/**")
+                .combine(properties.toCorsConfiguration());
     }
 
     @Override
