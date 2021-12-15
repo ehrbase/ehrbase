@@ -20,11 +20,11 @@ package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.*;
-import java.time.LocalDateTime;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.*;
@@ -39,33 +39,25 @@ import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.joda.time.DateTime;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.JSONB;
-import org.jooq.Record;
-import org.jooq.Record13;
-import org.jooq.Record8;
-import org.jooq.Result;
-import org.jooq.Table;
+import org.jooq.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.DSL.select;
-import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.*;
 
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
  */
 public class FolderAccess extends DataAccess implements I_FolderAccess, Comparable<FolderAccess> {
 
-    private static final Logger log = LogManager.getLogger(FolderAccess.class);
+  private static final Logger log = LoggerFactory.getLogger(FolderAccess.class);
     public static final String SUBFOLDERS = "subfolders";
     public static final String PARENT_FOLDER = "parent_folder";
     public static final String CHILD_FOLDER = "child_folder";

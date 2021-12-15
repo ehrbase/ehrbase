@@ -22,12 +22,8 @@ import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
-
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.time.LocalDateTime;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
@@ -42,9 +38,14 @@ import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
 import org.jooq.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
+
 import static org.ehrbase.jooq.pg.Tables.*;
 import static org.jooq.impl.DSL.*;
 
@@ -53,7 +54,7 @@ import static org.jooq.impl.DSL.*;
  */
 public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, Comparable<FolderHistoryAccess> {
 
-    private static final Logger log = LogManager.getLogger(FolderHistoryAccess.class);
+  private static final Logger log = LoggerFactory.getLogger(FolderHistoryAccess.class);
 
     private List<ObjectRef<? extends ObjectId>> items = new ArrayList<>();
     private Map<UUID, I_FolderAccess> subfoldersList = new TreeMap<>();

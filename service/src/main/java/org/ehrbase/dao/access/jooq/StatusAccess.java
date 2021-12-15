@@ -28,7 +28,6 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.time.LocalDateTime;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -39,13 +38,14 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.jooq.DSLContext;
 import org.jooq.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.ehrbase.jooq.pg.Tables.*;
@@ -55,7 +55,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public class StatusAccess extends DataAccess implements I_StatusAccess {
 
-    private static final Logger log = LogManager.getLogger(StatusAccess.class);
+  private static final Logger log = LoggerFactory.getLogger(StatusAccess.class);
 
     private StatusRecord statusRecord;
     private I_ContributionAccess contributionAccess; // locally referenced contribution associated to this status
