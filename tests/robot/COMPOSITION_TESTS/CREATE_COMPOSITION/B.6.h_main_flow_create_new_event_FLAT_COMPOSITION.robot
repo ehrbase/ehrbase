@@ -32,12 +32,12 @@ Suite Teardown  restart SUT
 Main flow create new event COMPOSITION FLAT
     [Tags]      593  not-ready  bug
     commit composition   format=FLAT
-    ...                  composition=EHRN_Vital_Signs__.json
+    ...                  composition=ehrn_vital_signs.v2__.json
     TRACE GITHUB ISSUE  593  bug
     check the successful result of commit composition
 
 
 *** Keywords ***
 Precondition
-    upload OPT    all_types/EHRN_Vital_Signs.opt
+    upload OPT    all_types/ehrn_vital_signs.v2.opt
     create EHR

@@ -313,6 +313,8 @@ commit composition
 
     IF   '${format}'=='FLAT'
     ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
+    ${compositionUid}=    Collections.Get From Dictionary    ${resp.json()}    compositionUid
+    Set Test Variable   ${compositionUid}  ${composition_uid}
     ELSE
     ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
     END
@@ -564,6 +566,23 @@ get composition by composition_uid
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
+# TODO: rename keyword properly e.g. by version_uid
+(FLAT) get composition by composition_uid
+    [Arguments]         ${uid}
+    [Documentation]     :uid: version_uid
+    ...                 DEPENDENCY: `prepare new request session` with proper Headers
+    ...                     e.g. Content-Type=application/xml  Accept=application/xml  Prefer=return=representation
+    ...                     and `commit composition (JSON/XML)` keywords
+
+    # the uid param in the doc is verioned_object.uid but is really the version.uid,
+    # because the response from the create compo has this endpoint in the Location header
+    &{params}=          Create Dictionary     format=FLAT
+    Create Session      ${SUT}    ${ECISURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+    ${resp}=            GET On Session         ${SUT}  composition/${uid}  params=${params}  expected_status=anything   headers=${headers}
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+
 
 get versioned composition by uid
     [Arguments]         ${format}    ${uid}
@@ -699,6 +718,18 @@ check content of compositions latest version (JSON)
                         # should be the content in the 2nd committed compo "modified value"
                         Set Test Variable     ${text}    ${response.json()['data']['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal       ${text}    modified value
+
+Compare content of compositions with the Original (FLAT)
+    [Arguments]         ${expected_result_data_set}
+                        ${file}=            Load JSON From File    ${expected_result_data_set}
+                        Set Test Variable      ${expected_result}    ${file}
+                        Log To Console  \n/////////// EXPECTED //////////////////////////////
+                        Output    ${expected result}
+                        Set Test Variable  ${actual_response}   ${response.json()}
+                        Log To Console  \n/////////// ACTUAL  //////////////////////////////
+                        Output    ${actual_response}
+    &{diff}=            compare_jsons_ignoring_properties  ${actual_response["composition"]}  ${expected result}  ${template_id}/_uid
+                        Should Be Empty  ${diff}  msg=DIFF DETECTED!
 
 
 check content of compositions latest version (XML)
