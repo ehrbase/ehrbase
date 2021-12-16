@@ -2,9 +2,9 @@
   "meta": {
     "_type": "RESULTSET",
     "_created": "2019-10-22T01:13:39.503Z",
-    "_executed_aql": "select TOP 5 e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] ORDER BY e/ehr_id/value ASC"
+    "_executed_aql": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] LIMIT 5 ORDER BY e/ehr_id/value ASC"
   },
-  "q": "select TOP 5 e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] ORDER BY e/ehr_id/value ASC",
+  "q": "select e/ehr_id/value, e/time_created/value, e/system_id/value from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.minimal.v1] LIMIT 5 ORDER BY e/ehr_id/value ASC",
   "columns": [
     {
       "name": "#0",

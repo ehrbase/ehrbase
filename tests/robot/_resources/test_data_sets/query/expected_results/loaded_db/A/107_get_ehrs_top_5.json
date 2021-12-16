@@ -2,9 +2,9 @@
   "meta": {
     "_type": "RESULTSET",
     "_created": "2021-11-29T00:14:57.613Z",
-    "_executed_aql": "SELECT TOP 5 e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created ASC"
+    "_executed_aql": "SELECT e/ehr_id/value, e/time_created/value FROM EHR e LIMIT 5 ORDER BY e/time_created ASC"
   },
-  "q": "SELECT TOP 5 e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created ASC",
+  "q": "SELECT e/ehr_id/value, e/time_created/value FROM EHR e LIMIT 5 ORDER BY e/time_created ASC",
   "columns": [
     {
       "name": "#0",
