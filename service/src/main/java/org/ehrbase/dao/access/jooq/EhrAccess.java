@@ -27,11 +27,7 @@ import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import org.apache.commons.collections.map.MultiValueMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -44,19 +40,21 @@ import org.ehrbase.dao.access.util.ContributionDef.ContributionState;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.AdminDeleteEhrHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.*;
+import java.time.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 import static org.ehrbase.jooq.pg.Tables.*;
 
@@ -66,7 +64,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
 @SuppressWarnings("java:S2589")
 public class EhrAccess extends DataAccess implements I_EhrAccess {
 
-    private static final Logger log = LogManager.getLogger(EhrAccess.class);
+  private static final Logger log = LoggerFactory.getLogger(EhrAccess.class);
     public static final String JSONB = "::jsonb";
     public static final String EXCEPTION = " exception:";
     public static final String COULD_NOT_RETRIEVE_EHR_FOR_ID = "Could not retrieve EHR for id:";

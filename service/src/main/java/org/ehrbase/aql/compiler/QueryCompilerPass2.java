@@ -26,11 +26,11 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.*;
 import org.ehrbase.aql.parser.AqlBaseListener;
 import org.ehrbase.aql.parser.AqlParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -53,7 +53,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
             "RTRIM","TRANSLATE","CAST", "NOW"
     };
 
-    private Logger logger = LogManager.getLogger(QueryCompilerPass2.class);
+  private Logger logger = LoggerFactory.getLogger(QueryCompilerPass2.class);
 
     private Deque<I_VariableDefinition> variableStack = new ArrayDeque<>();
     private Deque<OrderAttribute> orderAttributes = null;
