@@ -644,8 +644,7 @@ On this case, the own rules/invariants of the DV_INTERVAL apply to the validatio
 | 2021       | 2022       | false           | false           | true           | true           | accepted |  |
 | 2021-01    | 2022-08    | false           | false           | true           | true           | accepted |  |
 | 2021-01-20 | 2022-08-11 | false           | false           | true           | true           | accepted |  |
-
-| 2021       | 2022-10    | false           | false           | true           | true           | rejected | IMO two dates with different components shouldn't be strictly comparable, see https://discourse.openehr.org/t/issues-with-date-time-comparison-for-partial-date-time-expressions/2173 |
+| 2021       | 2021-10    | false           | false           | true           | true           | rejected | IMO two dates with different components and common higher order components (year on this case) shouldn't be strictly comparable, see https://discourse.openehr.org/t/issues-with-date-time-comparison-for-partial-date-time-expressions/2173 |
 | NULL       | NULL       | true            | true            | false          | false          | accepted |  |
 
 
@@ -689,7 +688,7 @@ NOTE: this test case doesn't include all the possible combinations of lower/uppe
 
 
 
-### 3.10.3. Test case DV_INTERVAL<DV_DATE> validity range constraint
+### 3.10.3. Test case DV_INTERVAL<DV_DATE> range constraint
 
 | lower      | upper      | lower_unbounded | upper_unbounded | lower_included | upper_included | C_DATE.range (lower) | C_DATE.range (upper) | expected | constraints violated          |
 |:----------:|:----------:|-----------------|-----------------|----------------|----------------|----------------------|----------------------|----------|---------------------------|
@@ -704,11 +703,49 @@ NOTE: this test case doesn't include all the possible combinations of lower/uppe
 
 ## 3.11. quantity.DV_INTERVAL<DV_TIME>
 
-TBD: this will use the test cases and data sets defined for the DV_TIME tests.
+### 3.11.1. Test case DV_INTERVAL<DV_TIME> open constraint
 
+| lower      | upper      | lower_unbounded | upper_unbounded | lower_included | upper_included | expected | constraints violated          |
+|:----------:|:----------:|-----------------|-----------------|----------------|----------------|----------|-------------------------------|
+| NULL       | NULL       | false           | false           | true           | true           | rejected | IMO should fail, see https://discourse.openehr.org/t/is-dv-interval-missing-invariants/2210 |
+| NULL       | T11:00:00  | false           | false           | true           | true           | rejected | IMO should fail, see https://discourse.openehr.org/t/is-dv-interval-missing-invariants/2210 |
+| T10:00:00  | NULL       | false           | false           | true           | true           | rejected | IMO should fail, see https://discourse.openehr.org/t/is-dv-interval-missing-invariants/2210 |
+| T10        | T11        | false           | false           | true           | true           | accepted |  |
+| T10:00     | T11:00     | false           | false           | true           | true           | accepted |  |
+| T10:00:00  | T11:00:00  | false           | false           | true           | true           | accepted |  |
+| T10        | T10:45:00  | false           | false           | true           | true           | rejected | IMO two times with different components and common higher order components (hour on this case) shouldn't be strictly comparable, see https://discourse.openehr.org/t/issues-with-date-time-comparison-for-partial-date-time-expressions/2173 |
+| NULL       | NULL       | true            | true            | false          | false          | accepted |  |
+
+
+### 3.11.2. Test case DV_INTERVAL<DV_TIME> validity kind constraint
+
+| lower      | upper      | lower_unbounded | upper_unbounded | lower_included | upper_included | minute_val. (lower) | second_val. (lower) | millisecond_val. (lower) | timezone_val. (lower) | minute_val. (upper) | second_val. (upper) | millisecond_val. (upper) | timezone_val. (upper) | expected | constraints violated          |
+|:----------:|:----------:|-----------------|-----------------|----------------|----------------|---------------------|---------------------|-------------------------|-----------------------|---------------------|---------------------|--------------------------|-----------------------|---------|-------------------------------|
+| T10        | T11        | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | minute_val. (lower), second_val. (lower), millisecond_val. (lower), timezone_val. (lower), minute_val. (upper), second_val. (upper), millisecond_val. (upper), timezone_val. (upper) |
+| T10:00     | T11:00    | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | second_val. (lower), millisecond_val. (lower), timezone_val. (lower), second_val. (upper), millisecond_val. (upper), timezone_val. (upper) |
+| T10:00:00  | T11:00:00 | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | millisecond_val. (lower), timezone_val. (lower), millisecond_val. (upper), timezone_val. (upper) |
+| T10:00:00.5  | T11:00:00.5 | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | timezone_val. (lower) timezone_val. (upper) |
+| T10:00:00.5Z | T11:00:00.5Z | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | accepted |  |
+
+TBD: combinations of other values for validity.
+
+
+### 3.11.3. Test case DV_INTERVAL<DV_TIME> range constraint
+
+| lower         | upper         | lower_unbounded | upper_unbounded | lower_included | upper_included | C_TIME.range (lower)    | C_TIME.range (upper) | expected | constraints violated          |
+|:----------:|:----------:|-----------------|-----------------|----------------|----------------|----------------------|----------------------|----------|---------------------------|
+| T10          | T11          | false           | false           | true           | true           | T09..T11                  | T10..T12          | accepted |    |
+| T10:00       | T11:00       | false           | false           | true           | true           | T09:00..T11:00            | T10:00..T12:00       | accepted |    |
+| T10:00:00    | T11:00:00    | false           | false           | true           | true           | T09:00:00..T11:00:00      | T10:00:00..T12:00:00    | accepted |    |
+| T10:00:00.5  | T11:00:00.5  | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0  | T10:00:00.0..T12:00:00.0  | accepted |    |
+| T10:00:00.5Z | T11:00:00.5Z | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0Z | T10:00:00.0Z..T12:00:00.0Z | accepted |    |
+
+TBD: fail cases
 
 
 ## 3.12. quantity.DV_INTERVAL<DV_DURATION>
+
+TBD
 
 
 ## 3.13. quantity.DV_INTERVAL<DV_ORDINAL>
