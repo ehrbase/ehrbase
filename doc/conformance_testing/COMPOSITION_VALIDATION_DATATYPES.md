@@ -773,7 +773,44 @@ TBD
 
 ## 4.2. quantity.date_time.DV_DURATION
 
-TBD
+### 4.2.1. Test case DV_DURATION open constraint
+
+| value           | expected | violated constraints |
+|-----------------|----------|----------------------|
+| NULL            | rejected | DV_DURATION.value is mandatory in the RM |
+| 1Y              | rejected | wrong ISO 8601 duration: missing duration desingator 'P' |         
+| P1Y             | accepted | |
+| P1Y3M           | accepted | |
+| P1W             | accepted | |
+| P1Y3M4D         | accepted | |
+| P1Y3M4DT2H      | accepted | |
+| P1Y3M4DT2H14M   | accepted | |
+| P1Y3M4DT2H14M5S | accepted | |
+
+### 4.2.2. Test case DV_DURATION fields allowed constraint
+
+The `allowed` fields are defined in the `C_DURATION` class, which allows to constraint the DV_DURATION.value attribute.
+
+| value              | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | expected | violated constraints |
+|--------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|---------------------------|----------|----------------------|
+| P1Y                | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
+| P1Y                | false          | true          | true          | true         | true          | true            | true             | ???          | rejected | C_DURATION.years_allowed |
+| P1Y3M              | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
+| P1Y3M              | true          | false          | true          | true         | true          | true            | true             | ???          | rejected | C_DURATION.months_allowed |
+| P1Y3M15D           | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
+| P1Y3M15D           | true          | true           | true          | false        | true          | true            | true             | ???          | rejected | C_DURATION.days_allowed |
+| P1W                | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
+| P7W                | true          | true           | false         | true         | true          | true            | true             | ???          | rejected | C_DURATION.weeks_allowed |
+| P1Y3M15DT23H       | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
+| P1Y3M15DT23H       | true          | true           | true          | true         | false         | true            | true             | ???          | rejected | C_DURATION.hours_allowed |
+| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
+| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | false           | true             | ???          | rejected | C_DURATION.minutes_allowed |
+| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
+| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | false            | ???          | rejected | C_DURATION.seconds_allowed |
+
+### 4.2.3. Test case DV_DURATION ramge cpmstraint
+
+
 
 
 ## 4.3. quantity.date_time.DV_TIME
