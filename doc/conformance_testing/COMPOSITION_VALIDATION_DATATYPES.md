@@ -808,8 +808,29 @@ The `allowed` fields are defined in the `C_DURATION` class, which allows to cons
 | P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
 | P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | false            | ???          | rejected | C_DURATION.seconds_allowed |
 
-### 4.2.3. Test case DV_DURATION ramge cpmstraint
+### 4.2.3. Test case DV_DURATION ramge constraint
 
+| value             | range.lower    | range.upper    | expected | violated constraints   |
+|-------------------|----------------|----------------|----------|------------------------|
+| P1Y               | P0Y            | P50Y           | accepted |                        |
+| P1Y               | P1Y            | P50Y           | accepted |                        |
+| P1Y               | P2Y            | P50Y           | rejected | C_DURATION.range.lower |
+| P1M               | P0M            | P50M           | accepted |                        |
+| P1M               | P1M            | P50M           | accepted |                        |
+| P1M               | P2M            | P50M           | rejected | C_DURATION.range.lower |
+| P1D               | P0D            | P50D           | accepted |                        |
+| P1D               | P1D            | P50D           | accepted |                        |
+| P1D               | P2D            | P50D           | rejected | C_DURATION.range.lower |
+| P1Y2M             | P0Y            | P50Y           | accepted |                        |
+| P1Y2M             | P1Y            | P50Y           | accepted |                        |
+| P1Y2M             | P2Y            | P50Y           | rejected | C_DURATION.range.lower |
+| P1Y20M            | P0Y            | P50Y           | accepted |                        |
+| P1Y20M            | P1Y            | P50Y           | accepted |                        |
+| P1Y20M            | P2Y            | P50Y           | rejected | TBD: it is not clear if the 20M are transformed to years to be compared with the range limits that only have years or if years in the value are compared with years in the range limits and if there are no limits for months in the range limits then the months in the value are not constrainted. |
+
+### 4.2.4. Test case DV_DURATION fields allowed and range constraints combined
+
+In the AOM specification it is allowed to combine allowed and range: "Both range and the constraint pattern can be set at the same time, corresponding to the ADL constraint PWD/|P0W..P50W|. (https://specifications.openehr.org/releases/AM/Release-2.2.0/AOM1.4.html#_c_duration_class)"
 
 
 
