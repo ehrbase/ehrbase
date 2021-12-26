@@ -787,28 +787,32 @@ TBD
 | P1Y3M4DT2H14M   | accepted | |
 | P1Y3M4DT2H14M5S | accepted | |
 
+
 ### 4.2.2. Test case DV_DURATION fields allowed constraint
 
 The `allowed` fields are defined in the `C_DURATION` class, which allows to constraint the DV_DURATION.value attribute.
 
-| value              | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | expected | violated constraints |
-|--------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|---------------------------|----------|----------------------|
-| P1Y                | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
-| P1Y                | false          | true          | true          | true         | true          | true            | true             | ???          | rejected | C_DURATION.years_allowed |
-| P1Y3M              | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
-| P1Y3M              | true          | false          | true          | true         | true          | true            | true             | ???          | rejected | C_DURATION.months_allowed |
-| P1Y3M15D           | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
-| P1Y3M15D           | true          | true           | true          | false        | true          | true            | true             | ???          | rejected | C_DURATION.days_allowed |
-| P1W                | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
-| P7W                | true          | true           | false         | true         | true          | true            | true             | ???          | rejected | C_DURATION.weeks_allowed |
-| P1Y3M15DT23H       | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
-| P1Y3M15DT23H       | true          | true           | true          | true         | false         | true            | true             | ???          | rejected | C_DURATION.hours_allowed |
-| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
-| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | false           | true             | ???          | rejected | C_DURATION.minutes_allowed |
-| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | true             | ???          | accepted |  |
-| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | false            | ???          | rejected | C_DURATION.seconds_allowed |
+| value              | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | expected | violated constraints     |
+|--------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|----------------------------|----------|--------------------------|
+| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
+| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | rejected | C_DURATION.years_allowed |
+| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
+| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | rejected | C_DURATION.months_allowed |
+| P1Y3M15D           | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
+| P1Y3M15D           | true          | true           | true          | false        | true          | true            | true            | ???                        | rejected | C_DURATION.days_allowed |
+| P1W                | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
+| P7W                | true          | true           | false         | true         | true          | true            | true            | ???                        | rejected | C_DURATION.weeks_allowed |
+| P1Y3M15DT23H       | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
+| P1Y3M15DT23H       | true          | true           | true          | true         | false         | true            | true            | ???                        | rejected | C_DURATION.hours_allowed |
+| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
+| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | false           | true            | ???                        | rejected | C_DURATION.minutes_allowed |
+| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
+| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | false           | ???                        | rejected | C_DURATION.seconds_allowed |
 
-### 4.2.3. Test case DV_DURATION ramge constraint
+> NOTE: the `fractional_seconds_allowed` field is not so clear since the ISO8601 would allow fractions on the lowest order component, which means if the duration lowest component is `minutes` then it's valid to have `5.23M`. Also consider in programming languages like Java, a duration string with fractions on other fields than seconds can't be parsed (for instance using https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-)
+
+
+### 4.2.3. Test case DV_DURATION range constraint
 
 | value             | range.lower    | range.upper    | expected | violated constraints   |
 |-------------------|----------------|----------------|----------|------------------------|
@@ -826,11 +830,28 @@ The `allowed` fields are defined in the `C_DURATION` class, which allows to cons
 | P1Y2M             | P2Y            | P50Y           | rejected | C_DURATION.range.lower |
 | P1Y20M            | P0Y            | P50Y           | accepted |                        |
 | P1Y20M            | P1Y            | P50Y           | accepted |                        |
-| P1Y20M            | P2Y            | P50Y           | rejected | TBD: it is not clear if the 20M are transformed to years to be compared with the range limits that only have years or if years in the value are compared with years in the range limits and if there are no limits for months in the range limits then the months in the value are not constrainted. |
+| P1Y20M            | P2Y            | P50Y           | ??? | TBD: it is not clear if the 20M are transformed to years to be compared with the range limits that only have years or if years in the value are compared with years in the range limits and if there are no limits for months in the range limits then the months in the value are not constrainted. |
+| P2W               | P0W            | P3W            | accepted |                        |
+| P2W               | P2W            | P3W            | accepted |                        |
+| P2W               | P3W            | P3W            | rejected | C_DURATION.range.lower |
+
 
 ### 4.2.4. Test case DV_DURATION fields allowed and range constraints combined
 
 In the AOM specification it is allowed to combine allowed and range: "Both range and the constraint pattern can be set at the same time, corresponding to the ADL constraint PWD/|P0W..P50W|. (https://specifications.openehr.org/releases/AM/Release-2.2.0/AOM1.4.html#_c_duration_class)"
+
+| value              | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | range.lower | range.upper | expected | violated constraints     |
+|--------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|----------------------------|-------------|-------------|----------|--------------------------|
+| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | accepted |  |
+| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P2Y         | P50Y        | rejected | C_DURATION.range.lower  |
+| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | rejected | C_DURATION.years_allowed |
+| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | P2Y         | P50Y        | rejected | C_DURATION.years_allowed, C_DURATION.range.lower |
+
+| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | P1Y         | P50Y        | accepted |  |
+| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P1Y         | P50Y        | rejected | C_DURATION.months_allowed |
+| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.lower |
+| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.months_allowed. C_DURATION.lower |
+
 
 
 
@@ -1586,13 +1607,31 @@ TBD: there is an open question about strictly comparability between time express
 
 # 6. encapsulated
 
-## Reference UML
+## 6.1. Reference UML
 
 ![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-data_types.encapsulated.svg)
 
-## DV_PARSABLE
+## 6.2. encapsulated.DV_PARSABLE
 
-## DV_MULTIMEDIA
+### 6.2.1. Test case DV_PARSABLE open constraint
+
+| value     | formalism   | expected | violated constraints |
+|-----------|-------------|----------|----------------------|
+| NULL      | NULL        | rejected | RM/schema value and formalism are required |
+| abc       | NULL        | rejected | RM/schema formalism is required |
+| NULL      | abc         | rejected | RM/schema value is required |
+| xxx       | abc         | accepted |  |
+
+### 6.2.2. Test case DV_PARSABLE value and formalism constrained
+
+Each field of the DV_PARSABLE could be constrained by a C_STRING.
+
+| value     | formalism   | C_STRING.pattern (value) | C_STRING.list (value) | C_STRING.pattern (formalism) | C_STRING.list (formalism) | expected | violated constraints |
+|-----------|-------------|--------------------------|-----------------------|------------------------------|---------------------------|----------|----------------------|
+| xxx       | abc         | x*                       | NULL                  | abc                          | NULL                      | accepted |  |
+
+
+## 6.3. encapsulated.DV_MULTIMEDIA
 
 
 
