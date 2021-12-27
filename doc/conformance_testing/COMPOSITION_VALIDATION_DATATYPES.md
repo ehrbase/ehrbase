@@ -1629,10 +1629,40 @@ Each field of the DV_PARSABLE could be constrained by a C_STRING.
 | value     | formalism   | C_STRING.pattern (value) | C_STRING.list (value) | C_STRING.pattern (formalism) | C_STRING.list (formalism) | expected | violated constraints |
 |-----------|-------------|--------------------------|-----------------------|------------------------------|---------------------------|----------|----------------------|
 | xxx       | abc         | x*                       | NULL                  | abc                          | NULL                      | accepted |  |
+| xxx       | abc         | a*                       | NULL                  | abc                          | NULL                      | rejected | C_STRING.pattern (value) |
+| xxx       | abc         | x*                       | NULL                  | x*                           | NULL                      | rejected | C_STRING.pattern (formalism) |
+| xxx       | abc         | NULL                     | [xxx, yyy, zzz]       | abc                          | NULL                      | accepted |  |
+| xxx       | abc         | NULL                     | [yyy, zzz]            | abc                          | NULL                      | rejected | C_STRING.list (value) |
+| xxx       | abc         | NULL                     | [xxx, yyy, zzz]       | NULL                         | [abc, bbb, aaa]           | accepted |  |
+| xxx       | abc         | NULL                     | [xxx, yyy, zzz]       | NULL                         | [bbb, aaa]                | rejected | C_STRING.list (formalism) |
 
 
 ## 6.3. encapsulated.DV_MULTIMEDIA
 
+### 6.3.1. Test ccase DV_MULTIMEDIA open constraint
+
+| media_type        | size        | expected | violated constraints |
+|-------------------|-------------|----------|----------------------|
+| NULL              | NULL        | rejected | RM/schema media_type and size are required |
+| abc               | NULL        | rejected | media_type is not in the media type openEHR term set, RM/schema size is required |
+| NULL              | 123         | rejected | RM/schema media_type is required |
+| application/dicom | 123         | accepted |  |
+
+
+### 6.3.2. Test case DV_MULTIMEDIA media type constraint
+
+NOTE: media_type could be constrained by a C_CODE_PHRASE and size could be constrained by C_INTEGER. A NULL C_CODE_PHRASE for the media_type means any code is allowed from the openEHR media type codeset https://github.com/openEHR/terminology/blob/master/openEHR_RM/openehr_external_terminologies.xml#L399
+
+| media_type        | size | C_CODE_PHRASE                              | C_INTEGER.list  | C_INTEGER.range | expected | violated constraints           |
+|-------------------|------|--------------------------------------------|-----------------|-----------------|----------|--------------------------------|
+| application/dicom | 123  | NULL                                       | [10, 100, 1000] | NULL            | rejected | C_INTEGER.list                 |
+| application/dicom | 100  | NULL                                       | [10, 100, 1000] | NULL            | accepted |                                |
+| application/dicom | 123  | NULL                                       | NULL            | 0..1000         | accepted |                                |
+| application/dicom | 123  | NULL                                       | NULL            | 200..1000       | rejected | C_INTEGER.range                |
+| application/dicom | 100  | [application/dicom, text/plain, text/html] | [10, 100, 1000] | NULL            | accepted |                                |
+| application/dicom | 100  | [text/plain, text/html]                    | [10, 100, 1000] | NULL            | rejected | C_CODE_PHRASE                  |
+| application/dicom | 100  | [application/dicom, text/plain, text/html] | NULL            | 0..1000         | accepted |                                |
+| application/dicom | 100  | [text/plain, text/html]                    | NULL            | 200..1000       | rejected | C_CODE_PHRASE, C_INTEGER.range |
 
 
 # 7. uri
