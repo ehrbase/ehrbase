@@ -650,8 +650,8 @@
                 <version>${json.path.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.openEHR</groupId>
-                <artifactId>archie</artifactId>
+                <groupId>com.nedap.healthcare.archie</groupId>
+                <artifactId>openehr-rm</artifactId>
                 <version>${archie.version}</version>
             </dependency>
             <dependency>

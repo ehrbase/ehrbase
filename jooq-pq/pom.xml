@@ -47,12 +47,8 @@
         </dependency>
 
         <dependency>
-            <!--        <groupId>com.nedap.healthcare.archie</groupId>
-                    <artifactId>archie-all</artifactId>
-                    <version>0.7.0-SNAPSHOT</version>
-            -->
-            <groupId>com.github.openEHR</groupId>
-            <artifactId>archie</artifactId>
+            <groupId>com.nedap.healthcare.archie</groupId>
+            <artifactId>openehr-rm</artifactId>
         </dependency>
 
         <dependency>
@@ -147,7 +143,9 @@
                                 </forcedType>
                                 <forcedType>
                                     <!-- Specify the Java type of your custom type. This corresponds to the Binding's <U> type. -->
-                                    <userType>java.util.AbstractMap.SimpleEntry&lt;java.time.OffsetDateTime, java.time.OffsetDateTime></userType>
+                                    <userType>java.util.AbstractMap.SimpleEntry&lt;java.time.OffsetDateTime,
+                                        java.time.OffsetDateTime>
+                                    </userType>
                                     <!--<userType>java.util.AbstractMap.SimpleEntry</userType>-->
 
                                     <!-- Associate that custom type with your binding. -->
