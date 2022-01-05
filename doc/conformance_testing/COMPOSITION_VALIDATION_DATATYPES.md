@@ -1667,14 +1667,67 @@ NOTE: media_type could be constrained by a C_CODE_PHRASE and size could be const
 
 # 7. uri
 
-## Reference UML
+## 7.1. Reference UML
 
 ![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-data_types.uri.svg)
 
-## DV_URI
+## 7.2. DV_URI
+
+### 7.2.1. Test case DV_URI open constraint
+
+On this test case, only invalid URIs should be rejected. Any RFC3986-compliant URI should be accepted.
+
+| value                                               | expected | violated constraints         |
+|-----------------------------------------------------|----------|------------------------------|
+| NULL                                                | rejected | RM/schema: value is required  |
+| xyz                                                 | rejected | value doesn't comply with RFC3986 |
+| ftp://ftp.is.co.za/rfc/rfc1808.txt                  | accepted |                              |
+| http://www.ietf.org/rfc/rfc2396.txt                 | accepted |                              |
+| ldap://[2001:db8::7]/c=GB?objectClass?one           | accepted |                              |
+| mailto:John.Doe@example.com                         | accepted |                              |
+| news:comp.infosystems.www.servers.unix              | accepted |                              |
+| tel:+1-816-555-1212                                 | accepted |                              |
+| telnet://192.0.2.16:80/                             | accepted |                              |
+| urn:oasis:names:specification:docbook:dtd:xml:4.1.2 | accepted |                              |
+| http://www.carestreamserver/um/webapp_services/wado?requestType=WADO&studyUID=1.2.250.1.59.40211.12345678.678910&seriesUID=1.2.250.1.59.40211.789001276.14556172.67789&objectUID=1.2.250.1.59.40211.2678810.87991027.899772.2&contentType=application%2Fdicom | accepted | |
 
 
-## DV_EHR_URI
+### 7.2.2. Test case DV_URI C_STRING constraint for value
+
+TBD: need to check what happens if the constraint is not compliant with the URI format, for instance when defining a pattern in the C_STRING.
+
+
+
+## 7.3. DV_EHR_URI
+
+### 7.3.1. Test case DV_EHR_URI open constraint
+
+| value                                               | expected | violated constraints | notes |
+|-----------------------------------------------------|----------|----------------------|-------|
+| NULL                                                | rejected | RM/schema: value is required | |
+| xyz                                                 | rejected | value doesn't comply with RFC3986 | |
+| ftp://ftp.is.co.za/rfc/rfc1808.txt                  | rejected | URI doesn't have schema = 'ehr'   | |
+| http://www.ietf.org/rfc/rfc2396.txt                 | rejected | URI doesn't have schema = 'ehr'   | |
+| ldap://[2001:db8::7]/c=GB?objectClass?one           | rejected | URI doesn't have schema = 'ehr'   | |
+| mailto:John.Doe@example.com                         | rejected | URI doesn't have schema = 'ehr'   | |
+| news:comp.infosystems.www.servers.unix              | rejected | URI doesn't have schema = 'ehr'   | |
+| tel:+1-816-555-1212                                 | rejected | URI doesn't have schema = 'ehr'   | |
+| telnet://192.0.2.16:80/                             | rejected | URI doesn't have schema = 'ehr'   | |
+| urn:oasis:names:specification:docbook:dtd:xml:4.1.2 | rejected | URI doesn't have schema = 'ehr'   | |
+| http://www.carestreamserver/um/webapp_services/wado?requestType=WADO&studyUID=1.2.250.1.59.40211.12345678.678910&seriesUID=1.2.250.1.59.40211.789001276.14556172.67789&objectUID=1.2.250.1.59.40211.2678810.87991027.899772.2&contentType=application%2Fdicom | rejected | URI doesn't have schema = 'ehr' |
+| ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a           | accepted | | This should be a valid reference to an EHR |
+| ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a/031f2513-b9ef-47b2-bbef-8db24ae68c2f::EHRSERVER::1 | accepted | | This should be a valid reference to a COMPOSITION or FOLDER in an EHR (some top-level VERSIONED_OBJECT) |
+| ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a/031f2513-b9ef-47b2-bbef-8db24ae68c2f::EHRSERVER::1/context/other_context[at0001]/items[archetype_id=openEHR-EHR-CLUSTER.sample_symptom.v1]/items[at0034]/items[at0021]/value | accepted | | This should be a valid reference to a DATA_VALUE node in a COMPOSITION from an EHR |
+| ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a           | accepted | | Similar to the examples above, with given system_id as the URI `authority` |
+| ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a/031f2513-b9ef-47b2-bbef-8db24ae68c2f::EHRSERVER::1 | accepted | | Similar to the examples above, with given system_id as the URI `authority` |
+| ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a/031f2513-b9ef-47b2-bbef-8db24ae68c2f::EHRSERVER::1/context/other_context[at0001]/items[archetype_id=openEHR-EHR-CLUSTER.sample_symptom.v1]/items[at0034]/items[at0021]/value | accepted | | Similar to the examples above, with given system_id as the URI `authority` |
+
+
+
+### 7.3.2. Test case DV_EHR_URI C_STRING constraint for value
+
+TBD: need to check what happens when the constriant is not compliant with the definition of the DV_EHR_URI which requires the scheme to be `ehr`.
+
 
 
 
