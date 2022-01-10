@@ -61,8 +61,8 @@
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.openEHR</groupId>
-            <artifactId>archie</artifactId>
+            <groupId>com.nedap.healthcare.archie</groupId>
+            <artifactId>openehr-rm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr.sdk</groupId>
