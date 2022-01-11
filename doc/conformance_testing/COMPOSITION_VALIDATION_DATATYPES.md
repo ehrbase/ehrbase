@@ -1679,7 +1679,7 @@ On this test case, only invalid URIs should be rejected. Any RFC3986-compliant U
 
 | value                                               | expected | violated constraints         |
 |-----------------------------------------------------|----------|------------------------------|
-| NULL                                                | rejected | RM/schema: value is required  |
+| NULL                                                | rejected | RM/schema: value is required |
 | xyz                                                 | rejected | value doesn't comply with RFC3986 |
 | ftp://ftp.is.co.za/rfc/rfc1808.txt                  | accepted |                              |
 | http://www.ietf.org/rfc/rfc2396.txt                 | accepted |                              |
@@ -1692,9 +1692,25 @@ On this test case, only invalid URIs should be rejected. Any RFC3986-compliant U
 | http://www.carestreamserver/um/webapp_services/wado?requestType=WADO&studyUID=1.2.250.1.59.40211.12345678.678910&seriesUID=1.2.250.1.59.40211.789001276.14556172.67789&objectUID=1.2.250.1.59.40211.2678810.87991027.899772.2&contentType=application%2Fdicom | accepted | |
 
 
-### 7.2.2. Test case DV_URI C_STRING constraint for value
+### 7.2.2. Test case DV_URI C_STRING pattern constraint for value
 
-TBD: need to check what happens if the constraint is not compliant with the URI format, for instance when defining a pattern in the C_STRING.
+NOTE: to use the pattern constraint, the pattern should comply with the URI format from RFC3986, so the pattern defines a subset of valid URIs. If the pattern doesn't comply with the URI format, modeling tools should be responsible to notify the modeler and shouldn't allow to export archetypes or templates in that case. Testing this is not part of the data validation compliance scope, because it is validation of AOM objects not RM.
+
+| value                                               | C_STRING.pattern | expected | violated constraints |
+|-----------------------------------------------------|------------------|----------|----------------------|
+| xyz                                                 | https://.*       | rejected | C_STRING.pattern     |
+| https://cabolabs.com                                | https://.*       | accepted |                      |
+
+
+### 7.2.3. Test case DV_URI C_STRING list constraint for value
+
+NOTE: the values in the C_STRING.list should be valid URIs compliant with RFC3986. If this doesn't happen, the archetype/template is invalid. Testing this case is not in the scope of the data validation.
+
+| value                | C_STRING.list                                      | expected | violated constraints |
+|----------------------|----------------------------------------------------|----------|----------------------|
+| xyz                  | [https://cabolabs.com, https://cloudehrserver.com] | rejected | C_STRING.list        |
+| https://cabolabs.com | [https://cabolabs.com, https://cloudehrserver.com] | accepted |                      |
+
 
 
 
@@ -1702,18 +1718,18 @@ TBD: need to check what happens if the constraint is not compliant with the URI 
 
 ### 7.3.1. Test case DV_EHR_URI open constraint
 
-| value                                               | expected | violated constraints | notes |
-|-----------------------------------------------------|----------|----------------------|-------|
-| NULL                                                | rejected | RM/schema: value is required | |
-| xyz                                                 | rejected | value doesn't comply with RFC3986 | |
-| ftp://ftp.is.co.za/rfc/rfc1808.txt                  | rejected | URI doesn't have schema = 'ehr'   | |
-| http://www.ietf.org/rfc/rfc2396.txt                 | rejected | URI doesn't have schema = 'ehr'   | |
-| ldap://[2001:db8::7]/c=GB?objectClass?one           | rejected | URI doesn't have schema = 'ehr'   | |
-| mailto:John.Doe@example.com                         | rejected | URI doesn't have schema = 'ehr'   | |
-| news:comp.infosystems.www.servers.unix              | rejected | URI doesn't have schema = 'ehr'   | |
-| tel:+1-816-555-1212                                 | rejected | URI doesn't have schema = 'ehr'   | |
-| telnet://192.0.2.16:80/                             | rejected | URI doesn't have schema = 'ehr'   | |
-| urn:oasis:names:specification:docbook:dtd:xml:4.1.2 | rejected | URI doesn't have schema = 'ehr'   | |
+| value                                               | expected | violated constraints              | notes |
+|-----------------------------------------------------|----------|-----------------------------------|-------|
+| NULL                                                | rejected | RM/schema: value is required      |       |
+| xyz                                                 | rejected | value doesn't comply with RFC3986 |       |
+| ftp://ftp.is.co.za/rfc/rfc1808.txt                  | rejected | URI doesn't have schema = 'ehr'   |       |
+| http://www.ietf.org/rfc/rfc2396.txt                 | rejected | URI doesn't have schema = 'ehr'   |       |
+| ldap://[2001:db8::7]/c=GB?objectClass?one           | rejected | URI doesn't have schema = 'ehr'   |       |
+| mailto:John.Doe@example.com                         | rejected | URI doesn't have schema = 'ehr'   |       |
+| news:comp.infosystems.www.servers.unix              | rejected | URI doesn't have schema = 'ehr'   |       |
+| tel:+1-816-555-1212                                 | rejected | URI doesn't have schema = 'ehr'   |       |
+| telnet://192.0.2.16:80/                             | rejected | URI doesn't have schema = 'ehr'   |       |
+| urn:oasis:names:specification:docbook:dtd:xml:4.1.2 | rejected | URI doesn't have schema = 'ehr'   |       |
 | http://www.carestreamserver/um/webapp_services/wado?requestType=WADO&studyUID=1.2.250.1.59.40211.12345678.678910&seriesUID=1.2.250.1.59.40211.789001276.14556172.67789&objectUID=1.2.250.1.59.40211.2678810.87991027.899772.2&contentType=application%2Fdicom | rejected | URI doesn't have schema = 'ehr' |
 | ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a           | accepted | | This should be a valid reference to an EHR |
 | ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a/031f2513-b9ef-47b2-bbef-8db24ae68c2f::EHRSERVER::1 | accepted | | This should be a valid reference to a COMPOSITION or FOLDER in an EHR (some top-level VERSIONED_OBJECT) |
@@ -1723,11 +1739,24 @@ TBD: need to check what happens if the constraint is not compliant with the URI 
 | ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a/031f2513-b9ef-47b2-bbef-8db24ae68c2f::EHRSERVER::1/context/other_context[at0001]/items[archetype_id=openEHR-EHR-CLUSTER.sample_symptom.v1]/items[at0034]/items[at0021]/value | accepted | | Similar to the examples above, with given system_id as the URI `authority` |
 
 
+### 7.3.2. Test case DV_EHR_URI C_STRING pattern constraint for value
 
-### 7.3.2. Test case DV_EHR_URI C_STRING constraint for value
+NOTE: to use the pattern constraint, the pattern should comply with the URI format from RFC3986, so the pattern defines a subset of valid URIs. If the pattern doesn't comply with the URI format, modeling tools should be responsible to notify the modeler and shouldn't allow to export archetypes or templates in that case. Testing this is not part of the data validation compliance scope, because it is validation of AOM objects not RM.
 
-TBD: need to check what happens when the constriant is not compliant with the definition of the DV_EHR_URI which requires the scheme to be `ehr`.
+| value                                                      | C_STRING.pattern | expected | violated constraints |
+|------------------------------------------------------------|------------------|----------|----------------------|
+| xyz                                                        | ehr://.*         | rejected | C_STRING.pattern     |
+| https://cabolabs.com                                       | ehr://.*         | rejected | C_STRING.pattern     |
+| ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a | ehr://.*         | accepted |                      |
 
 
+### 7.3.3. Test case DV_EHR_URI C_STRING list constraint for value
 
+NOTE: the values in the C_STRING.list should be valid URIs compliant with RFC3986. If this doesn't happen, the archetype/template is invalid. Testing this case is not in the scope of the data validation.
+
+| value                | C_STRING.list                                                                                                                | expected | violated constraints |
+|----------------------|------------------------------------------------------------------------------------------------------------------------------|----------|----------------------|
+| xyz                  | [ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a, ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a]                      | rejected | C_STRING.list        |
+| https://cabolabs.com | [ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a, ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a]                      | rejected | C_STRING.list        |
+| ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a | [ehr:/89c0752e-0815-47d7-8b3c-b3aaea2cea7a, ehr://CLOUD_EHRSERVER/89c0752e-0815-47d7-8b3c-b3aaea2cea7a] | accepted |                      |
 
