@@ -35,6 +35,7 @@ import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.*;
+import org.jooq.Record;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 
