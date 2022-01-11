@@ -5,13 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [unrealised]
+
+### Added
+
+- Add Flyway callback to check `IntervalStyle` configuration
+  parameter ([#720](https://github.com/ehrbase/ehrbase/pull/720)).
+
+### Changed
+
+- Upgrade to Archie 1.0.4 ([#719](https://github.com/ehrbase/ehrbase/pull/719))
+
+### Fixed
+
+## [0.18.3]
+
+### Added
+
+### Changed
+
+- removed log4j (see https://github.com/ehrbase/ehrbase/pull/711)
+
+### Fixed
+
+## [0.18.2]
+
+### Fixed
+
+- updated log4j from 1.15.0 to 1.60.0
+
+## [0.18.1]
+
+### Fixed
+
+- Fix deployment issue with Flyway migration V62__add_entry_history_missing_columns.sql
+
+## [0.18.0]
 
 ### Added
 
 - Migrated to Archie openEHR library version > 1.0.0, incl. its new strict invariant checks (
   see: https://github.com/ehrbase/ehrbase/pull/570)
 - Support Structured format on ecis composition endpoints (see https://github.com/ehrbase/ehrbase/pull/648)
+- Add new configuration options to customise user/admin role names when using OAuth authentication
+  (see https://github.com/ehrbase/ehrbase/pull/667)
+- Add configuration properties to customize CORS configuration (see https://github.com/ehrbase/ehrbase/pull/697)
 
 ### Changed
 
@@ -24,6 +62,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix conversion between `DvDateTime` and `Timestamp` (see https://github.com/ehrbase/ehrbase/pull/634)
 - Fix FLAT format does not return the archetype data if the archetype_id contains the letters "and"
 - Datetime inconsistent handling (see https://github.com/ehrbase/ehrbase/pull/649)
+- Fix issue using DV_DATE_TIME without time-zone (see https://github.com/ehrbase/ehrbase/pull/658)
+- update lg4j version (see https://github.com/ehrbase/ehrbase/pull/702)
 
 ## [0.17.2]
 
@@ -189,9 +229,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Representation of version uid of EHR_STATUS (see: https://github.com/ehrbase/ehrbase/pull/180)
 - Refactored support of PartyProxy and ObjectId in both CRUD and AQL operations (
   see https://github.com/ehrbase/ehrbase/pull/248)
--
-  - fix support of mandatory attributes in ENTRY specialization including rm_version (
-    see https://github.com/ehrbase/ehrbase/pull/247)
+- fix support of mandatory attributes in ENTRY specialization including rm_version (
+  see https://github.com/ehrbase/ehrbase/pull/247)
 
 #### DIRECTORY
 

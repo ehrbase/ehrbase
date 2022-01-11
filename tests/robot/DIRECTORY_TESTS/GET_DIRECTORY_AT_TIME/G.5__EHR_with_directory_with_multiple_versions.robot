@@ -38,7 +38,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 # Test Teardown  restore clean SUT state
 #Suite Teardown  shutdown SUT
 
-Force Tags    353    not-ready
+Force Tags    
 
 
 
@@ -48,8 +48,5 @@ Alternative flow 4: get directory at time on EHR with directory with multiple ve
     create EHR
     create DIRECTORY (JSON)    empty_directory.json
     update DIRECTORY (JSON)    subfolders_in_directory_with_details_items.json
-    get DIRECTORY at current time (JSON)
-
-        TRACE GITHUB ISSUE  353  bug
-    
+    get DIRECTORY at current time (JSON)    
     validate GET-version@time response - 200 retrieved

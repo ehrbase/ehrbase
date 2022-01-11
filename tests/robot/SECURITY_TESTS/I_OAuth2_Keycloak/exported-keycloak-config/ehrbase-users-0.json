@@ -17,7 +17,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "Admin", "offline_access", "uma_authorization" ],
+    "realmRoles" : [ "offline_access", "ehrbase.org/administrator", "uma_authorization" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -42,7 +42,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "user", "offline_access", "uma_authorization" ],
+    "realmRoles" : [ "offline_access", "uma_authorization", "ehrbase.org/user" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -67,7 +67,41 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "Admin", "user", "offline_access", "uma_authorization" ],
+    "realmRoles" : [ "offline_access", "ehrbase.org/administrator", "uma_authorization", "ehrbase.org/user" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "1f6cf211-1b7a-41c7-9eb2-166f1f09e4e8",
+    "createdTimestamp" : 1636647762130,
+    "username" : "service-account-ehrbase-custom-admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "serviceAccountClientId" : "ehrbase-custom-admin",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "519f4bb4-faaa-4e64-b029-d4a484bcdbcd",
+    "createdTimestamp" : 1636647708827,
+    "username" : "service-account-ehrbase-custom-user",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "serviceAccountClientId" : "ehrbase-custom-user",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "offline_access", "uma_authorization" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -89,7 +123,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "user", "offline_access", "uma_authorization" ],
+    "realmRoles" : [ "offline_access", "uma_authorization", "ehrbase.org/user" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },

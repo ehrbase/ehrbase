@@ -40,9 +40,10 @@ Main flow create new event COMPOSITION CANONICAL_XML
     check the successful result of commit composition
 
 Main flow create new event COMPOSITION FLAT
-    [Tags]    future
+    [Tags]      594  not-ready  bug
     commit composition   format=FLAT
-    ...                  composition=nested.en.v1__full.json
+    ...                  composition=nested.en.v1__full.xml.flat.json
+    TRACE GITHUB ISSUE  594  bug
     check the successful result of commit composition   nesting
 
 Main flow create new event COMPOSITION TDD

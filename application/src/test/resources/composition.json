@@ -1,0 +1,150 @@
+{
+  "_type": "COMPOSITION",
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "Minimal"
+  },
+  "archetype_details": {
+    "archetype_id": {
+      "value": "openEHR-EHR-COMPOSITION.minimal.v1"
+    },
+    "template_id": {
+      "value": "minimal_evaluation.en.v1"
+    },
+    "rm_version": "1.0.2"
+  },
+  "archetype_node_id": "openEHR-EHR-COMPOSITION.minimal.v1",
+  "language": {
+    "terminology_id": {
+      "value": "ISO_639-1"
+    },
+    "code_string": "en"
+  },
+  "territory": {
+    "terminology_id": {
+      "value": "ISO_3166-1"
+    },
+    "code_string": "UY"
+  },
+  "category": {
+    "value": "event",
+    "defining_code": {
+      "terminology_id": {
+        "value": "openehr"
+      },
+      "code_string": "433"
+    }
+  },
+  "composer": {
+    "_type": "PARTY_IDENTIFIED",
+    "external_ref": {
+      "id": {
+        "_type": "HIER_OBJECT_ID",
+        "value": "fc376c46-29c1-4090-bc01-5cc046af7f26"
+      },
+      "namespace": "DEMOGRAPHIC",
+      "type": "PERSON"
+    },
+    "name": "Dr. House"
+  },
+  "context": {
+    "start_time": {
+      "value": "2021-09-21T21:52:31.927-03:00"
+    },
+    "setting": {
+      "value": "primary medical care",
+      "defining_code": {
+        "terminology_id": {
+          "value": "openehr"
+        },
+        "code_string": "228"
+      }
+    },
+    "participations": [
+      {
+        "function": {
+          "value": "legal guardian consent author"
+        },
+        "performer": {
+          "_type": "PARTY_RELATED",
+          "name": "Alexandra Alamo",
+          "relationship": {
+            "value": "mother",
+            "defining_code": {
+              "terminology_id": {
+                "value": "openehr"
+              },
+              "code_string": "10"
+            }
+          }
+        },
+        "mode": {
+          "value": "not specified",
+          "defining_code": {
+            "terminology_id": {
+              "value": "openehr"
+            },
+            "code_string": "193"
+          }
+        }
+      }
+    ]
+  },
+  "content": [
+    {
+      "_type": "EVALUATION",
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "Minimal"
+      },
+      "archetype_details": {
+        "archetype_id": {
+          "value": "openEHR-EHR-EVALUATION.minimal.v1"
+        },
+        "template_id": {
+          "value": "minimal_evaluation.en.v1"
+        },
+        "rm_version": "1.0.2"
+      },
+      "archetype_node_id": "openEHR-EHR-EVALUATION.minimal.v1",
+      "language": {
+        "terminology_id": {
+          "value": "ISO_639-1"
+        },
+        "code_string": "en"
+      },
+      "encoding": {
+        "terminology_id": {
+          "value": "IANA_character-sets"
+        },
+        "code_string": "UTF-8"
+      },
+      "subject": {
+        "_type": "PARTY_SELF"
+      },
+      "data": {
+        "_type": "ITEM_TREE",
+        "name": {
+          "_type": "DV_TEXT",
+          "value": "Arbol"
+        },
+        "archetype_node_id": "at0001",
+        "items": [
+          {
+            "_type": "ELEMENT",
+            "name": {
+              "_type": "DV_TEXT",
+              "value": "quantity"
+            },
+            "archetype_node_id": "at0002",
+            "value": {
+              "_type": "DV_QUANTITY",
+              "magnitude": 78.5,
+              "units": "kg"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

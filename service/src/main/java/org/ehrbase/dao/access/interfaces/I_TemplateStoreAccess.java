@@ -20,39 +20,45 @@
 
 package org.ehrbase.dao.access.interfaces;
 
+import java.util.List;
+import java.util.Set;
 import org.ehrbase.dao.access.jooq.TemplateStoreAccess;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
-import java.util.List;
-
 public interface I_TemplateStoreAccess extends I_SimpleCRUD {
 
-    OPERATIONALTEMPLATE getTemplate();
+  OPERATIONALTEMPLATE getTemplate();
 
-    void setTemplate(OPERATIONALTEMPLATE template);
+  void setTemplate(OPERATIONALTEMPLATE template);
 
-    static I_TemplateStoreAccess getInstance(I_DomainAccess access, OPERATIONALTEMPLATE operationaltemplate) {
-        return new TemplateStoreAccess(access, operationaltemplate);
-    }
+  static I_TemplateStoreAccess getInstance(I_DomainAccess access,
+      OPERATIONALTEMPLATE operationaltemplate) {
+    return new TemplateStoreAccess(access, operationaltemplate);
+  }
 
-    static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess, String templateId) {
-        return TemplateStoreAccess.retrieveInstanceByTemplateId(domainAccess, templateId);
-    }
+  static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess,
+      String templateId) {
+    return TemplateStoreAccess.retrieveInstanceByTemplateId(domainAccess, templateId);
+  }
 
-    static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
-        return TemplateStoreAccess.fetchAll(domainAccess);
-    }
+  static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
+    return TemplateStoreAccess.fetchAll(domainAccess);
+  }
 
-    static String adminUpdateTemplate(I_DomainAccess domainAccess, OPERATIONALTEMPLATE template) {
-        return TemplateStoreAccess.adminUpdateTemplate(domainAccess, template);
-    }
+  static Set<String> fetchAllTemplateIds(I_DomainAccess domainAccess) {
+    return TemplateStoreAccess.fetchAllTemplateIds(domainAccess);
+  }
 
-    static boolean deleteTemplate(I_DomainAccess domainAccess, String templateId) {
-        return TemplateStoreAccess.deleteTemplate(domainAccess, templateId);
-    }
+  static String adminUpdateTemplate(I_DomainAccess domainAccess, OPERATIONALTEMPLATE template) {
+    return TemplateStoreAccess.adminUpdateTemplate(domainAccess, template);
+  }
 
-    static int adminDeleteAllTemplates(I_DomainAccess domainAccess) {
-        return TemplateStoreAccess.adminDeleteAllTemplates(domainAccess);
-    }
+  static boolean deleteTemplate(I_DomainAccess domainAccess, String templateId) {
+    return TemplateStoreAccess.deleteTemplate(domainAccess, templateId);
+  }
+
+  static int adminDeleteAllTemplates(I_DomainAccess domainAccess) {
+    return TemplateStoreAccess.adminDeleteAllTemplates(domainAccess);
+  }
 }

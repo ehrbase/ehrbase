@@ -25,24 +25,15 @@ package org.ehrbase.aql.compiler;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.compiler.recovery.RecoverArchetypeId;
-import org.ehrbase.aql.containment.AnonymousSymbol;
-import org.ehrbase.aql.containment.ComplexContainsCheck;
-import org.ehrbase.aql.containment.ContainPropositions;
-import org.ehrbase.aql.containment.Containment;
-import org.ehrbase.aql.containment.ContainmentSet;
-import org.ehrbase.aql.containment.ContainsExpressions;
-import org.ehrbase.aql.containment.ContainsProposition;
-import org.ehrbase.aql.containment.IdentifierMapper;
-import org.ehrbase.aql.containment.SimpleChainedCheck;
-import org.ehrbase.aql.containment.SimpleClassExpressionIdentifier;
+import org.ehrbase.aql.containment.*;
 import org.ehrbase.aql.definition.FromEhrDefinition;
 import org.ehrbase.aql.definition.FromForeignDataDefinition;
 import org.ehrbase.aql.definition.I_FromEntityDefinition;
 import org.ehrbase.aql.parser.AqlBaseListener;
 import org.ehrbase.aql.parser.AqlParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +56,7 @@ public class QueryCompilerPass1 extends AqlBaseListener {
     //from grammar: OPEN_BRACKET JOINON predicateEquality CLOSE_BRACKET
     public static final int JOIN_ARGUMENTS_COUNT = 4;
 
-    private Logger logger = LogManager.getLogger(QueryCompilerPass1.class);
+  private Logger logger = LoggerFactory.getLogger(QueryCompilerPass1.class);
 
     private IdentifierMapper identifierMapper = new IdentifierMapper(); //the map of identified contained nodes
     private Map<String, ContainmentSet> containmentSetMap = new HashMap<>(); //labelized contains sets

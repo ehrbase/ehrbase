@@ -2,7 +2,7 @@
     "_type": "COMPOSITION",
     "name": {
         "_type": "DV_TEXT",
-        "value": "Minimal"
+        "value": "E_Minimal"
     },
     "archetype_details": {
         "archetype_id": {
@@ -49,7 +49,7 @@
     },
     "context": {
         "start_time": {
-            "value": "2021-09-22T21:52:42.006-03:00"
+            "value": "2021-10-16T14:16:16.166-03:00"
         },
         "setting": {
             "value": "emergency care",

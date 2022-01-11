@@ -32,6 +32,11 @@
 spring:
   application:
     name: ehrbase
+
+  cache:
+    jcache:
+      config: classpath:ehcache.xml
+
   security:
     oauth2:
       resourceserver:
@@ -54,6 +59,8 @@ security:
   authPassword: SuperSecretPassword
   authAdminUser: ehrbase-admin
   authAdminPassword: EvenMoreSecretPassword
+  oauth2UserRole: USER
+  oauth2AdminRole: ADMIN
 
 # Attribute Based Access Control
 abac:
@@ -91,12 +98,9 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  config-path: '/ehcache.xml'
-  enabled: true
+  init-on-startup: true
   pre-build-queries: true
   pre-build-queries-depth: 4
-
-
 
 system:
   allow-template-overwrite: false

@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "_type": "RESULTSET",
+    "_created": "2021-10-16T09:59:11.803Z",
+    "_executed_aql": "SELECT c FROM COMPOSITION c LIMIT 5 ORDER BY c/context/start_time DESC"
+  },
+  "q": "SELECT c FROM COMPOSITION c LIMIT 5 ORDER BY c/context/start_time DESC",
+  "columns": [
+    {
+      "name": "#0",
+      "path": "/"
+    }
+  ],
+  "rows": [
+    "__MODIFY_WITH_LIST_OF_5_OLDEST_COMPOSITIONS__"
+  ]
+}

@@ -18,12 +18,13 @@
 
 package org.ehrbase.application.abac;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,11 +35,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.io.IOUtils;
-import org.ehrbase.application.EhrBase;
 import org.ehrbase.test_data.composition.CompositionTestDataCanonicalJson;
 import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.junit.jupiter.api.Assertions;
@@ -52,31 +53,34 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.util.ResourceUtils;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-    classes = EhrBase.class,
-    properties = {"abac.enabled=true"})
+@SpringBootTest
+@ActiveProfiles({"local", "test"})
 @EnabledIfEnvironmentVariable(named = "EHRBASE_ABAC_IT_TEST", matches = "true")
 @AutoConfigureMockMvc
 class AbacIntegrationTest {
 
   private static final String ORGA_ID = "f47bfc11-ec8d-412e-aebf-c6953cc23e7d";
+
   @MockBean
   private AbacConfig.AbacCheck abacCheck;
+
   @Autowired
   private MockMvc mockMvc;
+
   @Autowired
   private AbacConfig abacConfig;
 
   @Test
-  /*
-   * This test requires a new and clean DB state to run successfully.
-   */
+    /*
+     * This test requires a new and clean DB state to run successfully.
+     */
   void testAbacIntegrationTest() throws Exception {
     /*
           ----------------- TEST CONTEXT SETUP -----------------
@@ -88,38 +92,27 @@ class AbacIntegrationTest {
     attributes.put("sub", "my-id");
     attributes.put("email", "test@test.org");
 
+    // Counters to keep track of number of requests to mock ABAC server bean
+    int hasConsentPatientCount = 0;
+    int hasConsentTemplateCount = 0;
+
     String externalSubjectRef = UUID.randomUUID().toString();
-    String ehrStatus = String.format("{\n"
-        + "            \"_type\": \"EHR_STATUS\",\n"
-        + "            \"archetype_node_id\": \"openEHR-EHR-EHR_STATUS.generic.v1\",\n"
-        + "            \"name\": {\n"
-        + "                \"value\": \"EHR Status\"\n"
-        + "            },\n"
-        + "            \"subject\": {\n"
-        + "                \"external_ref\": {\n"
-        + "                    \"id\": {\n"
-        + "                        \"_type\": \"GENERIC_ID\",\n"
-        + "                        \"value\": \"%s\",\n"
-        + "                        \"scheme\": \"id_scheme\"\n"
-        + "                    },\n"
-        + "                    \"namespace\": \"examples\",\n"
-        + "                    \"type\": \"PERSON\"\n"
-        + "                }\n"
-        + "            },\n"
-        + "            \"is_queryable\": true,\n"
-        + "            \"is_modifiable\": true\n"
-        + "        }", externalSubjectRef);
+
+    String ehrStatus =
+        String.format(IOUtils.toString(ResourceUtils.getURL("classpath:ehr_status.json"),
+                StandardCharsets.UTF_8),
+            externalSubjectRef);
 
     MvcResult result = mockMvc.perform(post("/rest/openehr/v1/ehr")
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(ehrStatus)
-    )
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.ehr_id.value").exists())
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(ehrStatus)
+        )
+        .andExpectAll(status().isCreated(),
+            jsonPath("$.ehr_id.value").exists())
         .andReturn();
 
     String ehrId = JsonPath.read(result.getResponse().getContentAsString(), "$.ehr_id.value");
@@ -128,16 +121,16 @@ class AbacIntegrationTest {
 
     InputStream stream = OperationalTemplateTestData.CORONA_ANAMNESE.getStream();
     Assertions.assertNotNull(stream);
-    String streamString = IOUtils.toString(stream, UTF_8);
+    String streamString = IOUtils.toString(stream, StandardCharsets.UTF_8);
 
     mockMvc.perform(post("/rest/openehr/v1/definition/template/adl1.4/")
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .content(streamString)
-        .contentType(MediaType.APPLICATION_XML)
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_XML)
-    )
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .content(streamString)
+            .contentType(MediaType.APPLICATION_XML)
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_XML)
+        )
         .andExpect(r -> assertTrue(
             // created 201 or conflict 409 are okay
             r.getResponse().getStatus() == HttpStatus.CREATED.value() ||
@@ -145,7 +138,7 @@ class AbacIntegrationTest {
 
     stream = CompositionTestDataCanonicalJson.CORONA.getStream();
     Assertions.assertNotNull(stream);
-    streamString = IOUtils.toString(stream, UTF_8);
+    streamString = IOUtils.toString(stream, StandardCharsets.UTF_8);
 
     /*
           ----------------- TEST CASES -----------------
@@ -155,26 +148,38 @@ class AbacIntegrationTest {
           GET EHR
      */
     mockMvc.perform(get(String.format("/rest/openehr/v1/ehr/%s", ehrId))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isOk());
 
+    verify(abacCheck, times(++hasConsentPatientCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_patient", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+        }});
     /*
           GET EHR_STATUS
      */
     result = mockMvc.perform(get(String.format("/rest/openehr/v1/ehr/%s/ehr_status", ehrId))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isOk())
         .andReturn();
 
-    String ehrStatusVersionUid = JsonPath.read(result.getResponse().getContentAsString(), "$.uid.value");
+    verify(abacCheck, times(++hasConsentPatientCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_patient", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+        }});
+
+    String ehrStatusVersionUid = JsonPath.read(result.getResponse().getContentAsString(),
+        "$.uid.value");
     Assertions.assertNotNull(ehrStatusVersionUid);
     assertNotEquals("", ehrStatusVersionUid);
 
@@ -182,191 +187,167 @@ class AbacIntegrationTest {
           PUT EHR_STATUS
      */
     mockMvc.perform(put(String.format("/rest/openehr/v1/ehr/%s/ehr_status", ehrId))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("If-Match", ehrStatusVersionUid)
-        .header("PREFER", "return=representation")
-        .content(ehrStatus)
-        .contentType(MediaType.APPLICATION_JSON)
-        .accept(MediaType.APPLICATION_JSON_VALUE))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .header("If-Match", ehrStatusVersionUid)
+            .header("PREFER", "return=representation")
+            .content(ehrStatus)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isOk());
 
+    verify(abacCheck, times(++hasConsentPatientCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_patient", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+        }});
     /*
           GET VERSIONED_EHR_STATUS
      */
-    mockMvc.perform(get(String.format("/rest/openehr/v1/ehr/%s/versioned_ehr_status/version", ehrId))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isOk())
-        .andReturn();
+    mockMvc.perform(
+            get(String.format("/rest/openehr/v1/ehr/%s/versioned_ehr_status/version", ehrId))
+                .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                    jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                        .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+                .header("PREFER", "return=representation")
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk());
 
+    verify(abacCheck, times(++hasConsentPatientCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_patient", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+        }});
     /*
           POST COMPOSITION
      */
     result = mockMvc.perform(post(String.format("/rest/openehr/v1/ehr/%s/composition", ehrId))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .content(streamString)
-        .contentType(MediaType.APPLICATION_JSON)
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .content(streamString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isCreated())
         .andReturn();
 
-    String compositionVersionUid = JsonPath.read(result.getResponse().getContentAsString(), "$.uid.value");
+    String compositionVersionUid = JsonPath.read(result.getResponse().getContentAsString(),
+        "$.uid.value");
     Assertions.assertNotNull(compositionVersionUid);
     assertNotEquals("", compositionVersionUid);
     assertTrue(compositionVersionUid.contains("::"));
 
+    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "Corona_Anamnese");
+        }});
     /*
           GET VERSIONED_COMPOSITION
      */
     mockMvc.perform(get(String.format("/rest/openehr/v1/ehr/%s/versioned_composition/%s/version/%s",
-        ehrId, compositionVersionUid.split("::")[0], compositionVersionUid))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isOk())
-        .andReturn();
+            ehrId, compositionVersionUid.split("::")[0], compositionVersionUid))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk());
+
+    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "Corona_Anamnese");
+        }});
+
+        /*
+          GET COMPOSITION (here of deleted composition)
+     */
+    mockMvc.perform(
+            get(String.format("/rest/openehr/v1/ehr/%s/composition/%s", ehrId, compositionVersionUid))
+                .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                    jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                        .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+                .header("PREFER", "return=representation")
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk());
+
+    // Failing: Does not call ABAC Server. Deleted composition does not need to call ABAC server?
+    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "Corona_Anamnese");
+        }});
 
     /*
           DELETE COMPOSITION
      */
-    mockMvc.perform(delete(String.format("/rest/openehr/v1/ehr/%s/composition/%s", ehrId, compositionVersionUid))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
+    mockMvc.perform(delete(
+            String.format("/rest/openehr/v1/ehr/%s/composition/%s", ehrId, compositionVersionUid))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isNoContent());
 
-    /*
-          GET COMPOSITION (here of deleted composition)
-     */
-    mockMvc.perform(get(String.format("/rest/openehr/v1/ehr/%s/composition/%s", ehrId, compositionVersionUid))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isNoContent());
+    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "Corona_Anamnese");
+        }});
 
-
-    String contribution = String.format("{\n"
-        + "  \"_type\": \"CONTRIBUTION\",\n"
-        + "  \"versions\": [\n"
-        + "    {\n"
-        + "      \"_type\": \"ORIGINAL_VERSION\",\n"
-        + "      \"commit_audit\": {\n"
-        + "        \"_type\": \"AUDIT_DETAILS\",\n"
-        + "        \"system_id\": \"test-system-id\",\n"
-        + "        \"committer\": {\n"
-        + "          \"_type\": \"PARTY_IDENTIFIED\",\n"
-        + "          \"name\": \"<optional name of the committer>\",\n"
-        + "          \"external_ref\": {\n"
-        + "            \"id\": {\n"
-        + "              \"_type\": \"GENERIC_ID\",\n"
-        + "              \"value\": \"<OBJECT_ID>\",\n"
-        + "              \"scheme\": \"<ID SCHEME NAME>\"\n"
-        + "            },\n"
-        + "            \"namespace\": \"demographic\",\n"
-        + "            \"type\": \"PERSON\"\n"
-        + "          }\n"
-        + "        },\n"
-        + "        \"change_type\": {\n"
-        + "          \"value\": \"creation\",\n"
-        + "          \"defining_code\": {\n"
-        + "            \"terminology_id\": {\n"
-        + "              \"value\": \"openehr\"\n"
-        + "            },\n"
-        + "            \"code_string\": \"249\"\n"
-        + "          }\n"
-        + "        },\n"
-        + "        \"description\": {\n"
-        + "          \"value\": \"<optional audit description>\"\n"
-        + "        }\n"
-        + "      },\n"
-        + "      \"data\": \n"
-        + "        %s"
-        + "      ,\n"
-        + "      \"lifecycle_state\": {\n"
-        + "        \"value\": \"complete\",\n"
-        + "        \"defining_code\": {\n"
-        + "          \"terminology_id\": {\n"
-        + "            \"value\": \"openehr\"\n"
-        + "          },\n"
-        + "          \"code_string\": \"532\"\n"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ],\n"
-        + "  \"audit\": {\n"
-        + "    \"_type\": \"AUDIT_DETAILS\",\n"
-        + "    \"system_id\": \"test-system-id\",\n"
-        + "    \"committer\": {\n"
-        + "      \"_type\": \"PARTY_IDENTIFIED\",\n"
-        + "      \"name\": \"<optional name of the committer>\",\n"
-        + "      \"external_ref\": {\n"
-        + "        \"id\": {\n"
-        + "          \"_type\": \"GENERIC_ID\",\n"
-        + "          \"value\": \"<OBJECT_ID>\",\n"
-        + "          \"scheme\": \"<ID SCHEME NAME>\"\n"
-        + "        },\n"
-        + "        \"namespace\": \"demographic\",\n"
-        + "        \"type\": \"PERSON\"\n"
-        + "      }\n"
-        + "    },\n"
-        + "    \"change_type\": {\n"
-        + "      \"value\": \"creation\",\n"
-        + "      \"defining_code\": {\n"
-        + "        \"terminology_id\": {\n"
-        + "          \"value\": \"openehr\"\n"
-        + "        },\n"
-        + "        \"code_string\": \"249\"\n"
-        + "      }\n"
-        + "    },\n"
-        + "    \"description\": {\n"
-        + "      \"value\": \"<optional audit description>\"\n"
-        + "    }\n"
-        + "  }\n"
-        + "}\n"
-        + "\n", streamString);
-
+    String contribution =
+        String.format(IOUtils.toString(ResourceUtils.getURL("classpath:contribution.json"),
+                StandardCharsets.UTF_8),
+            streamString);
     /*
           POST CONTRIBUTION
      */
     mockMvc.perform(post(String.format("/rest/openehr/v1/ehr/%s/contribution", ehrId))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .content(contribution)
-        .contentType(MediaType.APPLICATION_JSON)
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .content(contribution)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isCreated())
         .andReturn();
+
+    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "Corona_Anamnese");
+        }});
 
     /*
           POST QUERY
      */
     mockMvc.perform(post("/rest/openehr/v1/query/aql")
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .content("{\n"
-            + "  \"q\": \"select\n"
-            + "    e/ehr_id/value, c/uid/value, c/archetype_details/template_id/value, c/feeder_audit from EHR e CONTAINS composition c\n"
-            + "   \"\n"
-            + "}")
-        .contentType(MediaType.APPLICATION_JSON))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .content("{\n"
+                + "    \"q\": \"select e/ehr_id/value, c/uid/value, c/archetype_details/template_id/value, c/feeder_audit from EHR e CONTAINS composition c\"\n"
+                + "}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isOk());
+
+    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "Corona_Anamnese");
+        }});
 
     /*
           GET QUERY
@@ -374,11 +355,18 @@ class AbacIntegrationTest {
     String pathQuery = "select e/ehr_id/value, c/uid/value, c/archetype_details/template_id/value, c/feeder_audit from EHR e CONTAINS composition c";
 
     mockMvc.perform(get(String.format("/rest/openehr/v1/query/aql?q=%s", pathQuery))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
         )
         .andExpect(status().isOk());
+
+    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "Corona_Anamnese");
+        }});
 
     /*
           GET QUERY WITH MULTIPLE EHRs AND TEMPLATES (incl. posting those)
@@ -386,43 +374,64 @@ class AbacIntegrationTest {
     // post another template
     stream = OperationalTemplateTestData.MINIMAL_EVALUATION.getStream();
     Assertions.assertNotNull(stream);
-    streamString = IOUtils.toString(stream, UTF_8);
+    streamString = IOUtils.toString(stream, StandardCharsets.UTF_8);
 
     mockMvc.perform(post("/rest/openehr/v1/definition/template/adl1.4/")
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .content(streamString)
-        .contentType(MediaType.APPLICATION_XML)
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_XML)
-    )
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .content(streamString)
+            .contentType(MediaType.APPLICATION_XML)
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_XML)
+        )
         .andExpect(r -> assertTrue(
             // created 201 or conflict 409 are okay
             r.getResponse().getStatus() == HttpStatus.CREATED.value() ||
                 r.getResponse().getStatus() == HttpStatus.CONFLICT.value()));
 
-    // post another composition with that template
-    stream = CompositionTestDataCanonicalJson.MINIMAL_EVAL.getStream();
-    Assertions.assertNotNull(stream);
-    streamString = IOUtils.toString(stream, UTF_8);
+    streamString = IOUtils.toString(ResourceUtils.getURL("classpath:composition.json"),
+        StandardCharsets.UTF_8);
 
     mockMvc.perform(post(String.format("/rest/openehr/v1/ehr/%s/composition", ehrId))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-        .content(streamString)
-        .contentType(MediaType.APPLICATION_JSON)
-        .header("PREFER", "return=representation")
-        .accept(MediaType.APPLICATION_JSON_VALUE))
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+            .content(streamString)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("PREFER", "return=representation")
+            .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isCreated())
         .andReturn();
 
+    verify(abacCheck).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template",
+        new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "minimal_evaluation.en.v1");
+        }});
+
     mockMvc.perform(get(String.format("/rest/openehr/v1/query/aql?q=%s", pathQuery))
-        .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
-            jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
-                .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
-    )
+            .with(jwt().authorities(new OAuth2UserAuthority("ROLE_USER", attributes)).
+                jwt(token -> token.claim(abacConfig.getPatientClaim(), externalSubjectRef)
+                    .claim(abacConfig.getOrganizationClaim(), ORGA_ID)))
+        )
         .andExpect(status().isOk());
+
+//    verify(abacCheck, times(++hasConsentTemplateCount)).execute(
+//        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template", new HashMap<>() {{
+//          put("patient", externalSubjectRef);
+//          put("organization", ORGA_ID);
+//          put("template", "Corona_Anamnese");
+//        }});
+
+    verify(abacCheck, times(3)).execute(
+        "http://localhost:3001/rest/v1/policy/execute/name/has_consent_template",
+        new HashMap<>() {{
+          put("patient", externalSubjectRef);
+          put("organization", ORGA_ID);
+          put("template", "minimal_evaluation.en.v1");
+        }});
 
   }
 }

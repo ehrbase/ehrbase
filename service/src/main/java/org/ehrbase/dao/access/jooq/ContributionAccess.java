@@ -22,8 +22,6 @@
 package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.generic.AuditDetails;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
@@ -37,22 +35,28 @@ import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.enums.ContributionState;
 import org.ehrbase.jooq.pg.tables.AdminDeleteStatusHistory;
-import org.ehrbase.jooq.pg.tables.records.*;
+import org.ehrbase.jooq.pg.tables.records.AdminDeleteStatusRecord;
+import org.ehrbase.jooq.pg.tables.records.AdminGetLinkedCompositionsForContribRecord;
+import org.ehrbase.jooq.pg.tables.records.AdminGetLinkedStatusForContribRecord;
+import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 import org.jooq.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Objects;
+import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
 
 /**
  * Created by Christian Chevalley on 4/17/2015.
  */
 public class ContributionAccess extends DataAccess implements I_ContributionAccess {
 
-    Logger log = LogManager.getLogger(ContributionAccess.class);
+  Logger log = LoggerFactory.getLogger(ContributionAccess.class);
     private ContributionRecord contributionRecord;
     private I_AuditDetailsAccess auditDetails; // audit associated with this contribution
 

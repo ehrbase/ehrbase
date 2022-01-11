@@ -164,7 +164,7 @@ retrieve OPT by template_id
     [Arguments]         ${template_id}
     [Documentation]     Gets OPT from server with provided template_id
 
-    ${resp}=            Get Request          ${SUT}    /definition/template/adl1.4/${template_id}
+    ${resp}=            GET On Session          ${SUT}    /definition/template/adl1.4/${template_id}   expected_status=anything
                         ...                  headers=${headers}
                         Log    ${resp.text}
                         # Log    ${resp.content}
@@ -289,7 +289,7 @@ upload valid template (XML)
 # retrieve list of uploaded OPTs (request lib example)
 #     [Documentation]    List all available operational templates on the system.
 #
-#     ${resp}=           Get Request          ${SUT}    /definition/template/adl1.4
+#     ${resp}=           GET On Session          ${SUT}    /definition/template/adl1.4
 #                        ...                  headers=${headers}
 #                        Should Be Equal As Strings   ${resp.status_code}   200
 #                        Log    ${resp.content}

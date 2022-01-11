@@ -34,8 +34,6 @@ import com.nedap.archie.rm.support.identification.ArchetypeID;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ContextAccess;
@@ -58,6 +56,8 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -71,7 +71,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public class EntryAccess extends DataAccess implements I_EntryAccess {
 
-    private static final Logger log = LogManager.getLogger(EntryAccess.class);
+  private static final Logger log = LoggerFactory.getLogger(EntryAccess.class);
     public static final String DB_INCONSISTENCY = "DB inconsistency:";
 
     private EntryRecord entryRecord;

@@ -24,17 +24,15 @@ package org.ehrbase.aql.sql.queryimpl;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 /**
  * Generate an SQL field corresponding to a JSONB data value query
@@ -52,7 +50,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
 public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     public static final String MAGNITUDE = "magnitude";
-    Logger logger = LogManager.getLogger(JsonbEntryQuery.class);
+  Logger logger = LoggerFactory.getLogger(JsonbEntryQuery.class);
 
     private static final String JSONB_PATH_SELECTOR_EXPR = " #>> '{";
     private static final String JSONB_AT_AT_SELECTOR_EXPR = " @@ '";

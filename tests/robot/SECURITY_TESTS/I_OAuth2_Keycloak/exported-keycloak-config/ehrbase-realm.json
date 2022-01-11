@@ -40,20 +40,6 @@
   "failureFactor" : 30,
   "roles" : {
     "realm" : [ {
-      "id" : "ccd7129c-7036-4b38-bfa1-5a21b1571a35",
-      "name" : "Admin",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "ehrbase",
-      "attributes" : { }
-    }, {
-      "id" : "bffd3aed-d7bd-4476-9120-d425858aaeb6",
-      "name" : "user",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "ehrbase",
-      "attributes" : { }
-    }, {
       "id" : "a851e8b1-95b5-4d66-b719-4852262b408d",
       "name" : "offline_access",
       "description" : "${role_offline-access}",
@@ -62,9 +48,25 @@
       "containerId" : "ehrbase",
       "attributes" : { }
     }, {
+      "id" : "1f81af9d-c35c-48b5-bf58-bffbc0fc6a0e",
+      "name" : "ehrbase.org/administrator",
+      "description" : "EHRBase admin role",
+      "composite" : false,
+      "clientRole" : false,
+      "containerId" : "ehrbase",
+      "attributes" : { }
+    }, {
       "id" : "2e44ac22-f985-4d27-b87c-9595ac34e9fa",
       "name" : "uma_authorization",
       "description" : "${role_uma_authorization}",
+      "composite" : false,
+      "clientRole" : false,
+      "containerId" : "ehrbase",
+      "attributes" : { }
+    }, {
+      "id" : "0f1aae75-bc69-4559-a7c1-c2c9cf9deabd",
+      "name" : "ehrbase.org/user",
+      "description" : "EHRBase user role",
       "composite" : false,
       "clientRole" : false,
       "containerId" : "ehrbase",
@@ -319,7 +321,9 @@
         "clientRole" : true,
         "containerId" : "26444c73-7c1d-4f2b-8e10-c0d69d0a1d17",
         "attributes" : { }
-      } ]
+      } ],
+      "ehrbase-custom-admin" : [ ],
+      "ehrbase-custom-user" : [ ]
     }
   },
   "groups" : [ ],
@@ -640,6 +644,166 @@
     "defaultClientScopes" : [ "web-origins", "role_list", "profile", "roles", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
+    "id" : "eeb8c693-d1f7-48c0-994a-60812b84d4d2",
+    "clientId" : "ehrbase-custom-admin",
+    "surrogateAuthRequired" : false,
+    "enabled" : true,
+    "alwaysDisplayInConsole" : false,
+    "clientAuthenticatorType" : "client-secret",
+    "secret" : "3081e92d-a5cf-4981-8c3f-293851170847",
+    "redirectUris" : [ ],
+    "webOrigins" : [ ],
+    "notBefore" : 0,
+    "bearerOnly" : false,
+    "consentRequired" : false,
+    "standardFlowEnabled" : false,
+    "implicitFlowEnabled" : false,
+    "directAccessGrantsEnabled" : false,
+    "serviceAccountsEnabled" : true,
+    "publicClient" : false,
+    "frontchannelLogout" : false,
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "saml.assertion.signature" : "false",
+      "saml.force.post.binding" : "false",
+      "saml.multivalued.roles" : "false",
+      "saml.encrypt" : "false",
+      "saml.server.signature" : "false",
+      "saml.server.signature.keyinfo.ext" : "false",
+      "exclude.session.state.from.auth.response" : "false",
+      "saml_force_name_id_format" : "false",
+      "saml.client.signature" : "false",
+      "tls.client.certificate.bound.access.tokens" : "false",
+      "saml.authnstatement" : "false",
+      "display.on.consent.screen" : "false",
+      "saml.onetimeuse.condition" : "false"
+    },
+    "authenticationFlowBindingOverrides" : { },
+    "fullScopeAllowed" : true,
+    "nodeReRegistrationTimeout" : -1,
+    "protocolMappers" : [ {
+      "id" : "87c21ff3-98b8-4446-a31d-b61ceb5647d1",
+      "name" : "Client IP Address",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientAddress",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientAddress",
+        "jsonType.label" : "String"
+      }
+    }, {
+      "id" : "5f76c037-d76f-4f5c-91fb-2ef3071c6922",
+      "name" : "Client ID",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientId",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientId",
+        "jsonType.label" : "String"
+      }
+    }, {
+      "id" : "c4c8c1ce-052a-4b55-bbcb-4a8c63d57d41",
+      "name" : "Client Host",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientHost",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientHost",
+        "jsonType.label" : "String"
+      }
+    } ],
+    "defaultClientScopes" : [ "role_list", "ehrbase.org/administrator" ],
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
+  }, {
+    "id" : "d0c76ca5-5081-4c1d-b6c7-27a1640575a4",
+    "clientId" : "ehrbase-custom-user",
+    "surrogateAuthRequired" : false,
+    "enabled" : true,
+    "alwaysDisplayInConsole" : false,
+    "clientAuthenticatorType" : "client-secret",
+    "secret" : "5d49493b-8bfb-47f9-aa0f-43653370bf6f",
+    "redirectUris" : [ ],
+    "webOrigins" : [ ],
+    "notBefore" : 0,
+    "bearerOnly" : false,
+    "consentRequired" : false,
+    "standardFlowEnabled" : false,
+    "implicitFlowEnabled" : false,
+    "directAccessGrantsEnabled" : false,
+    "serviceAccountsEnabled" : true,
+    "publicClient" : false,
+    "frontchannelLogout" : false,
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "saml.assertion.signature" : "false",
+      "saml.force.post.binding" : "false",
+      "saml.multivalued.roles" : "false",
+      "saml.encrypt" : "false",
+      "saml.server.signature" : "false",
+      "saml.server.signature.keyinfo.ext" : "false",
+      "exclude.session.state.from.auth.response" : "false",
+      "saml_force_name_id_format" : "false",
+      "saml.client.signature" : "false",
+      "tls.client.certificate.bound.access.tokens" : "false",
+      "saml.authnstatement" : "false",
+      "display.on.consent.screen" : "false",
+      "saml.onetimeuse.condition" : "false"
+    },
+    "authenticationFlowBindingOverrides" : { },
+    "fullScopeAllowed" : true,
+    "nodeReRegistrationTimeout" : -1,
+    "protocolMappers" : [ {
+      "id" : "343dc092-a6f2-4f0f-bd57-8942f1d39ea6",
+      "name" : "Client IP Address",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientAddress",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientAddress",
+        "jsonType.label" : "String"
+      }
+    }, {
+      "id" : "539bd817-509e-4b79-98bd-b9513a3a0e22",
+      "name" : "Client Host",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientHost",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientHost",
+        "jsonType.label" : "String"
+      }
+    }, {
+      "id" : "a56a6a82-7851-46c1-be95-44b953bea1a6",
+      "name" : "Client ID",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientId",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientId",
+        "jsonType.label" : "String"
+      }
+    } ],
+    "defaultClientScopes" : [ "ehrbase.org/user", "role_list" ],
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
+  }, {
     "id" : "92589e73-4057-4a20-bc8e-b71d47db6599",
     "clientId" : "ehrbase-robot",
     "description" : "Robot Framework client for automated integration testing",
@@ -797,6 +961,24 @@
         "user.attribute.locality" : "locality"
       }
     } ]
+  }, {
+    "id" : "d10e9027-9d8d-416c-af7c-45217ecdc361",
+    "name" : "ehrbase.org/administrator",
+    "description" : "EHRBase custom admin scope",
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "include.in.token.scope" : "true",
+      "display.on.consent.screen" : "true"
+    }
+  }, {
+    "id" : "80d00303-289a-46d0-bade-db768f7bc74d",
+    "name" : "ehrbase.org/user",
+    "description" : "EHRBase custom user scope",
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "include.in.token.scope" : "true",
+      "display.on.consent.screen" : "true"
+    }
   }, {
     "id" : "8846d7c1-0518-4f58-84be-0b26cdb5d5a6",
     "name" : "email",
@@ -1211,8 +1393,8 @@
       "config" : { }
     } ]
   } ],
-  "defaultDefaultClientScopes" : [ "role_list", "profile", "email", "roles", "web-origins" ],
-  "defaultOptionalClientScopes" : [ "offline_access", "address", "phone", "microprofile-jwt" ],
+  "defaultDefaultClientScopes" : [ "profile", "web-origins", "roles", "role_list", "email" ],
+  "defaultOptionalClientScopes" : [ "phone", "microprofile-jwt", "offline_access", "address" ],
   "browserSecurityHeaders" : {
     "contentSecurityPolicyReportOnly" : "",
     "xContentTypeOptions" : "nosniff",
@@ -1268,7 +1450,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper" ]
       }
     }, {
       "id" : "50289435-2f82-4291-9e77-3cccc349aad8",
@@ -1277,7 +1459,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper" ]
       }
     }, {
       "id" : "11cb432d-9d01-4007-8f11-3577e81dfe01",
@@ -1335,7 +1517,7 @@
   "internationalizationEnabled" : false,
   "supportedLocales" : [ ],
   "authenticationFlows" : [ {
-    "id" : "0a072d42-4b24-41c3-af9e-a6347f5ba412",
+    "id" : "7213538a-be67-4036-b5fc-35480252b0ab",
     "alias" : "Account verification options",
     "description" : "Method with which to verity the existing account",
     "providerId" : "basic-flow",
@@ -1355,7 +1537,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "1eb99e56-3158-4648-977c-c5c909858aac",
+    "id" : "61746da8-787b-44d5-96e8-025888c3dc96",
     "alias" : "Authentication Options",
     "description" : "Authentication options.",
     "providerId" : "basic-flow",
@@ -1381,7 +1563,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "7a3909b6-cd8f-42e5-915f-14eeeaba7fa6",
+    "id" : "745cd391-c133-4d6c-9f5e-b8bf706d370e",
     "alias" : "Browser - Conditional OTP",
     "description" : "Flow to determine if the OTP is required for the authentication",
     "providerId" : "basic-flow",
@@ -1401,7 +1583,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "6c8520ee-a1f4-4ddd-8332-2a958d573aa7",
+    "id" : "cab32ab2-0b53-415c-a155-2cf665409db0",
     "alias" : "Direct Grant - Conditional OTP",
     "description" : "Flow to determine if the OTP is required for the authentication",
     "providerId" : "basic-flow",
@@ -1421,7 +1603,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "e3c8dc1f-108d-4915-8f7a-9ff2702bae6f",
+    "id" : "2dc92003-631f-41c6-8a00-6b71ac63c8ed",
     "alias" : "First broker login - Conditional OTP",
     "description" : "Flow to determine if the OTP is required for the authentication",
     "providerId" : "basic-flow",
@@ -1441,7 +1623,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "160ab1d3-7d50-4a8b-a440-69f04b4511d9",
+    "id" : "def881bc-ec49-4dbf-ad91-976fb4e64916",
     "alias" : "Handle Existing Account",
     "description" : "Handle what to do if there is existing account with same email/username like authenticated identity provider",
     "providerId" : "basic-flow",
@@ -1461,7 +1643,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "92221293-07ed-4e41-a6bd-0f1d1785ab03",
+    "id" : "bd2bc789-58f4-44c8-92e9-07c2e032deba",
     "alias" : "Reset - Conditional OTP",
     "description" : "Flow to determine if the OTP should be reset or not. Set to REQUIRED to force.",
     "providerId" : "basic-flow",
@@ -1481,7 +1663,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "455f7679-c94c-4f3f-a28c-9b4adb829027",
+    "id" : "045d4f42-849b-424a-9855-1d3fd91742dd",
     "alias" : "User creation or linking",
     "description" : "Flow for the existing/non-existing user alternatives",
     "providerId" : "basic-flow",
@@ -1502,7 +1684,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "f6b769d1-1f0a-46f2-afa9-29ba88cea6cd",
+    "id" : "30377021-760f-43bc-ac20-9629d85cf0c1",
     "alias" : "Verify Existing Account by Re-authentication",
     "description" : "Reauthentication of existing account",
     "providerId" : "basic-flow",
@@ -1522,7 +1704,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "9d2d8655-4937-4bbc-b433-bac059d75c61",
+    "id" : "c8d053e8-8d13-4992-87fa-f0f7454c1a51",
     "alias" : "browser",
     "description" : "browser based authentication",
     "providerId" : "basic-flow",
@@ -1554,7 +1736,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "7319bcf1-6cfe-4b81-b129-ee933cff857d",
+    "id" : "937e2df5-9a77-439b-b257-bc9ca79ffe0b",
     "alias" : "clients",
     "description" : "Base authentication for clients",
     "providerId" : "client-flow",
@@ -1586,7 +1768,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "440b9153-366a-45e3-921f-d5b8666240ff",
+    "id" : "fdf1f796-c9f2-4660-ba79-e50ef152afb0",
     "alias" : "direct grant",
     "description" : "OpenID Connect Resource Owner Grant",
     "providerId" : "basic-flow",
@@ -1612,7 +1794,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "082cc8b3-646a-422a-bb5e-bd6b14f6d5af",
+    "id" : "e4dd3fc5-7ba5-4b86-98dd-0a281e33bebe",
     "alias" : "docker auth",
     "description" : "Used by Docker clients to authenticate against the IDP",
     "providerId" : "basic-flow",
@@ -1626,7 +1808,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "81cc3d98-6c5b-4648-aa4e-c270501772ab",
+    "id" : "1bdd97cc-e18e-4971-8a96-e8535a3a7d0e",
     "alias" : "first broker login",
     "description" : "Actions taken after first broker login with identity provider account, which is not yet linked to any Keycloak account",
     "providerId" : "basic-flow",
@@ -1647,7 +1829,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "16ea127e-460c-427f-a9a4-3f1cf526ab70",
+    "id" : "df93edad-aa0b-4c64-a7e6-4b43b0d4268d",
     "alias" : "forms",
     "description" : "Username, password, otp and other auth forms.",
     "providerId" : "basic-flow",
@@ -1667,7 +1849,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "b11052a7-b5ea-4371-b4ad-e2925ab7d1cc",
+    "id" : "6f21ca41-1c38-4bfe-9b49-5310d35a7c15",
     "alias" : "http challenge",
     "description" : "An authentication flow based on challenge-response HTTP Authentication Schemes",
     "providerId" : "basic-flow",
@@ -1687,7 +1869,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "d487dbd1-e533-4039-8315-3648e58e03a5",
+    "id" : "74673865-fff0-4013-9f43-23eef16ebebb",
     "alias" : "registration",
     "description" : "registration flow",
     "providerId" : "basic-flow",
@@ -1702,7 +1884,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "18ee9930-4aed-4e45-922f-6a0addc520de",
+    "id" : "bb2ae4e7-8dc3-41b3-b38a-19ec1d33697f",
     "alias" : "registration form",
     "description" : "registration form",
     "providerId" : "form-flow",
@@ -1734,7 +1916,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "f475ea4e-2320-4514-ada8-ea59f8aa3376",
+    "id" : "11e3f6b8-c741-4fc0-9c5a-e1708759d61d",
     "alias" : "reset credentials",
     "description" : "Reset credentials for a user if they forgot their password or something",
     "providerId" : "basic-flow",
@@ -1766,7 +1948,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "c55d8c4b-c1d4-462a-bb25-b75766195868",
+    "id" : "954f9c66-ae61-46b5-9b3d-5f4132a0455f",
     "alias" : "saml ecp",
     "description" : "SAML ECP Profile Authentication Flow",
     "providerId" : "basic-flow",
@@ -1781,13 +1963,13 @@
     } ]
   } ],
   "authenticatorConfig" : [ {
-    "id" : "6aa20843-d246-4fa0-9678-ea857f1cdcd5",
+    "id" : "3b2fc764-6aa5-4195-902d-90e38c1a4aaa",
     "alias" : "create unique user config",
     "config" : {
       "require.password.update.after.registration" : "false"
     }
   }, {
-    "id" : "62129f1e-7dae-48ca-92ac-32a510b6194f",
+    "id" : "044ed181-70c7-4d08-9cac-cf9c54185e6c",
     "alias" : "review profile config",
     "config" : {
       "update.profile.on.first.login" : "missing"

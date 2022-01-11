@@ -1,0 +1,3 @@
+{
+  "q": "SELECT a/context/start_time/value , o/data[at0001]/origin/value,o/data[at0001]/events[at0002]/time/value  from EHR e  contains COMPOSITION a[openEHR-EHR-COMPOSITION.minimal.v1] contains OBSERVATION o [openEHR-EHR-OBSERVATION.minimal.v1]  where a/uid/value ='replaceme'"
+}

@@ -168,11 +168,21 @@ public class ExtensionDefinition implements I_VariableDefinition {
 
     @Override
     public void setSelectType(DataType castTypeAs) {
-
+        //na
     }
 
     @Override
     public DataType getSelectType() {
         return null;
+    }
+
+    @Override
+    public boolean isVoidAlias() {
+        return false;
+    }
+
+    @Override
+    public void setVoidAlias(boolean isVoidAlias) {
+        //na
     }
 }

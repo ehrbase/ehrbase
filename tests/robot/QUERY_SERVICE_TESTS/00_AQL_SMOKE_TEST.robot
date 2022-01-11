@@ -84,7 +84,6 @@ AQL LOADED DB SMOKE TEST - Queries
     # execute ad-hoc query and check result (loaded DB)  A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json  A/603.tmp.json
 
     # execute ad-hoc query and check result (loaded DB)  B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-    # execute ad-hoc query and check result (loaded DB)  B/101_get_compositions_top_5.json    B/101.tmp.json
     # execute ad-hoc query and check result (loaded DB)  B/102_get_compositions_orderby_name.json    B/102.tmp.json
     # execute ad-hoc query and check result (loaded DB)  B/103_get_compositions_within_timewindow.json    B/103.tmp.json
     # execute ad-hoc query and check result (loaded DB)  B/200_get_compositions_from_ehr_by_id.json    B/200.tmp.json
@@ -164,14 +163,6 @@ B-100 Execute Ad-Hoc Query - Get Compositions From All EHRs
     B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
 
 
-B-102 Execute Ad-Hoc Query - Get Compositions (ordered by: name)
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              TODO    not-ready_test-issue
-    B/102_get_compositions_orderby_name.json    B/102.tmp.json
-    # execute ad-hoc query    B/102_get_compositions_orderby_name.json
-    # check response (LOADED DB): returns correct ordered content    B/102.tmp.json
-
-
 B-200 Execute Ad-Hoc Query - Get Compositions From All EHRs
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              357  358  359
@@ -182,9 +173,9 @@ B-200 Execute Ad-Hoc Query - Get Compositions From All EHRs
 B-400 Execute Ad-Hoc Query - Get Composition(s)
     [Documentation]     Test w/ "all_types.composition.json" commit
     [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              463    not-ready
+    [Tags]              586    not-ready
     B/400_get_compositions_contains_section_with_archetype_from_all_ehrs.json    B/400.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  463  bug
+    [Teardown]          TRACE GITHUB ISSUE  586  bug
 
 
 B-800 Execute Ad-Hoc Query - Get Compositions By UID
@@ -202,30 +193,6 @@ D-312 Execute Ad-HOc Query - Get Data
     [Template]          execute ad-hoc query and check result (loaded DB)
     [Tags]              TODO  # @WLAD implement a flow w/ TOP5 + ORDERED BY time_created
     D/312_select_data_values_from_all_ehrs_contains_composition_with_archetype_top_5.json    D/312.tmp.json
-
-
-D-500 Execute Ad-HOc Query - Get Data
-    [Documentation]     Get Data related query.
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
-    D/500_query.tmp.json    D/500.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
-
-
-D-501 Execute Ad-HOc Query - Get Data
-    [Documentation]     Get Data related query.
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              361    not-ready
-    D/501_query.tmp.json    D/501.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  361  bug
-
-
-D-504 Execute Ad-HOc Query - Get archetype_details
-    [Documentation]     Get Data related query.
-    [Template]          execute ad-hoc query and check result (loaded DB)
-    [Tags]              464    not-ready
-    D/504_query.tmp.json    D/504.tmp.json
-    [Teardown]          TRACE GITHUB ISSUE  464  bug
 
 
 CLEAN UP SUT
@@ -253,75 +220,6 @@ CLEAN UP SUT
 # o888o  o888o o888ooooood8     o888o           `8'      `8'        `Y8bood8P'  o888o  o888o o888bood8P'   8""88888P'
 #
 # [ THIS KWs OVERIDE EXISTING KWs IN RESOURCE FILE TO WORK PROPERLY IN SMOKE TEST ]
-
-D/500
-    [Documentation]     Condition: compo must be an Observation and must belong to first EHR record.
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Temp Query-Data-Set    D/500
-                        Create Temp List    ${compo_uid_value}
-                        ...                 ${compo_name_value}
-                        ...                 ${compo_data_origin_value}
-                        ...                 ${compo_events_time_value}
-                        ...                 ${compo_events_items_value_value}
-                        Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/500
-
-
-D/501
-    [Documentation]     Same flow as D/500, different content in 'rows'
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Temp Query-Data-Set    D/501
-                        Create Temp List    ${compo_uid}
-                        ...                 ${compo_name}
-                        ...                 ${compo_data_origin}
-                        ...                 ${compo_events_time}
-                        ...                 ${compo_events_items_value}
-                        Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/501
-
-
-D/502
-    [Documentation]     Similar flow as D/500, but different element is replaced in query-data-set.
-    ...                 Condition: compo must be an Observation and must belong to first EHR record.
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Query-Parameter in Temp Query-Data-Set    D/502
-                        Create Temp List    ${compo_uid_value}
-                        ...                 ${compo_name_value}
-                        ...                 ${compo_data_origin_value}
-                        ...                 ${compo_events_time_value}
-                        ...                 ${compo_events_items_value_value}
-                        Load Temp Result-Data-Set    D/502
-    ${meta_exec_aql}=   Get Value From Json    ${expected}    $.meta._executed_aql
-    ${meta_exec_aql}=   Replace String    ${meta_exec_aql}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
-                        Update Value To Json   ${expected}    $.meta._executed_aql    ${meta_exec_aql}
-                        Output    ${expected}     ${QUERY RESULTS LOADED DB}/D/502.tmp.json
-                        Update 'rows' in Temp Result-Data-Set    D/502
-
-
-D/503
-    [Documentation]     Similar flow as D/500, but different element is replaced in query-data-set.
-    ...                 Condition: compo must be an Observation and must belong to first EHR record.
-    ${is_observation}=  Set Variable if  ("${compo_content_archetype_node_id}"=="openEHR-EHR-OBSERVATION.minimal.v1")  ${TRUE}
-    ${is_from_ehr_1}=   Set Variable If  ${ehr_index}==1  ${TRUE}
-                        Return From Keyword If    not (${is_observation} and ${is_from_ehr_1})    NOTHING TO DO HERE!
-                        Run Keyword if    ${ehr_index}==1 and ${compo_index}==4    Update Query-Parameter in Temp Query-Data-Set    D/503
-                        Create Temp List    ${compo_uid}
-                        ...                 ${compo_name}
-                        ...                 ${compo_data_origin}
-                        ...                 ${compo_events_time}
-                        ...                 ${compo_events_items_value}
-                        Load Temp Result-Data-Set    D/503
-    ${meta_exec_aql}=   Get Value From Json    ${expected}    $.meta._executed_aql
-    ${meta_exec_aql}=   Replace String    ${meta_exec_aql}[0]    __MODIFY_EHR_ID_1__    ${ehr_id}
-                        Update Value To Json   ${expected}    $.meta._executed_aql    ${meta_exec_aql}
-                        # Set Suite Variable    ${expected}    ${expected}
-                        Output    ${expected}     ${QUERY RESULTS LOADED DB}/D/503.tmp.json
-                        Update 'rows' in Temp Result-Data-Set    D/503
-
 
 
 Establish Preconditions
@@ -352,7 +250,9 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
     upload OPT    minimal/minimal_evaluation.opt
     upload OPT    minimal/minimal_action.opt
     upload OPT    minimal/minimal_action_2.opt
-    upload OPT    all_types/Test_all_types.opt
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###upload OPT    all_types/Test_all_types.opt
+    upload OPT    all_types/Test_all_types_v2.opt
 
     Create EHR Record On The Server    1    ${ehr data sets}/ehr_status_01.json
     Commit Compo     1    1    ${compo data sets}/minimal_admin_1.composition.json
@@ -360,7 +260,9 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
     Commit Compo     3    1    ${compo data sets}/minimal_instruction_1.composition.json
     Commit Compo     4    1    ${compo data sets}/minimal_observation_1.composition.json
     Commit Compo     5    1    ${compo data sets}/minimal_action2_1.composition.json
-    Commit Compo     6    1    ${compo data sets}/all_types.composition.json
+    ### REL TO https://github.com/ehrbase/ehrbase/issues/643
+    ###Commit Compo     6    1    ${compo data sets}/all_types.composition.json
+    Commit Compo     6    1    ${compo data sets}/all_types_v2.composition.json
 
     Create EHR Record On The Server    2    ${ehr data sets}/ehr_status_01.json
     Commit Compo     1    2    ${compo data sets}/minimal_admin_1.composition.json
@@ -432,7 +334,6 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
     # # execute ad-hoc query and check result (loaded DB)  A/603_get_ehrs_by_contains_composition_contains_entry_with_archetype.json  A/603.tmp.json
 
     # # execute ad-hoc query and check result (loaded DB)  B/100_get_compositions_from_all_ehrs.json    B/100.tmp.json
-    # # execute ad-hoc query and check result (loaded DB)  B/101_get_compositions_top_5.json    B/101.tmp.json
     # # execute ad-hoc query and check result (loaded DB)  B/102_get_compositions_orderby_name.json    B/102.tmp.json
     # # execute ad-hoc query and check result (loaded DB)  B/103_get_compositions_within_timewindow.json    B/103.tmp.json
     # # execute ad-hoc query and check result (loaded DB)  B/200_get_compositions_from_ehr_by_id.json    B/200.tmp.json

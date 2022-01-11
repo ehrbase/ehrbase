@@ -25,9 +25,9 @@ package org.ehrbase.dao.access.jooq;
 import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ehrbase.dao.access.util.TransactionTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.Map;
@@ -41,7 +41,7 @@ import static org.ehrbase.jooq.pg.Tables.COMPO_XREF;
  */
 public class CompoXRefAccess extends DataAccess implements I_CompoXrefAccess {
 
-    static Logger log = LogManager.getLogger(CompoXRefAccess.class);
+  static Logger log = LoggerFactory.getLogger(CompoXRefAccess.class);
 
     public CompoXRefAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
