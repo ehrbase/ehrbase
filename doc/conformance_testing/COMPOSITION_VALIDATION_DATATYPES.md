@@ -719,12 +719,12 @@ NOTE: this test case doesn't include all the possible combinations of lower/uppe
 
 ### 3.11.2. Test case DV_INTERVAL<DV_TIME> validity kind constraint
 
-| lower      | upper      | lower_unbounded | upper_unbounded | lower_included | upper_included | minute_val. (lower) | second_val. (lower) | millisecond_val. (lower) | timezone_val. (lower) | minute_val. (upper) | second_val. (upper) | millisecond_val. (upper) | timezone_val. (upper) | expected | constraints violated          |
-|:----------:|:----------:|-----------------|-----------------|----------------|----------------|---------------------|---------------------|-------------------------|-----------------------|---------------------|---------------------|--------------------------|-----------------------|---------|-------------------------------|
-| T10        | T11        | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | minute_val. (lower), second_val. (lower), millisecond_val. (lower), timezone_val. (lower), minute_val. (upper), second_val. (upper), millisecond_val. (upper), timezone_val. (upper) |
-| T10:00     | T11:00    | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | second_val. (lower), millisecond_val. (lower), timezone_val. (lower), second_val. (upper), millisecond_val. (upper), timezone_val. (upper) |
-| T10:00:00  | T11:00:00 | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | millisecond_val. (lower), timezone_val. (lower), millisecond_val. (upper), timezone_val. (upper) |
-| T10:00:00.5  | T11:00:00.5 | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | timezone_val. (lower) timezone_val. (upper) |
+| lower        | upper        | lower_unbounded | upper_unbounded | lower_included | upper_included | minute_val. (lower) | second_val. (lower) | millisecond_val. (lower) | timezone_val. (lower) | minute_val. (upper) | second_val. (upper) | millisecond_val. (upper) | timezone_val. (upper) | expected | constraints violated          |
+|:------------:|:------------:|-----------------|-----------------|----------------|----------------|---------------------|---------------------|-------------------------|-----------------------|---------------------|---------------------|--------------------------|-----------------------|---------|-------------------------------|
+| T10          | T11          | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | minute_val. (lower), second_val. (lower), millisecond_val. (lower), timezone_val. (lower), minute_val. (upper), second_val. (upper), millisecond_val. (upper), timezone_val. (upper) |
+| T10:00       | T11:00       | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | second_val. (lower), millisecond_val. (lower), timezone_val. (lower), second_val. (upper), millisecond_val. (upper), timezone_val. (upper) |
+| T10:00:00    | T11:00:00    | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | millisecond_val. (lower), timezone_val. (lower), millisecond_val. (upper), timezone_val. (upper) |
+| T10:00:00.5  | T11:00:00.5  | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | rejected | timezone_val. (lower) timezone_val. (upper) |
 | T10:00:00.5Z | T11:00:00.5Z | false           | false           | true           | true           | mandatory           | mandatory           | mandatory                | mandatory             | mandatory           | mandatory           | mandatory                | mandatory             | accepted |  |
 
 TBD: combinations of other values for validity.
@@ -732,18 +732,40 @@ TBD: combinations of other values for validity.
 
 ### 3.11.3. Test case DV_INTERVAL<DV_TIME> range constraint
 
-| lower         | upper         | lower_unbounded | upper_unbounded | lower_included | upper_included | C_TIME.range (lower)    | C_TIME.range (upper) | expected | constraints violated          |
-|:----------:|:----------:|-----------------|-----------------|----------------|----------------|----------------------|----------------------|----------|---------------------------|
-| T10          | T11          | false           | false           | true           | true           | T09..T11                  | T10..T12          | accepted |    |
-| T10:00       | T11:00       | false           | false           | true           | true           | T09:00..T11:00            | T10:00..T12:00       | accepted |    |
-| T10:00:00    | T11:00:00    | false           | false           | true           | true           | T09:00:00..T11:00:00      | T10:00:00..T12:00:00    | accepted |    |
-| T10:00:00.5  | T11:00:00.5  | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0  | T10:00:00.0..T12:00:00.0  | accepted |    |
-| T10:00:00.5Z | T11:00:00.5Z | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0Z | T10:00:00.0Z..T12:00:00.0Z | accepted |    |
+| lower         | upper         | lower_unbounded | upper_unbounded | lower_included | upper_included | C_TIME.range (lower)      | C_TIME.range (upper)       | expected | constraints violated          |
+|:-------------:|:-------------:|-----------------|-----------------|----------------|----------------|---------------------------|----------------------------|----------|---------------------------|
+| T10           | T11           | false           | false           | true           | true           | T09..T11                  | T10..T12                   | accepted |    |
+| T10:00        | T11:00        | false           | false           | true           | true           | T09:00..T11:00            | T10:00..T12:00             | accepted |    |
+| T10:00:00     | T11:00:00     | false           | false           | true           | true           | T09:00:00..T11:00:00      | T10:00:00..T12:00:00       | accepted |    |
+| T10:00:00.5   | T11:00:00.5   | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0  | T10:00:00.0..T12:00:00.0   | accepted |    |
+| T10:00:00.5Z  | T11:00:00.5Z  | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0Z | T10:00:00.0Z..T12:00:00.0Z | accepted |    |
+| T10           | T11           | false           | false           | true           | true           | T11..T12                  | T11..T12                   | rejected | C_TIME.range (lower) |
+| T10           | T12           | false           | false           | true           | true           | T10..T11                  | T10..T11                   | rejected | C_TIME.range (upper) |
 
-TBD: fail cases
+TBD: more fail cases
 
 
 ## 3.12. quantity.DV_INTERVAL<DV_DURATION>
+
+### 3.12.1. Test case DV_INTERVAL<DV_DURATION> open constraint
+
+> NOTE: this considers the `lower` value of the interval should have all it's components lower or equals to the corresponding component in the `upper` value. This is to avoid normalization problems. For instance we could have an interval `P1Y6M..P2Y` which is semantically correct. But if we have values outside the normal boundaries of each component, like `P1Y37M..P2Y` there is a need of normalization to know if `P1Y37M` is really lower or equals to `P2Y`, which is the check ofr a valid internal. In some cases this normalization is doable, but in other cases it is not. For instance, some implementations might not know how many days in a month are, since months have a variable number of days. In the previous case, we know each year has 12 months so `P1Y37M` can actually be normalized to `P4Y1M`, but `P61D` can't be strictly compared with, let's say, `P3M`, since months could have 28, 29, 30 or 31 days, so without other information `P61D` could be lower or greater than `P3M`. To simplify this, some implementations might consider the measure of a `month`, in a duration expression, to be exactly 30 days. These considerations should be stated in the SUT Conformance Statement Document. To simplify writing the test cases for any implementation, we consider if `lower` is `P1Y37M`, the valid `upper` values have Y >= 1 and M >= 37, so `P2Y` wouldn't be valid in this context, but `P1Y37M..P1Y38M` or `P1Y37M..P2Y37M` would be valid intervals for the test cases. One extra simplification would be to consider values are inside their normal constraints (hours < 24, days < 31, etc.) but this won't be encouraged but these test cases. If each component is inside it's constrainsts it is possible to compare expressions that differ in the components like `P1D3H` and `P10D`, since comparison doesn't require normalization and both values form a semantically valid interval.
+
+| lower      | upper      | lower_unbounded | upper_unbounded | lower_included | upper_included | expected | constraints violated          |
+|:----------:|:----------:|-----------------|-----------------|----------------|----------------|----------|-------------------------------|
+| NULL       | NULL       | false           | false           | true           | true           | rejected | IMO should fail, see https://discourse.openehr.org/t/is-dv-interval-missing-invariants/2210 |
+| NULL       | PT2H       | false           | false           | true           | true           | rejected | IMO should fail, see https://discourse.openehr.org/t/is-dv-interval-missing-invariants/2210 |
+| PT1H       | NULL       | false           | false           | true           | true           | rejected | IMO should fail, see https://discourse.openehr.org/t/is-dv-interval-missing-invariants/2210 |
+| PT1H       | PT2H       | false           | false           | true           | true           | accepted |            |
+| PT1H       | PT2H       | false           | false           | true           | true           | accepted |            |
+| P1Y7M3D    | P1Y8M3D    | false           | false           | true           | true           | accepted |            |
+| P1DT3H     | P10D       | false           | false           | true           | true           | accepted |            |
+
+### 3.12.2. Test case DV_INTERVAL<DV_DURATION> xxx_allowed constraints
+
+TBD
+
+### 3.12.3. Test case DV_INTERVAL<DV_DURATION> range constraints
 
 TBD
 
@@ -772,6 +794,8 @@ TBD
 
 
 ## 4.2. quantity.date_time.DV_DURATION
+
+> NOTE: different duration implementations might affect the DV_DURATION related test cases. For instance, some implementations might not support `days` in the same duration expression that contains `months`, since there is no exact correspondence between the number of `days` and `months` (months could have 28, 29, 30 or 31 days). Then other implementations might simplify the `month` measurement to be 30 days. This also happens with some implementations that consider a `day` is exactly `24 hours` as a simplification. So in case the SUT has an implementation decision to be considered, the developers should mention it in the Conformance Statement Document.
 
 ### 4.2.1. Test case DV_DURATION open constraint
 
@@ -1599,10 +1623,13 @@ TBD: there is an open question about strictly comparability between time express
 
 ![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-data_types.time_specification.svg)
 
-## DV_GENERAL_TIME_SPECIFICATION
+## 5.1. DV_GENERAL_TIME_SPECIFICATION
 
-## DV_PERIODIC_TIME_SPECIFICATION
+TBD: this data type might not be used or supported by modeling tools
 
+## 5.2. DV_PERIODIC_TIME_SPECIFICATION
+
+TBD: this data type might not be used or supported by modeling tools
 
 
 # 6. encapsulated
