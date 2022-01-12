@@ -17,6 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Upgrade to Archie 1.0.4 ([#719](https://github.com/ehrbase/ehrbase/pull/719))
 
 ### Fixed
+- fixed SQL encoding whenever template is unresolved (https://github.com/ehrbase/ehrbase/pull/723)
 
 ## [0.18.3]
 

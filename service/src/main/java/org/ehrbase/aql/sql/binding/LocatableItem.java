@@ -32,7 +32,7 @@ public class LocatableItem {
 
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final JsonbEntryQuery jsonbEntryQuery;
-    private IQueryImpl.Clause clause;
+    private final IQueryImpl.Clause clause;
 
     public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
@@ -45,8 +45,10 @@ public class LocatableItem {
 
         multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
 
-        if (multiFields == null)
+        if (multiFields == null) {
+            compositionAttributeQuery.setUseEntry(true);
             return MultiFields.asNull(variableDefinition, templateId, clause);
+        }
 
         return multiFields;
     }
