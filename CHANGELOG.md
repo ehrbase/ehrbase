@@ -18,6 +18,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - fixed SQL encoding whenever template is unresolved (https://github.com/ehrbase/ehrbase/pull/723)
+- modified handling of conflicting identified parties (https://github.com/ehrbase/ehrbase/issues/710)
 
 ## [0.18.3]
 
