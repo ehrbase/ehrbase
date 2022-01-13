@@ -24,7 +24,7 @@ Resource    db_keywords.robot
 
 
 *** Variables ***
-${README_LINK}    https://github.com/ehrbase/ehrbase/blob/develop/tests/README.md
+${README_LINK}    https://docs.ehrbase.org/en/latest/03_development/02_testing/index.html
 ${LOCAL_SUT}    \#local-sut--manually-controlled-sut
 ${REMOTE_SUT}    \#remote-sut--or-how-to-execute-the-tests-against-other-systems
 
@@ -430,7 +430,7 @@ warn about manual test environment start up
     Log    //${SPACE * 64}///                                                                   level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN
-    Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
+    Log    [ check "Manually Controlled SUT" in Integration Test Documentation ]                level=WARN
     Log    [ ${README_LINK}${LOCAL_SUT} ]                                                       level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${FALSE}
@@ -446,7 +446,7 @@ warn about REMOTE test environment
     Log    //${SPACE * 64}///                                                                   level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN
-    Log    [ check "Remote SUT" in test README ]                                                level=WARN
+    Log    [ check "Remote SUT" in Integration Test Documentation ]                             level=WARN
     Log    [ ${README_LINK}${REMOTE_SUT} ]                                                      level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${FALSE}
@@ -472,7 +472,7 @@ abort tests due to issues with manually controlled test environment
     Log    //${SPACE * 64}///                                                                   level=WARN
     Log    /////////////////////////////////////////////////////////////////////                level=WARN
     Log    ${EMPTY}                                                                             level=WARN
-    Log    [ check "Manually Controlled SUT" in test README ]                                   level=WARN
+    Log    [ check "Manually Controlled SUT" in Integration Test Documentation ]                level=WARN
     Log    [ ${README_LINK}${LOCAL_SUT} ]                                                       level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${TRUE}
@@ -487,7 +487,7 @@ abort tests due to issues with remote test environment
     Log    //${SPACE * 6} BUT IT IS NOT AVAILABLE OR IS NOT SET UP PROPERLY! ${SPACE * 6}///    level=WARN
     Log    //${SPACE * 64}///                                                                   level=WARN
     Log    ${EMPTY}                                                                             level=WARN
-    Log    [ check "Remote SUT" in test README ]                                                level=WARN
+    Log    [ check "Remote SUT" in Integration Test Documentation ]                             level=WARN
     Log    [ ${README_LINK}${REMOTE_SUT} ]                                                      level=WARN
     Log    ${EMPTY}                                                                             level=WARN
     Set Global Variable    ${SKIP_SHUTDOWN_WARNING}    ${TRUE}
