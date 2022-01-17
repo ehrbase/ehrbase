@@ -18,6 +18,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - fixed SQL encoding whenever template is unresolved (https://github.com/ehrbase/ehrbase/pull/723)
+- Fixes wrong status code returned by EHRbase while creating FLAT composition ([#726](https://github.com/ehrbase/ehrbase/pull/726))
 
 ## [0.18.3]
 
