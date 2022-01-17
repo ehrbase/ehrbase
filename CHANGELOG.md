@@ -20,6 +20,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - fixed SQL encoding whenever template is unresolved (https://github.com/ehrbase/ehrbase/pull/723)
 - Fixes wrong status code returned by EHRbase while creating FLAT composition ([#726](https://github.com/ehrbase/ehrbase/pull/726))
 
+- Fix NullPointerException while deleting unknown (or already deleted) composition
+  parameter ([#722](https://github.com/ehrbase/ehrbase/pull/722)).
+
 ## [0.18.3]
 
 ### Added
