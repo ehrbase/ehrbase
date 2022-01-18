@@ -23,9 +23,11 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.jooq.Record;
 
 import java.util.List;
 import java.util.UUID;
@@ -99,18 +101,20 @@ class PersistedPartyIdentified extends PersistedParty {
     public UUID findInDB(PartyProxy partyProxy) {
         UUID uuid = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
 
-        // If no directly matching entry was found, search for one with matching name AND identifiers.
-        if (uuid == null){
-            PartyIdentifiedRecord rec = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED,
-                PARTY_IDENTIFIED.NAME.eq(((PartyIdentified) partyProxy).getName())
-                    .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_identified)));
+        //check that name matches the one already stored in DB, otherwise throw an exception (conflicting identification)
+        if (uuid != null){
+            Record record = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(uuid));
+            if (record == null)
+                throw new InternalServerException("Inconsistent PartyIdentified UUID:"+uuid);
+            if (!record.get(PARTY_IDENTIFIED.NAME).equals(((PartyIdentified) partyProxy).getName()))
+                throw new IllegalArgumentException(
+                        "Conflicting identification, existing name was:"+
+                                record.get(PARTY_IDENTIFIED.NAME) +
+                        ", but found passed name:"+
+                                ((PartyIdentified) partyProxy).getName());
 
-            if (rec != null) {
-                uuid = (rec).getId();
-                if (!new PartyIdentifiers(domainAccess).compare(rec, ((PartyIdentified) partyProxy).getIdentifiers()))
-                    uuid = null;
-            }
         }
+
         return uuid;
     }
 
