@@ -647,9 +647,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   @PreAuthorize("hasRole('ADMIN')")
   @Override
   public void adminDelete(UUID compositionId) {
-    I_CompositionAccess compositionAccess =
-        I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
-    compositionAccess.adminDelete();
+    I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
+    if (compositionAccess != null) {
+      compositionAccess.adminDelete();
+    }
   }
 
   @Override
