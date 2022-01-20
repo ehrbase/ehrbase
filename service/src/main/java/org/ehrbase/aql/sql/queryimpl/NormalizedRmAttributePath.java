@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
+
 public class NormalizedRmAttributePath {
 
     protected static final String FEEDER_SYSTEM_ITEM_IDS = "feeder_system_item_ids";
@@ -40,11 +42,12 @@ public class NormalizedRmAttributePath {
 
         if (pathSegments.size() == 1 && pathSegments.get(0).contains(FEEDER_SYSTEM_ITEM_IDS) && !pathSegments.get(0).endsWith(FEEDER_SYSTEM_ITEM_IDS))
             return new NormalizedFeederAuditAttributePath(pathSegments).transform();
-        else if (!pathSegments.stream().filter(segment -> segment.contains(OTHER_CONTEXT) || segment.contains(OTHER_DETAILS)).collect(Collectors.toList()).isEmpty())
+        if (pathSegments.size() >= 1 && pathSegments.get(pathSegments.size() - 1).contains(OTHER_PARTICIPATIONS))
+            return new NormalizedOtherParticipations(pathSegments).transform();
+        else if (!(pathSegments.stream().noneMatch(segment -> segment.contains(OTHER_CONTEXT) || segment.contains(OTHER_DETAILS))))
             return new NormalizedItemStructureAttributePath(pathSegments).transformStartingAt(fromIndex);
         else {
-            resultingPaths = new ArrayList<>();
-            resultingPaths.addAll(pathSegments);
+            resultingPaths = new ArrayList<>(pathSegments);
             return resultingPaths;
         }
 

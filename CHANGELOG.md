@@ -26,6 +26,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix NullPointerException while deleting unknown (or already deleted) composition
   parameter ([#722](https://github.com/ehrbase/ehrbase/pull/722)).
 
+- Fix querying other_participations ([#707](https://github.com/ehrbase/ehrbase/issues/707))
+
 
 ## [0.18.3]
 
