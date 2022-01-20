@@ -377,7 +377,6 @@ check the successful result of commit composition
 
     IF   '${format}' != 'FLAT'
     Should Be Equal    ${ETag}            ${composition_uid}
-    END
     # @ndanilin: EhrBase returns in header 'Location' wrong data so this check is disabled yet:
     #            - not baseUrl but ipv6
     #            - composition uid without system_id and version
@@ -387,7 +386,7 @@ check the successful result of commit composition
     # @ndanilin: EhrBase don't return context for persistent composition.
     #            It seems to us that it's wrong so a setting check is disabled yet.    
     # Should Be Equal    ${setting}         other care
-   
+    END
         
 check status_code of commit composition
     [Arguments]    ${status_code}
