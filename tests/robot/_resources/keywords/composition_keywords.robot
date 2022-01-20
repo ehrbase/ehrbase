@@ -335,7 +335,10 @@ check the successful result of commit composition
     Should Be Equal As Strings   ${response.status_code}   201
 
     ${Location}   Set Variable    ${response.headers}[Location]
+
+    IF   '${format}' != 'FLAT'
     ${ETag}       Get Substring   ${response.headers}[ETag]    1    -1
+    END
 
     IF  '${format}' == 'CANONICAL_JSON'
         ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
@@ -372,7 +375,9 @@ check the successful result of commit composition
         ${setting}            Set variable   ${response.json()}[${template_for_path}][context][0][setting][0][|value]
     END
 
+    IF   '${format}' != 'FLAT'
     Should Be Equal    ${ETag}            ${composition_uid}
+    END
     # @ndanilin: EhrBase returns in header 'Location' wrong data so this check is disabled yet:
     #            - not baseUrl but ipv6
     #            - composition uid without system_id and version
