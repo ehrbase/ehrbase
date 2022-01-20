@@ -359,8 +359,8 @@ check the successful result of commit composition
         # ${composition_uid}    Set Variable   ${response.json()}[${template_for_path}/_uid]
         # @ndanilin: in FLAT response isn't template_id so make a following placeholder:
         ${template_id}=       Set Variable   ${template}
-        ${composer}           Set Variable   ${response.json()}[${template_for_path}/composer|name]
-        ${setting}            Set variable   ${response.json()}[${template_for_path}/context/setting|value]
+        #${composer}           Set Variable   ${response.json()}[${template_for_path}/composer|name]
+        #${setting}            Set variable   ${response.json()}[${template_for_path}/context/setting|value]
     ELSE IF   '${format}' == 'TDD'
         ${xresp}=             Parse Xml                 ${response.text}
         ${composition_uid}=   Get Element Text          ${xresp}   uid/value
