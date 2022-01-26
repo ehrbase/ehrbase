@@ -685,9 +685,9 @@ jobs:
       - checkout
       - install-maven
       - restore-local-sdk-installation
-      - cache-out-ehrbase-m2-dependencies-syncbranch
+#      - cache-out-ehrbase-m2-dependencies-syncbranch
       - build-and-test-ehrbase
-      - cache-in-ehrbase-m2-dependencies-syncbranch
+#      - cache-in-ehrbase-m2-dependencies-syncbranch
       - save-packaged-ehrbase-jar
       - collect-ehrbase-unittest-results
       - save-ehrbase-test-results
