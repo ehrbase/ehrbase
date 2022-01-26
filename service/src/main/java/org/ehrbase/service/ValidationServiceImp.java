@@ -23,173 +23,144 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
+import java.util.List;
+import java.util.regex.Pattern;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
-import org.ehrbase.cache.CacheOptions;
-import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.terminology.openehr.TerminologyService;
-import org.ehrbase.validation.Validator;
-import org.ehrbase.validation.constraints.terminology.ExternalTerminologyValidationSupport;
+import org.ehrbase.validation.CompositionValidator;
+import org.ehrbase.validation.ConstraintViolationException;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.validation.terminology.ItemStructureVisitor;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
+import org.ehrbase.webtemplate.model.WebTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 @Service
 public class ValidationServiceImp implements ValidationService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+  private static final Logger LOG = LoggerFactory.getLogger(ValidationServiceImp.class);
 
-    private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
+  private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
-    private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(ArchieRMInfoLookup.getInstance(),s -> null);
+  private static final RMObjectValidator RM_OBJECT_VALIDATOR = new RMObjectValidator(
+      ArchieRMInfoLookup.getInstance(), s -> null);
 
-    private final I_KnowledgeCache knowledgeCache;
+  private final KnowledgeCacheService knowledgeCacheService;
 
-    private final TerminologyService terminologyService;
+  private final TerminologyService terminologyService;
 
-    private final Cache validatorCache;
+  private final CompositionValidator compositionValidator = new CompositionValidator();
 
-    private ExternalTerminologyValidationSupport externalTerminologyValidator;
+  public ValidationServiceImp(KnowledgeCacheService knowledgeCacheService,
+      TerminologyService terminologyService, ServerConfig serverConfig,
+      ObjectProvider<ExternalTerminologyValidation> objectProvider) {
+    this.knowledgeCacheService = knowledgeCacheService;
+    this.terminologyService = terminologyService;
 
-    @Autowired
-    public ValidationServiceImp(CacheManager cacheManager, I_KnowledgeCache knowledgeCache, TerminologyService terminologyService, ServerConfig serverConfig) {
-        this.validatorCache = cacheManager.getCache(CacheOptions.VALIDATOR_CACHE);
-        this.knowledgeCache = knowledgeCache;
-        this.terminologyService = terminologyService;
+    objectProvider.ifAvailable(compositionValidator::setExternalTerminologyValidation);
 
-        if (serverConfig.isDisableStrictValidation()) {
-            logger.warn("Disabling strict invariant validation. Caution is advised.");
-            RM_OBJECT_VALIDATOR.setRunInvariantChecks(false);
-        }
+    if (serverConfig.isDisableStrictValidation()) {
+      LOG.warn("Disabling strict invariant validation. Caution is advised.");
+      compositionValidator.setRunInvariantChecks(false);
+    }
+  }
+
+  @Override
+  public void check(String templateID, Composition composition) throws Exception {
+    WebTemplate webTemplate;
+    try {
+      webTemplate = knowledgeCacheService.getQueryOptMetaData(templateID);
+    } catch (IllegalArgumentException e) {
+      throw new org.ehrbase.validation.ValidationException(e.getMessage());
     }
 
-    @Override
-    public void check(UUID templateUUID, Composition composition) throws Exception {
-
-        //check if a validator is already in the cache
-        Validator validator = validatorCache.get(templateUUID, Validator.class);
-
-        if (validator == null) {
-            //create a new one for template
-            Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateUUID);
-            if (operationaltemplate.isEmpty()) {
-                throw new IllegalArgumentException("Not found template uuid:" + templateUUID);
-            }
-            validator = new Validator(operationaltemplate.get());
-            //add to cache
-            validatorCache.put(templateUUID, validator);
-        }
-        // Set the external terminology validator
-        validator.setExternalTerminologyValidator(externalTerminologyValidator);
-
-        //perform the validation
-        validator.check(composition);
-
-        //check codephrases against terminologies
-        ItemStructureVisitor itemStructureVisitor = new ItemStructureVisitor(terminologyService);
-        itemStructureVisitor.validate(composition);
+    // Validate the composition based on WebTemplate
+    var constraintViolations = compositionValidator.validate(composition, webTemplate);
+    if (!constraintViolations.isEmpty()) {
+      throw new ConstraintViolationException(constraintViolations);
     }
 
-    @Override
-    public void check(String templateID, Composition composition) throws Exception {
+    //check codephrases against terminologies
+    ItemStructureVisitor itemStructureVisitor = new ItemStructureVisitor(terminologyService);
+    itemStructureVisitor.validate(composition);
+  }
 
-        Optional<OPERATIONALTEMPLATE> operationaltemplate = knowledgeCache.retrieveOperationalTemplate(templateID);
-
-        if (operationaltemplate.isEmpty())
-            throw new UnprocessableEntityException("Not found template id: " + templateID);
-
-        check(UUID.fromString(operationaltemplate.get().getUid().getValue()), composition);
+  @Override
+  public void check(Composition composition) throws Exception {
+    //check if this composition is valid for processing
+    if (composition.getName() == null) {
+      throw new IllegalArgumentException("Composition missing mandatory attribute: name");
+    }
+    if (composition.getArchetypeNodeId() == null) {
+      throw new IllegalArgumentException(
+          "Composition missing mandatory attribute: archetype_node_id");
+    }
+    if (composition.getLanguage() == null) {
+      throw new IllegalArgumentException("Composition missing mandatory attribute: language");
+    }
+    if (composition.getCategory() == null) {
+      throw new IllegalArgumentException("Composition missing mandatory attribute: category");
+    }
+    if (composition.getComposer() == null) {
+      throw new IllegalArgumentException("Composition missing mandatory attribute: composer");
+    }
+    if (composition.getArchetypeDetails() == null) {
+      throw new IllegalArgumentException(
+          "Composition missing mandatory attribute: archetype details");
+    }
+    if (composition.getArchetypeDetails().getTemplateId() == null) {
+      throw new IllegalArgumentException(
+          "Composition missing mandatory attribute: archetype details/template_id");
     }
 
-    @Override
-    public void check(Composition composition) throws Exception {
-        //check if this composition is valid for processing
-        if (composition.getName() == null)
-            throw new IllegalArgumentException("Composition missing mandatory attribute: name");
-        if (composition.getArchetypeNodeId() == null)
-            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype_node_id");
-        if (composition.getLanguage() == null)
-            throw new IllegalArgumentException("Composition missing mandatory attribute: language");
-        if (composition.getCategory() == null)
-            throw new IllegalArgumentException("Composition missing mandatory attribute: category");
-        if (composition.getComposer() == null)
-            throw new IllegalArgumentException("Composition missing mandatory attribute: composer");
-        if (composition.getArchetypeDetails() == null)
-            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details");
-        if (composition.getArchetypeDetails().getTemplateId() == null)
-            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details/template_id");
+    check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
+  }
 
-        //check the built composition using Archie Validator
-        List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(composition);
-
-        if (!rmObjectValidationMessages.isEmpty()) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (RMObjectValidationMessage rmObjectValidationMessage : rmObjectValidationMessages) {
-                stringBuilder.append(rmObjectValidationMessage.toString());
-                stringBuilder.append("\n");
-            }
-            throw new IllegalArgumentException(stringBuilder.toString());
-        }
-
-        check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
+  @Override
+  public void check(EhrStatus ehrStatus) {
+    //case of a system generated ehr
+    if (ehrStatus == null) {
+      return;
     }
 
-    @Override
-    public void check(EhrStatus ehrStatus) {
+    //first, check the built EhrStatus using the general Archie RM-Validator
+    List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(
+        ehrStatus);
 
-        //case of a system generated ehr
-        if (ehrStatus == null)
-            return;
-
-        //first, check the built EhrStatus using the general Archie RM-Validator
-        List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(ehrStatus);
-
-        if (!rmObjectValidationMessages.isEmpty()) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (RMObjectValidationMessage rmObjectValidationMessage : rmObjectValidationMessages) {
-                stringBuilder.append(rmObjectValidationMessage.toString());
-                stringBuilder.append("\n");
-            }
-            throw new ValidationException(stringBuilder.toString());
-        }
-
-        //second, additional specific checks and other mandatory attributes
-
-        if (ehrStatus.getSubject() == null)
-            throw new ValidationException("subject is required");
-
-        if (ehrStatus.getSubject().getExternalRef() != null) {  // external_ref has 0..1 multiplicity, so null itself is okay
-            // but if it is there it has to have an ID
-            if (ehrStatus.getSubject().getExternalRef().getId() == null || ehrStatus.getSubject().getExternalRef().getId().getValue().isEmpty())
-                throw new ValidationException("ExternalRef ID is required");
-            // and a namespace
-            if (ehrStatus.getSubject().getExternalRef().getNamespace() == null) {
-                throw new ValidationException("ExternalRef namespace is required");
-                // which needs to be valid
-            } else if (!NAMESPACE_PATTERN.matcher(ehrStatus.getSubject().getExternalRef().getNamespace()).matches())
-                throw new ValidationException("Subject's namespace format invalid");
-        }
+    if (!rmObjectValidationMessages.isEmpty()) {
+      StringBuilder stringBuilder = new StringBuilder();
+      for (RMObjectValidationMessage rmObjectValidationMessage : rmObjectValidationMessages) {
+        stringBuilder.append(rmObjectValidationMessage.toString());
+        stringBuilder.append("\n");
+      }
+      throw new ValidationException(stringBuilder.toString());
     }
 
-    @Override
-    public void invalidate() {
-        validatorCache.invalidate();
+    //second, additional specific checks and other mandatory attributes
+
+    if (ehrStatus.getSubject() == null) {
+      throw new ValidationException("subject is required");
     }
 
-    @Autowired(required = false)
-    public void setExternalTerminologyValidator(ExternalTerminologyValidationSupport externalTerminologyValidator) {
-        this.externalTerminologyValidator = externalTerminologyValidator;
+    if (ehrStatus.getSubject().getExternalRef()
+        != null) {  // external_ref has 0..1 multiplicity, so null itself is okay
+      // but if it is there it has to have an ID
+      if (ehrStatus.getSubject().getExternalRef().getId() == null || ehrStatus.getSubject()
+          .getExternalRef().getId().getValue().isEmpty()) {
+        throw new ValidationException("ExternalRef ID is required");
+      }
+      // and a namespace
+      if (ehrStatus.getSubject().getExternalRef().getNamespace() == null) {
+        throw new ValidationException("ExternalRef namespace is required");
+        // which needs to be valid
+      } else if (!NAMESPACE_PATTERN.matcher(ehrStatus.getSubject().getExternalRef().getNamespace())
+          .matches()) {
+        throw new ValidationException("Subject's namespace format invalid");
+      }
     }
+  }
 }
