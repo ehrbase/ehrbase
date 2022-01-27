@@ -130,7 +130,7 @@
         <java.version>11</java.version>
         <!-- PostgreSQL Database Properties -->
         <database.host>localhost</database.host>
-        <database.port>5432</database.port>
+        <database.port>5433</database.port>
         <database.user>ehrbase</database.user>
         <database.pass>ehrbase</database.pass>
         <database.name>ehrbase</database.name>

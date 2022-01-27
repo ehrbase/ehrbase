@@ -69,7 +69,7 @@ public class GenericJsonField extends RMObjectAttribute {
 
     public Field hierObjectId(Field<UUID> uuidField) {
         String rmType = "HIER_OBJECT_ID";
-        Function<Field<UUID>, Field<JSON>> function = Routines::jsCanonicalHierObjectId1;
+        Function<Field<UUID>, Field<JSON>> function = Routines::jsCanonicalHierObjectId2;
         return jsonField(rmType, function, (TableField) uuidField);
     }
 

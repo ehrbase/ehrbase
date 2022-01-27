@@ -76,6 +76,9 @@ public class JoinBinder implements IJoinBinder {
      */
     public SelectQuery<?> addJoinClause(SelectQuery<?> selectQuery) {
 
+        //force to join with subject for sharding (should be a runtime option)
+//        joinSetup.setJoinEhr(true);
+
         if (joinSetup == null)
             return selectQuery;
 

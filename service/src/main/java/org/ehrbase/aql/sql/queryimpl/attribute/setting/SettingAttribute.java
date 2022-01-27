@@ -52,7 +52,7 @@ public class SettingAttribute extends EventContextAttribute {
 
             Field jsonContextField = DSL.field(
                     jsonpathItem(fieldContext.getContext().configuration(),
-                            Routines.jsDvCodedText2(tableField).cast(JSONB.class),
+                            Routines.jsDvCodedText1(tableField).cast(JSONB.class),
                             jsonpathParameters(new GenericJsonPath(jsonPath.get()).jqueryPath())
                     )
             ).cast(String.class);

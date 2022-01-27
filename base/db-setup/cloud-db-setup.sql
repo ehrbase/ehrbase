@@ -14,7 +14,6 @@ GRANT ALL PRIVILEGES ON DATABASE ehrbase TO ehrbase;
 CREATE SCHEMA IF NOT EXISTS ehr AUTHORIZATION ehrbase;
 CREATE SCHEMA IF NOT EXISTS ext AUTHORIZATION ehrbase;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA ext;
-CREATE EXTENSION IF NOT EXISTS "ltree" SCHEMA ext;
 
 -- setup the search_patch so the extensions can be found
 ALTER DATABASE ehrbase SET search_path TO "$user",public,ext;
