@@ -53,7 +53,6 @@ Apache License, Version 2.0 (see https://www.apache.org/licenses/LICENSE-2.0):
 - Apache Commons Collections (http://commons.apache.org)
 - Apache Http (http://hc.apache.org/)
 - Apache Log4j (http://logging.apache.org)
-- Apache Velocity 1.5 (http://velocity.apache.org)
 - Apache XML Beans (http://xmlbeans.apache.org)
 - Joda-Time (http://www.joda.org/joda-time/)
 - Guava: Google Core Libraries for Java (https://github.com/google/guava/guava)
