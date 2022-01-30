@@ -249,7 +249,7 @@ This case is when the ADL has `DV_ORDINAL matches {*}`
 
 DV_SCALE was introduced to the RM 1.1.0 (https://openehr.atlassian.net/browse/SPECRM-19), it is analogous to DV_ORDINAL with a Real value. So test cases for DV_SCALE and DV_ORDINAL are similar.
 
-NOTE: if this specification is implemented on a system that supports an RM < 1.1.0, then these tests shouldn't run against the system.
+NOTE: if this specification is implemented on a system that supports a RM < 1.1.0, then these tests shouldn't run against the system.
 
 ### 3.3.1. Test case DV_SCALE open constraint
 
@@ -511,6 +511,7 @@ The C_INTEGER constraint applies to the `type` attribute. The C_REAL constraints
 
 
 
+
 ## 3.7. quantity.DV_INTERVAL<DV_COUNT>
 
 ### 3.7.1. Test case DV_INTERVAL<DV_COUNT> open constraint
@@ -742,9 +743,6 @@ TBD
 
 ## 3.10. quantity.DV_INTERVAL<DV_DATE>
 
-TBD: this will use the test cases and data sets defined for the DV_DATE tests.
-
-
 ### 3.10.1. Test case DV_INTERVAL<DV_DATE> open constraint
 
 On this case, the own rules/invariants of the DV_INTERVAL apply to the validation.
@@ -920,16 +918,158 @@ TBD: more fail cases
 
 > NOTE: some modeling tools don't support representing DV_INTERVAL<DV_ORDINAL>.
 
+### 3.13.1. Test case DV_INTERVAL<DV_ORDINAL> open constraint
+
+This case is when the ADL has `DV_ORDINAL matches {*}`
+
+| lower.symbol   | lower.value | upper.symbol   | upper.value | lower_unbounded | upper_unbounded | lower_included | upper_included | expected | constraints violated |
+|:---------------|------------:|:---------------|------------:|-----------------|-----------------|----------------|----------------|----------|----------------------|
+| NULL           | NULL        | NULL           | NULL        | false           | false           | true           | true           | rejected | RM/Schema value and symbol are mandatory for lower and upper |
+| NULL           | 1           | NULL           | 5           | false           | false           | true           | true           | rejected | RM/Schema symbol is mandatory for lower and upper            |
+| local::at0005  | NULL        | local::at0003  | NULL        | false           | false           | true           | true           | rejected | RM/Schema value is mandatory for lower and upper             |
+| local::at0005  | 1           | local::at0002  | 5           | false           | false           | true           | true           | accepted |                                                              |
+| local::at0004  | 666         | local::at0003  | 777         | false           | false           | true           | true           | accepted |                                                              |
+| local::at0003  | 777         | local::at0004  | 666         | false           | false           | true           | true           | rejected | RM invariante Interval.Limits_comparable                     |
+
+
+### 3.13.2. Test case DV_INTERVAL<DV_ORDINAL> with constraints
+
+| lower.symbol   | lower.value | upper.symbol   | upper.value | lower_unbounded | upper_unbounded | lower_included | upper_included | lower.C_DV_ORDINAL.list                | upper.C_DV_ORDINAL.list                | expected | constraints violated |
+|:---------------|------------:|:---------------|------------:|-----------------|-----------------|----------------|----------------|----------------------------------------|----------------------------------------|----------|----------------------|
+| local::at0005  | 1           | local::at0002  | 5           | false           | false           | true           | true           |   1|[local::at0005], 2|[local::at0006] |   5|[local::at0002], 2|[local::at0006] | accepted |                                                           |
+| local::at0004  | 666         | local::at0003  | 777         | false           | false           | true           | true           |   8|[local::at0004], 2|[local::at0006] |   9|[local::at0003], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value for lower and upper  |
+| local::at0666  | 1           | local::at0777  | 2           | false           | false           | true           | true           |   1|[local::at0005], 2|[local::at0006] |   1|[local::at0005], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching symbol for lower and upper |
+| local::at0004  | 666         | local::at0003  | 777         | false           | false           | true           | true           |   8|[local::at0004], 2|[local::at0006] | 777|[local::at0003], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value for lower            |
+| local::at0666  | 1           | local::at0777  | 2           | false           | false           | true           | true           |   1|[local::at0005], 2|[local::at0006] |   1|[local::at0005], 2|[local::at0777] | rejected | C_DV_ORDINAL.list: no matching symbol for lower           |
+| local::at0004  | 666         | local::at0003  | 777         | false           | false           | true           | true           | 666|[local::at0004], 2|[local::at0006] |   9|[local::at0003], 2|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value for upper            |
+| local::at0005  | 1           | local::at0777  | 5           | false           | false           | true           | true           |   1|[local::at0005], 2|[local::at0006] |   1|[local::at0005], 5|[local::at0999] | rejected | C_DV_ORDINAL.list: no matching symbol for upper           |
+
+
 
 ## 3.14. quantity.DV_INTERVAL<DV_SCALE>
 
-> NOTE: some modeling tools don't support representing DV_INTERVAL<DV_SCALE>.
+DV_SCALE was introduced to the RM 1.1.0 (https://openehr.atlassian.net/browse/SPECRM-19), it is analogous to DV_ORDINAL with a Real value. So test cases for DV_SCALE and DV_ORDINAL are similar.
+
+NOTE: if this specification is implemented on a system that supports a RM < 1.1.0, then these tests shouldn't run against the system.
+
+> NOTE: some modeling tools don't support representing DV_INTERVAL<DV_SCALE>
+
+### 3.14.1. Test case DV_SCALE open constraint
+
+This case is when the ADL has `DV_ORDINAL matches {*}`
+
+| lower.symbol   | lower.value | upper.symbol   | upper.value | lower_unbounded | upper_unbounded | lower_included | upper_included | expected | constraints violated |
+|:---------------|------------:|:---------------|------------:|-----------------|-----------------|----------------|----------------|----------|----------------------|
+| NULL           | NULL        | NULL           | NULL        | false           | false           | true           | true           | rejected | RM/Schema value and symbol are mandatory for lower and upper |
+| NULL           | 1.5         | NULL           | 5.3         | false           | false           | true           | true           | rejected | RM/Schema symbol is mandatory for lower and upper            |
+| local::at0005  | NULL        | local::at0003  | NULL        | false           | false           | true           | true           | rejected | RM/Schema value is mandatory for lower and upper             |
+| local::at0005  | 1.5         | local::at0002  | 5.3         | false           | false           | true           | true           | accepted |                                                              |
+| local::at0004  | 666.1       | local::at0003  | 777.1       | false           | false           | true           | true           | accepted |                                                              |
+| local::at0003  | 777.1       | local::at0004  | 666.1       | false           | false           | true           | true           | rejected | RM invariante Interval.Limits_comparable                     |
+
+
+### 3.14.2. Test case DV_SCALE with constraints
+
+| lower.symbol   | lower.value | upper.symbol   | upper.value | lower_unbounded | upper_unbounded | lower_included | upper_included | lower.C_DV_ORDINAL.list                    | upper.C_DV_ORDINAL.list                    | expected | constraints violated |
+|:---------------|------------:|:---------------|------------:|-----------------|-----------------|----------------|----------------|--------------------------------------------|--------------------------------------------|----------|----------------------|
+| local::at0005  | 1.5         | local::at0002  | 5.3         | false           | false           | true           | true           |   1.5|[local::at0005], 2.4|[local::at0006] |   5.3|[local::at0002], 2.4|[local::at0006] | accepted |                                                           |
+| local::at0004  | 666.1       | local::at0003  | 777.1       | false           | false           | true           | true           |   8.9|[local::at0004], 2.4|[local::at0006] |   9.7|[local::at0003], 2.4|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value for lower and upper  |
+| local::at0666  | 1.5         | local::at0777  | 2.4         | false           | false           | true           | true           |   1.5|[local::at0005], 2.4|[local::at0006] |   1.5|[local::at0005], 2.4|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching symbol for lower and upper |
+| local::at0004  | 666.1       | local::at0003  | 777.1       | false           | false           | true           | true           |   8.9|[local::at0004], 2.4|[local::at0006] | 777.1|[local::at0003], 2.4|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value for lower            |
+| local::at0666  | 1.5         | local::at0777  | 2.4         | false           | false           | true           | true           |   1.5|[local::at0005], 2.4|[local::at0006] |   1.5|[local::at0005], 2.4|[local::at0777] | rejected | C_DV_ORDINAL.list: no matching symbol for lower           |
+| local::at0004  | 666.1       | local::at0003  | 777.1       | false           | false           | true           | true           | 666.1|[local::at0004], 2.4|[local::at0006] |   9.7|[local::at0003], 2.4|[local::at0006] | rejected | C_DV_ORDINAL.list: no matching value for upper            |
+| local::at0005  | 1.5         | local::at0777  | 5.3         | false           | false           | true           | true           |   1.5|[local::at0005], 2.4|[local::at0006] |   1.5|[local::at0005], 5.3|[local::at0999] | rejected | C_DV_ORDINAL.list: no matching symbol for upper           |
+
+
 
 
 ## 3.15. quantity.DV_INTERVAL<DV_PROPORTION>
 
 > NOTE: some modeling tools don't support representing DV_INTERVAL<DV_PROPORTION>.
 
+### 3.15.1. Test case DV_INTERVAL<DV_PROPORTION> open constraint
+
+The test data sets for lower and upper are divided into multiple tables because there are many attributes in the DV_PROPORTION.
+
+#### 3.15.1.a. Data set both valid ratios
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 20        | 500         | 0         |
+
+| expected | constraints violated             |
+|----------|----------------------------------|
+| accepted |                                  |
+
+#### 3.15.1.b. Data set different limit types
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | unitary          | 10        | 1           | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+| expected | constraints violated                      |
+|----------|-------------------------------------------|
+| rejected | DV_INTERVAL.Limits_consistent (invariant) |
+
+#### 3.15.1.c. Data set greater lower
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 5         | 500         | 0         |
+
+| expected | constraints violated                      |
+|----------|-------------------------------------------|
+| rejected | DV_INTERVAL.Limits_consistent (invariant) |
+
+
+
+### 3.15.2. Test case DV_INTERVAL<DV_PROPORTION> ratios
+
+TBD
+
+### 3.15.3. Test case DV_INTERVAL<DV_PROPORTION> unitaries
+
+TBD
+
+### 3.15.4. Test case DV_INTERVAL<DV_PROPORTION> percents
+
+TBD
+
+### 3.15.5. Test case DV_INTERVAL<DV_PROPORTION> fractions
+
+TBD
+
+### 3.15.6. Test case DV_INTERVAL<DV_PROPORTION> integer fractions
+
+TBD
+
+### 3.15.7. Test case DV_INTERVAL<DV_PROPORTION> ratioS with range limits
+
+TBD
 
 
 # 4. quantity.date_time
