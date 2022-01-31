@@ -157,7 +157,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 }
                 switch (versionClass) {
                     case COMPOSITION:
-                        processCompositionVersion(ehrId, contributionId, version, (Composition) versionRmObject);
+                        try {
+                            processCompositionVersion(ehrId, contributionId, version, (Composition) versionRmObject);
+                        } catch (UnprocessableEntityException e) {
+                            throw new ValidationException(e.getMessage());
+                        }
                         break;
                     case EHRSTATUS:
                         processEhrStatusVersion(ehrId, contributionId, version, (EhrStatus) versionRmObject);
