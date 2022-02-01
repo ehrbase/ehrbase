@@ -16,8 +16,12 @@
 
 package org.ehrbase.util;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.openehr.schemas.v1.CCOMPLEXOBJECT;
+import org.openehr.schemas.v1.COBJECT;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -28,6 +32,8 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
  * @since 1.0.0
  */
 public class TemplateUtils {
+
+  public static final List<String> UNSUPPORTED_RM_TYPES = List.of("ITEM_TABLE");
 
   private TemplateUtils() {
   }
@@ -63,5 +69,31 @@ public class TemplateUtils {
         .map(UUID::fromString)
         .orElseThrow(() -> new IllegalArgumentException(
             "Unique ID must not be null for the given template"));
+  }
+
+  /**
+   * @param template
+   * @return
+   */
+  public static boolean isNotSupported(OPERATIONALTEMPLATE template) {
+    if (template == null) {
+      return true;
+    }
+    return hasNotSupportedRmType(template.getDefinition());
+  }
+
+  private static boolean hasNotSupportedRmType(COBJECT cobject) {
+    if (UNSUPPORTED_RM_TYPES.contains(cobject.getRmTypeName())) {
+      return true;
+    }
+
+    if (cobject instanceof CCOMPLEXOBJECT) {
+      var ccomplexobject = (CCOMPLEXOBJECT) cobject;
+      return Arrays.stream(ccomplexobject.getAttributesArray())
+          .flatMap(attribute -> Arrays.stream(attribute.getChildrenArray()))
+          .anyMatch(TemplateUtils::hasNotSupportedRmType);
+    }
+
+    return false;
   }
 }
