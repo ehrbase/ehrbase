@@ -1346,7 +1346,7 @@ commands:
           name: Save the version number of locally installed SDK into a file
           command: |
             cd ~/projects/openEHR_SDK
-            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL versions:commit
+            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL$(cat /proc/sys/kernel/random/uuid) versions:commit
             SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo $SDK_VERSION > SDK_VERSION
             cat SDK_VERSION
@@ -1541,7 +1541,7 @@ commands:
             SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -u project/properties/ehrbase.sdk.version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u /_:project/_:properties/_:ehrbase.sdk.version -v $SDK_VERSION pom.xml
       - run:
           name: Show EHRbase's pom
           command: cat pom.xml
