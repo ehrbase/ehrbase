@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 Vitasystems GmbH and Hannover Medical School.
+ * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,12 +16,11 @@
 
 package org.ehrbase.util;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.openehr.schemas.v1.CCOMPLEXOBJECT;
-import org.openehr.schemas.v1.COBJECT;
+import org.ehrbase.webtemplate.model.WebTemplate;
+import org.ehrbase.webtemplate.parser.OPTParser;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -36,6 +35,29 @@ public class TemplateUtils {
   public static final List<String> UNSUPPORTED_RM_TYPES = List.of("ITEM_TABLE");
 
   private TemplateUtils() {
+  }
+
+  /**
+   * Check whether the given OPT template is supported.
+   *
+   * @param template the candidate template
+   * @return <code>true</code> if the template is supported
+   */
+  public static boolean isSupported(OPERATIONALTEMPLATE template) {
+    var webTemplate = new OPTParser(template).parse();
+    return isSupported(webTemplate);
+  }
+
+  /**
+   * Check whether the given WebTemplate is supported.
+   *
+   * @param template the candidate template
+   * @return <code>true</code> if the template is supported
+   */
+  public static boolean isSupported(WebTemplate template) {
+    return template.getTree()
+        .findMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
+        .isEmpty();
   }
 
   /**
@@ -69,31 +91,5 @@ public class TemplateUtils {
         .map(UUID::fromString)
         .orElseThrow(() -> new IllegalArgumentException(
             "Unique ID must not be null for the given template"));
-  }
-
-  /**
-   * @param template
-   * @return
-   */
-  public static boolean isNotSupported(OPERATIONALTEMPLATE template) {
-    if (template == null) {
-      return true;
-    }
-    return hasNotSupportedRmType(template.getDefinition());
-  }
-
-  private static boolean hasNotSupportedRmType(COBJECT cobject) {
-    if (UNSUPPORTED_RM_TYPES.contains(cobject.getRmTypeName())) {
-      return true;
-    }
-
-    if (cobject instanceof CCOMPLEXOBJECT) {
-      var ccomplexobject = (CCOMPLEXOBJECT) cobject;
-      return Arrays.stream(ccomplexobject.getAttributesArray())
-          .flatMap(attribute -> Arrays.stream(attribute.getChildrenArray()))
-          .anyMatch(TemplateUtils::hasNotSupportedRmType);
-    }
-
-    return false;
   }
 }

@@ -190,7 +190,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
       throw new IllegalArgumentException("Supplied template has nil or empty description");
     }
 
-    if (TemplateUtils.isNotSupported(template)) {
+    if (!TemplateUtils.isSupported(template)) {
       throw new IllegalArgumentException(
           MessageFormat.format("The supplied template is not supported (unsupported types: {0})",
               String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
