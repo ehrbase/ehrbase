@@ -1,11 +1,12 @@
 ---
-name: Defect(Robot)
-about: Report issues found by Robot tests
+name: Test bug
+about: Report failing tests and related bugs
 labels: bug
 ---
 
+# Test case
 
-## Test Case/s To Reproduce Issue
+> Add information about the failing test case.
 
 ```
 # path to test case
@@ -31,11 +32,14 @@ KNOWLEDGE_TESTS
 QUERY_SERVICE_TESTS
 ```
 
-## Actual Result
+# Actual result
 
-<!-- foo -->
+> Describe the wrong output / behavior.
 
+# Expected result
 
-## Expected Result
+> Describe the expected output / behavior.
 
-<!-- bar -->
+# Further information
+
+> Add additional information, if needed.
