@@ -39,10 +39,9 @@ Alternative flow 6 create new event COMPOSITION EHR doesnt exist CANONICAL_XML
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist FLAT
-    [Tags]      594  not-ready  bug
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=nested.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  594  bug  related
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist TDD

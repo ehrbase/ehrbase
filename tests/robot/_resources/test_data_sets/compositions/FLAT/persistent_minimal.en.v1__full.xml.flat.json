@@ -16,6 +16,7 @@
   "persistent_minimal/category|value" : "persistent",
   "persistent_minimal/category|terminology" : "openehr",
   "persistent_minimal/composer|id" : "c0760d23-a581-4ecf-b2ef-164e90917736",
+  "persistent_minimal/composer|id_scheme" : "Hospital-NS",
   "persistent_minimal/composer|id_namespace" : "DEMOGRAPHIC",
   "persistent_minimal/composer|name" : "composer test value"
 }
