@@ -31,6 +31,7 @@ Main flow has existing COMPOSITION (FLAT)
     create EHR
     commit composition   format=FLAT
     ...                  composition=ehrn_vital_signs.v2__.json
+    check the successful result of commit composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
 
@@ -52,6 +53,7 @@ Create and compare content of flat compositions
     create EHR
     commit composition   format=FLAT
     ...                  composition=${flat_composition_file_name}
+    check the successful result of commit composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
     Compare content of compositions with the Original (FLAT)  ${COMPO DATA SETS}/FLAT/${flat_composition_file_name}
