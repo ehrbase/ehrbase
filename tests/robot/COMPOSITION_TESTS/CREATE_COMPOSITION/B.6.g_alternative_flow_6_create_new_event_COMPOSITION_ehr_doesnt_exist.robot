@@ -67,10 +67,9 @@ Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist CANONICAL_
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist FLAT
-    [Tags]      595  not-ready  bug
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  595  bug  related
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist TDD

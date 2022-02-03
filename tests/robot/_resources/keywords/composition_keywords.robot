@@ -313,8 +313,6 @@ commit composition
 
     IF   '${format}'=='FLAT'
     ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
-    ${compositionUid}=    Collections.Get From Dictionary    ${resp.json()}    compositionUid
-    Set Test Variable   ${compositionUid}  ${composition_uid}
     ELSE
     ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
     END
@@ -361,6 +359,8 @@ check the successful result of commit composition
         ${template_id}=       Set Variable   ${template}
         #${composer}           Set Variable   ${response.json()}[${template_for_path}/composer|name]
         #${setting}            Set variable   ${response.json()}[${template_for_path}/context/setting|value]
+        ${compositionUid}=    Collections.Get From Dictionary    ${response.json()}    compositionUid
+        Set Test Variable     ${compositionUid}  ${composition_uid}
     ELSE IF   '${format}' == 'TDD'
         ${xresp}=             Parse Xml                 ${response.text}
         ${composition_uid}=   Get Element Text          ${xresp}   uid/value
