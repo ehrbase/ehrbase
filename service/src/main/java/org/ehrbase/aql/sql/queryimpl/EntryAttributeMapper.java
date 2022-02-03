@@ -62,9 +62,9 @@ public class EntryAttributeMapper {
 
     private EntryAttributeMapper(){}
 
-    private static Integer firstOccurence(int offset, List<String> list, String match) {
+    private static Integer firstOccurence(int offset, List<String> list) {
         for (int i = offset; i < list.size(); i++) {
-            if (list.get(i).equals(match))
+            if (list.get(i).equals(EntryAttributeMapper.VALUE))
                 return i;
         }
         return null;
@@ -77,12 +77,12 @@ public class EntryAttributeMapper {
      * @return
      */
     public static String map(String attribute) {
+        boolean inOtherParticipations = false;
+
         if (attribute.equals(OTHER_CONTEXT))
             return OTHER_CONTEXT; //conventionally
 
-        List<String> fields = new ArrayList<>();
-
-        fields.addAll(Arrays.asList(attribute.split(SLASH)));
+        List<String> fields = new ArrayList<>(Arrays.asList(attribute.split(SLASH)));
         if (!fields.get(0).equals(OTHER_CONTEXT))
             fields.remove(0);
 
@@ -92,11 +92,8 @@ public class EntryAttributeMapper {
             return null; //this happens when a non specified value is queried f.e. the whole json body
 
         //deals with the tricky ones first...
-        if (fields.get(0).equals(OTHER_PARTICIPATIONS)) { //insert a tag value
-            fields.set(0, OTHER_PARTICIPATIONS);
-            fields.add(1, "0");
-            fields.add(2, SLASH_VALUE);
-            floor = 3;
+        if (fields.get(0).equals(OTHER_PARTICIPATIONS)) {
+            inOtherParticipations = true; //to avoid adding an index to access name array struct
         } else if (fields.get(0).equals(NAME)) {
             fields.add(1, "0"); //name is now formatted as /name -> array of values! Required to deal with cluster items
         } else if (fields.size() >= 2 && fields.get(1).equals(MAPPINGS)) {
@@ -115,7 +112,7 @@ public class EntryAttributeMapper {
             fields = setEntryAttributeField(fields);
         }
         else { //this deals with the "/value,value"
-            Integer match = firstOccurence(0, fields, VALUE);
+            Integer match = firstOccurence(0, fields);
 
             if (match != null) { //deals with "/value/value"
                 if (match != 0) {
@@ -127,7 +124,7 @@ public class EntryAttributeMapper {
                         fields.set(match, SLASH_VALUE);
 
                 } else if (match + 1 < fields.size() - 1) {
-                    Integer first = firstOccurence(match + 1, fields, VALUE);
+                    Integer first = firstOccurence(match + 1, fields);
                     if (first != null && first == match + 1)
                         fields.set(match + 1, SLASH_VALUE);
                 }
@@ -140,7 +137,7 @@ public class EntryAttributeMapper {
         //deals with the remainder of the array
         for (int i = floor; i < fields.size(); i++) {
 
-            if (fields.get(i).equalsIgnoreCase("NAME")){
+            if (fields.get(i).equalsIgnoreCase("NAME") && !inOtherParticipations){
                 //whenever the canonical json for name is queried
                 fields.set(i, "/name,0");
             }

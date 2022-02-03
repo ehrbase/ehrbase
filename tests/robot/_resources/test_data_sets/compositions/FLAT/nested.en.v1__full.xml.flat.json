@@ -24,6 +24,7 @@
   "nesting/category|value" : "event",
   "nesting/category|terminology" : "openehr",
   "nesting/composer|id" : "194d0535-2822-411d-b2a1-2e1d9aad87e4",
+  "nesting/composer|id_scheme" : "Hospital-NS",
   "nesting/composer|id_namespace" : "DEMOGRAPHIC",
   "nesting/composer|name" : "composer test value"
 }

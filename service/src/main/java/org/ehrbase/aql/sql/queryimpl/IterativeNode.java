@@ -23,7 +23,9 @@ import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.service.IntrospectService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_DEPTH;
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_IGNORE_NODE;
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
@@ -96,15 +98,19 @@ public class IterativeNode implements IIterativeNode {
 
     public List<String> clipInIterativeMarker(List<String> segmentedPath, Integer[] clipPos) {
 
-        List<String> resultingPath = new ArrayList<>();
-        resultingPath.addAll(segmentedPath);
+        List<String> resultingPath = new ArrayList<>(segmentedPath);
 
-        for (Integer pos : clipPos) {
+        Arrays.stream(clipPos).sorted(Comparator.reverseOrder()).collect(Collectors.toList()).forEach(pos -> {
             if (pos == resultingPath.size())
                 resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
-            else if (!resultingPath.get(pos).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
+            else if (!resultingPath.get(pos).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
+                if (resultingPath.get(pos).equals("0"))
+                    //substitution
                     resultingPath.set(pos, AQL_NODE_ITERATIVE_MARKER);
-        }
+                else
+                    resultingPath.add(pos, AQL_NODE_ITERATIVE_MARKER);
+            }
+        });
         return resultingPath;
 
     }
@@ -177,7 +183,7 @@ public class IterativeNode implements IIterativeNode {
         if (System.getenv(ENV_AQL_ARRAY_IGNORE_NODE) != null) {
             ignoreIterativeNode = Arrays.asList(System.getenv(ENV_AQL_ARRAY_IGNORE_NODE).split(","));
         } else if (domainAccess.getServerConfig().getAqlIterationSkipList() != null && !domainAccess.getServerConfig().getAqlIterationSkipList().isBlank()){
-            Arrays.asList(domainAccess.getServerConfig().getAqlIterationSkipList().split(",")).stream().forEach(ignoreIterativeNode::add);
+            ignoreIterativeNode.addAll(Arrays.asList(domainAccess.getServerConfig().getAqlIterationSkipList().split(",")));
         }
         else
             ignoreIterativeNode = Arrays.asList("^/content.*", "^/events.*");

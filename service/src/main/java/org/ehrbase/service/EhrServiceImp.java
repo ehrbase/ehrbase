@@ -97,8 +97,6 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                 throw new ValidationException(e);
             if (e.getClass().equals(ValidationException.class))
                 throw e;
-            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
-                throw new ValidationException(e);
             else
                 throw new InternalServerException(e);
         }
@@ -233,8 +231,6 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                 throw new ValidationException(e);
             if (e.getClass().equals(ValidationException.class))
                 throw e;
-            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
-                throw new ValidationException(e);
             else
                 throw new InternalServerException(e);
         }

@@ -52,11 +52,6 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     <value-type>org.ehrbase.webtemplate.model.WebTemplate</value-type>
   </cache>
 
-  <cache alias="validatorCache" uses-template="template-cache">
-    <key-type>java.util.UUID</key-type>
-    <value-type>org.ehrbase.validation.Validator</value-type>
-  </cache>
-
   <cache alias="queryCache" uses-template="query-cache">
     <key-type>org.ehrbase.aql.containment.TemplateIdQueryTuple</key-type>
     <value-type>org.ehrbase.aql.containment.JsonPathQueryResult</value-type>
