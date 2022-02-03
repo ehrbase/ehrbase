@@ -1,9 +1,19 @@
-openEHR Data Validation Conformance
------------------------------------
+Composition Structural Validation (Conformance Testing)
+--------------------------------------------------------
 
-# TOC
+| Author                                           | Version          | Comments                                                   |
+|:------------------------------------------------:|:----------------:|:----------------------------------------------------------:|
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.1 (2021-06-21) | First version with different cardinality constraints for each container attribute in the RM |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2 (2021-11-03) | Updated style for cases accepted/rejected and index |
+||||
 
-- [TOC](#toc)
+# Index
+<!-- 
+  $ git clone https://github.com/Chris3606/TOC-Generator
+  $ cd TOC-Generator
+  $ python tocgen.py ../ehrbase/doc/conformance_testing
+-->
+<!--ts-->
 - [1. Introduction](#1-introduction)
   - [Glossary](#glossary)
   - [Implementation notes](#implementation-notes)
@@ -52,10 +62,12 @@ openEHR Data Validation Conformance
   - [6.3. ITEM_STRUCTURE is ITEM_LIST](#63-item_structure-is-item_list)
   - [6.4. ITEM_STRUCTURE is ITEM_TABLE](#64-item_structure-is-item_table)
   - [6.5. ITEM_STRUCTURE is ITEM_SINGLE](#65-item_structure-is-item_single)
+<!--te-->
+
 
 # 1. Introduction
 
-The test cases defined here are for creating archetypes expressing specific constraints over the openEHR RM. Then different data instances should be generated in order to test the constraints. It’s recommended to have at least one success case, one failure case and all border cases covered. That is, for each archetype constraint specified, at least three data instances should be created.
+The test cases defined here are for creating archetypes/templates expressing specific constraints over the openEHR RM. Then different data instances should be generated in order to test the constraints. It’s recommended to have at least one success case, one failure case and all border cases covered. That is, for each archetype constraint specified, at least three data instances should be created.
 
 Since there are many combinations of constraints possible in the AOM/TOM, we will try to separate them into different classes and focus on each constraint set class independently from the other sets. The sets are defined by:
 
@@ -105,6 +117,12 @@ The constraints combinations described below could be tested in two ways:
 > Note: we suggest to test with both strategies.
 
 ## Reference UML for COMPOSITION (latest RM)
+
+Composition:
+
+![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-composition.svg)
+
+Composition content:
 
 ![](https://specifications.openehr.org/releases/UML/latest/diagrams/diagram_Diagrams___18_1_83e026d_1433773264942_32842_8268.svg)
 
@@ -759,7 +777,7 @@ OBSERVATION data sets:
 3. OBSERVATION with state and no protocol
 4. OBSERVATION with state and protocol
 
-> Note: since data is mandatory by the RM we can't have a case for an AOM constraint with "no OBSERVATION.data". Though any OBSERVATION committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
+> Note: since OBSERVATION.data is mandatory by the RM we can't have a case for an AOM constraint with "no OBSERVATION.data". Though any OBSERVATION committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
 
 
 The constraints combinations described below could be tested in two ways:
@@ -771,6 +789,26 @@ The constraints combinations described below could be tested in two ways:
 
 
 ## 3.1. OBSERVATION state existence = 0..1, protocol existence = 0..1
+
+<style>
+
+#obs_1 tbody > tr:nth-child(5),
+#obs_1 tbody > tr:nth-child(6),
+#obs_1 tbody > tr:nth-child(7),
+#obs_1 tbody > tr:nth-child(8),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#obs_1 tbody > tr:nth-child(1),
+#obs_1 tbody > tr:nth-child(2),
+#obs_1 tbody > tr:nth-child(3),
+#obs_1 tbody > tr:nth-child(4),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
 
 <div id="obs_1">
 
@@ -790,6 +828,26 @@ The constraints combinations described below could be tested in two ways:
 
 ## 3.2. OBSERVATION state existence = 0..1, protocol existence = 1..1
 
+<style>
+
+#obs_2 tbody > tr:nth-child(6),
+#obs_2 tbody > tr:nth-child(8),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#obs_2 tbody > tr:nth-child(1),
+#obs_2 tbody > tr:nth-child(2),
+#obs_2 tbody > tr:nth-child(3),
+#obs_2 tbody > tr:nth-child(4),
+#obs_2 tbody > tr:nth-child(5),
+#obs_2 tbody > tr:nth-child(7),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
 <div id="obs_2">
 
 | data         | state      | protocol    | expected | constraints violated |
@@ -807,6 +865,26 @@ The constraints combinations described below could be tested in two ways:
 
 
 ## 3.3. OBSERVATION state existence = 1..1, protocol existence = 0..1
+
+<style>
+
+#obs_3 tbody > tr:nth-child(7),
+#obs_3 tbody > tr:nth-child(8),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#obs_3 tbody > tr:nth-child(1),
+#obs_3 tbody > tr:nth-child(2),
+#obs_3 tbody > tr:nth-child(3),
+#obs_3 tbody > tr:nth-child(4),
+#obs_3 tbody > tr:nth-child(5),
+#obs_3 tbody > tr:nth-child(6),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
 
 <div id="obs_3">
 
@@ -826,6 +904,26 @@ The constraints combinations described below could be tested in two ways:
 
 ## 3.4. OBSERVATION state existence = 1..1, protocol existence = 1..1
 
+<style>
+
+#obs_4 tbody > tr:nth-child(8),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#obs_4 tbody > tr:nth-child(1),
+#obs_4 tbody > tr:nth-child(2),
+#obs_4 tbody > tr:nth-child(3),
+#obs_4 tbody > tr:nth-child(4),
+#obs_4 tbody > tr:nth-child(5),
+#obs_4 tbody > tr:nth-child(6),
+#obs_4 tbody > tr:nth-child(7),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
 <div id="obs_4">
 
 | data         | state      | protocol    | expected | constraints violated |
@@ -840,8 +938,6 @@ The constraints combinations described below could be tested in two ways:
 | present      | present    | present     | accepted |  |
 
 </div>
-
-
 
 
 
@@ -873,6 +969,20 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.2. HISTORY events cardinality 0..*, summary existence 0..1
 
+<style>
+
+#history_1 tbody > tr:nth-child(1),
+#history_1 tbody > tr:nth-child(2),
+#history_1 tbody > tr:nth-child(3),
+#history_1 tbody > tr:nth-child(4),
+#history_1 tbody > tr:nth-child(5),
+#history_1 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+</style>
+
 <div id="history_1">
 
 | events           | summary         | expected | constraints violated |
@@ -888,6 +998,24 @@ The constraints combinations described below could be tested in two ways:
 
 
 ## 4.3. HISTORY events cardinality 1..*, summary existence 0..1
+
+<style>
+
+#history_2 tbody > tr:nth-child(2),
+#history_2 tbody > tr:nth-child(3),
+#history_2 tbody > tr:nth-child(5),
+#history_2 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_2 tbody > tr:nth-child(1),
+#history_2 tbody > tr:nth-child(4),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
 
 <div id="history_2">
 
@@ -905,6 +1033,24 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.4. HISTORY events cardinality 3..*, summary existence 0..1
 
+<style>
+
+#history_3 tbody > tr:nth-child(3),
+#history_3 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_3 tbody > tr:nth-child(1),
+#history_3 tbody > tr:nth-child(2),
+#history_3 tbody > tr:nth-child(4),
+#history_3 tbody > tr:nth-child(5),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
 <div id="history_3">
 
 | events           | summary         | expected | constraints violated |
@@ -920,6 +1066,25 @@ The constraints combinations described below could be tested in two ways:
 
 
 ## 4.5. HISTORY events cardinality 0..1, summary existence 0..1
+
+<style>
+
+#history_4 tbody > tr:nth-child(1),
+#history_4 tbody > tr:nth-child(2),
+#history_4 tbody > tr:nth-child(4),
+#history_4 tbody > tr:nth-child(5),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_4 tbody > tr:nth-child(3),
+#history_4 tbody > tr:nth-child(6),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
 
 <div id="history_4">
 
@@ -937,6 +1102,24 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.6. HISTORY events cardinality 1..1, summary existence 0..1
 
+<style>
+
+#history_5 tbody > tr:nth-child(2),
+#history_5 tbody > tr:nth-child(5),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_5 tbody > tr:nth-child(1),
+#history_5 tbody > tr:nth-child(3),
+#history_5 tbody > tr:nth-child(4),
+#history_5 tbody > tr:nth-child(6),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
 <div id="history_5">
 
 | events           | summary         | expected | constraints violated |
@@ -952,6 +1135,24 @@ The constraints combinations described below could be tested in two ways:
 
 
 ## 4.7. HISTORY events cardinality 3..5, summary existence 0..1
+
+<style>
+
+#history_6 tbody > tr:nth-child(3),
+#history_6 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_6 tbody > tr:nth-child(1),
+#history_6 tbody > tr:nth-child(2),
+#history_6 tbody > tr:nth-child(4),
+#history_6 tbody > tr:nth-child(5),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
 
 <div id="history_6">
 
@@ -969,7 +1170,25 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.8. HISTORY events cardinality 0..*, summary existence 1..1
 
-<div id="history_1">
+<style>
+
+#history_7 tbody > tr:nth-child(4),
+#history_7 tbody > tr:nth-child(5),
+#history_7 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_7 tbody > tr:nth-child(1),
+#history_7 tbody > tr:nth-child(2),
+#history_7 tbody > tr:nth-child(3),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
+<div id="history_7">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
@@ -985,7 +1204,25 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.9. HISTORY events cardinality 1..*, summary existence 1..1
 
-<div id="history_2">
+<style>
+
+#history_8 tbody > tr:nth-child(5),
+#history_8 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_8 tbody > tr:nth-child(1),
+#history_8 tbody > tr:nth-child(2),
+#history_8 tbody > tr:nth-child(3),
+#history_8 tbody > tr:nth-child(4),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
+<div id="history_8">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
@@ -1001,7 +1238,25 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.10. HISTORY events cardinality 3..*, summary existence 1..1
 
-<div id="history_3">
+<style>
+
+#history_9 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_9 tbody > tr:nth-child(1),
+#history_9 tbody > tr:nth-child(2),
+#history_9 tbody > tr:nth-child(3),
+#history_9 tbody > tr:nth-child(4),
+#history_9 tbody > tr:nth-child(5),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
+<div id="history_9">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
@@ -1017,7 +1272,25 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.11. HISTORY events cardinality 0..1, summary existence 1..1
 
-<div id="history_4">
+<style>
+
+#history_10 tbody > tr:nth-child(4),
+#history_10 tbody > tr:nth-child(5),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_10 tbody > tr:nth-child(1),
+#history_10 tbody > tr:nth-child(2),
+#history_10 tbody > tr:nth-child(3),
+#history_10 tbody > tr:nth-child(6),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
+<div id="history_10">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
@@ -1033,7 +1306,25 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.12. HISTORY events cardinality 1..1, summary existence 1..1
 
-<div id="history_5">
+<style>
+
+#history_11 tbody > tr:nth-child(5),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_11 tbody > tr:nth-child(1),
+#history_11 tbody > tr:nth-child(2),
+#history_11 tbody > tr:nth-child(3),
+#history_11 tbody > tr:nth-child(4),
+#history_11 tbody > tr:nth-child(6),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
+<div id="history_11">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
@@ -1049,7 +1340,25 @@ The constraints combinations described below could be tested in two ways:
 
 ## 4.13. HISTORY events cardinality 3..5, summary existence 1..1
 
-<div id="history_6">
+<style>
+
+#history_12 tbody > tr:nth-child(6),
+.accepted {
+  background-color: #ccffcc;
+}
+
+#history_12 tbody > tr:nth-child(1),
+#history_12 tbody > tr:nth-child(2),
+#history_12 tbody > tr:nth-child(3),
+#history_12 tbody > tr:nth-child(4),
+#history_12 tbody > tr:nth-child(5),
+.rejected {
+  background-color: #ffcccc;
+}
+
+</style>
+
+<div id="history_12">
 
 | events           | summary         | expected | constraints violated |
 |:-----------------|:----------------|:--------:|:---------------------|
@@ -1065,12 +1374,16 @@ The constraints combinations described below could be tested in two ways:
 
 # 5. EVENT data sets and test cases
 
+## Reference UML
+
+![](https://specifications.openehr.org/releases/RM/Release-1.1.0/UML/diagrams/RM-data_structures.svg)
+
 EVENT data sets:
 
 1. EVENT with no state
 2. EVENT with state
 
-> Note: since data is mandatory by the RM we can't have a case for an AOM constraint with "no EVENT.data". Though any EVENT committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
+> Note: since EVENT.data is mandatory by the RM we can't have a case for an AOM constraint with "no EVENT.data". Though any EVENT committed to the SUT without data will return a validation error comming from the RM/Schema, and this should be tested.
 
 
 EVENT type combinations:
@@ -1113,9 +1426,9 @@ The constraints combinations described below could be tested in two ways:
 
 </div>
 
-## 5.3. EVENT is EVENT
+## 5.3. EVENT is EVENT (type validation)
 
-The title of this case is correct, it means, in the AOM/TOM the constraint for the EVENT type is using the abstract class EVENT, so it allows any EVENT subclass at this position at runtime.
+The title of this case is correct, it means: in the AOM/TOM the constraint for the EVENT type is using the abstract class EVENT, so it allows any EVENT subclass at runtime.
 
 <div id="evt_3">
 
@@ -1126,7 +1439,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
-## 5.4. EVENT is POINT_EVENT
+## 5.4. EVENT is POINT_EVENT (type validation)
 
 <div id="evt_3">
 
@@ -1137,7 +1450,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
-## 5.5. EVENT is INTERVAL_EVENT
+## 5.5. EVENT is INTERVAL_EVENT (type validation)
 
 <div id="evt_3">
 
@@ -1151,7 +1464,6 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 # 6. ITEM_STRUCTURE data sets and test cases
 
-
 ITEM_STRUCTURE type combinations:
 
 1. ITEM_STRUCTURE is ITEM_TREE
@@ -1161,9 +1473,9 @@ ITEM_STRUCTURE type combinations:
 
 > Note: testing with any of the ITEM_STRUCTURE subclasses shouldn't affect the result of testing combinations with the rest of the constraints defined on container classes. It will affect only the type checking test if the wrong type of ITEM_STRUCTRE is provided. So instead of combining the expected results with the rest of the constraints, we will define separate test cases.
 
-## 6.1. ITEM_STRUCTURE is ITEM_STRUCTURE
+## 6.1. ITEM_STRUCTURE is any ITEM_STRUCTURE (type validation)
 
-The title of this case is correct, it means, in the AOM/TOM the constraint for the ITEM_STRUCTURE type is using the abstract class ITEM_STRUCTURE, so it allows any ITEM_STRUCTURE subclass at this position at runtime.
+The title of this case is correct, it means, in the AOM/TOM the constraint for the ITEM_STRUCTURE type is using an open constraint, so it allows any ITEM_STRUCTURE subclass at this position at runtime.
 
 <div id="str_1">
 
@@ -1176,7 +1488,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
-## 6.2. ITEM_STRUCTURE is ITEM_TREE
+## 6.2. ITEM_STRUCTURE is ITEM_TREE (type validation)
 
 <div id="str_2">
 
@@ -1190,7 +1502,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 </div>
 
 
-## 6.3. ITEM_STRUCTURE is ITEM_LIST
+## 6.3. ITEM_STRUCTURE is ITEM_LIST (type validation)
 
 <div id="str_3">
 
@@ -1204,7 +1516,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 </div>
 
 
-## 6.4. ITEM_STRUCTURE is ITEM_TABLE
+## 6.4. ITEM_STRUCTURE is ITEM_TABLE (type validation)
 
 <div id="str_4">
 
@@ -1218,7 +1530,7 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 </div>
 
 
-## 6.5. ITEM_STRUCTURE is ITEM_SINGLE
+## 6.5. ITEM_STRUCTURE is ITEM_SINGLE (type validation)
 
 <div id="str_5">
 
@@ -1231,4 +1543,50 @@ The title of this case is correct, it means, in the AOM/TOM the constraint for t
 
 </div>
 
+## 6.6. ITEM_TREE.items cardinality 0..*
+## 6.7. ITEM_TREE.items cardinality 1..*
+## 6.8. ITEM_TREE.items cardinality 3..*
+## 6.9. ITEM_TREE.items cardinality 0..1
+## 6.10. ITEM_TREE.items cardinality 1..1
+## 6.11. ITEM_TREE.items cardinality 3..5
 
+## 6.12. ITEM_LIST.items cardinality 0..*
+## 6.13. ITEM_LIST.items cardinality 1..*
+## 6.14. ITEM_LIST.items cardinality 3..*
+## 6.15. ITEM_LIST.items cardinality 0..1
+## 6.16. ITEM_LIST.items cardinality 1..1
+## 6.17. ITEM_LIST.items cardinality 3..5
+
+## 6.18. ITEM_TABLE.rows cardinality 0..*
+## 6.19. ITEM_TABLE.rows cardinality 1..*
+## 6.20. ITEM_TABLE.rows cardinality 3..*
+## 6.21. ITEM_TABLE.rows cardinality 0..1
+## 6.22. ITEM_TABLE.rows cardinality 1..1
+## 6.23. ITEM_TABLE.rows cardinality 3..5
+
+
+# 7. ITEM data sets and test cases
+
+## 7.1. ITEM is any ITEM (type validation)
+## 7.2. ITEM is CLUSTER (type validation)
+## 7.3. ITEM is ELEMENT (type validation)
+
+## 7.4. CLUSTER.items cardinality 0..*
+## 7.5. CLUSTER.items cardinality 1..*
+## 7.6. CLUSTER.items cardinality 3..*
+## 7.7. CLUSTER.items cardinality 0..1
+## 7.8. CLUSTER.items cardinality 1..1
+## 7.9. CLUSTER.items cardinality 3..5
+
+## 7.8. ELEMENT.value existence = 0..1
+## 7.9. ELEMENT.value existence = 1..1
+## 7.10. ELEMENT.null_flavour existence = 0..1
+## 7.11. ELEMENT.null_flavour existence = 1..1
+
+> We need to consider the invariant of value XOR null_flavour
+
+TODO: The cases for the different ELEMENT.value types will be in the data types component
+
+TODO: Add type test case for LOCATABLE.name having it's type defined as DV_CODED_TEXT
+
+TODO: Add occurrences test cases for items contained in container attributes (miultiple attributes)
