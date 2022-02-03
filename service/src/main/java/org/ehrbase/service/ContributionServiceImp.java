@@ -64,7 +64,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     public static final String TYPE_EHRSTATUS = "EHR_STATUS";
     public static final String TYPE_FOLDER = "FOLDER";
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final CompositionService compositionService;
     private final EhrService ehrService;

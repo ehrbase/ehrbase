@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
- *
- * This file is part of project EHRbase
+ * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,12 +30,19 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
+/**
+ * {@link Configuration} for Basic authentication.
+ *
+ * @author Jake Smolka
+ * @author Renaud Subiger
+ * @since 1.0.0
+ */
 @Configuration
 @ConditionalOnProperty(prefix = "security", name = "authType", havingValue = "basic")
 @EnableWebSecurity
 public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(BasicAuthSecurityConfiguration.class);
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final SecurityProperties properties;
 
@@ -47,7 +52,7 @@ public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
 
   @PostConstruct
   public void initialize() {
-    LOG.info("Using basic authentication.");
+    logger.info("Using basic authentication");
   }
 
   @Override
@@ -72,7 +77,7 @@ public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
         .cors()
           .and()
         .csrf()
-          .ignoringAntMatchers("/rest/**")
+        .ignoringAntMatchers("/rest/**")
           .and()
         .authorizeRequests()
           .antMatchers("/rest/admin/**", "/management/**").hasRole(ADMIN)

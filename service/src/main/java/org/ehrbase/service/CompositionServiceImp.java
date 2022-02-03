@@ -1,16 +1,11 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH,
- * Jake Smolka (Hannover Medical School),
- * Luis Marco-Ruiz (Hannover Medical School),
- * Stefan Spiska (Vitasystems GmbH).
- *
- * This file is part of project EHRbase
+ * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,32 +63,36 @@ import org.ehrbase.serialisation.flatencoding.FlatFormat;
 import org.ehrbase.serialisation.flatencoding.FlatJasonProvider;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
-import org.ehrbase.validation.ConstraintViolationException;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.templateprovider.TemplateProvider;
 import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * {@link CompositionService} implementation.
+ *
+ * @author Jake Smolka
+ * @author Luis Marco-Ruiz
+ * @author Stefan Spiska
+ * @since 1.0.0
+ */
 @Service
-@Transactional()
+@Transactional
 public class CompositionServiceImp extends BaseServiceImp implements CompositionService {
 
-  public static final String DESCRIPTION = "description";
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
   private final ValidationService validationService;
   private final KnowledgeCacheService knowledgeCacheService;
   private final EhrService ehrService;
-  private boolean supportCompositionXRef = false;
+  private final boolean supportCompositionXRef = false;
 
-  @Autowired
-  public CompositionServiceImp(
-      KnowledgeCacheService knowledgeCacheService,
+  public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService,
       ValidationService validationService,
       EhrService ehrService,
       DSLContext context,
@@ -149,19 +148,12 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
     } catch (org.ehrbase.validation.ValidationException e) {
       throw new UnprocessableEntityException(e.getMessage());
+    } catch (UnprocessableEntityException | ValidationException e) {
+      throw e;
+    } catch (IllegalArgumentException e) {
+      throw new ValidationException(e);
     } catch (Exception e) {
-      // rethrow if this class, but wrap all others in InternalServerException
-      if (e.getClass().equals(UnprocessableEntityException.class)) {
-        throw (UnprocessableEntityException) e;
-      }
-      if (e.getClass().equals(IllegalArgumentException.class)) {
-        throw new ValidationException(e);
-      } else if (e.getClass()
-          .equals(org.ehrbase.validation.ValidationException.class)) {
-        throw new ValidationException(e);
-      } else {
-        throw new InternalServerException(e);
-      }
+      throw new InternalServerException(e);
     }
 
     // pre-step: check for valid ehrId
@@ -195,13 +187,14 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         compositionId =
             compositionAccess.commit(LocalDateTime.now(), committerId, systemId, description);
       }
+    } catch (IllegalArgumentException e) {
+      throw e;
     } catch (Exception e) {
-      if (e instanceof IllegalArgumentException) {
-        throw new IllegalArgumentException(e);
-      } else {
-        throw new InternalServerException(e);
-      }
+      throw new InternalServerException(e);
     }
+
+    logger.debug("Composition created: id={}", compositionId);
+
     return compositionId;
   }
 
@@ -447,7 +440,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
           I_CompositionAccess.retrieveInstanceByTimestamp(
               getDataAccess(), compositionId, Timestamp.valueOf(timestamp));
     } catch (Exception e) {
-      logger.error(e.getMessage());
       throw new InternalServerException(e);
     }
 
@@ -596,7 +588,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     try {
       return I_CompositionAccess.getLastVersionNumber(getDataAccess(), compositionId);
     } catch (Exception e) {
-      logger.error(e.getMessage());
       throw new InternalServerException(e);
     }
   }
@@ -608,9 +599,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       version =
           I_CompositionAccess.getVersionFromTimeStamp(
               getDataAccess(), compositionId, Timestamp.valueOf(timestamp));
-    } catch (Exception e) {
-      logger.error(e.getMessage());
+    } catch (ObjectNotFoundException e) {
       throw e;
+    } catch (Exception e) {
+      throw new InternalServerException(e);
     }
     if (version <= 0) {
       throw new InternalServerException("Invalid version number calculated.");
@@ -635,7 +627,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    *
    * @param content Composition input
    * @param format  Composition format
-   * @return
+   * @return the uid of the composition
    */
   @Override
   public String getUidFromInputComposition(String content, CompositionFormat format)

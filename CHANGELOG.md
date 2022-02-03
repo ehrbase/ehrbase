@@ -11,10 +11,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Add Flyway callback to check `IntervalStyle` configuration
   parameter ([#720](https://github.com/ehrbase/ehrbase/pull/720)).
-- Validate RM types used in OPT template ([#739](https://github.com/ehrbase/ehrbase/issues/739))
+- Validate RM types used in OPT template ([#739](https://github.com/ehrbase/ehrbase/issues/739)).
+
 ### Changed
 
-- Upgrade to Archie 1.0.4 ([#719](https://github.com/ehrbase/ehrbase/pull/719))
+- Upgrade to Archie 1.0.4 ([#719](https://github.com/ehrbase/ehrbase/pull/719)).
+- Improve errors and exceptions logging ([#745](https://github.com/ehrbase/ehrbase/pull/745)).
 
 ### Fixed
 

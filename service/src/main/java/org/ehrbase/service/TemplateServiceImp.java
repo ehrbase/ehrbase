@@ -56,7 +56,7 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
     private final KnowledgeCacheService knowledgeCacheService;
     private final CompositionService compositionService;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, CompositionService compositionService) {

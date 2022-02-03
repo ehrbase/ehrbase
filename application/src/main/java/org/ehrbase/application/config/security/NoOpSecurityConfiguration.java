@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH and Hannover Medical School.
- *
- * This file is part of project EHRbase
+ * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,23 +27,28 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
+/**
+ * {@link Configuration} used when security is disabled.
+ *
+ * @author Renaud Subiger
+ * @since 1.0.0
+ */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "none")
 public class NoOpSecurityConfiguration {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NoOpSecurityConfiguration.class);
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   @PostConstruct
   public void initialize() {
-    LOG.warn("Security is disabled. Configure 'security.auth-type' to disable this warning.");
+    logger.warn("Security is disabled. Configure 'security.auth-type' to disable this warning.");
   }
 
   @Bean
   @Primary
   public IAuthenticationFacade anonymousAuthentication() {
     var filter = new AnonymousAuthenticationFilter("key");
-    return () -> new AnonymousAuthenticationToken("key",
-        filter.getPrincipal(),
+    return () -> new AnonymousAuthenticationToken("key", filter.getPrincipal(),
         filter.getAuthorities());
   }
 }

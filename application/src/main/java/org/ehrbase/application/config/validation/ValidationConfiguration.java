@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH.
- *
- * This file is part of project EHRbase
+ * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ehrbase.application.config.validation;
 
 import java.util.Map;
@@ -31,6 +30,9 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * {@link Configuration} for external terminology validation.
+ *
+ * @author Renaud Subiger
+ * @since 1.0.0
  */
 @Configuration
 @ConditionalOnProperty(name = "validation.external-terminology.enabled", havingValue = "true")
@@ -38,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
 @SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ValidationConfiguration.class);
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final ValidationProperties properties;
 
@@ -72,7 +74,7 @@ public class ValidationConfiguration {
 
   private ExternalTerminologyValidation buildExternalTerminologyValidation(
       Map.Entry<String, ValidationProperties.Provider> provider) {
-    LOG.info("Initializing '{}' external terminology provider (type: {})", provider.getKey(),
+    logger.info("Initializing '{}' external terminology provider (type: {})", provider.getKey(),
         provider.getValue().getType());
     if (provider.getValue().getType() == ValidationProperties.ProviderType.FHIR) {
       return fhirTerminologyValidation(provider.getValue().getUrl());

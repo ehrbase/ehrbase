@@ -21,11 +21,22 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.ehrbase.jooq.pg.Tables.ENTRY_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.TERRITORY;
+
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
 import com.nedap.archie.rm.archetyped.TemplateId;
-import com.nedap.archie.rm.composition.*;
+import com.nedap.archie.rm.composition.Action;
+import com.nedap.archie.rm.composition.AdminEntry;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.composition.Evaluation;
+import com.nedap.archie.rm.composition.EventContext;
+import com.nedap.archie.rm.composition.Instruction;
+import com.nedap.archie.rm.composition.Observation;
+import com.nedap.archie.rm.composition.Section;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
@@ -34,6 +45,13 @@ import com.nedap.archie.rm.support.identification.ArchetypeID;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ContextAccess;
@@ -59,466 +77,505 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Timestamp;
-import java.util.*;
-
-import static org.ehrbase.jooq.pg.Tables.*;
-
 /**
- * operations on the Entry part of a Composition (Entry is archetyped)
- * <p>
- * Created by Christian Chevalley on 4/9/2015.
+ * Operations on the Entry part of a Composition (Entry is archetyped).
+ *
+ * @author Christian Chevalley
+ * @author Jake Smolka
+ * @author Luis Marco-Ruiz
+ * @since 1.0.0
  */
 public class EntryAccess extends DataAccess implements I_EntryAccess {
 
-  private static final Logger log = LoggerFactory.getLogger(EntryAccess.class);
-    public static final String DB_INCONSISTENCY = "DB inconsistency:";
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private EntryRecord entryRecord;
+  public static final String DB_INCONSISTENCY = "DB inconsistency:";
 
-    private Composition composition;
+  private EntryRecord entryRecord;
 
-    /**
-     * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
-     *
-     * @param domainAccess  Current domain access object
-     * @param templateId    Template ID of this entry
-     * @param sequence      Sequence number of this entry
-     * @param compositionId Linked composition ID
-     * @param composition   Object representation of linked composition
-     */
-    public EntryAccess(I_DomainAccess domainAccess, String templateId, Integer sequence, UUID compositionId, Composition composition) {
-        super(domainAccess.getContext(), domainAccess.getKnowledgeManager(), domainAccess.getIntrospectService(), domainAccess.getServerConfig());
-        setFields(templateId, sequence, compositionId, composition);
+  private Composition composition;
+
+  /**
+   * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
+   *
+   * @param domainAccess  Current domain access object
+   * @param templateId    Template ID of this entry
+   * @param sequence      Sequence number of this entry
+   * @param compositionId Linked composition ID
+   * @param composition   Object representation of linked composition
+   */
+  public EntryAccess(I_DomainAccess domainAccess, String templateId, Integer sequence,
+      UUID compositionId, Composition composition) {
+    super(domainAccess.getContext(), domainAccess.getKnowledgeManager(),
+        domainAccess.getIntrospectService(), domainAccess.getServerConfig());
+    setFields(templateId, sequence, compositionId, composition);
+  }
+
+  private EntryAccess(I_DomainAccess domainAccess) {
+    super(domainAccess);
+
+  }
+
+  /**
+   * @throws IllegalArgumentException if DB is inconsistent or operation fails
+   */
+  public static List<I_EntryAccess> retrieveInstanceInComposition(I_DomainAccess domainAccess,
+      I_CompositionAccess compositionAccess) {
+
+    Result<EntryRecord> entryRecords = domainAccess.getContext().selectFrom(ENTRY)
+        .where(ENTRY.COMPOSITION_ID.eq(compositionAccess.getId())).fetch();
+
+    //build the list of parameters to recreate the composition
+    Map<SystemValue, Object> values = new HashMap<>();
+    values.put(SystemValue.COMPOSER,
+        new PersistedPartyProxy(domainAccess).retrieve(compositionAccess.getComposerId()));
+
+    // optional handling for persistent compositions that do not have a context
+    Optional<I_ContextAccess> opContextAccess = compositionAccess.getContextId()
+        .map(id -> I_ContextAccess.retrieveInstance(domainAccess, id));
+    opContextAccess.ifPresent(
+        context -> values.put(SystemValue.CONTEXT, context.mapRmEventContext()));
+
+    values.put(SystemValue.LANGUAGE,
+        new CodePhrase(new TerminologyId("ISO_639-1"), compositionAccess.getLanguageCode()));
+    String territory2letters = domainAccess.getContext()
+        .fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionAccess.getTerritoryCode()))
+        .getTwoletter();
+
+    values.put(SystemValue.TERRITORY,
+        new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
+
+    if (compositionAccess.getFeederAudit() != null) {
+      values.put(SystemValue.FEEDER_AUDIT,
+          new FeederAuditEncoding().fromDB(compositionAccess.getFeederAudit()));
     }
 
-    private EntryAccess(I_DomainAccess domainAccess) {
-        super(domainAccess);
-
+    if (compositionAccess.getLinks() != null) {
+      values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionAccess.getLinks()));
     }
 
-    /**
-     * @throws IllegalArgumentException if DB is inconsistent or operation fails
-     */
-    public static List<I_EntryAccess> retrieveInstanceInComposition(I_DomainAccess domainAccess, I_CompositionAccess compositionAccess) {
+    List<I_EntryAccess> content = new ArrayList<>();
 
-        Result<EntryRecord> entryRecords = domainAccess.getContext().selectFrom(ENTRY).where(ENTRY.COMPOSITION_ID.eq(compositionAccess.getId())).fetch();
+    try {
+      EntryAccess entryAccess = new EntryAccess(domainAccess);
 
-        //build the list of parameters to recreate the composition
-        Map<SystemValue, Object> values = new HashMap<>();
-        values.put(SystemValue.COMPOSER, new PersistedPartyProxy(domainAccess).retrieve(compositionAccess.getComposerId()));
+      for (EntryRecord record : entryRecords) {
+        //set the record UID in the composition with matching version number
+        Integer version = I_CompositionAccess.getLastVersionNumber(domainAccess,
+            compositionAccess.getId());
+        values.put(SystemValue.UID,
+            new ObjectVersionId(
+                compositionAccess.getId().toString() + "::" + domainAccess.getServerConfig()
+                    .getNodename() + "::" + version));
 
-        // optional handling for persistent compositions that do not have a context
-        Optional<I_ContextAccess> opContextAccess = compositionAccess.getContextId().map(id -> I_ContextAccess.retrieveInstance(domainAccess, id));
-        opContextAccess.ifPresent(context -> values.put(SystemValue.CONTEXT, context.mapRmEventContext()));
+        entryAccess.entryRecord = record;
+        String value = record.getEntry().data();
+        entryAccess.composition = new RawJson().unmarshal(value, Composition.class);
 
-        values.put(SystemValue.LANGUAGE, new CodePhrase(new TerminologyId("ISO_639-1"), compositionAccess.getLanguageCode()));
-        String territory2letters = domainAccess.getContext().fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionAccess.getTerritoryCode())).getTwoletter();
+        // continuing optional handling for persistent compositions
+        opContextAccess.map(I_ContextAccess::mapRmEventContext)
+            .ifPresent(ec -> values.put(SystemValue.CONTEXT, ec));
+        values.put(SystemValue.CATEGORY, new RecordedDvCodedText().fromDB(record, ENTRY.CATEGORY));
+        setCompositionAttributes(entryAccess.composition, values);
+        buildArchetypeDetails(entryAccess);
 
-        values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
+        content.add(entryAccess);
+      }
+    } catch (Exception e) {
+      throw new IllegalArgumentException(DB_INCONSISTENCY + e);
+    }
+    return content;
+  }
 
-        if (compositionAccess.getFeederAudit() != null)
-            values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionAccess.getFeederAudit()));
+  private static void buildArchetypeDetails(EntryAccess entryAccess) {
+    Archetyped archetypeDetails = new Archetyped();
+    TemplateId templateId = new TemplateId();
+    templateId.setValue(entryAccess.getTemplateId());
+    archetypeDetails.setTemplateId(templateId);
+    archetypeDetails.setArchetypeId(new ArchetypeID(entryAccess.getArchetypeId()));
+    archetypeDetails.setRmVersion(entryAccess.getRmVersion());
+    entryAccess.composition.setArchetypeDetails(archetypeDetails);
+  }
 
-        if (compositionAccess.getLinks() != null)
-            values.put(SystemValue.LINKS, new LinksEncoding().fromDB(compositionAccess.getLinks()));
+  public static List<I_EntryAccess> retrieveInstanceInCompositionVersion(
+      I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
 
-        List<I_EntryAccess> content = new ArrayList<>();
+    Result<EntryHistoryRecord> entryHistoryRecords = domainAccess.getContext().
+        selectFrom(ENTRY_HISTORY)
+        .where(ENTRY_HISTORY.COMPOSITION_ID.eq(compositionHistoryAccess.getId()))
+        .and(ENTRY_HISTORY.SYS_TRANSACTION.eq(compositionHistoryAccess.getSysTransaction()))
+        .fetch();
 
-        try {
-            EntryAccess entryAccess = new EntryAccess(domainAccess);
+    //build the list of parameters to recreate the composition
+    Map<SystemValue, Object> values = new HashMap<>();
+    values.put(SystemValue.COMPOSER,
+        new PersistedPartyProxy(domainAccess).retrieve(compositionHistoryAccess.getComposerId()));
 
-            for (EntryRecord record : entryRecords) {
-                //set the record UID in the composition with matching version number
-                Integer version = I_CompositionAccess.getLastVersionNumber(domainAccess, compositionAccess.getId());
-                values.put(SystemValue.UID,
-                        new ObjectVersionId(compositionAccess.getId().toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
+    EventContext context = I_ContextAccess.retrieveHistoricalEventContext(domainAccess,
+        compositionHistoryAccess.getId(), compositionHistoryAccess.getSysTransaction());
+    if (context == null) {//unchanged context use the current one!
+      // also optional handling of context, because persistent compositions don't have a context
+      compositionHistoryAccess.getContextId().ifPresent(
+          uuid -> I_ContextAccess.retrieveInstance(domainAccess, uuid).mapRmEventContext());
+    }
+    values.put(SystemValue.CONTEXT, context);
 
-                entryAccess.entryRecord = record;
-                String value = record.getEntry().data();
-                entryAccess.composition = new RawJson().unmarshal(value, Composition.class);
+    values.put(SystemValue.LANGUAGE,
+        new CodePhrase(new TerminologyId("ISO_639-1"), compositionHistoryAccess.getLanguageCode()));
+    String territory2letters = domainAccess.getContext()
+        .fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionHistoryAccess.getTerritoryCode()))
+        .getTwoletter();
+    values.put(SystemValue.TERRITORY,
+        new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
 
-                // continuing optional handling for persistent compositions
-                opContextAccess.map(I_ContextAccess::mapRmEventContext).ifPresent(ec -> values.put(SystemValue.CONTEXT, ec));
-                values.put(SystemValue.CATEGORY, new RecordedDvCodedText().fromDB(record, ENTRY.CATEGORY));
-                setCompositionAttributes(entryAccess.composition, values);
-                buildArchetypeDetails(entryAccess);
+    values.put(SystemValue.FEEDER_AUDIT,
+        new FeederAuditEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
 
-                content.add(entryAccess);
-            }
-        } catch (Exception e) {
-            log.error(DB_INCONSISTENCY + e);
-            throw new IllegalArgumentException(DB_INCONSISTENCY + e);
-        }
-        return content;
+    List<I_EntryAccess> content = new ArrayList<>();
+
+    try {
+      EntryAccess entryAccess = new EntryAccess(domainAccess);
+
+      for (EntryHistoryRecord record : entryHistoryRecords) {
+        //set the record UID in the composition
+        UUID compositionId = compositionHistoryAccess.getId();
+        values.put(SystemValue.UID, new ObjectVersionId(
+            compositionId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::"
+                + version));
+
+        entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
+        entryAccess.entryRecord.from(record);
+        entryAccess.composition = new RawJson().unmarshal(record.getEntry().data(),
+            Composition.class);
+
+        setCompositionAttributes(entryAccess.composition, values);
+        buildArchetypeDetails(entryAccess);
+
+        content.add(entryAccess);
+      }
+    } catch (Exception e) {
+      throw new IllegalArgumentException(DB_INCONSISTENCY + e);
+    }
+    return content;
+  }
+
+  /**
+   * @throws InternalServerException when the query failed
+   */
+  public static Map<String, Object> queryJSON(I_DomainAccess domainAccess, String queryString) {
+    return new AsyncSqlQuery(domainAccess, queryString).fetch();
+  }
+
+  private static void setCompositionAttributes(Composition composition,
+      Map<SystemValue, Object> values) {
+
+    if (values == null) {
+      return;
     }
 
-    private static void buildArchetypeDetails(EntryAccess entryAccess) {
-        Archetyped archetypeDetails = new Archetyped();
-        TemplateId templateId = new TemplateId();
-        templateId.setValue(entryAccess.getTemplateId());
-        archetypeDetails.setTemplateId(templateId);
-        archetypeDetails.setArchetypeId(new ArchetypeID(entryAccess.getArchetypeId()));
-        archetypeDetails.setRmVersion(entryAccess.getRmVersion());
-        entryAccess.composition.setArchetypeDetails(archetypeDetails);
+    for (Map.Entry<SystemValue, Object> systemValue : values.entrySet()) {
+      switch (systemValue.getKey()) {
+        case CATEGORY:
+          composition.setCategory((DvCodedText) systemValue.getValue());
+          break;
+        case LANGUAGE:
+          composition.setLanguage((CodePhrase) systemValue.getValue());
+          break;
+        case TERRITORY:
+          composition.setTerritory((CodePhrase) systemValue.getValue());
+          break;
+        case COMPOSER:
+          composition.setComposer((PartyProxy) systemValue.getValue());
+          break;
+        case UID:
+          composition.setUid((UIDBasedId) systemValue.getValue());
+          break;
+        case CONTEXT:
+          composition.setContext((EventContext) systemValue.getValue());
+          break;
+        case NAME:
+          composition.setName((DvText) systemValue.getValue());
+          break;
+
+        case RM_VERSION:
+          composition.getArchetypeDetails().setRmVersion((String) systemValue.getValue());
+          break;
+
+        case FEEDER_AUDIT:
+          composition.setFeederAudit((FeederAudit) systemValue.getValue());
+          break;
+
+        case LINKS:
+          composition.setLinks((List<Link>) systemValue.getValue());
+          break;
+
+        default:
+          throw new IllegalArgumentException(
+              "Could not handle composition attribute:" + systemValue.getKey());
+      }
+    }
+  }
+
+  /**
+   * set the EntryRecord with fields from composition:<br>
+   * <ul>
+   * <li>category</li>
+   * <li>item type</li>
+   * <li>archetype node Id</li>
+   * <li>entry content (json)</li>
+   * </ul>
+   *
+   * @param record      Target {@link EntryRecord}
+   * @param composition input data in {@link Composition} representation
+   */
+  private void setCompositionFields(EntryRecord record, Composition composition) {
+
+    record.setCategory(record.getCategory());
+
+    if (composition.getContent() != null && !composition.getContent().isEmpty()) {
+      Object node = composition.getContent().get(0);
+
+      if (node instanceof Section) {
+        record.setItemType(EntryType.valueOf("section"));
+      } else if (node instanceof Evaluation || node instanceof Observation
+          || node instanceof Instruction || node instanceof Action) {
+        record.setItemType(EntryType.valueOf("care_entry"));
+      } else if (node instanceof AdminEntry) {
+        record.setItemType(EntryType.valueOf("admin"));
+      }
+    } else {
+      record.setItemType(EntryType.valueOf("admin"));
     }
 
-    public static List<I_EntryAccess> retrieveInstanceInCompositionVersion(I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
+    record.setArchetypeId(composition.getArchetypeNodeId());
 
-        Result<EntryHistoryRecord> entryHistoryRecords = domainAccess.getContext().
-                selectFrom(ENTRY_HISTORY)
-                .where(ENTRY_HISTORY.COMPOSITION_ID.eq(compositionHistoryAccess.getId()))
-                .and(ENTRY_HISTORY.SYS_TRANSACTION.eq(compositionHistoryAccess.getSysTransaction()))
-                .fetch();
+    RawJson rawJson = new RawJson();
+    record.setEntry(JSONB.valueOf(rawJson.marshal(composition)));
+  }
 
-        //build the list of parameters to recreate the composition
-        Map<SystemValue, Object> values = new HashMap<>();
-        values.put(SystemValue.COMPOSER, new PersistedPartyProxy(domainAccess).retrieve(compositionHistoryAccess.getComposerId()));
+  /**
+   * Sets the field of a new Entry record (as part of the calling {@link EntryAccess} instance) with
+   * given parameters. The Composition of the calling {@link EntryAccess} will be updated with the
+   * given {@link Composition} as a result.
+   *
+   * @param templateId    ID of template
+   * @param sequence      Sequence number
+   * @param compositionId ID of composition
+   * @param composition   {@link Composition} object with more information for the entry
+   */
+  private void setFields(String templateId, Integer sequence, UUID compositionId,
+      Composition composition) {
 
-        EventContext context = I_ContextAccess.retrieveHistoricalEventContext(domainAccess, compositionHistoryAccess.getId(), compositionHistoryAccess.getSysTransaction());
-        if (context == null) {//unchanged context use the current one!
-            // also optional handling of context, because persistent compositions don't have a context
-            compositionHistoryAccess.getContextId().ifPresent(uuid -> I_ContextAccess.retrieveInstance(domainAccess, uuid).mapRmEventContext());
-        }
-        values.put(SystemValue.CONTEXT, context);
+    entryRecord = getContext().newRecord(ENTRY);
 
-        values.put(SystemValue.LANGUAGE, new CodePhrase(new TerminologyId("ISO_639-1"), compositionHistoryAccess.getLanguageCode()));
-        String territory2letters = domainAccess.getContext().fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionHistoryAccess.getTerritoryCode())).getTwoletter();
-        values.put(SystemValue.TERRITORY, new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
+    entryRecord.setTemplateId(templateId);
+    entryRecord.setSequence(sequence);
+    entryRecord.setCompositionId(compositionId);
+    entryRecord.setRmVersion(composition.getArchetypeDetails().getRmVersion());
+    new RecordedDvCodedText().toDB(entryRecord, ENTRY.CATEGORY, composition.getCategory());
+    setCompositionFields(entryRecord, composition);
 
-        values.put(SystemValue.FEEDER_AUDIT, new FeederAuditEncoding().fromDB(compositionHistoryAccess.getFeederAudit()));
+    setCompositionName(composition.getName());
 
-        List<I_EntryAccess> content = new ArrayList<>();
+    this.composition = composition;
+  }
 
-        try {
-            EntryAccess entryAccess = new EntryAccess(domainAccess);
+  @Override
+  public Composition getComposition() {
+    return composition;
+  }
 
-            for (EntryHistoryRecord record : entryHistoryRecords) {
-                //set the record UID in the composition
-                UUID compositionId = compositionHistoryAccess.getId();
-                values.put(SystemValue.UID, new ObjectVersionId(compositionId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + version));
+  @Override
+  public UUID commit(Timestamp transactionTime) {
 
-                entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
-                entryAccess.entryRecord.from(record);
-                entryAccess.composition = new RawJson().unmarshal(record.getEntry().data(), Composition.class);
+    //use jOOQ
+    Record result = getContext()
+        .insertInto(ENTRY,
+            ENTRY.SEQUENCE,
+            ENTRY.COMPOSITION_ID,
+            ENTRY.TEMPLATE_ID,
+            ENTRY.ITEM_TYPE,
+            ENTRY.ARCHETYPE_ID,
+            ENTRY.CATEGORY,
+            ENTRY.ENTRY_,
+            ENTRY.SYS_TRANSACTION,
+            ENTRY.NAME,
+            ENTRY.RM_VERSION)
+        .values(DSL.val(getSequence()),
+            DSL.val(getCompositionId()),
+            DSL.val(getTemplateId()),
+            DSL.val(EntryType.valueOf(getItemType())),
+            DSL.val(getArchetypeId()),
+            DSL.val(getCategory()),
+            DSL.val(getEntryJson()),
+            DSL.val(transactionTime),
+            DSL.val(getCompositionName()),
+            DSL.val(getRmVersion()))
+        .returning(ENTRY.ID)
+        .fetchOne();
 
-                setCompositionAttributes(entryAccess.composition, values);
-                buildArchetypeDetails(entryAccess);
+    return result.getValue(ENTRY.ID);
+  }
 
-                content.add(entryAccess);
-            }
-        } catch (Exception e) {
-            log.error(DB_INCONSISTENCY + e);
-            throw new IllegalArgumentException(DB_INCONSISTENCY + e);
-        }
-        return content;
+  /**
+   * @throws InternalServerException because inherited interface function isn't implemented in this
+   *                                 class
+   * @deprecated
+   */
+  @Deprecated
+  @Override
+  public UUID commit() {
+    throw new InternalServerException("INTERNAL: commit without transaction time is not legal");
+  }
+
+  @Override
+  public Boolean update(Timestamp transactionTime) {
+    return update(transactionTime, false);
+  }
+
+  @Override
+  public Boolean update(Timestamp transactionTime, boolean force) {
+
+    logger.debug(
+        "updating entry with force flag:" + force + " and changed flag:" + entryRecord.changed());
+    if (!(force || entryRecord.changed())) {
+      logger.debug("No updateComposition took place, returning...");
+      return false;
     }
 
-    /**
-     * @throws InternalServerException when the query failed
-     */
-    public static Map<String, Object> queryJSON(I_DomainAccess domainAccess, String queryString) {
-        return new AsyncSqlQuery(domainAccess, queryString).fetch();
+    //ignore the temporal field since it is maintained by an external trigger!
+    entryRecord.changed(ENTRY.SYS_PERIOD, false);
+
+    UpdateQuery<?> updateQuery = getContext().updateQuery(ENTRY);
+    updateQuery.addValue(ENTRY.COMPOSITION_ID, getCompositionId());
+    updateQuery.addValue(ENTRY.SEQUENCE, DSL.field(DSL.val(getSequence())));
+    updateQuery.addValue(ENTRY.TEMPLATE_ID, DSL.field(DSL.val(getTemplateId())));
+
+    updateQuery.addValue(ENTRY.ITEM_TYPE, DSL.field(DSL.val(EntryType.valueOf(getItemType()))));
+    updateQuery.addValue(ENTRY.ARCHETYPE_ID, DSL.field(DSL.val(getArchetypeId())));
+    updateQuery.addValue(ENTRY.CATEGORY, DSL.field(DSL.val(getCategory())));
+    updateQuery.addValue(ENTRY.ENTRY_, DSL.field(DSL.val(getEntryJson())));
+    updateQuery.addValue(ENTRY.SYS_TRANSACTION, DSL.field(DSL.val(transactionTime)));
+    updateQuery.addValue(ENTRY.NAME, DSL.field(DSL.val(getCompositionName())));
+    updateQuery.addValue(ENTRY.RM_VERSION, DSL.field(DSL.val(getRmVersion())));
+    updateQuery.addConditions(ENTRY.ID.eq(getId()));
+
+    logger.debug("Update done...");
+
+    return updateQuery.execute() > 0;
+  }
+
+  /**
+   * @throws InternalServerException because inherited interface function isn't implemented in this
+   *                                 class
+   * @deprecated
+   */
+  @Deprecated
+  @Override
+  public Boolean update() {
+    throw new InternalServerException(
+        "INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
+  }
+
+  /**
+   * @throws InternalServerException because inherited interface function isn't implemented in this
+   *                                 class
+   * @deprecated
+   */
+  @Deprecated
+  @Override
+  public Boolean update(Boolean force) {
+    throw new InternalServerException(
+        "INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
+  }
+
+  @Override
+  public Integer delete() {
+
+    if (entryRecord != null) {
+      return entryRecord.delete();
     }
 
-    private static void setCompositionAttributes(Composition composition, Map<SystemValue, Object> values) {
+    return 0;
+  }
 
-        if (values == null) return;
+  @Override
+  public UUID getId() {
+    return entryRecord.getId();
+  }
 
+  @Override
+  public JSONB getEntryJson() {
+    return entryRecord.getEntry();
+  }
 
-        for (Map.Entry<SystemValue, Object> systemValue : values.entrySet()) {
-            switch (systemValue.getKey()) {
-                case CATEGORY:
-                    composition.setCategory((DvCodedText) systemValue.getValue());
-                    break;
-                case LANGUAGE:
-                    composition.setLanguage((CodePhrase) systemValue.getValue());
-                    break;
-                case TERRITORY:
-                    composition.setTerritory((CodePhrase) systemValue.getValue());
-                    break;
-                case COMPOSER:
-                    composition.setComposer((PartyProxy) systemValue.getValue());
-                    break;
-                case UID:
-                    composition.setUid((UIDBasedId) systemValue.getValue());
-                    break;
-                case CONTEXT:
-                    composition.setContext((EventContext) systemValue.getValue());
-                    break;
-                case NAME:
-                    composition.setName((DvText) systemValue.getValue());
-                    break;
+  @Override
+  public DvCodedTextRecord getCategory() {
+    return entryRecord.getCategory();
+  }
 
-                case RM_VERSION:
-                    composition.getArchetypeDetails().setRmVersion((String)systemValue.getValue());
-                    break;
+  public DvCodedTextRecord getCompositionName() {
+    return entryRecord.getName();
+  }
 
-                case FEEDER_AUDIT:
-                    composition.setFeederAudit((FeederAudit) systemValue.getValue());
-                    break;
+  public void setCompositionName(DvText compositionName) {
+    new RecordedDvText().toDB(entryRecord, ENTRY.NAME, compositionName);
+  }
 
-                case LINKS:
-                    composition.setLinks((List<Link>) systemValue.getValue());
-                    break;
+  @Override
+  public UUID getCompositionId() {
+    return entryRecord.getCompositionId();
+  }
 
-                default:
-                    throw new IllegalArgumentException("Could not handle composition attribute:" + systemValue.getKey());
-            }
-        }
-    }
+  @Override
+  public void setCompositionId(UUID compositionId) {
+    entryRecord.setCompositionId(compositionId);
+  }
 
-    /**
-     * set the EntryRecord with fields from composition:<br>
-     * <ul>
-     * <li>category</li>
-     * <li>item type</li>
-     * <li>archetype node Id</li>
-     * <li>entry content (json)</li>
-     * </ul>
-     *
-     * @param record      Target {@link EntryRecord}
-     * @param composition input data in {@link Composition} representation
-     */
-    private void setCompositionFields(EntryRecord record, Composition composition) {
+  @Override
+  public String getTemplateId() {
+    return entryRecord.getTemplateId();
+  }
 
-        record.setCategory(record.getCategory());
+  @Override
+  public void setTemplateId(String templateId) {
+    entryRecord.setTemplateId(templateId);
+  }
 
-        if (composition.getContent() != null && !composition.getContent().isEmpty()) {
-            Object node = composition.getContent().get(0);
+  @Override
+  public Integer getSequence() {
+    return entryRecord.getSequence();
+  }
 
+  @Override
+  public void setSequence(Integer sequence) {
+    entryRecord.setSequence(sequence);
+  }
 
-            if (node instanceof Section)
-                record.setItemType(EntryType.valueOf("section"));
-            else if (node instanceof Evaluation || node instanceof Observation || node instanceof Instruction || node instanceof Action)
-                record.setItemType(EntryType.valueOf("care_entry"));
-            else if (node instanceof AdminEntry)
-                record.setItemType(EntryType.valueOf("admin"));
-        } else
-            record.setItemType(EntryType.valueOf("admin"));
+  @Override
+  public String getArchetypeId() {
+    return entryRecord.getArchetypeId();
+  }
 
-        record.setArchetypeId(composition.getArchetypeNodeId());
+  @Override
+  public String getRmVersion() {
+    return entryRecord.getRmVersion();
+  }
 
 
-        RawJson rawJson = new RawJson();
-        record.setEntry(JSONB.valueOf(rawJson.marshal(composition)));
-    }
+  @Override
+  public String getItemType() {
+    return entryRecord.getItemType().getLiteral();
+  }
 
-    /**
-     * Sets the field of a new Entry record (as part of the calling {@link EntryAccess} instance) with given parameters. The
-     * Composition of the calling {@link EntryAccess} will be updated with the given {@link Composition} as a result.
-     *
-     * @param templateId    ID of template
-     * @param sequence      Sequence number
-     * @param compositionId ID of composition
-     * @param composition   {@link Composition} object with more information for the entry
-     */
-    private void setFields(String templateId, Integer sequence, UUID compositionId, Composition composition) {
+  @Override
+  public void setCompositionData(Composition composition) {
+    setCompositionFields(entryRecord, composition);
+  }
 
-        entryRecord = getContext().newRecord(ENTRY);
-
-        entryRecord.setTemplateId(templateId);
-        entryRecord.setSequence(sequence);
-        entryRecord.setCompositionId(compositionId);
-        entryRecord.setRmVersion(composition.getArchetypeDetails().getRmVersion());
-        new RecordedDvCodedText().toDB(entryRecord, ENTRY.CATEGORY, composition.getCategory());
-        setCompositionFields(entryRecord, composition);
-
-        setCompositionName(composition.getName());
-
-        this.composition = composition;
-    }
-
-    @Override
-    public Composition getComposition() {
-        return composition;
-    }
-
-    @Override
-    public UUID commit(Timestamp transactionTime) {
-
-        //use jOOQ
-        Record result = getContext()
-                .insertInto(ENTRY,
-                        ENTRY.SEQUENCE,
-                        ENTRY.COMPOSITION_ID,
-                        ENTRY.TEMPLATE_ID,
-                        ENTRY.ITEM_TYPE,
-                        ENTRY.ARCHETYPE_ID,
-                        ENTRY.CATEGORY,
-                        ENTRY.ENTRY_,
-                        ENTRY.SYS_TRANSACTION,
-                        ENTRY.NAME,
-                        ENTRY.RM_VERSION)
-                .values(DSL.val(getSequence()),
-                        DSL.val(getCompositionId()),
-                        DSL.val(getTemplateId()),
-                        DSL.val(EntryType.valueOf(getItemType())),
-                        DSL.val(getArchetypeId()),
-                        DSL.val(getCategory()),
-                        DSL.val(getEntryJson()),
-                        DSL.val(transactionTime),
-                        DSL.val(getCompositionName()),
-                        DSL.val(getRmVersion()))
-                .returning(ENTRY.ID)
-                .fetchOne();
-
-        return result.getValue(ENTRY.ID);
-    }
-
-    /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public UUID commit() {
-        throw new InternalServerException("INTERNAL: commit without transaction time is not legal");
-    }
-
-    @Override
-    public Boolean update(Timestamp transactionTime) {
-        return update(transactionTime, false);
-    }
-
-    @Override
-    public Boolean update(Timestamp transactionTime, boolean force) {
-
-        log.debug("updating entry with force flag:" + force + " and changed flag:" + entryRecord.changed());
-        if (!(force || entryRecord.changed())) {
-            log.debug("No updateComposition took place, returning...");
-            return false;
-        }
-
-        //ignore the temporal field since it is maintained by an external trigger!
-        entryRecord.changed(ENTRY.SYS_PERIOD, false);
-
-        UpdateQuery<?> updateQuery = getContext().updateQuery(ENTRY);
-        updateQuery.addValue(ENTRY.COMPOSITION_ID, getCompositionId());
-        updateQuery.addValue(ENTRY.SEQUENCE, DSL.field(DSL.val(getSequence())));
-        updateQuery.addValue(ENTRY.TEMPLATE_ID, DSL.field(DSL.val(getTemplateId())));
-
-        updateQuery.addValue(ENTRY.ITEM_TYPE, DSL.field(DSL.val(EntryType.valueOf(getItemType()))));
-        updateQuery.addValue(ENTRY.ARCHETYPE_ID, DSL.field(DSL.val(getArchetypeId())));
-        updateQuery.addValue(ENTRY.CATEGORY, DSL.field(DSL.val(getCategory())));
-        updateQuery.addValue(ENTRY.ENTRY_, DSL.field(DSL.val(getEntryJson())));
-        updateQuery.addValue(ENTRY.SYS_TRANSACTION, DSL.field(DSL.val(transactionTime)));
-        updateQuery.addValue(ENTRY.NAME, DSL.field(DSL.val(getCompositionName())));
-        updateQuery.addValue(ENTRY.RM_VERSION, DSL.field(DSL.val(getRmVersion())));
-        updateQuery.addConditions(ENTRY.ID.eq(getId()));
-
-
-        log.debug("Update done...");
-
-        return updateQuery.execute() > 0;
-    }
-
-    /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public Boolean update() {
-        throw new InternalServerException("INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
-    }
-
-    /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public Boolean update(Boolean force) {
-        throw new InternalServerException("INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
-    }
-
-    @Override
-    public Integer delete() {
-
-        if (entryRecord != null)
-            return entryRecord.delete();
-
-        return 0;
-    }
-
-    @Override
-    public UUID getId() {
-        return entryRecord.getId();
-    }
-
-    @Override
-    public JSONB getEntryJson() {
-        return entryRecord.getEntry();
-    }
-
-    @Override
-    public DvCodedTextRecord getCategory() {
-        return entryRecord.getCategory();
-    }
-
-    public DvCodedTextRecord getCompositionName() {
-        return entryRecord.getName();
-    }
-
-    public void setCompositionName(DvText compositionName){
-        new RecordedDvText().toDB(entryRecord, ENTRY.NAME, compositionName);
-    }
-
-    @Override
-    public UUID getCompositionId() {
-        return entryRecord.getCompositionId();
-    }
-
-    @Override
-    public void setCompositionId(UUID compositionId) {
-        entryRecord.setCompositionId(compositionId);
-    }
-
-    @Override
-    public String getTemplateId() {
-        return entryRecord.getTemplateId();
-    }
-
-    @Override
-    public void setTemplateId(String templateId) {
-        entryRecord.setTemplateId(templateId);
-    }
-
-    @Override
-    public Integer getSequence() {
-        return entryRecord.getSequence();
-    }
-
-    @Override
-    public void setSequence(Integer sequence) {
-        entryRecord.setSequence(sequence);
-    }
-
-    @Override
-    public String getArchetypeId() {
-        return entryRecord.getArchetypeId();
-    }
-
-    @Override
-    public String getRmVersion() {
-        return entryRecord.getRmVersion();
-    }
-
-
-    @Override
-    public String getItemType() {
-        return entryRecord.getItemType().getLiteral();
-    }
-
-    @Override
-    public void setCompositionData(Composition composition) {
-        setCompositionFields(entryRecord, composition);
-    }
-
-    @Override
-    public DataAccess getDataAccess() {
-        return this;
-    }
+  @Override
+  public DataAccess getDataAccess() {
+    return this;
+  }
 
 }
