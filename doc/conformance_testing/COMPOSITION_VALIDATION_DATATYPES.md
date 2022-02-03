@@ -7,6 +7,169 @@ Composition Datatyps Validation (Conformance Testing)
 ||||
 ||||
 
+# Index
+<!-- 
+  $ git clone https://github.com/Chris3606/TOC-Generator
+  $ cd TOC-Generator
+  $ python tocgen.py ../ehrbase/doc/conformance_testing
+-->
+<!--ts-->
+- [Index](#index)
+- [General notes](#general-notes)
+- [1. basic](#1-basic)
+  - [1.1. Reference UML](#11-reference-uml)
+  - [1.2. basic.DV_BOOLEAN](#12-basicdv_boolean)
+    - [1.2.1. Test case anything allowed](#121-test-case-anything-allowed)
+    - [1.2.2. Test case only true allowed](#122-test-case-only-true-allowed)
+    - [1.2.3. Test case only false allowed](#123-test-case-only-false-allowed)
+  - [1.3. basic.DV_IDENTIFIER](#13-basicdv_identifier)
+    - [1.3.1. Test case validating all attributes using the pattern constraint](#131-test-case-validating-all-attributes-using-the-pattern-constraint)
+    - [1.3.2. Test case validating all attributes using the list constraint](#132-test-case-validating-all-attributes-using-the-list-constraint)
+  - [1.3. basic.DV_STATE](#13-basicdv_state)
+- [2. text](#2-text)
+  - [2.1. Reference UML](#21-reference-uml)
+  - [2.2. text.DV_TEXT](#22-textdv_text)
+    - [2.2.1. Test case DV_TEXT with open constraint](#221-test-case-dv_text-with-open-constraint)
+    - [2.2.2. Test case DV_TEXT with pattern constraint](#222-test-case-dv_text-with-pattern-constraint)
+    - [2.2.3. Test case DV_TEXT with list constraint](#223-test-case-dv_text-with-list-constraint)
+  - [2.3. text.DV_CODED_TEXT](#23-textdv_coded_text)
+    - [2.3.1. Test case DV_CODED_TEXT with open constraint](#231-test-case-dv_coded_text-with-open-constraint)
+    - [2.3.2. Test case DV_CODED_TEXT with local codes](#232-test-case-dv_coded_text-with-local-codes)
+    - [2.3.3. Test case DV_CODED_TEXT with external terminology (constraint reference)](#233-test-case-dv_coded_text-with-external-terminology-constraint-reference)
+  - [2.4. text.DV_PARAGRAPH](#24-textdv_paragraph)
+- [3. quantity](#3-quantity)
+  - [3.1. Reference UML](#31-reference-uml)
+  - [3.2. quantity.DV_ORDINAL](#32-quantitydv_ordinal)
+    - [3.2.1. Test case DV_ORDINAL open constraint](#321-test-case-dv_ordinal-open-constraint)
+    - [3.2.2. Test case DV_ORDINAL with constraints](#322-test-case-dv_ordinal-with-constraints)
+  - [3.3. quantity.DV_SCALE](#33-quantitydv_scale)
+    - [3.3.1. Test case DV_SCALE open constraint](#331-test-case-dv_scale-open-constraint)
+    - [3.3.2. Test case DV_SCALE with constraints](#332-test-case-dv_scale-with-constraints)
+  - [3.4. quantity.DV_COUNT](#34-quantitydv_count)
+    - [3.4.1. Test case DV_COUNT open constraint](#341-test-case-dv_count-open-constraint)
+    - [3.4.2. Test case DV_COUNT range constraint](#342-test-case-dv_count-range-constraint)
+    - [3.4.3. Test case DV_COUNT list constraint](#343-test-case-dv_count-list-constraint)
+  - [3.5. quantity.DV_QUANTITY](#35-quantitydv_quantity)
+    - [3.5.1. Test case DV_QUANTITY open constraint](#351-test-case-dv_quantity-open-constraint)
+    - [3.5.2. Test case DV_QUANTITY only property is constrained](#352-test-case-dv_quantity-only-property-is-constrained)
+    - [3.5.3. Test case DV_QUANTITY property and units are constrained, without magnitude range](#353-test-case-dv_quantity-property-and-units-are-constrained-without-magnitude-range)
+    - [3.5.4. Test case DV_QUANTITY property and units are constrained, with magnitude range](#354-test-case-dv_quantity-property-and-units-are-constrained-with-magnitude-range)
+  - [3.6. quantity.DV_PROPORTION](#36-quantitydv_proportion)
+    - [3.6.1. Test case DV_PROPORTION open constraint, validate RM rules](#361-test-case-dv_proportion-open-constraint-validate-rm-rules)
+    - [3.6.2. Test case DV_PROPORTION ratio](#362-test-case-dv_proportion-ratio)
+    - [3.6.3. Test case DV_PROPORTION unitary](#363-test-case-dv_proportion-unitary)
+    - [3.6.4. Test case DV_PROPORTION percent](#364-test-case-dv_proportion-percent)
+    - [3.6.5. Test case DV_PROPORTION fraction](#365-test-case-dv_proportion-fraction)
+    - [3.6.6. Test case DV_PROPORTION integer fraction](#366-test-case-dv_proportion-integer-fraction)
+    - [3.6.7. Test case DV_PROPORTION fraction or integer fraction](#367-test-case-dv_proportion-fraction-or-integer-fraction)
+    - [3.6.8. Test case DV_PROPORTION ratio with range limits](#368-test-case-dv_proportion-ratio-with-range-limits)
+  - [3.7. quantity.DV_INTERVAL<DV_COUNT>](#37-quantitydv_intervaldv_count)
+    - [3.7.1. Test case DV_INTERVAL<DV_COUNT> open constraint](#371-test-case-dv_intervaldv_count-open-constraint)
+    - [3.7.2. Test case DV_INTERVAL<DV_COUNT> lower and upper range constraint.](#372-test-case-dv_intervaldv_count-lower-and-upper-range-constraint)
+    - [3.7.3. Test case DV_INTERVAL<DV_COUNT> lower and upper list constraint.](#373-test-case-dv_intervaldv_count-lower-and-upper-list-constraint)
+  - [3.8. quantity.DV_INTERVAL<DV_QUANTITY>](#38-quantitydv_intervaldv_quantity)
+    - [3.8.1. Test case DV_INTERVAL<DV_QUANTITY> open constraint](#381-test-case-dv_intervaldv_quantity-open-constraint)
+    - [3.8.2. Test case DV_INTERVAL<DV_QUANTITY> lower and upper constraints present](#382-test-case-dv_intervaldv_quantity-lower-and-upper-constraints-present)
+  - [3.9. quantity.DV_INTERVAL<DV_DATE_TIME>](#39-quantitydv_intervaldv_date_time)
+    - [3.9.1. Test case DV_INTERVAL<DV_DATE_TIME> open constraint](#391-test-case-dv_intervaldv_date_time-open-constraint)
+    - [3.9.2. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are validity kind](#392-test-case-dv_intervaldv_date_time-lower-and-upper-constraints-are-validity-kind)
+    - [3.9.3. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are range](#393-test-case-dv_intervaldv_date_time-lower-and-upper-constraints-are-range)
+  - [3.10. quantity.DV_INTERVAL<DV_DATE>](#310-quantitydv_intervaldv_date)
+    - [3.10.1. Test case DV_INTERVAL<DV_DATE> open constraint](#3101-test-case-dv_intervaldv_date-open-constraint)
+    - [3.10.2. Test case DV_INTERVAL<DV_DATE> validity kind constraint](#3102-test-case-dv_intervaldv_date-validity-kind-constraint)
+    - [3.10.3. Test case DV_INTERVAL<DV_DATE> range constraint](#3103-test-case-dv_intervaldv_date-range-constraint)
+  - [3.11. quantity.DV_INTERVAL<DV_TIME>](#311-quantitydv_intervaldv_time)
+    - [3.11.1. Test case DV_INTERVAL<DV_TIME> open constraint](#3111-test-case-dv_intervaldv_time-open-constraint)
+    - [3.11.2. Test case DV_INTERVAL<DV_TIME> validity kind constraint](#3112-test-case-dv_intervaldv_time-validity-kind-constraint)
+    - [3.11.3. Test case DV_INTERVAL<DV_TIME> range constraint](#3113-test-case-dv_intervaldv_time-range-constraint)
+  - [3.12. quantity.DV_INTERVAL<DV_DURATION>](#312-quantitydv_intervaldv_duration)
+    - [3.12.1. Test case DV_INTERVAL<DV_DURATION> open constraint](#3121-test-case-dv_intervaldv_duration-open-constraint)
+    - [3.12.2. Test case DV_INTERVAL<DV_DURATION> xxx_allowed constraints](#3122-test-case-dv_intervaldv_duration-xxx_allowed-constraints)
+    - [3.12.3. Test case DV_INTERVAL<DV_DURATION> range constraints](#3123-test-case-dv_intervaldv_duration-range-constraints)
+  - [3.13. quantity.DV_INTERVAL<DV_ORDINAL>](#313-quantitydv_intervaldv_ordinal)
+    - [3.13.1. Test case DV_INTERVAL<DV_ORDINAL> open constraint](#3131-test-case-dv_intervaldv_ordinal-open-constraint)
+    - [3.13.2. Test case DV_INTERVAL<DV_ORDINAL> with constraints](#3132-test-case-dv_intervaldv_ordinal-with-constraints)
+  - [3.14. quantity.DV_INTERVAL<DV_SCALE>](#314-quantitydv_intervaldv_scale)
+    - [3.14.1. Test case DV_SCALE open constraint](#3141-test-case-dv_scale-open-constraint)
+    - [3.14.2. Test case DV_SCALE with constraints](#3142-test-case-dv_scale-with-constraints)
+  - [3.15. quantity.DV_INTERVAL<DV_PROPORTION>](#315-quantitydv_intervaldv_proportion)
+    - [3.15.1. Test case DV_INTERVAL<DV_PROPORTION> open constraint](#3151-test-case-dv_intervaldv_proportion-open-constraint)
+      - [3.15.1.a. Data set both valid ratios](#3151a-data-set-both-valid-ratios)
+      - [3.15.1.b. Data set different limit types](#3151b-data-set-different-limit-types)
+      - [3.15.1.c. Data set greater lower](#3151c-data-set-greater-lower)
+    - [3.15.2. Test case DV_INTERVAL<DV_PROPORTION> ratios](#3152-test-case-dv_intervaldv_proportion-ratios)
+      - [3.15.2.a. Data set valid ratios](#3152a-data-set-valid-ratios)
+      - [3.15.2.b. Data set no ratios](#3152b-data-set-no-ratios)
+    - [3.15.3. Test case DV_INTERVAL<DV_PROPORTION> unitaries](#3153-test-case-dv_intervaldv_proportion-unitaries)
+      - [3.15.3.a. Data set valid unitaries](#3153a-data-set-valid-unitaries)
+      - [3.15.3.b. Data set no unitaries](#3153b-data-set-no-unitaries)
+    - [3.15.4. Test case DV_INTERVAL<DV_PROPORTION> percentages](#3154-test-case-dv_intervaldv_proportion-percentages)
+      - [3.15.4.a. Data set valid percentages](#3154a-data-set-valid-percentages)
+      - [3.15.4.b. Data set no percentages](#3154b-data-set-no-percentages)
+    - [3.15.5. Test case DV_INTERVAL<DV_PROPORTION> fractions](#3155-test-case-dv_intervaldv_proportion-fractions)
+      - [3.15.5.a. Data set valid fractions](#3155a-data-set-valid-fractions)
+      - [3.15.5.b. Data set no fractions](#3155b-data-set-no-fractions)
+    - [3.15.6. Test case DV_INTERVAL<DV_PROPORTION> integer fractions](#3156-test-case-dv_intervaldv_proportion-integer-fractions)
+      - [3.15.6.a. Data set valid integer fractions](#3156a-data-set-valid-integer-fractions)
+      - [3.15.6.b. Data set no integer fractions](#3156b-data-set-no-integer-fractions)
+    - [3.15.7. Test case DV_INTERVAL<DV_PROPORTION> ratios with range limits](#3157-test-case-dv_intervaldv_proportion-ratios-with-range-limits)
+      - [3.15.7.a. Data set valid ratios](#3157a-data-set-valid-ratios)
+      - [3.15.7.b. Data set ratios, invalid lower](#3157b-data-set-ratios-invalid-lower)
+      - [3.15.7.c. Data set ratios, invalid upper](#3157c-data-set-ratios-invalid-upper)
+- [4. quantity.date_time](#4-quantitydate_time)
+  - [4.1. Reference UML](#41-reference-uml)
+  - [4.2. quantity.date_time.DV_DURATION](#42-quantitydate_timedv_duration)
+    - [4.2.1. Test case DV_DURATION open constraint](#421-test-case-dv_duration-open-constraint)
+    - [4.2.2. Test case DV_DURATION fields allowed constraint](#422-test-case-dv_duration-fields-allowed-constraint)
+    - [4.2.3. Test case DV_DURATION range constraint](#423-test-case-dv_duration-range-constraint)
+    - [4.2.4. Test case DV_DURATION fields allowed and range constraints combined](#424-test-case-dv_duration-fields-allowed-and-range-constraints-combined)
+  - [4.3. quantity.date_time.DV_TIME](#43-quantitydate_timedv_time)
+    - [4.3.1. Test case DV_TIME open constraint](#431-test-case-dv_time-open-constraint)
+    - [4.3.2. Test case DV_TIME validity kind constraint](#432-test-case-dv_time-validity-kind-constraint)
+    - [4.3.3. Test case DV_TIME range constraint](#433-test-case-dv_time-range-constraint)
+  - [4.4. quantity.date_time.DV_DATE](#44-quantitydate_timedv_date)
+    - [4.4.1. Test case DV_DATE open constraint](#441-test-case-dv_date-open-constraint)
+    - [4.4.2. Test Case DV_DATE validity kind constraint](#442-test-case-dv_date-validity-kind-constraint)
+    - [4.4.3. Test Case DV_DATE validity range constraint](#443-test-case-dv_date-validity-range-constraint)
+  - [4.5. quantity.date_time.DV_DATE_TIME](#45-quantitydate_timedv_date_time)
+    - [4.5.1. Test case DV_DATE_TIME open constraint](#451-test-case-dv_date_time-open-constraint)
+    - [4.5.2. Test Case DV_DATE_TIME validity kind constraint](#452-test-case-dv_date_time-validity-kind-constraint)
+    - [4.5.3. Test Case DV_DATE_TIME validity range](#453-test-case-dv_date_time-validity-range)
+- [5. time_specification](#5-time_specification)
+  - [Reference UML](#reference-uml)
+  - [5.1. DV_GENERAL_TIME_SPECIFICATION](#51-dv_general_time_specification)
+  - [5.2. DV_PERIODIC_TIME_SPECIFICATION](#52-dv_periodic_time_specification)
+- [6. encapsulated](#6-encapsulated)
+  - [6.1. Reference UML](#61-reference-uml)
+  - [6.2. encapsulated.DV_PARSABLE](#62-encapsulateddv_parsable)
+    - [6.2.1. Test case DV_PARSABLE open constraint](#621-test-case-dv_parsable-open-constraint)
+    - [6.2.2. Test case DV_PARSABLE value and formalism constrained](#622-test-case-dv_parsable-value-and-formalism-constrained)
+  - [6.3. encapsulated.DV_MULTIMEDIA](#63-encapsulateddv_multimedia)
+    - [6.3.1. Test ccase DV_MULTIMEDIA open constraint](#631-test-ccase-dv_multimedia-open-constraint)
+    - [6.3.2. Test case DV_MULTIMEDIA media type constraint](#632-test-case-dv_multimedia-media-type-constraint)
+- [7. uri](#7-uri)
+  - [7.1. Reference UML](#71-reference-uml)
+  - [7.2. DV_URI](#72-dv_uri)
+    - [7.2.1. Test case DV_URI open constraint](#721-test-case-dv_uri-open-constraint)
+    - [7.2.2. Test case DV_URI C_STRING pattern constraint for value](#722-test-case-dv_uri-c_string-pattern-constraint-for-value)
+    - [7.2.3. Test case DV_URI C_STRING list constraint for value](#723-test-case-dv_uri-c_string-list-constraint-for-value)
+  - [7.3. DV_EHR_URI](#73-dv_ehr_uri)
+    - [7.3.1. Test case DV_EHR_URI open constraint](#731-test-case-dv_ehr_uri-open-constraint)
+    - [7.3.2. Test case DV_EHR_URI C_STRING pattern constraint for value](#732-test-case-dv_ehr_uri-c_string-pattern-constraint-for-value)
+    - [7.3.3. Test case DV_EHR_URI C_STRING list constraint for value](#733-test-case-dv_ehr_uri-c_string-list-constraint-for-value)
+
+# General notes
+
+1. All test data sets for date/time/datetime expressions are represented in the ISO 8601 extended format. An openEHR CDR could choose to use the extended (with field delimiter characters) or basic format (without field delimiters) of ISO 8601, or support any of the two formats. In the test implementations it is probable that the data sets are represented as JSON or XML documents, in which the date and time expressions are always representede in the ISO 8601 extended format, but internally the SUT could store any of the two formats. If the test implementation doesn't use JSON or XML, the date and time expression formats could use the ISO 8601 basic format.
+
+2. The combination of test case + test data set is what will generate a result when running the test implementation againts a SUT.
+
+3. The test data sets described inside each test case are not exhaustive. We can create more data sets here, including border cases and more failure cases and data set combinations.
+   
+4. To have a full view of the Conformance Verification components, please check the document published here https://www.cabolabs.com/blog/article/openehr_conformance_framework-61ef4f513f7c5.html
+
+5. "TBD" means "To be defined".
+
 # 1. basic
 
 ## 1.1. Reference UML
@@ -205,7 +368,7 @@ In this case the DV_CODED_TEXT is constrained by a CONSTRAINT_REF. For the CONST
 
 ## 2.4. text.DV_PARAGRAPH
 
-// TBD: see https://discourse.openehr.org/t/is-dv-paragraph-used/2187
+// TBD: this DB is not used or supported by modeling tools, see https://discourse.openehr.org/t/is-dv-paragraph-used/2187
 
 
 # 3. quantity
@@ -468,7 +631,7 @@ The C_INTEGER constraint applies to the `type` attribute.
 
 | type | meaning (kind)   | numerator | denominator | precision | C_INTEGER.list | expected | constraints violated             |
 |:----:|------------------|-----------|-------------|-----------|----------------|----------|----------------------------------|
-| 0    | ratio            | 10        | 500         | 0         | [3]            | reejcted | C_INTEGER.list                   |
+| 0    | ratio            | 10        | 500         | 0         | [3]            | rejected | C_INTEGER.list                   |
 | 1    | unitary          | 10        | 1           | 0         | [3]            | rejected | C_INTEGER.list                   |
 | 2    | percent          | 10        | 100         | 0         | [3]            | rejected | C_INTEGER.list                   |
 | 3    | fraction         | 10        | 500         | 0         | [3]            | accepted |                                  |
@@ -736,9 +899,32 @@ The DV_INTERVAL<DV_DATE_TIME> constraint is {*}.
 
 ### 3.9.3. Test case DV_INTERVAL<DV_DATE_TIME> lower and upper constraints are range
 
-TBD
-
-
+| lower              | upper              | lower_unbounded | upper_unbounded | lower_included | upper_included | C_DATE_TIME.range (lower)       | C_DATE_TIME.range (upper)       | expected | constraints violated                       |
+|:------------------:|:------------------:|-----------------|-----------------|----------------|----------------|---------------------------------|---------------------------------|----------|-------------------------------------------|
+| 2021               | 2022               | false           | false           | true           | true           | 2020..2030                      | 2020..2030                      | accepted |                                            |
+| 2021               | 2022               | false           | false           | true           | true           | 2000..2010                      | 2020..2030                      | rejected | C_DATE_TIME.range (lower)                  |
+| 2021               | 2022               | false           | false           | true           | true           | 2020..2030                      | 2020..2021                      | rejected | C_DATE_TIME.range (upper)                  |
+| 2021-10            | 2022-11            | false           | false           | true           | true           | 2020-01..2030-12                | 2020-01..2030-12                | accepted |                                            |
+| 2021-10            | 2022-11            | false           | false           | true           | true           | 2000-01..2010-12                | 2020-01..2030-12                | rejected | C_DATE_TIME.range (lower)                  |
+| 2021-10            | 2022-11            | false           | false           | true           | true           | 2020-01..2030-12                | 2020-01..2021-12                | rejected | C_DATE_TIME.range (upper)                  |
+| 2021-10-24         | 2022-11-02         | false           | false           | true           | true           | 2020-01-01..2030-12-31          | 2020-01-01..2030-12-31          | accepted |                                            |
+| 2021-10-24         | 2022-11-02         | false           | false           | true           | true           | 2000-01-01..2010-12-31          | 2020-01-01..2030-12-31          | rejected | C_DATE_TIME.range (lower)                  |
+| 2021-10-24         | 2022-11-02         | false           | false           | true           | true           | 2020-01-01..2030-12-31          | 2020-01-01..2021-12-31          | rejected | C_DATE_TIME.range (upper)                  |
+| 2021-10-24T10      | 2022-11-02T19      | false           | false           | true           | true           | 2020-01-01T00..2030-12-31T23    | 2020-01-01T00..2030-12-31T23    | accepted |                                            |
+| 2021-10-24T10      | 2022-11-02T19      | false           | false           | true           | true           | 2000-01-01T00..2010-12-31T23    | 2020-01-01T00..2030-12-31T23    | rejected | C_DATE_TIME.range (lower)                  |
+| 2021-10-24T10      | 2022-11-02T19      | false           | false           | true           | true           | 2020-01-01T00..2030-12-31T23    | 2020-01-01T00..2021-12-31T23    | rejected | C_DATE_TIME.range (upper)                  |
+| 2021-10-24T10:00          | 2022-11-02T19:32          | false           | false           | true           | true           | 2020-01-01T00:00..2030-12-31T23:59    | 2020-01-01T00:00..2030-12-31T23:59    | accepted |                                            |
+| 2021-10-24T10:00          | 2022-11-02T19:32          | false           | false           | true           | true           | 2000-01-01T00:00..2010-12-31T23:59    | 2020-01-01T00:00..2030-12-31T23:59    | rejected | C_DATE_TIME.range (lower)                  |
+| 2021-10-24T10:00          | 2022-11-02T19:32          | false           | false           | true           | true           | 2020-01-01T00:00..2030-12-31T23:59    | 2020-01-01T00:00..2021-12-31T23:59    | rejected | C_DATE_TIME.range (upper)                  |
+| 2021-10-24T10:00:10       | 2022-11-02T19:32:40       | false           | false           | true           | true           | 2020-01-01T00:00:00..2030-12-31T23:59:59    | 2020-01-01T00:00..2030-12-31T23:59    | accepted |                                            |
+| 2021-10-24T10:00:10       | 2022-11-02T19:32:40       | false           | false           | true           | true           | 2000-01-01T00:00:00..2010-12-31T23:59:59    | 2020-01-01T00:00..2030-12-31T23:59    | rejected | C_DATE_TIME.range (lower)                  |
+| 2021-10-24T10:00:10       | 2022-11-02T19:32:40       | false           | false           | true           | true           | 2020-01-01T00:00:00..2030-12-31T23:59:59    | 2020-01-01T00:00..2021-12-31T23:59    | rejected | C_DATE_TIME.range (upper)                  |
+| 2021-10-24T10:00:10.5     | 2022-11-02T19:32:40.333   | false           | false           | true           | true           | 2020-01-01T00:00:00.0..2030-12-31T23:59:59.999999 | 2020-01-01T00:00..2030-12-31T23:59    | accepted |                                            |
+| 2021-10-24T10:00:10.5     | 2022-11-02T19:32:40.333   | false           | false           | true           | true           | 2000-01-01T00:00:00.0..2010-12-31T23:59:59.999999 | 2020-01-01T00:00..2030-12-31T23:59    | rejected | C_DATE_TIME.range (lower)                  |
+| 2021-10-24T10:00:10.5     | 2022-11-02T19:32:40.333   | false           | false           | true           | true           | 2020-01-01T00:00:00.0..2030-12-31T23:59:59.999999 | 2020-01-01T00:00..2021-12-31T23:59    | rejected | C_DATE_TIME.range (upper)                  |
+| 2021-10-24T10:00:10Z      | 2022-11-02T19:32:40Z      | false           | false           | true           | true           | 2020-01-01T00:00:00Z..2030-12-31T23:59:59Z   | 2020-01-01T00:00..2030-12-31T23:59    | accepted |                                            |
+| 2021-10-24T10:00:10Z      | 2022-11-02T19:32:40Z      | false           | false           | true           | true           | 2000-01-01T00:00:00Z..2010-12-31T23:59:59Z   | 2020-01-01T00:00..2030-12-31T23:59    | rejected | C_DATE_TIME.range (lower)                  |
+| 2021-10-24T10:00:10Z      | 2022-11-02T19:32:40Z      | false           | false           | true           | true           | 2020-01-01T00:00:00Z..2030-12-31T23:59:59Z   | 2020-01-01T00:00..2021-12-31T23:59    | rejected | C_DATE_TIME.range (upper)                  |
 
 
 ## 3.10. quantity.DV_INTERVAL<DV_DATE>
@@ -1011,6 +1197,8 @@ DV_INTERVAL.upper
 
 #### 3.15.1.b. Data set different limit types
 
+This data set fails beacause DV_INTERVAL.Limits_consistent need both lower and upper to have the same `type`.
+
 DV_INTERVAL.lower
 
 | type | meaning (kind)   | numerator | denominator | precision |
@@ -1049,27 +1237,273 @@ DV_INTERVAL.upper
 
 ### 3.15.2. Test case DV_INTERVAL<DV_PROPORTION> ratios
 
-TBD
+The constraint is on the `type` of each limit of the interval as a C_INTEGER.list = [0], constraining the type as a ratio.
+
+#### 3.15.2.a. Data set valid ratios
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 20        | 500         | 0         |
+
+| expected | constraints violated             |
+|----------|----------------------------------|
+| accepted |                                  |
+
+#### 3.15.2.b. Data set no ratios
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 1    | unitary          | 10        | 1           | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 1    | unitary          | 20        | 1           | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| rejected | C_INTEGER.list for lower and upper |
+
+
 
 ### 3.15.3. Test case DV_INTERVAL<DV_PROPORTION> unitaries
 
-TBD
+The constraint is on the `type` of each limit of the interval as a C_INTEGER.list = [1], constraining the type as unitary.
 
-### 3.15.4. Test case DV_INTERVAL<DV_PROPORTION> percents
+#### 3.15.3.a. Data set valid unitaries
 
-TBD
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 1    | unitary          | 10        | 1           | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 1    | unitary          | 20        | 1           | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| accepted |                                    |
+
+#### 3.15.3.b. Data set no unitaries
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 20        | 500         | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| rejected | C_INTEGER.list for lower and upper |
+
+
+
+### 3.15.4. Test case DV_INTERVAL<DV_PROPORTION> percentages
+
+The constraint is on the `type` of each limit of the interval as a C_INTEGER.list = [2], constraining the type as percentage.
+
+#### 3.15.4.a. Data set valid percentages
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 2    | percent          | 10        | 100         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 2    | percent          | 20        | 100         | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| accepted |                                    |
+
+#### 3.15.4.b. Data set no percentages
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 20        | 500         | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| rejected | C_INTEGER.list for lower and upper |
+
+
 
 ### 3.15.5. Test case DV_INTERVAL<DV_PROPORTION> fractions
 
-TBD
+The constraint is on the `type` of each limit of the interval as a C_INTEGER.list = [3], constraining the type as fraction.
+
+#### 3.15.5.a. Data set valid fractions
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 3    | fraction         | 3         | 4           | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 3    | fraction         | 5         | 4           | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| accepted |                                    |
+
+#### 3.15.5.b. Data set no fractions
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 20        | 500         | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| rejected | C_INTEGER.list for lower and upper |
+
+
 
 ### 3.15.6. Test case DV_INTERVAL<DV_PROPORTION> integer fractions
 
-TBD
+The constraint is on the `type` of each limit of the interval as a C_INTEGER.list = [3], constraining the type as fraction.
 
-### 3.15.7. Test case DV_INTERVAL<DV_PROPORTION> ratioS with range limits
+#### 3.15.6.a. Data set valid integer fractions
 
-TBD
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 4    | integer fraction | 3         | 4           | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 4    | integer fraction | 5         | 4           | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| accepted |                                    |
+
+#### 3.15.6.b. Data set no integer fractions
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 10        | 500         | 0         |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision |
+|:----:|------------------|-----------|-------------|-----------|
+| 0    | ratio            | 20        | 500         | 0         |
+
+| expected | constraints violated               |
+|----------|------------------------------------|
+| rejected | C_INTEGER.list for lower and upper |
+
+
+
+### 3.15.7. Test case DV_INTERVAL<DV_PROPORTION> ratios with range limits
+
+The constraint is on the `type` of each limit of the interval as a C_INTEGER.list = [0], constraining the type as a ratio. For the limits, the constraints are C_REAL using the range attribute.
+
+#### 3.15.7.a. Data set valid ratios
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision | C_REAL.range (num) | C_REAL.range (den) | 
+|:----:|------------------|-----------|-------------|-----------|--------------------|--------------------|
+| 0    | ratio            | 10        | 500         | 0         | 0..15              | 100..1000          |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision | C_REAL.range (num) | C_REAL.range (den) | 
+|:----:|------------------|-----------|-------------|-----------|--------------------|--------------------|
+| 0    | ratio            | 20        | 500         | 0         | 0..50              | 100..1000          |
+
+| expected | constraints violated             |
+|----------|----------------------------------|
+| accepted |                                  |
+
+
+#### 3.15.7.b. Data set ratios, invalid lower
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision | C_REAL.range (num) | C_REAL.range (den) | 
+|:----:|------------------|-----------|-------------|-----------|--------------------|--------------------|
+| 0    | ratio            | 10        | 500         | 0         | 0..5               | 100..1000          |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision | C_REAL.range (num) | C_REAL.range (den) | 
+|:----:|------------------|-----------|-------------|-----------|--------------------|--------------------|
+| 0    | ratio            | 20        | 500         | 0         | 0..50              | 100..1000          |
+
+| expected | constraints violated             |
+|----------|----------------------------------|
+| rejected | C_REAL.range (num) for lower     |
+
+
+#### 3.15.7.c. Data set ratios, invalid upper
+
+DV_INTERVAL.lower
+
+| type | meaning (kind)   | numerator | denominator | precision | C_REAL.range (num) | C_REAL.range (den) | 
+|:----:|------------------|-----------|-------------|-----------|--------------------|--------------------|
+| 0    | ratio            | 10        | 500         | 0         | 0..15              | 100..1000          |
+
+DV_INTERVAL.upper
+
+| type | meaning (kind)   | numerator | denominator | precision | C_REAL.range (num) | C_REAL.range (den) | 
+|:----:|------------------|-----------|-------------|-----------|--------------------|--------------------|
+| 0    | ratio            | 20        | 500         | 0         | 0..10              | 100..1000          |
+
+| expected | constraints violated             |
+|----------|----------------------------------|
+| rejected | C_REAL.range (num) for upper     |
 
 
 # 4. quantity.date_time
@@ -1152,17 +1586,16 @@ In the AOM specification it is allowed to combine allowed and range: "Both range
 
 | value              | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | range.lower | range.upper | expected | violated constraints     |
 |--------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|----------------------------|-------------|-------------|----------|--------------------------|
-| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | accepted |  |
-| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P2Y         | P50Y        | rejected | C_DURATION.range.lower  |
-| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | rejected | C_DURATION.years_allowed |
+| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | accepted |                                     |
+| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P2Y         | P50Y        | rejected | C_DURATION.range.lower                                 |
+| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | rejected | C_DURATION.years_allowed                         |
 | P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | P2Y         | P50Y        | rejected | C_DURATION.years_allowed, C_DURATION.range.lower |
+| P1Y3M              | true          | true           | true          | true         | true          | true            | Ftrue            | ???                        | P1Y         | P50Y        | accepted |                                     |
+| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P1Y         | P50Y        | rejected | C_DURATION.months_allowed                        |
+| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.lower                                 |
+| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.months_allowed. C_DURATION.lower      |
 
-| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | P1Y         | P50Y        | accepted |  |
-| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P1Y         | P50Y        | rejected | C_DURATION.months_allowed |
-| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.lower |
-| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.months_allowed. C_DURATION.lower |
-
-
+> NOTE: the `fractional_seconds_allowed` field is not so clear since the ISO8601 would allow fractions on the lowest order component, which means if the duration lowest component is `minutes` then it's valid to have `5.23M`. Also consider in programming languages like Java, a duration string with fractions on other fields than seconds can't be parsed (for instance using https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-)
 
 
 ## 4.3. quantity.date_time.DV_TIME
@@ -1893,10 +2326,10 @@ TBD: there is an open question about strictly comparability between time express
 | 2021-10-24T10          | 1900-03-13T00:00..1900-03-13T09:59             | rejected | C_DATE_TIME.range                  |
 | 2021-10-24T10          | 1900-03-13T00:00:00..1900-03-13T09:59:59       | rejected | C_DATE_TIME.range                  |
 | 2021-10-24T10          | 1900-03-13T00:00:00.0..1900-03-13T09:59:59.999 | rejected | C_DATE_TIME.range                  |
-| 2021-10-24T10          | >=1900-03-13T00                                | accepted |                               |
-| 2021-10-24T10          | >=1900-03-13T00:00                             | accepted |                               |
-| 2021-10-24T10          | >=1900-03-13T00:00:00                          | accepted |                               |
-| 2021-10-24T10          | >=1900-03-13T00:00:00.0                        | accepted |                               |
+| 2021-10-24T10          | >=1900-03-13T00                                | accepted |                                    |
+| 2021-10-24T10          | >=1900-03-13T00:00                             | accepted |                                    |
+| 2021-10-24T10          | >=1900-03-13T00:00:00                          | accepted |                                    |
+| 2021-10-24T10          | >=1900-03-13T00:00:00.0                        | accepted |                                    |
 | 2021-10-24T10          | >=1900-03-13T11                                | rejected | C_DATE_TIME.range                  |
 | 2021-10-24T10          | >=1900-03-13T11:00                             | rejected | C_DATE_TIME.range                  |
 | 2021-10-24T10          | >=1900-03-13T11:00:00                          | rejected | C_DATE_TIME.range                  |
