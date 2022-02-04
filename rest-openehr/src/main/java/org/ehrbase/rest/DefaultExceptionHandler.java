@@ -65,38 +65,30 @@ public class DefaultExceptionHandler {
       ValidationException.class,
       UnmarshalException.class
   })
-  public ResponseEntity<Object> handleBadRequestExceptions(Exception ex, WebRequest request) {
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST,
-        request);
+  public ResponseEntity<Object> handleBadRequestExceptions(Exception ex) {
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(ObjectNotFoundException.class)
-  public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex,
-      WebRequest request) {
-
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND,
-        request);
+  public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND);
   }
 
   @ExceptionHandler(NotAcceptableException.class)
-  public ResponseEntity<Object> handleNotAcceptableException(NotAcceptableException ex,
-      WebRequest request) {
+  public ResponseEntity<Object> handleNotAcceptableException(NotAcceptableException ex) {
 
     return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.NOT_ACCEPTABLE, request);
+        HttpStatus.NOT_ACCEPTABLE);
   }
 
   @ExceptionHandler(StateConflictException.class)
-  public ResponseEntity<Object> handleStateConflictException(StateConflictException ex,
-      WebRequest request) {
+  public ResponseEntity<Object> handleStateConflictException(StateConflictException ex) {
 
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT,
-        request);
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(PreconditionFailedException.class)
-  public ResponseEntity<Object> handlePreconditionFailedException(PreconditionFailedException ex,
-      WebRequest request) {
+  public ResponseEntity<Object> handlePreconditionFailedException(PreconditionFailedException ex) {
 
     var headers = new HttpHeaders();
 
@@ -105,16 +97,15 @@ public class DefaultExceptionHandler {
       headers.setLocation(URI.create(ex.getUrl()));
     }
 
-    return handleExceptionInternal(ex, ex.getMessage(), headers, HttpStatus.PRECONDITION_FAILED,
-        request);
+    return handleExceptionInternal(ex, ex.getMessage(), headers, HttpStatus.PRECONDITION_FAILED);
   }
 
   @ExceptionHandler(UnsupportedMediaTypeException.class)
   public ResponseEntity<Object> handleUnsupportedMediaTypeException(
-      UnsupportedMediaTypeException ex, WebRequest request) {
+      UnsupportedMediaTypeException ex) {
 
     return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.UNSUPPORTED_MEDIA_TYPE, request);
+        HttpStatus.UNSUPPORTED_MEDIA_TYPE);
   }
 
   @ExceptionHandler(UnprocessableEntityException.class)
@@ -122,18 +113,17 @@ public class DefaultExceptionHandler {
       WebRequest request) {
 
     return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.UNPROCESSABLE_ENTITY, request);
+        HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<Object> handleUncaughtException(Exception ex, WebRequest request) {
+  public ResponseEntity<Object> handleUncaughtException(Exception ex) {
     var message = "An internal error has occurred. Please contact your administrator.";
-    return handleExceptionInternal(ex, message, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR,
-        request);
+    return handleExceptionInternal(ex, message, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   private ResponseEntity<Object> handleExceptionInternal(Exception ex, String message,
-      HttpHeaders headers, HttpStatus status, WebRequest request) {
+      HttpHeaders headers, HttpStatus status) {
 
     if (status.is5xxServerError()) {
       logger.error("", ex);
@@ -143,14 +133,6 @@ public class DefaultExceptionHandler {
         logger.debug("Exception stack trace", ex);
       }
     }
-
-//    if (BaseController.RETURN_REPRESENTATION.equals(request.getHeader(BaseController.PREFER))) {
-//      Map<String, Object> body = new HashMap<>();
-//      body.put("message", message);
-//      return new ResponseEntity<>(body, headers, status);
-//    } else {
-//      return new ResponseEntity<>(headers, status);
-//    }
 
     Map<String, Object> body = new HashMap<>();
     body.put("error", status.getReasonPhrase());
