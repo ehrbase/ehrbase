@@ -21,8 +21,15 @@ package org.ehrbase.rest.openehr;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Supplier;
+import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -49,16 +56,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
  * Controller for /ehr resource of openEHR REST API
@@ -167,7 +164,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
