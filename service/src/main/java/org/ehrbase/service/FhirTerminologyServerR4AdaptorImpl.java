@@ -47,7 +47,7 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
 
     private static final String FHIR_JSON_MEDIA_TYPE = "application/fhir+json";
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final HttpClient httpClient;
 

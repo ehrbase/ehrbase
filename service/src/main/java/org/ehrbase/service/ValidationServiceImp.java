@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
- *
- * This file is part of project EHRbase
+ * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +24,7 @@ import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.terminology.openehr.TerminologyService;
@@ -39,10 +38,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
+/**
+ * {@link ValidationService} implementation.
+ *
+ * @author Christian Chevalley
+ * @since 1.0.0
+ */
 @Service
 public class ValidationServiceImp implements ValidationService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ValidationServiceImp.class);
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
@@ -64,7 +69,7 @@ public class ValidationServiceImp implements ValidationService {
     objectProvider.ifAvailable(compositionValidator::setExternalTerminologyValidation);
 
     if (serverConfig.isDisableStrictValidation()) {
-      LOG.warn("Disabling strict invariant validation. Caution is advised.");
+      logger.warn("Disabling strict invariant validation. Caution is advised.");
       compositionValidator.setRunInvariantChecks(false);
     }
   }
@@ -75,7 +80,7 @@ public class ValidationServiceImp implements ValidationService {
     try {
       webTemplate = knowledgeCacheService.getQueryOptMetaData(templateID);
     } catch (IllegalArgumentException e) {
-      throw new org.ehrbase.validation.ValidationException(e.getMessage());
+      throw new UnprocessableEntityException(e.getMessage());
     }
 
     // Validate the composition based on WebTemplate
@@ -118,6 +123,8 @@ public class ValidationServiceImp implements ValidationService {
     }
 
     check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
+
+    logger.debug("Composition validated successfully");
   }
 
   @Override

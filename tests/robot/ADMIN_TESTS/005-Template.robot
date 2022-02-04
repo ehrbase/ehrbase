@@ -329,7 +329,7 @@ validate DELETE response - 204 deleted
 
 validate DELETE response - 422 unprocessable entity
                         Integer    response status   422
-                        String     response body error
+                        String     response body message
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
 
@@ -340,7 +340,7 @@ validate DELETE ALL response - 204 deleted ${amount}
 
 validate DELETE ALL response - 422 unprocessable entity
                         Integer    response status   422
-                        String     response body error
+                        String     response body message
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
 
