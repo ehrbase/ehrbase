@@ -24,6 +24,9 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 
 Force Tags
 
+Suite Setup       Precondition
+Suite Teardown    restart SUT
+
 *** Test Cases ***
 Main flow has existing COMPOSITION (FLAT)
     [Tags]
@@ -35,22 +38,22 @@ Main flow has existing COMPOSITION (FLAT)
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
 
-    [Teardown]    restart SUT
+
 
 Data driven tests for Compare content of compositions with the Original (FLAT)
-    [Tags]
+    [Tags]  600  not-ready  bug
     [Template]    Create and compare content of flat compositions
 
-    #template_file_name            flat_composition_file_name
-    ehrn_vital_signs.v2.opt        ehrn_vital_signs.v2__.json
+    #flat_composition_file_name
+    ehrn_vital_signs.v2__.json
+    nested.en.v1__full.xml.flat.json
 
-[Teardown]    restart SUT
+    TRACE GITHUB ISSUE  600  bug
+
 
 *** Keywords ***
 Create and compare content of flat compositions
-    [Arguments]    ${template_file_name}          ${flat_composition_file_name}
-    upload OPT    all_types/${template_file_name}
-    create EHR
+    [Arguments]    ${flat_composition_file_name}
     commit composition   format=FLAT
     ...                  composition=${flat_composition_file_name}
     check the successful result of commit composition
@@ -58,3 +61,7 @@ Create and compare content of flat compositions
     check composition exists
     Compare content of compositions with the Original (FLAT)  ${COMPO DATA SETS}/FLAT/${flat_composition_file_name}
 
+Precondition
+    Upload OPT    nested/nested.opt
+    Upload OPT    all_types/ehrn_vital_signs.v2.opt
+    create EHR
