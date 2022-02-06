@@ -52,6 +52,7 @@ public class EhrScapeExceptionHandler {
 
   @ExceptionHandler({
       GeneralRequestProcessingException.class,
+      IllegalArgumentException.class,
       InvalidApiParameterException.class,
       MethodArgumentTypeMismatchException.class,
       MissingServletRequestParameterException.class,
