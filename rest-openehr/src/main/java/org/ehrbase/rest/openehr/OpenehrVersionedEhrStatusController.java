@@ -4,8 +4,11 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -28,12 +31,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
@@ -61,7 +58,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if(!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
@@ -84,7 +81,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if(!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
@@ -111,7 +108,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if(!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
@@ -152,7 +149,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if(!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found.");
         }
 

@@ -85,7 +85,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     @Override
     public boolean hasContribution(UUID ehrId, UUID contributionId) {
         //pre-step: check for valid ehrId
-        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
@@ -119,7 +119,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     @Override
     public UUID commitContribution(UUID ehrId, String content, CompositionFormat format) {
         //pre-step: check for valid ehrId
-        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 

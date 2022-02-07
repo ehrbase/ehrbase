@@ -49,12 +49,10 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
-import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
-import org.ehrbase.dao.access.jooq.CompoXRefAccess;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -90,7 +88,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   private final ValidationService validationService;
   private final KnowledgeCacheService knowledgeCacheService;
   private final EhrService ehrService;
-  private final boolean supportCompositionXRef = false;
 
   public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService,
       ValidationService validationService,
@@ -157,7 +154,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     }
 
     // pre-step: check for valid ehrId
-    if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+    if (!ehrService.hasEhr(ehrId)) {
       throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
     }
 
@@ -609,17 +606,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     } else {
       return version;
     }
-  }
-
-  private void linkComposition(UUID master, UUID child) {
-    if (!supportCompositionXRef) {
-      return;
-    }
-    if (master == null || child == null) {
-      return;
-    }
-    I_CompoXrefAccess compoXrefAccess = new CompoXRefAccess(getDataAccess());
-    compoXrefAccess.setLink(master, child);
   }
 
   /**
