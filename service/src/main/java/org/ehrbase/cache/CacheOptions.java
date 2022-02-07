@@ -22,35 +22,33 @@ package org.ehrbase.cache;
  */
 public class CacheOptions {
 
-    public static final String INTROSPECT_CACHE = "introspectCache";
+  public static final String INTROSPECT_CACHE = "introspectCache";
 
-    public static final String OPERATIONAL_TEMPLATE_CACHE = "operationaltemplateCache";
+  public static final String OPERATIONAL_TEMPLATE_CACHE = "operationaltemplateCache";
 
-    public static final String VALIDATOR_CACHE = "validatorCache";
+  public static final String QUERY_CACHE = "queryCache";
 
-    public static final String QUERY_CACHE = "queryCache";
+  public static final String FIELDS_CACHE = "fieldsCache";
 
-    public static final String FIELDS_CACHE = "fieldsCache";
+  public static final String MULTI_VALUE_CACHE = "multivaluedCache";
 
-    public static final String MULTI_VALUE_CACHE = "multivaluedCache";
+  private boolean preBuildQueries;
 
-    private boolean preBuildQueries;
+  private int preBuildQueriesDepth;
 
-    private int preBuildQueriesDepth;
+  public boolean isPreBuildQueries() {
+    return preBuildQueries;
+  }
 
-    public boolean isPreBuildQueries() {
-        return preBuildQueries;
-    }
+  public void setPreBuildQueries(boolean preBuildQueries) {
+    this.preBuildQueries = preBuildQueries;
+  }
 
-    public void setPreBuildQueries(boolean preBuildQueries) {
-        this.preBuildQueries = preBuildQueries;
-    }
+  public int getPreBuildQueriesDepth() {
+    return preBuildQueriesDepth;
+  }
 
-    public int getPreBuildQueriesDepth() {
-        return preBuildQueriesDepth;
-    }
-
-    public void setPreBuildQueriesDepth(int preBuildQueriesDepth) {
-        this.preBuildQueriesDepth = preBuildQueriesDepth;
-    }
+  public void setPreBuildQueriesDepth(int preBuildQueriesDepth) {
+    this.preBuildQueriesDepth = preBuildQueriesDepth;
+  }
 }

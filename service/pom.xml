@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.18.3</version>
+        <version>0.19.0</version>
     </parent>
 
     <artifactId>service</artifactId>
@@ -61,8 +61,8 @@
             <artifactId>serialisation</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.openEHR</groupId>
-            <artifactId>archie</artifactId>
+            <groupId>com.nedap.healthcare.archie</groupId>
+            <artifactId>openehr-rm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr.sdk</groupId>

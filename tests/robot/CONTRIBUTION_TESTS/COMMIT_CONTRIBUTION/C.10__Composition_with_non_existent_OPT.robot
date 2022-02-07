@@ -52,4 +52,4 @@ Alternative flow 9. commit CONTRIBUTION with COMPOSITION referencing a non exist
 
       commit invalid CONTRIBUTION (JSON)    ref_to_non_existent_OPT.json
 
-      check response: is negative indicating non-existent OPT
+      check response: is negative indicating errors in committed data

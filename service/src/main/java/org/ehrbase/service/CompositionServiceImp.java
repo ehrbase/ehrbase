@@ -1,16 +1,11 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH,
- * Jake Smolka (Hannover Medical School),
- * Luis Marco-Ruiz (Hannover Medical School),
- * Stefan Spiska (Vitasystems GmbH).
- *
- * This file is part of project EHRbase
+ * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,18 +29,30 @@ import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
-import org.ehrbase.dao.access.interfaces.I_CompoXrefAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
-import org.ehrbase.dao.access.jooq.CompoXRefAccess;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -60,30 +67,29 @@ import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.*;
-
+/**
+ * {@link CompositionService} implementation.
+ *
+ * @author Jake Smolka
+ * @author Luis Marco-Ruiz
+ * @author Stefan Spiska
+ * @since 1.0.0
+ */
 @Service
-@Transactional()
+@Transactional
 public class CompositionServiceImp extends BaseServiceImp implements CompositionService {
 
-  public static final String DESCRIPTION = "description";
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
   private final ValidationService validationService;
   private final KnowledgeCacheService knowledgeCacheService;
   private final EhrService ehrService;
-  private boolean supportCompositionXRef = false;
 
-  @Autowired
-  public CompositionServiceImp(
-      KnowledgeCacheService knowledgeCacheService,
+  public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService,
       ValidationService validationService,
       EhrService ehrService,
       DSLContext context,
@@ -117,11 +123,11 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   /**
    * Creation of a new composition. With optional custom contribution, or one will be created.
    *
-   * @param ehrId ID of EHR
-   * @param composition RMObject instance of the given Composition to be created
-   * @param systemId Audit system; or NULL if contribution is given
-   * @param committerId Audit committer; or NULL if contribution is given
-   * @param description (Optional) Audit description; or NULL if contribution is given
+   * @param ehrId          ID of EHR
+   * @param composition    RMObject instance of the given Composition to be created
+   * @param systemId       Audit system; or NULL if contribution is given
+   * @param committerId    Audit committer; or NULL if contribution is given
+   * @param description    (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
    * @return ID of created composition
    * @throws InternalServerException when creation failed
@@ -136,19 +142,19 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     // pre-step: validate
     try {
       validationService.check(composition);
+
+    } catch (org.ehrbase.validation.ValidationException e) {
+      throw new UnprocessableEntityException(e.getMessage());
+    } catch (UnprocessableEntityException | ValidationException e) {
+      throw e;
+    } catch (IllegalArgumentException e) {
+      throw new ValidationException(e);
     } catch (Exception e) {
-      // rethrow if this class, but wrap all others in InternalServerException
-      if (e.getClass().equals(UnprocessableEntityException.class))
-        throw (UnprocessableEntityException) e;
-      if (e.getClass().equals(IllegalArgumentException.class)) throw new ValidationException(e);
-      else if (e.getClass()
-          .equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
-        throw new ValidationException(e);
-      else throw new InternalServerException(e);
+      throw new InternalServerException(e);
     }
 
     // pre-step: check for valid ehrId
-    if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+    if (!ehrService.hasEhr(ehrId)) {
       throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
     }
 
@@ -178,10 +184,14 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         compositionId =
             compositionAccess.commit(LocalDateTime.now(), committerId, systemId, description);
       }
+    } catch (IllegalArgumentException e) {
+      throw e;
     } catch (Exception e) {
-      if (e instanceof IllegalArgumentException) throw new IllegalArgumentException(e);
-      else throw new InternalServerException(e);
+      throw new InternalServerException(e);
     }
+
+    logger.debug("Composition created: id={}", compositionId);
+
     return compositionId;
   }
 
@@ -234,11 +244,12 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    * Update of an existing composition. With optional custom contribution, or existing one will be
    * updated.
    *
-   * @param compositionId ID of existing composition
-   * @param composition RMObject instance of the given Composition which represents the new version
-   * @param systemId Audit system; or NULL if contribution is given
-   * @param committerId Audit committer; or NULL if contribution is given
-   * @param description (Optional) Audit description; or NULL if contribution is given
+   * @param compositionId  ID of existing composition
+   * @param composition    RMObject instance of the given Composition which represents the new
+   *                       version
+   * @param systemId       Audit system; or NULL if contribution is given
+   * @param committerId    Audit committer; or NULL if contribution is given
+   * @param description    (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if new one should be created; or ID of given custom contribution
    * @return Version UID pointing to updated composition
    */
@@ -265,9 +276,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       String inputTemplateId = composition.getArchetypeDetails().getTemplateId().getValue();
       if (!existingTemplateId.equals(inputTemplateId)) {
         // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
-        if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0]))
+        if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0])) {
           throw new InvalidApiParameterException(
               "Can't update composition to have different template.");
+        }
         // if base matches, check if given template ID is just a new version of the correct template
         int existingTemplateIdVersion = Integer.parseInt(existingTemplateId.split("\\.v")[1]);
         int inputTemplateIdVersion =
@@ -303,7 +315,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
     } catch (ObjectNotFoundException
         | InvalidApiParameterException
-            e) { // otherwise exceptions would always get sucked up by the catch below
+        e) { // otherwise exceptions would always get sucked up by the catch below
       throw e;
     } catch (Exception e) {
       throw new InternalServerException(e);
@@ -348,10 +360,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    * Deletion of an existing composition. With optional custom contribution, or existing one will be
    * updated.
    *
-   * @param compositionId ID of existing composition
-   * @param systemId Audit system; or NULL if contribution is given
-   * @param committerId Audit committer; or NULL if contribution is given
-   * @param description (Optional) Audit description; or NULL if contribution is given
+   * @param compositionId  ID of existing composition
+   * @param systemId       Audit system; or NULL if contribution is given
+   * @param committerId    Audit committer; or NULL if contribution is given
+   * @param description    (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
    * @return Time of deletion, if successful
    */
@@ -425,7 +437,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
           I_CompositionAccess.retrieveInstanceByTimestamp(
               getDataAccess(), compositionId, Timestamp.valueOf(timestamp));
     } catch (Exception e) {
-      logger.error(e.getMessage());
       throw new InternalServerException(e);
     }
 
@@ -453,7 +464,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    * format either with a custom lambda expression for desired target format
    *
    * @param composition Composition dto from database
-   * @param format Target format
+   * @param format      Target format
    * @return Structured string with string of data and content format
    */
   @Override
@@ -476,18 +487,18 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         compositionString =
             new StructuredString(
                 new FlatJasonProvider(
-                        new TemplateProvider() {
-                          @Override
-                          public Optional<OPERATIONALTEMPLATE> find(String s) {
-                            return knowledgeCacheService.retrieveOperationalTemplate(s);
-                          }
+                    new TemplateProvider() {
+                      @Override
+                      public Optional<OPERATIONALTEMPLATE> find(String s) {
+                        return knowledgeCacheService.retrieveOperationalTemplate(s);
+                      }
 
-                          @Override
-                          public Optional<WebTemplate> buildIntrospect(String templateId) {
-                            return Optional.ofNullable(
-                                knowledgeCacheService.getQueryOptMetaData(templateId));
-                          }
-                        })
+                      @Override
+                      public Optional<WebTemplate> buildIntrospect(String templateId) {
+                        return Optional.ofNullable(
+                            knowledgeCacheService.getQueryOptMetaData(templateId));
+                      }
+                    })
                     .buildFlatJson(FlatFormat.SIM_SDT, composition.getTemplateId())
                     .marshal(composition.getComposition()),
                 StructuredStringFormat.JSON);
@@ -496,18 +507,18 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         compositionString =
             new StructuredString(
                 new FlatJasonProvider(
-                        new TemplateProvider() {
-                          @Override
-                          public Optional<OPERATIONALTEMPLATE> find(String s) {
-                            return knowledgeCacheService.retrieveOperationalTemplate(s);
-                          }
+                    new TemplateProvider() {
+                      @Override
+                      public Optional<OPERATIONALTEMPLATE> find(String s) {
+                        return knowledgeCacheService.retrieveOperationalTemplate(s);
+                      }
 
-                          @Override
-                          public Optional<WebTemplate> buildIntrospect(String templateId) {
-                            return Optional.ofNullable(
-                                knowledgeCacheService.getQueryOptMetaData(templateId));
-                          }
-                        })
+                      @Override
+                      public Optional<WebTemplate> buildIntrospect(String templateId) {
+                        return Optional.ofNullable(
+                            knowledgeCacheService.getQueryOptMetaData(templateId));
+                      }
+                    })
                     .buildFlatJson(FlatFormat.STRUCTURED, composition.getTemplateId())
                     .marshal(composition.getComposition()),
                 StructuredStringFormat.JSON);
@@ -530,36 +541,36 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       case FLAT:
         composition =
             new FlatJasonProvider(
-                    new TemplateProvider() {
-                      @Override
-                      public Optional<OPERATIONALTEMPLATE> find(String s) {
-                        return knowledgeCacheService.retrieveOperationalTemplate(s);
-                      }
+                new TemplateProvider() {
+                  @Override
+                  public Optional<OPERATIONALTEMPLATE> find(String s) {
+                    return knowledgeCacheService.retrieveOperationalTemplate(s);
+                  }
 
-                      @Override
-                      public Optional<WebTemplate> buildIntrospect(String templateId) {
-                        return Optional.ofNullable(
-                            knowledgeCacheService.getQueryOptMetaData(templateId));
-                      }
-                    })
+                  @Override
+                  public Optional<WebTemplate> buildIntrospect(String templateId) {
+                    return Optional.ofNullable(
+                        knowledgeCacheService.getQueryOptMetaData(templateId));
+                  }
+                })
                 .buildFlatJson(FlatFormat.SIM_SDT, templateId)
                 .unmarshal(content);
         break;
       case STRUCTURED:
         composition =
             new FlatJasonProvider(
-                    new TemplateProvider() {
-                      @Override
-                      public Optional<OPERATIONALTEMPLATE> find(String s) {
-                        return knowledgeCacheService.retrieveOperationalTemplate(s);
-                      }
+                new TemplateProvider() {
+                  @Override
+                  public Optional<OPERATIONALTEMPLATE> find(String s) {
+                    return knowledgeCacheService.retrieveOperationalTemplate(s);
+                  }
 
-                      @Override
-                      public Optional<WebTemplate> buildIntrospect(String templateId) {
-                        return Optional.ofNullable(
-                            knowledgeCacheService.getQueryOptMetaData(templateId));
-                      }
-                    })
+                  @Override
+                  public Optional<WebTemplate> buildIntrospect(String templateId) {
+                    return Optional.ofNullable(
+                        knowledgeCacheService.getQueryOptMetaData(templateId));
+                  }
+                })
                 .buildFlatJson(FlatFormat.STRUCTURED, templateId)
                 .unmarshal(content);
         break;
@@ -574,7 +585,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     try {
       return I_CompositionAccess.getLastVersionNumber(getDataAccess(), compositionId);
     } catch (Exception e) {
-      logger.error(e.getMessage());
       throw new InternalServerException(e);
     }
   }
@@ -586,9 +596,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       version =
           I_CompositionAccess.getVersionFromTimeStamp(
               getDataAccess(), compositionId, Timestamp.valueOf(timestamp));
-    } catch (Exception e) {
-      logger.error(e.getMessage());
+    } catch (ObjectNotFoundException e) {
       throw e;
+    } catch (Exception e) {
+      throw new InternalServerException(e);
     }
     if (version <= 0) {
       throw new InternalServerException("Invalid version number calculated.");
@@ -597,19 +608,12 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     }
   }
 
-  private void linkComposition(UUID master, UUID child) {
-    if (!supportCompositionXRef) return;
-    if (master == null || child == null) return;
-    I_CompoXrefAccess compoXrefAccess = new CompoXRefAccess(getDataAccess());
-    compoXrefAccess.setLink(master, child);
-  }
-
   /**
    * Internal helper funcition to read UID from given composition input in stated format.
    *
    * @param content Composition input
-   * @param format Composition format
-   * @return
+   * @param format  Composition format
+   * @return the uid of the composition
    */
   @Override
   public String getUidFromInputComposition(String content, CompositionFormat format)
@@ -647,9 +651,11 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   @PreAuthorize("hasRole('ADMIN')")
   @Override
   public void adminDelete(UUID compositionId) {
-    I_CompositionAccess compositionAccess =
-        I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
-    compositionAccess.adminDelete();
+    I_CompositionAccess compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(),
+        compositionId);
+    if (compositionAccess != null) {
+      compositionAccess.adminDelete();
+    }
   }
 
   @Override
@@ -733,15 +739,19 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       UUID versionedObjectUid, int version) {
     // check for valid version parameter
     if ((version == 0)
-        || I_CompositionAccess.getLastVersionNumber(getDataAccess(), versionedObjectUid) < version)
+        || I_CompositionAccess.getLastVersionNumber(getDataAccess(), versionedObjectUid)
+        < version) {
       throw new ObjectNotFoundException(
           "versioned_composition", "No VERSIONED_COMPOSITION with given version: " + version);
+    }
 
     // retrieve requested object
     I_CompositionAccess compositionAccess =
         I_CompositionAccess.retrieveCompositionVersion(
             getDataAccess(), versionedObjectUid, version);
-    if (compositionAccess == null) return Optional.empty();
+    if (compositionAccess == null) {
+      return Optional.empty();
+    }
 
     // create data for output, i.e. fields of the OriginalVersion<Composition>
     ObjectVersionId versionId =
@@ -782,7 +792,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
     Optional<CompositionDto> compositionDto = retrieve(versionedObjectUid, version);
     Composition composition = null;
-    if (compositionDto.isPresent()) composition = compositionDto.get().getComposition();
+    if (compositionDto.isPresent()) {
+      composition = compositionDto.get().getComposition();
+    }
 
     OriginalVersion<Composition> versionComposition =
         new OriginalVersion<>(

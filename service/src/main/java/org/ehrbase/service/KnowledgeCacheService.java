@@ -24,6 +24,7 @@ package org.ehrbase.service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -187,6 +188,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     if (template.getDescription() == null || !template.getDescription().validate()) {
       throw new IllegalArgumentException("Supplied template has nil or empty description");
+    }
+
+    if (!TemplateUtils.isSupported(template)) {
+      throw new IllegalArgumentException(
+          MessageFormat.format("The supplied template is not supported (unsupported types: {0})",
+              String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
     }
 
     String templateId;

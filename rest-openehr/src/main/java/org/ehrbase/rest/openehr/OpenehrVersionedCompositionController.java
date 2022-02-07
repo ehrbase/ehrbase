@@ -27,9 +27,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -186,7 +183,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     private void checkForValidEhrAndCompositionParameter(UUID ehrId, UUID versionedCompoUid) {
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if(!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 

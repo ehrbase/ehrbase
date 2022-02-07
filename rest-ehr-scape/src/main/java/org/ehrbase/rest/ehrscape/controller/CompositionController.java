@@ -19,6 +19,10 @@
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.net.URI;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -26,61 +30,65 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
-import org.ehrbase.rest.ehrscape.responsedata.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.ehrbase.rest.ehrscape.responsedata.Action;
+import org.ehrbase.rest.ehrscape.responsedata.ActionRestResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.CompositionWriteRestResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.Meta;
+import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(
     path = "/rest/ecis/v1/composition",
-    produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+)
 public class CompositionController extends BaseController {
 
   private final CompositionService compositionService;
 
-  @Autowired
   public CompositionController(CompositionService compositionService) {
-
     this.compositionService = Objects.requireNonNull(compositionService);
   }
 
-  @PostMapping()
+  @PostMapping
   public ResponseEntity<CompositionWriteRestResponseData> createComposition(
       @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
       @RequestParam(value = "templateId", required = false) String templateId,
-      @RequestParam(value = "link", required = false) UUID linkId,
       @RequestParam(value = "ehrId") UUID ehrId,
       @RequestBody String content) {
 
     if ((format == CompositionFormat.FLAT
-            || format == CompositionFormat.STRUCTURED
-            || format == CompositionFormat.ECISFLAT)
+        || format == CompositionFormat.STRUCTURED
+        || format == CompositionFormat.ECISFLAT)
         && StringUtils.isEmpty(templateId)) {
       throw new InvalidApiParameterException(
           String.format("Template Id needs to specified for format %s", format));
     }
 
-    var compoObj = compositionService.buildComposition(content, format, templateId);
+    var composition = compositionService.buildComposition(content, format, templateId);
+    var compositionUuid = compositionService.create(ehrId, composition)
+        .map(CompositionDto::getUuid)
+        .orElseThrow(() -> new InternalServerException("Failed to create composition"));
 
-    Optional<CompositionDto> optionalCompositionDto = compositionService.create(ehrId, compoObj);
-
-    var compositionUuid =
-        optionalCompositionDto
-            .orElseThrow(() -> new InternalServerException("Failed to create composition"))
-            .getUuid();
-
-    CompositionWriteRestResponseData responseData = new CompositionWriteRestResponseData();
+    var responseData = new CompositionWriteRestResponseData();
     responseData.setAction(Action.CREATE);
     responseData.setCompositionUid(
         compositionUuid + "::" + compositionService.getServerConfig().getNodename() + "::" + 1);
     responseData.setMeta(buildMeta(responseData.getCompositionUid()));
-    return ResponseEntity.ok(responseData);
+
+    return ResponseEntity.created(URI.create(responseData.getMeta().getHref().getUrl()))
+        .body(responseData);
   }
 
   @GetMapping(path = "/{uid}")
@@ -116,15 +124,14 @@ public class CompositionController extends BaseController {
   }
 
   @PutMapping(path = "/{uid}")
-  public ResponseEntity<ActionRestResponseData> update(
-      @PathVariable("uid") String compositionUid,
+  public ResponseEntity<ActionRestResponseData> update(@PathVariable("uid") String compositionUid,
       @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
       @RequestParam(value = "templateId", required = false) String templateId,
       @RequestBody String content) {
 
     if ((format == CompositionFormat.FLAT
-            || format == CompositionFormat.STRUCTURED
-            || format == CompositionFormat.ECISFLAT)
+        || format == CompositionFormat.STRUCTURED
+        || format == CompositionFormat.ECISFLAT)
         && StringUtils.isEmpty(templateId)) {
       throw new InvalidApiParameterException(
           String.format("Template Id needs to specified for format %s", format));
