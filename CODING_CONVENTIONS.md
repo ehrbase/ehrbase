@@ -3,7 +3,8 @@
 ## Best practices
 
 - Follow general best practices in software development as much as possible
-- Commit frequently, and break down large changes into logical series of easier understandable patches
+- For PR readability and easing reviews, commit frequently, and break down large changes into logical series of easier understandable patches
+- For Git history readability, squash and merge commits before pulling the change into the mainline
 - Write [good commit messages](https://cbea.ms/git-commit/)
 
 ## Code Conventions and Housekeeping
