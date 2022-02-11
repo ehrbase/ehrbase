@@ -149,7 +149,7 @@
         <postgressql.version>42.2.25</postgressql.version>
         <ehrbase.sdk.version>1.18.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>7.11.3</flyway.version>
-        <joda.version>2.10.6</joda.version>
+        <joda.version>2.10.13</joda.version>
         <jacoco.version>0.8.6</jacoco.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
