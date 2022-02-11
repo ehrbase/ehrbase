@@ -149,7 +149,7 @@
         <ehrbase.sdk.version>1.18.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
         <joda.version>2.10.13</joda.version>
-        <jacoco.version>0.8.6</jacoco.version>
+        <jacoco.version>0.8.7</jacoco.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
         <prometheus.version>1.8.2</prometheus.version>
