@@ -154,7 +154,7 @@
         <failsafe.version>3.0.0-M5</failsafe.version>
         <prometheus.version>1.8.2</prometheus.version>
         <antlr4.version>4.9.3</antlr4.version>
-        <javamelody.version>1.88.0</javamelody.version>
+        <javamelody.version>1.90.0</javamelody.version>
         <json-api.version>2.0.0</json-api.version>
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
