@@ -145,7 +145,7 @@
         <jooq.version>3.12.4</jooq.version>
         <spring.version>2.5.9</spring.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
-        <postgressql.version>42.2.25</postgressql.version>
+        <postgressql.version>42.3.2</postgressql.version>
         <ehrbase.sdk.version>1.18.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
         <joda.version>2.10.13</joda.version>
