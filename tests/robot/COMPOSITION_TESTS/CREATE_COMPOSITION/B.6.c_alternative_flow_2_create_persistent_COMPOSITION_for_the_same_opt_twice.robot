@@ -48,10 +48,10 @@ Alternative flow 2 create persistent COMPOSITION for the same opt twice CANONICA
     check status_code of commit composition   400
 
 Alternative flow 2 create persistent COMPOSITION for the same opt twice FLAT
-    [Tags]      595  not-ready  bug
+    [Tags]      599  not-ready  bug
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  595  bug
+    TRACE GITHUB ISSUE  599  bug
     check status_code of commit composition   201
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json

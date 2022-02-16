@@ -28,12 +28,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.6</version>
+        <version>2.5.9</version>
     </parent>
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>0.19.0-SNAPSHOT</version>
+    <version>0.20.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>EHRbase</name>
@@ -140,23 +140,22 @@
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-        <assertj.core>3.11.1</assertj.core>
-        <json.path.version>2.4.0</json.path.version>
-        <jooq.version>3.12.3</jooq.version>
-        <keycloak.version>4.0.0.Final</keycloak.version>
-        <spring.version>2.5.6</spring.version>
-        <springdoc-openapi.version>1.5.11</springdoc-openapi.version>
-        <postgressql.version>42.2.18</postgressql.version>
-        <ehrbase.sdk.version>1.7.0-SNAPSHOT</ehrbase.sdk.version>
-        <flyway.version>7.11.3</flyway.version>
-        <joda.version>2.10.6</joda.version>
-        <jacoco.version>0.8.6</jacoco.version>
+        <assertj.core>3.22.0</assertj.core>
+        <json.path.version>2.7.0</json.path.version>
+        <jooq.version>3.12.4</jooq.version>
+        <spring.version>2.5.9</spring.version>
+        <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
+        <postgressql.version>42.3.3</postgressql.version>
+        <ehrbase.sdk.version>1.18.0-SNAPSHOT</ehrbase.sdk.version>
+        <flyway.version>8.4.4</flyway.version>
+        <joda.version>2.10.13</joda.version>
+        <jacoco.version>0.8.7</jacoco.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
-        <prometheus.version>1.6.1</prometheus.version>
-        <antlr4.version>4.9.1</antlr4.version>
-        <javamelody.version>1.88.0</javamelody.version>
-        <json-api.version>2.0.0</json-api.version>
+        <prometheus.version>1.8.2</prometheus.version>
+        <antlr4.version>4.9.3</antlr4.version>
+        <javamelody.version>1.90.0</javamelody.version>
+        <json-api.version>2.0.1</json-api.version>
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
         <test.profile>unit</test.profile>
@@ -668,11 +667,6 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.8.6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity</artifactId>
-                <version>1.5</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>

@@ -97,8 +97,6 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                 throw new ValidationException(e);
             if (e.getClass().equals(ValidationException.class))
                 throw e;
-            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
-                throw new ValidationException(e);
             else
                 throw new InternalServerException(e);
         }
@@ -162,7 +160,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public Optional<EhrStatus> getEhrStatus(UUID ehrUuid) {
         //pre-step: check for valid ehrId
-        if (hasEhr(ehrUuid).equals(Boolean.FALSE)) {
+        if (!hasEhr(ehrUuid)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
         }
 
@@ -183,7 +181,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version) {
         //pre-step: check for valid ehrId
-        if (hasEhr(ehrUuid).equals(Boolean.FALSE)) {
+        if (!hasEhr(ehrUuid)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
         }
 
@@ -233,14 +231,12 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                 throw new ValidationException(e);
             if (e.getClass().equals(ValidationException.class))
                 throw e;
-            else if (e.getClass().equals(org.ehrbase.validation.constraints.wrappers.ValidationException.class))
-                throw new ValidationException(e);
             else
                 throw new InternalServerException(e);
         }
 
         //pre-step: check for valid ehrId
-        if (hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
@@ -287,7 +283,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
      */
     public DvDateTime getCreationTime(UUID ehrId) {
         //pre-step: check for valid ehrId
-        if (hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
@@ -330,7 +326,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     }
 
     @Override
-    public Boolean hasEhr(UUID ehrId) {
+    public boolean hasEhr(UUID ehrId) {
         return I_EhrAccess.hasEhr(getDataAccess(), ehrId);
     }
 

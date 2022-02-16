@@ -1,11 +1,11 @@
 /*
- * Copyright 2021 Vitasystems GmbH and Hannover Medical School.
+ * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,11 @@
 
 package org.ehrbase.util;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.webtemplate.model.WebTemplate;
+import org.ehrbase.webtemplate.parser.OPTParser;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -29,7 +32,32 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
  */
 public class TemplateUtils {
 
+  public static final List<String> UNSUPPORTED_RM_TYPES = List.of("ITEM_TABLE");
+
   private TemplateUtils() {
+  }
+
+  /**
+   * Check whether the given OPT template is supported.
+   *
+   * @param template the candidate template
+   * @return <code>true</code> if the template is supported
+   */
+  public static boolean isSupported(OPERATIONALTEMPLATE template) {
+    var webTemplate = new OPTParser(template).parse();
+    return isSupported(webTemplate);
+  }
+
+  /**
+   * Check whether the given WebTemplate is supported.
+   *
+   * @param template the candidate template
+   * @return <code>true</code> if the template is supported
+   */
+  public static boolean isSupported(WebTemplate template) {
+    return template.getTree()
+        .findMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
+        .isEmpty();
   }
 
   /**

@@ -313,8 +313,6 @@ commit composition
 
     IF   '${format}'=='FLAT'
     ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
-    ${compositionUid}=    Collections.Get From Dictionary    ${resp.json()}    compositionUid
-    Set Test Variable   ${compositionUid}  ${composition_uid}
     ELSE
     ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
     END
@@ -335,7 +333,10 @@ check the successful result of commit composition
     Should Be Equal As Strings   ${response.status_code}   201
 
     ${Location}   Set Variable    ${response.headers}[Location]
+
+    IF   '${format}' != 'FLAT'
     ${ETag}       Get Substring   ${response.headers}[ETag]    1    -1
+    END
 
     IF  '${format}' == 'CANONICAL_JSON'
         ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
@@ -353,11 +354,13 @@ check the successful result of commit composition
         #            It seems to us that it's wrong so a setting check is disabled yet.        
         # ${setting}=           Get Element Text      ${xresp}   context/setting/value    
     ELSE IF   '${format}' == 'FLAT'
-        ${composition_uid}    Set Variable   ${response.json()}[${template_for_path}/_uid]
+        # ${composition_uid}    Set Variable   ${response.json()}[${template_for_path}/_uid]
         # @ndanilin: in FLAT response isn't template_id so make a following placeholder:
         ${template_id}=       Set Variable   ${template}
-        ${composer}           Set Variable   ${response.json()}[${template_for_path}/composer|name]
-        ${setting}            Set variable   ${response.json()}[${template_for_path}/context/setting|value]
+        #${composer}           Set Variable   ${response.json()}[${template_for_path}/composer|name]
+        #${setting}            Set variable   ${response.json()}[${template_for_path}/context/setting|value]
+        ${compositionUid}=    Collections.Get From Dictionary    ${response.json()}    compositionUid
+        Set Test Variable     ${compositionUid}  ${composition_uid}
     ELSE IF   '${format}' == 'TDD'
         ${xresp}=             Parse Xml                 ${response.text}
         ${composition_uid}=   Get Element Text          ${xresp}   uid/value
@@ -372,6 +375,7 @@ check the successful result of commit composition
         ${setting}            Set variable   ${response.json()}[${template_for_path}][context][0][setting][0][|value]
     END
 
+    IF   '${format}' != 'FLAT'
     Should Be Equal    ${ETag}            ${composition_uid}
     # @ndanilin: EhrBase returns in header 'Location' wrong data so this check is disabled yet:
     #            - not baseUrl but ipv6
@@ -382,7 +386,7 @@ check the successful result of commit composition
     # @ndanilin: EhrBase don't return context for persistent composition.
     #            It seems to us that it's wrong so a setting check is disabled yet.    
     # Should Be Equal    ${setting}         other care
-   
+    END
         
 check status_code of commit composition
     [Arguments]    ${status_code}

@@ -50,7 +50,7 @@ public class ContainsExpressions {
     public boolean isExplicitContainsClause(){
         if (containExpressionBoolContext.getChild(0) instanceof AqlParser.ContainsContext)
             if (containExpressionBoolContext.getChild(0).getChildCount() > 1)
-                return new CommonTokenCompare(containExpressionBoolContext.getChild(0).getChild(1)).equals(AqlLexer.CONTAINS);
+                return new CommonTokenCompare(containExpressionBoolContext.getChild(0).getChild(1)).isEquals(AqlLexer.CONTAINS);
 
         return false;
 

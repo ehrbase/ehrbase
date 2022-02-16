@@ -152,7 +152,7 @@ check response: is negative indicating errors in committed data
 check response: is negative - complaining about empty versions list
                         Should Be Equal As Strings   ${response.status_code}   400
                         Set Test Variable    ${body}    ${response.json()}
-                        Set Test Variable    ${error_message}    ${body['error']}
+                        Set Test Variable    ${error_message}    ${body['message']}
                         Should Be Equal As Strings    ${error_message}    Invalid Contribution, must have at least one Version object.
 
 

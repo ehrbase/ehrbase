@@ -64,17 +64,11 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
     ...                    (DELETE /ehr/${ehr_id}/composition/${uid}) \n\n
     ...                 2. Delete the same composition again via admin endpoint \n\n
     ...                    (DELETE /admin/ehr/${ehr_id}/composition/${versioned_object_uid} \n\n
-    [Tags]    433  not-ready  bug
     upload OPT    minimal/minimal_admin.opt
     create new EHR (XML)
     commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
     delete composition    ${version_uid}
-
-        TRACE GITHUB ISSUE  433  bug
-
     (admin) delete composition
-    [Teardown]          (admin) delete OPT
-
 
 
 *** Keywords ***

@@ -119,3 +119,15 @@ The arrows should be interpreted as "depends on".
 
 ![Test Suites](img/openEHR_Test_Suite_Dependencies.png "Test Suites")
 </div>
+
+
+## Composition Validation Testing
+
+Data validation against the constraints defined in an Operational Template (OPT) is a requirement of every openEHR CDR, to verify all the information committed to an EHR is compliant with the template that models that data set.
+
+This testing component is focused on two main areas:
+
+1. [Structural testing (types, existence, cardinality, occurrences, invariants)](COMPOSITION_VALIDATION_STRUCTURE.md)
+2. [Datatype-specific constraints](COMPOSITION_VALIDATION_DATATYPES.md)
+
+> NOTE: This testing component doesn't include testing of exchange formats against their schemas (XML/JSON), this is focused on validating a COMPOSITION instance against an OPT instance. The difference between these two types of validation is: the first is a "syntactic" validation, while the second is a "semantic" validation. Having an instance of a COMPOSITION implies it is "syntactically" valid, since the instance should follow the openEHR Reference Model.

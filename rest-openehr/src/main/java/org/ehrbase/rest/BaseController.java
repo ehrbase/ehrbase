@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Jake Smolka (Hannover Medical School).
- *
- * This file is part of project EHRbase
+ * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,37 +16,6 @@
 
 package org.ehrbase.rest;
 
-import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.exception.BadGatewayException;
-import org.ehrbase.api.exception.DuplicateObjectException;
-import org.ehrbase.api.exception.GeneralRequestProcessingException;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.NotAcceptableException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.PreconditionFailedException;
-import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.api.exception.UnsupportedMediaTypeException;
-import org.ehrbase.api.exception.ValidationException;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.serialisation.exception.UnmarshalException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -57,10 +24,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 /**
  * This base controller implements the basic functionality for all specific controllers. This
  * includes error handling and utils.
+ *
+ * @author Stefan Spiska
+ * @author Jake Smolka
+ * @since 1.0.0
  */
 public abstract class BaseController {
 
@@ -125,7 +110,9 @@ public abstract class BaseController {
       metaMap = new HashMap<>();
       contentMap = new HashMap<>();
       metaMap.put("meta", contentMap);
-    } else contentMap = metaMap.get("meta");
+    } else {
+      contentMap = metaMap.get("meta");
+    }
 
     contentMap.put(key, value);
     return metaMap;
@@ -208,7 +195,7 @@ public abstract class BaseController {
    * content type header string.
    *
    * @param contentType String representation of REST request's input {@link MediaType} style
-   *     content type header
+   *                    content type header
    * @return {@link CompositionFormat} expressing the content type
    * @throws NotAcceptableException when content type is not supported or input is invalid
    */
@@ -241,22 +228,6 @@ public abstract class BaseController {
     return path;
   }
 
-  protected ResponseEntity<Map<String, String>> createErrorResponse(
-      String message, HttpStatus status) {
-    Map<String, String> error = new HashMap<>();
-    error.put("error", message);
-    error.put("status", status.getReasonPhrase());
-    return new ResponseEntity<>(error, status);
-  }
-
-  protected ResponseEntity<Map<String, String>> createErrorResponse(
-      String message, HttpStatus status, HttpHeaders headers) {
-    Map<String, String> error = new HashMap<>();
-    error.put("error", message);
-    error.put("status", status.getReasonPhrase());
-    return new ResponseEntity<>(error, headers, status);
-  }
-
   /**
    * Extracts the UUID base from a versioned UID. Or, if
    *
@@ -264,12 +235,16 @@ public abstract class BaseController {
    * @return
    */
   protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
-    if (!versionUid.contains("::")) return UUID.fromString(versionUid);
+    if (!versionUid.contains("::")) {
+      return UUID.fromString(versionUid);
+    }
     return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
   }
 
   protected int extractVersionFromVersionUid(String versionUid) {
-    if (!versionUid.contains("::")) return 0; // current version
+    if (!versionUid.contains("::")) {
+      return 0; // current version
+    }
     // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
     // via making a substring starting at last occurrence of "::" + 2
     return Integer.parseInt(versionUid.substring(versionUid.lastIndexOf("::") + 2));
@@ -299,7 +274,7 @@ public abstract class BaseController {
   /**
    * Resolves the Content-Type based on Accept header.
    *
-   * @param acceptHeader Accept header value
+   * @param acceptHeader     Accept header value
    * @param defaultMediaType Default Content-Type
    * @return Content-Type of the response
    */
@@ -329,246 +304,21 @@ public abstract class BaseController {
 
   protected Optional<OffsetDateTime> getVersionAtTimeParam() {
     Map<String, String> queryParams = ServletUriComponentsBuilder.fromCurrentRequest().build()
-            .getQueryParams()
-            .toSingleValueMap();
+        .getQueryParams()
+        .toSingleValueMap();
 
     String versionAtTime = queryParams.get("version_at_time");
     if (StringUtils.isBlank(versionAtTime)) {
-        return Optional.empty();
+      return Optional.empty();
     }
 
     try {
-        return Optional.of(OffsetDateTime.parse(UriUtils.decode(versionAtTime, StandardCharsets.UTF_8)));
+      return Optional.of(
+          OffsetDateTime.parse(UriUtils.decode(versionAtTime, StandardCharsets.UTF_8)));
     } catch (DateTimeParseException e) {
-      throw new IllegalArgumentException("Value '" + versionAtTime + "' is not valid for version_at_time parameter. " +
+      throw new IllegalArgumentException(
+          "Value '" + versionAtTime + "' is not valid for version_at_time parameter. " +
               "Value must be in the extended ISO 8601 format.", e);
     }
-  }
-
-  /*
-  EXCEPTION HANDLING GENERAL BEHAVIOR DEFINITION
-   */
-
-  // 204 No content is handled in controllers, as it refers to a non-error situation.
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as ALREADY_REPORTED - 208
-   */
-  @ExceptionHandler(DuplicateObjectException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(DuplicateObjectException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.ALREADY_REPORTED);
-  }
-
-  /**
-   * Handler for broad and general Java standard exception IllegalArgumentException. Shall be
-   * replaced with a more specific exception like InvalidApiParameterException in backend code with
-   * time.
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   * @deprecated Throw a more specific exception.
-   */
-  @Deprecated
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(IllegalArgumentException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map<String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(java.rmi.UnmarshalException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(java.rmi.UnmarshalException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(GeneralRequestProcessingException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(GeneralRequestProcessingException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(InvalidApiParameterException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(InvalidApiParameterException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * This handler catches the exception automatically generated and thrown by the framework, when
-   * specified parameters are not present or matching.
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(
-      MissingServletRequestParameterException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * This handler catches the exception automatically generated and thrown by the framework, when
-   * the request's message can't be read. For example, due to missing body, while required.
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(HttpMessageNotReadableException e) {
-    return createErrorResponse(
-        "Bad Request: HTTP message not readable, for instance, due to missing parameter. Error: "
-            + e.getMessage(),
-        HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * Handler for validation errors
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(ValidationException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(ValidationException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * Handler for unmarshalling error (f.e. invalid EhrStatus)
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(UnmarshalException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(UnmarshalException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
-  }
-
-  /**
-   * Handler for parsing input string parameters to specific type (e.g. time string that cannot be
-   * parsed into Instant since it is not a valid ISO 6801 date time string
-   *
-   * @param req - Request
-   * @param e - Exception thrown from converter
-   * @return ResponseEntity<Map < String, String>> as BAD_REQUEST - 400
-   */
-  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(
-      HttpServletRequest req, MethodArgumentTypeMismatchException e) {
-    return createErrorResponse(
-        String.format("Value %s for parameter %s is not valid.", e.getValue(), e.getName()),
-        HttpStatus.BAD_REQUEST);
-  }
-
-  // 401 Unauthorized is created automatically by framework
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as NOT_FOUND - 404
-   */
-  @ExceptionHandler(ObjectNotFoundException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(ObjectNotFoundException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as NOT_ACCEPTABLE - 406
-   */
-  @ExceptionHandler(NotAcceptableException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(NotAcceptableException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as CONFLICT - 409
-   */
-  @ExceptionHandler(StateConflictException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(StateConflictException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.CONFLICT);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as PRECONDITION FAILED - 412
-   */
-  @ExceptionHandler(PreconditionFailedException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(PreconditionFailedException e) {
-
-    if (e.getUrl() == null || e.getCurrentVersionUid() == null) {
-      return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED);
-    } else {
-      HttpHeaders headers = new HttpHeaders();
-      headers.setETag("\"" + e.getCurrentVersionUid() + "\"");
-      headers.setLocation(URI.create(e.getUrl()));
-      return createErrorResponse(e.getMessage(), HttpStatus.PRECONDITION_FAILED, headers);
-    }
-  }
-
-  /**
-   * Handler for all exceptions that are caused by a payload that cannot be processed by a service
-   * or subordinated handlers.
-   *
-   * @param e - UnsupportedMediaTypeException thrown at handler mechanism
-   * @return ResponseEntity<Map < String, String>> as UNSUPPORTED MEDIA Type - 415
-   */
-  @ExceptionHandler(UnsupportedMediaTypeException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(UnsupportedMediaTypeException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as UNPROCESSABLE ENTITY Type - 422
-   */
-  @ExceptionHandler(UnprocessableEntityException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(UnprocessableEntityException e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
-  }
-
-  // TODO: Maybe remove this redundant handler since fallback will cover the same functionality
-
-  /**
-   * Handler for less specific internal error
-   *
-   * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
-   */
-  @ExceptionHandler(InternalServerException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(InternalServerException e) {
-    return createErrorResponse(
-        "Internal Server Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-
-  /**
-   * Handler for project-custom exception.
-   *
-   * @return ResponseEntity<Map < String, String>> as BAD_GATEWAY - 502
-   */
-  @ExceptionHandler(BadGatewayException.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(BadGatewayException e) {
-    return createErrorResponse("Bad Gateway: Proxied connection failed", HttpStatus.BAD_GATEWAY);
-  }
-
-  /**
-   * Fallback error handler.
-   *
-   * @return ResponseEntity<Map < String, String>> as INTERNAL_SERVER_ERROR - 500
-   */
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<Map<String, String>> restErrorHandler(Exception e) {
-    return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

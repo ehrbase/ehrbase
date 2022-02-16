@@ -64,7 +64,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     public static final String TYPE_EHRSTATUS = "EHR_STATUS";
     public static final String TYPE_FOLDER = "FOLDER";
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final CompositionService compositionService;
     private final EhrService ehrService;
@@ -85,7 +85,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     @Override
     public boolean hasContribution(UUID ehrId, UUID contributionId) {
         //pre-step: check for valid ehrId
-        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
@@ -119,7 +119,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     @Override
     public UUID commitContribution(UUID ehrId, String content, CompositionFormat format) {
         //pre-step: check for valid ehrId
-        if (ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
@@ -157,7 +157,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 }
                 switch (versionClass) {
                     case COMPOSITION:
-                        processCompositionVersion(ehrId, contributionId, version, (Composition) versionRmObject);
+                        try {
+                            processCompositionVersion(ehrId, contributionId, version, (Composition) versionRmObject);
+                        } catch (UnprocessableEntityException e) {
+                            throw new ValidationException(e.getMessage());
+                        }
                         break;
                     case EHRSTATUS:
                         processEhrStatusVersion(ehrId, contributionId, version, (EhrStatus) versionRmObject);
