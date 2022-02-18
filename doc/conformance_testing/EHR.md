@@ -1,12 +1,13 @@
 # openEHR Conformance Testing Specification (EHR)
 
-| Author                                           | Version            | Comments                                         |
-|:------------------------------------------------:|:------------------:|:------------------------------------------------:|
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.1 (2019-02-20)   | First version covering EHR related services.     |
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2 (2019-03-12)   | Removed CONTRIBUTION section.                                              |
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2.1 (2019-12-30) | Added comments about EHR_STATUS.other_details.                             |
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.3 (2020-04-07)   | Updated data sets for create EHR.                                          |
-| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.4 (2021-04-19)   | Refactored data sets for create EHR. Improved description of the flows, grammar and comments |
+| Author                                           | Version              | Comments                                                                                     |
+|:------------------------------------------------:|:--------------------:|:--------------------------------------------------------------------------------------------:|
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.1   (2019-02-20)   | First version covering EHR related services.                                                 |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2   (2019-03-12)   | Removed CONTRIBUTION section.                                                                |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.2.1 (2019-12-30)   | Added comments about EHR_STATUS.other_details.                                               |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.3   (2020-04-07)   | Updated data sets for create EHR.                                                            |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.4   (2021-04-19)   | Refactored data sets for create EHR. Improved description of the flows, grammar and comments |
+| Pablo Pazos Gutierrez <pablo.pazos@cabolabs.com> | 0.4.1 (2022-02-11)   | Clarified test data sets and test cases related to subject_id / subject.external_ref         |
 
 
 # Index
@@ -94,26 +95,42 @@ These are the data set classes:
    1. providing invalid EHR_STATUS
 
 
-**Valid data sets when the EHR_STATUS is provided and internal strucrures are valid (data set class 1.2):**
+**Valid test data sets when the EHR_STATUS is provided and internal strucrures are valid (data set class 1.2):**
 
-| No. | is_queryable | is_modifiable | subject  | other_details | ehr_id       |
-| --- | ------------ | ------------- | -------- | ------------- | ------------ |
-| 1   | true         | true          | provided | not provided  | not provided |
-| 2   | true         | false         | provided | not provided  | not provided |
-| 3   | false        | true          | provided | not provided  | not provided |
-| 4   | false        | false         | provided | not provided  | not provided |
-| 5   | true         | true          | provided | provided      | not provided |
-| 6   | true         | false         | provided | provided      | not provided |
-| 7   | false        | true          | provided | provided      | not provided |
-| 8   | false        | false         | provided | provided      | not provided |
-| 9   | true         | true          | provided | not provided  | provided     |
-| 10  | true         | false         | provided | not provided  | provided     |
-| 11  | false        | true          | provided | not provided  | provided     |
-| 12  | false        | false         | provided | not provided  | provided     |
-| 13  | true         | true          | provided | provided      | provided     |
-| 14  | true         | false         | provided | provided      | provided     |
-| 15  | false        | true          | provided | provided      | provided     |
-| 16  | false        | false         | provided | provided      | provided     |
+| No. | is_queryable | is_modifiable | subject.external_ref | other_details | ehr_id       |
+| --- | ------------ | ------------- | -------------------- | ------------- | ------------ |
+| 1   | true         | true          | provided             | not provided  | not provided |
+| 2   | true         | false         | provided             | not provided  | not provided |
+| 3   | false        | true          | provided             | not provided  | not provided |
+| 4   | false        | false         | provided             | not provided  | not provided |
+| 5   | true         | true          | provided             | provided      | not provided |
+| 6   | true         | false         | provided             | provided      | not provided |
+| 7   | false        | true          | provided             | provided      | not provided |
+| 8   | false        | false         | provided             | provided      | not provided |
+| 9   | true         | true          | provided             | not provided  | provided     |
+| 10  | true         | false         | provided             | not provided  | provided     |
+| 11  | false        | true          | provided             | not provided  | provided     |
+| 12  | false        | false         | provided             | not provided  | provided     |
+| 13  | true         | true          | provided             | provided      | provided     |
+| 14  | true         | false         | provided             | provided      | provided     |
+| 15  | false        | true          | provided             | provided      | provided     |
+| 16  | false        | false         | provided             | provided      | provided     |
+| 17  | true         | true          | not provided         | not provided  | not provided |
+| 18  | true         | false         | not provided         | not provided  | not provided |
+| 19  | false        | true          | not provided         | not provided  | not provided |
+| 20  | false        | false         | not provided         | not provided  | not provided |
+| 21  | true         | true          | not provided         | provided      | not provided |
+| 22  | true         | false         | not provided         | provided      | not provided |
+| 23  | false        | true          | not provided         | provided      | not provided |
+| 24  | false        | false         | not provided         | provided      | not provided |
+| 25  | true         | true          | not provided         | not provided  | provided     |
+| 26  | true         | false         | not provided         | not provided  | provided     |
+| 27  | false        | true          | not provided         | not provided  | provided     |
+| 28  | false        | false         | not provided         | not provided  | provided     |
+| 29  | true         | true          | not provided         | provided      | provided     |
+| 30  | true         | false         | not provided         | provided      | provided     |
+| 31  | false        | true          | not provided         | provided      | provided     |
+| 32  | false        | false         | not provided         | provided      | provided     |
 
 
 **Any other data set should be treated as invalid, for instance providing EHR_STATUS with:**
@@ -121,7 +138,7 @@ These are the data set classes:
 - missing is_queryable, is_modifiable
 - empty is_queryable, is_modifiable
 - missing or empty subject
-- invalid subject
+- invalid subject (e.g. external_ref is present but external_ref.id is empty)
 - invalid other_details
 
 
@@ -129,9 +146,10 @@ These are the data set classes:
 
 1. When the ehr_id is not present, it is expected that it is assigned by the server.
 2. The server should set the EHR.system_id value to a known value (defined by the server's configuration).
-3. The default values that should be assigned by the server for is_modifiable and is_queryable are "true", and for the subject it defaults to an instance of PARTY_SELF.
+3. The default values that should be assigned by the server for is_modifiable and is_queryable are "true", and for the subject it defaults to an instance of PARTY_SELF with no exter_ref.
 4. There are no cases to check if the provided ehr_id is valid, since in the [openEHR Service Model](https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface) the parameters is typed to UUID, any other format will be an invalid call.
 5. The validity of an EHR_STATUS can be checked in it's JSON form by validating against the JSON schemas https://specifications.openehr.org/releases/ITS-JSON/latest/components/RM
+6. The test cases mentioning subject_id refer to the EHR_STATUS.subject.external_ref.id value, mentioned just as `subject.external_ref` in the test data sets table above.
 
 
 
@@ -192,11 +210,11 @@ A new EHR will exist in the system.
 **Flow:**
 
 1. Invoke the create EHR service
-   1. for each VALID data set with a provided subject and not providing ehr_id
+   1. for each VALID data set with a provided subject.external_ref and not providing ehr_id
 2. The server should answer with a positive response associated to the successful EHR creation
 3. Invoke the create EHR service
    1. with the same data set used in 1.1
-4. The server should answer with a negative response, related with the EHR already existing for the provided subject
+4. The server should answer with a negative response, related with the EHR already existing for the provided subject.external_ref
 
 
 
@@ -230,7 +248,7 @@ None.
 
 **Flow:**
 
-1. Invoke has EHR service with the known subject_id
+1. Invoke has EHR service with the existing subject_id
 2. The result should be positive, realted to "the EHR with subject_id exists"
 
 
@@ -300,7 +318,7 @@ None.
 
 **Flow:**
 
-1. Invoke get EHR service with the known subject_id
+1. Invoke get EHR service with the existing subject_id
 2. The result should be positive and retrieve the EHR
 
 
