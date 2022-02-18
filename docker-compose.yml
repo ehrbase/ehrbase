@@ -10,9 +10,9 @@ services:
     env_file:
       - .env.ehrbase
     environment:
-      DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
-      DB_USER: ehrbase
-      DB_PASS: ehrbase
+      DB_URL: jdbc:postgresql://cameddb:5432/camedbase
+      DB_USER: Camed
+      DB_PASS: Colorina1
     restart: on-failure
 
   ehrdb:
@@ -25,9 +25,9 @@ services:
       - ./.pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      EHRBASE_USER: ehrbase
-      EHRBASE_PASSWORD: ehrbase
+      POSTGRES_PASSWORD: Colorina1
+      EHRBASE_USER: camedbase
+      EHRBASE_PASSWORD: Colorina1
 
 networks:
   ehrbase-net: {}

@@ -115,10 +115,10 @@ tasks:
         docker network remove ehrnet
         docker network create ehrnet
 
-        docker run --name ehrdb \
+        docker run --name cameddb \
                    --network ehrnet \
-                   -e POSTGRES_USER=postgres \
-                   -e POSTGRES_PASSWORD=postgres \
+                   -e POSTGRES_USER=camedbase \
+                   -e POSTGRES_PASSWORD=Colorina1 \
                    -e DISABLE_SECURITY \
                    -e PGDATA=/tmp \
                    -d -p 5432:5432 \
@@ -139,12 +139,12 @@ tasks:
     desc: START EHRBASE DOCKER CONTAINER
     cmds:
       - |
-        echo ... starting EHRBASE server ...
+        echo ... starting camedBASE server ...
         docker run --name ehrdocker \
                    --network ehrnet \
-                   -e DB_URL=jdbc:postgresql://ehrdb:5432/ehrbase \
-                   -e DB_USER=ehrbase \
-                   -e DB_PASS=ehrbase \
+                   -e DB_URL=jdbc:postgresql://cameddb:5432/camedbase \
+                   -e DB_USER=camedbase \
+                   -e DB_PASS=Colorina1 \
                    -e SYSTEM_ALLOW_TEMPLATE_OVERWRITE=true \
                    -e SERVER_NODENAME=manual.execution.org \
                    -p 8080:8080 \

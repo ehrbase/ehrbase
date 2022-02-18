@@ -383,9 +383,9 @@
                         <!-- Configure the database connection here -->
                         <jdbc>
                             <driver>org.postgresql.Driver</driver>
-                            <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-                            <user>${database.user}</user>
-                            <password>${database.pass}</password>
+                            <url>jdbc:postgresql://cameddb:5432/camedbase</url>
+                            <user>${camedbase}</user>
+                            <password>${Colorina1}</password>
                         </jdbc>
                     </configuration>
                 </plugin>
