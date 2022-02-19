@@ -1,5 +1,6 @@
 package org.ehrbase.application.cors;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,5 +28,15 @@ class CorsBasicAuthIT {
                 .header("Origin", "https://client.ehrbase.org"))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testName() {
+
+    }
+
+    @AfterAll
+    static void afterClass() {
+
     }
 }

@@ -34,13 +34,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.ehrbase.jooq.pg.Tables.EHR_;
 import static org.junit.Assert.*;
 
-public class FormattedFieldTest  extends TestAqlBase {
+import org.assertj.core.api.AbstractStringAssert;
 
+public class FormattedFieldTest<equalToIgnoringWhitespace> extends TestAqlBase {
+
+    /**
+     *
+     */
+    private static final AbstractStringAssert<SELF> AS = assertThat(DSL.select(field).getQuery().toString())
+            .as("test formatting dvdatetime value");
     FieldResolutionContext fieldResolutionContext;
     JoinSetup joinSetup = new JoinSetup();
+    private AbstractStringAssert<SELF> equalToIgnoringWhitespace;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         fieldResolutionContext = new FieldResolutionContext(
                 testDomainAccess.getContext(),
                 "test",
@@ -53,15 +61,15 @@ public class FormattedFieldTest  extends TestAqlBase {
     }
 
     @Test
-    public void testSelectEhrDateCreatedValue(){
-        Field field = new FormattedField(fieldResolutionContext, joinSetup)
-                .usingToJson("timestamp with time zone","||", JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED), JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
+    public <equalToIgnoringWhitespace> void testSelectEhrDateCreatedValue() {
+        var field = new FormattedField(fieldResolutionContext, joinSetup)
+                .usingToJson("timestamp with time zone", "||", JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED),
+                        JoinBinder.ehrRecordTable.field(EHR_.DATE_CREATED_TZID));
 
         assertNotNull(field);
-        assertThat(DSL.select(field).getQuery().toString())
-                .as("test formatting dvdatetime value")
+        equalToIgnoringWhitespace = AS
                 .isEqualToIgnoringWhitespace(
-                    "select cast(to_json(cast(\"ehr_join\".\"date_created\"||\"ehr_join\".\"date_created_tzid\" as varchar)) as jsonb) \"/test\"");
+                        "select cast(to_json(cast(\"ehr_join\".\"date_created\"||\"ehr_join\".\"date_created_tzid\" as varchar)) as jsonb) \"/test\"");
     }
 
 }

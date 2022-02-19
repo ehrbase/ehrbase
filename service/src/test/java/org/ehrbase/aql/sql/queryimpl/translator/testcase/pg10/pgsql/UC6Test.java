@@ -19,7 +19,6 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
-import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC6;
 import org.junit.Test;
 
@@ -27,16 +26,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC6Test extends UC6 {
 
-    public UC6Test(){
+    public UC6Test() {
         super();
-        this.expectedSqlExpression =
-                "select \"\".\"description\" from (select ARRAY.COLUMN as \"description\" from \"ehr\".\"entry\" join lateral (\n" +
-                        "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"description\" asc";
+        this.expectedSqlExpression = "select \"\".\"description\" from (select ARRAY.COLUMN as \"description\" from \"ehr\".\"entry\" join lateral (\n"
+                +
+                "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n"
+                +
+                " AS COLUMN) as \"ARRAY\" on 1 = 1 where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"description\" asc";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }
