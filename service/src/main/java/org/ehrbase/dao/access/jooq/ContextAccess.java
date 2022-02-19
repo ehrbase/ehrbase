@@ -69,7 +69,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     private static final String DB_INCONSISTENCY = "DB inconsistency";
-  private static Logger log = LoggerFactory.getLogger(ContextAccess.class);
+    private static Logger log = LoggerFactory.getLogger(ContextAccess.class);
     private EventContextRecord eventContextRecord;
     private List<ParticipationRecord> participations = new ArrayList<>();
 
@@ -95,11 +95,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         ContextAccess contextAccess = new ContextAccess(domainAccess);
         EventContextRecord eventContextRecord = domainAccess.getContext().newRecord(EVENT_CONTEXT);
         eventContextRecord.setStartTime((Timestamp) records.getValue(0, I_CompositionAccess.F_CONTEXT_START_TIME));
-        eventContextRecord.setStartTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_START_TIME_TZID));
+        eventContextRecord
+                .setStartTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_START_TIME_TZID));
         eventContextRecord.setEndTime((Timestamp) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME));
         eventContextRecord.setEndTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME_TZID));
         eventContextRecord.setLocation((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_LOCATION));
-//        eventContextRecord.setSetting(records.getValue(0, I_CompositionAccess.F_CONTEXT_SETTING));
+        // eventContextRecord.setSetting(records.getValue(0,
+        // I_CompositionAccess.F_CONTEXT_SETTING));
         eventContextRecord.setOtherContext((JSONB) records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
 
         return contextAccess;
@@ -108,49 +110,51 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     /**
      * @throws InternalServerException on failure of decoding DvText or DvDateTime
      */
-    public static EventContext retrieveHistoricalEventContext(I_DomainAccess domainAccess, UUID compositionId, Timestamp transactionTime) {
+    public static EventContext retrieveHistoricalEventContext(I_DomainAccess domainAccess, UUID compositionId,
+            Timestamp transactionTime) {
 
-        //use fetch any since duplicates are possible during tests...
+        // use fetch any since duplicates are possible during tests...
         EventContextHistoryRecord eventContextHistoryRecord = domainAccess.getContext()
                 .fetchAny(EVENT_CONTEXT_HISTORY, EVENT_CONTEXT_HISTORY.COMPOSITION_ID.eq(compositionId)
                         .and(EVENT_CONTEXT_HISTORY.SYS_TRANSACTION.eq(transactionTime)));
 
-        if (eventContextHistoryRecord == null) return null; //no matching version for this composition
+        if (eventContextHistoryRecord == null)
+            return null; // no matching version for this composition
 
-        //get the facility entry
+        // get the facility entry
         PartyIdentified healthCareFacility = null;
 
         if (eventContextHistoryRecord.getFacility() != null) {
             PartyIdentifiedRecord partyIdentifiedRecord = domainAccess.getContext()
                     .fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(eventContextHistoryRecord.getFacility()));
-            //facility identifiers
+            // facility identifiers
 
             if (partyIdentifiedRecord != null) {
                 List<DvIdentifier> identifiers = new ArrayList<>();
 
-                domainAccess.getContext().fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())).forEach(record -> {
-                    DvIdentifier dvIdentifier = new DvIdentifier();
-                    dvIdentifier.setIssuer(record.getIssuer());
-                    dvIdentifier.setAssigner(record.getAssigner());
-                    dvIdentifier.setId(record.getIdValue());
-                    dvIdentifier.setType(record.getTypeName());
-                    identifiers.add(dvIdentifier);
-                });
+                domainAccess.getContext().fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId()))
+                        .forEach(record -> {
+                            DvIdentifier dvIdentifier = new DvIdentifier();
+                            dvIdentifier.setIssuer(record.getIssuer());
+                            dvIdentifier.setAssigner(record.getAssigner());
+                            dvIdentifier.setId(record.getIdValue());
+                            dvIdentifier.setType(record.getTypeName());
+                            identifiers.add(dvIdentifier);
+                        });
 
-                //get PartyRef values from record
+                // get PartyRef values from record
                 healthCareFacility = getPartyIdentifiedFromRecord(partyIdentifiedRecord, identifiers);
             }
         }
 
         List<Participation> participationList = new ArrayList<>();
-        //get the participations
+        // get the participations
         domainAccess.getContext().fetch(PARTICIPATION_HISTORY,
-                        PARTICIPATION_HISTORY.EVENT_CONTEXT.eq(eventContextHistoryRecord.getId())
-                                .and(PARTICIPATION_HISTORY.SYS_TRANSACTION.eq(transactionTime)))
+                PARTICIPATION_HISTORY.EVENT_CONTEXT.eq(eventContextHistoryRecord.getId())
+                        .and(PARTICIPATION_HISTORY.SYS_TRANSACTION.eq(transactionTime)))
                 .forEach(record -> {
-                    //retrieve performer
+                    // retrieve performer
                     PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(record.getPerformer());
-
 
                     DvInterval<DvDateTime> startTime = convertDvIntervalDvDateTimeFromRecord(eventContextHistoryRecord);
                     DvCodedText mode = convertModeFromRecord(eventContextHistoryRecord);
@@ -163,11 +167,14 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     participationList.add(participation);
                 });
 
-        DvCodedText setting = (DvCodedText) new RecordedDvCodedText().fromDB(eventContextHistoryRecord, EVENT_CONTEXT_HISTORY.SETTING);
+        DvCodedText setting = (DvCodedText) new RecordedDvCodedText().fromDB(eventContextHistoryRecord,
+                EVENT_CONTEXT_HISTORY.SETTING);
 
         return new EventContext(healthCareFacility,
-                new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getStartTime(), eventContextHistoryRecord.getStartTimeTzid()),
-                new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getEndTime(), eventContextHistoryRecord.getEndTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getStartTime(),
+                        eventContextHistoryRecord.getStartTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextHistoryRecord.getEndTime(),
+                        eventContextHistoryRecord.getEndTimeTzid()),
                 participationList.isEmpty() ? null : participationList,
                 eventContextHistoryRecord.getLocation(),
                 setting,
@@ -175,20 +182,32 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     }
 
-    private static PartyIdentified getPartyIdentifiedFromRecord(PartyIdentifiedRecord partyIdentifiedRecord, List<DvIdentifier> identifiers) {
+    private static DvCodedText convertModeFromRecord(EventContextHistoryRecord eventContextHistoryRecord) {
+        return null;
+    }
+
+    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(
+            EventContextHistoryRecord eventContextHistoryRecord) {
+        return null;
+    }
+
+    private static PartyIdentified getPartyIdentifiedFromRecord(PartyIdentifiedRecord partyIdentifiedRecord,
+            List<DvIdentifier> identifiers) {
         PartyIdentified healthCareFacility;
         PartyRef partyRef = null;
         if (partyIdentifiedRecord.getPartyRefValue() != null && partyIdentifiedRecord.getPartyRefScheme() != null) {
             ObjectId objectID = new PersistedObjectId().fromDB(partyIdentifiedRecord);
-            partyRef = new PartyRef(objectID, partyIdentifiedRecord.getPartyRefNamespace(), partyIdentifiedRecord.getPartyRefType());
+            partyRef = new PartyRef(objectID, partyIdentifiedRecord.getPartyRefNamespace(),
+                    partyIdentifiedRecord.getPartyRefType());
         }
-        healthCareFacility = new PartyIdentified(partyRef, partyIdentifiedRecord.getName(), identifiers.isEmpty() ? null : identifiers);
+        healthCareFacility = new PartyIdentified(partyRef, partyIdentifiedRecord.getName(),
+                identifiers.isEmpty() ? null : identifiers);
         return healthCareFacility;
     }
 
-
     /**
-     * setup an EventContextRecord instance based on values from an EventContext instance
+     * setup an EventContextRecord instance based on values from an EventContext
+     * instance
      *
      * @param id
      * @param eventContext
@@ -205,14 +224,14 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         }
         eventContextRecord.setId(id != null ? id : UUID.randomUUID());
 
-        //Health care facility
+        // Health care facility
         if (eventContext.getHealthCareFacility() != null) {
             UUID healthcareFacilityId = new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility());
 
             eventContextRecord.setFacility(healthcareFacilityId);
         }
 
-        //location
+        // location
         if (eventContext.getLocation() != null)
             eventContextRecord.setLocation(eventContext.getLocation());
 
@@ -242,7 +261,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
                 }
 
-                PartyIdentified performer; //only PartyIdentified performer is supported now
+                PartyIdentified performer; // only PartyIdentified performer is supported now
 
                 PartyProxy setPerformer = participation.getPerformer();
 
@@ -253,19 +272,19 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
                 performer = (PartyIdentified) setPerformer;
                 UUID performerUuid = new PersistedPartyProxy(this).getOrCreate(performer);
-                //set the performer
+                // set the performer
                 participationRecord.setPerformer(performerUuid);
                 participations.add(participationRecord);
             }
         }
 
-        //other context
-        if (eventContext.getOtherContext() != null && CollectionUtils.isNotEmpty(eventContext.getOtherContext().getItems())) {
-            //set up the JSONB field other_context
+        // other context
+        if (eventContext.getOtherContext() != null
+                && CollectionUtils.isNotEmpty(eventContext.getOtherContext().getItems())) {
+            // set up the JSONB field other_context
             eventContextRecord.setOtherContext(JSONB.valueOf(new RawJson().marshal(eventContext.getOtherContext())));
         }
     }
-
 
     /**
      * @throws InternalServerException  when database operation or
@@ -300,11 +319,10 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         if (!participations.isEmpty()) {
             participations.forEach(participation -> {
-                        participation.setEventContext(eventContextRecord.getId());
-                        participation.setSysTransaction(transactionTime);
-                        participation.store();
-                    }
-            );
+                participation.setEventContext(eventContextRecord.getId());
+                participation.setSysTransaction(transactionTime);
+                participation.store();
+            });
         }
 
         return eventContextRecord.getId();
@@ -320,15 +338,16 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     }
 
     /**
-     * @throws InternalServerException if DB inconsistency or other problem with updating DB entry
+     * @throws InternalServerException if DB inconsistency or other problem with
+     *                                 updating DB entry
      */
     @Override
     public Boolean update(Timestamp transactionTime) {
-        //updateComposition participations
+        // updateComposition participations
         for (ParticipationRecord participationRecord : participations) {
             participationRecord.setSysTransaction(transactionTime);
             if (participationRecord.changed()) {
-                //check if commit or updateComposition (exists or not...)
+                // check if commit or updateComposition (exists or not...)
                 try {
                     if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
                         participationRecord.update();
@@ -336,12 +355,12 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                         participationRecord.setId(UUID.randomUUID());
                         participationRecord.store();
                     }
-                } catch (DataAccessException e) {   // generalize DB exceptions
+                } catch (DataAccessException e) { // generalize DB exceptions
                     throw new InternalServerException(DB_INCONSISTENCY, e);
                 }
             }
         }
-        //ignore the temporal field since it is maintained by an external trigger!
+        // ignore the temporal field since it is maintained by an external trigger!
         eventContextRecord.changed(EVENT_CONTEXT.SYS_PERIOD, false);
 
         eventContextRecord.setSysTransaction(transactionTime);
@@ -364,7 +383,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         boolean result;
         try {
             result = updateQuery.execute() > 0;
-        } catch (DataAccessException e) {   // generalize DB exceptions
+        } catch (DataAccessException e) { // generalize DB exceptions
             throw new InternalServerException("Problem when updating DB entry", e);
         }
 
@@ -378,12 +397,12 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     public Boolean update(Timestamp transactionTime, boolean force) {
         if (force) {
             eventContextRecord.changed(true);
-            //jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
+            // jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
             eventContextRecord.changed(EVENT_CONTEXT.SYS_PERIOD, false);
 
             for (ParticipationRecord participationRecord : participations) {
                 participationRecord.changed(true);
-                //jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
+                // jOOQ limited support of TSTZRANGE, exclude sys_period from updateComposition!
                 participationRecord.changed(PARTICIPATION.SYS_PERIOD, false);
             }
         }
@@ -391,31 +410,36 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     }
 
     /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
+     * @throws InternalServerException because inherited interface function isn't
+     *                                 implemented in this class
      * @deprecated
      */
     @Deprecated
     @Override
     public Boolean update() {
-        throw new InternalServerException("INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
+        throw new InternalServerException(
+                "INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
     }
 
     /**
-     * @throws InternalServerException because inherited interface function isn't implemented in this class
+     * @throws InternalServerException because inherited interface function isn't
+     *                                 implemented in this class
      * @deprecated
      */
     @Deprecated
     @Override
     public Boolean update(Boolean force) {
-        throw new InternalServerException("INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
+        throw new InternalServerException(
+                "INTERNAL: Invalid updateComposition call to updateComposition without Transaction time and/or force flag arguments");
     }
 
     @Override
     public Integer delete() {
         int count = 0;
-        //delete any cross reference participants if any
-        //delete the participation record
-        count += getContext().delete(PARTICIPATION).where(PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId())).execute();
+        // delete any cross reference participants if any
+        // delete the participation record
+        count += getContext().delete(PARTICIPATION).where(PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId()))
+                .execute();
 
         count += eventContextRecord.delete();
         return count;
@@ -427,9 +451,10 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     @Override
     public EventContext mapRmEventContext() {
 
-        //get the facility entry
-        PartyIdentifiedRecord partyIdentifiedRecord = getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(eventContextRecord.getFacility()));
-        //facility identifiers
+        // get the facility entry
+        PartyIdentifiedRecord partyIdentifiedRecord = getContext().fetchOne(PARTY_IDENTIFIED,
+                PARTY_IDENTIFIED.ID.eq(eventContextRecord.getFacility()));
+        // facility identifiers
         PartyIdentified healthCareFacility = null;
 
         if (partyIdentifiedRecord != null) {
@@ -444,27 +469,28 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 identifiers.add(dvIdentifier);
             });
 
-            //get PartyRef values from record
+            // get PartyRef values from record
             healthCareFacility = getPartyIdentifiedFromRecord(partyIdentifiedRecord, identifiers);
         }
 
         List<Participation> participationList = new ArrayList<>();
-        //get the participations
-        getContext().fetch(PARTICIPATION, PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId())).forEach(record -> {
-            //retrieve performer
-            PartyProxy performer = new PersistedPartyProxy(this).retrieve(record.getPerformer());
+        // get the participations
+        getContext().fetch(PARTICIPATION, PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId()))
+                .forEach(record -> {
+                    // retrieve performer
+                    PartyProxy performer = new PersistedPartyProxy(this).retrieve(record.getPerformer());
 
-            DvInterval<DvDateTime> dvInterval = convertDvIntervalDvDateTimeFromRecord(record);
+                    DvInterval<DvDateTime> dvInterval = convertDvIntervalDvDateTimeFromRecord(record);
 
-            DvCodedText mode = convertModeFromRecord(record);
+                    DvCodedText mode = convertModeFromRecord(record);
 
-            Participation participation = new Participation(performer,
-                    (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
-                    mode,
-                    dvInterval);
+                    Participation participation = new Participation(performer,
+                            (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
+                            mode,
+                            dvInterval);
 
-            participationList.add(participation);
-        });
+                    participationList.add(participation);
+                });
 
         DvCodedText concept = (DvCodedText) new RecordedDvCodedText().fromDB(eventContextRecord, EVENT_CONTEXT.SETTING);
 
@@ -475,23 +501,25 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         }
 
         return new EventContext(healthCareFacility,
-                new RecordedDvDateTime().decodeDvDateTime(eventContextRecord.getStartTime(), eventContextRecord.getStartTimeTzid()),
-                new RecordedDvDateTime().decodeDvDateTime(eventContextRecord.getEndTime(), eventContextRecord.getEndTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextRecord.getStartTime(),
+                        eventContextRecord.getStartTimeTzid()),
+                new RecordedDvDateTime().decodeDvDateTime(eventContextRecord.getEndTime(),
+                        eventContextRecord.getEndTimeTzid()),
                 participationList.isEmpty() ? null : participationList,
                 eventContextRecord.getLocation(),
                 concept,
-                otherContext
-        );
+                otherContext);
 
     }
 
     private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record) {
         DvInterval<DvDateTime> dvDateTimeDvInterval = null;
-        if (record.get(PARTICIPATION.TIME_LOWER) != null) { //start time null value is allowed for participation
+        if (record.get(PARTICIPATION.TIME_LOWER) != null) { // start time null value is allowed for participation
             dvDateTimeDvInterval = new DvInterval<>(
-                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_LOWER), record.get(PARTICIPATION.TIME_LOWER_TZ)),
-                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_UPPER), record.get(PARTICIPATION.TIME_UPPER_TZ))
-            );
+                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_LOWER),
+                            record.get(PARTICIPATION.TIME_LOWER_TZ)),
+                    new RecordedDvDateTime().decodeDvDateTime(record.get(PARTICIPATION.TIME_UPPER),
+                            record.get(PARTICIPATION.TIME_UPPER_TZ)));
         }
         return dvDateTimeDvInterval;
     }

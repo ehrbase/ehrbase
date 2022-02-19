@@ -60,8 +60,8 @@ public class AqlQueryHandler extends DataAccess {
         return execute(aqlExpression);
     }
 
-    @SuppressWarnings("unchecked")
-    private AqlResult execute(AqlExpression aqlExpression){
+    SuppressWarnings
+    "private" AqlResult execute(AqlExpression aqlExpression){
 
         AuditVariables auditVariables = new AuditVariables();
 
