@@ -23,8 +23,8 @@ class CorsBasicAuthIT {
     @Test
     void testCors() throws Exception {
         mockMvc.perform(options("/rest/openehr/v1/definition/template/adl1.4")
-                        .header("Access-Control-Request-Method", "GET")
-                        .header("Origin", "https://client.ehrbase.org"))
+                .header("Access-Control-Request-Method", "GET")
+                .header("Origin", "https://client.ehrbase.org"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
