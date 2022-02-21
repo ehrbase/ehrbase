@@ -42,11 +42,6 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
 
   <persistence directory="${java.io.tmpdir}/ehcache"/>
 
-  <cache alias="operationaltemplateCache" uses-template="template-cache">
-    <key-type>java.lang.String</key-type>
-    <value-type>org.openehr.schemas.v1.OPERATIONALTEMPLATE</value-type>
-  </cache>
-
   <cache alias="introspectCache" uses-template="introspect-cache">
     <key-type>java.util.UUID</key-type>
     <value-type>org.ehrbase.webtemplate.model.WebTemplate</value-type>
@@ -66,15 +61,6 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     <key-type>java.lang.String</key-type>
     <value-type>java.util.List</value-type>
   </cache>
-
-  <cache-template name="template-cache">
-    <expiry>
-      <none/>
-    </expiry>
-    <resources>
-      <heap>20</heap>
-    </resources>
-  </cache-template>
 
   <cache-template name="introspect-cache">
     <expiry>

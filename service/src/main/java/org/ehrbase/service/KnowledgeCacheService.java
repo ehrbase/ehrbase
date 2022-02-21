@@ -97,7 +97,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   private final CacheOptions cacheOptions;
 
   private final Cache jsonPathQueryResultCache;
-  private final Cache atOptCache;
   private final Cache webTemplateCache;
   private final Cache fieldCache;
   private final Cache multivaluedCache;
@@ -117,7 +116,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     this.templateStorage = templateStorage;
     this.cacheOptions = cacheOptions;
 
-    atOptCache = cacheManager.getCache(CacheOptions.OPERATIONAL_TEMPLATE_CACHE);
     webTemplateCache = cacheManager.getCache(CacheOptions.INTROSPECT_CACHE);
     jsonPathQueryResultCache = cacheManager.getCache(CacheOptions.QUERY_CACHE);
     fieldCache = cacheManager.getCache(CacheOptions.FIELDS_CACHE);
@@ -174,27 +172,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     OPERATIONALTEMPLATE template = document.getTemplate();
-    if (template == null) {
-      throw new InvalidApiParameterException("Could not parse input template");
-    }
 
-    if (template.getConcept() == null || template.getConcept().isEmpty()) {
-      throw new IllegalArgumentException("Supplied template has nil or empty concept");
-    }
-
-    if (template.getDefinition() == null || template.getDefinition().isNil()) {
-      throw new IllegalArgumentException("Supplied template has nil or empty definition");
-    }
-
-    if (template.getDescription() == null || !template.getDescription().validate()) {
-      throw new IllegalArgumentException("Supplied template has nil or empty description");
-    }
-
-    if (!TemplateUtils.isSupported(template)) {
-      throw new IllegalArgumentException(
-          MessageFormat.format("The supplied template is not supported (unsupported types: {0})",
-              String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
-    }
+    validateTemplate(template);
 
     String templateId;
     try {
@@ -236,7 +215,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     var uid = TemplateUtils.getUid(template);
 
     try {
-      atOptCache.put(templateId, template);
       idxCacheUuidToTemplateId.put(uid, templateId);
       idxCacheTemplateIdToUuid.put(templateId, uid);
 
@@ -263,7 +241,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   private void invalidateCache(OPERATIONALTEMPLATE template) {
     // invalidate the cache for this template
     webTemplateCache.evict(TemplateUtils.getUid(template));
-    atOptCache.evict(template.getTemplateId().getValue());
 
     jsonPathQueryResultCache.invalidate();
     fieldCache.invalidate();
@@ -384,10 +361,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
    */
   private OPERATIONALTEMPLATE getOperationaltemplateFromFileStorage(String filename) {
     var template = templateStorage.readOperationaltemplate(filename);
-    template.ifPresent(existingTemplate -> {
-      atOptCache.put(filename, existingTemplate);
-      idxCacheUuidToTemplateId.put(TemplateUtils.getUid(existingTemplate), filename);
-    });
+    template.ifPresent(
+        existingTemplate -> idxCacheUuidToTemplateId.put(TemplateUtils.getUid(existingTemplate),
+            filename));
     return template.orElse(null);
   }
 
@@ -516,5 +492,34 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   @Override
   public I_KnowledgeCache getKnowledge() {
     return this;
+  }
+
+  /**
+   * Validates that the given template is valid and supported by EHRbase.
+   *
+   * @param template the template to validate
+   */
+  private void validateTemplate(OPERATIONALTEMPLATE template) {
+    if (template == null) {
+      throw new InvalidApiParameterException("Could not parse input template");
+    }
+
+    if (template.getConcept() == null || template.getConcept().isEmpty()) {
+      throw new IllegalArgumentException("Supplied template has nil or empty concept");
+    }
+
+    if (template.getDefinition() == null || template.getDefinition().isNil()) {
+      throw new IllegalArgumentException("Supplied template has nil or empty definition");
+    }
+
+    if (template.getDescription() == null || !template.getDescription().validate()) {
+      throw new IllegalArgumentException("Supplied template has nil or empty description");
+    }
+
+    if (!TemplateUtils.isSupported(template)) {
+      throw new IllegalArgumentException(
+          MessageFormat.format("The supplied template is not supported (unsupported types: {0})",
+              String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
+    }
   }
 }

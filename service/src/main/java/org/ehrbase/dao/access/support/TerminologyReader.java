@@ -20,6 +20,10 @@
  */
 package org.ehrbase.dao.access.support;
 
+import java.util.Map;
+import javax.xml.XMLConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -39,7 +43,11 @@ import java.util.Vector;
  * @author Christian Chevalley: added parsing of Territory Elements
  */
 public class TerminologyReader extends DefaultHandler {
-    private InputStream source;
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final InputStream source;
+
     private Hashtable<String, String> languageTable;
     private Hashtable<Integer, String> primaryRubricTable;
     private Hashtable<String, Hashtable<Integer, String>> conceptTable;
@@ -57,126 +65,137 @@ public class TerminologyReader extends DefaultHandler {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
 
         try {
-            final SAXParser saxParser = factory.newSAXParser();
-            //saxParser.parse(new InputSource(source), this);
-            saxParser.parse(source, this);
+            final SAXParser parser = factory.newSAXParser();
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            parser.parse(source, this);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Exception occurred", e);
         }
     }
 
     private void initialiseTables() {
-        languageTable = new Hashtable<String, String>();
-        primaryRubricTable = new Hashtable<Integer, String>();
-        conceptTable = new Hashtable<String, Hashtable<Integer, String>>();
-        grouperTable = new Hashtable<Integer, Integer>();
-        groupedConceptTable = new Hashtable<Integer, Vector<Integer>>();
-        terminologyIdTable = new Hashtable<String, String>();
-        territoryTable = new Hashtable<Integer, Vector<String>>();
+        languageTable = new Hashtable<>();
+        primaryRubricTable = new Hashtable<>();
+        conceptTable = new Hashtable<>();
+        grouperTable = new Hashtable<>();
+        groupedConceptTable = new Hashtable<>();
+        terminologyIdTable = new Hashtable<>();
+        territoryTable = new Hashtable<>();
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName,
                              Attributes attributes) throws SAXException {
         try {
-            //System.out.println(attributes.getQName(0));
-            //System.out.println(attributes.getValue(2));
-            //System.out.println(qName);
-            //attrib.add(attributes);
-            //System.out.println(attributes.getValue("id"));
-            if (qName.equals("Language")) {
-                final String code = attributes.getValue("code");
-                final String description = attributes.getValue("Description");
+            switch (qName) {
+                case "Language":
+                    final String code = attributes.getValue("code");
+                    final String description = attributes.getValue("Description");
 
-                if (code != null && description != null) {
-                    languageTable.put(code, description);
+                    if (code != null && description != null) {
+                        languageTable.put(code, description);
+                    }
+                    break;
+                case "PrimaryRubric": {
+                    final Integer id = Integer.parseInt(attributes.getValue("Id"));
+                    final String language = attributes.getValue("Language");
+
+                    if (id != null && language != null) {
+                        primaryRubricTable.put(id, language);
+                    }
+                    break;
                 }
-            } else if (qName.equals("PrimaryRubric")) {
-                final Integer id = Integer.parseInt(attributes.getValue("Id"));
-                final String language = attributes.getValue("Language");
+                case "Concept": {
+                    final String language = attributes.getValue("Language");
+                    final int id = Integer.parseInt(attributes.getValue("ConceptID"));
+                    final String rubric = attributes.getValue("Rubric");
 
-                if (id != null && language != null) {
-                    primaryRubricTable.put(id, language);
+                    if (conceptTable.containsKey(language)) {
+                        final Hashtable<Integer, String> rubrics = conceptTable.get(language);
+                        rubrics.put(id, rubric);
+                    } else {
+                        final Hashtable<Integer, String> rubrics = new Hashtable<>();
+                        rubrics.put(id, rubric);
+                        conceptTable.put(language, rubrics);
+                    }
+                    break;
                 }
-            } else if (qName.equals("Concept")) {
-                final String language = attributes.getValue("Language");
-                final int id = Integer.parseInt(attributes.getValue("ConceptID"));
-                final String rubric = attributes.getValue("Rubric");
+                case "Grouper": {
+                    final Integer id = Integer.parseInt(attributes.getValue("id"));
+                    final Integer conceptID = Integer.parseInt(attributes.getValue("ConceptID"));
 
-                if (conceptTable.containsKey(language)) {
-                    final Hashtable<Integer, String> rubrics = conceptTable.get(language);
-                    rubrics.put(id, rubric);
-                } else {
-                    final Hashtable<Integer, String> rubrics = new Hashtable<Integer, String>();
-                    rubrics.put(id, rubric);
-                    conceptTable.put(language, rubrics);
+                    grouperTable.put(conceptID, id);
+                    break;
                 }
-            } else if (qName.equals("Grouper")) {
-                final Integer id = Integer.parseInt(attributes.getValue("id"));
-                final Integer conceptID = Integer.parseInt(attributes.getValue("ConceptID"));
+                case "GroupedConcept":
+                    final Integer grouperID = Integer.parseInt(attributes.getValue("GrouperID"));
+                    final Integer childID = Integer.parseInt(attributes.getValue("ChildID"));
 
-                grouperTable.put(conceptID, id);
-            } else if (qName.equals("GroupedConcept")) {
-                final Integer grouperID = Integer.parseInt(attributes.getValue("GrouperID"));
-                final Integer childID = Integer.parseInt(attributes.getValue("ChildID"));
+                    if (groupedConceptTable.containsKey(grouperID)) {
+                        final Vector<Integer> v = groupedConceptTable.get(grouperID);
+                        v.add(childID);
+                    } else {
+                        final Vector<Integer> v = new Vector<>();
+                        v.add(childID);
+                        groupedConceptTable.put(grouperID, v);
+                    }
+                    break;
+                case "TerminologyIdentifiers":
+                    final String vsab = attributes.getValue("VSAB");
+                    final String sourceName = attributes.getValue("SourceName");
 
-                if (groupedConceptTable.containsKey(grouperID)) {
-                    final Vector<Integer> v = groupedConceptTable.get(grouperID);
-                    v.add(childID);
-                } else {
-                    final Vector<Integer> v = new Vector<Integer>();
-                    v.add(childID);
-                    groupedConceptTable.put(grouperID, v);
-                }
-            } else if (qName.equals("TerminologyIdentifiers")) {
-                final String vsab = attributes.getValue("VSAB");
-                final String sourceName = attributes.getValue("SourceName");
+                    terminologyIdTable.put(vsab, sourceName);
+                    break;
+                case "Territory":
+                    final Integer territoryId = Integer.parseInt(
+                        attributes.getValue("NumericCode"));
+                    final String twoLetter = attributes.getValue("TwoLetter");
+                    final String threeLetter = attributes.getValue("ThreeLetter");
+                    final String text = attributes.getValue("Text");
 
-                terminologyIdTable.put(vsab, sourceName);
-            } else if (qName.equals("Territory")) {
-                final Integer territoryId = Integer.parseInt(attributes.getValue("NumericCode"));
-                final String twoLetter = attributes.getValue("TwoLetter");
-                final String threeLetter = attributes.getValue("ThreeLetter");
-                final String text = attributes.getValue("Text");
+                    final Vector<String> vattr = new Vector<>();
+                    vattr.add(twoLetter);
+                    vattr.add(threeLetter);
+                    vattr.add(text);
 
-                final Vector<String> vattr = new Vector<String>();
-                vattr.add(twoLetter);
-                vattr.add(threeLetter);
-                vattr.add(text);
+                    territoryTable.put(territoryId, vattr);
 
-                territoryTable.put(territoryId, vattr);
-
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported element: " + localName);
             }
         } catch (NullPointerException e) {
-            e.printStackTrace();
+            logger.error("NullPointerException occurred", e);
         }
     }
 
-    public Hashtable<String, String> getLanguageTable() {
+    public Map<String, String> getLanguageTable() {
         return languageTable;
     }
 
-    public Hashtable<Integer, String> getPrimaryRubricTable() {
+    public Map<Integer, String> getPrimaryRubricTable() {
         return primaryRubricTable;
     }
 
-    public Hashtable<String, Hashtable<Integer, String>> getConceptTable() {
+    public Map<String, Hashtable<Integer, String>> getConceptTable() {
         return conceptTable;
     }
 
-    public Hashtable<Integer, Integer> getGrouperTable() {
+    public Map<Integer, Integer> getGrouperTable() {
         return grouperTable;
     }
 
-    public Hashtable<Integer, Vector<Integer>> getGroupedConceptTable() {
+    public Map<Integer, Vector<Integer>> getGroupedConceptTable() {
         return groupedConceptTable;
     }
 
-    public Hashtable<Integer, Vector<String>> getTerritoryTable() {
+    public Map<Integer, Vector<String>> getTerritoryTable() {
         return territoryTable;
     }
 
 
-    public Hashtable<String, String> getTerminologyIdTable() {
+    public Map<String, String> getTerminologyIdTable() {
         return terminologyIdTable;
     }
 }
