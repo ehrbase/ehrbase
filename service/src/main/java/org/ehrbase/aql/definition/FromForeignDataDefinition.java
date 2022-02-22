@@ -1,17 +1,11 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
-
- * This file is part of Project EHRbase
-
- * Copyright (c) Ripple Foundation CIC Ltd, UK, 2017
- * Author: Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright 2016-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,19 +24,24 @@ import java.util.List;
  * <p>
  * The FROM clause is generally associated to an EHR definition
  * </p>
- * Created by christian on 5/2/2016.
+ *
+ * @author Christian Chevalley
+ * @since 1.0
  */
 public class FromForeignDataDefinition implements I_FromEntityDefinition {
 
-    public enum FDType {PERSON, AGENT, ORGANISATION, GROUP}
+    public enum FDType {
+
+        PERSON, AGENT, ORGANISATION, GROUP
+
+    }
 
     public static class NodePredicate {
+
         String field;
         String value;
         String identifier;
         String operator;
-
-//        public enum OPERATOR {EQ, NE, GT, LT, GE, LE}
 
         public NodePredicate(String field, String value, String operator) {
             this.field = field;
@@ -75,19 +74,19 @@ public class FromForeignDataDefinition implements I_FromEntityDefinition {
         }
 
         public String toString() {
-            return "FD::" + getIdentifier() + "::" + getIdentifier() + "::" + getValue();
+            return "ForeignData::" + getIdentifier() + "::" + getIdentifier() + "::" + getValue();
         }
     }
 
-    private boolean isEHR = false;
+    private final List<NodePredicate> fromNodePredicates = new ArrayList<>();
+
     private String identifier;
-    private FDType fdType;
+
+    private final FDType fdType;
 
     public FromForeignDataDefinition(String type) {
         fdType = FDType.valueOf(type);
     }
-
-    private List<NodePredicate> fromNodePredicates = new ArrayList<>();
 
     @Override
     public void add(String identifier, String value, String operator) {
@@ -102,19 +101,21 @@ public class FromForeignDataDefinition implements I_FromEntityDefinition {
         return identifier;
     }
 
+    public FDType getFdType() {
+        return fdType;
+    }
+
     /**
-     * aasumes ehr_id/value has been given
+     * Assumes ehr_id/value has been given
      *
-     * @return
+     * @return the string representation of FROM clause
      */
     public String toString() {
-
-        StringBuffer stringBuffer = new StringBuffer();
-
+        StringBuilder builder = new StringBuilder();
         for (NodePredicate predicate : fromNodePredicates) {
-            stringBuffer.append(predicate + " ");
+            builder.append(predicate).append(" ");
         }
-        return stringBuffer.toString();
+        return builder.toString();
     }
 
     public List<NodePredicate> getFDPredicates() {
