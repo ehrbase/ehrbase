@@ -175,6 +175,19 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     }
 
+    private static DvCodedText convertModeFromRecord(EventContextHistoryRecord eventContextHistoryRecord) {
+        return null;
+    }
+
+    private static DvCodedText convertModeFromRecord(ParticipationRecord record) {
+        return null;
+    }
+
+    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(
+            ParticipationRecord record) {
+        return null;
+    }
+
     private static PartyIdentified getPartyIdentifiedFromRecord(PartyIdentifiedRecord partyIdentifiedRecord, List<DvIdentifier> identifiers) {
         PartyIdentified healthCareFacility;
         PartyRef partyRef = null;

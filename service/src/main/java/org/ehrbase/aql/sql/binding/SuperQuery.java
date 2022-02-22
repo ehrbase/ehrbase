@@ -41,28 +41,35 @@ import java.util.List;
 /**
  * Created by christian on 9/20/2017.
  */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({ "java:S3776", "java:S3740", "java:S1452" })
 public class SuperQuery {
 
     private VariableDefinitions variableDefinitions;
     private SelectQuery query;
+    private SelectQuery query2;
+    public SuperQuery(SelectQuery query) {
+        query2 = query;
+        this.query = query;
+    }
+
     private DSLContext context;
     private boolean outputWithJson;
 
-    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query, boolean containsJson) {
+    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery query,
+            boolean containsJson) {
         this.context = domainAccess.getContext();
         this.variableDefinitions = variableDefinitions;
         this.query = query;
         this.outputWithJson = containsJson;
     }
 
-    @SuppressWarnings( "deprecation" )
+    @SuppressWarnings("deprecation")
     private List<Field> selectDistinctFields() {
 
         List<Field> fields = new ArrayList<>();
         Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
 
-        //check if the list of variable contains at least ONE distinct statement
+        // check if the list of variable contains at least ONE distinct statement
         if (!variableDefinitions.hasDistinctOperator())
             return fields;
 
@@ -75,17 +82,15 @@ public class SuperQuery {
                 }
                 fields.add(DSL.fieldByName(stringBuilder.toString()));
 
-            }
-            else {
+            } else {
                 if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty())
-                    fields.add(DSL.fieldByName(DefaultColumnId.value(variableDefinition))); //CR #50
+                    fields.add(DSL.fieldByName(DefaultColumnId.value(variableDefinition))); // CR #50
                 else
                     fields.add(DSL.fieldByName(variableDefinition.getAlias()));
             }
         }
 
         return fields;
-
 
     }
 
@@ -101,7 +106,7 @@ public class SuperQuery {
         return selectQuery;
     }
 
-    @SuppressWarnings( {"deprecation", "unchecked"} )
+    @SuppressWarnings({ "deprecation", "unchecked" })
     private SelectQuery selectAggregate(SelectQuery selectQuery) {
 
         List<Field> fields = new ArrayList<>();
@@ -111,7 +116,9 @@ public class SuperQuery {
 
         while (iterator.hasNext()) {
             I_VariableDefinition variableDefinition = iterator.next();
-            String alias = variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty() ? variableDefinition.getPath() : variableDefinition.getAlias();
+            String alias = variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty()
+                    ? variableDefinition.getPath()
+                    : variableDefinition.getAlias();
             if (variableDefinition.isFunction()) {
                 skipField.add(alias);
 
@@ -127,29 +134,27 @@ public class SuperQuery {
 
                 fields.add(field);
             } else if (variableDefinition.isExtension()) {
-                //do nothing... for the time being
+                // do nothing... for the time being
             } else {
-                //check if this alias is serviced by a function
-                //check if this alias requires distinct
+                // check if this alias is serviced by a function
+                // check if this alias requires distinct
                 distinctRequired = distinctRequired || variableDefinition.isDistinct();
 
                 if (skipField.contains(alias))
                     continue;
 
                 if (variableDefinition.isDistinct())
-                    fields.add(DSL.fieldByName("DISTINCT "+ alias));
+                    fields.add(DSL.fieldByName("DISTINCT " + alias));
                 else
                     fields.add(DSL.fieldByName(alias));
             }
         }
 
-
         selectQuery.addSelect(fields);
-
 
         selectQuery.addFrom(query);
 
-        //aggregate return scalar values
+        // aggregate return scalar values
         this.outputWithJson = false;
 
         return selectQuery;
@@ -168,7 +173,7 @@ public class SuperQuery {
     }
 
     @SuppressWarnings("unchecked")
-    public SelectQuery setOrderBy(List<OrderAttribute> orderAttributes, SelectQuery selectQuery){
+    public SelectQuery setOrderBy(List<OrderAttribute> orderAttributes, SelectQuery selectQuery) {
         return new OrderByBinder(variableDefinitions, orderAttributes, selectQuery).bind();
     }
 
@@ -178,8 +183,7 @@ public class SuperQuery {
 
         if (new Variables(variableDefinitions).hasDefinedFunction()) {
             selectQuery = selectAggregate(selectQuery);
-        }
-        else if (new Variables(variableDefinitions).hasDefinedDistinct()) { //build a super select
+        } else if (new Variables(variableDefinitions).hasDefinedDistinct()) { // build a super select
             selectQuery = selectDistinct(selectQuery);
         }
 

@@ -26,6 +26,7 @@ import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
+import org.jooq.Select;
 import org.jooq.impl.DSL;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class FormattedFieldTest<equalToIgnoringWhitespace> extends TestAqlBase {
             .as("test formatting dvdatetime value");
     FieldResolutionContext fieldResolutionContext;
     JoinSetup joinSetup = new JoinSetup();
-    private AbstractStringAssert<SELF> equalToIgnoringWhitespace;
+    private AbstractStringAssert<Select> equalToIgnoringWhitespace;
 
     @Before
     public void setUp() {

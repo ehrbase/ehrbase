@@ -80,6 +80,49 @@ public class WhereMultiFields {
         }
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((compositionAttributeQuery == null) ? 0 : compositionAttributeQuery.hashCode());
+        result = prime * result + ((jsonbEntryQuery == null) ? 0 : jsonbEntryQuery.hashCode());
+        result = prime * result + ((pathResolver == null) ? 0 : pathResolver.hashCode());
+        result = prime * result + ((whereClause == null) ? 0 : whereClause.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        WhereMultiFields other = (WhereMultiFields) obj;
+        if (compositionAttributeQuery == null) {
+            if (other.compositionAttributeQuery != null)
+                return false;
+        } else if (!compositionAttributeQuery.equals(other.compositionAttributeQuery))
+            return false;
+        if (jsonbEntryQuery == null) {
+            if (other.jsonbEntryQuery != null)
+                return false;
+        } else if (!jsonbEntryQuery.equals(other.jsonbEntryQuery))
+            return false;
+        if (pathResolver == null) {
+            if (other.pathResolver != null)
+                return false;
+        } else if (!pathResolver.equals(other.pathResolver))
+            return false;
+        if (whereClause == null) {
+            if (other.whereClause != null)
+                return false;
+        } else if (!whereClause.equals(other.whereClause))
+            return false;
+        return true;
+    }
+
     public  List<MultiFields> bind(String templateId) {
 
         List<MultiFields> multiFieldsList = new ArrayList<>();

@@ -24,6 +24,7 @@ import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.LateralVariable;
 import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.jooq.*;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 public class LateralJoins {
@@ -77,7 +78,8 @@ public class LateralJoins {
 
         SelectSelectStep wrappedSelectSelectStep = DSL.select(DSL.field(selectSelectStep).as(variableAlias));
 
-        Table<Record> table = DSL.table(wrappedSelectSelectStep).as(tableAlias);
+        SelectSelectStep wrappedSelectSelectStep2 = wrappedSelectSelectStep;
+        Table<Record> table = DSL.table(wrappedSelectSelectStep2).as(tableAlias);
         item.setLateralJoinTable(templateId, new LateralJoinDefinition(selectSelectStep.getSQL(), table, variableAlias, JoinType.LEFT_OUTER_JOIN, DSL.condition(true), clause));
         item.setSubstituteFieldVariable(variableAlias);
     }
