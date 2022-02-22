@@ -13,6 +13,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Remove unused Operational Template cache ([#759](https://github.com/ehrbase/ehrbase/pull/759)).
 
 ## [0.19.0] 
 
