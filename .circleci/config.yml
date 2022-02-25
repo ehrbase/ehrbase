@@ -47,6 +47,11 @@ workflows:
           requires:
             - build-ehrbase
 
+  - SANITY-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - COMPOSITION-tests-1:
           context: org-global
           requires:
@@ -192,6 +197,7 @@ workflows:
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
+            - SANITY-tests
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -250,6 +256,11 @@ workflows:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+
+ - SANITY-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -393,6 +404,7 @@ workflows:
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
+            - SANITY-tests
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -528,6 +540,10 @@ workflows:
       - run java integration tests - sdk:
           requires:
             - build package ehrbase with locally installed sdk
+      - SANITY-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - COMPOSITION-tests-1:
           context: org-global
           requires:
@@ -623,6 +639,7 @@ workflows:
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
+            - SANITY-tests
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -740,8 +757,18 @@ jobs:
       - collect-sdk-unittest-results
       - collect-sdk-integrationtest-results
       - save-skd-test-results
-  
-  
+
+  SANITY-tests:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "Sanity"
+          test-suite-path: "SANITY_TESTS"
+          test-suite-name: "SANITY TESTS"
+
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
