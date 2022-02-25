@@ -288,9 +288,13 @@ commit composition
     END
 
     IF   '${format}'=='CANONICAL_JSON'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json    
     ELSE IF   '${format}'=='CANONICAL_XML'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/xml
         Set To Dictionary   ${headers}   Accept=application/xml
     ELSE IF   '${format}'=='FLAT'
@@ -339,20 +343,22 @@ check the successful result of commit composition
     END
 
     IF  '${format}' == 'CANONICAL_JSON'
-        ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
+        ${compositionUid}=   Set Variable   ${response.json()}[uid][value]
         ${template_id}=       Set Variable   ${response.json()}[archetype_details][template_id][value]
         ${composer}           Set Variable   ${response.json()}[composer][name]
         # @ndanilin: EhrBase don't return context for persistent composition.
         #            It seems to us that it's wrong so a setting check is disabled yet.
         # ${setting}            Set variable   ${response.json()}[context][setting][value]
+        Set Test Variable     ${compositionUid}  ${composition_uid}
     ELSE IF   '${format}' == 'CANONICAL_XML'
         ${xresp}=             Parse Xml             ${response.text}
-        ${composition_uid}=   Get Element Text      ${xresp}   uid/value
+        ${compositionUid}=   Get Element Text      ${xresp}   uid/value
         ${template_id}=       Get Element Text      ${xresp}   archetype_details/template_id/value
         ${composer}=          Get Element Text      ${xresp}   composer/name
         # @ndanilin: EhrBase don't return context for persistent composition.
         #            It seems to us that it's wrong so a setting check is disabled yet.        
-        # ${setting}=           Get Element Text      ${xresp}   context/setting/value    
+        # ${setting}=           Get Element Text      ${xresp}   context/setting/value
+        Set Test Variable     ${compositionUid}  ${composition_uid}
     ELSE IF   '${format}' == 'FLAT'
         # ${composition_uid}    Set Variable   ${response.json()}[${template_for_path}/_uid]
         # @ndanilin: in FLAT response isn't template_id so make a following placeholder:
@@ -417,6 +423,25 @@ update composition (JSON)
                         Set Test Variable   ${response}    ${resp}
                         capture point in time    2
 
+update composition (FLAT)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION
+    ...                 DEPENDENCY: `commit composition' keyword
+
+    ${file}=           Get File   ${COMPO DATA SETS}/${format}/${new_version_of_composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/json
+                        ...                 Accept=application/json
+                        ...                 Prefer=return=representation
+
+    &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
+
+    ${resp}=            PUT On Session      ${SUT}   composition/${composition_uid}    params=${params}  expected_status=anything   data=${file}   headers=${headers}
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+                        capture point in time    2
+
+    Should Be Equal As Strings    ${response.status_code}    200
 
 update composition - invalid opt reference (JSON)
     [Arguments]         ${new_version_of_composition}
@@ -587,6 +612,16 @@ get composition by composition_uid
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
+
+get web template by template id
+    [Arguments]         ${template_id}
+
+    Create Session      ${SUT}    ${ECISURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+    ${resp}=            GET On Session         ${SUT}  template/${template_id}  expected_status=anything   headers=${headers}
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+                        Should Be Equal As Strings   ${resp.status_code}   200
 
 get versioned composition by uid
     [Arguments]         ${format}    ${uid}
