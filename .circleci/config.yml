@@ -47,7 +47,7 @@ workflows:
           requires:
             - build-ehrbase
 
-  - SANITY-tests:
+      - SANITY-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -260,7 +260,7 @@ workflows:
           requires:
             - build-ehrbase
 
- - SANITY-tests:
+      - SANITY-tests:
           context: org-global
           requires:
             - build-ehrbase
