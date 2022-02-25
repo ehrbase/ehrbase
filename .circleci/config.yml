@@ -767,7 +767,7 @@ jobs:
       - run-robot-tests:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
-          test-suite-name: "SANITY TESTS"
+          test-suite-name: "SANITY"
 
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
