@@ -42,6 +42,9 @@ Main flow Sanity Tests for FLAT Compositions
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
 
+    [Teardown]    restart SUT
+
+
 Main flow Sanity Tests for Canonical JSON Compositions
     [Tags]
     Get Web Template By Template Id  ${template_id}
@@ -50,6 +53,14 @@ Main flow Sanity Tests for Canonical JSON Compositions
     check the successful result of commit composition
     get composition by composition_uid    ${composition_uid}
     check composition exists
+
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    check content of composition (JSON)
+
+    update composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
+    check content of updated composition (JSON)
+
+    [Teardown]    restart SUT
 
 Main flow Sanity Tests for Canonical XML Compositions
     [Tags]
@@ -60,10 +71,20 @@ Main flow Sanity Tests for Canonical XML Compositions
     get composition by composition_uid    ${composition_uid}
     check composition exists
 
+    commit composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.xml
+    check content of composition (XML)
+
+    update composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
+    check content of updated composition (XML)
+
+    [Teardown]    restart SUT
+
+
 
 *** Keywords ***
 Precondition
     Upload OPT    all_types/family_history.opt
     Upload OPT    nested/nested.opt
+    upload OPT    minimal/minimal_observation.opt
     Extract Template_id From OPT File
     create EHR
