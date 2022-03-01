@@ -60,6 +60,9 @@ Main flow Sanity Tests for Canonical JSON Compositions
     update composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
     check content of updated composition (JSON)
 
+    get composition by composition_uid    ${version_uid}
+    check composition exists
+
     [Teardown]    restart SUT
 
 Main flow Sanity Tests for Canonical XML Compositions
@@ -76,6 +79,9 @@ Main flow Sanity Tests for Canonical XML Compositions
 
     update composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
     check content of updated composition (XML)
+
+    get composition by composition_uid    ${version_uid}
+    check composition exists
 
     [Teardown]    restart SUT
 
