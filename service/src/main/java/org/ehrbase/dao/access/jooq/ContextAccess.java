@@ -1,17 +1,11 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School), Luis Marco-Ruiz (Hannover Medical School)..
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ehrbase.dao.access.jooq;
 
 import com.nedap.archie.rm.composition.EventContext;
@@ -51,7 +46,12 @@ import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.InsertQuery;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.UpdateQuery;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,17 +61,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 /**
- * Created by Christian Chevalley on 4/9/2015.
+ * @author Christian Chevalley
+ * @author Jake Smolka
+ * @author Luis Marco-Ruiz
+ * @since 1.0
  */
 public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     private static final String DB_INCONSISTENCY = "DB inconsistency";
-  private static Logger log = LoggerFactory.getLogger(ContextAccess.class);
+
+    private final Logger log = LoggerFactory.getLogger(ContextAccess.class);
+
+    private final List<ParticipationRecord> participations = new ArrayList<>();
+
     private EventContextRecord eventContextRecord;
-    private List<ParticipationRecord> participations = new ArrayList<>();
 
     public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext) {
         super(context, null, null, serverConfig);
@@ -99,9 +110,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         eventContextRecord.setEndTime((Timestamp) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME));
         eventContextRecord.setEndTimeTzid((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_END_TIME_TZID));
         eventContextRecord.setLocation((String) records.getValue(0, I_CompositionAccess.F_CONTEXT_LOCATION));
-//        eventContextRecord.setSetting(records.getValue(0, I_CompositionAccess.F_CONTEXT_SETTING));
         eventContextRecord.setOtherContext((JSONB) records.getValue(0, I_CompositionAccess.F_CONTEXT_OTHER_CONTEXT));
-
         return contextAccess;
     }
 
