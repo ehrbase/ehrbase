@@ -43,6 +43,9 @@ Main flow Sanity Tests for FLAT Compositions
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
 
+    execute ad-hoc query    B/102_get_compositions_orderby_name.json
+    check response: is positive
+
     [Teardown]    restart SUT
 
 
@@ -64,12 +67,8 @@ Main flow Sanity Tests for Canonical JSON Compositions
     get composition by composition_uid    ${version_uid}
     check composition exists
 
-    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes_no_time_zone.xml
-    Replace Uid With Actual  ${VALID QUERY DATA SETS}/${TIME QUERY DATA SET}  ${composition_uid}  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
-    Replace Uid With Actual  ${QUERY RESULTS LOADED DB}/${No Time Zone Expected DATA SET}  ${composition_uid}  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
-    execute ad-hoc query and check result (loaded DB)   actual_uid_replaced.json  expected_uid_replaced.json
-    Remove File  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
-    Remove File  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
+    execute ad-hoc query    B/102_get_compositions_orderby_name.json
+    check response: is positive
 
     [Teardown]    restart SUT
 
@@ -90,6 +89,9 @@ Main flow Sanity Tests for Canonical XML Compositions
 
     get composition by composition_uid    ${version_uid}
     check composition exists
+
+    execute ad-hoc query    B/102_get_compositions_orderby_name.json
+    check response: is positive
 
     [Teardown]    restart SUT
 
