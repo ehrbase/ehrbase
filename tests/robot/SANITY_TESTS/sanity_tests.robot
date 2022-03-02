@@ -47,7 +47,7 @@ Main flow Sanity Tests for FLAT Compositions
 
 
 Main flow Sanity Tests for Canonical JSON Compositions
-    [Tags]  wip
+    [Tags]
     Get Web Template By Template Id  ${template_id}
     commit composition   format=CANONICAL_JSON
     ...                  composition=nested.en.v1__full_without_links.json
