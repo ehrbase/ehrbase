@@ -23,6 +23,7 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../_resources/keywords/composition_keywords.robot
+Resource        ../_resources/keywords/aql_query_keywords.robot
 
 Suite Setup       Precondition
 Suite Teardown  restart SUT
@@ -62,6 +63,13 @@ Main flow Sanity Tests for Canonical JSON Compositions
 
     get composition by composition_uid    ${version_uid}
     check composition exists
+
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes_Berlin_time_zone.xml
+    Replace Uid With Actual  ${VALID QUERY DATA SETS}/${TIME QUERY DATA SET}  ${composition_uid}  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
+    Replace Uid With Actual  ${QUERY RESULTS LOADED DB}/${Berlin Time Zone Expected DATA SET}  ${composition_uid}  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
+    execute ad-hoc query and check result (loaded DB)   actual_uid_replaced.json  expected_uid_replaced.json
+    Remove File  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
+    Remove File  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
 
     [Teardown]    restart SUT
 
