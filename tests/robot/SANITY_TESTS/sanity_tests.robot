@@ -47,7 +47,7 @@ Main flow Sanity Tests for FLAT Compositions
 
 
 Main flow Sanity Tests for Canonical JSON Compositions
-    [Tags]
+    [Tags]  wip
     Get Web Template By Template Id  ${template_id}
     commit composition   format=CANONICAL_JSON
     ...                  composition=nested.en.v1__full_without_links.json
@@ -64,9 +64,9 @@ Main flow Sanity Tests for Canonical JSON Compositions
     get composition by composition_uid    ${version_uid}
     check composition exists
 
-    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes_Berlin_time_zone.xml
+    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes_no_time_zone.xml
     Replace Uid With Actual  ${VALID QUERY DATA SETS}/${TIME QUERY DATA SET}  ${composition_uid}  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
-    Replace Uid With Actual  ${QUERY RESULTS LOADED DB}/${Berlin Time Zone Expected DATA SET}  ${composition_uid}  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
+    Replace Uid With Actual  ${QUERY RESULTS LOADED DB}/${No Time Zone Expected DATA SET}  ${composition_uid}  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
     execute ad-hoc query and check result (loaded DB)   actual_uid_replaced.json  expected_uid_replaced.json
     Remove File  ${VALID QUERY DATA SETS}/actual_uid_replaced.json
     Remove File  ${QUERY RESULTS LOADED DB}/expected_uid_replaced.json
