@@ -16,15 +16,6 @@
 
 package org.ehrbase.rest;
 
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -35,9 +26,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 /**
  * This base controller implements the basic functionality for all specific controllers. This
@@ -119,18 +114,8 @@ public abstract class BaseController {
   }
 
   protected String getBaseEnvLinkURL() {
-    String baseEnvLinkURL = null;
-    HttpServletRequest currentRequest =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-    // lazy about determining protocol but can be done too
-    baseEnvLinkURL = "http://" + currentRequest.getLocalName();
-    if (currentRequest.getLocalPort() != 80) {
-      baseEnvLinkURL += ":" + currentRequest.getLocalPort();
-    }
-    if (!StringUtils.isEmpty(currentRequest.getContextPath())) {
-      baseEnvLinkURL += currentRequest.getContextPath();
-    }
-    return baseEnvLinkURL;
+
+    return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
   }
 
   /**
