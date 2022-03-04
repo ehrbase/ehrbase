@@ -16,12 +16,10 @@
 
 package org.ehrbase.rest.ehrscape.controller;
 
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * This base controller implements the basic functionality for all specific controllers. This
@@ -49,17 +47,7 @@ public abstract class BaseController {
   }
 
   protected String getBaseEnvLinkURL() {
-    String baseEnvLinkURL = null;
-    HttpServletRequest currentRequest =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-    // lazy about determining protocol but can be done too
-    baseEnvLinkURL = "http://" + currentRequest.getLocalName();
-    if (currentRequest.getLocalPort() != 80) {
-      baseEnvLinkURL += ":" + currentRequest.getLocalPort();
-    }
-    if (!StringUtils.isEmpty(currentRequest.getContextPath())) {
-      baseEnvLinkURL += currentRequest.getContextPath();
-    }
-    return baseEnvLinkURL;
+
+    return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
   }
 }
