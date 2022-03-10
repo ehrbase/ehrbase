@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2019 Jake Smolka (Hannover Medical School) and Vitasystems GmbH.
- *
- * This file is part of project EHRbase
+ * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +18,16 @@ package org.ehrbase.jooq.binding;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import org.ehrbase.serialisation.dbencoding.RawJson;
-import org.jooq.*;
+import org.jooq.Binding;
+import org.jooq.BindingGetResultSetContext;
+import org.jooq.BindingGetSQLInputContext;
+import org.jooq.BindingGetStatementContext;
+import org.jooq.BindingRegisterContext;
+import org.jooq.BindingSQLContext;
+import org.jooq.BindingSetSQLOutputContext;
+import org.jooq.BindingSetStatementContext;
+import org.jooq.Converter;
+import org.jooq.JSONB;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 
@@ -33,14 +40,19 @@ import java.util.Optional;
 /**
  * Binding <T> = Object (unknown DB type), and <U> = {@link ItemStructure} (user type) for "other_details" column (of STATUS table).
  * See pom.xml of this module for further configuration, like what columns are linked with this binding.
- * Source: https://www.jooq.org/doc/3.12/manual/code-generation/custom-data-type-bindings/
+ * https://www.jooq.org/doc/3.12/manual/code-generation/custom-data-type-bindings/
+ *
+ * @author Jake Smolka
+ * @author Renaud Subiger
+ * @since 1.0
  */
-public class OtherDetailsJsonbBinder implements Binding<org.jooq.JSONB, ItemStructure> {
+public class OtherDetailsJsonbBinder implements Binding<JSONB, ItemStructure> {
 
     // The converter does all the work
     @Override
-    public Converter<org.jooq.JSONB, ItemStructure> converter() {
-        return new Converter<org.jooq.JSONB, ItemStructure>() {
+    public Converter<JSONB, ItemStructure> converter() {
+        return new Converter<>() {
+
             @Override
             public ItemStructure from(org.jooq.JSONB databaseObject) {
                 // null is valid "other_details" column's value
@@ -51,14 +63,14 @@ public class OtherDetailsJsonbBinder implements Binding<org.jooq.JSONB, ItemStru
             }
 
             @Override
-            public org.jooq.JSONB to(ItemStructure userObject) {
+            public JSONB to(ItemStructure userObject) {
                 return Optional.ofNullable(userObject)
                         .map(i -> JSONB.valueOf(new RawJson().marshal(i)))
                         .orElse(null);
             }
 
             @Override
-            public Class<org.jooq.JSONB> fromType() {
+            public Class<JSONB> fromType() {
                 return org.jooq.JSONB.class;
             }
 
@@ -118,7 +130,7 @@ public class OtherDetailsJsonbBinder implements Binding<org.jooq.JSONB, ItemStru
      */
     @Override
     public void get(BindingGetResultSetContext<ItemStructure> ctx) throws SQLException {
-        ctx.convert(converter()).value(JSONB.valueOf(ctx.resultSet().getString(ctx.index())));
+        ctx.convert(converter()).value(JSONB.jsonbOrNull(ctx.resultSet().getString(ctx.index())));
     }
 
     /**
@@ -129,7 +141,7 @@ public class OtherDetailsJsonbBinder implements Binding<org.jooq.JSONB, ItemStru
      */
     @Override
     public void get(BindingGetStatementContext<ItemStructure> ctx) throws SQLException {
-        ctx.convert(converter()).value(JSONB.valueOf(ctx.statement().getString(ctx.index())));
+        ctx.convert(converter()).value(JSONB.jsonbOrNull(ctx.statement().getString(ctx.index())));
     }
 
     /**
