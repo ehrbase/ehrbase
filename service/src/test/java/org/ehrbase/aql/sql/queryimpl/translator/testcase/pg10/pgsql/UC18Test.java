@@ -19,25 +19,23 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
-import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC18;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC18Test extends UC18 {
 
-    public UC18Test(){
+    public UC18Test() {
         super();
         this.expectedSqlExpression =
                 "select ARRAY.COLUMN as \"a\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" join lateral (\n" +
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{}') \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"template_id\" = 'openEHR-EHR-COMPOSITION.health_summary.v1' and \"ehr_join\".\"id\" = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))";
+                        " AS COLUMN) as \"ARRAY\" on true where (\"ehr\".\"entry\".\"template_id\" = ? and (\"ehr\".\"entry\".\"template_id\" = 'openEHR-EHR-COMPOSITION.health_summary.v1' and \"ehr_join\".\"id\" = '4a7c01cf-bb1c-4d3d-8385-4ae0674befb1'))";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

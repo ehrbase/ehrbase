@@ -142,7 +142,7 @@
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <assertj.core>3.22.0</assertj.core>
         <json.path.version>2.7.0</json.path.version>
-        <jooq.version>3.12.4</jooq.version>
+        <jooq.version>3.16.5</jooq.version>
         <spring.version>2.5.9</spring.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <postgressql.version>42.3.3</postgressql.version>
@@ -216,18 +216,6 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <!-- TODO: CAN THIS BE REMOVED? SEEMS TO HAVE NO IMPACT ON TEST EXECUTION. -->
-                <!-- MOREOVER TEST WITH DB ACCESS SHOULD BE INTEGRATION NOT UNIT TESTS! -->
-                <!-- <configuration>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                    <systemPropertyVariables>
-                        <test.db.host>${database.host}</test.db.host>
-                        <test.db.port>${database.port}</test.db.port>
-                        <test.db.name>${database.name}</test.db.name>
-                        <test.db.user>${database.user}</test.db.user>
-                        <test.db.password>${database.pass}</test.db.password>
-                    </systemPropertyVariables>
-                </configuration> -->
                 <configuration>
                     <skipTests>true</skipTests>
                     <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
@@ -344,49 +332,9 @@
                     </executions>
                 </plugin>
                 <plugin>
-
-                    <!-- Specify the maven code generator plugin -->
-                    <!-- Use org.jooq            for the Open Source Edition
-                             org.jooq.pro        for commercial editions,
-                             org.jooq.pro-java-6 for commercial editions with Java 6 support,
-                             org.jooq.trial      for the free trial edition
-
-                         Note: Only the Open Source Edition is hosted on Maven Central.
-                               Import the others manually from your distribution -->
                     <groupId>org.jooq</groupId>
                     <artifactId>jooq-codegen-maven</artifactId>
                     <version>${jooq.version}</version>
-
-                    <!-- The plugin should hook into the generate goal -->
-                    <executions>
-                        <execution>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>generate</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-
-                    <!-- Manage the plugin's dependency. In this example, we'll use a PostgreSQL database -->
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.postgresql</groupId>
-                            <artifactId>postgresql</artifactId>
-                            <version>${postgressql.version}</version>
-                        </dependency>
-                    </dependencies>
-
-                    <!-- Specify the plugin configuration.
-                         The configuration format is the same as for the standalone code generator -->
-                    <configuration>
-                        <!-- Configure the database connection here -->
-                        <jdbc>
-                            <driver>org.postgresql.Driver</driver>
-                            <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-                            <user>${database.user}</user>
-                            <password>${database.pass}</password>
-                        </jdbc>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.flywaydb</groupId>
@@ -628,17 +576,6 @@
                 <version>${postgressql.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq</artifactId>
-                <version>${jooq.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-codegen-maven</artifactId>
-                <version>${jooq.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
                 <version>${antlr4.version}</version>
@@ -657,11 +594,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
                 <version>4.1</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>2.9.10</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>

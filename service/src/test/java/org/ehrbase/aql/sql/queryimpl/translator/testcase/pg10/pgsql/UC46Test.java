@@ -26,18 +26,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC46Test extends UC46 {
 
-    public UC46Test(){
+    public UC46Test() {
         super();
         this.expectedSqlExpression =
                 "select distinct on (\"description\", \"timing\") \"\".\"description\", \"\".\"timing\" from (select ARRAY.COLUMN as \"description\", ARRAY.COLUMN as \"timing\" from \"ehr\".\"entry\" join lateral (\n" +
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 join lateral (\n" +
+                        " AS COLUMN) as \"ARRAY\" on true join lateral (\n" +
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/time,/value}') \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"description\" asc";
+                        " AS COLUMN) as \"ARRAY\" on true where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"description\" asc";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }
