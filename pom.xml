@@ -56,6 +56,7 @@
         <module>rest-openehr</module>
         <module>service</module>
         <module>test-coverage</module>
+        <module>plugin</module>
     </modules>
 
     <distributionManagement>
@@ -560,6 +561,11 @@
                 <artifactId>jooq-pg</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.ehrbase.openehr</groupId>
+                <artifactId>plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- sdk -->
             <dependency>
@@ -615,6 +621,12 @@
                         <artifactId>log4j-to-slf4j</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.pf4j</groupId>
+                <artifactId>pf4j-spring</artifactId>
+                <version>0.7.0</version>
             </dependency>
 
             <dependency>

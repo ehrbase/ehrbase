@@ -29,22 +29,8 @@ import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.api.exception.ValidationException;
+import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -67,9 +53,15 @@ import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.*;
 
 /**
  * {@link CompositionService} implementation.
@@ -88,17 +80,19 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   private final ValidationService validationService;
   private final KnowledgeCacheService knowledgeCacheService;
   private final EhrService ehrService;
+private final ListableBeanFactory beanFactory;
 
   public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService,
-      ValidationService validationService,
-      EhrService ehrService,
-      DSLContext context,
-      ServerConfig serverConfig) {
+                               ValidationService validationService,
+                               EhrService ehrService,
+                               DSLContext context,
+                               ServerConfig serverConfig,ListableBeanFactory beanFactory) {
 
     super(knowledgeCacheService, context, serverConfig);
     this.validationService = validationService;
     this.ehrService = ehrService;
     this.knowledgeCacheService = knowledgeCacheService;
+    this.beanFactory = beanFactory;
   }
 
   @Override
@@ -139,6 +133,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       UUID committerId,
       String description,
       UUID contributionId) {
+
     // pre-step: validate
     try {
       validationService.check(composition);
