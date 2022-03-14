@@ -16,8 +16,7 @@
 
 package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import org.ehrbase.webtemplate.parser.AqlPath;
 
 /**
  * @author Christian Chevalley
@@ -26,8 +25,6 @@ import java.util.stream.Collectors;
  */
 public class OtherContextPredicate {
 
-    private static final String PREDICATE = "other_context[";
-
     private final String path;
 
     public OtherContextPredicate(String path) {
@@ -35,19 +32,17 @@ public class OtherContextPredicate {
     }
 
     public String adjustForQuery() {
-        if (!path.contains(PREDICATE)) {
-            return path;
+        var aqlPath = AqlPath.parse(path);
+        var aqlNodes = aqlPath.getNodes();
+
+        for (int i = 0; i < aqlNodes.size(); i++) {
+            if ("other_context".equals(aqlNodes.get(i).getName())) {
+                aqlPath = aqlPath.replaceNode(i, aqlNodes.get(i).withAtCode(null));
+            }
         }
 
-        var pathSegments = Arrays.stream(path.split("/"))
-                .map(pathSegment -> {
-                    if (pathSegment.startsWith(PREDICATE)) {
-                        return "other_context";
-                    }
-                    return pathSegment;
-                })
-                .collect(Collectors.toList());
-
-        return String.join("/", pathSegments);
+        // Removes initial "/" if not present in original path
+        var result = aqlPath.format(true);
+        return path.startsWith("/") ? result : result.substring(1);
     }
 }

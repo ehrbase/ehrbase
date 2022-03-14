@@ -16,9 +16,10 @@
 package org.ehrbase.ehr.util;
 
 
-import java.util.ArrayList;
+import org.ehrbase.webtemplate.parser.AqlPath;
+
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 /**
  * Utility class for path manipulation.
@@ -33,21 +34,14 @@ public class LocatableHelper {
     }
 
     public static List<String> dividePathIntoSegments(String path) {
-        List<String> pathSegments = new ArrayList<>();
-        StringTokenizer tokens = new StringTokenizer(path, "/");
-
-        while (tokens.hasMoreTokens()) {
-            String current = tokens.nextToken();
-            StringBuilder pathSegment = new StringBuilder(current);
-            if (current.contains("[")) {
-                while (!current.endsWith("]")) {
-                    current = tokens.nextToken();
-                    pathSegment.append("/").append(current);
-                }
-            }
-            pathSegments.add(pathSegment.toString());
-        }
-
-        return pathSegments;
+        var aqlPath = AqlPath.parse(path);
+        return aqlPath.getNodes()
+                .stream()
+                .map(aqlNode -> {
+                    StringBuilder sb = new StringBuilder();
+                    aqlNode.appendFormat(sb, AqlPath.OtherPredicatesFormat.SHORTED);
+                    return sb.toString();
+                })
+                .collect(Collectors.toList());
     }
 }
