@@ -976,9 +976,29 @@ create EHR
     ...                 AND             extract ehrstatus_uid (XML)
 
 
+create EHR wih x forwarded headers
+    [Arguments]         ${accept-header}=JSON
+
+    Run Keyword If      '${accept-header}'=='JSON'
+    ...                 Run Keywords    prepare new request session   JSON
+    ...                                 Prefer=return=representation
+    ...                                 X-Forwarded-Host=example.com
+    ...                                 X-Forwarded-Port=333
+    ...                                 X-Forwarded-Proto=https
+    ...                 AND             create new EHR
+    # ...                 AND             extract ehr_id from response (JSON)
+    # ...                 AND             extract ehrstatus_uid (JSON)
+
+    Run Keyword If      '${accept-header}'=='XML'
+    ...                 Run Keywords    prepare new request session    XML
+    ...                                 content=application/xml
+    ...                                 accept=application/xml    Prefer=return=representation
+    ...                 AND             create new EHR (XML)
+    ...                 AND             extract ehr_id from response (XML)
+    ...                 AND             extract ehrstatus_uid (XML)
+
 capture time before first commit
     capture point in time   0
-
 
 capture point in time
     [Arguments]         ${point_in_time}
