@@ -31,7 +31,19 @@ Suite Teardown  restart SUT
 
 
 *** Test Cases ***
-Main flow Sanity Tests for FLAT Compositions Check Headers
+Check Headers with (JSON)
+    [Tags]
+    create EHR wih x forwarded headers
+    check that headers location response has    https   example.com    333
+    [Teardown]    restart SUT
+
+Check Headers with (XML)
+    [Tags]
+    create EHR wih x forwarded headers   XML
+    check that headers location response has    https   example.com    333
+    [Teardown]    restart SUT
+
+Check Headers with Commit Composition
     [Tags]
     create EHR wih x forwarded headers
     check that headers location response has    https   example.com    333
@@ -39,88 +51,9 @@ Main flow Sanity Tests for FLAT Compositions Check Headers
     commit composition   format=FLAT
     ...                  composition=family_history__.json
     check the successful result of commit composition
-    (FLAT) get composition by composition_uid    ${composition_uid}
-    Get Web Template By Template Id  ${template_id}
-    (FLAT) get composition by composition_uid    ${composition_uid}
-    Update Composition (FLAT)  family_history.v2__.json
-    (FLAT) get composition by composition_uid    ${composition_uid}
-    check composition exists
-
-    ${composition_uid_short}=  Fetch From Left  ${composition_uid}  :
-    Replace Uid With Actual  robot/_resources/test_data_sets/directory/empty_directory_items.json  ${composition_uid_short}  robot/_resources/test_data_sets/directory/empty_directory_items_uid_replaced.json
-    create DIRECTORY (JSON)    empty_directory_items_uid_replaced.json
-    Should Be Equal As Strings    ${response.status_code}    201
-    remove File  robot/_resources/test_data_sets/directory/empty_directory_items_uid_replaced.json
-
-    execute ad-hoc query    B/102_get_compositions_orderby_name.json
-    check response: is positive
-
-
+    check that composition headers location response has    https   example.com    333
+    check that composition body location response has    https   example.com    333
     [Teardown]    restart SUT
-
-
-Main flow Sanity Tests for Canonical JSON Compositions Check Headers
-    [Tags]
-    create EHR wih x forwarded headers
-    check that headers location response has    https   example.com    333
-    Get Web Template By Template Id  ${template_id}
-    commit composition   format=CANONICAL_JSON
-    ...                  composition=nested.en.v1__full_without_links.json
-    check the successful result of commit composition
-    get composition by composition_uid    ${composition_uid}
-    check composition exists
-
-    commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-    check content of composition (JSON)
-
-    update composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
-    check content of updated composition (JSON)
-
-    get composition by composition_uid    ${version_uid}
-    check composition exists
-
-    ${version_uid_short}=  Fetch From Left  ${version_uid}  :
-    Replace Uid With Actual  robot/_resources/test_data_sets/directory/empty_directory_items.json  ${version_uid_short}  robot/_resources/test_data_sets/directory/empty_directory_items_uid_replaced.json
-    create DIRECTORY (JSON)    empty_directory_items_uid_replaced.json
-    Should Be Equal As Strings    ${response.status_code}    201
-    remove File  robot/_resources/test_data_sets/directory/empty_directory_items_uid_replaced.json
-
-    execute ad-hoc query    B/102_get_compositions_orderby_name.json
-    check response: is positive
-
-    [Teardown]    restart SUT
-
-Main flow Sanity Tests for Canonical XML Compositions Check Headers
-    [Tags]
-    create EHR wih x forwarded headers
-    check that headers location response has    https   example.com    333
-    Get Web Template By Template Id  ${template_id}
-    commit composition   format=CANONICAL_XML
-    ...                  composition=nested.en.v1__full_without_links.xml
-    check the successful result of commit composition
-    get composition by composition_uid    ${composition_uid}
-    check composition exists
-
-    commit composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.xml
-    check content of composition (XML)
-
-    update composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml
-    check content of updated composition (XML)
-
-    get composition by composition_uid    ${version_uid}
-    check composition exists
-    ${version_uid_short}=  Fetch From Left  ${version_uid}  :
-    Replace Uid With Actual  robot/_resources/test_data_sets/directory/empty_directory_items.json  ${version_uid_short}  robot/_resources/test_data_sets/directory/empty_directory_items_uid_replaced.json
-    create DIRECTORY (JSON)    empty_directory_items_uid_replaced.json
-    Should Be Equal As Strings    ${response.status_code}    201
-    remove File  robot/_resources/test_data_sets/directory/empty_directory_items_uid_replaced.json
-
-    execute ad-hoc query    B/102_get_compositions_orderby_name.json
-    check response: is positive
-
-    [Teardown]    restart SUT
-
-
 
 *** Keywords ***
 Precondition

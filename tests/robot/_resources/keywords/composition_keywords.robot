@@ -300,6 +300,9 @@ commit composition
     ELSE IF   '${format}'=='FLAT'
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json
+        Set To Dictionary   ${headers}   X-Forwarded-Host=example.com
+        Set To Dictionary   ${headers}   X-Forwarded-Port=333
+        Set To Dictionary   ${headers}   X-Forwarded-Proto=https
         &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
         Create Session      ${SUT}    ${ECISURL}    debug=2
         ...                 auth=${CREDENTIALS}    verify=True
@@ -993,6 +996,9 @@ create EHR wih x forwarded headers
     ...                 Run Keywords    prepare new request session    XML
     ...                                 content=application/xml
     ...                                 accept=application/xml    Prefer=return=representation
+    ...                                 X-Forwarded-Host=example.com
+    ...                                 X-Forwarded-Port=333
+    ...                                 X-Forwarded-Proto=https
     ...                 AND             create new EHR (XML)
     ...                 AND             extract ehr_id from response (XML)
     ...                 AND             extract ehrstatus_uid (XML)
