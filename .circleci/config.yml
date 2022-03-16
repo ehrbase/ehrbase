@@ -138,6 +138,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - HEADER-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
