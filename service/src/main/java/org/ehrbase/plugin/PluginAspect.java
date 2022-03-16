@@ -17,21 +17,19 @@
 package org.ehrbase.plugin;
 
 import com.nedap.archie.rm.composition.Composition;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.extensionpoints.CompositionExtensionPointInterface;
-import org.ehrbase.response.ehrscape.CompositionDto;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /**
@@ -54,61 +52,48 @@ public class PluginAspect {
     this.beanFactory = beanFactory;
   }
 
-  @Around("execution(* org.ehrbase.service.CompositionServiceImp.create(..))")
+  @Around("execution(* org.ehrbase.api.service.CompositionService.create(..))")
   public Object aroundCreateComposition(ProceedingJoinPoint pjp) throws Throwable {
 
     Collection<CompositionExtensionPointInterface> compositionExtensionPointInterfaceList =
         getCompositionExtensionPointInterfaceList();
 
-    if (CollectionUtils.isEmpty(compositionExtensionPointInterfaceList)) {
-      return pjp.proceed(pjp.getArgs());
-    } else {
+    Function<CompositionWithEhrId, UUID> last =
+        i -> {
+          Object[] clone = ArrayUtils.clone(pjp.getArgs());
+          clone[1] = i.getComposition();
+          clone[0] = i.getEhrId();
+          try {
+            return ((Optional<UUID>) pjp.proceed(clone)).get();
+          } catch (Exception e) {
+            throw new InternalServerException("Expedition in Plugin Aspect ", e);
+          } catch (Throwable e) {
+            // should never happen
+            throw new RuntimeException(e);
+          }
+        };
 
-      AtomicReference<Optional<CompositionDto>> proceed = new AtomicReference<>();
+    Chain<CompositionExtensionPointInterface> chain =
+        buildChain(
+            compositionExtensionPointInterfaceList, new CompositionExtensionPointInterface() {});
 
-      Function<CompositionWithEhrId, Composition> last =
-          i -> {
-            Object[] clone = ArrayUtils.clone(pjp.getArgs());
-            clone[1] = i.getComposition();
-            clone[0] = i.getEhrId();
-            try {
-              proceed.set((Optional<CompositionDto>) pjp.proceed(clone));
+    Composition compositionArg = (Composition) pjp.getArgs()[1];
+    UUID ehrIdArg = (UUID) pjp.getArgs()[0];
 
-              return proceed.get().map(CompositionDto::getComposition).orElse(null);
-            } catch (Throwable e) {
-              throw new RuntimeException(e);
-            }
-          };
+    return Optional.of(handle(chain, new CompositionWithEhrId(compositionArg, ehrIdArg), last));
+  }
 
-      Chain<CompositionExtensionPointInterface> chain = null;
+  private <T> Chain<T> buildChain(Collection<T> extensionPointInterfaceList, T identity) {
+    Chain<T> chain = new Chain<>();
+    chain.current = identity;
 
-      for (CompositionExtensionPointInterface point : compositionExtensionPointInterfaceList) {
-        Chain<CompositionExtensionPointInterface> next = new Chain<>();
-          next.current = point;
-
-        if (chain != null) {
-          chain.next = next;
-        }
-        chain = next;
-      }
-
-        Composition compositionArg = (Composition) pjp.getArgs()[1];
-        UUID ehrIdArg = (UUID) pjp.getArgs()[0];
-        Composition outputComposition =
-          handle(
-              chain,
-              new CompositionWithEhrId(compositionArg, ehrIdArg),
-              last);
-
-      return Optional.ofNullable(outputComposition)
-          .map(
-              c ->
-                  new CompositionDto(
-                      c,
-                      c.getArchetypeDetails().getTemplateId().getValue(),
-                      UUID.fromString(c.getUid().getRoot().getValue()),
-                          ehrIdArg));
+    for (T point : extensionPointInterfaceList) {
+      Chain<T> next = new Chain<>();
+      next.current = point;
+      chain.next = next;
+      chain = next;
     }
+    return chain;
   }
 
   private Collection<CompositionExtensionPointInterface>
@@ -116,10 +101,10 @@ public class PluginAspect {
     return beanFactory.getBeansOfType(CompositionExtensionPointInterface.class).values();
   }
 
-  private Composition handle(
+  private UUID handle(
       Chain<CompositionExtensionPointInterface> chain,
       CompositionWithEhrId input,
-      Function<CompositionWithEhrId, Composition> compositionFunction) {
+      Function<CompositionWithEhrId, UUID> compositionFunction) {
 
     if (chain.next != null) {
       return handle(chain.next, input, i -> chain.current.aroundCreation(i, compositionFunction));

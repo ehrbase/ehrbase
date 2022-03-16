@@ -26,7 +26,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  */
 public abstract  class EhrBasePlugin extends SpringPlugin {
 
-    public EhrBasePlugin(PluginWrapper wrapper) {
+  protected EhrBasePlugin(PluginWrapper wrapper) {
         super(wrapper);
     }
 

@@ -16,10 +16,10 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
-import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.pf4j.ExtensionPoint;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -27,7 +27,8 @@ import java.util.function.Function;
  */
 public interface CompositionExtensionPointInterface extends ExtensionPoint {
 
-    default Composition aroundCreation(CompositionWithEhrId input, Function<CompositionWithEhrId,Composition> chain ){
+  default UUID aroundCreation(
+      CompositionWithEhrId input, Function<CompositionWithEhrId, UUID> chain) {
 return chain.apply(input);
     }
 }

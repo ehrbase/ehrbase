@@ -53,7 +53,6 @@ import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,53 +79,52 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   private final ValidationService validationService;
   private final KnowledgeCacheService knowledgeCacheService;
   private final EhrService ehrService;
-private final ListableBeanFactory beanFactory;
 
-  public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService,
-                               ValidationService validationService,
-                               EhrService ehrService,
-                               DSLContext context,
-                               ServerConfig serverConfig,ListableBeanFactory beanFactory) {
+  public CompositionServiceImp(
+      KnowledgeCacheService knowledgeCacheService,
+      ValidationService validationService,
+      EhrService ehrService,
+      DSLContext context,
+      ServerConfig serverConfig) {
 
     super(knowledgeCacheService, context, serverConfig);
     this.validationService = validationService;
     this.ehrService = ehrService;
     this.knowledgeCacheService = knowledgeCacheService;
-    this.beanFactory = beanFactory;
   }
 
   @Override
-  public Optional<CompositionDto> create(
+  public Optional<UUID> create(
       UUID ehrId, Composition objData, UUID systemId, UUID committerId, String description) {
 
-    UUID compositionId = internalCreate(ehrId, objData, systemId, committerId, description, null);
-    return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId));
+    UUID compositionId = createInternal(ehrId, objData, systemId, committerId, description, null);
+    return Optional.of(compositionId);
   }
 
   @Override
-  public Optional<CompositionDto> create(UUID ehrId, Composition objData, UUID contribution) {
-    UUID compositionId = internalCreate(ehrId, objData, null, null, null, contribution);
-    return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId));
+  public Optional<UUID> create(UUID ehrId, Composition objData, UUID contribution) {
+    UUID compositionId = createInternal(ehrId, objData, null, null, null, contribution);
+    return Optional.of(compositionId);
   }
 
   @Override
-  public Optional<CompositionDto> create(UUID ehrId, Composition objData) {
+  public Optional<UUID> create(UUID ehrId, Composition objData) {
     return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
   }
 
   /**
    * Creation of a new composition. With optional custom contribution, or one will be created.
    *
-   * @param ehrId          ID of EHR
-   * @param composition    RMObject instance of the given Composition to be created
-   * @param systemId       Audit system; or NULL if contribution is given
-   * @param committerId    Audit committer; or NULL if contribution is given
-   * @param description    (Optional) Audit description; or NULL if contribution is given
+   * @param ehrId ID of EHR
+   * @param composition RMObject instance of the given Composition to be created
+   * @param systemId Audit system; or NULL if contribution is given
+   * @param committerId Audit committer; or NULL if contribution is given
+   * @param description (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
    * @return ID of created composition
    * @throws InternalServerException when creation failed
    */
-  private UUID internalCreate(
+  private UUID createInternal(
       UUID ehrId,
       Composition composition,
       UUID systemId,
@@ -191,7 +189,7 @@ private final ListableBeanFactory beanFactory;
   }
 
   @Override
-  public Optional<CompositionDto> update(
+  public Optional<UUID> update(
       UUID ehrId,
       ObjectVersionId targetObjId,
       Composition objData,
@@ -207,13 +205,12 @@ private final ListableBeanFactory beanFactory;
             committerId,
             description,
             null);
-    return getCompositionDto(
-        I_CompositionAccess.retrieveInstance(
-            getDataAccess(), UUID.fromString(compoId.getObjectId().getValue())));
+
+    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
   }
 
   @Override
-  public Optional<CompositionDto> update(
+  public Optional<UUID> update(
       UUID ehrId, ObjectVersionId targetObjId, Composition objData, UUID contribution) {
 
     var compoId =
@@ -224,14 +221,11 @@ private final ListableBeanFactory beanFactory;
             null,
             null,
             contribution);
-    return getCompositionDto(
-        I_CompositionAccess.retrieveInstance(
-            getDataAccess(), UUID.fromString(compoId.getObjectId().getValue())));
+    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
   }
 
   @Override
-  public Optional<CompositionDto> update(
-      UUID ehrId, ObjectVersionId targetObjId, Composition objData) {
+  public Optional<UUID> update(UUID ehrId, ObjectVersionId targetObjId, Composition objData) {
     return update(ehrId, targetObjId, objData, getSystemUuid(), getUserUuid(), null);
   }
 

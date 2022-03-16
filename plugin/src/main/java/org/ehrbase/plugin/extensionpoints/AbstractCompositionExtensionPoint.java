@@ -16,9 +16,9 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
-import com.nedap.archie.rm.composition.Composition;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -30,12 +30,14 @@ public abstract class AbstractCompositionExtensionPoint implements CompositionEx
     public  CompositionWithEhrId beforeCreation(CompositionWithEhrId input){
         return input;
     }
-    public  Composition afterCreation(CompositionWithEhrId output){
-     return output.getComposition();
+
+  public UUID afterCreation(UUID output) {
+    return output;
     }
 
-    @Override
-    public Composition aroundCreation(CompositionWithEhrId input, Function<CompositionWithEhrId, Composition> chain) {
-        return afterCreation(new CompositionWithEhrId( chain.apply(beforeCreation(input)) ,input.getEhrId()));
+  @Override
+  public UUID aroundCreation(
+      CompositionWithEhrId input, Function<CompositionWithEhrId, UUID> chain) {
+    return afterCreation(chain.apply(beforeCreation(input)));
     }
 }

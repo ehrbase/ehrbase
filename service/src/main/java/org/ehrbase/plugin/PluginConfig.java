@@ -16,7 +16,6 @@
 
 package org.ehrbase.plugin;
 
-
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.ExtensionsInjector;
 import org.pf4j.spring.SpringPluginManager;
@@ -34,67 +33,63 @@ import java.nio.file.Path;
  * @author Stefan Spiska
  */
 @Configuration
-public class PluginConfig  {
+public class PluginConfig {
 
+  @Bean
+  public EhrbaseSpringPluginManager pluginManager() {
+    return new EhrbaseSpringPluginManager();
+  }
 
+  @Bean
+  public BeanFactoryPostProcessor beanFactoryPostProcessor(
+      EhrbaseSpringPluginManager pluginManager) {
 
-    @Bean
-    public EhrbaseSpringPluginManager pluginManager() {
-        return new EhrbaseSpringPluginManager();
+    return beanFactory -> {
+      pluginManager.loadPlugins();
+
+      pluginManager.getPlugins().stream()
+          .map(PluginWrapper::getPlugin)
+          .map(EhrBasePlugin.class::cast)
+          .forEach(
+              p -> {
+                String beanName = p.getWrapper().getPluginId();
+                System.out.println(beanName);
+
+                ServletRegistrationBean bean =
+                    new ServletRegistrationBean(
+                        p.getDispatcherServlet(),
+                        "/plugin/" + p.getWrapper().getDescriptor().getPluginId() + "/*");
+
+                bean.setLoadOnStartup(1);
+                bean.setOrder(1);
+                bean.setName(beanName);
+                beanFactory.initializeBean(bean, beanName);
+                beanFactory.autowireBean(bean);
+                beanFactory.registerSingleton(beanName, bean);
+              });
+    };
+  }
+
+  @Bean
+  ApplicationListener<ServletWebServerInitializedEvent>
+      servletWebServerInitializedEventApplicationListener(
+          EhrbaseSpringPluginManager pluginManager) {
+
+    return event -> pluginManager.init2();
+  }
+
+  public static class EhrbaseSpringPluginManager extends SpringPluginManager {
+
+    public EhrbaseSpringPluginManager() {
+      super(Path.of("c:", "plugin"));
     }
 
-@Bean
-public BeanFactoryPostProcessor beanFactoryPostProcessor(EhrbaseSpringPluginManager pluginManager){
+    private boolean init = false;
 
-        return beanFactory -> {
-            pluginManager.loadPlugins();
+    @Override
+    public void init() {}
 
-            pluginManager.getPlugins().stream()
-                    .map(PluginWrapper::getPlugin)
-                    .map(EhrBasePlugin.class::cast)
-                    .forEach(
-                            p -> {
-                                String beanName = p.getWrapper().getPluginId();
-                                System.out.println(beanName);
-
-                                ServletRegistrationBean bean =  new ServletRegistrationBean(p.getDispatcherServlet(),"/plugin/" + p.getWrapper().getDescriptor().getPluginId() + "/*");
-
-                                bean.setLoadOnStartup(1);
-                                bean.setOrder(1);
-                                bean.setName(beanName);
-                                beanFactory.initializeBean(bean, beanName);
-                                beanFactory.autowireBean(bean);
-                                beanFactory.registerSingleton(beanName,bean);
-                            });
-
-        };
-}
-
-@Bean
-    ApplicationListener<ServletWebServerInitializedEvent> servletWebServerInitializedEventApplicationListener(EhrbaseSpringPluginManager pluginManager){
-
-        return event -> pluginManager.init2();
-}
-
-
-
-    public static class EhrbaseSpringPluginManager extends SpringPluginManager {
-
-
-
-        public EhrbaseSpringPluginManager() {
-            super(Path.of("c:", "plugin"));
-        }
-
-        private boolean init = false;
-
-       @Override
-
-        public void init() {
-
-        }
-
-        public void init2() {
+    public void init2() {
 
       if (!init) {
 
@@ -106,10 +101,7 @@ public BeanFactoryPostProcessor beanFactoryPostProcessor(EhrbaseSpringPluginMana
         ExtensionsInjector extensionsInjector = new ExtensionsInjector(this, beanFactory);
         extensionsInjector.injectExtensions();
         init = true;
-             }
-
-        }
+      }
     }
-
-
+  }
 }

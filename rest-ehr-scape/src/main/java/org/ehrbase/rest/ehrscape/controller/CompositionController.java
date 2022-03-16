@@ -19,10 +19,6 @@
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.net.URI;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -30,23 +26,15 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
-import org.ehrbase.rest.ehrscape.responsedata.Action;
-import org.ehrbase.rest.ehrscape.responsedata.ActionRestResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.CompositionWriteRestResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.Meta;
-import org.ehrbase.rest.ehrscape.responsedata.RestHref;
+import org.ehrbase.rest.ehrscape.responsedata.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(
@@ -78,7 +66,6 @@ public class CompositionController extends BaseController {
 
     var composition = compositionService.buildComposition(content, format, templateId);
     var compositionUuid = compositionService.create(ehrId, composition)
-        .map(CompositionDto::getUuid)
         .orElseThrow(() -> new InternalServerException("Failed to create composition"));
 
     var responseData = new CompositionWriteRestResponseData();
@@ -144,14 +131,11 @@ public class CompositionController extends BaseController {
     var compoObj = compositionService.buildComposition(content, format, templateId);
 
     // Actual update
-    Optional<CompositionDto> dtoOptional =
-        compositionService.update(ehrId, objectVersionId, compoObj);
+    Optional<UUID> dtoOptional = compositionService.update(ehrId, objectVersionId, compoObj);
 
     var compositionVersionUid =
         dtoOptional
             .orElseThrow(() -> new InternalServerException("Failed to create composition"))
-            .getComposition()
-            .getUid()
             .toString();
     ActionRestResponseData responseData = new ActionRestResponseData();
     responseData.setAction(Action.UPDATE);
