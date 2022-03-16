@@ -17,7 +17,6 @@
 package org.ehrbase.plugin;
 
 import com.nedap.archie.rm.composition.Composition;
-import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -30,6 +29,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -53,36 +53,44 @@ public class PluginAspect {
   }
 
   @Around("execution(* org.ehrbase.api.service.CompositionService.create(..))")
-  public Object aroundCreateComposition(ProceedingJoinPoint pjp) throws Throwable {
-
-    Collection<CompositionExtensionPointInterface> compositionExtensionPointInterfaceList =
-        getCompositionExtensionPointInterfaceList();
-
-    Function<CompositionWithEhrId, UUID> last =
-        i -> {
-          Object[] clone = ArrayUtils.clone(pjp.getArgs());
-          clone[1] = i.getComposition();
-          clone[0] = i.getEhrId();
-          try {
-            return ((Optional<UUID>) pjp.proceed(clone)).get();
-          } catch (RuntimeException e) {
-            throw e;
-          } catch (Exception e) {
-            throw new InternalServerException("Expedition in Plugin Aspect ", e);
-          } catch (Throwable e) {
-            // should never happen
-            throw new RuntimeException(e);
-          }
-        };
+  public Object aroundCreateComposition(ProceedingJoinPoint pjp) {
 
     Chain<CompositionExtensionPointInterface> chain =
         buildChain(
-            compositionExtensionPointInterfaceList, new CompositionExtensionPointInterface() {});
+            getCompositionExtensionPointInterfaceList(),
+            new CompositionExtensionPointInterface() {});
+    CompositionWithEhrId input =
+        new CompositionWithEhrId((Composition) pjp.getArgs()[1], (UUID) pjp.getArgs()[0]);
 
-    Composition compositionArg = (Composition) pjp.getArgs()[1];
-    UUID ehrIdArg = (UUID) pjp.getArgs()[0];
+    return Optional.of(
+        handleChain(
+            chain,
+            l -> (l::aroundCreation),
+            input,
+            i -> {
+              pjp.getArgs()[1] = i.getComposition();
+              pjp.getArgs()[0] = i.getEhrId();
 
-    return Optional.of(handle(chain, new CompositionWithEhrId(compositionArg, ehrIdArg), last));
+              return ((Optional<UUID>) proceed(pjp)).orElseThrow();
+            }));
+  }
+
+  private Object proceed(ProceedingJoinPoint pjp) {
+    try {
+      return pjp.proceed(pjp.getArgs());
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new InternalServerException("Expedition in Plugin Aspect ", e);
+    } catch (Throwable e) {
+      // should never happen
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Collection<CompositionExtensionPointInterface>
+      getCompositionExtensionPointInterfaceList() {
+    return beanFactory.getBeansOfType(CompositionExtensionPointInterface.class).values();
   }
 
   private <T> Chain<T> buildChain(Collection<T> extensionPointInterfaceList, T identity) {
@@ -98,20 +106,20 @@ public class PluginAspect {
     return chain;
   }
 
-  private Collection<CompositionExtensionPointInterface>
-      getCompositionExtensionPointInterfaceList() {
-    return beanFactory.getBeansOfType(CompositionExtensionPointInterface.class).values();
-  }
-
-  private UUID handle(
-      Chain<CompositionExtensionPointInterface> chain,
-      CompositionWithEhrId input,
-      Function<CompositionWithEhrId, UUID> compositionFunction) {
+  private <X, R, T> R handleChain(
+      Chain<T> chain,
+      Function<T, BiFunction<X, Function<X, R>, R>> around,
+      X input,
+      Function<X, R> compositionFunction) {
 
     if (chain.next != null) {
-      return handle(chain.next, input, i -> chain.current.aroundCreation(i, compositionFunction));
+      return handleChain(
+          chain.next,
+          around,
+          input,
+          i -> around.apply(chain.current).apply(i, compositionFunction));
     } else {
-      return chain.current.aroundCreation(input, compositionFunction);
+      return around.apply(chain.current).apply(input, compositionFunction);
     }
   }
 }

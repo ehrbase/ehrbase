@@ -206,3 +206,8 @@ client:
 # JavaMelody
 javamelody:
   enabled: false
+
+#  plugin configuration
+plugin-manager:
+  plugin-dir: ./plugin_dir
+  enable: false

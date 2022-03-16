@@ -27,14 +27,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(exclude = {
-    SecurityAutoConfiguration.class,
-    ManagementWebSecurityAutoConfiguration.class
-})
+@SpringBootApplication(
+    exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class})
 @Import({
-    ServiceModuleConfiguration.class,
-    RestEHRScapeModuleConfiguration.class,
-    RestModuleConfiguration.class,
+  ServiceModuleConfiguration.class,
+  RestEHRScapeModuleConfiguration.class,
+  RestModuleConfiguration.class
 })
 public class EhrBase {
 

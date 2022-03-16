@@ -627,6 +627,12 @@
                 <groupId>org.pf4j</groupId>
                 <artifactId>pf4j-spring</artifactId>
                 <version>0.7.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-to-slf4j</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
