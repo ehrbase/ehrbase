@@ -65,6 +65,8 @@ public class PluginAspect {
           clone[0] = i.getEhrId();
           try {
             return ((Optional<UUID>) pjp.proceed(clone)).get();
+          } catch (RuntimeException e) {
+            throw e;
           } catch (Exception e) {
             throw new InternalServerException("Expedition in Plugin Aspect ", e);
           } catch (Throwable e) {
