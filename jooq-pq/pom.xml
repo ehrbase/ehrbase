@@ -34,33 +34,25 @@
     <artifactId>jooq-pg</artifactId>
 
     <name>jooq-pq</name>
+
     <dependencies>
         <!-- Generation of the DB  -->
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>base</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>serialisation</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.nedap.healthcare.archie</groupId>
             <artifactId>openehr-rm</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq-codegen-maven</artifactId>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -85,7 +77,33 @@
             <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
+                <!-- The plugin should hook into the generate goal -->
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <!-- Manage the plugin's dependency. In this example, we'll use a PostgreSQL database -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgressql.version}</version>
+                    </dependency>
+                </dependencies>
+                <!-- Specify the plugin configuration.
+                     The configuration format is the same as for the standalone code generator -->
                 <configuration>
+                    <!-- Configure the database connection here -->
+                    <jdbc>
+                        <driver>org.postgresql.Driver</driver>
+                        <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+                        <user>${database.user}</user>
+                        <password>${database.pass}</password>
+                    </jdbc>
                     <generator>
                         <database>
                             <!-- The database dialect fromBinder jooq-meta. Available dialects are named
@@ -143,9 +161,7 @@
                                 </forcedType>
                                 <forcedType>
                                     <!-- Specify the Java type of your custom type. This corresponds to the Binding's <U> type. -->
-                                    <userType>java.util.AbstractMap.SimpleEntry&lt;java.time.OffsetDateTime,
-                                        java.time.OffsetDateTime>
-                                    </userType>
+                                    <userType>java.util.AbstractMap.SimpleEntry&lt;java.time.OffsetDateTime, java.time.OffsetDateTime></userType>
                                     <!--<userType>java.util.AbstractMap.SimpleEntry</userType>-->
 
                                     <!-- Associate that custom type with your binding. -->
@@ -174,24 +190,15 @@
                             </forcedTypes>
                         </database>
                         <generate>
-                            <!-- Generation flags: See advanced configuration properties -->
+                            <javaTimeTypes>false</javaTimeTypes>
                         </generate>
                         <target>
-                            <!-- The destination package of your generated classes (within the destination
-                                directory) jOOQ may append the schema name to this package if generating
-                                multiple schemas, e.g. org.jooq.your.packagename.schema1 org.jooq.your.packagename.schema2 -->
                             <packageName>org.ehrbase.jooq.pg</packageName>
-                            <!-- The destination directory of your generated classes -->
-                            <!--<directory>./build/generated-src/main/</directory>-->
                             <directory>target/generated-sources/</directory>
                         </target>
                     </generator>
                 </configuration>
             </plugin>
-
-
         </plugins>
     </build>
-
-
 </project>

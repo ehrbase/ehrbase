@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2021 Jake Smolka (Hannover Medical School) and Vitasystems GmbH.
- *
- * This file is part of project EHRbase
+ * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,16 +18,6 @@ package org.ehrbase.application.abac;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
@@ -43,7 +31,6 @@ import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.openehr.OpenehrQueryController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,10 +39,25 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
 /**
  * Implementation of custom security expression, to be used in e.g. @PreAuthorize(..) to allow ABAC
  * requests.
+ *
+ * @author Jake Smolka
+ * @since 1.0
  */
+@SuppressWarnings("unused")
 public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot implements
     MethodSecurityExpressionOperations {
 
@@ -102,19 +104,13 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param contentType Content type from the scope
    * @return True if ABAC authorizes given attributes
    * @throws IOException On parsing error
-   * @throws InterruptedException On error while communicating with the ABAC server
    */
-  public boolean checkAbacPost(String type, String subject, Object payload,
-      String contentType)
-      throws IOException, InterruptedException {
-
+  public boolean checkAbacPost(String type, String subject, Object payload, String contentType) throws IOException {
     return checkAbac(type, subject, payload, contentType, POST);
   }
 
-  public boolean checkAbacPostQuery(Object payload)
-      throws IOException, InterruptedException {
-
-    return checkAbac(OpenehrQueryController.QUERY, null, payload, null, POST);
+  public boolean checkAbacPostQuery(Object payload) throws IOException {
+    return checkAbac(BaseController.QUERY, null, payload, null, POST);
   }
 
   /**
@@ -127,24 +123,17 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param contentType Content type from the scope
    * @return True if ABAC authorizes given attributes
    * @throws IOException On parsing error
-   * @throws InterruptedException On error while communicating with the ABAC server
    */
-  public boolean checkAbacPre(String type, String subject, Object payload,
-      String contentType)
-      throws IOException, InterruptedException {
-
+  public boolean checkAbacPre(String type, String subject, Object payload, String contentType) throws IOException {
     // @PreAuthorize will give different types, e.g. String (for composition), EhrStatus,...
     // so just pipe it through to templateHandling and make by-type handling there
-
     return checkAbac(type, subject, payload, contentType, PRE);
   }
 
   /*
   Short call with less parameters.
    */
-  public boolean checkAbacPre(String type, String subject)
-      throws IOException, InterruptedException {
-
+  public boolean checkAbacPre(String type, String subject) throws IOException {
     return checkAbac(type, subject, null, null, PRE);
   }
 
@@ -157,10 +146,9 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param authType Pre- or PostAuthorize, determines payload style (string or object)
    * @return True if ABAC returns a positive feedback, False if not
    * @throws IOException On parsing error
-   * @throws InterruptedException On error while communicating with the ABAC server
    */
   private boolean checkAbac(String type, String subject, Object payload,
-      String contentType, String authType) throws IOException, InterruptedException {
+      String contentType, String authType) throws IOException {
     // Set type specific settings:
     // Extract and set parameters according to which parameters are configured
     List<PolicyParameter> policyParameters;
@@ -255,6 +243,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param subject Subject from EHR
    * @param requestMap ABAC request attribute map to add the result
    */
+  @SuppressWarnings("unchecked")
   private boolean patientHandling(JwtAuthenticationToken jwt, String subject,
       Map<String, Object> requestMap, String type, Object payload) {
 
@@ -268,7 +257,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
       // special case of type QUERY, where multiple subjects are possible
       if (payload instanceof Map) {
         if (((Map<?, ?>) payload).containsKey(AuditVariables.EHR_PATH)) {
-          Set<UUID> ehrs = (Set) ((Map<?, ?>) payload).get(AuditVariables.EHR_PATH);
+          Set<UUID> ehrs = (Set<UUID>) ((Map<?, ?>) payload).get(AuditVariables.EHR_PATH);
           Set<String> patientSet = new HashSet<>();
           for (UUID ehr : ehrs) {
             String subjectId = ehrService.getSubjectExtRef(ehr.toString());
@@ -318,6 +307,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param requestMap ABAC request attribute map to add the result
    * @param authType Pre- or PostAuthorize, determines payload style (string or object)
    */
+  @SuppressWarnings("unchecked")
   private void templateHandling(String type, Object payload, String contentType, Map<String,
       Object> requestMap, String authType) {
     switch (type) {
@@ -329,17 +319,15 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         String content = "";
         if (authType.equals(POST)) {
           // @PostAuthorize gives a ResponseEntity type for "returnObject", so payload is of that type
-          if (((ResponseEntity) payload).hasBody()) {
-            Object body = ((ResponseEntity) payload).getBody();
+          if (((ResponseEntity<?>) payload).hasBody()) {
+            Object body = ((ResponseEntity<?>) payload).getBody();
             // can have "No content" here (even with some data in the body) if the compo was (logically) deleted
             if (((ResponseEntity<?>) payload).getStatusCode().equals(HttpStatus.NO_CONTENT)) {
               if (body instanceof Map) {
                 Object error = ((Map<?, ?>) body).get("error");
-                if (error != null) {
-                  if (((String) error).contains("delet")) {
-                    //composition was deleted, so nothing to check here, skip
-                    break;
-                  }
+                if (error != null && ((String) error).contains("delet")) {
+                  //composition was deleted, so nothing to check here, skip
+                  break;
                 }
               }
               throw new InternalServerException("ABAC: Unexpected empty response from composition reuquest");
@@ -369,7 +357,9 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
             Optional<CompositionDto> compoDto = compositionService.retrieve(compositionUid, null);
             if (compoDto.isPresent()) {
               Composition c = compoDto.get().getComposition();
-              requestMap.put(TEMPLATE, c.getArchetypeDetails().getTemplateId().getValue());
+              if (c.getArchetypeDetails() != null && c.getArchetypeDetails().getTemplateId() != null) {
+                requestMap.put(TEMPLATE, c.getArchetypeDetails().getTemplateId().getValue());
+              }
               break; // special case, so done here, exit
             } else {
               throw new InternalServerException(
@@ -412,7 +402,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         // special case of type QUERY, where multiple subjects are possible
         if (payload instanceof Map) {
           if (((Map<?, ?>) payload).containsKey(AuditVariables.TEMPLATE_PATH)) {
-            Set<String> templates = (Set) ((Map<?, ?>) payload).get(AuditVariables.TEMPLATE_PATH);
+            Set<String> templates = (Set<String>) ((Map<?, ?>) payload).get(AuditVariables.TEMPLATE_PATH);
             Set<String> templateSet = new HashSet<>(templates);
             // put result set into the requestMap and exit
             requestMap.put(TEMPLATE, templateSet);
@@ -428,8 +418,8 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
   }
 
-  private boolean abacCheckRequest(String url, Map<String, Object> bodyMap)
-      throws IOException, InterruptedException {
+  @SuppressWarnings("unchecked")
+  private boolean abacCheckRequest(String url, Map<String, Object> bodyMap) throws IOException {
     // prepare request attributes and convert from <String, Object> to <String, String>
     Map<String, String> request = new HashMap<>();
     if (bodyMap.containsKey(ORGANIZATION)) {
@@ -488,10 +478,10 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param request Processed attributes for the request
    * @return True on success, False if one combinations is rejected by the ABAC server
    * @throws IOException On error during attribute or HTTP handling
-   * @throws InterruptedException On error during HTTP handling
    */
+  @SuppressWarnings("unchecked")
   private boolean sendRequestForEach(String type, String url, Map<String, Object> bodyMap,
-      Map<String, String> request) throws IOException, InterruptedException {
+      Map<String, String> request) throws IOException {
     Set<String> set = (Set<String>) bodyMap.get(type);
     for (String s : set) {
       request.put(type, s);

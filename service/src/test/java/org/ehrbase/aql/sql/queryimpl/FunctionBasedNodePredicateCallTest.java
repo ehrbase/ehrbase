@@ -1,20 +1,17 @@
 /*
- *  Copyright (c) 2020 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
- *
- *  This file is part of project EHRbase
+ * Copyright 2020-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- *
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
- *   software distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and  limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.ehrbase.aql.sql.queryimpl;
@@ -22,7 +19,9 @@ package org.ehrbase.aql.sql.queryimpl;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.jooq.pg.Routines;
-import org.jooq.*;
+import org.jooq.Field;
+import org.jooq.JSON;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,14 +32,20 @@ import java.util.function.Function;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER;
 import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
-import static org.junit.Assert.*;
+import static org.jooq.impl.DSL.select;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+/**
+ * @author Christian Chevalley
+ * @since 1.0
+ */
 public class FunctionBasedNodePredicateCallTest {
 
     FieldResolutionContext fieldResolutionContext;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         fieldResolutionContext = new FieldResolutionContext(
                 DSL.using(SQLDialect.POSTGRES),
                 null,
@@ -50,11 +55,10 @@ public class FunctionBasedNodePredicateCallTest {
                 null,
                 null,
                 null);
-
     }
 
     @Test
-    public void testConstruct1(){
+    public void testConstruct1() {
         String[] pathArray = {
                 "'other_context'",
                 "'/items[openEHR-EHR-CLUSTER.case_identification.v0]'",
@@ -69,14 +73,13 @@ public class FunctionBasedNodePredicateCallTest {
 
         FunctionBasedNodePredicateCall functionBasedNodePredicateCall = new FunctionBasedNodePredicateCall(fieldResolutionContext, Arrays.asList(pathArray));
         Function<Field<UUID>, Field<JSON>> function = Routines::jsContext;
-        Field test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
+        Field<?> test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
 
         assertNotNull(test);
-
     }
 
     @Test
-    public void testConstruct2(){
+    public void testConstruct2() {
         String[] pathArray = {
                 "'other_context'",
                 "'/items[openEHR-EHR-CLUSTER.case_identification.v0]'",
@@ -92,14 +95,13 @@ public class FunctionBasedNodePredicateCallTest {
 
         FunctionBasedNodePredicateCall functionBasedNodePredicateCall = new FunctionBasedNodePredicateCall(fieldResolutionContext, Arrays.asList(pathArray));
         Function<Field<UUID>, Field<JSON>> function = Routines::jsContext;
-        Field test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
+        Field<?> test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
 
         assertNotNull(test);
-
     }
 
     @Test
-    public void testConstruct3(){
+    public void testConstruct3() {
         String[] pathArray = {
                 "'other_context'",
                 "'/items[openEHR-EHR-CLUSTER.case_identification.v0]'",
@@ -115,24 +117,23 @@ public class FunctionBasedNodePredicateCallTest {
 
         FunctionBasedNodePredicateCall functionBasedNodePredicateCall = new FunctionBasedNodePredicateCall(fieldResolutionContext, Arrays.asList(pathArray));
         Function<Field<UUID>, Field<JSON>> function = Routines::jsContext;
-        Field test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
+        Field<?> test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
 
-        String dummySelect = DSL.select(test).toString();
+        String dummySelect = select(test).toString();
 
-        assertEquals(dummySelect,"select jsonb_extract_path_text(cast(\"ehr\".\"aql_node_name_predicate\"(\n" +
+        assertEquals(dummySelect, "select jsonb_extract_path_text(cast(\"ehr\".\"aql_node_name_predicate\"(\n" +
                 "  cast(jsonb_extract_path_text(\"ehr\".\"aql_node_name_predicate\"(\n" +
-                "  cast(jsonb_extract_path_text(cast(\"ehr\".\"js_context\"(\"ehr\".\"event_context\".\"id\") as jsonb),'other_context','/items[openEHR-EHR-CLUSTER.case_identification.v0]') as jsonb), \n" +
-                "  'item-1', \n" +
+                "  cast(jsonb_extract_path_text(cast(\"ehr\".\"js_context\"(\"ehr\".\"event_context\".\"id\") as jsonb),'other_context','/items[openEHR-EHR-CLUSTER.case_identification.v0]') as jsonb),\n" +
+                "  'item-1',\n" +
                 "  ''\n" +
-                "),'/items[at0001]') as jsonb), \n" +
-                "  'item-2', \n" +
+                "),'/items[at0001]') as jsonb),\n" +
+                "  'item-2',\n" +
                 "  ''\n" +
                 ") as jsonb),'/name','0','value')");
-
     }
 
     @Test
-    public void testConstruct4(){
+    public void testConstruct4() {
         String[] pathArray = {
                 "'other_context'",
                 "'/items[openEHR-EHR-CLUSTER.case_identification.v0]'",
@@ -150,11 +151,8 @@ public class FunctionBasedNodePredicateCallTest {
 
         FunctionBasedNodePredicateCall functionBasedNodePredicateCall = new FunctionBasedNodePredicateCall(fieldResolutionContext, Arrays.asList(pathArray));
         Function<Field<UUID>, Field<JSON>> function = Routines::jsContext;
-        Field test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
+        Field<?> test = functionBasedNodePredicateCall.resolve(function, EVENT_CONTEXT.ID);
 
         assertNotNull(test);
-
     }
-
-
 }

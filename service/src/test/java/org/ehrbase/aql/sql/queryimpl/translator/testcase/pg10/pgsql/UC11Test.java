@@ -26,15 +26,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC11Test extends UC11 {
 
-    public UC11Test(){
+    public UC11Test() {
         super();
         this.expectedSqlExpression =
                 "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\"" +
-                        " from (select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\" limit ?";
+                        " from (select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\" offset ? rows fetch next ? rows only";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }
