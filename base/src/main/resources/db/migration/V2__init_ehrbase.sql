@@ -2991,21 +2991,18 @@ ALTER FUNCTION ehr.xjsonb_array_elements(entry jsonb) OWNER TO ehrbase;
 
 CREATE TABLE ehr.access
 (
-    id       uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id       uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     settings text,
     scheme   text
 );
 ALTER TABLE ehr.access
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.access
-    ADD CONSTRAINT access_pkey PRIMARY KEY (id);
-
 COMMENT ON TABLE ehr.access IS 'defines the modality for accessing an com.ethercis.ehr (security strategy implementation)';
 
 CREATE TABLE ehr.attestation
 (
-    id         uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id         uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     proof      text,
     reason     text,
     is_pending boolean,
@@ -3015,25 +3012,19 @@ CREATE TABLE ehr.attestation
 ALTER TABLE ehr.attestation
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.attestation
-    ADD CONSTRAINT attestation_pkey PRIMARY KEY (id);
-
 CREATE TABLE ehr.attestation_ref
 (
-    ref uuid DEFAULT ext.uuid_generate_v4() NOT NULL
+    ref uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL
 );
 ALTER TABLE ehr.attestation_ref
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.attestation_ref
-    ADD CONSTRAINT attestation_ref_pkey PRIMARY KEY (ref);
 
 ALTER TABLE ONLY ehr.attestation
     ADD CONSTRAINT attestation_reference_fkey FOREIGN KEY (reference) REFERENCES ehr.attestation_ref (ref) ON DELETE CASCADE;
 
 CREATE TABLE ehr.attested_view
 (
-    id                        uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id                        uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     attestation_id            uuid,
     alternate_text            text,
     compression_algorithm     text,
@@ -3048,15 +3039,12 @@ ALTER TABLE ehr.attested_view
     OWNER TO ehrbase;
 
 ALTER TABLE ONLY ehr.attested_view
-    ADD CONSTRAINT attested_view_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY ehr.attested_view
     ADD CONSTRAINT attested_view_attestation_id_fkey FOREIGN KEY (attestation_id) REFERENCES ehr.attestation (id) ON DELETE CASCADE;
 
 
 CREATE TABLE ehr.audit_details
 (
-    id                  uuid                        DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id                  uuid     primary key  DEFAULT ext.uuid_generate_v4() NOT NULL,
     system_id           uuid                                                       NOT NULL,
     committer           uuid                                                       NOT NULL,
     time_committed      timestamp without time zone DEFAULT now(),
@@ -3067,15 +3055,12 @@ CREATE TABLE ehr.audit_details
 ALTER TABLE ehr.audit_details
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.audit_details
-    ADD CONSTRAINT audit_details_pkey PRIMARY KEY (id);
-
 ALTER TABLE ONLY ehr.attestation
     ADD CONSTRAINT attestation_has_audit_fkey FOREIGN KEY (has_audit) REFERENCES ehr.audit_details (id) ON DELETE CASCADE;
 
 CREATE TABLE ehr.composition
 (
-    id              uuid    DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id              uuid primary key  DEFAULT ext.uuid_generate_v4() NOT NULL,
     ehr_id          uuid,
     in_contribution uuid,
     active          boolean DEFAULT true,
@@ -3093,9 +3078,6 @@ CREATE TABLE ehr.composition
 ALTER TABLE ehr.composition
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.composition
-    ADD CONSTRAINT composition_pkey PRIMARY KEY (id);
-
 COMMENT ON TABLE ehr.composition IS 'Composition table';
 
 ALTER TABLE ONLY ehr.composition
@@ -3106,7 +3088,7 @@ ALTER TABLE ONLY ehr.composition
 
 CREATE TABLE ehr.ehr
 (
-    id                uuid                        DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id                uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     date_created      timestamp without time zone DEFAULT CURRENT_DATE,
     date_created_tzid text,
     access            uuid,
@@ -3115,9 +3097,6 @@ CREATE TABLE ehr.ehr
 );
 ALTER TABLE ehr.ehr
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.ehr
-    ADD CONSTRAINT ehr_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ehr.ehr
     ADD CONSTRAINT ehr_access_fkey FOREIGN KEY (access) REFERENCES ehr.access (id);
@@ -3129,7 +3108,7 @@ COMMENT ON TABLE ehr.ehr IS 'EHR itself';
 
 CREATE TABLE ehr.entry
 (
-    id              uuid              DEFAULT ext.uuid_generate_v4()                                                                                                                NOT NULL,
+    id              uuid primary key DEFAULT ext.uuid_generate_v4()                                                                                                                NOT NULL,
     composition_id  uuid,
     sequence        integer,
     item_type       ehr.entry_type,
@@ -3147,16 +3126,13 @@ ALTER TABLE ehr.entry
     OWNER TO ehrbase;
 
 ALTER TABLE ONLY ehr.entry
-    ADD CONSTRAINT entry_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY ehr.entry
     ADD CONSTRAINT entry_composition_id_fkey FOREIGN KEY (composition_id) REFERENCES ehr.composition (id) ON DELETE CASCADE;
 
 COMMENT ON TABLE ehr.entry IS 'this table hold the actual archetyped data values (fromBinder a template)';
 
 CREATE TABLE ehr.event_context
 (
-    id              uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id              uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     composition_id  uuid,
     start_time      timestamp without time zone         NOT NULL,
     start_time_tzid text,
@@ -3173,16 +3149,13 @@ ALTER TABLE ehr.event_context
     OWNER TO ehrbase;
 
 ALTER TABLE ONLY ehr.event_context
-    ADD CONSTRAINT event_context_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY ehr.event_context
     ADD CONSTRAINT event_context_composition_id_fkey FOREIGN KEY (composition_id) REFERENCES ehr.composition (id) ON DELETE CASCADE;
 
 COMMENT ON TABLE ehr.event_context IS 'defines the context of an event (time, who, where... see openEHR IM 5.2';
 
 CREATE TABLE ehr.party_identified
 (
-    id                  uuid                  DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id                  uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     name                text,
     party_ref_value     text,
     party_ref_scheme    text,
@@ -3195,9 +3168,6 @@ CREATE TABLE ehr.party_identified
 ALTER TABLE ehr.party_identified
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.party_identified
-    ADD CONSTRAINT party_identified_pkey PRIMARY KEY (id);
-
 ALTER TABLE ONLY ehr.audit_details
     ADD CONSTRAINT audit_details_committer_fkey FOREIGN KEY (committer) REFERENCES ehr.party_identified (id);
 
@@ -3209,7 +3179,7 @@ ALTER TABLE ONLY ehr.event_context
 
 CREATE TABLE ehr.status
 (
-    id                uuid              DEFAULT ext.uuid_generate_v4()                                                                                                             NOT NULL,
+    id                uuid primary key DEFAULT ext.uuid_generate_v4()                                                                                                             NOT NULL,
     ehr_id            uuid,
     is_queryable      boolean           DEFAULT true,
     is_modifiable     boolean           DEFAULT true,
@@ -3225,9 +3195,6 @@ CREATE TABLE ehr.status
 );
 ALTER TABLE ehr.status
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.status
-    ADD CONSTRAINT status_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ehr.status
     ADD CONSTRAINT status_ehr_id_fkey FOREIGN KEY (ehr_id) REFERENCES ehr.ehr (id) ON DELETE CASCADE;
@@ -3278,7 +3245,7 @@ ALTER TABLE ehr.composition_history
 
 CREATE TABLE ehr.concept
 (
-    id          uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id          uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     conceptid   integer,
     language    character varying(5),
     description text
@@ -3286,14 +3253,11 @@ CREATE TABLE ehr.concept
 ALTER TABLE ehr.concept
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.concept
-    ADD CONSTRAINT concept_pkey PRIMARY KEY (id);
-
 COMMENT ON TABLE ehr.concept IS 'openEHR common concepts (e.g. terminology) used in the system';
 
 CREATE TABLE ehr.contribution
 (
-    id                uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id                uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     ehr_id            uuid,
     contribution_type ehr.contribution_data_type,
     state             ehr.contribution_state,
@@ -3302,9 +3266,6 @@ CREATE TABLE ehr.contribution
 );
 ALTER TABLE ehr.contribution
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.contribution
-    ADD CONSTRAINT contribution_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ehr.contribution
     ADD CONSTRAINT contribution_ehr_id_fkey FOREIGN KEY (ehr_id) REFERENCES ehr.ehr (id) ON DELETE CASCADE;
@@ -3379,7 +3340,7 @@ ALTER TABLE ehr.event_context_history
 
 CREATE TABLE ehr.folder
 (
-    id                uuid    DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id                uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     in_contribution   uuid                                   NOT NULL,
     name              text                                   NOT NULL,
     archetype_node_id text                                   NOT NULL,
@@ -3391,9 +3352,6 @@ CREATE TABLE ehr.folder
 );
 ALTER TABLE ehr.folder
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.folder
-    ADD CONSTRAINT folder_pk PRIMARY KEY (id);
 
 ALTER TABLE ONLY ehr.folder
     ADD CONSTRAINT folder_has_audit_fkey FOREIGN KEY (has_audit) REFERENCES ehr.audit_details (id) ON DELETE CASCADE;
@@ -3507,14 +3465,11 @@ ALTER TABLE ONLY ehr.heading
 
 CREATE TABLE ehr.language
 (
-    code        character varying(5) NOT NULL,
+    code        character varying(5) primary key NOT NULL,
     description text                 NOT NULL
 );
 ALTER TABLE ehr.language
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.language
-    ADD CONSTRAINT language_pkey PRIMARY KEY (code);
 
 ALTER TABLE ONLY ehr.composition
     ADD CONSTRAINT composition_language_fkey FOREIGN KEY (language) REFERENCES ehr.language (code);
@@ -3567,7 +3522,7 @@ COMMENT ON TABLE ehr.object_ref_history IS '*implements https://specifications.o
 
 CREATE TABLE ehr.participation
 (
-    id              uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id              uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     event_context   uuid                                NOT NULL,
     performer       uuid,
     function        ehr.dv_coded_text,
@@ -3581,9 +3536,6 @@ CREATE TABLE ehr.participation
 );
 ALTER TABLE ehr.participation
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.participation
-    ADD CONSTRAINT participation_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ehr.participation
     ADD CONSTRAINT participation_event_context_fkey FOREIGN KEY (event_context) REFERENCES ehr.event_context (id) ON DELETE CASCADE;
@@ -3612,7 +3564,7 @@ ALTER TABLE ehr.participation_history
 
 CREATE TABLE ehr.session_log
 (
-    id           uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id           uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     subject_id   text                                NOT NULL,
     node_id      text,
     session_id   text,
@@ -3622,9 +3574,6 @@ CREATE TABLE ehr.session_log
 );
 ALTER TABLE ehr.session_log
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.session_log
-    ADD CONSTRAINT session_log_pkey PRIMARY KEY (id);
 
 CREATE TABLE ehr.status_history
 (
@@ -3667,15 +3616,12 @@ ALTER TABLE ONLY ehr.stored_query
 
 CREATE TABLE ehr.system
 (
-    id          uuid DEFAULT ext.uuid_generate_v4() NOT NULL,
+    id          uuid primary key DEFAULT ext.uuid_generate_v4() NOT NULL,
     description text                                NOT NULL,
     settings    text                                NOT NULL
 );
 ALTER TABLE ehr.system
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.system
-    ADD CONSTRAINT system_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ehr.audit_details
     ADD CONSTRAINT audit_details_system_id_fkey FOREIGN KEY (system_id) REFERENCES ehr.system (id);
@@ -3687,7 +3633,7 @@ COMMENT ON TABLE ehr.system IS 'system table for reference';
 
 CREATE TABLE ehr.template_store
 (
-    id              uuid                        NOT NULL,
+    id              uuid primary key            NOT NULL,
     template_id     text,
     content         text,
     sys_transaction timestamp without time zone NOT NULL
@@ -3695,35 +3641,26 @@ CREATE TABLE ehr.template_store
 ALTER TABLE ehr.template_store
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.template_store
-    ADD CONSTRAINT template_store_pkey PRIMARY KEY (id);
-
 CREATE TABLE ehr.terminology_provider
 (
-    code      text NOT NULL,
+    code      text primary key NOT NULL,
     source    text NOT NULL,
     authority text
 );
 ALTER TABLE ehr.terminology_provider
     OWNER TO ehrbase;
 
-ALTER TABLE ONLY ehr.terminology_provider
-    ADD CONSTRAINT terminology_provider_pkey PRIMARY KEY (code);
-
 COMMENT ON TABLE ehr.terminology_provider IS 'openEHR identified terminology provider';
 
 CREATE TABLE ehr.territory
 (
-    code        integer NOT NULL,
+    code        integer primary key NOT NULL,
     twoletter   character(2),
     threeletter character(3),
     text        text    NOT NULL
 );
 ALTER TABLE ehr.territory
     OWNER TO ehrbase;
-
-ALTER TABLE ONLY ehr.territory
-    ADD CONSTRAINT territory_pkey PRIMARY KEY (code);
 
 ALTER TABLE ONLY ehr.composition
     ADD CONSTRAINT composition_territory_fkey FOREIGN KEY (territory) REFERENCES ehr.territory (code);
