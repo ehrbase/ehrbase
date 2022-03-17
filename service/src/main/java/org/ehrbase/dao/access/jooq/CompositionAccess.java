@@ -883,7 +883,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
   @Override
   public void setFeederAudit(FeederAudit feederAudit) {
-    compositionRecord.setFeederAudit(JSONB.valueOf(new FeederAuditEncoding().toDB(feederAudit)));
+    if (feederAudit == null) {
+      compositionRecord.setFeederAudit(null);
+    } else {
+      compositionRecord.setFeederAudit(JSONB.valueOf(new FeederAuditEncoding().toDB(feederAudit)));
+    }
   }
 
   @Override
@@ -1008,6 +1012,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     setLanguageCode(seekLanguageCode(newComposition.getLanguage().getCodeString()));
     setTerritoryCode(seekTerritoryCode(newComposition.getTerritory().getCodeString()));
     setComposerId(seekComposerId(newComposition.getComposer()));
+
+    setFeederAudit(newComposition.getFeederAudit());
   }
 
   @Override
