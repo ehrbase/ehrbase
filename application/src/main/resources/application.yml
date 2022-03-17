@@ -211,3 +211,4 @@ javamelody:
 plugin-manager:
   plugin-dir: ./plugin_dir
   enable: true
+  plugin-context-path: /plugin

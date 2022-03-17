@@ -16,13 +16,14 @@
 
 package org.ehrbase.application.config.plugin;
 
+import static org.ehrbase.application.config.plugin.PluginManagerProperties.PLUGIN_MANAGER_PREFIX;
+
 import org.ehrbase.plugin.EhrBasePlugin;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.context.ServletWebServerInitializedEvent;
@@ -32,8 +33,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import static org.ehrbase.application.config.plugin.PluginManagerProperties.PLUGIN_MANAGER_PREFIX;
 
 /**
  * @author Stefan Spiska
@@ -45,16 +44,21 @@ public class PluginConfig {
 
   @Bean
   public EhrBasePluginManager pluginManager(Environment environment) {
-    // since this is used in a BeanFactoryPostProcessor the PluginManagerProperties must be bind
-    // manually.
-    BindResult<PluginManagerProperties> result =
-        Binder.get(environment).bind(PLUGIN_MANAGER_PREFIX, PluginManagerProperties.class);
-    return new EhrBasePluginManager(result.get());
+
+    return new EhrBasePluginManager(getPluginManagerProperties(environment));
+  }
+  // since this is used in a BeanFactoryPostProcessor the PluginManagerProperties must be bound
+  // manually.
+  private PluginManagerProperties getPluginManagerProperties(Environment environment) {
+    return Binder.get(environment).bind(PLUGIN_MANAGER_PREFIX, PluginManagerProperties.class).get();
   }
 
+  /** Register the {@link DispatcherServlet} for all {@link EhrBasePlugin} */
   @Bean
-  public BeanFactoryPostProcessor beanFactoryPostProcessor(EhrBasePluginManager pluginManager) {
+  public BeanFactoryPostProcessor beanFactoryPostProcessor(
+      EhrBasePluginManager pluginManager, Environment environment) {
 
+    PluginManagerProperties pluginManagerProperties = getPluginManagerProperties(environment);
     return beanFactory -> {
       pluginManager.loadPlugins();
 
@@ -62,16 +66,26 @@ public class PluginConfig {
           .map(PluginWrapper::getPlugin)
           .filter(p -> EhrBasePlugin.class.isAssignableFrom(p.getClass()))
           .map(EhrBasePlugin.class::cast)
-          .forEach(p -> register(beanFactory, p));
+          .forEach(p -> register(beanFactory, pluginManagerProperties, p));
     };
   }
 
-  private void register(ConfigurableListableBeanFactory beanFactory, EhrBasePlugin p) {
+  /**
+   * Register the {@link DispatcherServlet} for a {@link EhrBasePlugin}
+   *
+   * @param beanFactory
+   * @param pluginManagerProperties
+   * @param p
+   */
+  private void register(
+      ConfigurableListableBeanFactory beanFactory,
+      PluginManagerProperties pluginManagerProperties,
+      EhrBasePlugin p) {
     String pluginId = p.getWrapper().getPluginId();
 
     final String uri =
         UriComponentsBuilder.newInstance()
-            .path("/plugin")
+            .path(pluginManagerProperties.getPluginContextPath())
             .path(p.getContextPath())
             .path("/*")
             .build()
@@ -88,11 +102,17 @@ public class PluginConfig {
     beanFactory.registerSingleton(pluginId, bean);
   }
 
+  /**
+   * Create a Listener for the {@link ServletWebServerInitializedEvent } to initialise the {@link
+   * org.pf4j.ExtensionPoint} after all {@link DispatcherServlet} have been initialised.
+   *
+   * @param pluginManager
+   * @return
+   */
   @Bean
   ApplicationListener<ServletWebServerInitializedEvent>
       servletWebServerInitializedEventApplicationListener(EhrBasePluginManager pluginManager) {
 
     return event -> pluginManager.initPlugins();
   }
-
 }
