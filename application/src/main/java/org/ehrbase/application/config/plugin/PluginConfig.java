@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.ehrbase.application.config.plugin.PluginManagerProperties.PLUGIN_MANAGER_PREFIX;
 
@@ -68,8 +69,16 @@ public class PluginConfig {
   private void register(ConfigurableListableBeanFactory beanFactory, EhrBasePlugin p) {
     String pluginId = p.getWrapper().getPluginId();
 
+    final String uri =
+        UriComponentsBuilder.newInstance()
+            .path("/plugin")
+            .path(p.getContextPath())
+            .path("/*")
+            .build()
+            .getPath();
+
     ServletRegistrationBean<DispatcherServlet> bean =
-        new ServletRegistrationBean<>(p.getDispatcherServlet(), "/plugin/" + pluginId + "/*");
+        new ServletRegistrationBean<>(p.getDispatcherServlet(), uri);
 
     bean.setLoadOnStartup(1);
     bean.setOrder(1);

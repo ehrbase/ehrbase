@@ -36,4 +36,6 @@ public abstract  class EhrBasePlugin extends SpringPlugin {
     }
 
     public abstract DispatcherServlet getDispatcherServlet();
+
+  public abstract String getContextPath();
 }

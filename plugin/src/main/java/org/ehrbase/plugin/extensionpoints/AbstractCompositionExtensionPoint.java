@@ -22,22 +22,41 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
+ * Provides After and Before Interceptors for {@link CompositionExtensionPointInterface}
+ *
  * @author Stefan Spiska
  */
-public abstract class AbstractCompositionExtensionPoint implements CompositionExtensionPointInterface{
+public abstract class AbstractCompositionExtensionPoint
+    implements CompositionExtensionPointInterface {
 
+  /**
+   * Called before Composition create
+   *
+   * @param input {@link com.nedap.archie.rm.composition.Composition} to be created in ehr with
+   *     ehrId {@link UUID}
+   * @return input to be given to Composition create
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public CompositionWithEhrId beforeCreation(CompositionWithEhrId input) {
+    return input;
+  }
 
-    public  CompositionWithEhrId beforeCreation(CompositionWithEhrId input){
-        return input;
-    }
-
+  /**
+   * Intercept Composition create
+   *
+   * @param output {@link UUID} of the created Composition
+   * @return {@link UUID} of the created Composition
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
   public UUID afterCreation(UUID output) {
     return output;
-    }
+  }
 
   @Override
   public UUID aroundCreation(
       CompositionWithEhrId input, Function<CompositionWithEhrId, UUID> chain) {
     return afterCreation(chain.apply(beforeCreation(input)));
-    }
+  }
 }

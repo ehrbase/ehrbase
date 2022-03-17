@@ -23,12 +23,26 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
+ * Extension Point for Component handling.
+ *
+ * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+ *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
  * @author Stefan Spiska
  */
 public interface CompositionExtensionPointInterface extends ExtensionPoint {
 
+  /**
+   * Intercept Composition create
+   *
+   * @param input {@link com.nedap.archie.rm.composition.Composition} to be created in ehr with
+   *     ehrId {@link UUID}
+   * @param chain next Extension Point
+   * @return {@link UUID} of the created Composition
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
   default UUID aroundCreation(
       CompositionWithEhrId input, Function<CompositionWithEhrId, UUID> chain) {
-return chain.apply(input);
-    }
+    return chain.apply(input);
+  }
 }

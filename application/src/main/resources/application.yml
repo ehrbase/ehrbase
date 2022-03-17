@@ -210,4 +210,4 @@ javamelody:
 #  plugin configuration
 plugin-manager:
   plugin-dir: ./plugin_dir
-  enable: false
+  enable: true

@@ -16,6 +16,7 @@
 
 package org.ehrbase.application.config.plugin;
 
+
 import org.pf4j.spring.ExtensionsInjector;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
@@ -37,6 +38,7 @@ public class EhrBasePluginManager extends SpringPluginManager {
   }
 
   public void initPlugins() {
+
 
     if (!init) {
 
