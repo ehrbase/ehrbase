@@ -19,7 +19,6 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
-import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC22;
 import org.junit.Test;
 
@@ -27,18 +26,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC22Test extends UC22 {
 
-    public UC22Test(){
+    public UC22Test() {
         super();
         this.expectedSqlExpression =
                 "select count(\"_FCT_ARG_0\",\"_FCT_ARG_1\") as \"count\" from (select ARRAY.COLUMN as \"_FCT_ARG_1\", ARRAY.COLUMN as \"_FCT_ARG_0\" from \"ehr\".\"entry\" join lateral (\n" +
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0004],0,/value,value}') \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 join lateral (\n" +
+                        " AS COLUMN) as \"ARRAY\" on true join lateral (\n" +
                         "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[openEHR-EHR-CLUSTER.test_all_types.v1],0,/items[at0001],0,/items[at0002],0,/items[at0003],0,/value,value}') \n" +
-                        " AS COLUMN) as \"ARRAY\" on 1 = 1 where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
+                        " AS COLUMN) as \"ARRAY\" on true where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

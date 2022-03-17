@@ -19,7 +19,6 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
-import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC41;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC42;
 import org.junit.Test;
 
@@ -27,10 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC42Test extends UC42 {
 
-    public UC42Test(){
+    public UC42Test() {
         super();
         this.expectedSqlExpression =
-                "(select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                "select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
                         "  cast(composition_join.id as uuid), \n" +
                         "  'local'\n" +
                         ") as jsonb),'uid','value') as \"Diagnose\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Diagnose' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
@@ -47,7 +46,7 @@ public class UC42Test extends UC42 {
                         ") as jsonb),'uid','value') as \"NewerComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
                         "  \"ehr\".\"event_context\".\"start_time\", \n" +
                         "  event_context.START_TIME_TZID\n" +
-                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where \"ehr\".\"entry\".\"template_id\" = ?) union (select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
+                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where \"ehr\".\"entry\".\"template_id\" = ? union select ARRAY.COLUMN as \"Diagnose\", ARRAY.COLUMN as \"MabuseComposition\", ARRAY.COLUMN as \"NewerComposition\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\" join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\" left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
                         "  cast(composition_join.id as uuid), \n" +
                         "  'local'\n" +
                         ") as jsonb),'uid','value') as \"Diagnose\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"name\") as jsonb),'value') as varchar) = cast('Diagnose' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? left outer join lateral (select (select jsonb_extract_path_text(cast(\"ehr\".\"js_composition\"(\n" +
@@ -64,11 +63,11 @@ public class UC42Test extends UC42 {
                         ") as jsonb),'uid','value') as \"NewerComposition\" where cast(jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
                         "  \"ehr\".\"event_context\".\"start_time\", \n" +
                         "  event_context.START_TIME_TZID\n" +
-                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where \"ehr\".\"entry\".\"template_id\" = ?)";
+                        ") as jsonb),'value') as varchar) > cast('2020-01-01' as varchar)) as \"COLUMN\") as \"ARRAY\" on ? where \"ehr\".\"entry\".\"template_id\" = ?";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

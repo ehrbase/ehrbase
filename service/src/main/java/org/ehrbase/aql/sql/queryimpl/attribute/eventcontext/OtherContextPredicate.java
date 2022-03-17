@@ -1,26 +1,48 @@
+/*
+ * Copyright 2020-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.ehrbase.webtemplate.parser.AqlPath;
 
+/**
+ * @author Christian Chevalley
+ * @author Renaud Subiger
+ * @since 1.0
+ */
 public class OtherContextPredicate {
 
-    String path;
+    private final String path;
 
     public OtherContextPredicate(String path) {
         this.path = path;
     }
 
-    public String adjustForQuery(){
-        if (path.matches("^.*other_context\\[.*\\].*")){
-            //strip other_context predicate
-            Pattern pattern = Pattern.compile("other_context\\[(.*?)\\]");
-            Matcher matcher = pattern.matcher(path);
-            if (matcher.find()) {
-                path = path.substring(0, matcher.start() + "other_context[".length() - 1) + (matcher.end() == path.length() ? "" : path.substring(matcher.end()));
+    public String adjustForQuery() {
+        var aqlPath = AqlPath.parse(path);
+        var aqlNodes = aqlPath.getNodes();
+
+        for (int i = 0; i < aqlNodes.size(); i++) {
+            if ("other_context".equals(aqlNodes.get(i).getName())) {
+                aqlPath = aqlPath.replaceNode(i, aqlNodes.get(i).withAtCode(null));
             }
         }
 
-        return path;
+        // Removes initial "/" if not present in original path
+        var result = aqlPath.format(true);
+        return path.startsWith("/") ? result : result.substring(1);
     }
 }

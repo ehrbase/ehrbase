@@ -117,6 +117,7 @@ logging:
   level:
     org.ehcache: info
     org.jooq: info
+    org.jooq.Constants: warn
     org.springframework: info
   pattern:
     console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X]){faint} %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'

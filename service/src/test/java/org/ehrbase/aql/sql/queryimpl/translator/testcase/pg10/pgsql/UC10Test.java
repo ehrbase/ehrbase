@@ -33,7 +33,7 @@ public class UC10Test extends UC10 {
                         " from (" +
                         "       select \"ehr_join\".\"id\" as \"/ehr_id/value\"" +
                         "       from \"ehr\".\"ehr\" as \"ehr_join\"" +
-                        ") as \"\" limit ? offset ?";
+                        ") as \"\" offset ? rows fetch next ? rows only";
     }
 
     @Test
