@@ -18,6 +18,9 @@ package org.ehrbase.application.config.plugin;
 
 import static org.ehrbase.application.config.plugin.PluginManagerProperties.PLUGIN_MANAGER_PREFIX;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.plugin.EhrBasePlugin;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -59,6 +62,9 @@ public class PluginConfig {
       EhrBasePluginManager pluginManager, Environment environment) {
 
     PluginManagerProperties pluginManagerProperties = getPluginManagerProperties(environment);
+
+    Map<String, String> registeredUrl = new HashMap<>();
+
     return beanFactory -> {
       pluginManager.loadPlugins();
 
@@ -66,7 +72,7 @@ public class PluginConfig {
           .map(PluginWrapper::getPlugin)
           .filter(p -> EhrBasePlugin.class.isAssignableFrom(p.getClass()))
           .map(EhrBasePlugin.class::cast)
-          .forEach(p -> register(beanFactory, pluginManagerProperties, p));
+          .forEach(p -> register(beanFactory, pluginManagerProperties, registeredUrl, p));
     };
   }
 
@@ -75,12 +81,15 @@ public class PluginConfig {
    *
    * @param beanFactory
    * @param pluginManagerProperties
+   * @param registeredUrl
    * @param p
    */
   private void register(
       ConfigurableListableBeanFactory beanFactory,
       PluginManagerProperties pluginManagerProperties,
+      Map<String, String> registeredUrl,
       EhrBasePlugin p) {
+
     String pluginId = p.getWrapper().getPluginId();
 
     final String uri =
@@ -90,6 +99,20 @@ public class PluginConfig {
             .path("/*")
             .build()
             .getPath();
+
+    // check for duplicate plugin uri
+    registeredUrl.entrySet().stream()
+        .filter(e -> e.getValue().equals(uri))
+        .findAny()
+        .ifPresent(
+            e -> {
+              throw new InternalServerException(
+                  String.format(
+                      "uri %s for plugin %s already registered by plugin %s",
+                      uri, pluginId, e.getKey()));
+            });
+
+    registeredUrl.put(pluginId, uri);
 
     ServletRegistrationBean<DispatcherServlet> bean =
         new ServletRegistrationBean<>(p.getDispatcherServlet(), uri);
