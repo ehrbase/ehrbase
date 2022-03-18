@@ -131,10 +131,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     compositionRecord.setComposer(seekComposerId(composition.getComposer()));
 
     //new Locatable attributes
-    if (composition.getFeederAudit() != null) {
-      compositionRecord.setFeederAudit(
-          JSONB.valueOf(new FeederAuditEncoding().toDB(composition.getFeederAudit())));
-    }
+    setFeederAudit(composition.getFeederAudit());
 
     if (composition.getLinks() != null && !composition.getLinks().isEmpty()) {
       compositionRecord.setLinks(
@@ -187,10 +184,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
 
     //add the new locatable attributes
-    if (composition.getFeederAudit() != null) {
-      compositionRecord.setFeederAudit(
-          JSONB.valueOf(new FeederAuditEncoding().toDB(composition.getFeederAudit())));
-    }
+    setFeederAudit(composition.getFeederAudit());
     if (composition.getLinks() != null) {
       compositionRecord.setFeederAudit(
           JSONB.valueOf(new LinksEncoding().toDB(composition.getLinks())));
