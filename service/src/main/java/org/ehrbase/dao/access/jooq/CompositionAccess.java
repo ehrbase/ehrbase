@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -132,11 +133,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     //new Locatable attributes
     setFeederAudit(composition.getFeederAudit());
-
-    if (composition.getLinks() != null && !composition.getLinks().isEmpty()) {
-      compositionRecord.setLinks(
-          JSONB.valueOf(new LinksEncoding().toDB(composition.getLinks())));
-    }
+    setLinks(composition.getLinks());
 
     //associate a contribution with this composition
     contributionAccess = I_ContributionAccess.getInstance(this, compositionRecord.getEhrId());
@@ -185,11 +182,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     //add the new locatable attributes
     setFeederAudit(composition.getFeederAudit());
-    if (composition.getLinks() != null) {
-      compositionRecord.setLinks(
-          JSONB.valueOf(new LinksEncoding().toDB(composition.getLinks())));
-    }
-
+    setLinks(composition.getLinks());
   }
 
   /**
@@ -886,7 +879,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
   @Override
   public void setLinks(List<Link> links) {
-    compositionRecord.setLinks(JSONB.valueOf(new LinksEncoding().toDB(links)));
+    if (links == null) {
+      compositionRecord.setLinks(null);
+    } else {
+      compositionRecord.setLinks(JSONB.valueOf(new LinksEncoding().toDB(links)));
+    }
   }
 
   /**
@@ -1008,6 +1005,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     setComposerId(seekComposerId(newComposition.getComposer()));
 
     setFeederAudit(newComposition.getFeederAudit());
+    setLinks(newComposition.getLinks());
   }
 
   @Override
