@@ -186,7 +186,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     //add the new locatable attributes
     setFeederAudit(composition.getFeederAudit());
     if (composition.getLinks() != null) {
-      compositionRecord.setFeederAudit(
+      compositionRecord.setLinks(
           JSONB.valueOf(new LinksEncoding().toDB(composition.getLinks())));
     }
 
