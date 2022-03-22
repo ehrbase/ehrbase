@@ -16,7 +16,18 @@
 
 package org.ehrbase.plugin;
 
+import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
+
 import com.nedap.archie.rm.composition.Composition;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,19 +35,16 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.extensionpoints.CompositionExtensionPointInterface;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author Stefan Spiska
  */
 @Component
 @Aspect
+@ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
 public class PluginAspect {
 
   public static final Comparator<Map.Entry<String, CompositionExtensionPointInterface>>
@@ -48,6 +56,7 @@ public class PluginAspect {
               .reversed()
               // ensure constant ordering
               .thenComparing(Map.Entry::getKey);
+
 
   private static class Chain<T> {
 

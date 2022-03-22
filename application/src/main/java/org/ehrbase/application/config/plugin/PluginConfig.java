@@ -16,7 +16,7 @@
 
 package org.ehrbase.application.config.plugin;
 
-import static org.ehrbase.application.config.plugin.PluginManagerProperties.PLUGIN_MANAGER_PREFIX;
+import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 
 import java.util.HashMap;
 import java.util.Map;

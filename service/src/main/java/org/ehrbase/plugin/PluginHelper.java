@@ -16,26 +16,14 @@
 
 package org.ehrbase.plugin;
 
-import org.pf4j.PluginWrapper;
-import org.pf4j.spring.SpringPlugin;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
-
 /**
  * @author Stefan Spiska
  */
-public abstract class EhrBasePlugin extends SpringPlugin {
+public class PluginHelper {
 
-  protected EhrBasePlugin(PluginWrapper wrapper) {
-    super(wrapper);
+  private PluginHelper() {
+    // Util class
   }
 
-  @Override
-  protected ApplicationContext createApplicationContext() {
-    return getDispatcherServlet().getWebApplicationContext();
-  }
-
-  public abstract DispatcherServlet getDispatcherServlet();
-
-  public abstract String getContextPath();
+  public static final String PLUGIN_MANAGER_PREFIX = "plugin-manager";
 }

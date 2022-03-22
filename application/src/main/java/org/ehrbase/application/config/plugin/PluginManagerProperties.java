@@ -16,6 +16,8 @@
 
 package org.ehrbase.application.config.plugin;
 
+import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
+
 import java.nio.file.Path;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -23,9 +25,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Stefan Spiska
  *     <p>{@link ConfigurationProperties} for {@link EhrBasePluginManager}.
  */
-@ConfigurationProperties(prefix = PluginManagerProperties.PLUGIN_MANAGER_PREFIX)
+@ConfigurationProperties(prefix = PLUGIN_MANAGER_PREFIX)
 public class PluginManagerProperties {
-  public static final String PLUGIN_MANAGER_PREFIX = "plugin-manager";
 
   private Path pluginDir;
   private boolean enable;
