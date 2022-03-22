@@ -16,18 +16,28 @@
 
 package org.ehrbase.application.config.plugin;
 
-
+import java.io.IOException;
+import java.nio.file.Path;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.plugin.EhrBasePluginManagerInterface;
+import org.pf4j.PluginWrapper;
 import org.pf4j.spring.ExtensionsInjector;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.support.ResourcePropertySource;
 
 /**
  * @author Stefan Spiska
  */
-public class EhrBasePluginManager extends SpringPluginManager {
+public class EhrBasePluginManager extends SpringPluginManager
+    implements EhrBasePluginManagerInterface {
+
+  private PluginManagerProperties properties;
 
   public EhrBasePluginManager(PluginManagerProperties properties) {
     super(properties.getPluginDir());
+    this.properties = properties;
   }
 
   private boolean init = false;
@@ -50,6 +60,20 @@ public class EhrBasePluginManager extends SpringPluginManager {
       ExtensionsInjector extensionsInjector = new ExtensionsInjector(this, beanFactory);
       extensionsInjector.injectExtensions();
       init = true;
+    }
+  }
+
+  @Override
+  public ResourcePropertySource getConfig(String fileName, PluginWrapper pluginWrapper) {
+    try {
+      return new ResourcePropertySource(
+          new FileSystemResource(
+              Path.of(
+                  properties.getPluginConfigDir().toString(),
+                  pluginWrapper.getPluginId(),
+                  fileName)));
+    } catch (IOException e) {
+      throw new InternalServerException(e);
     }
   }
 }

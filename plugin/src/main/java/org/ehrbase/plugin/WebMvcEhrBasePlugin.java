@@ -16,6 +16,7 @@
 
 package org.ehrbase.plugin;
 
+
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SpringPlugin;
 import org.springframework.context.ApplicationContext;
@@ -24,9 +25,9 @@ import org.springframework.web.servlet.DispatcherServlet;
 /**
  * @author Stefan Spiska
  */
-public abstract class EhrBasePlugin extends SpringPlugin {
+public abstract class WebMvcEhrBasePlugin extends SpringPlugin implements PluginWithConfig {
 
-  protected EhrBasePlugin(PluginWrapper wrapper) {
+  protected WebMvcEhrBasePlugin(PluginWrapper wrapper) {
     super(wrapper);
   }
 
