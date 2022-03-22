@@ -86,8 +86,8 @@ public class PluginAspect {
         buildChain(
             getCompositionExtensionPointInterfaceList(),
             new CompositionExtensionPointInterface() {});
-    CompositionWithEhrId input =
-        new CompositionWithEhrId((Composition) pjp.getArgs()[1], (UUID) pjp.getArgs()[0]);
+    Object[] args = pjp.getArgs();
+    CompositionWithEhrId input = new CompositionWithEhrId((Composition) args[1], (UUID) args[0]);
 
     return Optional.of(
         handleChain(
@@ -95,10 +95,10 @@ public class PluginAspect {
             l -> (l::aroundCreation),
             input,
             i -> {
-              pjp.getArgs()[1] = i.getComposition();
-              pjp.getArgs()[0] = i.getEhrId();
+              args[1] = i.getComposition();
+              args[0] = i.getEhrId();
 
-              return ((Optional<UUID>) proceed(pjp)).orElseThrow();
+              return ((Optional<UUID>) proceed(pjp, args)).orElseThrow();
             }));
   }
 
@@ -106,11 +106,12 @@ public class PluginAspect {
    * Proceed with Error handling.
    *
    * @param pjp
+   * @param args
    * @return
    */
-  private Object proceed(ProceedingJoinPoint pjp) {
+  private Object proceed(ProceedingJoinPoint pjp, Object[] args) {
     try {
-      return pjp.proceed(pjp.getArgs());
+      return pjp.proceed(args);
     } catch (RuntimeException e) {
       // Simple rethrow to handle in Controller layer
       throw e;
