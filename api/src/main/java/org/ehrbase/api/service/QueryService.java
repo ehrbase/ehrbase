@@ -35,9 +35,9 @@ public interface QueryService extends BaseService {
      * @param explain
      * @return
      */
-    QueryResultDto query(String queryString, QueryMode queryMode, boolean explain);
+    QueryResultDto query(String queryString, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap);
 
-    QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain);
+    QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap);
 
     //=== DEFINITION: manage stored queries
     List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);
@@ -50,7 +50,4 @@ public interface QueryService extends BaseService {
     QueryDefinitionResultDto updateStoredQuery(String qualifiedName, String version, String queryString);
 
     QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version);
-
-    //the audit variables
-    Map<String, Set<Object>> getAuditResultMap();
 }

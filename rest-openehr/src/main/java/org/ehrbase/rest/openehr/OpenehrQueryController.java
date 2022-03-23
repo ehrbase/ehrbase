@@ -235,17 +235,18 @@ public class OpenehrQueryController extends BaseController
       HttpServletRequest request) {
     QueryResponseData queryResponseData;
 
+    Map<String, Set<Object>> auditResultMap = new HashMap<>();
+    
     //get the query and pass it to the service
     if (parameters != null && !parameters.isEmpty()) {
       queryResponseData = new QueryResponseData(
-          queryService.query(aql, parameters, QueryMode.AQL, false));
+          queryService.query(aql, parameters, QueryMode.AQL, false, auditResultMap));
     } else {
       queryResponseData = new QueryResponseData(
-          queryService.query(aql, QueryMode.AQL, false));
+          queryService.query(aql, QueryMode.AQL, false, auditResultMap));
     }
 
     // Enriches request attributes with EhrId(s) for later audit processing
-    Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
     request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE,
         auditResultMap.get(EHR_ID_VALUE));
 
@@ -298,17 +299,18 @@ public class OpenehrQueryController extends BaseController
       HttpServletRequest request) {
     QueryResponseData queryResponseData;
 
+    Map<String, Set<Object>> auditResultMap = new HashMap<>();
+    
     if (queryParameter != null && !queryParameter.isEmpty()) {
       Map<String, Object> parameters = new HashMap<>(queryParameter);
       queryResponseData = new QueryResponseData(
-          queryService.query(query, parameters, QueryMode.AQL, false));
+          queryService.query(query, parameters, QueryMode.AQL, false, auditResultMap));
     } else {
       queryResponseData = new QueryResponseData(
-          queryService.query(query, QueryMode.AQL, false));
+          queryService.query(query, QueryMode.AQL, false, auditResultMap));
     }
 
     // Enriches request attributes with EhrId(s) for later audit processing
-    Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
     request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE,
         auditResultMap.get(EHR_ID_VALUE));
 

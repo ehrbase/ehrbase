@@ -18,7 +18,18 @@
 
 package org.ehrbase.service;
 
-import com.google.gson.JsonElement;
+import static java.lang.String.format;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.BadGatewayException;
@@ -46,13 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.gson.JsonElement;
 
 @Service
 @SuppressWarnings("unchecked")
@@ -61,8 +66,6 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
     private final FhirTerminologyServerR4AdaptorImpl tsAdapter;
 
-    private Map<String, Set<Object>> auditResultMap;
-
     @Autowired
     public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
 
@@ -70,15 +73,21 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         this.tsAdapter = tsAdapter;
     }
 
+    private static BiConsumer<Map<?,?>,String> CHECK_NON_NULL = (map, errMsg) -> { if(map == null) throw new IllegalArgumentException(errMsg); };
+    
     @Override
-    public QueryResultDto query(String queryString, QueryMode queryMode, boolean explain) {
+    public QueryResultDto query(String queryString, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap) {
 
         switch (queryMode) {
             case SQL:
-                return querySql(queryString);
+                return querySql(queryString, auditResultMap);
 
             case AQL:
-                return queryAql(queryString, explain);
+                return queryAql(
+                    queryString,
+                    explain,
+                    () -> new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString),
+                    auditResultMap);
 
             default:
                 throw new IllegalArgumentException("Invalid query mode:"+queryMode);
@@ -86,14 +95,18 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     }
 
     @Override
-    public QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain) {
+    public QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap) {
 
         switch (queryMode) {
             case SQL:
-                return querySql(queryString);
+                return querySql(queryString, auditResultMap);
 
             case AQL:
-                return queryAql(queryString, parameters, explain);
+                return queryAql(
+                    queryString,
+                    explain,
+                    () -> new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString, parameters),
+                    auditResultMap);
 
             default:
                 throw new IllegalArgumentException("Invalid query mode:"+queryMode);
@@ -130,40 +143,27 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         return dto;
     }
 
-    private QueryResultDto queryAql(String queryString, boolean explain) {
-        try {
-
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), tsAdapter);
-            AqlResult aqlResult = queryHandler.process(queryString);
-            auditResultMap = aqlResult.getAuditResultMap();
-            return formatResult(aqlResult, queryString, explain);
-        } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae){
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e){
-            throw new IllegalArgumentException("Could not process query, reason:" + e);
-        }
+    private static final String ERR_MAP_NON_NULL = "Arg[%s] must not be null";
+    
+    
+    private QueryResultDto queryAql(String queryString, boolean explain, Supplier<AqlResult> resultSupplier, Map<String, Set<Object>> auditResultMap) {
+      CHECK_NON_NULL.accept(auditResultMap, format(ERR_MAP_NON_NULL, "auditResultMap"));
+      try {
+          AqlResult aqlResult = resultSupplier.get();
+          auditResultMap.putAll(aqlResult.getAuditResultMap());
+          return formatResult(aqlResult, queryString, explain);
+      } catch(RestClientException rce) {
+          throw new BadGatewayException("Bad gateway exception: "+rce.getCause().getMessage());
+      } catch (DataAccessException dae){
+          throw new GeneralRequestProcessingException("Data Access Error: "+dae.getCause().getMessage());
+      } catch (IllegalArgumentException iae){
+          throw new IllegalArgumentException(iae.getMessage());
+      } catch (Exception e){
+          throw new IllegalArgumentException("Could not process query/stored-query, reason: " + e);
+      }
     }
 
-    private QueryResultDto queryAql(String queryString, Map<String, Object> parameters, boolean explain) {
-        try {
-            AqlQueryHandler queryHandler = new AqlQueryHandler(getDataAccess(), tsAdapter);
-            AqlResult aqlResult = queryHandler.process(queryString, parameters);
-            auditResultMap = aqlResult.getAuditResultMap();
-            return formatResult(aqlResult, queryString, explain);
-        } catch(RestClientException rce) {
-        	throw new BadGatewayException("Bad gateway exception: "+rce.getCause().getMessage());
-        } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error: "+dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae){
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e){
-            throw new IllegalArgumentException("Could not retrieve stored query, reason: " + e);
-        }
-    }
-
-    private QueryResultDto querySql(String queryString) {
+    private QueryResultDto querySql(String queryString, Map<String, Set<Object>> auditResultMap) {
         Map<String, Object> result;
         try {
             result = I_EntryAccess.queryJSON(getDataAccess(), queryString);
@@ -287,11 +287,6 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         }
     }
 
-    @Override
-    public Map<String, Set<Object>> getAuditResultMap() {
-        return auditResultMap;
-    }
-
     private QueryDefinitionResultDto mapToQueryDefinitionDto(I_StoredQueryAccess storedQueryAccess) {
         QueryDefinitionResultDto dto = new QueryDefinitionResultDto();
         dto.setSaved(storedQueryAccess.getCreationDate().toInstant().atZone(ZoneId.systemDefault()));
@@ -301,6 +296,4 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         dto.setType(storedQueryAccess.getQueryType());
         return dto;
     }
-
-
 }
