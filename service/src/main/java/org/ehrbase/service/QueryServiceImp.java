@@ -73,14 +73,14 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         this.tsAdapter = tsAdapter;
     }
 
-    private static BiConsumer<Map<?,?>,String> CHECK_NON_NULL = (map, errMsg) -> { if(map == null) throw new IllegalArgumentException(errMsg); };
+    private static BiConsumer<Map<?,?>,String> checkNonNull = (map, errMsg) -> { if(map == null) throw new IllegalArgumentException(errMsg); };
     
     @Override
     public QueryResultDto query(String queryString, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap) {
 
         switch (queryMode) {
             case SQL:
-                return querySql(queryString, auditResultMap);
+                return querySql(queryString);
 
             case AQL:
                 return queryAql(
@@ -99,7 +99,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
         switch (queryMode) {
             case SQL:
-                return querySql(queryString, auditResultMap);
+                return querySql(queryString);
 
             case AQL:
                 return queryAql(
@@ -147,7 +147,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     
     
     private QueryResultDto queryAql(String queryString, boolean explain, Supplier<AqlResult> resultSupplier, Map<String, Set<Object>> auditResultMap) {
-      CHECK_NON_NULL.accept(auditResultMap, format(ERR_MAP_NON_NULL, "auditResultMap"));
+      checkNonNull.accept(auditResultMap, format(ERR_MAP_NON_NULL, "auditResultMap"));
       try {
           AqlResult aqlResult = resultSupplier.get();
           auditResultMap.putAll(aqlResult.getAuditResultMap());
@@ -163,7 +163,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
       }
     }
 
-    private QueryResultDto querySql(String queryString, Map<String, Set<Object>> auditResultMap) {
+    private QueryResultDto querySql(String queryString) {
         Map<String, Object> result;
         try {
             result = I_EntryAccess.queryJSON(getDataAccess(), queryString);
