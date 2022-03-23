@@ -42,6 +42,7 @@ gradlew    text eol=lf
 *.scm      text
 *.scss     text
 *.sh       text eol=lf
+Dockerfile text eol=lf
 *.sql      text
 *.styl     text
 *.tag      text
