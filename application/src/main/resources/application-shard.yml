@@ -15,7 +15,7 @@
 # limitations under the License.
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/ehrbase
+    url: jdbc:yugabytedb://localhost:5433/ehrbase
     username: ehrbase
     password: ehrbase
     tomcat:

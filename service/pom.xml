@@ -81,10 +81,9 @@
             <artifactId>web-template</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>com.yugabyte</groupId>
+            <artifactId>jdbc-yugabytedb</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>

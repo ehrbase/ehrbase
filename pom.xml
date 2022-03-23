@@ -148,6 +148,7 @@
         <postgressql.version>42.3.3</postgressql.version>
         <ehrbase.sdk.version>1.18.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
+        <jdbc-yugabytedb.version>42.3.4</jdbc-yugabytedb.version>
         <joda.version>2.10.13</joda.version>
         <jacoco.version>0.8.7</jacoco.version>
         <surefire.version>3.0.0-M5</surefire.version>
@@ -556,9 +557,9 @@
                 <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${postgressql.version}</version>
+                <groupId>com.yugabyte</groupId>
+                <artifactId>jdbc-yugabytedb</artifactId>
+                <version>${jdbc-yugabytedb.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
