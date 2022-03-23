@@ -29,22 +29,8 @@ import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.api.exception.ValidationException;
+import org.ehrbase.api.exception.*;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -71,6 +57,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.*;
+
 /**
  * {@link CompositionService} implementation.
  *
@@ -89,7 +80,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   private final KnowledgeCacheService knowledgeCacheService;
   private final EhrService ehrService;
 
-  public CompositionServiceImp(KnowledgeCacheService knowledgeCacheService,
+  public CompositionServiceImp(
+      KnowledgeCacheService knowledgeCacheService,
       ValidationService validationService,
       EhrService ehrService,
       DSLContext context,
@@ -102,43 +94,44 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public Optional<CompositionDto> create(
+  public Optional<UUID> create(
       UUID ehrId, Composition objData, UUID systemId, UUID committerId, String description) {
 
-    UUID compositionId = internalCreate(ehrId, objData, systemId, committerId, description, null);
-    return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId));
+    UUID compositionId = createInternal(ehrId, objData, systemId, committerId, description, null);
+    return Optional.of(compositionId);
   }
 
   @Override
-  public Optional<CompositionDto> create(UUID ehrId, Composition objData, UUID contribution) {
-    UUID compositionId = internalCreate(ehrId, objData, null, null, null, contribution);
-    return getCompositionDto(I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId));
+  public Optional<UUID> create(UUID ehrId, Composition objData, UUID contribution) {
+    UUID compositionId = createInternal(ehrId, objData, null, null, null, contribution);
+    return Optional.of(compositionId);
   }
 
   @Override
-  public Optional<CompositionDto> create(UUID ehrId, Composition objData) {
+  public Optional<UUID> create(UUID ehrId, Composition objData) {
     return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
   }
 
   /**
    * Creation of a new composition. With optional custom contribution, or one will be created.
    *
-   * @param ehrId          ID of EHR
-   * @param composition    RMObject instance of the given Composition to be created
-   * @param systemId       Audit system; or NULL if contribution is given
-   * @param committerId    Audit committer; or NULL if contribution is given
-   * @param description    (Optional) Audit description; or NULL if contribution is given
+   * @param ehrId ID of EHR
+   * @param composition RMObject instance of the given Composition to be created
+   * @param systemId Audit system; or NULL if contribution is given
+   * @param committerId Audit committer; or NULL if contribution is given
+   * @param description (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
    * @return ID of created composition
    * @throws InternalServerException when creation failed
    */
-  private UUID internalCreate(
+  private UUID createInternal(
       UUID ehrId,
       Composition composition,
       UUID systemId,
       UUID committerId,
       String description,
       UUID contributionId) {
+
     // pre-step: validate
     try {
       validationService.check(composition);
@@ -196,7 +189,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public Optional<CompositionDto> update(
+  public Optional<UUID> update(
       UUID ehrId,
       ObjectVersionId targetObjId,
       Composition objData,
@@ -212,13 +205,12 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             committerId,
             description,
             null);
-    return getCompositionDto(
-        I_CompositionAccess.retrieveInstance(
-            getDataAccess(), UUID.fromString(compoId.getObjectId().getValue())));
+
+    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
   }
 
   @Override
-  public Optional<CompositionDto> update(
+  public Optional<UUID> update(
       UUID ehrId, ObjectVersionId targetObjId, Composition objData, UUID contribution) {
 
     var compoId =
@@ -229,14 +221,11 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             null,
             null,
             contribution);
-    return getCompositionDto(
-        I_CompositionAccess.retrieveInstance(
-            getDataAccess(), UUID.fromString(compoId.getObjectId().getValue())));
+    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
   }
 
   @Override
-  public Optional<CompositionDto> update(
-      UUID ehrId, ObjectVersionId targetObjId, Composition objData) {
+  public Optional<UUID> update(UUID ehrId, ObjectVersionId targetObjId, Composition objData) {
     return update(ehrId, targetObjId, objData, getSystemUuid(), getUserUuid(), null);
   }
 

@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CompositionService extends BaseService, VersionedObjectService<Composition, CompositionDto> {
+public interface CompositionService extends BaseService, VersionedObjectService<Composition, UUID> {
     /**
      * @param compositionId The {@link UUID} of the composition to be returned.
      * @param version       The version to returned. If null return the latest
@@ -136,4 +136,8 @@ public interface CompositionService extends BaseService, VersionedObjectService<
     Optional<OriginalVersion<Composition>> getOriginalVersionComposition(UUID versionedObjectUid, int version);
 
     Composition buildComposition(String content, CompositionFormat format, String templateId);
+
+
+
+
 }
