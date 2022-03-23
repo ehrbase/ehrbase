@@ -19,7 +19,7 @@ package org.ehrbase.plugin;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.support.ResourcePropertySource;
+import org.springframework.core.env.PropertySource;
 
 /**
  * @author Stefan Spiska
@@ -28,5 +28,5 @@ public interface EhrBasePluginManagerInterface extends PluginManager {
 
   ApplicationContext getApplicationContext();
 
-  ResourcePropertySource getConfig(String fileName, PluginWrapper pluginWrapper);
+  PropertySource<?> getConfig(String fileName, PluginWrapper pluginWrapper);
 }

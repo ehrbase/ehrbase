@@ -18,20 +18,39 @@ package org.ehrbase.application.config.plugin;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.plugin.EhrBasePluginManagerInterface;
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.ExtensionsInjector;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
+import org.springframework.boot.env.PropertiesPropertySourceLoader;
+import org.springframework.boot.env.PropertySourceLoader;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.support.ResourcePropertySource;
 
 /**
  * @author Stefan Spiska
  */
 public class EhrBasePluginManager extends SpringPluginManager
     implements EhrBasePluginManagerInterface {
+
+  private static final Map<String, PropertySourceLoader> PROPERTY_SOURCE_LOADER_MAP =
+      Stream.of(
+              new YamlPropertySourceLoader(),
+              new PropertiesPropertySourceLoader(),
+              new JsonPropertySourceLoader())
+          .flatMap(p -> Arrays.stream(p.getFileExtensions()).map(e -> Pair.of(e, p)))
+          .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 
   private PluginManagerProperties properties;
 
@@ -64,16 +83,36 @@ public class EhrBasePluginManager extends SpringPluginManager
   }
 
   @Override
-  public ResourcePropertySource getConfig(String fileName, PluginWrapper pluginWrapper) {
-    try {
-      return new ResourcePropertySource(
-          new FileSystemResource(
-              Path.of(
-                  properties.getPluginConfigDir().toString(),
-                  pluginWrapper.getPluginId(),
-                  fileName)));
-    } catch (IOException e) {
-      throw new InternalServerException(e);
+  public PropertySource<?> getConfig(String fileName, PluginWrapper pluginWrapper) {
+
+    Path totalPath =
+        Path.of(properties.getPluginConfigDir().toString(), pluginWrapper.getPluginId(), fileName);
+
+    return Optional.of(fileName)
+        .map(FilenameUtils::getExtension)
+        .map(PROPERTY_SOURCE_LOADER_MAP::get)
+        .map(
+            p -> {
+              try {
+
+                return p.load(fileName, new FileSystemResource(totalPath));
+              } catch (IOException e) {
+                throw new InternalServerException(e);
+              }
+            })
+        .stream()
+        .flatMap(List::stream)
+        .findAny()
+        .orElseThrow(
+            () ->
+                new InternalServerException(
+                    String.format("No Property Source found for %s", totalPath)));
+  }
+
+  public static class JsonPropertySourceLoader extends YamlPropertySourceLoader {
+    @Override
+    public String[] getFileExtensions() {
+      return new String[] {"json"};
     }
   }
 }
