@@ -19,11 +19,11 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import com.yugabyte.util.PGInterval;
 import org.ehrbase.aql.sql.binding.Iso8601Duration;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Result;
-import org.postgresql.util.PGInterval;
 
 public class DurationFormatter {
 

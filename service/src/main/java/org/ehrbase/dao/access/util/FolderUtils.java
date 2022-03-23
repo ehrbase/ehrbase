@@ -3,11 +3,11 @@ package org.ehrbase.dao.access.util;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.yugabyte.util.PGobject;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.jooq.JSONB;
-import org.postgresql.util.PGobject;
 
 import java.util.HashSet;
 import java.util.Optional;

@@ -45,7 +45,7 @@ spring:
   profiles:
     active: local
   datasource:
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: com.yugabyte.Driver
 
   flyway:
     schemas: ehr

@@ -18,26 +18,32 @@
 
         package org.ehrbase.dao.access.jooq;
 
-        import com.nedap.archie.rm.datastructures.Item;
         import com.nedap.archie.rm.datastructures.ItemStructure;
-        import com.nedap.archie.rm.datavalues.DvText;
         import org.joda.time.DateTime;
         import org.joda.time.format.DateTimeFormat;
         import org.joda.time.format.DateTimeFormatter;
-        import org.jooq.*;
+        import org.jooq.DSLContext;
+        import org.jooq.Record11;
+        import org.jooq.Record15;
+        import org.jooq.Record9;
+        import org.jooq.Result;
+        import org.jooq.SQLDialect;
         import org.jooq.impl.DSL;
         import org.jooq.tools.jdbc.MockDataProvider;
         import org.jooq.tools.jdbc.MockExecuteContext;
         import org.jooq.tools.jdbc.MockResult;
-        import org.postgresql.util.PGobject;
 
         import java.sql.SQLException;
-        import java.sql.Time;
         import java.sql.Timestamp;
         import java.time.OffsetDateTime;
-        import java.util.*;
+        import java.util.AbstractMap;
+        import java.util.TimeZone;
+        import java.util.UUID;
 
-        import static org.ehrbase.jooq.pg.Tables.*;
+        import static org.ehrbase.jooq.pg.Tables.FOLDER;
+        import static org.ehrbase.jooq.pg.Tables.FOLDER_HIERARCHY;
+        import static org.ehrbase.jooq.pg.Tables.FOLDER_ITEMS;
+        import static org.ehrbase.jooq.pg.Tables.OBJECT_REF;
 
         /***
          *@Created by Luis Marco-Ruiz on Jun 13, 2019

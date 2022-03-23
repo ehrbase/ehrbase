@@ -19,10 +19,10 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import com.yugabyte.util.PGInterval;
 import org.jooq.types.DayToSecond;
 import org.jooq.types.YearToMonth;
 import org.jooq.types.YearToSecond;
-import org.postgresql.util.PGInterval;
 
 public class Iso8601Duration {
 

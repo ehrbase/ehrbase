@@ -91,6 +91,7 @@
                     <dependency>
                         <groupId>com.yugabyte</groupId>
                         <artifactId>jdbc-yugabytedb</artifactId>
+                        <version>${jdbc-yugabytedb.version}</version>
                     </dependency>
                 </dependencies>
                 <!-- Specify the plugin configuration.
