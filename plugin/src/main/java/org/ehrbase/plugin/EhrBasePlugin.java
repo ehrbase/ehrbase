@@ -16,24 +16,25 @@
 
 package org.ehrbase.plugin;
 
-import java.util.Collections;
-import java.util.List;
 import org.pf4j.PluginWrapper;
+import org.pf4j.spring.SpringPlugin;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author Stefan Spiska
  */
-public interface PluginWithConfig {
+public abstract class EhrBasePlugin extends SpringPlugin {
 
-  /**
-   * List of config file wich will be loaded from the <code>plugin-manager.plugin-config-dir</code>
-   * /{@link PluginWrapper#getPluginId()} dir add addet to the plugin environment.
-   *
-   * <p>json, yml and properties extensions are supported
-   *
-   * @return
-   */
-  default List<String> getConfigFileNames() {
-    return Collections.emptyList();
+  protected EhrBasePlugin(PluginWrapper wrapper) {
+    super(wrapper);
+  }
+
+  protected final void loadProperties(
+      ConfigurableApplicationContext applicationContext,
+      EhrBasePluginManagerInterface pluginManager) {
+
+    pluginManager
+        .loadConfig(this.getWrapper())
+        .forEach(p -> applicationContext.getEnvironment().getPropertySources().addLast(p));
   }
 }

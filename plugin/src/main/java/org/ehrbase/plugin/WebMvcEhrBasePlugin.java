@@ -17,7 +17,6 @@
 package org.ehrbase.plugin;
 
 import org.pf4j.PluginWrapper;
-import org.pf4j.spring.SpringPlugin;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
@@ -26,7 +25,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 /**
  * @author Stefan Spiska
  */
-public abstract class WebMvcEhrBasePlugin extends SpringPlugin implements PluginWithConfig {
+public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
 
   protected WebMvcEhrBasePlugin(PluginWrapper wrapper) {
     super(wrapper);
@@ -50,14 +49,7 @@ public abstract class WebMvcEhrBasePlugin extends SpringPlugin implements Plugin
           (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
 
       if (applicationContext instanceof ConfigurableApplicationContext) {
-
-        getConfigFileNames()
-            .forEach(
-                c ->
-                    ((ConfigurableApplicationContext) applicationContext)
-                        .getEnvironment()
-                        .getPropertySources()
-                        .addLast(pluginManager.getConfig(c, this.getWrapper())));
+        loadProperties((ConfigurableApplicationContext) applicationContext, pluginManager);
       }
     }
 

@@ -16,6 +16,7 @@
 
 package org.ehrbase.plugin;
 
+import java.util.List;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.ApplicationContext;
@@ -28,5 +29,5 @@ public interface EhrBasePluginManagerInterface extends PluginManager {
 
   ApplicationContext getApplicationContext();
 
-  PropertySource<?> getConfig(String fileName, PluginWrapper pluginWrapper);
+  List<PropertySource<?>> loadConfig(PluginWrapper pluginWrapper);
 }
