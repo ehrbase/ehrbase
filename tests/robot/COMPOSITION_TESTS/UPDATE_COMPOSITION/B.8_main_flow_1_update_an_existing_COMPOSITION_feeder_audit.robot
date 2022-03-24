@@ -26,7 +26,7 @@ Force Tags
 
 
 *** Test Cases ***
-Update an existing event COMPOSITION Feeder Audit value
+Update an existing event COMPOSITION Feeder Audit and Links values
     upload OPT    all_types/genericFHIRTemplate.opt
     create EHR
     Get Web Template By Template Id     genericFHIRTemplate
