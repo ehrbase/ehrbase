@@ -129,7 +129,7 @@
     <properties>
         <java.version>11</java.version>
         <!-- PostgreSQL Database Properties -->
-        <database.host>localhost</database.host>
+        <database.host>10.216.24.69</database.host>
         <database.port>5433</database.port>
         <database.user>ehrbase</database.user>
         <database.pass>ehrbase</database.pass>
@@ -145,7 +145,7 @@
         <jooq.version>3.16.5</jooq.version>
         <spring.version>2.5.9</spring.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
-        <postgressql.version>42.3.3</postgressql.version>
+        <postgresql.version>42.3.3</postgresql.version>
         <ehrbase.sdk.version>1.18.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
         <jdbc-yugabytedb.version>42.3.4</jdbc-yugabytedb.version>

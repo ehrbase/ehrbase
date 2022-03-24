@@ -64,8 +64,8 @@
                     <locations>
                         <location>classpath:db/migration</location>
                     </locations>
-                    <url>jdbc:yugabytedb://${database.host}:${database.port}/${database.name}</url>
-                    <driver>com.yugabyte.Driver</driver>
+                    <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+                    <driver>org.postgresql.Driver</driver>
                     <user>${database.user}</user>
                     <password>${database.pass}</password>
                     <defaultSchema>ehr</defaultSchema>
@@ -73,6 +73,13 @@
                         <schema>ehr</schema>
                     </schemas>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.jooq</groupId>
