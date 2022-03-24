@@ -82,6 +82,14 @@ public class EhrBasePluginManager extends SpringPluginManager
     }
   }
 
+  /**
+   * Create a property source from a file <code>fileName</code> in {@link
+   * PluginManagerProperties#getPluginDir()}/{@link PluginWrapper#getPluginId()}
+   *
+   * @param fileName json, yml and properties extensions are supported
+   * @param pluginWrapper
+   * @return
+   */
   @Override
   public PropertySource<?> getConfig(String fileName, PluginWrapper pluginWrapper) {
 

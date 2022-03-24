@@ -30,6 +30,12 @@ public abstract class NonWebMvcEhrBasePlugin extends SpringPlugin implements Plu
     super(wrapper);
   }
 
+  /**
+   * Build the {@link ApplicationContext} of the plugin. Will only be called once by EHRbase. The
+   * {@link ApplicationContext} will be refreshed by EHRbase.
+   *
+   * @return
+   */
   protected abstract ApplicationContext buildApplicationContext();
 
   @Override

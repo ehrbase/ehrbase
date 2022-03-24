@@ -18,12 +18,21 @@ package org.ehrbase.plugin;
 
 import java.util.Collections;
 import java.util.List;
+import org.pf4j.PluginWrapper;
 
 /**
  * @author Stefan Spiska
  */
 public interface PluginWithConfig {
 
+  /**
+   * List of config file wich will be loaded from the <code>plugin-manager.plugin-config-dir</code>
+   * /{@link PluginWrapper#getPluginId()} dir add addet to the plugin environment.
+   *
+   * <p>json, yml and properties extensions are supported
+   *
+   * @return
+   */
   default List<String> getConfigFileNames() {
     return Collections.emptyList();
   }

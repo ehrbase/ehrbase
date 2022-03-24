@@ -9,7 +9,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772)).
+- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772)
+  , [#779](https://github.com/ehrbase/ehrbase/pull/779) ).
 
 ### Changed
 

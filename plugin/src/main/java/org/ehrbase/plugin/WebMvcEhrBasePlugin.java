@@ -64,7 +64,20 @@ public abstract class WebMvcEhrBasePlugin extends SpringPlugin implements Plugin
     return dispatcherServlet;
   }
 
-  public abstract DispatcherServlet buildDispatcherServlet();
+  /**
+   * Build the {@link DispatcherServlet} of the plugin. Will only be called once by EHRbase. The
+   * contained {@link ApplicationContext} will be refreshed by EHRbase.
+   *
+   * @return
+   */
+  protected abstract DispatcherServlet buildDispatcherServlet();
 
+  /**
+   * Context path of the deployed {@link DispatcherServlet}. Relativ to <code>
+   * server.servlet.context-path</code>/<code>plugin-manager.plugin-context-path</code>
+   *
+   * @return
+   * @see WebMvcEhrBasePlugin#buildDispatcherServlet()
+   */
   public abstract String getContextPath();
 }
