@@ -33,7 +33,7 @@ public abstract class NonWebMvcEhrBasePlugin extends SpringPlugin implements Plu
   protected abstract ApplicationContext buildApplicationContext();
 
   @Override
-  protected ApplicationContext createApplicationContext() {
+  protected final ApplicationContext createApplicationContext() {
     ApplicationContext applicationContext = buildApplicationContext();
 
     if (applicationContext instanceof ConfigurableApplicationContext

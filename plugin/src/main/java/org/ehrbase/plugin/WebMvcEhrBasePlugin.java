@@ -16,10 +16,11 @@
 
 package org.ehrbase.plugin;
 
-
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SpringPlugin;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
@@ -31,12 +32,39 @@ public abstract class WebMvcEhrBasePlugin extends SpringPlugin implements Plugin
     super(wrapper);
   }
 
+  private DispatcherServlet dispatcherServlet;
+
   @Override
-  protected ApplicationContext createApplicationContext() {
+  protected final ApplicationContext createApplicationContext() {
     return getDispatcherServlet().getWebApplicationContext();
   }
 
-  public abstract DispatcherServlet getDispatcherServlet();
+  public final DispatcherServlet getDispatcherServlet() {
+
+    if (dispatcherServlet == null) {
+      dispatcherServlet = buildDispatcherServlet();
+
+      WebApplicationContext applicationContext = dispatcherServlet.getWebApplicationContext();
+
+      EhrBasePluginManagerInterface pluginManager =
+          (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
+
+      if (applicationContext instanceof ConfigurableApplicationContext) {
+
+        getConfigFileNames()
+            .forEach(
+                c ->
+                    ((ConfigurableApplicationContext) applicationContext)
+                        .getEnvironment()
+                        .getPropertySources()
+                        .addLast(pluginManager.getConfig(c, this.getWrapper())));
+      }
+    }
+
+    return dispatcherServlet;
+  }
+
+  public abstract DispatcherServlet buildDispatcherServlet();
 
   public abstract String getContextPath();
 }
