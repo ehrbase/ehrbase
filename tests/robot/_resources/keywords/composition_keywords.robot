@@ -403,28 +403,50 @@ check status_code of commit composition
     
 
 update composition (JSON)
-    [Arguments]         ${new_version_of_composition}
+    [Arguments]         ${new_version_of_composition}   ${file_type}=xml
     [Documentation]     Commit a new version for the COMPOSITION
     ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
     ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
 
-                        get valid OPT file  ${new_version_of_composition}
+    IF      '${file_type}' == 'xml'
+        get valid OPT file  ${new_version_of_composition}
+        &{headers}          Create Dictionary   Content-Type=application/xml
+                            ...                 Accept=application/json
+                            ...                 Prefer=return=representation
+                            ...                 If-Match=${preceding_version_uid}
+        ${resp}             PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
+                            log to console      ${resp.content}
+                            Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
+                            Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
 
-    &{headers}=         Create Dictionary   Content-Type=application/xml
-                        ...                 Accept=application/json
-                        ...                 Prefer=return=representation
-                        ...                 If-Match=${preceding_version_uid}
+        ${short_uid}        Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
+                            Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
 
-    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
-                        log to console      ${resp.content}
-                        Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
-                        Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
+                            Set Test Variable   ${response}    ${resp}
+                            capture point in time    2
+    END
 
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
-                        Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
+    IF      '${file_type}' == 'json'
+        ${file}=           Get File   ${COMPO DATA SETS}/${format}/${new_version_of_composition}
+        &{headers}          Create Dictionary   Content-Type=application/json
+                            ...                 Accept=application/json
+                            ...                 Prefer=return=representation
+                            ...                 If-Match=${composition_uid}
+        ${composition_id}        Remove String       ${composition_uid}    ::${CREATING_SYSTEM_ID}::1
+        &{params}          Create Dictionary     ehr_id=${ehr_id}   composition_id=${composition_id}
+        ${resp}             PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${composition_id}
+        ...                 data=${file}   headers=${headers}     params=${params}
+                            log to console      ${resp.content}
+                            Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
+                            Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
 
-                        Set Test Variable   ${response}    ${resp}
-                        capture point in time    2
+        ${short_uid}        Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
+                            Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
+
+                            Set Test Variable   ${response}    ${resp}
+                            capture point in time    2
+    END
+
 
 update composition (FLAT)
     [Arguments]         ${new_version_of_composition}
@@ -507,6 +529,17 @@ check content of updated composition (JSON)
     ${text}=            Set Variable    ${response.json()['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal     ${text}    modified value
 
+check content of updated composition generic (JSON)
+    [Documentation]     Get text from response, based on path provided as argument1.
+    ...                 Argument2 is the expected value.
+    ...                 Applicable for response in JSON format.
+    [Arguments]         ${pathToLookInto}   ${expectedVal}
+    @{expectedStatusCodesList}      Create List     200     201
+                        ${string_status_code}    Convert To String    ${response.status_code}
+                        List Should Contain Value   ${expectedStatusCodesList}      ${string_status_code}
+                        #Should Be Equal As Strings    ${response.status_code}    200
+    ${text}             Set Variable    ${response.json()${pathToLookInto}}
+                        Should Be Equal     ${text}    ${expectedVal}
 
 update composition (XML)
     [Arguments]         ${new_version_of_composition}
