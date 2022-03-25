@@ -23,14 +23,19 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.jooq.Record;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
@@ -59,6 +64,25 @@ class PersistedPartyIdentified extends PersistedParty {
                 identifierList.isEmpty() ? null : identifierList);
 
         return partyIdentified;
+    }
+    
+    @Override
+    public List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
+      
+        List<Pair<PartyIdentifiedRecord, List<DvIdentifier>>> partyIdPair = new PartyIdentifiers(domainAccess).retrieveMultiple(partyIdentifiedRecords);
+        
+        return partyIdPair.stream()
+            .map(pair -> {
+                PartyIdentifiedRecord pir = pair.getLeft(); 
+                
+                PartyRef partyRef = Optional.ofNullable(pir.getPartyRefType())
+                    .map(ref -> new PartyRef(new PersistedObjectId().fromDB(pir), pir.getPartyRefNamespace(), pir.getPartyRefType()))
+                    .orElse(null);
+              
+                List<DvIdentifier> identifierList = pair.getRight();
+                return new PartyIdentified(partyRef, pir.getName(), identifierList.isEmpty() ? null : identifierList);
+            })
+            .collect(Collectors.toList());
     }
 
     @Override

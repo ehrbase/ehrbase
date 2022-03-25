@@ -18,16 +18,25 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
-import com.nedap.archie.rm.datavalues.DvIdentifier;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
 
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
+import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+
+import com.nedap.archie.rm.datavalues.DvIdentifier;
+import com.nedap.archie.rm.generic.PartyIdentified;
 
 /**
  * Deals with identifiers attribute of PARTY_IDENTIFIED and PARTY_RELATED
@@ -57,20 +66,51 @@ class PartyIdentifiers {
             }
         }
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    private static final BiFunction<Collection<IdentifierRecord>,UUID, Collection<IdentifierRecord>> allMatchingIdRec = (col, uuid) ->
+        col.stream().filter(irec -> uuid.equals(irec.getParty())).collect(Collectors.toCollection(HashSet::new));
+    
+    List<Pair<PartyIdentifiedRecord,List<DvIdentifier>>> retrieveMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
+      
+        Set<UUID> allIds = partyIdentifiedRecords.stream().map(pir -> pir.getId()).collect(Collectors.toSet());
+      
+        Collection<IdentifierRecord> allIdRecs = domainAccess.getContext()
+            .selectFrom(IDENTIFIER)
+            .where(IDENTIFIER.PARTY.in(allIds))
+            .fetch()
+            .collect(Collectors.toCollection(HashSet::new));
+      
+        List<Pair<PartyIdentifiedRecord, List<DvIdentifier>>> result = partyIdentifiedRecords.stream()
+            .map(pir -> {
+                List<DvIdentifier> dvIds = allMatchingIdRec.apply(allIdRecs, pir.getId()).stream()
+                    .map(record -> idConvert.apply(record))
+                    .collect(Collectors.toList());
+                return Pair.of(pir, dvIds);
+            })
+            .collect(Collectors.toList());
 
-    List<DvIdentifier> retrieve(PartyIdentifiedRecord partyIdentifiedRecord){
-        List<DvIdentifier> identifierList = new ArrayList<>();
-
-        domainAccess.getContext().fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())).forEach(record -> {
-            DvIdentifier identifier = new DvIdentifier();
+        return result;
+    }
+    
+    private static final Function<IdentifierRecord,DvIdentifier> idConvert = record -> {
+        DvIdentifier identifier = new DvIdentifier();
             identifier.setIssuer(record.getIssuer());
             identifier.setAssigner(record.getAssigner());
             identifier.setId(record.getIdValue());
             identifier.setType(record.getTypeName());
-            identifierList.add(identifier);
-        });
+        return identifier;
+    };
+    
+    //--------------------------------------------------------------------------------------------------------
+    
 
-        return identifierList;
+    List<DvIdentifier> retrieve(PartyIdentifiedRecord partyIdentifiedRecord){
+        return domainAccess.getContext()
+            .fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId()))
+            .stream()
+            .map(record -> idConvert.apply(record))
+            .collect(Collectors.toList());
     }
 
     /**
