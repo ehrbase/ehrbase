@@ -18,6 +18,12 @@
 
 package org.ehrbase.rest.ehrscape.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
@@ -26,13 +32,11 @@ import org.ehrbase.rest.ehrscape.responsedata.QueryResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/rest/ecis/v1/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -62,7 +66,7 @@ public class QueryController extends BaseController {
         } else {
             throw new InvalidApiParameterException("No query parameter supplied");
         }
-        QueryResponseData responseData = new QueryResponseData(queryService.query(queryString, queryMode, explain));
+        QueryResponseData responseData = new QueryResponseData(queryService.query(queryString, queryMode, explain, new HashMap<>()));
         responseData.setAction(Action.EXECUTE);
         return ResponseEntity.ok(responseData);
     }
