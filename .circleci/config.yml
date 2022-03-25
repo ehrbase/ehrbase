@@ -1255,6 +1255,7 @@ commands:
                    --server.nodename=<< parameters.nodename >> \
                    --plugin-manager.enable=true \
                    --plugin-manager.plugin-dir='tests/test_plugin' \
+                   --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' \
                    --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
                 timeout=60
                 while [ ! -f ./log ];
@@ -1428,7 +1429,7 @@ commands:
             cd ~/projects
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir'> log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1450,7 +1451,7 @@ commands:
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
-                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' > log &
+                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir'> log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1626,7 +1627,7 @@ commands:
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             jps
 

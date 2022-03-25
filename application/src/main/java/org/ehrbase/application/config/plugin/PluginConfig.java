@@ -21,7 +21,7 @@ import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 import java.util.HashMap;
 import java.util.Map;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.plugin.EhrBasePlugin;
+import org.ehrbase.plugin.WebMvcEhrBasePlugin;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -56,7 +56,7 @@ public class PluginConfig {
     return Binder.get(environment).bind(PLUGIN_MANAGER_PREFIX, PluginManagerProperties.class).get();
   }
 
-  /** Register the {@link DispatcherServlet} for all {@link EhrBasePlugin} */
+  /** Register the {@link DispatcherServlet} for all {@link WebMvcEhrBasePlugin} */
   @Bean
   public BeanFactoryPostProcessor beanFactoryPostProcessor(
       EhrBasePluginManager pluginManager, Environment environment) {
@@ -70,14 +70,14 @@ public class PluginConfig {
 
       pluginManager.getPlugins().stream()
           .map(PluginWrapper::getPlugin)
-          .filter(p -> EhrBasePlugin.class.isAssignableFrom(p.getClass()))
-          .map(EhrBasePlugin.class::cast)
+          .filter(p -> WebMvcEhrBasePlugin.class.isAssignableFrom(p.getClass()))
+          .map(WebMvcEhrBasePlugin.class::cast)
           .forEach(p -> register(beanFactory, pluginManagerProperties, registeredUrl, p));
     };
   }
 
   /**
-   * Register the {@link DispatcherServlet} for a {@link EhrBasePlugin}
+   * Register the {@link DispatcherServlet} for a {@link WebMvcEhrBasePlugin}
    *
    * @param beanFactory
    * @param pluginManagerProperties
@@ -88,7 +88,7 @@ public class PluginConfig {
       ConfigurableListableBeanFactory beanFactory,
       PluginManagerProperties pluginManagerProperties,
       Map<String, String> registeredUrl,
-      EhrBasePlugin p) {
+      WebMvcEhrBasePlugin p) {
 
     String pluginId = p.getWrapper().getPluginId();
 
