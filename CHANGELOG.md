@@ -9,8 +9,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772)
-  , [#779](https://github.com/ehrbase/ehrbase/pull/779) ).
+- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772),
+  [#779](https://github.com/ehrbase/ehrbase/pull/779)).
+- AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
 
