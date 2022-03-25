@@ -384,10 +384,10 @@ public class QueryCompilerPass2 extends AqlBaseListener {
               new VariableDefinition(path, null, identifier, false));
         }
 
-        if (context1.ASC() != null || context1.ASCENDING() != null) {
-          orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
-        } else if (context1.DESC() != null || context1.DESCENDING() != null) {
+        if (context1.DESC() != null || context1.DESCENDING() != null) {
           orderAttribute.setDirection(OrderAttribute.OrderDirection.DESC);
+        } else {
+          orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
         }
         orderAttributes.push(orderAttribute);
       }

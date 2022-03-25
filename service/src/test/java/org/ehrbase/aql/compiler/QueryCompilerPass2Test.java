@@ -197,6 +197,24 @@ public class QueryCompilerPass2Test {
             I_VariableDefinition expected = I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false);
             I_VariableDefinitionHelper.checkEqualWithoutFuncParameters(orderAttribute.getVariableDefinition(), expected);
         }
+
+        // with default direction
+        {
+            QueryCompilerPass2 cut = new QueryCompilerPass2();
+            String aql = "select a/uid/value as uid, a/composer/name as author, a/context/start_time/value as date_created " +
+                    "from EHR e  contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1] " +
+                    "order by date_created";
+            ParseTree tree = QueryHelper.setupParseTree(aql);
+            walker.walk(cut, tree);
+
+            List<OrderAttribute> orderAttributes = cut.getOrderAttributes();
+            Assertions.assertThat(orderAttributes).size().isEqualTo(1);
+
+            OrderAttribute orderAttribute = orderAttributes.get(0);
+            assertThat(orderAttribute.getDirection()).isEqualTo(OrderAttribute.OrderDirection.ASC);
+            I_VariableDefinition expected = I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false);
+            I_VariableDefinitionHelper.checkEqualWithoutFuncParameters(orderAttribute.getVariableDefinition(), expected);
+        }
     }
 
     @Test
