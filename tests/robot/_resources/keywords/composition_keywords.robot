@@ -682,7 +682,7 @@ check if get templates response has
     [Arguments]         @{templatesIDList}
     [Documentation]     Verify in Get Template response if templates are present.
     ...                 DEPENDENCY: `get all web templates`
-    ...                 Argument to be provided as list of two elements.
+    ...                 Argument to be provided as list of 1 or n elements.
     ...                 Example: check if get templates response has    ${template1}    ${template2}
     log to console      ${XML}
     @{responseTemplates}        Get Elements Texts      ${xml}      templates/templates/template_id
