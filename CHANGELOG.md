@@ -2,20 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
-adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
+to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
 
 ### Added
 
+- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772),
+  [#779](https://github.com/ehrbase/ehrbase/pull/779)).
+- AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
+
 ### Changed
+- update Archie to version 2.0.1  [#784](https://github.com/ehrbase/ehrbase/pull/784)
 
 ### Fixed
 
 - Remove unused Operational Template cache ([#759](https://github.com/ehrbase/ehrbase/pull/759)).
+- Allow update/adding/removal of feeder_audit/links on Composition ([#773](https://github.com/ehrbase/ehrbase/pull/773))
+- Add default ASC direction to ORDER BY clause in AQL ([#780](https://github.com/ehrbase/ehrbase/pull/780)).
 
-## [0.19.0] 
+## [0.19.0]
 
 ### Added
 

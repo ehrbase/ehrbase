@@ -207,3 +207,10 @@ client:
 # JavaMelody
 javamelody:
   enabled: true
+
+#  plugin configuration
+plugin-manager:
+  plugin-dir: ./plugin_dir
+  plugin-config-dir: ./plugin_config_dir
+  enable: false
+  plugin-context-path: /plugin

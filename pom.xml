@@ -56,6 +56,7 @@
         <module>rest-openehr</module>
         <module>service</module>
         <module>test-coverage</module>
+        <module>plugin</module>
     </modules>
 
     <distributionManagement>
@@ -135,7 +136,7 @@
         <database.pass>ehrbase</database.pass>
         <database.name>ehrbase</database.name>
         <!-- Dependency Versions -->
-        <archie.version>1.0.4</archie.version>
+        <archie.version>2.0.1</archie.version>
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
@@ -156,7 +157,7 @@
         <prometheus.version>1.8.2</prometheus.version>
         <antlr4.version>4.9.3</antlr4.version>
         <javamelody.version>1.90.0</javamelody.version>
-        <json-api.version>2.0.1</json-api.version>
+        <jackson-bom.version>2.13.2</jackson-bom.version>
         <skipIntegrationTests>true</skipIntegrationTests>
         <include.tests>**/*Test.java</include.tests>
         <test.profile>unit</test.profile>
@@ -494,6 +495,11 @@
                 <artifactId>jooq-pg</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.ehrbase.openehr</groupId>
+                <artifactId>plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- sdk -->
             <dependency>
@@ -547,6 +553,18 @@
                     <exclusion>
                         <groupId>org.apache.logging.log4j</groupId>
                         <artifactId>log4j-to-slf4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.pf4j</groupId>
+                <artifactId>pf4j-spring</artifactId>
+                <version>0.7.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -626,11 +644,15 @@
                 <artifactId>joda-time</artifactId>
                 <version>${joda.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>jakarta.json</groupId>
-                <artifactId>jakarta.json-api</artifactId>
-                <version>${json-api.version}</version>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>net.bull.javamelody</groupId>
                 <artifactId>javamelody-spring-boot-starter</artifactId>

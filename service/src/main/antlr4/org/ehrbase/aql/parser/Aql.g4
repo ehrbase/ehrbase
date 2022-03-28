@@ -18,7 +18,7 @@ grammar Aql;
 
 query   :   queryExpr ;
 
-queryExpr : select from (where)? (limit)? (offset)? (orderBy)? EOF ;
+queryExpr : select from (where)? (orderBy (limit offset?)? | (limit offset?) orderBy?)? EOF ;
 
 select
         : SELECT selectExpr
@@ -54,7 +54,7 @@ orderBySeq
         : orderByExpr (COMMA orderBySeq)?;
 //      | orderByExpr COMMA orderBySeq ;
 
-orderByExpr : identifiedPath (DESCENDING|ASCENDING|DESC|ASC);
+orderByExpr : identifiedPath (DESCENDING|ASCENDING|DESC|ASC)?;
 //      | identifiedPath DESCENDING
 //      | identifiedPath ASCENDING
 //      | identifiedPath DESC

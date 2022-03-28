@@ -19,6 +19,7 @@
 package org.ehrbase.service;
 
 
+import org.ehrbase.dao.access.PerformanceListener;
 import org.jooq.ExecuteContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.*;
@@ -86,7 +87,7 @@ public class PersistenceConfig {
         DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
         jooqConfiguration.set(connectionProvider());
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
-
+        jooqConfiguration.set(new PerformanceListener());
 
         SQLDialect dialect = SQLDialect.POSTGRES;
         jooqConfiguration.set(dialect);
