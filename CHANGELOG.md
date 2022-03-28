@@ -14,7 +14,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
-- update Archie to version 2.0.1  [#784](https://github.com/ehrbase/ehrbase/pull/784)
+- Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
+- Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
 
 ### Fixed
 
