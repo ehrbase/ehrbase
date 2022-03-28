@@ -206,4 +206,4 @@ client:
 
 # JavaMelody
 javamelody:
-  enabled: false
+  enabled: true
