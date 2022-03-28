@@ -29,7 +29,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
-import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
 import org.ehrbase.response.ehrscape.FolderDto;
@@ -89,16 +88,6 @@ public class OpenehrDirectoryController extends BaseController
       @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
       @RequestBody Folder folder) {
 
-    // Check for existence of EHR record
-    checkEhrExists(ehrId);
-
-    // Check for duplicate directories
-    if (ehrService.getDirectoryId(ehrId) != null) {
-      throw new StateConflictException(
-          String.format("EHR with id %s already contains a directory.", ehrId.toString())
-      );
-    }
-
     var createdFolder = folderService.create(ehrId, folder)
         .orElseThrow(() -> new InternalServerException("An error occurred while creating folder"));
 
@@ -119,10 +108,6 @@ public class OpenehrDirectoryController extends BaseController
       @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
       @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
       @RequestBody Folder folder) {
-
-    // Check if directory is set and ehr exists
-    checkEhrExists(ehrId);
-    checkDirectoryExists(ehrId);
 
     // Check version conflicts and throw precondition failed exception if not
     checkDirectoryVersionConflicts(folderId, ehrId);
@@ -155,14 +140,11 @@ public class OpenehrDirectoryController extends BaseController
       @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
       @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
 
-    // Check if directory is set and ehr exists
-    checkEhrExists(ehrId);
-    checkDirectoryExists(ehrId);
 
     // Check version conflicts and throw precondition failed exception if not
     checkDirectoryVersionConflicts(folderId, ehrId);
 
-    ehrService.removeDirectory(ehrId);
+    //actually delete the EHR root folder
     folderService.delete(ehrId, folderId);
 
     return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
@@ -180,7 +162,7 @@ public class OpenehrDirectoryController extends BaseController
       @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
 
     // Check if EHR for the folder exists
-    checkEhrExists(ehrId);
+    ehrService.checkEhrExists(ehrId);
 
     assertValidPath(path);
 
@@ -212,7 +194,7 @@ public class OpenehrDirectoryController extends BaseController
       @RequestHeader(name = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
 
     // Check ehr exists
-    checkEhrExists(ehrId);
+    ehrService.checkEhrExists(ehrId);
 
     assertValidPath(path);
 
@@ -326,26 +308,6 @@ public class OpenehrDirectoryController extends BaseController
     }
   }
 
-  private void checkEhrExists(UUID ehrId) {
-    if (!ehrService.doesEhrExist(ehrId)) {
-      throw new ObjectNotFoundException(
-          "DIRECTORY",
-          String.format("EHR with id %s not found", ehrId.toString())
-      );
-    }
-  }
-
-  private void checkDirectoryExists(UUID ehrId) {
-    if (ehrService.getDirectoryId(ehrId) == null) {
-      throw new PreconditionFailedException(
-          String.format(
-              "EHR with id %s does not contain a directory. Maybe it has been deleted?",
-              ehrId.toString()
-          )
-      );
-    }
-  }
-
   private void checkDirectoryVersionConflicts(ObjectVersionId requestedFolderId, UUID ehrId) {
     UUID directoryUuid = ehrService.getDirectoryId(ehrId);
 
@@ -364,12 +326,11 @@ public class OpenehrDirectoryController extends BaseController
           "If-Match version_uid does not match latest version.",
           directoryId,
           encodePath(getBaseEnvLinkURL()
-              + "/rest/openehr/v1/ehr/"
-              + ehrId.toString()
-              + "/directory/" + directoryId
+                     + "/rest/openehr/v1/ehr/"
+                     + ehrId.toString()
+                     + "/directory/" + directoryId
           )
       );
     }
   }
 }
-
