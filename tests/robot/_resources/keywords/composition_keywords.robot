@@ -265,7 +265,9 @@ commit same composition again
 
 
 commit composition
-    [Arguments]         ${format}   ${composition}   ${need_template_id}=true   ${prefer}=representation   ${lifecycle}=complete
+    [Arguments]         ${format}   ${composition}
+    ...         ${need_template_id}=true   ${prefer}=representation
+    ...         ${lifecycle}=complete    ${extTemplateId}=false
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
@@ -303,7 +305,12 @@ commit composition
         Set To Dictionary   ${headers}   X-Forwarded-Host=example.com
         Set To Dictionary   ${headers}   X-Forwarded-Port=333
         Set To Dictionary   ${headers}   X-Forwarded-Proto=https
-        &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
+        IF  '${extTemplateId}' == 'true'
+            ${template_id}      Set Variable   ${externalTemplate}
+            ${template}      Set Variable   ${externalTemplate}
+            Set Suite Variable    ${template_id}    ${template}
+        END
+        &{params}       Create Dictionary     format=FLAT   ehrId=${ehr_id}     templateId=${template_id}
         Create Session      ${SUT}    ${ECISURL}    debug=2
         ...                 auth=${CREDENTIALS}    verify=True
     ELSE IF   '${format}'=='TDD'
@@ -653,11 +660,37 @@ get web template by template id
     [Arguments]         ${template_id}
 
     Create Session      ${SUT}    ${ECISURL}    debug=2
-        ...                 auth=${CREDENTIALS}    verify=True
+    ...                 auth=${CREDENTIALS}    verify=True
     ${resp}=            GET On Session         ${SUT}  template/${template_id}  expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
                         Should Be Equal As Strings   ${resp.status_code}   200
+
+
+get all web templates
+    Create Session      ${SUT}    ${ECISURL}    debug=2
+    ...                 auth=${CREDENTIALS}    verify=True
+    ${resp}=            GET On Session          ${SUT}  template  expected_status=anything   headers=${headers}
+                        log to console          ${resp.content}
+                        Set Test Variable       ${response}    ${resp}
+                        Status Should Be        200
+                        ${xml}     Parse Xml        ${response.text}
+                        Set Suite Variable      ${xml}
+
+
+check if get templates response has
+    [Arguments]         @{templatesIDList}
+    [Documentation]     Verify in Get Template response if templates are present.
+    ...                 DEPENDENCY: `get all web templates`
+    ...                 Argument to be provided as list of two elements.
+    ...                 Example: check if get templates response has    ${template1}    ${template2}
+    log to console      ${XML}
+    @{responseTemplates}        Get Elements Texts      ${xml}      templates/templates/template_id
+    FOR     ${template}     IN      @{templatesIDList}
+        List Should Contain Value   ${responseTemplates}    ${template}
+    END
+
+
 
 get versioned composition by uid
     [Arguments]         ${format}    ${uid}
@@ -943,19 +976,23 @@ check versioned composition does not exist
 
 
 delete composition
-    [Arguments]         ${uid}
+    [Arguments]         ${uid}      ${ehrScape}=false
     [Documentation]     :uid: preceding_version_uid (format of version_uid)
 
-    ${resp}=            Delete On Session       ${SUT}   /ehr/${ehr_id}/composition/${uid}   expected_status=anything
-                        log to console          ${resp.headers}
-                        log to console          ${resp.content}
+    IF      '${ehrScape}' == 'false'
+        ${resp}     Delete On Session   ${SUT}   /ehr/${ehr_id}/composition/${uid}   expected_status=anything
+        Status Should Be    204
+                            # the ETag comes with quotes, this removes them
+        ${del_version_uid}      Get Substring           ${resp.headers['ETag']}    1    -1
+        log to console          \ndeleted version uid:  ${del_version_uid}
+        Set Test Variable       ${del_version_uid}      ${del_version_uid}
+    ELSE
+        ${resp}     Delete On Session   ${SUT}   /composition/${uid}   expected_status=anything
+        Status Should Be    200
 
-                        Should Be Equal As Strings    ${resp.status_code}    204
-
-                        # the ETag comes with quotes, this removes them
-    ${del_version_uid}=    Get Substring        ${resp.headers['ETag']}    1    -1
-                        log to console          \ndeleted version uid: ${del_version_uid}
-                        Set Test Variable       ${del_version_uid}    ${del_version_uid}
+    END
+        log to console      ${resp.headers}
+        log to console      ${resp.content}
 
 
 get deleted composition
@@ -963,9 +1000,17 @@ get deleted composition
     ...                 204 is the code for deleted - as per openEHR REST spec
 
     ${resp}=            GET On Session           ${SUT}   /ehr/${ehr_id}/composition/${del_version_uid}   expected_status=anything
-                        log to console        ${resp.content}
-                        Should Be Equal As Strings   ${resp.status_code}   204
+                        log to console          ${resp.content}
+                        Status Should Be        204
 
+get deleted composition (EHRScape)
+    [Documentation]     The deleted compo should not exist
+    ...                 204 is the code for deleted - as per openEHR REST spec:
+    ...                 https://www.ehrscape.com/reference.html#_composition
+
+    ${resp}=            GET On Session           ${SUT}   /composition/${composition_uid}   expected_status=anything
+                        log to console          ${resp.content}
+                        Status Should Be        204
 
 delete non-existent composition
     [Documentation]     DEPENDENCY `prepare new request session`, `generate random composition_uid`
@@ -992,6 +1037,21 @@ upload OPT
                         upload OPT file
                         server accepted OPT
 
+upload OPT ECIS
+    [Arguments]     ${opt_file}
+
+    # TODO: rm comments
+    # setting proper Accept=application/xxx header
+    # Run Keyword If    '${accept-header}'=='JSON'   template_opt1.4_keywords.start request session
+
+                        prepare new request session    XML
+                        ...                          Prefer=return=representation
+
+    # Run Keyword If    '${accept-header}'=='XML'    start request session (XML)
+
+                        get valid OPT file    ${opt_file}
+                        upload OPT file ECIS
+                        server accepted OPT
 
 create EHR
     [Arguments]         ${accept-header}=JSON
@@ -1011,6 +1071,11 @@ create EHR
     ...                 AND             extract ehr_id from response (XML)
     ...                 AND             extract ehrstatus_uid (XML)
 
+create ECIS EHR
+    [Arguments]
+    create new EHR      ehrScape=True
+    # ...                 AND             extract ehr_id from response (JSON)
+    # ...                 AND             extract ehrstatus_uid (JSON)
 
 create EHR wih x forwarded headers
     [Arguments]         ${accept-header}=JSON
