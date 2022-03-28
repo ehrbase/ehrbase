@@ -1542,7 +1542,7 @@ commands:
       steps:
         - run:
             name: Generate Cache Checksum for openEHR_SDK Dependencies
-            command: find openEHR_SDK/ -type f \( -name "*.java" -o -name "*.xml" \) | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
+            command: find openEHR_SDK/ -type f \( -name "*.java" -o -name "pom.xml" \) | sort | xargs cat > /tmp/openEHR_SDK_syncbranch_maven_cache_seed
         - restore_cache:
             key: openEHR_SDK-syncbranch-v1-
 
