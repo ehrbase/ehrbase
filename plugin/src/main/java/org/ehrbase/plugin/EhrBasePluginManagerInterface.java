@@ -16,25 +16,18 @@
 
 package org.ehrbase.plugin;
 
+import java.util.List;
+import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
-import org.pf4j.spring.SpringPlugin;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.PropertySource;
 
 /**
  * @author Stefan Spiska
  */
-public abstract class EhrBasePlugin extends SpringPlugin {
+public interface EhrBasePluginManagerInterface extends PluginManager {
 
-  protected EhrBasePlugin(PluginWrapper wrapper) {
-    super(wrapper);
-  }
+  ApplicationContext getApplicationContext();
 
-  protected final void loadProperties(
-      ConfigurableApplicationContext applicationContext,
-      EhrBasePluginManagerInterface pluginManager) {
-
-    pluginManager
-        .loadConfig(this.getWrapper())
-        .forEach(p -> applicationContext.getEnvironment().getPropertySources().addLast(p));
-  }
+  List<PropertySource<?>> loadConfig(PluginWrapper pluginWrapper);
 }

@@ -31,6 +31,7 @@ public class PluginManagerProperties {
   private Path pluginDir;
   private boolean enable;
   private String pluginContextPath;
+  private Path pluginConfigDir;
 
   public void setPluginDir(Path pluginDir) {
     this.pluginDir = pluginDir;
@@ -58,5 +59,13 @@ public class PluginManagerProperties {
 
   public void setPluginContextPath(String pluginContextPath) {
     this.pluginContextPath = pluginContextPath;
+  }
+
+  public Path getPluginConfigDir() {
+    return pluginConfigDir;
+  }
+
+  public void setPluginConfigDir(Path pluginConfigDir) {
+    this.pluginConfigDir = pluginConfigDir;
   }
 }

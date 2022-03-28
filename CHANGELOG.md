@@ -9,9 +9,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772)).
+- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772),
+  [#779](https://github.com/ehrbase/ehrbase/pull/779)).
+- AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
+- Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
+- Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
 
 ### Fixed
 
