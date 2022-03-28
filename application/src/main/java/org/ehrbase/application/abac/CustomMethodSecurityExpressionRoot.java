@@ -49,6 +49,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of custom security expression, to be used in e.g. @PreAuthorize(..) to allow ABAC
@@ -259,21 +260,24 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
         if (((Map<?, ?>) payload).containsKey(AuditVariables.EHR_PATH)) {
           Set<UUID> ehrs = (Set<UUID>) ((Map<?, ?>) payload).get(AuditVariables.EHR_PATH);
           Set<String> patientSet = new HashSet<>();
-          for (UUID ehr : ehrs) {
-            String subjectId = ehrService.getSubjectExtRef(ehr.toString());
-            // check if patient token is available and if it matches OR internal reference is null
-            if (tokenPatient.equals(subjectId) || subjectId == null) {
-              // matches OR EHR's external ref is null, so add our subject from token
-              patientSet.add(tokenPatient);
-            } else {
-              // doesn't match -> requesting data for patient X with token for patient Y
-              return false;
-            }
 
+          List<String> allSubjectExtRefs = ehrService.getSubjectExtRefs(ehrs.stream().map(UUID::toString).collect(Collectors.toList()));
+          
+          boolean isValidRefs = false;
+          
+          if(allSubjectExtRefs.isEmpty())
+            isValidRefs = true;
+          else
+            isValidRefs = allSubjectExtRefs.stream()
+              .map(ref -> tokenPatient.equals(ref))
+              .reduce(true, (b1, b2) -> b1 && b2);
+          
+          if(isValidRefs) {
+            patientSet.add(tokenPatient);
+            requestMap.put(PATIENT, patientSet);
           }
-          // put result set into the requestMap and exit
-          requestMap.put(PATIENT, patientSet);
-          return true;
+          
+          return isValidRefs;
         } else {
           throw new InternalServerException("ABAC: AQL audit patient data unavailable.");
         }

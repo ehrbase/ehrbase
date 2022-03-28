@@ -22,6 +22,7 @@ public class DataGenerator {
     return partyUUIDs.stream()
         .map(uuid -> {
             IdentifierRecord rec = new IdentifierRecord();
+            rec.setIdValue(uuid.toString());
             rec.setParty(uuid);
             return rec;
         })
@@ -35,11 +36,12 @@ public class DataGenerator {
     return rec;
   }
   
-  public static List<PartyIdentifiedRecord> anyPartyIdentifiedRecordWith(List<UUID> uuids) {
+  public static List<PartyIdentifiedRecord> anyPartyIdentifiedRecordWith(List<UUID> uuids, Consumer<PartyIdentifiedRecord>... constraints) {
     return uuids.stream()
       .map(uuid -> {
         PartyIdentifiedRecord rec = new PartyIdentifiedRecord();
         rec.setId(uuid);
+        Stream.of(constraints).forEach(c -> c.accept(rec));
         return rec;
       })
       .collect(Collectors.toList());

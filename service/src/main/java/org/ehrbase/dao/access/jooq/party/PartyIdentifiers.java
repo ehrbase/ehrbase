@@ -67,7 +67,6 @@ class PartyIdentifiers {
         }
     }
     
-    //--------------------------------------------------------------------------------------------------------
     private static final BiFunction<Collection<IdentifierRecord>,UUID, Collection<IdentifierRecord>> allMatchingIdRec = (col, uuid) ->
         col.stream().filter(irec -> uuid.equals(irec.getParty())).collect(Collectors.toCollection(HashSet::new));
     
@@ -102,9 +101,6 @@ class PartyIdentifiers {
         return identifier;
     };
     
-    //--------------------------------------------------------------------------------------------------------
-    
-
     List<DvIdentifier> retrieve(PartyIdentifiedRecord partyIdentifiedRecord){
         return domainAccess.getContext()
             .fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId()))

@@ -1,71 +1,63 @@
 package org.ehrbase.dao.access.jooq.party;
 
-import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
+import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import org.ehrbase.jooq.pg.tables.Identifier;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
+import org.ehrbase.jooq.pg.tables.Identifier;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectWhereStep;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.jooq.Condition;
 
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 
 
+
 public class PartyIdentifiersTest {
 
-//    @Test
-//    public void retrieveMultiple() {
-//      List<UUID> uuids = DataGenerator.anyUUIDs(4);
-//      List<PartyIdentifiedRecord> records = DataGenerator.anyPartyIdentifiedRecordWith(uuids);
-//      
-//      
-//      DataGenerator
-//      
-//      
-//      
-//      Result result = Mockito.mock(Result.class);
-//      Mockito.when(result.collect(Mockito.isA(Collector.class))).thenReturn(result);
-//      
-//      SelectConditionStep cond = Mockito.mock(SelectConditionStep.class);
-//      Mockito.when(cond.fetch()).thenReturn(result);
-//      
-//      SelectWhereStep where = Mockito.mock(SelectWhereStep.class);
-//      Mockito.when(where.where(Mockito.isA(Condition.class))).thenReturn(cond);
-//      
-//      DSLContext ctx = Mockito.mock(DSLContext.class);
-//      Mockito.when(ctx.selectFrom(Mockito.isA(Identifier.class))).thenReturn(where);
-//      
-//      I_DomainAccess domAccess = Mockito.mock(I_DomainAccess.class);
-//      Mockito.when(domAccess.getContext()).thenReturn(ctx);
-//      
-//      
-////      Collection<IdentifierRecord> allIdRecs = ctx
-////          .selectFrom(IDENTIFIER)
-////          .where(IDENTIFIER.PARTY.in(allIds))
-////          .fetch()
-////          .collect(Collectors.toCollection(HashSet::new));
-//    }
-  
-    
-  
-  
-  
-  
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void retrieveMultiple() {
+      List<UUID> uuids = DataGenerator.anyUUIDs(4);
+      List<PartyIdentifiedRecord> records = DataGenerator.anyPartyIdentifiedRecordWith(uuids);
+
+      List<IdentifierRecord> idRec = DataGenerator.anyIdentifierRecordWith(uuids);
+      
+      Result result = Mockito.mock(Result.class);
+      Mockito.when(result.collect(Mockito.isA(Collector.class))).thenReturn(idRec);
+      
+      SelectConditionStep cond = Mockito.mock(SelectConditionStep.class);
+      Mockito.when(cond.fetch()).thenReturn(result);
+      
+      SelectWhereStep where = Mockito.mock(SelectWhereStep.class);
+      Mockito.when(where.where(Mockito.isA(Condition.class))).thenReturn(cond);
+      
+      DSLContext ctx = Mockito.mock(DSLContext.class);
+      Mockito.when(ctx.selectFrom(Mockito.isA(Identifier.class))).thenReturn(where);
+      
+      I_DomainAccess domAccess = Mockito.mock(I_DomainAccess.class);
+      Mockito.when(domAccess.getContext()).thenReturn(ctx);
+      
+      PartyIdentifiers pIds = new PartyIdentifiers(domAccess);
+      List<Pair<PartyIdentifiedRecord,List<DvIdentifier>>> retrieveMultiple = pIds.retrieveMultiple(records);
+      
+      retrieveMultiple.forEach(p -> {
+        Assert.assertTrue(p.getRight().stream().map(e -> e.getId()).collect(Collectors.toList()).contains(p.getLeft().getId().toString()));
+      });
+    }
   
     @Test
     public void isIdentical() {

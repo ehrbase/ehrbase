@@ -22,12 +22,15 @@ import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.enums.PartyType;
@@ -64,66 +67,49 @@ public class PersistedPartyProxy {
         }
     }
 
-    //------------------------------------------------------------------------------------------------
-    
-    public Collection<PartyProxy> retrieveMany(UUID...ids) {
-      BiFunction<Result<PartyIdentifiedRecord>,PartyType, Set<PartyIdentifiedRecord>> partyTypeFilter =
-          (result, pt) -> result.stream().filter(r -> r.getPartyType() == PartyType.party_self).collect(Collectors.toSet());
-      
-      Collection<PartyProxy> partyProxies = new ArrayList<>();
-      
-      if(ids.length == 0)
-          return partyProxies;
-      
-      Result<PartyIdentifiedRecord> result = domainAccess.getContext()
-          .selectFrom(PARTY_IDENTIFIED)
-          .where(PARTY_IDENTIFIED.ID.in(ids))
-          .fetch();
-
-      
-      Set<PartyIdentifiedRecord> self = partyTypeFilter.apply(result, PartyType.party_self);
-      List<PartyProxy> renderMultiple = new PersistedPartySelf(domainAccess).renderMultiple(self);
-      
-      
-      Set<PartyIdentifiedRecord> identified = partyTypeFilter.apply(result, PartyType.party_identified);
-      List<PartyProxy> renderMultiple2 = new PersistedPartyIdentified(domainAccess).renderMultiple(identified);
-      
-      
-      Set<PartyIdentifiedRecord> related = partyTypeFilter.apply(result, PartyType.party_related);
-      List<PartyProxy> renderMultiple3 = new PersistedPartyRelated(domainAccess).renderMultiple(related);
-      
-      
-      
-      
-      
-      return null;
-      
-//      fetch2.stream()
-//          .filter(pir -> pir != null)
-//          .map(pir -> {
-//            return null;
-//          })
-//          .collect(Collectors.toCollection(ArrayList::new));
-//      return collect;
+    private final BiFunction<Result<PartyIdentifiedRecord>,PartyType, Set<PartyIdentifiedRecord>> partyTypeFilter =
+        (result, pt) -> result.stream().filter(r -> r.getPartyType() == pt).collect(Collectors.toSet());
+        
+    private final Consumer<Result<PartyIdentifiedRecord>> partyTypeValidator =
+        result -> result.stream().forEach(p -> {
+          switch (p.getPartyType()) {
+            case party_self:
+            case party_identified:
+            case party_related:
+              return;
+            default:
+                throw new InternalServerException("Inconsistent Party type detected:" + p.getPartyRefType());
+          }});
+        
+    public Collection<PartyProxy> retrieveMany(List<UUID> uuids) {
+        Collection<PartyProxy> partyProxies = new ArrayList<>();
+        
+        if(uuids.size() == 0)
+            return partyProxies;
+        
+        Result<PartyIdentifiedRecord> result = domainAccess.getContext()
+            .selectFrom(PARTY_IDENTIFIED)
+            .where(PARTY_IDENTIFIED.ID.in(uuids))
+            .fetch();
+        
+        partyTypeValidator.accept(result);
+        
+        Set<PartyIdentifiedRecord> self = partyTypeFilter.apply(result, PartyType.party_self);
+        
+        List<PartyProxy> allParties = new PersistedPartySelf(domainAccess).renderMultiple(self);
+        
+        Set<PartyIdentifiedRecord> identified = partyTypeFilter.apply(result, PartyType.party_identified);
+        allParties.addAll(new PersistedPartyIdentified(domainAccess).renderMultiple(identified));
+        
+        Set<PartyIdentifiedRecord> related = partyTypeFilter.apply(result, PartyType.party_related);
+        allParties.addAll(new PersistedPartyRelated(domainAccess).renderMultiple(related));
+        
+        return allParties;
     }
     
-    //------------------------------------------------------------------------------------------------
-    
     public PartyProxy retrieve(UUID id){
-        PartyIdentifiedRecord identifiedRecord = domainAccess.getContext().fetchOne(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(id));
-        if(identifiedRecord == null)
-          return null;
-
-        switch (identifiedRecord.getPartyType()) {
-            case party_self:
-                return new PersistedPartySelf(domainAccess).render(identifiedRecord);
-            case party_identified:
-                return new PersistedPartyIdentified(domainAccess).render(identifiedRecord);
-            case party_related:
-                return new PersistedPartyRelated(domainAccess).render(identifiedRecord);
-            default:
-                throw new InternalServerException("Inconsistent Party type detected:" + identifiedRecord.getPartyRefType());
-        }
+        Iterator<PartyProxy> proxy = retrieveMany(List.of(id)).iterator();
+        return proxy.hasNext() ? proxy.next() : null;
     }
 
     public UUID getOrCreate(PartyProxy partyProxy){
