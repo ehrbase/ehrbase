@@ -13,6 +13,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   , [#779](https://github.com/ehrbase/ehrbase/pull/779) ).
 
 ### Changed
+- update Archie to version 2.0.1  [#784](https://github.com/ehrbase/ehrbase/pull/784)
 
 ### Fixed
 
