@@ -96,6 +96,9 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
   private Optional<FolderDto> internalCreate(UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description,
                                              UUID contribution) {
+    /*Note:
+     The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
+     in every necessary case */
 
     // Check for existence of EHR record
     ehrService.checkEhrExistsAndIsModifiable(ehrId);
@@ -179,7 +182,11 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
                                              UUID committerId, String description, UUID contribution) {
     var timestamp = LocalDateTime.now();
 
-    // Check for existence of EHR record and the
+    /*Note:
+     The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
+     in every necessary case */
+
+    // Check for existence of EHR record and make sure the folder is actually part of the EHR
     ehrService.checkEhrExistsAndIsModifiable(ehrId);
     checkFolderWithIdExistsInEhr(ehrId, targetObjId);
 
@@ -258,8 +265,11 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
   private boolean internalDelete(UUID ehrId, ObjectVersionId folderId, UUID systemId, UUID committerId, String description,
                                  UUID contribution, boolean withEhrCheck) {
+    /*Note:
+     The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
+     in every necessary case */
+    if (withEhrCheck) {//provide the option to skip the EHR checks for subfolder deletes while updating
 
-    if (withEhrCheck) {
       ehrService.checkEhrExistsAndIsModifiable(ehrId);
       checkFolderWithIdExistsInEhr(ehrId, folderId);
     }
@@ -309,7 +319,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
     if (!uuidMatchesObjectVersionId(ehrRootDirectoryId, folderId) && !doesAnySubFolderIdMatch(folderAccess, folderId)) {
       throw new PreconditionFailedException(
-          String.format("Directory with id %s is not part of EHR with id %s", folderId.getValue(), ehrId));
+          String.format("Folder with id %s is not part of EHR with id %s", folderId.getValue(), ehrId));
     }
   }
 

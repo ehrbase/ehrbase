@@ -109,7 +109,7 @@ public class OpenehrDirectoryController extends BaseController
       @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
       @RequestBody Folder folder) {
 
-    // Check version conflicts and throw precondition failed exception if not
+    // Check version conflicts if EHR and directory exist
     checkDirectoryVersionConflicts(folderId, ehrId);
 
     // Update folder and get new version
@@ -140,8 +140,7 @@ public class OpenehrDirectoryController extends BaseController
       @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
       @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
 
-
-    // Check version conflicts and throw precondition failed exception if not
+    // Check version conflicts if EHR and directory exist
     checkDirectoryVersionConflicts(folderId, ehrId);
 
     //actually delete the EHR root folder
@@ -309,8 +308,11 @@ public class OpenehrDirectoryController extends BaseController
   }
 
   private void checkDirectoryVersionConflicts(ObjectVersionId requestedFolderId, UUID ehrId) {
-    UUID directoryUuid = ehrService.getDirectoryId(ehrId);
-
+    UUID directoryUuid;
+    if (!ehrService.hasEhr(ehrId) || (directoryUuid = ehrService.getDirectoryId(ehrId)) == null) {
+      //Let the service layer handle this, to ensure same behaviour across the application
+      return;
+    }
     int latestVersion = folderService.getLastVersionNumber(
         new ObjectVersionId(directoryUuid.toString()));
     // TODO: Change column 'directory' in EHR to String with ObjectVersionId
