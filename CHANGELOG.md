@@ -22,6 +22,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Remove unused Operational Template cache ([#759](https://github.com/ehrbase/ehrbase/pull/759)).
 - Allow update/adding/removal of feeder_audit/links on Composition ([#773](https://github.com/ehrbase/ehrbase/pull/773))
 - Add default ASC direction to ORDER BY clause in AQL ([#780](https://github.com/ehrbase/ehrbase/pull/780)).
+- Fix DB Migration scripts. Allow user different then ehrbase ([#795](https://github.com/ehrbase/ehrbase/pull/795)).
 
 ## [0.19.0]
 
