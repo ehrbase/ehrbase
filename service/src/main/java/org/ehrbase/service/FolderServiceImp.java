@@ -312,7 +312,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     I_FolderAccess folderAccess =
         I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), new ObjectVersionId(ehrRootDirectoryId.toString()));
 
-    if (!uuidMatchesObjectVersionId(ehrRootDirectoryId, folderId) && !doesAnyIdInFolderStructureMatch(folderAccess, folderId)) {
+    if (!doesAnyIdInFolderStructureMatch(folderAccess, folderId)) {
       throw new PreconditionFailedException(
           String.format("Folder with id %s is not part of EHR with id %s", folderId.getValue(), ehrId));
     }

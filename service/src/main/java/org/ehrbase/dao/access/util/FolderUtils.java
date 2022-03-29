@@ -3,9 +3,10 @@ package org.ehrbase.dao.access.util;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.util.ArrayDeque;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -150,18 +151,19 @@ public class FolderUtils {
   }
 
   public static boolean doesAnyIdInFolderStructureMatch(I_FolderAccess folderAccess, ObjectVersionId folderId) {
-    Map<UUID, I_FolderAccess> subfoldersList = folderAccess.getSubfoldersList();
 
-    //root also counts
-    if (uuidMatchesObjectVersionId(folderAccess.getFolderId(), folderId)) {
-      return true;
+    if (folderAccess == null || folderId == null) {
+      return false;
     }
 
-    //if subfolder IDs and current dir ID don't match, check one level deeper
-    for (I_FolderAccess subFolder : subfoldersList.values()) {
-      if (doesAnyIdInFolderStructureMatch(subFolder, folderId)) {
+    Queue<I_FolderAccess> queue = new ArrayDeque<>();
+    queue.add(folderAccess);
+    while (!queue.isEmpty()) {
+      I_FolderAccess current = queue.remove();
+      if (uuidMatchesObjectVersionId(current.getFolderId(), folderId)) {
         return true;
       }
+      queue.addAll(current.getSubfoldersList().values());
     }
 
     return false;

@@ -70,5 +70,8 @@ public class FolderUtilsTest {
         //a random UUID should return false
         Assertions.assertFalse(
             FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, new ObjectVersionId(UUID.randomUUID().toString())));
+        Assertions.assertFalse(
+            FolderUtils.doesAnyIdInFolderStructureMatch(null, new ObjectVersionId(UUID.randomUUID().toString())));
+        Assertions.assertFalse(FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, null));
     }
 }
