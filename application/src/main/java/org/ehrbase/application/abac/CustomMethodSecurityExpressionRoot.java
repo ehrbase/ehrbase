@@ -245,7 +245,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param requestMap ABAC request attribute map to add the result
    */
   @SuppressWarnings("unchecked")
-  private boolean patientHandling(JwtAuthenticationToken jwt, String subject,
+  boolean patientHandling(JwtAuthenticationToken jwt, String subject,
       Map<String, Object> requestMap, String type, Object payload) {
 
     if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
