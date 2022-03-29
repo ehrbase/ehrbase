@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -69,10 +70,13 @@ class PersistedPartyRelated extends PersistedParty {
           partyRelated.setRelationship(new JooqDvCodedText(pIdRec.getRelationship()).toRmInstance());
         return partyRelated;      
     };
+
+    private I_DomainAccess getDomainAccess() { return domainAccess; }
+    Supplier<PersistedPartyIdentified> persistedPartyIdentifiedCreator = () ->  new PersistedPartyIdentified(getDomainAccess()); 
     
     @Override
     public List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
-      List<PartyProxy> renderMultiple = new PersistedPartyIdentified(domainAccess).renderMultiple(partyIdentifiedRecords);
+      List<PartyProxy> renderMultiple = persistedPartyIdentifiedCreator.get().renderMultiple(partyIdentifiedRecords);
       
       return renderMultiple.stream()
           .map(pp -> (PartyIdentified) pp)
