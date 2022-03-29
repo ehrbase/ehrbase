@@ -30,6 +30,7 @@ import org.ehrbase.api.exception.DuplicateObjectException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
 
@@ -223,7 +224,7 @@ public interface EhrService extends BaseService {
   default void checkEhrExistsAndIsModifiable(UUID ehrId) {
     checkEhrExists(ehrId);
     if (!isModifiable(ehrId)) {
-      throw new GeneralRequestProcessingException(
+      throw new StateConflictException(
           String.format("EHR with id %s does not allow modification", ehrId.toString()));
     }
   }

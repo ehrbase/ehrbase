@@ -27,6 +27,7 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -180,7 +181,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
     // Check for existence of EHR record and the
     ehrService.checkEhrExistsAndIsModifiable(ehrId);
-    checkDirectoryWithIdExistsInEhr(ehrId, targetObjId);
+    checkFolderWithIdExistsInEhr(ehrId, targetObjId);
 
     // Check of there are name conflicts on each folder level
     checkSiblingNameConflicts(objData);
@@ -194,9 +195,12 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     // Delete sub folders and all their sub folder, as well as their linked entities
     if (contribution == null) {
       folderAccess.getSubfoldersList()
-          .forEach((sf, sa) -> delete(ehrId, new ObjectVersionId(sf.toString()), systemId, committerId, description));
+          .forEach(
+              (sf, sa) -> internalDelete(ehrId, new ObjectVersionId(sf.toString()), systemId, committerId, description, null,
+                                         false));
     } else {
-      folderAccess.getSubfoldersList().forEach((sf, sa) -> delete(ehrId, new ObjectVersionId(sf.toString()), contribution));
+      folderAccess.getSubfoldersList().forEach(
+          (sf, sa) -> internalDelete(ehrId, new ObjectVersionId(sf.toString()), null, null, null, contribution, false));
     }
     // Clear sub folder list
     folderAccess.getSubfoldersList().clear();
@@ -233,7 +237,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
    */
   @Override
   public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId, String description) {
-    return internalDelete(ehrId, targetObjId, systemId, committerId, description, null);
+    return internalDelete(ehrId, targetObjId, systemId, committerId, description, null, true);
   }
 
   /**
@@ -241,7 +245,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
    */
   @Override
   public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-    return internalDelete(ehrId, targetObjId, null, null, null, contribution);
+    return internalDelete(ehrId, targetObjId, null, null, null, contribution, true);
   }
 
   /**
@@ -253,14 +257,19 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
   }
 
   private boolean internalDelete(UUID ehrId, ObjectVersionId folderId, UUID systemId, UUID committerId, String description,
-                                 UUID contribution) {
+                                 UUID contribution, boolean withEhrCheck) {
 
-    ehrService.checkEhrExistsAndIsModifiable(ehrId);
-    checkDirectoryWithIdExistsInEhr(ehrId, folderId);
+    if (withEhrCheck) {
+      ehrService.checkEhrExistsAndIsModifiable(ehrId);
+      checkFolderWithIdExistsInEhr(ehrId, folderId);
+    }
 
-    //first remove folders reference from EHR
-    ehrService.removeDirectory(ehrId);
-    //actually delete the folder
+    //first remove the folders reference from EHR if necessary
+    if (uuidMatchesObjectVersionId(ehrService.getDirectoryId(ehrId), folderId)) {
+      ehrService.removeDirectory(ehrId);
+    }
+
+    //delete the folder
     I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
 
     var timestamp = LocalDateTime.now();
@@ -281,17 +290,44 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     }
   }
 
-  private void checkDirectoryWithIdExistsInEhr(UUID ehrId, ObjectVersionId folderId) {
-    UUID ehrDirId = ehrService.getDirectoryId(ehrId);
-    if (ehrDirId == null) {
+  private boolean uuidMatchesObjectVersionId(UUID ehrRootDirectoryId, ObjectVersionId folderId) {
+    return Optional.ofNullable(ehrRootDirectoryId)
+        .map(UUID::toString)
+        .filter(id -> folderId.getObjectId().getValue().equals(id))
+        .isPresent();
+  }
+
+  private void checkFolderWithIdExistsInEhr(UUID ehrId, ObjectVersionId folderId) {
+    UUID ehrRootDirectoryId = ehrService.getDirectoryId(ehrId);
+    if (ehrRootDirectoryId == null) {
       throw new PreconditionFailedException(
           String.format("EHR with id %s does not contain a directory. Maybe it has been deleted?", ehrId.toString()));
     }
 
-    if (!folderId.getObjectId().getValue().equals(ehrDirId.toString())) {
+    I_FolderAccess folderAccess =
+        I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), new ObjectVersionId(ehrRootDirectoryId.toString()));
+
+    if (!uuidMatchesObjectVersionId(ehrRootDirectoryId, folderId) && !doesAnySubFolderIdMatch(folderAccess, folderId)) {
       throw new PreconditionFailedException(
-          String.format("Directory with id %s is not part of EHR with id %s", folderId.getValue(), ehrDirId));
+          String.format("Directory with id %s is not part of EHR with id %s", folderId.getValue(), ehrId));
     }
+  }
+
+  private boolean doesAnySubFolderIdMatch(I_FolderAccess folderAccess, ObjectVersionId folderId) {
+    Map<UUID, I_FolderAccess> subfoldersList = folderAccess.getSubfoldersList();
+
+    if (subfoldersList.keySet().stream().anyMatch(fid -> uuidMatchesObjectVersionId(fid, folderId))) {
+      return true;
+    }
+
+    //if no subfolder ID matches, check one level deeper
+    for (I_FolderAccess subFolder : subfoldersList.values()) {
+      if (doesAnySubFolderIdMatch(subFolder, folderId)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
