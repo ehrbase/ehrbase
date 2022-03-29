@@ -19,6 +19,8 @@
 package org.ehrbase.service;
 
 import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
+import static org.ehrbase.dao.access.util.FolderUtils.doesAnyIdInFolderStructureMatch;
+import static org.ehrbase.dao.access.util.FolderUtils.uuidMatchesObjectVersionId;
 
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
@@ -27,7 +29,6 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -300,12 +301,6 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     }
   }
 
-  private boolean uuidMatchesObjectVersionId(UUID ehrRootDirectoryId, ObjectVersionId folderId) {
-    return Optional.ofNullable(ehrRootDirectoryId)
-        .map(UUID::toString)
-        .filter(id -> folderId.getObjectId().getValue().equals(id))
-        .isPresent();
-  }
 
   private void checkFolderWithIdExistsInEhr(UUID ehrId, ObjectVersionId folderId) {
     UUID ehrRootDirectoryId = ehrService.getDirectoryId(ehrId);
@@ -317,27 +312,10 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     I_FolderAccess folderAccess =
         I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), new ObjectVersionId(ehrRootDirectoryId.toString()));
 
-    if (!uuidMatchesObjectVersionId(ehrRootDirectoryId, folderId) && !doesAnySubFolderIdMatch(folderAccess, folderId)) {
+    if (!uuidMatchesObjectVersionId(ehrRootDirectoryId, folderId) && !doesAnyIdInFolderStructureMatch(folderAccess, folderId)) {
       throw new PreconditionFailedException(
           String.format("Folder with id %s is not part of EHR with id %s", folderId.getValue(), ehrId));
     }
-  }
-
-  private boolean doesAnySubFolderIdMatch(I_FolderAccess folderAccess, ObjectVersionId folderId) {
-    Map<UUID, I_FolderAccess> subfoldersList = folderAccess.getSubfoldersList();
-
-    if (subfoldersList.keySet().stream().anyMatch(fid -> uuidMatchesObjectVersionId(fid, folderId))) {
-      return true;
-    }
-
-    //if no subfolder ID matches, check one level deeper
-    for (I_FolderAccess subFolder : subfoldersList.values()) {
-      if (doesAnySubFolderIdMatch(subFolder, folderId)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   /**
