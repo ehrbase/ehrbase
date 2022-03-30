@@ -1,13 +1,11 @@
 /*
- * Copyright (c) 2020 Jake Smolka (Hannover Medical School) and Vitasystems GmbH.
- *
- * This file is part of project EHRbase
+ * Copyright 2020-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +16,15 @@
 
 package org.ehrbase.jooq.binding;
 
-import org.jooq.*;
+import org.jooq.Binding;
+import org.jooq.BindingGetResultSetContext;
+import org.jooq.BindingGetSQLInputContext;
+import org.jooq.BindingGetStatementContext;
+import org.jooq.BindingRegisterContext;
+import org.jooq.BindingSQLContext;
+import org.jooq.BindingSetSQLOutputContext;
+import org.jooq.BindingSetStatementContext;
+import org.jooq.Converter;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 
@@ -26,17 +32,21 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.time.format.DateTimeFormatter.*;
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
-// meta: AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>is used to mimic a range as postgres's tstzrange is a range.
 /**
  * Binding <T> = Object (unknown DB type), and <U> = {@link AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>} (user type) for "sys_period" column (of STATUS table).
  * See pom.xml of this module for further configuration, like what columns are linked with this binding.
  * Source: https://www.jooq.org/doc/3.12/manual/code-generation/custom-data-type-bindings/
+ *
+ * @author Jake Smolka
+ * @author Renaud Subiger
+ * @since 1.0
  */
 public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> {
 
@@ -51,8 +61,9 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
 
             @Override
             public AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> from(Object databaseObject) {
-                if (databaseObject == null)
+                if (databaseObject == null) {
                     return null;
+                }
 
                 Matcher m = PATTERN.matcher("" + databaseObject);
                 if (m.find()) {
@@ -65,8 +76,9 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
                         upperStr = upperStr.replace(" ", "T");
                         OffsetDateTime upper = OffsetDateTime.parse(upperStr);
                         return new AbstractMap.SimpleEntry<>(lower, upper);
-                    } else
+                    } else {
                         return new AbstractMap.SimpleEntry<>(lower, null);
+                    }
                 } else {
                     throw new IllegalArgumentException("Unsupported range : " + databaseObject);
                 }
@@ -74,18 +86,20 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
 
             @Override
             public Object to(AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> userObject) {
-                if (userObject == null)
+                if (userObject == null) {
                     return null;
+                }
 
                 String lower = userObject.getKey().format(ISO_OFFSET_DATE_TIME).replace("T", " ");
                 String upper = "";
                 if (userObject.getValue() != null)  // upper bound can be empty
                     upper = userObject.getValue().format(ISO_OFFSET_DATE_TIME).replace("T", " ");
 
-                if (upper.isEmpty())
+                if (upper.isEmpty()) {
                     return "[\"" + lower + "\",)";
-                else
+                } else {
                     return "[\"" + lower + "\",)\"" + lower + "\")";
+                }
             }
 
             @Override
@@ -150,7 +164,7 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      */
     @Override
     public void get(BindingGetResultSetContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
-        ctx.convert(converter()).value(JSONB.valueOf(ctx.resultSet().getString(ctx.index())));
+        ctx.convert(converter()).value(ctx.resultSet().getString(ctx.index()));
     }
 
     /**
@@ -161,7 +175,7 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      */
     @Override
     public void get(BindingGetStatementContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
-        ctx.convert(converter()).value(JSONB.valueOf(ctx.statement().getString(ctx.index())));
+        ctx.convert(converter()).value(ctx.statement().getString(ctx.index()));
     }
 
     /**

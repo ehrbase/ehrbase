@@ -47,6 +47,11 @@ workflows:
           requires:
             - build-ehrbase
 
+      - SANITY-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - COMPOSITION-tests-1:
           context: org-global
           requires:
@@ -128,6 +133,12 @@ workflows:
             - QUERYSERVICE-test-1
 
       - COMPOSITION-tests-14:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - HEADER-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -192,6 +203,7 @@ workflows:
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
+            - SANITY-tests
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -206,6 +218,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - HEADER-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -250,6 +263,11 @@ workflows:
                 - /^(release\/v\d+\.\d+\.\d+|master)$/
 
       - run-SDK-integration-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+
+      - SANITY-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -340,6 +358,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - HEADER-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -393,6 +417,7 @@ workflows:
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
+            - SANITY-tests
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -407,6 +432,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - HEADER-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -528,6 +554,10 @@ workflows:
       - run java integration tests - sdk:
           requires:
             - build package ehrbase with locally installed sdk
+      - SANITY-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - COMPOSITION-tests-1:
           context: org-global
           requires:
@@ -584,6 +614,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - HEADER-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -623,6 +657,7 @@ workflows:
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
+            - SANITY-tests
             - COMPOSITION-tests-1
             - COMPOSITION-tests-2
             - COMPOSITION-tests-3
@@ -637,6 +672,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - HEADER-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -740,8 +776,18 @@ jobs:
       - collect-sdk-unittest-results
       - collect-sdk-integrationtest-results
       - save-skd-test-results
-  
-  
+
+  SANITY-tests:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "Sanity"
+          test-suite-path: "SANITY_TESTS"
+          test-suite-name: "SANITY"
+
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
@@ -896,6 +942,17 @@ jobs:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_SHANGHAI"
+
+  HEADER-tests:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "HeadersChecks"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "HEADER-tests"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
@@ -1196,6 +1253,9 @@ commands:
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
                    --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
                    --server.nodename=<< parameters.nodename >> \
+                   --plugin-manager.enable=true \
+                   --plugin-manager.plugin-dir='tests/test_plugin' \
+                   --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' \
                    --cache.enabled=<< parameters.cache-enabled >> > log & app_pid=$!
                 timeout=60
                 while [ ! -f ./log ];
@@ -1369,7 +1429,7 @@ commands:
             cd ~/projects
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir'> log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1391,7 +1451,7 @@ commands:
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
-                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
+                 -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir'> log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             cd ~/projects/openEHR_SDK
             jps
@@ -1567,7 +1627,7 @@ commands:
             ls -la
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
-            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true > log &
+            java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
             jps
 
@@ -1880,7 +1940,7 @@ commands:
           name: Package Maven app
           command: |
             cd ~/projects
-            mvn package     # -DskipTests
+            mvn package -U    # -DskipTests
 
 
 

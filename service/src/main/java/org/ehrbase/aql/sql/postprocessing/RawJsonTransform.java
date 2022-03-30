@@ -22,16 +22,15 @@
 package org.ehrbase.aql.sql.postprocessing;
 
 import com.google.gson.JsonElement;
+import java.io.StringReader;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonReader;
 import org.ehrbase.serialisation.dbencoding.rawjson.LightRawJsonEncoder;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
-
-import jakarta.json.Json;
-import jakarta.json.JsonException;
-import jakarta.json.JsonReader;
-import java.io.StringReader;
 
 /**
  * Created by christian on 2/21/2017.

@@ -288,14 +288,21 @@ commit composition
     END
 
     IF   '${format}'=='CANONICAL_JSON'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json    
     ELSE IF   '${format}'=='CANONICAL_XML'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/xml
         Set To Dictionary   ${headers}   Accept=application/xml
     ELSE IF   '${format}'=='FLAT'
         Set To Dictionary   ${headers}   Content-Type=application/json
         Set To Dictionary   ${headers}   Accept=application/json
+        Set To Dictionary   ${headers}   X-Forwarded-Host=example.com
+        Set To Dictionary   ${headers}   X-Forwarded-Port=333
+        Set To Dictionary   ${headers}   X-Forwarded-Proto=https
         &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
         Create Session      ${SUT}    ${ECISURL}    debug=2
         ...                 auth=${CREDENTIALS}    verify=True
@@ -339,20 +346,22 @@ check the successful result of commit composition
     END
 
     IF  '${format}' == 'CANONICAL_JSON'
-        ${composition_uid}=   Set Variable   ${response.json()}[uid][value]
+        ${compositionUid}=   Set Variable   ${response.json()}[uid][value]
         ${template_id}=       Set Variable   ${response.json()}[archetype_details][template_id][value]
         ${composer}           Set Variable   ${response.json()}[composer][name]
         # @ndanilin: EhrBase don't return context for persistent composition.
         #            It seems to us that it's wrong so a setting check is disabled yet.
         # ${setting}            Set variable   ${response.json()}[context][setting][value]
+        Set Test Variable     ${compositionUid}  ${composition_uid}
     ELSE IF   '${format}' == 'CANONICAL_XML'
         ${xresp}=             Parse Xml             ${response.text}
-        ${composition_uid}=   Get Element Text      ${xresp}   uid/value
+        ${compositionUid}=   Get Element Text      ${xresp}   uid/value
         ${template_id}=       Get Element Text      ${xresp}   archetype_details/template_id/value
         ${composer}=          Get Element Text      ${xresp}   composer/name
         # @ndanilin: EhrBase don't return context for persistent composition.
         #            It seems to us that it's wrong so a setting check is disabled yet.        
-        # ${setting}=           Get Element Text      ${xresp}   context/setting/value    
+        # ${setting}=           Get Element Text      ${xresp}   context/setting/value
+        Set Test Variable     ${compositionUid}  ${composition_uid}
     ELSE IF   '${format}' == 'FLAT'
         # ${composition_uid}    Set Variable   ${response.json()}[${template_for_path}/_uid]
         # @ndanilin: in FLAT response isn't template_id so make a following placeholder:
@@ -394,29 +403,70 @@ check status_code of commit composition
     
 
 update composition (JSON)
-    [Arguments]         ${new_version_of_composition}
+    [Arguments]         ${new_version_of_composition}   ${file_type}=xml
     [Documentation]     Commit a new version for the COMPOSITION
     ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
     ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
 
-                        get valid OPT file  ${new_version_of_composition}
+    IF      '${file_type}' == 'xml'
+        get valid OPT file  ${new_version_of_composition}
+        &{headers}          Create Dictionary   Content-Type=application/xml
+                            ...                 Accept=application/json
+                            ...                 Prefer=return=representation
+                            ...                 If-Match=${preceding_version_uid}
+        ${resp}             PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
+                            log to console      ${resp.content}
+                            Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
+                            Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
 
-    &{headers}=         Create Dictionary   Content-Type=application/xml
+        ${short_uid}        Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
+                            Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
+
+                            Set Test Variable   ${response}    ${resp}
+                            capture point in time    2
+    END
+
+    IF      '${file_type}' == 'json'
+        ${file}=           Get File   ${COMPO DATA SETS}/${format}/${new_version_of_composition}
+        &{headers}          Create Dictionary   Content-Type=application/json
+                            ...                 Accept=application/json
+                            ...                 Prefer=return=representation
+                            ...                 If-Match=${composition_uid}
+        ${composition_id}        Remove String       ${composition_uid}    ::${CREATING_SYSTEM_ID}::1
+        &{params}          Create Dictionary     ehr_id=${ehr_id}   composition_id=${composition_id}
+        ${resp}             PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${composition_id}
+        ...                 data=${file}   headers=${headers}     params=${params}
+                            log to console      ${resp.content}
+                            Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
+                            Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
+
+        ${short_uid}        Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
+                            Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
+
+                            Set Test Variable   ${response}    ${resp}
+                            capture point in time    2
+    END
+
+
+update composition (FLAT)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION
+    ...                 DEPENDENCY: `commit composition' keyword
+
+    ${file}=           Get File   ${COMPO DATA SETS}/${format}/${new_version_of_composition}
+
+    &{headers}=         Create Dictionary   Content-Type=application/json
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
-                        ...                 If-Match=${preceding_version_uid}
 
-    ${resp}=            PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
+    &{params}=          Create Dictionary     format=FLAT   ehrId=${ehr_id}  templateId=${template_id}
+
+    ${resp}=            PUT On Session      ${SUT}   composition/${composition_uid}    params=${params}  expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
-                        Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
-                        Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
-
-    ${short_uid}=       Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
-                        Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
-
                         Set Test Variable   ${response}    ${resp}
                         capture point in time    2
 
+    Should Be Equal As Strings    ${response.status_code}    200
 
 update composition - invalid opt reference (JSON)
     [Arguments]         ${new_version_of_composition}
@@ -479,6 +529,17 @@ check content of updated composition (JSON)
     ${text}=            Set Variable    ${response.json()['content'][0]['data']['events'][0]['data']['items'][0]['value']['value']}
                         Should Be Equal     ${text}    modified value
 
+check content of updated composition generic (JSON)
+    [Documentation]     Get text from response, based on path provided as argument1.
+    ...                 Argument2 is the expected value.
+    ...                 Applicable for response in JSON format.
+    [Arguments]         ${pathToLookInto}   ${expectedVal}
+    @{expectedStatusCodesList}      Create List     200     201
+                        ${string_status_code}    Convert To String    ${response.status_code}
+                        List Should Contain Value   ${expectedStatusCodesList}      ${string_status_code}
+                        #Should Be Equal As Strings    ${response.status_code}    200
+    ${text}             Set Variable    ${response.json()${pathToLookInto}}
+                        Should Be Equal     ${text}    ${expectedVal}
 
 update composition (XML)
     [Arguments]         ${new_version_of_composition}
@@ -587,6 +648,16 @@ get composition by composition_uid
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
 
+
+get web template by template id
+    [Arguments]         ${template_id}
+
+    Create Session      ${SUT}    ${ECISURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+    ${resp}=            GET On Session         ${SUT}  template/${template_id}  expected_status=anything   headers=${headers}
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+                        Should Be Equal As Strings   ${resp.status_code}   200
 
 get versioned composition by uid
     [Arguments]         ${format}    ${uid}
@@ -941,9 +1012,32 @@ create EHR
     ...                 AND             extract ehrstatus_uid (XML)
 
 
+create EHR wih x forwarded headers
+    [Arguments]         ${accept-header}=JSON
+
+    Run Keyword If      '${accept-header}'=='JSON'
+    ...                 Run Keywords    prepare new request session   JSON
+    ...                                 Prefer=return=representation
+    ...                                 X-Forwarded-Host=example.com
+    ...                                 X-Forwarded-Port=333
+    ...                                 X-Forwarded-Proto=https
+    ...                 AND             create new EHR
+    # ...                 AND             extract ehr_id from response (JSON)
+    # ...                 AND             extract ehrstatus_uid (JSON)
+
+    Run Keyword If      '${accept-header}'=='XML'
+    ...                 Run Keywords    prepare new request session    XML
+    ...                                 content=application/xml
+    ...                                 accept=application/xml    Prefer=return=representation
+    ...                                 X-Forwarded-Host=example.com
+    ...                                 X-Forwarded-Port=333
+    ...                                 X-Forwarded-Proto=https
+    ...                 AND             create new EHR (XML)
+    ...                 AND             extract ehr_id from response (XML)
+    ...                 AND             extract ehrstatus_uid (XML)
+
 capture time before first commit
     capture point in time   0
-
 
 capture point in time
     [Arguments]         ${point_in_time}

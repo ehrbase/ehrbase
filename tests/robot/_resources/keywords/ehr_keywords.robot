@@ -571,6 +571,83 @@ extract system_id from response (JSON)
 
                         Set Suite Variable    ${system_id}   ${system_id}[0]
 
+check that headers location response has
+   [Documentation]      Extract `Protocol, Host, Port` from Location headers response of preceding request.
+   ...                  DEPENDENCY: `create new EHR`
+   ...                  Expected result is the list of arguments, in the following order:
+   ...                  Protocol  Host  Port
+   ...                  Example of arguments: https  example.com  333
+   ...                  Takes a list of 3 arguments, to compare expected with actual location protocol, host, port values.
+   [Arguments]          @{expectedLocationInfo}
+   @{tokenized_uri}         Split String    ${response.headers.Location}   /
+   ${tmpProtocol}          Remove String   ${tokenized_uri}[0]     :
+   ${locationProtocol}      Set Variable     ${tmpProtocol}
+   ${tmpHost}              Set Variable     ${tokenized_uri}[2]
+   @{hostPortList}          Split String     ${tmpHost}     :
+   ${locationHost}          Set Variable        ${hostPortList}[0]
+   ${locationPort}          Set Variable       ${hostPortList}[1]
+   Should be equal as strings    ${expectedLocationInfo}[0]    ${locationProtocol}
+   Should be equal as strings    ${expectedLocationInfo}[1]    ${locationHost}
+   Should be equal as strings    ${expectedLocationInfo}[2]    ${locationPort}
+   Log To Console    \n\tDEBUG OUTPUT - Location Protocol: \n\t${locationProtocol}
+   Log To Console    \n\tDEBUG OUTPUT - Location Host: \n\t${locationHost}
+   Log To Console    \n\tDEBUG OUTPUT - Location Port: \n\t${locationPort}
+   Set Suite Variable    ${locationProtocol}
+   Set Suite Variable    ${locationHost}
+   Set Suite Variable    ${locationPort}
+
+check that composition headers location response has
+   [Documentation]      Extract `Protocol, Host, Port` from Location headers response of preceding request.
+   ...                  DEPENDENCY: `commit composition`
+   ...                  Expected result is the list of arguments, in the following order:
+   ...                  Protocol  Host  Port
+   ...                  Example of arguments: https  example.com  333
+   ...                  Takes a list of 3 arguments, to compare expected with actual location protocol, host, port values.
+   [Arguments]          @{expectedLocationInfo}
+   ${fullLocation}   Set Variable    ${response.headers['Location']}
+   @{tokenized_uri}         Split String    ${fullLocation}   /
+   ${tmpProtocol}          Remove String   ${tokenized_uri}[0]     :
+   ${locationProtocol}      Set Variable     ${tmpProtocol}
+   ${tmpHost}              Set Variable     ${tokenized_uri}[2]
+   @{hostPortList}          Split String     ${tmpHost}     :
+   ${locationHost}          Set Variable        ${hostPortList}[0]
+   ${locationPort}          Set Variable       ${hostPortList}[1]
+   Should be equal as strings    ${expectedLocationInfo}[0]    ${locationProtocol}
+   Should be equal as strings    ${expectedLocationInfo}[1]    ${locationHost}
+   Should be equal as strings    ${expectedLocationInfo}[2]    ${locationPort}
+   Log To Console    \n\tDEBUG OUTPUT - Location Protocol: \n\t${locationProtocol}
+   Log To Console    \n\tDEBUG OUTPUT - Location Host: \n\t${locationHost}
+   Log To Console    \n\tDEBUG OUTPUT - Location Port: \n\t${locationPort}
+   Set Suite Variable    ${locationProtocol}
+   Set Suite Variable    ${locationHost}
+   Set Suite Variable    ${locationPort}
+
+check that composition body location response has
+   [Documentation]      Extract `Protocol, Host, Port` from Location body response of preceding request.
+   ...                  DEPENDENCY: `commit composition`
+   ...                  Expected result is the list of arguments, in the following order:
+   ...                  Protocol  Host  Port
+   ...                  Example of arguments: https  example.com  333
+   ...                  Takes a list of 3 arguments, to compare expected with actual location protocol, host, port values.
+   [Arguments]          @{expectedLocationInfo}
+   ${metaObj}      Get From Dictionary     ${response.json()}      meta
+   ${fullLocation}      Set Variable    ${metaObj['href']['url']}
+   @{tokenized_uri}         Split String    ${fullLocation}   /
+   ${tmpProtocol}          Remove String   ${tokenized_uri}[0]     :
+   ${locationProtocol}      Set Variable     ${tmpProtocol}
+   ${tmpHost}              Set Variable     ${tokenized_uri}[2]
+   @{hostPortList}          Split String     ${tmpHost}     :
+   ${locationHost}          Set Variable        ${hostPortList}[0]
+   ${locationPort}          Set Variable       ${hostPortList}[1]
+   Should be equal as strings    ${expectedLocationInfo}[0]    ${locationProtocol}
+   Should be equal as strings    ${expectedLocationInfo}[1]    ${locationHost}
+   Should be equal as strings    ${expectedLocationInfo}[2]    ${locationPort}
+   Log To Console    \n\tDEBUG OUTPUT - Location Protocol: \n\t${locationProtocol}
+   Log To Console    \n\tDEBUG OUTPUT - Location Host: \n\t${locationHost}
+   Log To Console    \n\tDEBUG OUTPUT - Location Port: \n\t${locationPort}
+   Set Suite Variable    ${locationProtocol}
+   Set Suite Variable    ${locationHost}
+   Set Suite Variable    ${locationPort}
 
 extract subject_id from response (JSON)
     [Documentation]     Extracts subject_id from response of preceding request.

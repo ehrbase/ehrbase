@@ -18,18 +18,17 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.assertj.core.api.Assertions;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.PREDICATE;
 
 public class QueryCompilerPass2Test {
 
@@ -197,6 +196,24 @@ public class QueryCompilerPass2Test {
             I_VariableDefinition expected = I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false);
             I_VariableDefinitionHelper.checkEqualWithoutFuncParameters(orderAttribute.getVariableDefinition(), expected);
         }
+
+        // with default direction
+        {
+            QueryCompilerPass2 cut = new QueryCompilerPass2();
+            String aql = "select a/uid/value as uid, a/composer/name as author, a/context/start_time/value as date_created " +
+                    "from EHR e  contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1] " +
+                    "order by date_created";
+            ParseTree tree = QueryHelper.setupParseTree(aql);
+            walker.walk(cut, tree);
+
+            List<OrderAttribute> orderAttributes = cut.getOrderAttributes();
+            Assertions.assertThat(orderAttributes).size().isEqualTo(1);
+
+            OrderAttribute orderAttribute = orderAttributes.get(0);
+            assertThat(orderAttribute.getDirection()).isEqualTo(OrderAttribute.OrderDirection.ASC);
+            I_VariableDefinition expected = I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false);
+            I_VariableDefinitionHelper.checkEqualWithoutFuncParameters(orderAttribute.getVariableDefinition(), expected);
+        }
     }
 
     @Test
@@ -243,7 +260,7 @@ public class QueryCompilerPass2Test {
         {
             QueryCompilerPass2 cut = new QueryCompilerPass2();
             String aql = "select e/ehr_id/value " +
-                    "from EHR e OFFSET 6 ";
+                    "from EHR e LIMIT 5 OFFSET 6 ";
             ParseTree tree = QueryHelper.setupParseTree(aql);
             walker.walk(cut, tree);
             Integer actual = cut.getOffsetAttribute();
@@ -270,7 +287,7 @@ public class QueryCompilerPass2Test {
 
     @Test
     @Ignore("in progress")
-    public void testCompositionNodeWithPredicate(){
+    public void testCompositionNodeWithPredicate() {
         ParseTreeWalker walker = new ParseTreeWalker();
         QueryCompilerPass2 cut = new QueryCompilerPass2();
         String aql = "SELECT\n" +
@@ -284,5 +301,52 @@ public class QueryCompilerPass2Test {
         walker.walk(cut, tree);
         Integer actual = cut.getOffsetAttribute();
         assertThat(actual).isEqualTo(6);
+    }
+
+    @Test
+    public void limitAndOrderByAnyOrder() {
+        var walker = new ParseTreeWalker();
+        var compiler = new QueryCompilerPass2();
+
+        String aql;
+        ParseTree tree;
+
+        aql = "select e/ehr_id/value from EHR e LIMIT 5 OFFSET 6";
+        tree = QueryHelper.setupParseTree(aql);
+        walker.walk(compiler, tree);
+        assertThat(compiler.getLimitAttribute()).isEqualTo(5);
+        assertThat(compiler.getOffsetAttribute()).isEqualTo(6);
+        assertThat(compiler.getOffsetAttribute()).isEqualTo(6);
+
+        aql = "select e/ehr_id/value from EHR e ORDER BY e/ehr_id/value DESC";
+        tree = QueryHelper.setupParseTree(aql);
+        walker.walk(compiler, tree);
+        assertThat(compiler.getOrderAttributes().get(0).getDirection()).isEqualTo(OrderAttribute.OrderDirection.DESC);
+
+        aql = "select e/ehr_id/value from EHR e LIMIT 5 ORDER BY e/ehr_id/value DESC";
+        tree = QueryHelper.setupParseTree(aql);
+        walker.walk(compiler, tree);
+        assertThat(compiler.getLimitAttribute()).isEqualTo(5);
+        assertThat(compiler.getOrderAttributes().get(0).getDirection()).isEqualTo(OrderAttribute.OrderDirection.DESC);
+
+        aql = "select e/ehr_id/value from EHR e ORDER BY e/ehr_id/value DESC LIMIT 5";
+        tree = QueryHelper.setupParseTree(aql);
+        walker.walk(compiler, tree);
+        assertThat(compiler.getLimitAttribute()).isEqualTo(5);
+        assertThat(compiler.getOrderAttributes().get(0).getDirection()).isEqualTo(OrderAttribute.OrderDirection.DESC);
+
+        aql = "select e/ehr_id/value from EHR e LIMIT 5 OFFSET 6 ORDER BY e/ehr_id/value DESC";
+        tree = QueryHelper.setupParseTree(aql);
+        walker.walk(compiler, tree);
+        assertThat(compiler.getLimitAttribute()).isEqualTo(5);
+        assertThat(compiler.getOffsetAttribute()).isEqualTo(6);
+        assertThat(compiler.getOrderAttributes().get(0).getDirection()).isEqualTo(OrderAttribute.OrderDirection.DESC);
+
+        aql = "select e/ehr_id/value from EHR e ORDER BY e/ehr_id/value DESC LIMIT 5 OFFSET 6";
+        tree = QueryHelper.setupParseTree(aql);
+        walker.walk(compiler, tree);
+        assertThat(compiler.getLimitAttribute()).isEqualTo(5);
+        assertThat(compiler.getOffsetAttribute()).isEqualTo(6);
+        assertThat(compiler.getOrderAttributes().get(0).getDirection()).isEqualTo(OrderAttribute.OrderDirection.DESC);
     }
 }

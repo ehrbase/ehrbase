@@ -18,19 +18,6 @@ package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Supplier;
-import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -51,17 +38,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
@@ -106,11 +92,10 @@ public class OpenehrCompositionController extends BaseController implements
 
     var compoObj = compositionService.buildComposition(composition, compositionFormat, null);
 
-    Optional<CompositionDto> optionalCompositionDto = compositionService.create(ehrId, compoObj);
-
-    var compositionUuid = optionalCompositionDto.orElseThrow(() ->
-            new InternalServerException("Failed to create composition"))
-        .getUuid();
+    var compositionUuid =
+        compositionService
+            .create(ehrId, compoObj)
+            .orElseThrow(() -> new InternalServerException("Failed to create composition"));
 
     var uri = URI.create(this.encodePath(
         getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/"
@@ -192,15 +177,15 @@ public class OpenehrCompositionController extends BaseController implements
     try {
       Composition compoObj = compositionService.buildComposition(composition, compositionFormat,
           null);
-      // TODO should have EHR as parameter and check for existence as precondition - see EHR-245 (no direct EHR access in this controller)
+      // TODO should have EHR as parameter and check for existence as precondition - see EHR-245 (no
+      // direct EHR access in this controller)
       // ifMatch header has to be tested for correctness already above
 
-      Optional<CompositionDto> dtoOptional = compositionService
-          .update(ehrId, new ObjectVersionId(ifMatch), compoObj);
-
-      var compositionVersionUid = dtoOptional.orElseThrow(() ->
-              new InternalServerException("Failed to create composition"))
-          .getComposition().getUid().toString();
+      var compositionVersionUid =
+          compositionService
+              .update(ehrId, new ObjectVersionId(ifMatch), compoObj)
+              .orElseThrow(() -> new InternalServerException("Failed to create composition"))
+              .toString();
 
       var uri = URI.create(this.encodePath(
           getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/"

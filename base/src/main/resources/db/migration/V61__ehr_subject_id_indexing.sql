@@ -84,8 +84,8 @@ BEGIN
 END
 $BODY$;
 
-ALTER FUNCTION ehr.js_party_ref(text, text, text, text)
-    OWNER TO ehrbase;
+-- ALTER FUNCTION ehr.js_party_ref(text, text, text, text)
+--     OWNER TO ehrbase;
 
 -- create index
 create index if not exists ehr_subject_id_index on ehr.party_identified(jsonb_extract_path_text(cast("ehr"."js_party_ref"(

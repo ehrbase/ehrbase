@@ -51,6 +51,7 @@ COPY ./rest-ehr-scape/pom.xml ./rest-ehr-scape/pom.xml
 COPY ./rest-openehr/pom.xml ./rest-openehr/pom.xml
 COPY ./service/pom.xml ./service/pom.xml
 COPY ./test-coverage/pom.xml ./test-coverage/pom.xml
+COPY ./plugin/pom.xml ./plugin/pom.xml
 RUN mvn dependency:go-offline -B
 
 # COPY SOURCEFILES
@@ -61,6 +62,7 @@ COPY ./jooq-pq/src ./jooq-pq/src
 COPY ./rest-ehr-scape/src ./rest-ehr-scape/src
 COPY ./rest-openehr/src ./rest-openehr/src
 COPY ./service/src ./service/src
+COPY ./plugin/src ./plugin/src
 RUN mvn compile dependency:go-offline \
     -Dflyway.skip=true \
     -Djooq.codegen.skip=true \

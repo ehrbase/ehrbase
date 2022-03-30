@@ -20,7 +20,9 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
+
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -33,6 +35,8 @@ import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.util.CollectionUtils;
@@ -64,17 +68,22 @@ public class OpenehrQueryController extends BaseController
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final QueryService queryService;
+  
+  @Autowired(required = true)
+  @Qualifier("requestAwareAuditResultMapHolder")
+  private RequestAwareAuditResultMapHolder auditResultMapHolder;
 
   public OpenehrQueryController(QueryService queryService) {
     this.queryService = queryService;
   }
 
+  
   /**
    * {@inheritDoc}
    */
   @Override
   @GetMapping(path = "/aql")
-  @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
+  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
   public ResponseEntity<QueryResponseData> executeAdHocQuery(
       @RequestParam(name = "q") String query,
       @RequestParam(name = "offset", required = false) Integer offset,
@@ -109,7 +118,7 @@ public class OpenehrQueryController extends BaseController
    */
   @Override
   @PostMapping(path = "/aql")
-  @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
+  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
   @SuppressWarnings("unchecked")
   public ResponseEntity<QueryResponseData> executeAdHocQuery(
       @RequestBody Map<String, Object> queryRequest,
@@ -139,7 +148,7 @@ public class OpenehrQueryController extends BaseController
    */
   @Override
   @GetMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
-  @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
+  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
   public ResponseEntity<QueryResponseData> executeStoredQuery(
       @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
       @PathVariable(name = "version", required = false) String version,
@@ -184,7 +193,7 @@ public class OpenehrQueryController extends BaseController
    */
   @Override
   @PostMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
-  @PostAuthorize("checkAbacPostQuery(@queryServiceImp.getAuditResultMap())")
+  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
   @SuppressWarnings("unchecked")
   public ResponseEntity<QueryResponseData> executeStoredQuery(
       @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
@@ -235,17 +244,18 @@ public class OpenehrQueryController extends BaseController
       HttpServletRequest request) {
     QueryResponseData queryResponseData;
 
+    Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
+    
     //get the query and pass it to the service
     if (parameters != null && !parameters.isEmpty()) {
       queryResponseData = new QueryResponseData(
-          queryService.query(aql, parameters, QueryMode.AQL, false));
+          queryService.query(aql, parameters, QueryMode.AQL, false, auditResultMap));
     } else {
       queryResponseData = new QueryResponseData(
-          queryService.query(aql, QueryMode.AQL, false));
+          queryService.query(aql, QueryMode.AQL, false, auditResultMap));
     }
 
     // Enriches request attributes with EhrId(s) for later audit processing
-    Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
     request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE,
         auditResultMap.get(EHR_ID_VALUE));
 
@@ -298,17 +308,18 @@ public class OpenehrQueryController extends BaseController
       HttpServletRequest request) {
     QueryResponseData queryResponseData;
 
+    Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
+    
     if (queryParameter != null && !queryParameter.isEmpty()) {
       Map<String, Object> parameters = new HashMap<>(queryParameter);
       queryResponseData = new QueryResponseData(
-          queryService.query(query, parameters, QueryMode.AQL, false));
+          queryService.query(query, parameters, QueryMode.AQL, false, auditResultMap));
     } else {
       queryResponseData = new QueryResponseData(
-          queryService.query(query, QueryMode.AQL, false));
+          queryService.query(query, QueryMode.AQL, false, auditResultMap));
     }
 
     // Enriches request attributes with EhrId(s) for later audit processing
-    Map<String, Set<Object>> auditResultMap = queryService.getAuditResultMap();
     request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE,
         auditResultMap.get(EHR_ID_VALUE));
 
