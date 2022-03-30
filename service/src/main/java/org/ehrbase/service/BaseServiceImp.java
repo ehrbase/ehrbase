@@ -22,8 +22,6 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.datavalues.DvIdentifier;
-import java.util.ArrayList;
-import java.util.List;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.BaseService;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -33,6 +31,8 @@ import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class BaseServiceImp implements BaseService {
@@ -43,6 +43,8 @@ public class BaseServiceImp implements BaseService {
   private final ServerConfig serverConfig;
   private final KnowledgeCacheService knowledgeCacheService;
   private final DSLContext context;
+
+  private UUID systemId;
 
   @Autowired
   private IAuthenticationFacade authenticationFacade;
@@ -65,7 +67,10 @@ public class BaseServiceImp implements BaseService {
    * @return Default system UUID.
    */
   public UUID getSystemUuid() {
-    return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
+    if (systemId == null) {
+      systemId = I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());;
+    }
+    return systemId;
   }
 
   /**
