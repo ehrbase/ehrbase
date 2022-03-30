@@ -14,13 +14,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
-- update Archie to version 2.0.1  [#784](https://github.com/ehrbase/ehrbase/pull/784)
+- Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
+- Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
 
 ### Fixed
 
 - Remove unused Operational Template cache ([#759](https://github.com/ehrbase/ehrbase/pull/759)).
 - Allow update/adding/removal of feeder_audit/links on Composition ([#773](https://github.com/ehrbase/ehrbase/pull/773))
 - Add default ASC direction to ORDER BY clause in AQL ([#780](https://github.com/ehrbase/ehrbase/pull/780)).
+- Fix DB Migration scripts. Allow user different then ehrbase ([#795](https://github.com/ehrbase/ehrbase/pull/795)).
 
 ## [0.19.0]
 
