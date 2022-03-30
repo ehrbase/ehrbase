@@ -68,7 +68,7 @@ public class BaseServiceImp implements BaseService {
    */
   public UUID getSystemUuid() {
     if (systemId == null) {
-      systemId = I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
+      systemId = I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());;
     }
     return systemId;
   }

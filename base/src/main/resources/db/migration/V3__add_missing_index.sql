@@ -25,3 +25,6 @@ CREATE UNIQUE INDEX entry_composition_id_idx on ehr.entry(composition_id);
 
 DROP INDEX ehr.context_composition_id_idx;
 CREATE UNIQUE INDEX context_composition_id_idx ON ehr.event_context(composition_id);
+
+DROP INDEX ehr.status_ehr_idx;
+CREATE UNIQUE INDEX status_ehr_idx ON ehr.status(ehr_id);

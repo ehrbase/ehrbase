@@ -33,7 +33,7 @@
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>0.20.0-SNAPSHOT</version>
+    <version>0.21.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>EHRbase</name>
@@ -147,7 +147,7 @@
         <spring.version>2.5.9</spring.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <postgresql.version>42.3.3</postgresql.version>
-        <ehrbase.sdk.version>1.18.0-SNAPSHOT</ehrbase.sdk.version>
+        <ehrbase.sdk.version>1.19.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
         <jdbc-yugabytedb.version>42.3.4</jdbc-yugabytedb.version>
         <joda.version>2.10.13</joda.version>
