@@ -44,6 +44,8 @@ public class BaseServiceImp implements BaseService {
   private final KnowledgeCacheService knowledgeCacheService;
   private final DSLContext context;
 
+  private UUID systemId;
+
   @Autowired
   private IAuthenticationFacade authenticationFacade;
 
@@ -65,7 +67,10 @@ public class BaseServiceImp implements BaseService {
    * @return Default system UUID.
    */
   public UUID getSystemUuid() {
-    return I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
+    if (systemId == null) {
+      systemId = I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());;
+    }
+    return systemId;
   }
 
   /**
