@@ -15,7 +15,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
-- Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
+- Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788) and [#796](https://github.com/ehrbase/ehrbase/pull/796)
 
 ### Fixed
 
