@@ -49,6 +49,7 @@ Create new event COMPOSITION FLAT with 24 Hours Average - 24 value
     ...     ['composition']['a1/blood_pressure/a24_hour_average/width']
     ...     ${24HoursAvg_Value}
 
+
 ## below test cases are testing negative flows, with value < 24H and > 24H
 Create new event COMPOSITION FLAT with 24 Hours Average - 15 value
     [Tags]      negative
@@ -57,7 +58,6 @@ Create new event COMPOSITION FLAT with 24 Hours Average - 15 value
     Should Contain    ${errMsg}    The value ${24HoursAvg_Value} must be >= PT24H
     [Teardown]      Change Json 24 Hour Average Value and Save Back To File
     ...     ${initalJson}      PT24H
-
 
 
 Create new event COMPOSITION FLAT with 24 Hours Average - 0 value
