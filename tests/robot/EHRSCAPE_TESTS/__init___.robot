@@ -26,4 +26,4 @@ Documentation    EHRSCAPE TEST SUITE
 
 Resource    ../_resources/suite_settings.robot
 
-Force Tags    EHRSCAPE
+Force Tags    EhrScapeTag

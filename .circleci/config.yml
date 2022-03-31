@@ -980,7 +980,7 @@ jobs:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
-          include-tags: "EHRSCAPE"
+          include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
           test-suite-name: "EHRSCAPE"
 
