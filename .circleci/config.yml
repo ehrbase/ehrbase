@@ -372,7 +372,7 @@ workflows:
             - QUERYSERVICE-test-2
 
       - EHRScape-tests:
-        context: org-global
+          context: org-global
           requires:
             - build-ehrbase
             - QUERYSERVICE-test-2
