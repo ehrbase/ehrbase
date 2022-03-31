@@ -55,6 +55,9 @@ Create new event COMPOSITION FLAT with 24 Hours Average - 15 value
     ${24HoursAvg_Value}     Set Variable    PT15H
     Create Composition With 24 Hours Average - Invalid Value    ${24HoursAvg_Value}
     Should Contain    ${errMsg}    The value ${24HoursAvg_Value} must be >= PT24H
+    [Teardown]      Change Json 24 Hour Average Value and Save Back To File
+    ...     ${initalJson}      PT24H
+
 
 
 Create new event COMPOSITION FLAT with 24 Hours Average - 0 value
@@ -62,6 +65,8 @@ Create new event COMPOSITION FLAT with 24 Hours Average - 0 value
     ${24HoursAvg_Value}     Set Variable    PT0S
     Create Composition With 24 Hours Average - Invalid Value    ${24HoursAvg_Value}
     Should Contain    ${errMsg}    The value ${24HoursAvg_Value} must be >= PT24H
+    [Teardown]      Change Json 24 Hour Average Value and Save Back To File
+    ...     ${initalJson}      PT24H
 
 
 Create new event COMPOSITION FLAT with 24 Hours Average - 27 value
@@ -69,6 +74,8 @@ Create new event COMPOSITION FLAT with 24 Hours Average - 27 value
     ${24HoursAvg_Value}     Set Variable    PT27H
     Create Composition With 24 Hours Average - Invalid Value    ${24HoursAvg_Value}
     Should Contain    ${errMsg}    The value ${24HoursAvg_Value} must be <= PT24H
+    [Teardown]      Change Json 24 Hour Average Value and Save Back To File
+    ...     ${initalJson}      PT24H
 
 
 Create new event COMPOSITION FLAT with 24 Hours Average - -1 value
@@ -76,6 +83,8 @@ Create new event COMPOSITION FLAT with 24 Hours Average - -1 value
     ${24HoursAvg_Value}     Set Variable    PT-1H
     Create Composition With 24 Hours Average - Invalid Value    ${24HoursAvg_Value}
     Should Contain    ${errMsg}    The value ${24HoursAvg_Value} must be >= PT24H
+    [Teardown]      Change Json 24 Hour Average Value and Save Back To File
+    ...     ${initalJson}      PT24H
 
 
 Create new event COMPOSITION FLAT with 24 Hours Average - -24 value
@@ -83,6 +92,8 @@ Create new event COMPOSITION FLAT with 24 Hours Average - -24 value
     ${24HoursAvg_Value}     Set Variable    PT-24H
     Create Composition With 24 Hours Average - Invalid Value    ${24HoursAvg_Value}
     Should Contain    ${errMsg}    The value ${24HoursAvg_Value} must be >= PT24H
+    [Teardown]      Change Json 24 Hour Average Value and Save Back To File
+    ...     ${initalJson}      PT24H
 
 
 *** Keywords ***
@@ -94,6 +105,7 @@ Create Composition With 24 Hours Average - Invalid Value
     [Arguments]     ${24HoursVal}
     Load Json File With Composition
     ${initalJson}           Load Json From File     ${compositionFilePath}
+    Set Test Variable       ${initalJson}
     Change Json 24 Hour Average Value and Save Back To File
     ...     ${initalJson}      ${24HoursVal}
     commit composition      format=FLAT
