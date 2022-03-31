@@ -691,7 +691,6 @@ check if get templates response has
     END
 
 
-
 get versioned composition by uid
     [Arguments]         ${format}    ${uid}
     [Documentation]     :uid: versioned_object_uid

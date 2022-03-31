@@ -35,6 +35,7 @@ Main flow create Template and GET by Template ID
     Extract Template_id From OPT File
     get web template by template id     ${template_id}
 
+
 Main flow create and GET all Templates
     [Tags]
     upload OPT ECIS     all_types/family_history.opt

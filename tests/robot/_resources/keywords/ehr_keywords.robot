@@ -108,11 +108,11 @@ create new EHR
 
                             Output Debug Info To Console  # NOTE: won't work with content-type=XML
     ELSE
-        &{prms}=            Create Dictionary   subjectId=test
-                            ...                 subjectNamespace=test123
+        &{prms}=            Create Dictionary   subjectId=74777-1259
+                            ...                 subjectNamespace=testIssuer
 
-        &{resp}=            POST On Session    ${SUT}   ${ECISURL}/ehr   params=&{prms}
-                            Integer      response status    201
+        &{resp}=            POST On Session     ${SUT}   ${ECISURL}/ehr   params=&{prms}
+                            Status Should Be    201
 
                             extract ehr_id from response (JSON)
                             extract system_id from response (JSON)

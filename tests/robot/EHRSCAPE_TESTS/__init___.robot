@@ -24,7 +24,4 @@ Documentation    EHRSCAPE TEST SUITE
 ...
 ...              test documentation: to be defined
 
-# Suite Setup  startup SUT
-# Suite Teardown  shutdown SUT
-
 Force Tags    EHRSCAPE

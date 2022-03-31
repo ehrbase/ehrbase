@@ -24,7 +24,6 @@ Documentation   EHRScape Composition Test. CRUD operations on Composition (Creat
 
 Resource        ../_resources/keywords/composition_keywords.robot
 
-#Suite Setup         Precondition
 Suite Teardown      restart SUT
 
 
@@ -66,8 +65,8 @@ Main flow create and delete Composition
     ## Delete action
     delete composition    ${composition_uid}    ehrScape=true
     get deleted composition (EHRScape)
-    TRACE GITHUB ISSUE
-    [Teardown]      TRACE GITHUB ISSUE  CDR-324  bug  reladed
+    [Teardown]      TRACE JIRA ISSUE    CDR-324
+
 
 *** Keywords ***
 Create Template
