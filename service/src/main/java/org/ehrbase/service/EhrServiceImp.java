@@ -81,6 +81,9 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
     @PostConstruct
     public void init() {
+        // Create local system UUID
+        getSystemUuid();
+
         emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
     }
 
