@@ -975,14 +975,14 @@ jobs:
 
   EHRScape-tests:
     executor: docker-py3-java11-postgres
-      # executor: machine-ubuntu-2004
+    # executor: machine-ubuntu-2004
     steps:
       - checkout
       - restore-packaged-ehrbase-jar
       - run-robot-tests:
           include-tags: "EHRSCAPE"
           test-suite-path: "EHRSCAPE_TESTS"
-          test-suite-name: "EHRScape-tests"
+          test-suite-name: "EHRSCAPE"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
