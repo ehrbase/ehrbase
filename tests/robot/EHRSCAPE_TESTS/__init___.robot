@@ -24,4 +24,6 @@ Documentation    EHRSCAPE TEST SUITE
 ...
 ...              test documentation: to be defined
 
+Resource    ../_resources/suite_settings.robot
+
 Force Tags    EHRSCAPE
