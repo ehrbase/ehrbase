@@ -19,7 +19,7 @@
 
 
 *** Settings ***
-Documentation   EHRScape Composition Test. CRUD operations on Composition (Create, Update, Delete, Get)
+Documentation   EHRScape Tests
 ...             Documentation URL to be defined
 
 Resource        ../_resources/keywords/composition_keywords.robot

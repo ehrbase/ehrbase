@@ -19,7 +19,7 @@
 
 
 *** Settings ***
-Documentation   EHRScape Template Test
+Documentation   EHRScape Tests
 ...             Documentation URL to be defined
 
 Resource        ../_resources/keywords/composition_keywords.robot

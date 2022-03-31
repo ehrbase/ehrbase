@@ -19,7 +19,7 @@
 
 
 *** Settings ***
-Documentation   EHRScape EHR Tests. CRUD operations on EHR (Create, Update, Delete, Get)
+Documentation   EHRScape Tests
 ...             Documentation URL to be defined
 
 Resource        ../_resources/keywords/composition_keywords.robot
