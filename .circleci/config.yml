@@ -634,8 +634,8 @@ workflows:
             - build package ehrbase with locally installed sdk
       - EHRScape-tests:
           context: org-global
-            requires:
-              - build package ehrbase with locally installed sdk
+          requires:
+            - build package ehrbase with locally installed sdk
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -976,13 +976,13 @@ jobs:
   EHRScape-tests:
     executor: docker-py3-java11-postgres
       # executor: machine-ubuntu-2004
-      steps:
-          - checkout
-            - restore-packaged-ehrbase-jar
-            - run-robot-tests:
-            include-tags: "EHRSCAPE"
-            test-suite-path: "EHRSCAPE_TESTS"
-            test-suite-name: "EHRScape-tests"
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "EHRSCAPE"
+          test-suite-path: "EHRSCAPE_TESTS"
+          test-suite-name: "EHRScape-tests"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
