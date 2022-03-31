@@ -89,23 +89,41 @@ check response of 'update EHR' (JSON)
 create new EHR
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
     ...                 DEPENDENCY: `prepare new request session`
+    [Arguments]         ${ehrScape}=False
 
-    &{resp}=            REST.POST    ${baseurl}/ehr
-                        Integer      response status    201
+    IF      '${ehrScape}' == 'False'
+        &{resp}=            REST.POST    ${baseurl}/ehr
+                            Integer      response status    201
 
-                        extract ehr_id from response (JSON)
-                        extract system_id from response (JSON)
+                            extract ehr_id from response (JSON)
+                            extract system_id from response (JSON)
 
-                        # TODO: @WLAD check Github Issue #272
-                        # extract subject_id from response (JSON)
+                            # TODO: @WLAD check Github Issue #272
+                            # extract subject_id from response (JSON)
 
-                        extract ehr_status from response (JSON)
-                        extract ehrstatus_uid (JSON)
+                            extract ehr_status from response (JSON)
+                            extract ehrstatus_uid (JSON)
 
-                        Set Suite Variable    ${response}    ${resp}
+                            Set Suite Variable    ${response}    ${resp}
 
-                        Output Debug Info To Console  # NOTE: won't work with content-type=XML
+                            Output Debug Info To Console  # NOTE: won't work with content-type=XML
+    ELSE
+        &{prms}=            Create Dictionary   subjectId=74777-1259
+                            ...                 subjectNamespace=testIssuer
 
+        &{resp}=            POST On Session     ${SUT}   ${ECISURL}/ehr   params=&{prms}
+                            Status Should Be    201
+
+                            extract ehr_id from response (JSON)
+                            extract system_id from response (JSON)
+
+                            extract ehr_status from response (JSON)
+                            extract ehrstatus_uid (JSON)
+
+                            Set Suite Variable    ${response}    ${resp}
+
+                            Output Debug Info To Console  # NOTE: won't work with content-type=XML
+    END
 
 #TODO: @WLAD  rename KW name when refactor this resource file
 create supernew ehr

@@ -144,6 +144,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -219,6 +225,7 @@ workflows:
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
             - HEADER-tests
+            - EHRScape-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -364,6 +371,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -433,6 +446,7 @@ workflows:
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
             - HEADER-tests
+            - EHRScape-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -618,6 +632,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally installed sdk
+      - EHRScape-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally installed sdk
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -673,6 +691,7 @@ workflows:
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
             - HEADER-tests
+            - EHRScape-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -953,6 +972,17 @@ jobs:
           include-tags: "HeadersChecks"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "HEADER-tests"
+
+  EHRScape-tests:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-packaged-ehrbase-jar
+      - run-robot-tests:
+          include-tags: "EhrScapeTag"
+          test-suite-path: "EHRSCAPE_TESTS"
+          test-suite-name: "EHRSCAPE"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
