@@ -29,8 +29,22 @@ import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -56,11 +70,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.*;
 
 /**
  * {@link CompositionService} implementation.
@@ -206,7 +215,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             description,
             null);
 
-    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
+    return Optional.of(compoId);
   }
 
   @Override
@@ -221,7 +230,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             null,
             null,
             contribution);
-    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
+    return Optional.of(compoId);
   }
 
   @Override
@@ -233,16 +242,15 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    * Update of an existing composition. With optional custom contribution, or existing one will be
    * updated.
    *
-   * @param compositionId  ID of existing composition
-   * @param composition    RMObject instance of the given Composition which represents the new
-   *                       version
-   * @param systemId       Audit system; or NULL if contribution is given
-   * @param committerId    Audit committer; or NULL if contribution is given
-   * @param description    (Optional) Audit description; or NULL if contribution is given
+   * @param compositionId ID of existing composition
+   * @param composition RMObject instance of the given Composition which represents the new version
+   * @param systemId Audit system; or NULL if contribution is given
+   * @param committerId Audit committer; or NULL if contribution is given
+   * @param description (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if new one should be created; or ID of given custom contribution
    * @return Version UID pointing to updated composition
    */
-  private ObjectVersionId internalUpdate(
+  private UUID internalUpdate(
       UUID compositionId,
       Composition composition,
       UUID systemId,
@@ -313,10 +321,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     if (!result) {
       throw new InternalServerException("Update failed on composition:" + compositionId);
     }
-    return new ObjectVersionId(
-        compositionId.toString(),
-        this.getServerConfig().getNodename(),
-        getLastVersionNumber(compositionId).toString());
+    return compositionId;
   }
 
   @Override

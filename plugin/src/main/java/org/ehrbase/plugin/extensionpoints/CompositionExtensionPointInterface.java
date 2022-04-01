@@ -16,11 +16,11 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
-import org.ehrbase.plugin.dto.CompositionWithEhrId;
-import org.pf4j.ExtensionPoint;
-
 import java.util.UUID;
 import java.util.function.Function;
+import org.ehrbase.plugin.dto.CompositionWithEhrId;
+import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
+import org.pf4j.ExtensionPoint;
 
 /**
  * Extension Point for Component handling.
@@ -43,6 +43,23 @@ public interface CompositionExtensionPointInterface extends ExtensionPoint {
    */
   default UUID aroundCreation(
       CompositionWithEhrId input, Function<CompositionWithEhrId, UUID> chain) {
+    return chain.apply(input);
+  }
+
+  /**
+   * Intercept Composition update
+   *
+   * @param input {@link com.nedap.archie.rm.composition.Composition} to update previous version
+   *     {@link com.nedap.archie.rm.support.identification.ObjectVersionId} in ehr with ehrId {@link
+   *     UUID}
+   * @param chain next Extension Point
+   * @return {@link UUID} of the updated Composition
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  default UUID aroundUpdate(
+      CompositionWithEhrIdAndPreviousVersion input,
+      Function<CompositionWithEhrIdAndPreviousVersion, UUID> chain) {
     return chain.apply(input);
   }
 }

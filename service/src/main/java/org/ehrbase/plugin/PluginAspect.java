@@ -19,6 +19,7 @@ package org.ehrbase.plugin;
 import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
+import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
 import org.ehrbase.plugin.extensionpoints.CompositionExtensionPointInterface;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -96,6 +98,40 @@ public class PluginAspect {
             input,
             i -> {
               args[1] = i.getComposition();
+              args[0] = i.getEhrId();
+
+              return ((Optional<UUID>) proceed(pjp, args)).orElseThrow();
+            }));
+  }
+
+  /**
+   * Handle Extension-points for Composition update
+   *
+   * @param pjp
+   * @return
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  @Around("execution(* org.ehrbase.api.service.CompositionService.update(..))")
+  public Object aroundUpdateComposition(ProceedingJoinPoint pjp) {
+
+    Chain<CompositionExtensionPointInterface> chain =
+        buildChain(
+            getCompositionExtensionPointInterfaceList(),
+            new CompositionExtensionPointInterface() {});
+    Object[] args = pjp.getArgs();
+    CompositionWithEhrIdAndPreviousVersion input =
+        new CompositionWithEhrIdAndPreviousVersion(
+            (Composition) args[2], (ObjectVersionId) args[1], (UUID) args[0]);
+
+    return Optional.of(
+        handleChain(
+            chain,
+            l -> (l::aroundUpdate),
+            input,
+            i -> {
+              args[2] = i.getComposition();
+              args[1] = i.getPreviousVersion();
               args[0] = i.getEhrId();
 
               return ((Optional<UUID>) proceed(pjp, args)).orElseThrow();

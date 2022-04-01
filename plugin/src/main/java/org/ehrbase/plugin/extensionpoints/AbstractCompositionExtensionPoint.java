@@ -16,10 +16,10 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
-import org.ehrbase.plugin.dto.CompositionWithEhrId;
-
 import java.util.UUID;
 import java.util.function.Function;
+import org.ehrbase.plugin.dto.CompositionWithEhrId;
+import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
 
 /**
  * Provides After and Before Interceptors for {@link CompositionExtensionPointInterface}
@@ -43,7 +43,7 @@ public abstract class AbstractCompositionExtensionPoint
   }
 
   /**
-   * Intercept Composition create
+   * Called after Composition create
    *
    * @param output {@link UUID} of the created Composition
    * @return {@link UUID} of the created Composition
@@ -58,5 +58,39 @@ public abstract class AbstractCompositionExtensionPoint
   public UUID aroundCreation(
       CompositionWithEhrId input, Function<CompositionWithEhrId, UUID> chain) {
     return afterCreation(chain.apply(beforeCreation(input)));
+  }
+
+  /**
+   * Called before Composition update
+   *
+   * @param input {@link com.nedap.archie.rm.composition.Composition} to update previous version
+   *     {@link com.nedap.archie.rm.support.identification.ObjectVersionId} in ehr with ehrId {@link
+   *     UUID}
+   * @return input to be given to Composition update
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public CompositionWithEhrIdAndPreviousVersion beforeUpdate(
+      CompositionWithEhrIdAndPreviousVersion input) {
+    return input;
+  }
+
+  /**
+   * Called after Composition update
+   *
+   * @param output {@link UUID} of the updated Composition
+   * @return {@link UUID} of the updated Composition
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public UUID afterUpdate(UUID output) {
+    return output;
+  }
+
+  @Override
+  public UUID aroundUpdate(
+      CompositionWithEhrIdAndPreviousVersion input,
+      Function<CompositionWithEhrIdAndPreviousVersion, UUID> chain) {
+    return afterUpdate(chain.apply(beforeUpdate(input)));
   }
 }
