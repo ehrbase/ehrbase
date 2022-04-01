@@ -18,13 +18,14 @@
 
 package org.ehrbase.rest.openehr;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
+import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.response.openehr.ResponseData;
 import org.ehrbase.response.openehr.TemplateResponseData;
 import org.ehrbase.response.openehr.TemplatesResponseData;
@@ -143,6 +144,27 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData().get()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+
+    @GetMapping(path = "/adl1.4/{template_id}/example")
+    public ResponseEntity<CompositionResponseData> getTemplateExample(
+        @RequestHeader(value = ACCEPT, required = false) String accept,
+        @PathVariable(value = "template_id") String templateId) {
+        CompositionFormat format = extractCompositionFormat(accept);
+        StructuredString example = templateService.buildExample(templateId, format);
+        CompositionResponseData data = new CompositionResponseData(example.getValue(), example.getFormat());
+
+        HttpHeaders respHeaders = new HttpHeaders();
+          if (format.equals(CompositionFormat.XML)) {
+            respHeaders.setContentType(MediaType.APPLICATION_XML);
+        } else if (format.equals(CompositionFormat.JSON)) {
+            respHeaders.setContentType(MediaType.APPLICATION_JSON);
+        }
+
+        return ResponseEntity.ok()
+                .headers(respHeaders)
+                .body(data);
     }
 
     /*

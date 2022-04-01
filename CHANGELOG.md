@@ -9,6 +9,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Implement template example endpoints
+
 ### Changed
 - Upgrade to Spring boot 2.5.12
   see [spring-framework-rce](https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement) ([#800](https://github.com/ehrbase/ehrbase/pull/800))
@@ -26,6 +28,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
+
 - Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
 - Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
   and [#796](https://github.com/ehrbase/ehrbase/pull/796)

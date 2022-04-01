@@ -71,10 +71,10 @@ public class TemplateController extends BaseController {
     @GetMapping(path = "/{templateId}/example")
     public ResponseEntity<TemplateExampleResponseData> getTemplateExample(@PathVariable(value = "templateId") String templateId,
                                                                           @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
-
         TemplateExampleResponseData responseData = new TemplateExampleResponseData();
         responseData.setComposition(templateService.buildExample(templateId, format));
         responseData.setAction(Action.RETRIEVE);
+        responseData.setFormat(format);
         RestHref url = new RestHref();
         url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/template" + templateId + "/example");
         Meta meta = new Meta();
