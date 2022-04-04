@@ -427,7 +427,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public Optional<CompositionDto> retrieve(UUID compositionId, Integer version)
+  public Optional<CompositionDto> retrieve(UUID ehrId, UUID compositionId, Integer version)
       throws InternalServerException {
 
     final I_CompositionAccess compositionAccess;
@@ -442,9 +442,15 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     return getCompositionDto(compositionAccess);
   }
 
+  @Override
+  public UUID getEhrId(UUID compositionId) {
+    return I_CompositionAccess.getEhrId(getDataAccess(), compositionId);
+  }
+
   // TODO: untested because not needed, yet
   @Override
-  public Optional<CompositionDto> retrieveByTimestamp(UUID compositionId, LocalDateTime timestamp) {
+  public Optional<CompositionDto> retrieveByTimestamp(
+      UUID ehrId, UUID compositionId, LocalDateTime timestamp) {
     I_CompositionAccess compositionAccess;
     try {
       compositionAccess =
@@ -674,7 +680,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public VersionedComposition getVersionedComposition(UUID ehrId, UUID composition) {
-    Optional<CompositionDto> dto = retrieve(composition, 1);
+    Optional<CompositionDto> dto = retrieve(ehrId, composition, 1);
 
     VersionedComposition compo = new VersionedComposition();
     if (dto.isPresent()) {
@@ -699,14 +705,14 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID composition) {
+  public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition) {
     // get number of versions
     int versions = getLastVersionNumber(composition);
     // fetch each version and add to revision history
     RevisionHistory revisionHistory = new RevisionHistory();
     for (int i = 1; i <= versions; i++) {
       Optional<OriginalVersion<Composition>> compoVersion =
-          getOriginalVersionComposition(composition, i);
+          getOriginalVersionComposition(ehrUid, composition, i);
       compoVersion.ifPresent(
           compositionOriginalVersion ->
               revisionHistory.addItem(
@@ -750,7 +756,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public Optional<OriginalVersion<Composition>> getOriginalVersionComposition(
-      UUID versionedObjectUid, int version) {
+      UUID ehrUid, UUID versionedObjectUid, int version) {
     // check for valid version parameter
     if ((version == 0)
         || I_CompositionAccess.getLastVersionNumber(getDataAccess(), versionedObjectUid)
@@ -804,7 +810,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
               versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
     }
 
-    Optional<CompositionDto> compositionDto = retrieve(versionedObjectUid, version);
+    Optional<CompositionDto> compositionDto = retrieve(ehrUid, versionedObjectUid, version);
     Composition composition = null;
     if (compositionDto.isPresent()) {
       composition = compositionDto.get().getComposition();

@@ -18,6 +18,16 @@ package org.ehrbase.application.abac;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
@@ -38,17 +48,6 @@ import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Implementation of custom security expression, to be used in e.g. @PreAuthorize(..) to allow ABAC
@@ -354,7 +353,9 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
             // try if this is the Delete composition case. Payload would contain the UUID of the compo.
             ObjectVersionId versionId = new ObjectVersionId((String) payload);
             UUID compositionUid = UUID.fromString(versionId.getRoot().getValue());
-            Optional<CompositionDto> compoDto = compositionService.retrieve(compositionUid, null);
+            Optional<CompositionDto> compoDto =
+                compositionService.retrieve(
+                    compositionService.getEhrId(compositionUid), compositionUid, null);
             if (compoDto.isPresent()) {
               Composition c = compoDto.get().getComposition();
               if (c.getArchetypeDetails() != null && c.getArchetypeDetails().getTemplateId() != null) {

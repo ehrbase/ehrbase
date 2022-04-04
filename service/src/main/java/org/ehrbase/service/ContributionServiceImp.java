@@ -369,8 +369,9 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 // deleting an object without knowing which type it is requires checking of type, here with nested try-catch blocks
                 UUID objectUid = getVersionedUidFromVersion(version);
                 try {
-                    // throw exception to signal no matching composition was found
-                    CompositionDto compo = compositionService.retrieve(objectUid, null).orElseThrow(Exception::new);
+          // throw exception to signal no matching composition was found
+          CompositionDto compo =
+              compositionService.retrieve(ehrId, objectUid, null).orElseThrow(Exception::new);
                     String actualPreceding = getAndCheckActualPreceding(version);
                     compositionService.delete(ehrId, new ObjectVersionId(actualPreceding), contributionId);
                 } catch (Exception e) { // given version ID is not of type composition - ignoring the exception because it is expected possible outcome

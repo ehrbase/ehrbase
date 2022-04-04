@@ -22,35 +22,35 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
-
 public interface CompositionService extends BaseService, VersionedObjectService<Composition, UUID> {
-    /**
-     * @param compositionId The {@link UUID} of the composition to be returned.
-     * @param version       The version to returned. If null return the latest
-     * @return
-     * @throws InternalServerException
-     */
-    Optional<CompositionDto> retrieve(UUID compositionId, Integer version);
+  /**
+   * @param compositionId The {@link UUID} of the composition to be returned.
+   * @param version The version to returned. If null return the latest
+   * @return
+   * @throws InternalServerException
+   */
+  Optional<CompositionDto> retrieve(UUID ehrId, UUID compositionId, Integer version);
 
-    /**
-     * TODO: untested because not needed, yet
-     *
-     * Gets the composition that is closest in time before timestamp
-     *
-     * @param compositionId UUID (versioned_object_id) of composition
-     * @param timestamp Given time
-     * @return Optional of CompositionDto closest in time before timestamp
-     */
-    Optional<CompositionDto> retrieveByTimestamp(UUID compositionId, LocalDateTime timestamp);
+  /**
+   * TODO: untested because not needed, yet
+   *
+   * <p>Gets the composition that is closest in time before timestamp
+   *
+   * @param compositionId UUID (versioned_object_id) of composition
+   * @param timestamp Given time
+   * @return Optional of CompositionDto closest in time before timestamp
+   */
+  Optional<CompositionDto> retrieveByTimestamp(
+      UUID ehrId, UUID compositionId, LocalDateTime timestamp);
 
     /**
      * Public serializer entry point which will be called with
@@ -120,24 +120,25 @@ public interface CompositionService extends BaseService, VersionedObjectService<
      */
     VersionedComposition getVersionedComposition(UUID ehrUid, UUID composition);
 
-    /**
-     * Gets revision history of given composition.
-     * @param composition Given composition.
-     * @return Revision history
-     */
-    RevisionHistory getRevisionHistoryOfVersionedComposition(UUID composition);
+  /**
+   * Gets revision history of given composition.
+   *
+   * @param composition Given composition.
+   * @return Revision history
+   */
+  RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition);
 
-    /**
-     * Gets Original Version container class representation of the given composition at given version.
-     * @param versionedObjectUid Given composition Uid.
-     * @param version Given version number.
-     * @return Original Version container class representation.
-     */
-    Optional<OriginalVersion<Composition>> getOriginalVersionComposition(UUID versionedObjectUid, int version);
+  /**
+   * Gets Original Version container class representation of the given composition at given version.
+   *
+   * @param versionedObjectUid Given composition Uid.
+   * @param version Given version number.
+   * @return Original Version container class representation.
+   */
+  Optional<OriginalVersion<Composition>> getOriginalVersionComposition(
+      UUID ehrUid, UUID versionedObjectUid, int version);
 
     Composition buildComposition(String content, CompositionFormat format, String templateId);
 
-
-
-
+  UUID getEhrId(UUID compositionId);
 }
