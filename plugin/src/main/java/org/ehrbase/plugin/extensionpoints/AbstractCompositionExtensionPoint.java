@@ -18,6 +18,7 @@ package org.ehrbase.plugin.extensionpoints;
 
 import java.util.UUID;
 import java.util.function.Function;
+import org.ehrbase.plugin.dto.CompositionVersionIdWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
 
@@ -92,5 +93,35 @@ public abstract class AbstractCompositionExtensionPoint
       CompositionWithEhrIdAndPreviousVersion input,
       Function<CompositionWithEhrIdAndPreviousVersion, UUID> chain) {
     return afterUpdate(chain.apply(beforeUpdate(input)));
+  }
+
+  /**
+   * Called before Composition delete
+   *
+   * @param input {@link com.nedap.archie.rm.composition.Composition} to update previous version
+   *     {@link com.nedap.archie.rm.support.identification.ObjectVersionId} in ehr with ehrId {@link
+   *     UUID}
+   * @return input to be given to Composition delete
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public CompositionVersionIdWithEhrId beforeDelete(CompositionVersionIdWithEhrId input) {
+    return input;
+  }
+
+  /**
+   * Called after Composition delete
+   *
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public Void afterDelete(Void v) {
+    return v;
+  }
+
+  @Override
+  public Void aroundDelete(
+      CompositionVersionIdWithEhrId input, Function<CompositionVersionIdWithEhrId, Void> chain) {
+    return afterDelete(chain.apply(beforeDelete(input)));
   }
 }

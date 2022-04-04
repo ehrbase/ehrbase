@@ -16,8 +16,10 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.UUID;
 import java.util.function.Function;
+import org.ehrbase.plugin.dto.CompositionVersionIdWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
 import org.pf4j.ExtensionPoint;
@@ -60,6 +62,20 @@ public interface CompositionExtensionPointInterface extends ExtensionPoint {
   default UUID aroundUpdate(
       CompositionWithEhrIdAndPreviousVersion input,
       Function<CompositionWithEhrIdAndPreviousVersion, UUID> chain) {
+    return chain.apply(input);
+  }
+
+  /**
+   * Intercept Composition delete
+   *
+   * @param input composition version {@link ObjectVersionId} in ehr with ehrId {@link UUID} to be
+   *     deleted
+   * @param chain next Extension Point
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  default Void aroundDelete(
+      CompositionVersionIdWithEhrId input, Function<CompositionVersionIdWithEhrId, Void> chain) {
     return chain.apply(input);
   }
 }

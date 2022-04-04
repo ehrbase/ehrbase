@@ -325,13 +325,13 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public boolean delete(
+  public void delete(
       UUID ehrId,
       ObjectVersionId targetObjId,
       UUID systemId,
       UUID committerId,
       String description) {
-    return internalDelete(
+    internalDelete(
         UUID.fromString(targetObjId.getObjectId().getValue()),
         systemId,
         committerId,
@@ -340,28 +340,27 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-    return internalDelete(
+  public void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
+    internalDelete(
         UUID.fromString(targetObjId.getObjectId().getValue()), null, null, null, contribution);
   }
 
   @Override
-  public boolean delete(UUID ehrId, ObjectVersionId targetObjId) {
-    return delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
+  public void delete(UUID ehrId, ObjectVersionId targetObjId) {
+    delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
   }
 
   /**
    * Deletion of an existing composition. With optional custom contribution, or existing one will be
    * updated.
    *
-   * @param compositionId  ID of existing composition
-   * @param systemId       Audit system; or NULL if contribution is given
-   * @param committerId    Audit committer; or NULL if contribution is given
-   * @param description    (Optional) Audit description; or NULL if contribution is given
+   * @param compositionId ID of existing composition
+   * @param systemId Audit system; or NULL if contribution is given
+   * @param committerId Audit committer; or NULL if contribution is given
+   * @param description (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
-   * @return Time of deletion, if successful
    */
-  private boolean internalDelete(
+  private void internalDelete(
       UUID compositionId,
       UUID systemId,
       UUID committerId,
@@ -401,8 +400,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     if (result <= 0) {
       throw new InternalServerException(
           "Delete failed on composition:" + compositionAccess.getId());
-    } else {
-      return true;
     }
   }
 

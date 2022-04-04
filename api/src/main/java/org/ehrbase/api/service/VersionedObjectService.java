@@ -93,6 +93,7 @@ public interface VersionedObjectService<T extends Locatable, U> {
 
   /**
    * Deletion with given audit meta-data. Will create a new ad-hoc contribution.
+   *
    * @param ehrId EHR ID of context
    * @param targetObjId ID of target object
    * @param systemId Audit system ID
@@ -100,23 +101,25 @@ public interface VersionedObjectService<T extends Locatable, U> {
    * @param description Optional audit description text
    * @return True if successful
    */
-  boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId, String description);
+  void delete(
+      UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId, String description);
 
   /**
    * Deletion with a given contribution, and its audit meta-data.
+   *
    * @param ehrId EHR ID of context
    * @param targetObjId ID of target object
    * @param contribution Contribution for operation
    * @return True if successful
    */
-  boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution);
+  void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution);
 
   /**
    * Deletion with default audit meta-data. Will create a new ad-hoc contribution.
+   *
    * @param ehrId EHR ID of context
    * @param targetObjId ID of target object
    * @return True if successful
    */
-  boolean delete(UUID ehrId, ObjectVersionId targetObjId);
-
+  void delete(UUID ehrId, ObjectVersionId targetObjId);
 }

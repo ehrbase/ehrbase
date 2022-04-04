@@ -18,10 +18,18 @@
 
 package org.ehrbase.service;
 
+import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
+
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -44,15 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
 
 @Service
 @Transactional
@@ -241,32 +240,35 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId,
-        String description) {
-        return internalDelete(targetObjId, systemId, committerId, description, null);
+  /** {@inheritDoc} */
+  @Override
+  public void delete(
+      UUID ehrId,
+      ObjectVersionId targetObjId,
+      UUID systemId,
+      UUID committerId,
+      String description) {
+    internalDelete(targetObjId, systemId, committerId, description, null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-        return internalDelete(targetObjId, null, null, null, contribution);
+  /** {@inheritDoc} */
+  @Override
+  public void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
+    internalDelete(targetObjId, null, null, null, contribution);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean delete(UUID ehrId, ObjectVersionId targetObjId) {
-        return delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
+  /** {@inheritDoc} */
+  @Override
+  public void delete(UUID ehrId, ObjectVersionId targetObjId) {
+    delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
     }
 
-    private boolean internalDelete(ObjectVersionId folderId, UUID systemId, UUID committerId, String description, UUID contribution) {
+  private void internalDelete(
+      ObjectVersionId folderId,
+      UUID systemId,
+      UUID committerId,
+      String description,
+      UUID contribution) {
 
         I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
 
@@ -279,9 +281,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
             result = folderAccess.delete(timestamp, contribution);
         }
 
-        if (result > 0) {
-            return true;
-        } else {
+    if (result <= 0) {
             // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors
             // On the server side
             throw new InternalServerException("Error during deletion of folder " + folderId);

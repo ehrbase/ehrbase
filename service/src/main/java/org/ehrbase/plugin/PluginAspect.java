@@ -33,6 +33,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.plugin.dto.CompositionVersionIdWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
 import org.ehrbase.plugin.extensionpoints.CompositionExtensionPointInterface;
@@ -58,7 +59,6 @@ public class PluginAspect {
               .reversed()
               // ensure constant ordering
               .thenComparing(Map.Entry::getKey);
-
 
   private static class Chain<T> {
 
@@ -136,6 +136,38 @@ public class PluginAspect {
 
               return ((Optional<UUID>) proceed(pjp, args)).orElseThrow();
             }));
+  }
+
+  /**
+   * Handle Extension-points for Composition update
+   *
+   * @param pjp
+   * @return
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  @Around("execution(* org.ehrbase.api.service.CompositionService.delete(..))")
+  public void aroundDeleteComposition(ProceedingJoinPoint pjp) {
+
+    Chain<CompositionExtensionPointInterface> chain =
+        buildChain(
+            getCompositionExtensionPointInterfaceList(),
+            new CompositionExtensionPointInterface() {});
+    Object[] args = pjp.getArgs();
+    CompositionVersionIdWithEhrId input =
+        new CompositionVersionIdWithEhrId((ObjectVersionId) args[1], (UUID) args[0]);
+
+    handleChain(
+        chain,
+        l -> (l::aroundDelete),
+        input,
+        i -> {
+          args[1] = i.getVersionId();
+          args[0] = i.getEhrId();
+
+          proceed(pjp, args);
+          return (Void) null;
+        });
   }
 
   /**
