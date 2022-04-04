@@ -84,7 +84,7 @@ public class PersistedPartyProxy {
     public Collection<PartyProxy> retrieveMany(List<UUID> uuids) {
         Collection<PartyProxy> partyProxies = new ArrayList<>();
         
-        if(uuids.size() == 0)
+        if(uuids.isEmpty())
             return partyProxies;
         
         Result<PartyIdentifiedRecord> result = domainAccess.getContext()
