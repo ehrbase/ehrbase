@@ -29,8 +29,22 @@ import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
@@ -56,11 +70,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.*;
 
 /**
  * {@link CompositionService} implementation.
@@ -132,6 +141,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       String description,
       UUID contributionId) {
 
+    // pre-step: check for existing and modifiable ehr
+    ehrService.checkEhrExistsAndIsModifiable(ehrId);
+
     // pre-step: validate
     try {
       validationService.check(composition);
@@ -144,11 +156,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       throw new ValidationException(e);
     } catch (Exception e) {
       throw new InternalServerException(e);
-    }
-
-    // pre-step: check for valid ehrId
-    if (!ehrService.hasEhr(ehrId)) {
-      throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
     }
 
     // actual creation
@@ -199,6 +206,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
     var compoId =
         internalUpdate(
+            ehrId,
             UUID.fromString(targetObjId.getObjectId().getValue()),
             objData,
             systemId,
@@ -215,6 +223,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
     var compoId =
         internalUpdate(
+            ehrId,
             UUID.fromString(targetObjId.getObjectId().getValue()),
             objData,
             null,
@@ -243,18 +252,29 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    * @return Version UID pointing to updated composition
    */
   private ObjectVersionId internalUpdate(
+      UUID ehrId,
       UUID compositionId,
       Composition composition,
       UUID systemId,
       UUID committerId,
       String description,
       UUID contributionId) {
+
+    //pre-step: check ehr exists and is modifiable
+    ehrService.checkEhrExistsAndIsModifiable(ehrId);
+
     boolean result;
     try {
       var compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
       if (compositionAccess == null) {
         throw new ObjectNotFoundException(
             I_CompositionAccess.class.getName(), "Could not find composition: " + compositionId);
+      }
+
+      if (!ehrId.equals(compositionAccess.getEhrid())) {
+        throw new ObjectNotFoundException("COMPOSITION",
+                                          String.format("EHR with id %s does not contain composition with id %s", ehrId,
+                                                        compositionAccess.getEhrid()));
       }
 
       // validate RM composition
@@ -327,6 +347,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       UUID committerId,
       String description) {
     return internalDelete(
+        ehrId,
         UUID.fromString(targetObjId.getObjectId().getValue()),
         systemId,
         committerId,
@@ -337,7 +358,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   @Override
   public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
     return internalDelete(
-        UUID.fromString(targetObjId.getObjectId().getValue()), null, null, null, contribution);
+        ehrId, UUID.fromString(targetObjId.getObjectId().getValue()), null, null, null, contribution);
   }
 
   @Override
@@ -357,11 +378,16 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    * @return Time of deletion, if successful
    */
   private boolean internalDelete(
+      UUID ehrId,
       UUID compositionId,
       UUID systemId,
       UUID committerId,
       String description,
       UUID contributionId) {
+
+    //pre-step: check if ehr exists and is modifiable
+    ehrService.checkEhrExistsAndIsModifiable(ehrId);
+
     I_CompositionAccess compositionAccess;
     try {
       compositionAccess = I_CompositionAccess.retrieveInstance(getDataAccess(), compositionId);
@@ -372,6 +398,12 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     if (compositionAccess == null) {
       throw new ObjectNotFoundException(
           I_CompositionAccess.class.getName(), "Could not find composition:" + compositionId);
+    }
+
+    if (!ehrId.equals(compositionAccess.getEhrid())) {
+      throw new ObjectNotFoundException("COMPOSITION",
+                                        String.format("EHR with id %s does not contain composition with id %s", ehrId,
+                                                      compositionAccess.getEhrid()));
     }
 
     int result;
