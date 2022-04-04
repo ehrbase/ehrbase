@@ -17,16 +17,13 @@
 
 
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Authors    *Vladislav Ploaia, Adil Mushtaque*
+Metadata    Version    1.0
+Metadata    Authors    *Vladislav Ploaia*
 
-Documentation    COMPOSITION TEST SUITE
+Documentation    EHRSCAPE TEST SUITE
 ...
 ...              test documentation: to be defined
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource    ../_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
-
-Force Tags    HeadersChecks
+Force Tags    EhrScapeTag

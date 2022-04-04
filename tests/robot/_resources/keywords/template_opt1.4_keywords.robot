@@ -95,12 +95,19 @@ upload invalid OPT
 upload OPT file
     [Documentation]     Uploads OPT file which was obtained with one of the Keywords
     ...                 `get valid OPT file` or `get invalid OPT file`
-
     ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
                         Set Suite Variable    ${response}    ${resp}
                         # Log To Console      ${resp.content}
 
+upload OPT file ECIS
+    [Documentation]     Uploads OPT file which was obtained with one of the Keywords
+    ...                 `get valid OPT file` or `get invalid OPT file`
+
+    ${resp}=            POST On Session      ${SUT}    ${ECISURL}/template   expected_status=anything
+                        ...                  data=${file}    headers=${headers}
+                        Set Suite Variable    ${response}    ${resp}
+                        # Log To Console      ${resp.content}
 
 upload OPT file with version parameter
     # to be implemented
@@ -132,7 +139,9 @@ verify server response
 
 
 server accepted OPT
-                        Should Be Equal As Strings    ${response.status_code}   201
+                        @{expectedStatusCodesList}      Create List     200     201
+                        ${string_status_code}    Convert To String    ${response.status_code}
+                        List Should Contain Value   ${expectedStatusCodesList}      ${string_status_code}
 
 
 server rejected OPT with status code ${status code}

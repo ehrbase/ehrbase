@@ -32,13 +32,34 @@ import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
-import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
+import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
+import org.ehrbase.dao.access.interfaces.I_FolderAccess;
+import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -51,10 +72,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
 
 @Service
 @Transactional
@@ -118,6 +135,10 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
     @Override
     public UUID commitContribution(UUID ehrId, String content, CompositionFormat format) {
+        /*Note: we do not perform is_modifiable checks here since a contribution may contain a modification of the
+        is_modifiable flag. The is_modifiable checks are performed per version in the service responsible for handling the
+        versions content*/
+
         //pre-step: check for valid ehrId
         if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());

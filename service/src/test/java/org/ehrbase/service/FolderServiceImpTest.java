@@ -1,6 +1,10 @@
 package org.ehrbase.service;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.nedap.archie.rm.directory.Folder;
+import java.io.IOException;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
@@ -11,11 +15,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.IOException;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class FolderServiceImpTest {
 
@@ -32,7 +31,7 @@ public class FolderServiceImpTest {
     public void setUp() throws Exception {
         KnowledgeCacheService knowledgeCache = KnowledgeCacheHelper
                 .buildKnowledgeCache(testFolder, cacheRule);
-        this.folderService = new FolderServiceImp(knowledgeCache, null, KnowledgeCacheHelper.buildServerConfig());
+        this.folderService = new FolderServiceImp(knowledgeCache, null, KnowledgeCacheHelper.buildServerConfig(), null);
     }
 
     @Ignore("the tested example contains the empty attributes serialized but the serialization does not print them. Decide about behaviour. " +

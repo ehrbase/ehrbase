@@ -668,8 +668,14 @@ TRACE GITHUB ISSUE
                     # Run Keyword If    '${type}'=='not-ready'    Set Tags    not-ready
 
 
+TRACE JIRA ISSUE
+    [Arguments]     ${JIRA_ISSUE}
+    ...             ${message}=Next step fails due to a bug!
+    ...             ${loglevel}=ERROR
+                    Log    ${message} | <a href="https://jira.vitagroup.ag/browse/${JIRA_ISSUE}">JIRA ISSUE ${JIRA_ISSUE}</a>
+                    ...    level=${loglevel}    html=True
 
-
+                    Set Tags    not-ready   ${JIRA_ISSUE}
 
 
 

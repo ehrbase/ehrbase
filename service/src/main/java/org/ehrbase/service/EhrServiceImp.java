@@ -19,21 +19,45 @@
 
 package org.ehrbase.service;
 
+import static org.ehrbase.jooq.pg.Routines.partyUsage;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.*;
+import com.nedap.archie.rm.generic.Attestation;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import javax.annotation.PostConstruct;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
-import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_EhrAccess;
+import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
@@ -51,19 +75,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Routines.partyUsage;
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 @Service(value = "ehrService")
 @Transactional()
@@ -331,6 +342,15 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public boolean hasEhr(UUID ehrId) {
         return I_EhrAccess.hasEhr(getDataAccess(), ehrId);
+    }
+
+
+    @Override
+    /*TODO This method should be cached...
+    For contributions it may be called n times where n is the number of versions in the contribution which will in turn mean
+    n SQL queries are performed*/
+    public boolean isModifiable(UUID ehrId) {
+        return I_EhrAccess.isModifiable(getDataAccess(), ehrId);
     }
 
     @Override
