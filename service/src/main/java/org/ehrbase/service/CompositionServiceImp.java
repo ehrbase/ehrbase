@@ -446,7 +446,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     }
 
     // check that the composition is actually in the ehr
-    checkCompositionIsInEhr(ehrId, compositionAccess);
+    if (compositionAccess != null) {
+      checkCompositionIsInEhr(ehrId, compositionAccess);
+    }
     return getCompositionDto(compositionAccess);
   }
 
@@ -472,7 +474,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       throw new InternalServerException(e);
     }
     // check that the composition is actually in the ehr
-    checkCompositionIsInEhr(ehrId, compositionAccess);
+    if (compositionAccess != null) {
+      checkCompositionIsInEhr(ehrId, compositionAccess);
+    }
 
     return getCompositionDto(compositionAccess);
   }
