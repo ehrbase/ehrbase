@@ -200,8 +200,7 @@ public class OpenehrCompositionController extends BaseController implements
     try {
       Composition compoObj = compositionService.buildComposition(composition, compositionFormat,
           null);
-      // TODO should have EHR as parameter and check for existence as precondition - see EHR-245 (no
-      // direct EHR access in this controller)
+
       // ifMatch header has to be tested for correctness already above
 
       var compositionVersionUid =

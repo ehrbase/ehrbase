@@ -269,12 +269,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         throw new ObjectNotFoundException(
             I_CompositionAccess.class.getName(), "Could not find composition: " + compositionId);
       }
-
-      if (!ehrId.equals(compositionAccess.getEhrid())) {
-        throw new ObjectNotFoundException("COMPOSITION",
-                                          String.format("EHR with id %s does not contain composition with id %s", ehrId,
-                                                        compositionAccess.getEhrid()));
-      }
+      // check that the  composition is actually in the ehr
+      checkCompositionIsInEhr(ehrId, compositionAccess);
 
       // validate RM composition
       validationService.check(composition);
@@ -333,6 +329,16 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       throw new InternalServerException("Update failed on composition:" + compositionId);
     }
     return compositionId;
+  }
+
+  private void checkCompositionIsInEhr(UUID ehrId, I_CompositionAccess compositionAccess) {
+    if (!ehrId.equals(compositionAccess.getEhrid())) {
+      throw new ObjectNotFoundException(
+          "COMPOSITION",
+          String.format(
+              "EHR with id %s does not contain composition with id %s",
+              ehrId, compositionAccess.getEhrid()));
+    }
   }
 
   @Override
@@ -394,12 +400,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       throw new ObjectNotFoundException(
           I_CompositionAccess.class.getName(), "Could not find composition:" + compositionId);
     }
-
-    if (!ehrId.equals(compositionAccess.getEhrid())) {
-      throw new ObjectNotFoundException("COMPOSITION",
-                                        String.format("EHR with id %s does not contain composition with id %s", ehrId,
-                                                      compositionAccess.getEhrid()));
-    }
+    // check that the  composition is actually in the ehr
+    checkCompositionIsInEhr(ehrId, compositionAccess);
 
     int result;
     if (contributionId != null) { // if custom contribution should be set
@@ -430,6 +432,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   public Optional<CompositionDto> retrieve(UUID ehrId, UUID compositionId, Integer version)
       throws InternalServerException {
 
+    // check that the ehr exists
+    ehrService.checkEhrExists(ehrId);
+
     final I_CompositionAccess compositionAccess;
     if (version != null) {
       compositionAccess =
@@ -439,6 +444,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
           I_CompositionAccess.retrieveCompositionVersion(
               getDataAccess(), compositionId, getLastVersionNumber(compositionId));
     }
+
+    // check that the composition is actually in the ehr
+    checkCompositionIsInEhr(ehrId, compositionAccess);
     return getCompositionDto(compositionAccess);
   }
 
@@ -451,6 +459,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   @Override
   public Optional<CompositionDto> retrieveByTimestamp(
       UUID ehrId, UUID compositionId, LocalDateTime timestamp) {
+
+    // check that the ehr exists
+    ehrService.checkEhrExists(ehrId);
+
     I_CompositionAccess compositionAccess;
     try {
       compositionAccess =
@@ -459,6 +471,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     } catch (Exception e) {
       throw new InternalServerException(e);
     }
+    // check that the composition is actually in the ehr
+    checkCompositionIsInEhr(ehrId, compositionAccess);
 
     return getCompositionDto(compositionAccess);
   }
