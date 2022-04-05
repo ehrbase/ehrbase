@@ -429,7 +429,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public Optional<CompositionDto> retrieve(UUID ehrId, UUID compositionId, Integer version)
+  public Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version)
       throws InternalServerException {
 
     // check that the ehr exists
@@ -449,7 +449,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     if (compositionAccess != null) {
       checkCompositionIsInEhr(ehrId, compositionAccess);
     }
-    return getCompositionDto(compositionAccess);
+    return getComposition(compositionAccess);
   }
 
   @Override
@@ -494,6 +494,23 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             i ->
                 new CompositionDto(
                     i.getComposition(), i.getTemplateId(), i.getCompositionId(), ehrId));
+  }
+
+  private Optional<Composition> getComposition(I_CompositionAccess compositionAccess) {
+    if (compositionAccess == null) {
+      return Optional.empty();
+    } else {
+      return compositionAccess.getContent().stream().findAny().map(I_EntryAccess::getComposition);
+    }
+  }
+
+  @Override
+  public CompositionDto from(UUID ehrId, Composition composition) {
+    return new CompositionDto(
+        composition,
+        composition.getArchetypeDetails().getTemplateId().getValue(),
+        UUID.fromString(composition.getUid().getValue()),
+        ehrId);
   }
 
   /**
@@ -698,7 +715,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public VersionedComposition getVersionedComposition(UUID ehrId, UUID composition) {
-    Optional<CompositionDto> dto = retrieve(ehrId, composition, 1);
+    Optional<CompositionDto> dto = retrieve(ehrId, composition, 1).map(c -> from(ehrId, c));
 
     VersionedComposition compo = new VersionedComposition();
     if (dto.isPresent()) {
@@ -828,10 +845,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
               versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
     }
 
-    Optional<CompositionDto> compositionDto = retrieve(ehrUid, versionedObjectUid, version);
+    Optional<Composition> compositionDto = retrieve(ehrUid, versionedObjectUid, version);
     Composition composition = null;
     if (compositionDto.isPresent()) {
-      composition = compositionDto.get().getComposition();
+      composition = compositionDto.get();
     }
 
     OriginalVersion<Composition> versionComposition =

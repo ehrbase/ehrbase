@@ -101,8 +101,11 @@ public class CompositionController extends BaseController {
       version = getCompositionVersion(compositionUid); // version number is inorder: 1, 2, 3 etc.
     }
 
+    UUID ehrId = compositionService.getEhrId(identifier);
     Optional<CompositionDto> compositionDto =
-        compositionService.retrieve(compositionService.getEhrId(identifier), identifier, version);
+        compositionService
+            .retrieve(ehrId, identifier, version)
+            .map(c -> compositionService.from(ehrId, c));
     if (compositionDto.isPresent()) {
 
       // Serialize onto target format

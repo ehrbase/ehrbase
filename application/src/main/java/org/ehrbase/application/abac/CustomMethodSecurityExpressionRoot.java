@@ -37,7 +37,6 @@ import org.ehrbase.application.abac.AbacConfig.AbacType;
 import org.ehrbase.application.abac.AbacConfig.Policy;
 import org.ehrbase.application.abac.AbacConfig.PolicyParameter;
 import org.ehrbase.aql.compiler.AuditVariables;
-import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.rest.BaseController;
@@ -353,11 +352,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
             // try if this is the Delete composition case. Payload would contain the UUID of the compo.
             ObjectVersionId versionId = new ObjectVersionId((String) payload);
             UUID compositionUid = UUID.fromString(versionId.getRoot().getValue());
-            Optional<CompositionDto> compoDto =
+            Optional<Composition> compoDto =
                 compositionService.retrieve(
                     compositionService.getEhrId(compositionUid), compositionUid, null);
             if (compoDto.isPresent()) {
-              Composition c = compoDto.get().getComposition();
+              Composition c = compoDto.get();
               if (c.getArchetypeDetails() != null && c.getArchetypeDetails().getTemplateId() != null) {
                 requestMap.put(TEMPLATE, c.getArchetypeDetails().getTemplateId().getValue());
               }

@@ -33,6 +33,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.plugin.dto.CompositionIdWithVersionAndEhrId;
 import org.ehrbase.plugin.dto.CompositionVersionIdWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
@@ -139,7 +140,7 @@ public class PluginAspect {
   }
 
   /**
-   * Handle Extension-points for Composition update
+   * Handle Extension-points for Composition delete
    *
    * @param pjp
    * @return
@@ -170,6 +171,37 @@ public class PluginAspect {
         });
   }
 
+  /**
+   * Handle Extension-points for Composition retrieve
+   *
+   * @param pjp
+   * @return
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  @Around("execution(* org.ehrbase.api.service.CompositionService.retrieve(..))")
+  public Object aroundRetrieveComposition(ProceedingJoinPoint pjp) {
+
+    Chain<CompositionExtensionPointInterface> chain =
+        buildChain(
+            getCompositionExtensionPointInterfaceList(),
+            new CompositionExtensionPointInterface() {});
+    Object[] args = pjp.getArgs();
+    CompositionIdWithVersionAndEhrId input =
+        new CompositionIdWithVersionAndEhrId((UUID) args[0], (UUID) args[1], (Integer) args[3]);
+
+    return handleChain(
+        chain,
+        l -> (l::aroundRetrieve),
+        input,
+        i -> {
+          args[2] = i.getVersion();
+          args[1] = i.getCompositionId();
+          args[0] = i.getEhrId();
+
+          return (Optional<Composition>) proceed(pjp, args);
+        });
+  }
   /**
    * Proceed with Error handling.
    *

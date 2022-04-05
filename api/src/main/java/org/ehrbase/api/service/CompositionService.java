@@ -38,7 +38,7 @@ public interface CompositionService extends BaseService, VersionedObjectService<
    * @return
    * @throws InternalServerException
    */
-  Optional<CompositionDto> retrieve(UUID ehrId, UUID compositionId, Integer version);
+  Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version);
 
   /**
    * TODO: untested because not needed, yet
@@ -52,18 +52,18 @@ public interface CompositionService extends BaseService, VersionedObjectService<
   Optional<CompositionDto> retrieveByTimestamp(
       UUID ehrId, UUID compositionId, LocalDateTime timestamp);
 
-    /**
-     * Public serializer entry point which will be called with
-     * composition dto fetched from database and the
-     * desired target serialized string format.
-     * Will parse the composition dto into target format either
-     * with a custom lambda expression for desired target format
-     *
-     * @param composition Composition dto from database
-     * @param format      Target format
-     * @return Structured string with string of data and content format
-     */
-    StructuredString serialize(CompositionDto composition, CompositionFormat format);
+  CompositionDto from(UUID ehrId, Composition composition);
+
+  /**
+   * Public serializer entry point which will be called with composition dto fetched from database
+   * and the desired target serialized string format. Will parse the composition dto into target
+   * format either with a custom lambda expression for desired target format
+   *
+   * @param composition Composition dto from database
+   * @param format Target format
+   * @return Structured string with string of data and content format
+   */
+  StructuredString serialize(CompositionDto composition, CompositionFormat format);
 
     Integer getLastVersionNumber(UUID compositionId);
 

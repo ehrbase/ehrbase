@@ -62,7 +62,6 @@ import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
-import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
 import org.jooq.DSLContext;
@@ -369,9 +368,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 // deleting an object without knowing which type it is requires checking of type, here with nested try-catch blocks
                 UUID objectUid = getVersionedUidFromVersion(version);
                 try {
+
           // throw exception to signal no matching composition was found
-          CompositionDto compo =
-              compositionService.retrieve(ehrId, objectUid, null).orElseThrow(Exception::new);
+          if (compositionService.retrieve(ehrId, objectUid, null).isEmpty()) {
+            throw new RuntimeException();
+          }
                     String actualPreceding = getAndCheckActualPreceding(version);
                     compositionService.delete(ehrId, new ObjectVersionId(actualPreceding), contributionId);
                 } catch (Exception e) { // given version ID is not of type composition - ignoring the exception because it is expected possible outcome

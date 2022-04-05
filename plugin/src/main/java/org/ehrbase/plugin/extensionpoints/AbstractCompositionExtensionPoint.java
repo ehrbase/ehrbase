@@ -16,8 +16,11 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
+import com.nedap.archie.rm.composition.Composition;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import org.ehrbase.plugin.dto.CompositionIdWithVersionAndEhrId;
 import org.ehrbase.plugin.dto.CompositionVersionIdWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
@@ -123,5 +126,35 @@ public abstract class AbstractCompositionExtensionPoint
   public Void aroundDelete(
       CompositionVersionIdWithEhrId input, Function<CompositionVersionIdWithEhrId, Void> chain) {
     return afterDelete(chain.apply(beforeDelete(input)));
+  }
+
+  /**
+   * Called before Composition retrieve
+   *
+   * @param input composition id {@link UUID} with version in ehr with ehrId {@link UUID} to be
+   *     retrieved
+   * @return input to be given to Composition retrieve
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public CompositionIdWithVersionAndEhrId beforeRetrieve(CompositionIdWithVersionAndEhrId input) {
+    return input;
+  }
+
+  /**
+   * Called after Composition retrieve
+   *
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public Optional<Composition> afterRetrieve(Optional<Composition> output) {
+    return output;
+  }
+
+  @Override
+  public Optional<Composition> aroundRetrieve(
+      CompositionIdWithVersionAndEhrId input,
+      Function<CompositionIdWithVersionAndEhrId, Optional<Composition>> chain) {
+    return afterRetrieve(chain.apply(beforeRetrieve(input)));
   }
 }
