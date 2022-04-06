@@ -56,6 +56,11 @@ commit CONTRIBUTION (JSON)
                         Set Test Variable    ${contribution_uid}    ${body['uid']['value']}
                         Set Test Variable    ${versions}    ${body['versions']}
 
+commit CONTRIBUTION (JSON) is modifiable false
+    [Arguments]         ${valid_test_data_set}
+                        Set Test Variable  ${KEYWORD NAME}  COMMIT CONTRIBUTION 1 (JSON)
+                        load valid test-data-set    ${valid_test_data_set}
+                        POST /ehr/ehr_id/contribution    JSON
 
 commit CONTRIBUTION without accept header
     [Arguments]         ${valid_test_data_set}
@@ -168,7 +173,6 @@ check response: is negative indicating wrong change_type
 check response: is negative indicating non-existent OPT
                         Should Be Equal As Strings   ${response.status_code}   422
                         # TODO: Add checks from response body
-
 
 commit COMTRIBUTION(S) (JSON)
                         Set Test Variable  ${KEYWORD NAME}  COMMIT COMTRIBUTION(S) (JSON)
