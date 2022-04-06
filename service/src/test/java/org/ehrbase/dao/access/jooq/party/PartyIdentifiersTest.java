@@ -1,15 +1,43 @@
 package org.ehrbase.dao.access.jooq.party;
 
-import com.nedap.archie.rm.datavalues.DvIdentifier;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import static org.junit.Assert.*;
+import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.nedap.archie.rm.datavalues.DvIdentifier;
+
+
 
 public class PartyIdentifiersTest {
 
+    @Test
+    @SuppressWarnings({ "unchecked" })
+    public void retrieveMultiple() {
+      String issuer = UUID.randomUUID().toString();
+      List<UUID> uuids = DataGenerator.anyUUIDs(4);
+      List<PartyIdentifiedRecord> records = DataGenerator.anyPartyIdentifiedRecordWith(uuids);
+      List<IdentifierRecord> idRec = DataGenerator.anyIdentifierRecordWithParty(uuids, rec -> rec.setIssuer(issuer));
+      
+      PartyIdentifiers partyIdents = new PartyIdentifiers(MockSupport.prepareDomainAccessMock(idRec));
+      List<Pair<PartyIdentifiedRecord,List<DvIdentifier>>> pairs = partyIdents.retrieveMultiple(records);
+      
+      pairs.forEach(p -> {
+          p.getRight().forEach(i -> {
+              Assert.assertTrue(issuer.equals(i.getIssuer()));
+          });
+      });
+    }
+  
     @Test
     public void isIdentical() {
 

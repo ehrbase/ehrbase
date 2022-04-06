@@ -18,21 +18,26 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
-import com.nedap.archie.rm.datavalues.DvIdentifier;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.jdom2.IllegalAddException;
 import org.jooq.Record;
 
-import java.util.List;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+import com.nedap.archie.rm.datavalues.DvIdentifier;
+import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.PartyRef;
 
 /**
  * PARTY_IDENTIFIED DB operations
@@ -43,22 +48,32 @@ class PersistedPartyIdentified extends PersistedParty {
         super(domainAccess);
     }
 
+    private static final String ERR_MISSING_PROXY = "Missing PartyProxy for PartyIdentifiedRecord[%s]";
+    
     @Override
     public PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord) {
-        PartyRef partyRef = null;
-
-        if (partyIdentifiedRecord.getPartyRefType() != null) {
-            ObjectId objectID = new PersistedObjectId().fromDB(partyIdentifiedRecord);
-            partyRef = new PartyRef(objectID, partyIdentifiedRecord.getPartyRefNamespace(), partyIdentifiedRecord.getPartyRefType());
-        }
-
-        List<DvIdentifier> identifierList = new PartyIdentifiers(domainAccess).retrieve(partyIdentifiedRecord);
-
-        PartyIdentified partyIdentified = new PartyIdentified(partyRef,
-                partyIdentifiedRecord.getName(),
-                identifierList.isEmpty() ? null : identifierList);
-
-        return partyIdentified;
+        return renderMultiple(List.of(partyIdentifiedRecord)).stream()
+            .findFirst()
+            .orElseThrow(() -> new IllegalAddException(String.format(ERR_MISSING_PROXY, partyIdentifiedRecord.getId())));
+    }
+    
+    @Override
+    public List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
+      
+        List<Pair<PartyIdentifiedRecord, List<DvIdentifier>>> partyIdPair = new PartyIdentifiers(domainAccess).retrieveMultiple(partyIdentifiedRecords);
+        
+        return partyIdPair.stream()
+            .map(pair -> {
+                PartyIdentifiedRecord pir = pair.getLeft(); 
+                
+                PartyRef partyRef = Optional.ofNullable(pir.getPartyRefType())
+                    .map(ref -> new PartyRef(new PersistedObjectId().fromDB(pir), pir.getPartyRefNamespace(), pir.getPartyRefType()))
+                    .orElse(null);
+              
+                List<DvIdentifier> identifierList = pair.getRight();
+                return new PartyIdentified(partyRef, pir.getName(), identifierList.isEmpty() ? null : identifierList);
+            })
+            .collect(Collectors.toList());
     }
 
     @Override
