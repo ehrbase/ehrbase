@@ -289,4 +289,16 @@ public interface I_EhrAccess extends I_SimpleCRUD {
     static boolean hasEhr(I_DomainAccess domainAccess, UUID ehrId) {
         return EhrAccess.hasEhr(domainAccess, ehrId);
     }
+
+    /**
+     * Check if the EHR identified by the given ID is marked as modifiable.
+     * Use this method if you do not need a full I_EhrAccess instance.
+     *
+     * @param domainAccess Context
+     * @param ehrId EHR ID to check
+     * @return true if EHR.ehr_status.isModifiable, false otherwise (missing EHR will also return false)
+     */
+    static boolean isModifiable(I_DomainAccess domainAccess, UUID ehrId) {
+        return EhrAccess.isModifiable(domainAccess, ehrId);
+    }
 }

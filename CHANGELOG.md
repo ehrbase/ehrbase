@@ -9,7 +9,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Implement template example endpoints
+- Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
+- Implement EHR_STATUS.is_modifiable semantics on service level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
 
 ### Changed
 - Upgrade to Spring boot 2.5.12
@@ -28,7 +29,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
-
 - Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
 - Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
   and [#796](https://github.com/ehrbase/ehrbase/pull/796)
