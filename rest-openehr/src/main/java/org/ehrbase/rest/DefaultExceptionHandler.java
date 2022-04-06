@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Default exception handler.
@@ -77,8 +78,7 @@ public class DefaultExceptionHandler {
   @ExceptionHandler(NotAcceptableException.class)
   public ResponseEntity<Object> handleNotAcceptableException(NotAcceptableException ex) {
 
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.NOT_ACCEPTABLE);
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_ACCEPTABLE);
   }
 
   @ExceptionHandler(StateConflictException.class)
@@ -104,16 +104,13 @@ public class DefaultExceptionHandler {
   public ResponseEntity<Object> handleUnsupportedMediaTypeException(
       UnsupportedMediaTypeException ex) {
 
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
   }
 
   @ExceptionHandler(UnprocessableEntityException.class)
-  public ResponseEntity<Object> handleUnprocessableEntityException(UnprocessableEntityException ex,
-      WebRequest request) {
+  public ResponseEntity<Object> handleUnprocessableEntityException(UnprocessableEntityException ex, WebRequest request) {
 
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.UNPROCESSABLE_ENTITY);
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
   @ExceptionHandler(Exception.class)
@@ -122,8 +119,13 @@ public class DefaultExceptionHandler {
     return handleExceptionInternal(ex, message, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  private ResponseEntity<Object> handleExceptionInternal(Exception ex, String message,
-      HttpHeaders headers, HttpStatus status) {
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<Object> handleSpringResponseStatusException(ResponseStatusException ex) {
+    //rethrow will not work properly, so we handle it
+    return handleExceptionInternal(ex, ex.getReason(), ex.getResponseHeaders(), ex.getStatus());
+  }
+
+  private ResponseEntity<Object> handleExceptionInternal(Exception ex, String message, HttpHeaders headers, HttpStatus status) {
 
     if (status.is5xxServerError()) {
       logger.error("", ex);
