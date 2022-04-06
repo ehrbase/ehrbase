@@ -42,10 +42,16 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -474,17 +480,44 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         Routines.deleteOrphanHistory(getDataAccess().getContext().configuration());
     }
 
-
     @Override
     public UUID getSubjectUuid(String ehrId) {
-        Optional<EhrStatus> status = getEhrStatus(UUID.fromString(ehrId));
-        return status.map(ehrStatus -> new PersistedPartyProxy(getDataAccess())
-            .getOrCreate(ehrStatus.getSubject())).orElse(null);
+        return getSubjectUuids(List.of(ehrId)).get(0).getRight();
+    }
+    
+    private List<Pair<String,UUID>> getSubjectUuids(Collection<String> ehrIds) {
+        return ehrIds.stream()
+            .map(ehrId -> Pair.of(ehrId, getEhrStatus(UUID.fromString(ehrId)).orElse(null)))
+            .map(p -> {
+              if(p.getRight() == null)
+                return Pair.<String,UUID>of(p.getLeft(), null);
+              return Pair.of(
+                  p.getLeft(),
+                  new PersistedPartyProxy(getDataAccess()).getOrCreate(p.getRight().getSubject()));
+            })
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<String> getSubjectExtRefs(Collection<String> ehrIds) {
+        List<UUID> nonNullVal = getSubjectUuids(ehrIds).stream()
+          .filter(p -> p.getRight() != null)
+          .map(p -> p.getRight())
+          .collect(Collectors.toList());
+        
+        if(nonNullVal.size() == 0)
+            return Collections.emptyList();
+        
+        return new PersistedPartyProxy(getDataAccess()).retrieveMany(nonNullVal).stream()
+            .map(p -> p.getExternalRef())
+            .filter(p -> p != null)
+            .map(p -> p.getId().getValue())
+            .collect(Collectors.toList());
     }
 
     @Override
     public String getSubjectExtRef(String ehrId) {
-        return Optional.ofNullable(new PersistedPartyProxy(getDataAccess()).retrieve(getSubjectUuid(ehrId)).getExternalRef())
-            .map(p -> p.getId().getValue()).orElse(null);
+        List<String> extRefs = getSubjectExtRefs(List.of(ehrId));
+        return extRefs.size() == 0 ? null : extRefs.get(0);
     }
 }
