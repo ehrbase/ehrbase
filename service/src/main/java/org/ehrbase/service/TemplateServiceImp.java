@@ -17,6 +17,13 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.xml.namespace.QName;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -26,17 +33,14 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.building.webtemplateskeletnbuilder.WebTemplateSkeletonBuilder;
-import org.ehrbase.client.classgenerator.shareddefinition.Category;
 import org.ehrbase.client.classgenerator.shareddefinition.Language;
 import org.ehrbase.client.classgenerator.shareddefinition.Setting;
 import org.ehrbase.client.classgenerator.shareddefinition.Territory;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorConfig;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorToCompositionWalker;
-import org.ehrbase.response.ehrscape.CompositionDto;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
+import org.ehrbase.serialisation.walker.FlatHelper;
 import org.ehrbase.serialisation.walker.defaultvalues.DefaultValuePath;
 import org.ehrbase.serialisation.walker.defaultvalues.DefaultValues;
 import org.ehrbase.webtemplate.model.WebTemplate;
@@ -46,14 +50,6 @@ import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.xml.namespace.QName;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author Stefan Spiska
@@ -97,8 +93,8 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
         return dto;
     }
 
-    @Override
-    public StructuredString buildExample(String templateId, CompositionFormat format) {
+  @Override
+  public Composition buildExample(String templateId) {
         WebTemplate webTemplate = findTemplate(templateId);
         Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
 
@@ -106,17 +102,18 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
 
         DefaultValues defaultValues = new DefaultValues();
         defaultValues.addDefaultValue(DefaultValuePath.TIME, OffsetDateTime.now());
-        defaultValues.addDefaultValue(DefaultValuePath.LANGUAGE, Language.DE);
+    defaultValues.addDefaultValue(
+        DefaultValuePath.LANGUAGE,
+        FlatHelper.findEnumValueOrThrow(webTemplate.getDefaultLanguage(), Language.class));
         defaultValues.addDefaultValue(DefaultValuePath.TERRITORY, Territory.DE);
-        defaultValues.addDefaultValue(DefaultValuePath.SETTING, Setting.DENTAL_CARE);
-
-        composition.setCategory(Category.EVENT.toCodedText());
+    defaultValues.addDefaultValue(DefaultValuePath.SETTING, Setting.OTHER_CARE);
+    defaultValues.addDefaultValue(DefaultValuePath.COMPOSER_NAME, "Max Mustermann");
 
         ExampleGeneratorToCompositionWalker walker = new ExampleGeneratorToCompositionWalker();
         walker.walk(composition, object, webTemplate, defaultValues, templateId);
 
-        CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
-        return compositionService.serialize(compositionDto, format);
+    composition.setTerritory(Territory.DE.toCodePhrase());
+    return composition;
     }
 
     @Override
