@@ -716,7 +716,7 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - install maven
+      - install-maven
       - git-clone-sdk-repo
       - git-checkout-sdk-sync-branch
       - cache-out-sdk-m2-dependencies-sync-branch
