@@ -519,8 +519,7 @@ workflows:
                                   branch of each repository
 
       Find detailed steps description for this workflow in following jobs:
-      - "pull build install sdk from sync-branch"
-      - "build package ehrbase with locally installed sdk"
+      - "build package ehrbase with locally built sdk from sync-branch"
       - "run java integration tests - sdk"
 
       HOW TO USE THIS WORKFLOW?
@@ -556,122 +555,119 @@ workflows:
     #     - equal: [ feature/sync/*, << pipeline.git.branch >> ]
 
     jobs:
-      - pull build install sdk from sync-branch:
+      - build package ehrbase with locally built sdk from sync-branch:
           filters:
             branches:
               only:
                 - /^sync\/.*/
                 - /^feature\/sync\/.*/
-      - build package ehrbase with locally installed sdk:
-          requires:
-            - pull build install sdk from sync-branch
       - run java integration tests - sdk:
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - SANITY-tests:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-1:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-2:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-3:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-4:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-5:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-6:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-7:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-8:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-9:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-10:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-11:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-12:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-13:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-14:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - HEADER-tests:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - EHRScape-tests:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - CONTRIBUTION-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - DIRECTORY-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - EHRSERVICE-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - EHRSTATUS-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - KNOWLEDGE-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - QUERYSERVICE-test-2:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - SECURITY-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - ADMIN-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -716,30 +712,18 @@ jobs:
   #   88,   ,d88   Y8a.    .a8P   88      a8P  Y8a     a8P
   #    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
 
-
-  pull build install sdk from sync-branch:
-    # executor: machine-ubuntu-2004
-    executor: docker-python3-java11
+  build package ehrbase with locally built sdk from sync-branch:
+    executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - install-maven
+      - install maven
       - git-clone-sdk-repo
       - git-checkout-sdk-sync-branch
       - cache-out-sdk-m2-dependencies-sync-branch
       - maven-install-sdk
       - cache-in-sdk-m2-dependencies-sync-branch
-      - save-local-sdk-installation
       - collect-sdk-unittest-results
-      - save-skd-test-results
-
-
-  build package ehrbase with locally installed sdk:
-    # executor: machine-ubuntu-2004
-    executor: docker-py3-java11-postgres
-    steps:
-      - checkout
-      - install-maven
-      - restore-local-sdk-installation
+      - save-sdk-test-results
       - cache-out-ehrbase-m2-dependencies-syncbranch
       - build-and-test-ehrbase
       - cache-in-ehrbase-m2-dependencies-syncbranch
@@ -754,12 +738,11 @@ jobs:
     steps:
       - checkout
       - install-maven
-      - restore-local-sdk-installation
       - restore-packaged-ehrbase-jar
       - cache-out-ehrbase-m2-dependencies-syncbranch
       - start-ehrbase-and-run-java-integration-sdk-tests
       - collect-sdk-integrationtest-results
-      - save-skd-test-results
+      - save-sdk-test-results
 
 
   build-ehrbase:
@@ -794,7 +777,7 @@ jobs:
       - generate-sdk-it-coverage-report
       - collect-sdk-unittest-results
       - collect-sdk-integrationtest-results
-      - save-skd-test-results
+      - save-sdk-test-results
 
   SANITY-tests:
     executor: docker-py3-java11-postgres
@@ -1607,7 +1590,7 @@ commands:
           when: always
 
     
-  save-skd-test-results:
+  save-sdk-test-results:
     steps:
       - store_test_results:
           path: ~/sdk-test-results
