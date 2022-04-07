@@ -35,11 +35,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.validation.BindException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Default exception handler.
@@ -55,38 +60,46 @@ public class DefaultExceptionHandler {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
+  //400
   @ExceptionHandler({
-      GeneralRequestProcessingException.class,
+      //Spring MVC
       HttpMessageNotReadableException.class,
-      InvalidApiParameterException.class,
-      IllegalArgumentException.class,
       MethodArgumentTypeMismatchException.class,
-      MissingServletRequestParameterException.class,
+      MissingServletRequestPartException.class,
+      BindException.class,
+      ServletRequestBindingException.class,
+      //Java/third party Library
+      IllegalArgumentException.class,
+      //ehrbase/SDK
+      GeneralRequestProcessingException.class,
+      InvalidApiParameterException.class,
       ValidationException.class,
-      UnmarshalException.class
+      UnmarshalException.class,
   })
   public ResponseEntity<Object> handleBadRequestExceptions(Exception ex) {
     return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
   }
 
+  //404
   @ExceptionHandler(ObjectNotFoundException.class)
   public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {
     return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler(NotAcceptableException.class)
+  //406
+  @ExceptionHandler({HttpMediaTypeNotAcceptableException.class,
+                     NotAcceptableException.class})
   public ResponseEntity<Object> handleNotAcceptableException(NotAcceptableException ex) {
-
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.NOT_ACCEPTABLE);
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_ACCEPTABLE);
   }
 
+  //409
   @ExceptionHandler(StateConflictException.class)
   public ResponseEntity<Object> handleStateConflictException(StateConflictException ex) {
-
     return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT);
   }
 
+  //412
   @ExceptionHandler(PreconditionFailedException.class)
   public ResponseEntity<Object> handlePreconditionFailedException(PreconditionFailedException ex) {
 
@@ -100,30 +113,35 @@ public class DefaultExceptionHandler {
     return handleExceptionInternal(ex, ex.getMessage(), headers, HttpStatus.PRECONDITION_FAILED);
   }
 
-  @ExceptionHandler(UnsupportedMediaTypeException.class)
+  //415
+  @ExceptionHandler({HttpMediaTypeNotSupportedException.class,
+                     UnsupportedMediaTypeException.class})
   public ResponseEntity<Object> handleUnsupportedMediaTypeException(
       UnsupportedMediaTypeException ex) {
-
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
   }
 
+  //422
   @ExceptionHandler(UnprocessableEntityException.class)
-  public ResponseEntity<Object> handleUnprocessableEntityException(UnprocessableEntityException ex,
-      WebRequest request) {
-
-    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(),
-        HttpStatus.UNPROCESSABLE_ENTITY);
+  public ResponseEntity<Object> handleUnprocessableEntityException(UnprocessableEntityException ex, WebRequest request) {
+    return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
+  //custom status
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<Object> handleSpringResponseStatusException(ResponseStatusException ex) {
+    //rethrow will not work properly, so we handle it
+    return handleExceptionInternal(ex, ex.getReason(), ex.getResponseHeaders(), ex.getStatus());
+  }
+
+  //500 - general
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Object> handleUncaughtException(Exception ex) {
     var message = "An internal error has occurred. Please contact your administrator.";
     return handleExceptionInternal(ex, message, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  private ResponseEntity<Object> handleExceptionInternal(Exception ex, String message,
-      HttpHeaders headers, HttpStatus status) {
+  private ResponseEntity<Object> handleExceptionInternal(Exception ex, String message, HttpHeaders headers, HttpStatus status) {
 
     if (status.is5xxServerError()) {
       logger.error("", ex);
