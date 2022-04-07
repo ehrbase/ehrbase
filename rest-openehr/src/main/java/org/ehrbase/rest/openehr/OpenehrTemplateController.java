@@ -18,12 +18,22 @@
 
 package org.ehrbase.rest.openehr;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.nedap.archie.rm.composition.Composition;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.response.ehrscape.CompositionDto;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.response.openehr.ResponseData;
 import org.ehrbase.response.openehr.TemplateResponseData;
@@ -46,14 +56,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
-
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
@@ -62,10 +64,13 @@ import java.util.function.Supplier;
 public class OpenehrTemplateController extends BaseController implements TemplateApiSpecification {
 
     private final TemplateService templateService;
+  private final CompositionService compositionService;
 
-    @Autowired
-    public OpenehrTemplateController(TemplateService templateService) {
+  @Autowired
+  public OpenehrTemplateController(
+      TemplateService templateService, CompositionService compositionService) {
         this.templateService = Objects.requireNonNull(templateService);
+    this.compositionService = Objects.requireNonNull(compositionService);
     }
 
     /*
@@ -143,6 +148,30 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData().get()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+  @GetMapping(path = "/adl1.4/{template_id}/example")
+  public ResponseEntity<StructuredString> getTemplateExample(
+      @RequestHeader(value = ACCEPT, required = false) String accept,
+      @PathVariable(value = "template_id") String templateId) {
+        CompositionFormat format = extractCompositionFormat(accept);
+
+    Composition composition = templateService.buildExample(templateId);
+
+        HttpHeaders respHeaders = new HttpHeaders();
+          if (format.equals(CompositionFormat.XML)) {
+            respHeaders.setContentType(MediaType.APPLICATION_XML);
+        } else if (format.equals(CompositionFormat.JSON)) {
+            respHeaders.setContentType(MediaType.APPLICATION_JSON);
+        }
+
+    ResponseEntity<StructuredString> body =
+        ResponseEntity.ok()
+            .headers(respHeaders)
+            .body(
+                compositionService.serialize(
+                    new CompositionDto(composition, templateId, null, null), format));
+    return body;
     }
 
     /*
