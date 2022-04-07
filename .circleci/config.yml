@@ -724,6 +724,7 @@ jobs:
       - cache-in-sdk-m2-dependencies-sync-branch
       - collect-sdk-unittest-results
       - save-sdk-test-results
+      - save-openEHR-SDK-repo
       - cache-out-ehrbase-m2-dependencies-syncbranch
       - build-and-test-ehrbase
       - cache-in-ehrbase-m2-dependencies-syncbranch
@@ -738,7 +739,8 @@ jobs:
     steps:
       - checkout
       - install-maven
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
+      - cache-out-sdk-m2-dependencies-sync-branch
       - cache-out-ehrbase-m2-dependencies-syncbranch
       - start-ehrbase-and-run-java-integration-sdk-tests
       - collect-sdk-integrationtest-results
@@ -784,7 +786,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
@@ -795,7 +797,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_create"
           test-suite-path: "COMPOSITION_TESTS"
@@ -807,7 +809,7 @@ jobs:
     steps:
       - run: echo MOCKED JOB 3
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get"
           test-suite-path: "COMPOSITION_TESTS"
@@ -818,7 +820,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:      
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get_versioned"
           test-suite-path: "COMPOSITION_TESTS"
@@ -829,7 +831,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
@@ -840,7 +842,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
@@ -851,7 +853,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -862,7 +864,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -873,7 +875,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -884,7 +886,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -895,7 +897,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -906,7 +908,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -917,7 +919,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -928,7 +930,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -939,7 +941,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -950,7 +952,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "HeadersChecks"
           test-suite-path: "COMPOSITION_TESTS"
@@ -961,7 +963,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
@@ -972,7 +974,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "CONTRIBUTION"
           test-suite-path: "CONTRIBUTION_TESTS"
@@ -983,7 +985,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "directory"
           test-suite-path: "DIRECTORY_TESTS"
@@ -994,7 +996,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "EHR_SERVICE"
           test-suite-path: "EHR_SERVICE_TESTS"
@@ -1004,7 +1006,7 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "EHR_STATUS"
           test-suite-path: "EHR_STATUS_TESTS"
@@ -1014,7 +1016,7 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "OPT"
           test-suite-path: "KNOWLEDGE_TESTS"
@@ -1026,7 +1028,7 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
@@ -1040,7 +1042,7 @@ jobs:
       SUT: TEST
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
@@ -1105,7 +1107,7 @@ jobs:
     steps:
       - checkout
       - install-and-configure-keycloak
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "SECURITY_oauth"
@@ -1121,7 +1123,7 @@ jobs:
       SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           sut: "ADMIN-TEST"
           include-tags: "ADMIN"
@@ -1678,11 +1680,19 @@ commands:
             - projects/tests/requirements.txt
 
  
-  restore-packaged-ehrbase-jar:
+  restore-workspace:
     steps:
       - attach_workspace:
           at: /home/circleci/
 
+
+  save-openEHR-SDK-repo:
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - projects/openEHR_SDK
+            
 
   collect-ehrbase-unittest-results:
     steps:
