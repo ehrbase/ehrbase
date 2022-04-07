@@ -18,17 +18,15 @@
 
 package org.ehrbase.api.service;
 
-import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.StructuredString;
-import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
-
+import com.nedap.archie.rm.composition.Composition;
 import java.util.List;
+import org.ehrbase.api.definitions.OperationalTemplateFormat;
+import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
 
 public interface TemplateService extends BaseService {
     List<TemplateMetaDataDto> getAllTemplates();
 
-    StructuredString buildExample(String templateId, CompositionFormat format);
+  Composition buildExample(String templateId);
 
     org.ehrbase.webtemplate.model.WebTemplate findTemplate(String templateId);
 

@@ -553,6 +553,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
+                <artifactId>example-generator</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-logging</artifactId>
                 <exclusions>
