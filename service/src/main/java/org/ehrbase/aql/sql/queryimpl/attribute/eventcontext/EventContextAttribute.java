@@ -26,5 +26,6 @@ public abstract class EventContextAttribute extends RMObjectAttribute {
     protected EventContextAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup){
         super(fieldContext, joinSetup);
         joinSetup.setJoinEventContext(true);
+        joinSetup.setJoinComposition(true);
     }
 }

@@ -31,8 +31,8 @@ public interface IQueryImpl {
 
     enum Clause {SELECT, WHERE, ORDERBY, FROM}
 
-    MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause);
+    MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) throws UnknownVariableException;
 
-    MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition);
+    MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition) throws UnknownVariableException;
 
 }

@@ -63,7 +63,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
         this.variableDefinitions = variableDefinitions;
         this.jsonbEntryQuery = new JsonbEntryQuery(domainAccess, introspectCache, pathResolver);
         this.compositionAttributeQuery = new CompositionAttributeQuery(domainAccess, pathResolver, serverNodeId, introspectCache);
-        this.whereBinder = new WhereBinder(domainAccess, compositionAttributeQuery, whereClause, pathResolver);
+        this.whereBinder = new WhereBinder(whereClause, pathResolver);
     }
 
     private SelectBinder(I_DomainAccess domainAccess, IntrospectService introspectCache, IdentifierMapper mapper, VariableDefinitions variableDefinitions, List whereClause, String serverNodeId) {
@@ -81,7 +81,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
      * @param templateId
      * @return
      */
-    public List<MultiFields> bind(String templateId) {
+    public List<MultiFields> bind(String templateId) throws UnknownVariableException {
         ObjectQuery.reset();
 
         List<MultiFields> multiFieldsList = new ArrayList<>();
@@ -118,15 +118,15 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     }
 
 
-    public Condition getWhereConditions(String templateId, int whereCursor, MultiFieldsMap multiWhereFieldsMap, MultiFieldsMap multiSelectFieldsMap) {
-        return whereBinder.bind(templateId, whereCursor, multiWhereFieldsMap, multiSelectFieldsMap);
+    public Condition getWhereConditions(String templateId, int whereCursor, MultiFieldsMap multiWhereFieldsMap, int selectCursor, MultiFieldsMap multiSelectFieldsMap) throws UnknownVariableException {
+        return whereBinder.bind(templateId, whereCursor, multiWhereFieldsMap, selectCursor, multiSelectFieldsMap);
     }
 
    public CompositionAttributeQuery getCompositionAttributeQuery() {
         return compositionAttributeQuery;
     }
 
-   private void encodeForLateral(String className, String templateId, I_VariableDefinition variableDefinition, MultiFields multiFields){
+   private void encodeForLateral(String className, String templateId, I_VariableDefinition variableDefinition, MultiFields multiFields) throws UnknownVariableException {
         for (Iterator<QualifiedAqlField> it = multiFields.iterator(); it.hasNext(); ) {
             QualifiedAqlField qualifiedAqlField = it.next();
             Field sqlField = qualifiedAqlField.getSQLField();

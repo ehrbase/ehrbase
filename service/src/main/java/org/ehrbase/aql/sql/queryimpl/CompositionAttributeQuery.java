@@ -52,7 +52,7 @@ import static org.ehrbase.aql.sql.QueryProcessor.NIL_TEMPLATE;
 @SuppressWarnings({"java:S3776","java:S3740"})
 public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl, IJoinBinder {
 
-    private String serverNodeId;
+    private final String serverNodeId;
 
     protected JoinSetup joinSetup = new JoinSetup(); //used to pass join metadata to perform binding
 
@@ -66,7 +66,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     }
 
     @Override
-    public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+    public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) throws UnknownVariableException {
         //resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
         FieldResolutionContext fieldResolutionContext =
@@ -79,7 +79,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                         introspectCache,
                         pathResolver.entryRoot(templateId));
 
-        Field retField;
+        Field<?> retField;
 
         if (clause.equals(Clause.WHERE))
             fieldResolutionContext.setWithAlias(false);
@@ -136,7 +136,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     }
 
     @Override
-    public MultiFields whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) {
+    public MultiFields whereField(String templateId,String identifier, I_VariableDefinition variableDefinition) throws UnknownVariableException {
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
     }
 
@@ -168,7 +168,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
         return joinSetup;
     }
 
-    private void deriveLateralJoinForPredicate(I_VariableDefinition variableDefinition, Field retField){
+    private void deriveLateralJoinForPredicate(I_VariableDefinition variableDefinition, Field retField) throws UnknownVariableException {
 
         //encode a pseudo variable to get the predicate in the where clause
         VariableDefinition pseudoVar = new VariableDefinition(variableDefinition.getPredicateDefinition().getOperand1(), null, variableDefinition.getIdentifier(), false);

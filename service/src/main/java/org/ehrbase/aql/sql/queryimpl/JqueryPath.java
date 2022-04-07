@@ -61,37 +61,26 @@ public class JqueryPath {
         int offset = 0;
         List<String> segments = LocatableHelper.dividePathIntoSegments(path);
         List<String> jqueryPath = new ArrayList<>();
-        String nodeId = null;
+        String nodeId;
         for (int i = offset; i < segments.size(); i++) {
             nodeId = segments.get(i);
             nodeId = nodeId.equals(OTHER_CONTEXT.substring(1))  ? nodeId : "/" + nodeId;
 
             encodeTreeMapNodeId(jqueryPath, nodeId);
 
-            //CHC, 180502. See CR#95 for more on this.
-            //IDENTIFIER_PATH_PART is provided by CONTAINMENT.
             NodePredicate nodePredicate = new NodePredicate(nodeId);
-            if (pathPart.equals(JsonbEntryQuery.PATH_PART.IDENTIFIER_PATH_PART)) {
+//
+            if (nodePredicate.hasPredicate()) {
+                //do the formatting to allow name/value node predicate processing
+                jqueryPath = new NodeNameValuePredicate(nodePredicate).path(jqueryPath, nodeId);
+            } else {
                 nodeId = nodePredicate.removeNameValuePredicate();
                 jqueryPath.add(nodeId);
-                if (i <= segments.size() - 1 && isList(nodeId))
-                    jqueryPath.add(defaultIndex);
             }
-            //VARIABLE_PATH_PART is provided by the user. It may contain name/value node predicate
-            //see http://www.openehr.org/releases/QUERY/latest/docs/AQL/AQL.html#_node_predicate
-            else if (pathPart.equals(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART)) {
 
-                if (nodePredicate.hasPredicate()) {
-                    //do the formatting to allow name/value node predicate processing
-                    jqueryPath = new NodeNameValuePredicate(nodePredicate).path(jqueryPath, nodeId);
-                } else {
-                    nodeId = nodePredicate.removeNameValuePredicate();
-                    jqueryPath.add(nodeId);
-                }
-
-                if (isList(nodeId))
-                    jqueryPath.add(defaultIndex);
-            }
+            if (isList(nodeId))
+                jqueryPath.add(defaultIndex);
+//            }
 
         }
 

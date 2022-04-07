@@ -50,6 +50,7 @@ import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.util.TemplateUtils;
+import org.ehrbase.util.WebTemplateNodeQuery;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 import org.ehrbase.webtemplate.parser.NodeId;
@@ -391,6 +392,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     JsonPathQueryResult jsonPathQueryResult =
         jsonPathQueryResultCache.get(key, JsonPathQueryResult.class);
 
+    //test
+//    Set testTree = new TreeSet<>();
+//    testTree.add("/content[openEHR-EHR-SECTION.adhoc.v1 ,'Blutdruck nach 5 Minuten Ruhe']/items[openEHR-EHR-OBSERVATION.blood_pressure.v2]");
+//    JsonPathQueryResult jsonPathQueryResult = new JsonPathQueryResult(templateId, testTree);
+
     if (jsonPathQueryResult == null) {
       WebTemplate webTemplate = getQueryOptMetaData(templateId);
       List<WebTemplateNode> webTemplateNodeList = new ArrayList<>();
@@ -417,7 +423,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
       }
 
       Set<String> uniquePaths = new TreeSet<>();
-      webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
+      webTemplateNodeList.stream().map(n -> n.getAqlPath(new WebTemplateNodeQuery(webTemplate, n).requiresNamePredicate())).forEach(uniquePaths::add);
 
       if (!uniquePaths.isEmpty()) {
         jsonPathQueryResult = new JsonPathQueryResult(templateId, uniquePaths);

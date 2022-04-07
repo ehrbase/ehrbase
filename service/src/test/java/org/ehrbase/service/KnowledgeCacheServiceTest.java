@@ -117,6 +117,57 @@ public class KnowledgeCacheServiceTest {
         () -> knowledgeCacheService.addOperationalTemplate(content));
   }
 
+  @Test
+  public void testListAllOperationalTemplates2() throws Exception {
+    KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
+    knowledge.addOperationalTemplate(
+            IOUtils.toByteArray(TemplateTestData.ANAMNESE.getStream()));
+
+    // a node requiring full node/name qualification
+    NodeId nodeId = new NodeId("OBSERVATION", "openEHR-EHR-OBSERVATION.blood_pressure.v2");
+    List<NodeId> nodeIds = new ArrayList<>();
+    nodeIds.add(nodeId);
+
+    //resolve
+    JsonPathQueryResult jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese",
+            nodeIds);
+    assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString()).contains("and name/value='Blutdruck nach 5 Minuten Ruhe'");
+
+    nodeId = new NodeId("OBSERVATION", "openEHR-EHR-OBSERVATION.height.v2");
+    nodeIds = new ArrayList<>();
+    nodeIds.add(nodeId);
+
+    jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
+    assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString()).doesNotContain("and name/value=");
+
+
+    nodeId = new NodeId("SECTION", "openEHR-EHR-SECTION.adhoc.v1");
+    nodeIds = new ArrayList<>();
+    nodeIds.add(nodeId);
+
+    jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
+    assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString()).contains("and name/value=");
+
+    nodeIds = new ArrayList<>();
+    nodeId = new NodeId("SECTION", "openEHR-EHR-SECTION.adhoc.v1");
+    nodeIds.add(nodeId);
+    nodeIds.add(nodeId); //sections in section!
+
+    jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
+    assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString()).contains("and name/value=");
+
+    NodeId evalNode = new NodeId("EVALUATION", "openEHR-EHR-EVALUATION.problem_diagnosis.v1");
+    nodeIds.add(nodeId);
+    nodeIds.add(nodeId);
+    nodeIds.add(evalNode);
+
+    jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
+    assertThat(jsonPathQueryResult.getAqlPath().toArray().length).isEqualTo(25);
+
+
+
+  }
+
   public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder,
       CacheRule cacheRule) throws Exception {
 

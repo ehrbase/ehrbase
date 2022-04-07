@@ -28,6 +28,7 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.webtemplate.model.WebTemplate;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -101,15 +102,14 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             TAG_EVENTS
     };
 
-    private boolean ignoreUnresolvedIntrospect = false;
+    private final boolean ignoreUnresolvedIntrospect;
 
-    private static String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
-
-    private IntrospectService introspectCache;
+    private final IntrospectService introspectCache;
 
     public JsonbEntryQuery(I_DomainAccess domainAccess, IntrospectService introspectCache, PathResolver pathResolver) {
         super(domainAccess, pathResolver);
         this.introspectCache = introspectCache;
+        String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
         ignoreUnresolvedIntrospect = Boolean.parseBoolean(System.getProperty(ENV_IGNORE_UNRESOLVED_INTROSPECT, "false"));
     }
 
@@ -126,10 +126,10 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     }
 
     @Override
-    public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+    public MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) throws UnknownVariableException {
         boolean setReturningFunctionInWhere = false; //if true, use a subselect
         boolean isRootContent = false; //that is a query path on a full composition starting from the root content
-        DataType castTypeAs = null;
+        DataType castTypeAs;
 
         if (pathResolver.entryRoot(templateId) == null) //case of (invalid) composition with null entry!
             return null;
@@ -144,13 +144,24 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
 
         if (pathSet == null || pathSet.isEmpty()) {
-            return MultiFields.asNull(variableDefinition, templateId, clause);
+            throw new UnknownVariableException(variableDefinition.getPath());
+//            return MultiFields.asNull(variableDefinition, templateId, clause);
         }
 
         //traverse the set of paths and create the corresponding fields
         List<QualifiedAqlField> fieldList = new ArrayList<>();
 
+        WebTemplate webTemplate = introspectCache.getQueryOptMetaData(templateId);
+        if (webTemplate == null)
+            throw new UnknownVariableException("unknown template:"+templateId);
+
         for (String path: pathSet) {
+
+            //check whether the path is valid for this template
+            if (!new WebTemplateAqlPath(webTemplate, path, variableDefinition.getPath()).isValid()){
+                continue; //ignore this path as it is not identified in the webtemplate
+            }
+
             List<String> itemPathArray = new ArrayList<>();
             itemPathArray.add(pathResolver.entryRoot(templateId));
 
@@ -172,8 +183,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             resolveArrayIndex(itemPathArray);
 
-            List<String> referenceItemPathArray = new ArrayList<>();
-            referenceItemPathArray.addAll(itemPathArray);
+            List<String> referenceItemPathArray = new ArrayList<>(itemPathArray);
             Collections.replaceAll(referenceItemPathArray, AQL_NODE_ITERATIVE_MARKER, "0");
 
             if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
@@ -185,7 +195,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             String itemPath = StringUtils.join(itemPathArray.toArray(new String[]{}), ",");
 
             if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION) && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION))
-                itemPath = wrapQuery(itemPath, JSONB_SELECTOR_COMPOSITION_OPEN, JSONB_SELECTOR_CLOSE);
+                itemPath = wrapQuery(itemPath);
 
 
             DataTypeFromTemplate dataTypeFromTemplate = new DataTypeFromTemplate(introspectCache, ignoreUnresolvedIntrospect, clause);
@@ -299,7 +309,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     }
 
 
-    private static String wrapQuery(String itemPath, String open, String close) {
+    private static String wrapQuery(String itemPath) {
         if (itemPath.contains("/item_count")) {
             //trim the last array index in the prefix
             //look ahead for an index expression: ','<nnn>','
@@ -308,7 +318,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             String pathPart = StringUtils.join(ArrayUtils.subarray(segments, 0, segments.length - 1));
             return QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+ "(" + CONTENT + " #> '{" + pathPart + "}')";
         } else
-            return open + itemPath + close;
+            return JsonbEntryQuery.JSONB_SELECTOR_COMPOSITION_OPEN + itemPath + JsonbEntryQuery.JSONB_SELECTOR_CLOSE;
 
     }
 }

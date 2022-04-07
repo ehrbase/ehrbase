@@ -37,7 +37,7 @@ public class CompositionAttribute {
         this.clause = clause;
     }
 
-    public MultiFields toSql(I_VariableDefinition variableDefinition, String templateId, String identifier){
+    public MultiFields toSql(I_VariableDefinition variableDefinition, String templateId, String identifier) throws UnknownVariableException {
         MultiFields qualifiedAqlFields;
 
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {

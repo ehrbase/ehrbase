@@ -68,7 +68,7 @@ public class QueryProcessor extends TemplateMetaData {
     public static class AqlSelectQuery {
         private final SelectQuery<Record> selectQuery;
         private final Collection<List<QuerySteps>> querySteps;
-        private boolean outputWithJson;
+        private final boolean outputWithJson;
 
 
         AqlSelectQuery(SelectQuery<Record> selectQuery, Collection<List<QuerySteps>> querySteps, boolean outputWithJson) {
@@ -95,6 +95,7 @@ public class QueryProcessor extends TemplateMetaData {
     private Statements statements;
     private final String serverNodeId;
     private JoinSetup joinSetup = new JoinSetup();
+    private final ActiveTemplates activeTemplates;
 
     public QueryProcessor(I_DomainAccess domainAccess, IntrospectService introspectCache, Contains contains, Statements statements, String serverNodeId) {
         super(introspectCache);
@@ -102,13 +103,18 @@ public class QueryProcessor extends TemplateMetaData {
         this.contains = contains;
         this.statements = statements;
         this.serverNodeId = serverNodeId;
+        this.activeTemplates = new ActiveTemplates(domainAccess.getContext());
     }
 
 
     public AqlResult execute() {
+
+        //retrieve the active templates
+        activeTemplates.init();
+
         AqlSelectQuery aqlSelectQuery = buildAqlSelectQuery();
 
-        Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery(), null);
+        Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery());
 
         //if any jsonb data field transform them into raw json
         RawJsonTransform.toRawJson(result);
@@ -127,15 +133,35 @@ public class QueryProcessor extends TemplateMetaData {
 
         statements = new OrderByField(statements).merge();
 
+        List<QuerySteps> querySteps;
+
         if (contains.getTemplates().isEmpty()) {
             if (contains.hasContains() && contains.requiresTemplateWhereClause()) {
-                cacheQuery.put(NIL_TEMPLATE, buildNullSelect(NIL_TEMPLATE));
-                containsJson = false;
+                try {
+                    querySteps = buildNullSelect();
+                    cacheQuery.put(NIL_TEMPLATE, querySteps);
+                } catch (UnknownVariableException e){
+                    //do nothing
+                }
             } else
-                cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
+                try {
+                    querySteps = buildQuerySteps(NIL_TEMPLATE);
+                    cacheQuery.put(NIL_TEMPLATE, querySteps);
+                } catch (UnknownVariableException e){
+                    //do nothing
+                }
         } else {
             for (String templateId : contains.getTemplates()) {
-                cacheQuery.put(templateId, buildQuerySteps(templateId));
+                //optimize: use only the template that are currently used in the DB!
+                if (activeTemplates.isInitialized() && !activeTemplates.isActive(templateId))
+                    continue;
+
+                try {
+                    querySteps = buildQuerySteps(templateId);
+                    cacheQuery.put(templateId, querySteps);
+                } catch (UnknownVariableException e){
+                    //ignore
+                }
             }
         }
 
@@ -175,9 +201,7 @@ public class QueryProcessor extends TemplateMetaData {
                     unionSetQuery.union(select);
 
             }
-
         }
-
 
         // Add function or Distinct
         SuperQuery superQuery = new SuperQuery(domainAccess, statements.getVariables(), unionSetQuery, containsJson);
@@ -203,7 +227,7 @@ public class QueryProcessor extends TemplateMetaData {
         return new AqlSelectQuery(unionSetQuery, cacheQuery.values(), containsJson);
     }
 
-    private List<QuerySteps> buildQuerySteps(String templateId) {
+    private List<QuerySteps> buildQuerySteps(String templateId) throws UnknownVariableException {
 
         List<QuerySteps> queryStepsList = new ArrayList<>();
 
@@ -240,13 +264,11 @@ public class QueryProcessor extends TemplateMetaData {
                     select.addSelect(multiSelectFields.getQualifiedFieldOrLast(selectCursor).getSQLField());
                 }
 
-                Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap, multiSelectFieldsMap);
+                Condition condition = selectBinder.getWhereConditions(templateId, whereCursor, multiWhereFieldsMap, selectCursor, multiSelectFieldsMap);
                 if (condition != null && condition.equals(DSL.falseCondition()))
                     break; //do not add since it is always false
 
-                List<LateralJoinDefinition> joins = new ArrayList<>();
-
-                joins.addAll(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); //composition attributes
+                List<LateralJoinDefinition> joins = new ArrayList<>(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); //composition attributes
                 if (!templateId.equals(NIL_TEMPLATE)) {
                     joins.addAll(lateralJoinsSelectClause(templateId, selectCursor)); //select clause fields
                     joins.addAll(lateralJoinsWhereClause(templateId, whereCursor)); //where clause fields
@@ -303,12 +325,12 @@ public class QueryProcessor extends TemplateMetaData {
 
         //traverse the lateral joins derived from SELECT clause
         for (VariableDefinitions it = statements.getVariables(); it.hasNext(); ) {
-            Object item = it.next();
-            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
-                Set<LateralJoinDefinition> listOfLaterals = ((I_VariableDefinition)item).getLateralJoinDefinitions(templateId);
+            I_VariableDefinition item = it.next();
+            if (item != null && item.isLateralJoin(templateId)) {
+                Set<LateralJoinDefinition> listOfLaterals = item.getLateralJoinDefinitions(templateId);
                 int index = cursor < listOfLaterals.size() ? cursor : listOfLaterals.size() - 1;
                 LateralJoinDefinition encapsulatedLateralJoinDefinition =
-                        ((I_VariableDefinition)item).getLateralJoinDefinition(templateId, index);
+                        item.getLateralJoinDefinition(templateId, index);
                 LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(
                         encapsulatedLateralJoinDefinition.getSqlExpression(),
                         DSL.lateral(encapsulatedLateralJoinDefinition.getTable()),
@@ -354,8 +376,9 @@ public class QueryProcessor extends TemplateMetaData {
         return lateralJoinsList;
     }
 
-    private Result<Record> fetchResultSet(Select<?> select, Result<Record> result) {
+    private Result<Record> fetchResultSet(Select<?> select) {
         Result<Record> intermediary;
+
         try {
             intermediary = (Result<Record>) select.fetch();
         } catch (Exception e) {
@@ -367,12 +390,7 @@ public class QueryProcessor extends TemplateMetaData {
                     select.getSQL();
             throw new IllegalArgumentException(reason);
         }
-        if (result != null) {
-            result.addAll(intermediary);
-        } else if (intermediary != null) {
-            result = intermediary;
-        }
-        return result;
+        return intermediary;
     }
 
     private List<List<String>> buildExplain(Select<?> select) {
@@ -383,15 +401,16 @@ public class QueryProcessor extends TemplateMetaData {
         List<String> details = new ArrayList<>();
         details.add(sql);
         for (Param<?> parameter : select.getParams().values()) {
-            details.add(parameter.getValue().toString());
+            if (parameter.getValue() != null)
+                details.add(parameter.getValue().toString());
         }
         explainList.add(details);
         return explainList;
     }
 
-    private List<QuerySteps> buildNullSelect(String templateId) {
+    private List<QuerySteps> buildNullSelect() throws UnknownVariableException {
 
-        List<QuerySteps> queryStepsList = buildQuerySteps(templateId);
+        List<QuerySteps> queryStepsList = buildQuerySteps(NIL_TEMPLATE);
 
         //force a null condition for these steps
         for (QuerySteps querySteps: queryStepsList){

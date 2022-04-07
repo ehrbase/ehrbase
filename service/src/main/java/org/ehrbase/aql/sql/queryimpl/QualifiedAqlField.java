@@ -52,4 +52,8 @@ public class QualifiedAqlField {
     public boolean isQualified() {
         return itemType != null && itemCategory != null;
     }
+
+    public String getItemType() {
+        return itemType;
+    }
 }

@@ -39,7 +39,7 @@ public class ContextualAttribute {
         this.clause = clause;
     }
 
-    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition){
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition) throws UnknownVariableException {
         String inTemplatePath = compositionAttributeQuery.variableTemplatePath(templateId, variableDefinition.getIdentifier());
         if (inTemplatePath.startsWith("/"))
             inTemplatePath = inTemplatePath.substring(1); //conventionally, composition attribute path have the leading '/' striped.

@@ -18,10 +18,7 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.*;
 
 @SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
 public class ExpressionField {
@@ -36,7 +33,7 @@ public class ExpressionField {
         this.compositionAttributeQuery = compositionAttributeQuery;
     }
 
-   MultiFields toSql(String className, String templateId, String identifier, IQueryImpl.Clause clause) {
+   MultiFields toSql(String className, String templateId, String identifier, IQueryImpl.Clause clause) throws UnknownVariableException {
 
         MultiFields aqlFields;
 

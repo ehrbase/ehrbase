@@ -25,10 +25,7 @@ import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
@@ -45,10 +42,10 @@ import java.util.List;
 @SuppressWarnings({"java:S3776","java:S135"})
 public class WhereMultiFields {
 
-    private JsonbEntryQuery jsonbEntryQuery;
-    private CompositionAttributeQuery compositionAttributeQuery;
+    private final JsonbEntryQuery jsonbEntryQuery;
+    private final CompositionAttributeQuery compositionAttributeQuery;
     private final List<Object> whereClause;
-    private PathResolver pathResolver;
+    private final PathResolver pathResolver;
 
     public WhereMultiFields(JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery, List<Object> whereClause, PathResolver pathResolver) {
         this.jsonbEntryQuery = jsonbEntryQuery;
@@ -64,7 +61,7 @@ public class WhereMultiFields {
         this.whereClause = whereClause;
     }
 
-    private void buildWhereCondition(List<MultiFields> multiFieldsList, String templateId, List<Object> item) {
+    private void buildWhereCondition(List<MultiFields> multiFieldsList, String templateId, List<Object> item) throws UnknownVariableException {
 
         for (Object part : item) {
             if (part instanceof VariableDefinition) {
@@ -80,7 +77,7 @@ public class WhereMultiFields {
         }
     }
 
-    public  List<MultiFields> bind(String templateId) {
+    public  List<MultiFields> bind(String templateId) throws UnknownVariableException {
 
         List<MultiFields> multiFieldsList = new ArrayList<>();
 
