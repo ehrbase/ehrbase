@@ -724,7 +724,7 @@ jobs:
       - cache-in-sdk-m2-dependencies-sync-branch
       - collect-sdk-unittest-results
       - save-sdk-test-results
-      - save-openEHR-SDK-repo
+      - save-openehr-sdk-repo
       - cache-out-ehrbase-m2-dependencies-syncbranch
       - build-and-test-ehrbase
       - cache-in-ehrbase-m2-dependencies-syncbranch
@@ -1686,7 +1686,7 @@ commands:
           at: /home/circleci/
 
 
-  save-openEHR-SDK-repo:
+  save-openehr-sdk-repo:
     steps:
       - persist_to_workspace:
           root: /home/circleci
