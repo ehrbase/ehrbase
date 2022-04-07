@@ -24,6 +24,8 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.DuplicateObjectException;
@@ -202,6 +204,8 @@ public interface EhrService extends BaseService {
    */
   String getSubjectExtRef(String ehrId);
 
+  List<String> getSubjectExtRefs(Collection<String> ehrIds);  
+  
   /**
    * Checks if an EHR with the given UUID exists.
    * Throws {@link ObjectNotFoundException} if no EHR is found

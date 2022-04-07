@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
 - Implement EHR_STATUS.is_modifiable semantics on service level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
 
 ### Changed
@@ -17,6 +18,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   .
 
 ### Fixed
+
+- Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
 
 ## [0.20.0] (beta)
 

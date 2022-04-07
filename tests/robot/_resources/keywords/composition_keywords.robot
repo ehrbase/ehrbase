@@ -475,6 +475,22 @@ update composition (FLAT)
 
     Should Be Equal As Strings    ${response.status_code}    200
 
+
+update composition - is modifiable false (JSON)
+    [Arguments]         ${new_version_of_composition}
+    [Documentation]     Commit a new version for the COMPOSITION
+    ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
+    ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
+
+    get valid OPT file  ${new_version_of_composition}
+    &{headers}          Create Dictionary   Content-Type=application/xml
+                        ...                 Accept=application/json
+                        ...                 Prefer=return=representation
+                        ...                 If-Match=${preceding_version_uid}
+    ${resp}             PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${compo_uid_v1}   data=${file}   expected_status=anything   headers=${headers}
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}     ${resp.content}
+
 update composition - invalid opt reference (JSON)
     [Arguments]         ${new_version_of_composition}
     [Documentation]     Commit a new version for the COMPOSITION but with wrong OPT reference.
@@ -993,6 +1009,15 @@ delete composition
         log to console      ${resp.headers}
         log to console      ${resp.content}
 
+delete composition - invalid - is modifiable false
+    [Arguments]         ${uid}
+    [Documentation]     :uid: preceding_version_uid (format of version_uid)
+
+    ${resp}     Delete On Session   ${SUT}   /ehr/${ehr_id}/composition/${uid}   expected_status=anything
+    Set Test Variable   ${response}     ${resp}
+    check response: is negative indicating does not allow modification
+    log to console      ${resp.headers}
+    log to console      ${resp.content}
 
 get deleted composition
     [Documentation]     The deleted compo should not exist

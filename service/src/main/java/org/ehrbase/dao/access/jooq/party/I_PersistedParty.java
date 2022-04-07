@@ -18,10 +18,14 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
-import com.nedap.archie.rm.generic.PartyProxy;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 
-import java.util.UUID;
+import com.nedap.archie.rm.generic.PartyProxy;
 
 public interface I_PersistedParty {
 
@@ -32,6 +36,18 @@ public interface I_PersistedParty {
      */
     PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord);
 
+    
+    /**
+     * Render all PartyProxy from a retrieved collection of DB record (from PartyIdentified table)
+     * @param partyIdentifiedRecord
+     * @return
+     */
+    default List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
+      return partyIdentifiedRecords.stream()
+          .map(record -> render(record))
+          .collect(Collectors.toList());
+    }
+    
     /**
      * store a party proxy relatively to its actual type
      * @param partyProxy

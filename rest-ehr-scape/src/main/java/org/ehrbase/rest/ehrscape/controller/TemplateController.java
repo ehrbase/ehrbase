@@ -18,12 +18,17 @@
 
 package org.ehrbase.rest.ehrscape.controller;
 
+import com.nedap.archie.rm.composition.Composition;
+import java.util.Objects;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
-import org.ehrbase.rest.ehrscape.responsedata.TemplateExampleResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.TemplateResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.TemplatesResponseData;
 import org.ehrbase.webtemplate.filter.Filter;
@@ -38,17 +43,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Objects;
-
 @RestController
 @RequestMapping(path = "/rest/ecis/v1/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class TemplateController extends BaseController {
 
     private final TemplateService templateService;
+  private final CompositionService compositionService;
 
-    @Autowired
-    public TemplateController(TemplateService templateService) {
+  @Autowired
+  public TemplateController(
+      TemplateService templateService, CompositionService compositionService) {
         this.templateService = Objects.requireNonNull(templateService);
+    this.compositionService = Objects.requireNonNull(compositionService);
     }
 
     @GetMapping()
@@ -68,19 +74,21 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @GetMapping(path = "/{templateId}/example")
-    public ResponseEntity<TemplateExampleResponseData> getTemplateExample(@PathVariable(value = "templateId") String templateId,
-                                                                          @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
+  @GetMapping(path = "/{templateId}/example")
+  public ResponseEntity<StructuredString> getTemplateExample(
+      @PathVariable(value = "templateId") String templateId,
+      @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
 
-        TemplateExampleResponseData responseData = new TemplateExampleResponseData();
-        responseData.setComposition(templateService.buildExample(templateId, format));
-        responseData.setAction(Action.RETRIEVE);
-        RestHref url = new RestHref();
-        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/template" + templateId + "/example");
-        Meta meta = new Meta();
-        meta.setHref(url);
-        responseData.setMeta(meta);
-        return ResponseEntity.ok(responseData);
+    if ((format == CompositionFormat.RAW
+        || format == CompositionFormat.EXPANDED
+        || format == CompositionFormat.ECISFLAT)) {
+      throw new InvalidApiParameterException(String.format("Format %s not supported", format));
+    }
+
+    Composition composition = templateService.buildExample(templateId);
+    return ResponseEntity.ok(
+        compositionService.serialize(
+            new CompositionDto(composition, templateId, null, null), format));
     }
 
     @GetMapping(path = "/{templateId}")
