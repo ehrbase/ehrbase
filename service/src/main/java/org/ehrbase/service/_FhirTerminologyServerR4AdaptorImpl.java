@@ -43,7 +43,7 @@ import java.util.List;
  */
 @Component
 @SuppressWarnings("java:S6212")
-public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyServer {
+public class _FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyServer {
 
     private static final String FHIR_JSON_MEDIA_TYPE = "application/fhir+json";
 
@@ -53,7 +53,7 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
 
     private final FhirTsProps props;
 
-    public FhirTerminologyServerR4AdaptorImpl(HttpClient httpClient, FhirTsProps props) {
+    public _FhirTerminologyServerR4AdaptorImpl(HttpClient httpClient, FhirTsProps props) {
         this.httpClient = httpClient;
         this.props = props;
     }
