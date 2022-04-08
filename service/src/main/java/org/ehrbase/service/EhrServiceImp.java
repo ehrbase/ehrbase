@@ -30,7 +30,6 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.Attestation;
 import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.generic.RevisionHistoryItem;
@@ -48,9 +47,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -73,6 +70,7 @@ import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
 import org.ehrbase.util.PartyUtils;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -154,28 +152,29 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
     @Override
     public Optional<EhrStatusDto> getEhrStatusEhrScape(UUID ehrUuid, CompositionFormat format) {
-        EhrStatusDto statusDto = new EhrStatusDto();
-        try {
 
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUuid);
-            if (ehrAccess == null) {
-                return Optional.empty();
-            }
-
-            PartyProxy partyProxy = new PersistedPartyProxy(getDataAccess()).retrieve(ehrAccess.getParty());
-
-            statusDto.setSubjectId(partyProxy.getExternalRef().getId().getValue());
-            statusDto.setSubjectNamespace(partyProxy.getExternalRef().getNamespace());
-            statusDto.setModifiable(ehrAccess.isModifiable());
-            statusDto.setQueryable(ehrAccess.isQueryable());
-            statusDto.setOtherDetails(new StructuredString(new CanonicalJson().marshal(ehrAccess.getOtherDetails()), StructuredStringFormat.JSON));
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new InternalServerException(e);
-        }
-        return Optional.of(statusDto);
+    return getEhrStatus(ehrUuid).map(s -> from(s, format));
     }
+
+  private EhrStatusDto from(EhrStatus status, CompositionFormat format) {
+
+    EhrStatusDto statusDto = new EhrStatusDto();
+    statusDto.setSubjectId(status.getSubject().getExternalRef().getId().getValue());
+    statusDto.setSubjectNamespace(status.getSubject().getExternalRef().getNamespace());
+    statusDto.setModifiable(status.isModifiable());
+    statusDto.setQueryable(status.isQueryable());
+    if (format.equals(CompositionFormat.XML)) {
+      statusDto.setOtherDetails(
+          new StructuredString(
+              new CanonicalXML().marshal(status.getOtherDetails()), StructuredStringFormat.XML));
+    } else {
+      statusDto.setOtherDetails(
+          new StructuredString(
+              new CanonicalJson().marshal(status.getOtherDetails()), StructuredStringFormat.JSON));
+    }
+
+    return statusDto;
+  }
 
     @Override
     public Optional<EhrStatus> getEhrStatus(UUID ehrUuid) {
