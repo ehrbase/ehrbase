@@ -188,7 +188,7 @@ public class PluginAspect {
             new CompositionExtensionPointInterface() {});
     Object[] args = pjp.getArgs();
     CompositionIdWithVersionAndEhrId input =
-        new CompositionIdWithVersionAndEhrId((UUID) args[0], (UUID) args[1], (Integer) args[3]);
+        new CompositionIdWithVersionAndEhrId((UUID) args[0], (UUID) args[1], (Integer) args[2]);
 
     return handleChain(
         chain,

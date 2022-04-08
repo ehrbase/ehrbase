@@ -509,7 +509,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     return new CompositionDto(
         composition,
         composition.getArchetypeDetails().getTemplateId().getValue(),
-        UUID.fromString(composition.getUid().getValue()),
+        UUID.fromString(composition.getUid().getRoot().getValue()),
         ehrId);
   }
 
