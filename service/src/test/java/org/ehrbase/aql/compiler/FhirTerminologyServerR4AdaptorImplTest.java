@@ -1,6 +1,27 @@
 package org.ehrbase.aql.compiler;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.List;
+
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustAllStrategy;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
+import org.ehrbase.service._FhirTerminologyServerR4AdaptorImpl;
+import org.ehrbase.service.FhirTsProps;
+import org.ehrbase.service._FhirTerminologyServerR4AdaptorImpl;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.util.ResourceUtils;
+
 /*
  * Copyright (c) 2020 Luis Marco-Ruiz (Hannover Medical School) and Vitasystems GmbH.
  *
@@ -20,24 +41,6 @@ package org.ehrbase.aql.compiler;
  */
 
 import com.nedap.archie.rm.datavalues.DvCodedText;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
-import org.ehrbase.service.FhirTsProps;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.util.ResourceUtils;
-
-import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest//(classes= {org.ehrbase.application.EhrBase.class})
@@ -57,7 +60,7 @@ public class FhirTerminologyServerR4AdaptorImplTest {
         props.setSystemPath("$[\"expansion\"][\"contains\"][*][\"system\"]");
         props.setTsUrl("https://r4.ontoserver.csiro.au/fhir/");
         try {
-            tsserver = new FhirTerminologyServerR4AdaptorImpl(HttpClients.createDefault(), props);
+            tsserver = new _FhirTerminologyServerR4AdaptorImpl(HttpClients.createDefault(), props);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -99,7 +102,7 @@ public class FhirTerminologyServerR4AdaptorImplTest {
         props.setSystemPath("$[\"expansion\"][\"contains\"][*][\"system\"]");
         props.setTsUrl("https://terminology-highmed.medic.medfak.uni-koeln.de/fhir/");
         try {
-            tsserver = new FhirTerminologyServerR4AdaptorImpl(httpClient, props);
+            tsserver = new _FhirTerminologyServerR4AdaptorImpl(httpClient, props);
         } catch (Exception e) {
             e.printStackTrace();
         }
