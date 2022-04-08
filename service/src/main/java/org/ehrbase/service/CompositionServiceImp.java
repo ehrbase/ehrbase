@@ -457,29 +457,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     return I_CompositionAccess.getEhrId(getDataAccess(), compositionId);
   }
 
-  // TODO: untested because not needed, yet
-  @Override
-  public Optional<CompositionDto> retrieveByTimestamp(
-      UUID ehrId, UUID compositionId, LocalDateTime timestamp) {
-
-    // check that the ehr exists
-    ehrService.checkEhrExists(ehrId);
-
-    I_CompositionAccess compositionAccess;
-    try {
-      compositionAccess =
-          I_CompositionAccess.retrieveInstanceByTimestamp(
-              getDataAccess(), compositionId, Timestamp.valueOf(timestamp));
-    } catch (Exception e) {
-      throw new InternalServerException(e);
-    }
-    // check that the composition is actually in the ehr
-    if (compositionAccess != null) {
-      checkCompositionIsInEhr(ehrId, compositionAccess);
-    }
-
-    return getCompositionDto(compositionAccess);
-  }
 
   // Helper function to create returnable DTO
   private Optional<CompositionDto> getCompositionDto(I_CompositionAccess compositionAccess) {

@@ -40,17 +40,7 @@ public interface CompositionService extends BaseService, VersionedObjectService<
    */
   Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version);
 
-  /**
-   * TODO: untested because not needed, yet
-   *
-   * <p>Gets the composition that is closest in time before timestamp
-   *
-   * @param compositionId UUID (versioned_object_id) of composition
-   * @param timestamp Given time
-   * @return Optional of CompositionDto closest in time before timestamp
-   */
-  Optional<CompositionDto> retrieveByTimestamp(
-      UUID ehrId, UUID compositionId, LocalDateTime timestamp);
+
 
   CompositionDto from(UUID ehrId, Composition composition);
 
