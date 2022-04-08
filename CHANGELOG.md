@@ -9,21 +9,41 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
+- Implement EHR_STATUS.is_modifiable semantics on service level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
+
+### Changed
+- Upgrade to Spring boot 2.5.12
+  see [spring-framework-rce](https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement) ([#800](https://github.com/ehrbase/ehrbase/pull/800))
+  .
+
+### Fixed
+
+- Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
+
+## [0.20.0] (beta)
+
+### Added
+
 - Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772),
   [#779](https://github.com/ehrbase/ehrbase/pull/779)).
-- AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
+- AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any
+  order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
 - Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
 - Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
+  and [#796](https://github.com/ehrbase/ehrbase/pull/796)
+- Upgrade openEHR_SDK to version 1.18.0 see  https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 
 ### Fixed
 
 - Remove unused Operational Template cache ([#759](https://github.com/ehrbase/ehrbase/pull/759)).
 - Allow update/adding/removal of feeder_audit/links on Composition ([#773](https://github.com/ehrbase/ehrbase/pull/773))
 - Add default ASC direction to ORDER BY clause in AQL ([#780](https://github.com/ehrbase/ehrbase/pull/780)).
+- Fix DB Migration scripts. Allow user different then ehrbase ([#795](https://github.com/ehrbase/ehrbase/pull/795)).
 
-## [0.19.0]
+## [0.19.0] (beta)
 
 ### Added
 
@@ -49,7 +69,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   parameter ([#722](https://github.com/ehrbase/ehrbase/pull/722)).
 - Fix querying other_participations ([#707](https://github.com/ehrbase/ehrbase/issues/707))
 
-## [0.18.3]
+## [0.18.3] (beta)
 
 ### Added
 
@@ -59,19 +79,19 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-## [0.18.2]
+## [0.18.2] (beta)
 
 ### Fixed
 
 - updated log4j from 1.15.0 to 1.60.0
 
-## [0.18.1]
+## [0.18.1] (beta)
 
 ### Fixed
 
 - Fix deployment issue with Flyway migration V62__add_entry_history_missing_columns.sql
 
-## [0.18.0]
+## [0.18.0] (beta)
 
 ### Added
 
@@ -101,7 +121,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix issue using DV_DATE_TIME without time-zone (see https://github.com/ehrbase/ehrbase/pull/658)
 - update lg4j version (see https://github.com/ehrbase/ehrbase/pull/702)
 
-## [0.17.2]
+## [0.17.2] (beta)
 
 ### Added
 
@@ -426,18 +446,28 @@ the next release this file will provide a proper overview.
 - AQL queries with partial paths return data in canonical json format (including full compositions)
 - Multimedia data can be correctly stored and retrieved
 - Spring configuration allows setting the System ID
-- Validation of openEHR Terminology (openEHR terminology codes are tested against an internal
-  terminology service)
+- Validation of openEHR Terminology (openEHR terminology codes are tested against an internal terminology service)
 
 ### Fixed
 
-- Order of columns in AQL result sets are now reliably
-  preserved (https://github.com/ehrbase/ehrbase/issues/37)
+- Order of columns in AQL result sets are now reliably preserved (https://github.com/ehrbase/ehrbase/issues/37)
 - Some projection issues for EHR attributes have been resolved in AQL
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.17.2...HEAD
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.20.0...HEAD
+
+[0.20.0]: https://github.com/ehrbase/ehrbase/compare/v0.19.0...v0.20.0
+
+[0.19.0]: https://github.com/ehrbase/ehrbase/compare/v0.18.3...v0.19.0
+
+[0.18.3]: https://github.com/ehrbase/ehrbase/compare/v0.18.2...v0.18.3
+
+[0.18.2]: https://github.com/ehrbase/ehrbase/compare/v0.18.1...v0.18.2
+
+[0.18.1]: https://github.com/ehrbase/ehrbase/compare/v0.18.0...v0.18.1
+
+[0.18.0]: https://github.com/ehrbase/ehrbase/compare/v0.17.2...v0.18.0
 
 [0.17.2]: https://github.com/ehrbase/ehrbase/compare/v0.17.1...v0.17.2
 

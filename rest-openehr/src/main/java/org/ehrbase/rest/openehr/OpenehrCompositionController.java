@@ -18,9 +18,23 @@ package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Supplier;
+import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -38,16 +52,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.function.Supplier;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
@@ -285,13 +300,16 @@ public class OpenehrCompositionController extends BaseController implements
       // Enriches request attributes with current compositionId for later audit processing
       request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
       request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE,
-          extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+                           extractVersionedObjectUidFromVersionUid(precedingVersionUid));
 
       return ResponseEntity.noContent().headers(headers).build();
     } catch (ObjectNotFoundException e) {
       // if composition not available at all --> 404
       throw new ObjectNotFoundException("composition",
-          "No EHR with the supplied ehr_id or no COMPOSITION with the supplied preceding_version_uid.");
+                                        "No EHR with the supplied ehr_id or no COMPOSITION with the supplied " +
+                                        "preceding_version_uid.");
+    } catch (StateConflictException e) {
+      throw e;
     } catch (Exception e) {
       throw new InternalServerException("Deleting of composition failed", e);
     }

@@ -144,6 +144,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -219,6 +225,7 @@ workflows:
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
             - HEADER-tests
+            - EHRScape-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -364,6 +371,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -433,6 +446,7 @@ workflows:
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
             - HEADER-tests
+            - EHRScape-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -505,8 +519,7 @@ workflows:
                                   branch of each repository
 
       Find detailed steps description for this workflow in following jobs:
-      - "pull build install sdk from sync-branch"
-      - "build package ehrbase with locally installed sdk"
+      - "build package ehrbase with locally built sdk from sync-branch"
       - "run java integration tests - sdk"
 
       HOW TO USE THIS WORKFLOW?
@@ -542,118 +555,119 @@ workflows:
     #     - equal: [ feature/sync/*, << pipeline.git.branch >> ]
 
     jobs:
-      - pull build install sdk from sync-branch:
+      - build package ehrbase with locally built sdk from sync-branch:
           filters:
             branches:
               only:
                 - /^sync\/.*/
                 - /^feature\/sync\/.*/
-      - build package ehrbase with locally installed sdk:
-          requires:
-            - pull build install sdk from sync-branch
       - run java integration tests - sdk:
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - SANITY-tests:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-1:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-2:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-3:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-4:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-5:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-6:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-7:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-8:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-9:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-10:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-11:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-12:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-13:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - COMPOSITION-tests-14:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - HEADER-tests:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
+      - EHRScape-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - CONTRIBUTION-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - DIRECTORY-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - EHRSERVICE-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - EHRSTATUS-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - KNOWLEDGE-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - QUERYSERVICE-test-2:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - SECURITY-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - ADMIN-test:
           context: org-global
           requires:
-            - build package ehrbase with locally installed sdk
+            - build package ehrbase with locally built sdk from sync-branch
       - ROBOT-TEST-REPORT:
           context: org-global
           requires:
@@ -673,6 +687,7 @@ workflows:
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
             - HEADER-tests
+            - EHRScape-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -697,10 +712,8 @@ jobs:
   #   88,   ,d88   Y8a.    .a8P   88      a8P  Y8a     a8P
   #    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
 
-
-  pull build install sdk from sync-branch:
-    # executor: machine-ubuntu-2004
-    executor: docker-python3-java11
+  build package ehrbase with locally built sdk from sync-branch:
+    executor: docker-py3-java11-postgres
     steps:
       - checkout
       - install-maven
@@ -709,18 +722,9 @@ jobs:
       - cache-out-sdk-m2-dependencies-sync-branch
       - maven-install-sdk
       - cache-in-sdk-m2-dependencies-sync-branch
-      - save-local-sdk-installation
       - collect-sdk-unittest-results
-      - save-skd-test-results
-
-
-  build package ehrbase with locally installed sdk:
-    # executor: machine-ubuntu-2004
-    executor: docker-py3-java11-postgres
-    steps:
-      - checkout
-      - install-maven
-      - restore-local-sdk-installation
+      - save-sdk-test-results
+      - save-openehr-sdk-repo
       - cache-out-ehrbase-m2-dependencies-syncbranch
       - build-and-test-ehrbase
       - cache-in-ehrbase-m2-dependencies-syncbranch
@@ -735,12 +739,12 @@ jobs:
     steps:
       - checkout
       - install-maven
-      - restore-local-sdk-installation
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
+      - cache-out-sdk-m2-dependencies-sync-branch
       - cache-out-ehrbase-m2-dependencies-syncbranch
       - start-ehrbase-and-run-java-integration-sdk-tests
       - collect-sdk-integrationtest-results
-      - save-skd-test-results
+      - save-sdk-test-results
 
 
   build-ehrbase:
@@ -775,14 +779,14 @@ jobs:
       - generate-sdk-it-coverage-report
       - collect-sdk-unittest-results
       - collect-sdk-integrationtest-results
-      - save-skd-test-results
+      - save-sdk-test-results
 
   SANITY-tests:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
@@ -793,7 +797,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_create"
           test-suite-path: "COMPOSITION_TESTS"
@@ -805,7 +809,7 @@ jobs:
     steps:
       - run: echo MOCKED JOB 3
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get"
           test-suite-path: "COMPOSITION_TESTS"
@@ -816,7 +820,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:      
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get_versioned"
           test-suite-path: "COMPOSITION_TESTS"
@@ -827,7 +831,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
@@ -838,7 +842,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
@@ -849,7 +853,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -860,7 +864,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -871,7 +875,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -882,7 +886,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -893,7 +897,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -904,7 +908,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -915,7 +919,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -926,7 +930,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -937,7 +941,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -948,18 +952,29 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "HeadersChecks"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "HEADER-tests"
+
+  EHRScape-tests:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-workspace
+      - run-robot-tests:
+          include-tags: "EhrScapeTag"
+          test-suite-path: "EHRSCAPE_TESTS"
+          test-suite-name: "EHRSCAPE"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "CONTRIBUTION"
           test-suite-path: "CONTRIBUTION_TESTS"
@@ -970,7 +985,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "directory"
           test-suite-path: "DIRECTORY_TESTS"
@@ -981,7 +996,7 @@ jobs:
     # executor: machine-ubuntu-2004
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "EHR_SERVICE"
           test-suite-path: "EHR_SERVICE_TESTS"
@@ -991,7 +1006,7 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "EHR_STATUS"
           test-suite-path: "EHR_STATUS_TESTS"
@@ -1001,7 +1016,7 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "OPT"
           test-suite-path: "KNOWLEDGE_TESTS"
@@ -1013,7 +1028,7 @@ jobs:
     executor: docker-py3-java11-postgres
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
@@ -1027,7 +1042,7 @@ jobs:
       SUT: TEST
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
@@ -1092,7 +1107,7 @@ jobs:
     steps:
       - checkout
       - install-and-configure-keycloak
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "SECURITY_oauth"
@@ -1108,7 +1123,7 @@ jobs:
       SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
     steps:
       - checkout
-      - restore-packaged-ehrbase-jar
+      - restore-workspace
       - run-robot-tests:
           sut: "ADMIN-TEST"
           include-tags: "ADMIN"
@@ -1577,7 +1592,7 @@ commands:
           when: always
 
     
-  save-skd-test-results:
+  save-sdk-test-results:
     steps:
       - store_test_results:
           path: ~/sdk-test-results
@@ -1665,11 +1680,19 @@ commands:
             - projects/tests/requirements.txt
 
  
-  restore-packaged-ehrbase-jar:
+  restore-workspace:
     steps:
       - attach_workspace:
           at: /home/circleci/
 
+
+  save-openehr-sdk-repo:
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - projects/openEHR_SDK
+            
 
   collect-ehrbase-unittest-results:
     steps:

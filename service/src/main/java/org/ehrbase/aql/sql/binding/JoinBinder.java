@@ -169,7 +169,7 @@ public class JoinBinder implements IJoinBinder {
     private void joinSystem(SelectQuery<?> selectQuery) {
         if (systemJoined)
             return;
-        selectQuery.addJoin(systemRecordTable, JoinType.RIGHT_OUTER_JOIN, DSL.field(systemRecordTable.field(SYSTEM.ID)).eq(DSL.field(ehrRecordTable.field(EHR_.SYSTEM_ID.getName(), UUID.class))));
+        selectQuery.addJoin(systemRecordTable, JoinType.JOIN, DSL.field(systemRecordTable.field(SYSTEM.ID)).eq(DSL.field(ehrRecordTable.field(EHR_.SYSTEM_ID.getName(), UUID.class))));
         systemJoined = true;
     }
 
