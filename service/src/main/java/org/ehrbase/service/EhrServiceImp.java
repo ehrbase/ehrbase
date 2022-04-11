@@ -102,24 +102,12 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
     }
 
-    @Override
-    public UUID create(EhrStatus status, UUID ehrId) {
+  @Override
+  public UUID create(UUID ehrId, EhrStatus status) {
 
-        try {
-            validationService.check(status);
-        } catch (Exception e) {
-            // rethrow if this class, but wrap all others in InternalServerException
-            if (e.getClass().equals(UnprocessableEntityException.class))
-                throw (UnprocessableEntityException) e;
-            if (e.getClass().equals(IllegalArgumentException.class))
-                throw new ValidationException(e);
-            if (e.getClass().equals(ValidationException.class))
-                throw e;
-            else
-                throw new InternalServerException(e);
-        }
+    check(status);
 
-        if (status == null) {   // in case of new status with default values
+    if (status == null) { // in case of new status with default values
             status = new EhrStatus();
             status.setSubject(new PartySelf(null));
             status.setModifiable(true);
@@ -237,50 +225,47 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         return Optional.of(versionStatus);
     }
 
-    @Override
-    public Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
+  @Override
+  public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
 
-        try {
-            validationService.check(status);
-        } catch (Exception e) {
-            // rethrow if this class, but wrap all others in InternalServerException
-            if (e.getClass().equals(UnprocessableEntityException.class))
-                throw (UnprocessableEntityException) e;
-            if (e.getClass().equals(IllegalArgumentException.class))
-                throw new ValidationException(e);
-            if (e.getClass().equals(ValidationException.class))
-                throw e;
-            else
-                throw new InternalServerException(e);
-        }
+    check(status);
 
-        //pre-step: check for valid ehrId
-        if (!hasEhr(ehrId)) {
+    // pre-step: check for valid ehrId
+    if (!hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
         I_EhrAccess ehrAccess;
         try {
             ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-        } catch (Exception e) {
-            throw new InternalServerException(e);
-        }
-        if (ehrAccess == null) {
-            return Optional.empty();
-        }
-        if (status != null) {
+    } catch (Exception e) {
+      throw new InternalServerException(e);
+    }
+
             ehrAccess.setStatus(status);
-        }
 
         // execute actual update and check for success
         if (ehrAccess.update(getUserUuid(), getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
             throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
 
-        return getEhrStatus(ehrId);
-    }
+    return UUID.fromString(getEhrStatus(ehrId).get().getUid().getRoot().getValue());
+  }
 
-    @Override
-    public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
+  private void check(EhrStatus status) {
+    try {
+      validationService.check(status);
+    } catch (Exception e) {
+      // rethrow if this class, but wrap all others in InternalServerException
+      if (e.getClass().equals(UnprocessableEntityException.class))
+        throw (UnprocessableEntityException) e;
+      if (e.getClass().equals(IllegalArgumentException.class)) throw new ValidationException(e);
+      if (e.getClass().equals(ValidationException.class)) throw e;
+      else throw new InternalServerException(e);
+    }
+  }
+
+  @Override
+  public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
         UUID subjectUuid = new PersistedPartyRef(getDataAccess()).findInDB(subjectId, nameSpace);
         return Optional.ofNullable(I_EhrAccess.retrieveInstanceBySubject(getDataAccess(), subjectUuid));
     }

@@ -77,7 +77,7 @@ public class AbstartPluginAspect<T> {
   /**
    * @return Order List of {@link CompositionExtensionPointInterface} in Context.
    */
-  protected List<T> getCompositionExtensionPointInterfaceList() {
+  protected List<T> getExtensionPointInterfaceList() {
 
     return beanFactory.getBeansOfType(clazz).entrySet().stream()
         .sorted(EXTENSION_POINTS_COMPARATOR)

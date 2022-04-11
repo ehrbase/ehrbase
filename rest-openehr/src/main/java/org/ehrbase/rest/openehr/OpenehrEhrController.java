@@ -85,7 +85,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                                     HttpServletRequest request) {
         final UUID ehrId;
         if (ehrStatus != null) {
-            ehrId = ehrService.create(ehrStatus, null);
+      ehrId = ehrService.create(null, ehrStatus);
         } else {
             ehrId = ehrService.create(null, null);
         }
@@ -117,9 +117,9 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         final UUID resultEhrId;
         if (ehrStatus != null) {
-            resultEhrId = ehrService.create(ehrStatus, ehrId);
+      resultEhrId = ehrService.create(ehrId, ehrStatus);
         } else {
-            resultEhrId = ehrService.create(null, ehrId);
+      resultEhrId = ehrService.create(ehrId, null);
         }
 
         if (!ehrId.equals(resultEhrId)) {

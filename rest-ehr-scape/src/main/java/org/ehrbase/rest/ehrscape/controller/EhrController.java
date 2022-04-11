@@ -91,7 +91,7 @@ public class EhrController extends BaseController {
     PartySelf partySelf = new PartySelf(
         new PartyRef(new HierObjectId(subjectId), subjectNamespace, null));
     ehrStatus.setSubject(partySelf);
-    UUID ehrId = ehrService.create(ehrStatus, null);
+    UUID ehrId = ehrService.create(null, ehrStatus);
 
     // TODO: use config file or alike to set the basic api path
     URI url = URI.create(getBaseEnvLinkURL() + "/rest/ecis/v1/ehr/" + ehrId.toString());

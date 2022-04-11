@@ -58,10 +58,8 @@ public class CompositionPluginAspect
   @Around("execution(* org.ehrbase.api.service.CompositionService.create(..))")
   public Object aroundCreateComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain =
-        buildChain(
-            getCompositionExtensionPointInterfaceList(),
-            new CompositionExtensionPointInterface() {});
+    Chain<CompositionExtensionPointInterface> chain = getChain();
+
     Object[] args = pjp.getArgs();
     CompositionWithEhrId input = new CompositionWithEhrId((Composition) args[1], (UUID) args[0]);
 
@@ -78,6 +76,12 @@ public class CompositionPluginAspect
             }));
   }
 
+  private Chain<CompositionExtensionPointInterface> getChain() {
+    Chain<CompositionExtensionPointInterface> chain =
+        buildChain(getExtensionPointInterfaceList(), new CompositionExtensionPointInterface() {});
+    return chain;
+  }
+
   /**
    * Handle Extension-points for Composition update
    *
@@ -89,10 +93,8 @@ public class CompositionPluginAspect
   @Around("execution(* org.ehrbase.api.service.CompositionService.update(..))")
   public Object aroundUpdateComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain =
-        buildChain(
-            getCompositionExtensionPointInterfaceList(),
-            new CompositionExtensionPointInterface() {});
+    Chain<CompositionExtensionPointInterface> chain = getChain();
+
     Object[] args = pjp.getArgs();
     CompositionWithEhrIdAndPreviousVersion input =
         new CompositionWithEhrIdAndPreviousVersion(
@@ -123,10 +125,8 @@ public class CompositionPluginAspect
   @Around("execution(* org.ehrbase.api.service.CompositionService.delete(..))")
   public void aroundDeleteComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain =
-        buildChain(
-            getCompositionExtensionPointInterfaceList(),
-            new CompositionExtensionPointInterface() {});
+    Chain<CompositionExtensionPointInterface> chain = getChain();
+
     Object[] args = pjp.getArgs();
     CompositionVersionIdWithEhrId input =
         new CompositionVersionIdWithEhrId((ObjectVersionId) args[1], (UUID) args[0]);
@@ -155,10 +155,8 @@ public class CompositionPluginAspect
   @Around("execution(* org.ehrbase.api.service.CompositionService.retrieve(..))")
   public Object aroundRetrieveComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain =
-        buildChain(
-            getCompositionExtensionPointInterfaceList(),
-            new CompositionExtensionPointInterface() {});
+    Chain<CompositionExtensionPointInterface> chain = getChain();
+
     Object[] args = pjp.getArgs();
     CompositionIdWithVersionAndEhrId input =
         new CompositionIdWithVersionAndEhrId((UUID) args[0], (UUID) args[1], (Integer) args[2]);

@@ -50,23 +50,54 @@ public class EhrPluginAspect extends AbstartPluginAspect<EhrExtensionPointInterf
    *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   @Around("execution(* org.ehrbase.api.service.EhrService.create(..))")
-  public Object aroundCreateComposition(ProceedingJoinPoint pjp) {
+  public Object aroundCreateEhr(ProceedingJoinPoint pjp) {
 
-    Chain<EhrExtensionPointInterface> chain =
-        buildChain(
-            getCompositionExtensionPointInterfaceList(), new EhrExtensionPointInterface() {});
+    Chain<EhrExtensionPointInterface> chain = getChain();
+
     Object[] args = pjp.getArgs();
-    EhrStatusWithEhrId input = new EhrStatusWithEhrId((EhrStatus) args[0], (UUID) args[1]);
+    EhrStatusWithEhrId input = new EhrStatusWithEhrId((EhrStatus) args[1], (UUID) args[0]);
 
     return handleChain(
         chain,
         l -> (l::aroundCreation),
         input,
         i -> {
-          args[0] = i.getEhrStatus();
-          args[1] = i.getEhrId();
+          args[1] = i.getEhrStatus();
+          args[0] = i.getEhrId();
 
           return (UUID) proceed(pjp, args);
         });
+  }
+
+  /**
+   * Handle Extension-points for Ehr create
+   *
+   * @param pjp
+   * @return
+   * @see <a href="I_EHR_SERVICE in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   */
+  @Around("execution(* org.ehrbase.api.service.EhrService.updateStatus(..))")
+  public Object aroundUpdateEhrStatus(ProceedingJoinPoint pjp) {
+
+    Chain<EhrExtensionPointInterface> chain = getChain();
+
+    Object[] args = pjp.getArgs();
+    EhrStatusWithEhrId input = new EhrStatusWithEhrId((EhrStatus) args[1], (UUID) args[0]);
+
+    return handleChain(
+        chain,
+        l -> (l::aroundUpdate),
+        input,
+        i -> {
+          args[1] = i.getEhrStatus();
+          args[0] = i.getEhrId();
+
+          return (UUID) proceed(pjp, args);
+        });
+  }
+
+  private Chain<EhrExtensionPointInterface> getChain() {
+    return buildChain(getExtensionPointInterfaceList(), new EhrExtensionPointInterface() {});
   }
 }

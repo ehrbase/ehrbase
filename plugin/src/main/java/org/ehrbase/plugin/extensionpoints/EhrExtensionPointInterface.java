@@ -22,7 +22,7 @@ import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
 import org.pf4j.ExtensionPoint;
 
 /**
- * Extension Point for Component handling.
+ * Extension Point for Ehr handling.
  *
  * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
  *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
@@ -41,6 +41,19 @@ public interface EhrExtensionPointInterface extends ExtensionPoint {
    *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
   default UUID aroundCreation(EhrStatusWithEhrId input, Function<EhrStatusWithEhrId, UUID> chain) {
+    return chain.apply(input);
+  }
+
+  /**
+   * Intercept EhrStatus update
+   *
+   * @param input update ehrStatus {@link com.nedap.archie.rm.ehr.EhrStatus} in ehrId {@link UUID}
+   * @param chain next Extension Point
+   * @return {@link UUID} of the updated {@link com.nedap.archie.rm.ehr.EhrStatus}
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  default UUID aroundUpdate(EhrStatusWithEhrId input, Function<EhrStatusWithEhrId, UUID> chain) {
     return chain.apply(input);
   }
 }

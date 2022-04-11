@@ -40,13 +40,13 @@ public interface EhrService extends BaseService {
   /**
    * Creates new EHR instance, with default settings and values when no status or ID is supplied.
    *
+   * @param ehrId Optional, sets custom ID
    * @param status Optional, sets custom status
-   * @param ehrId  Optional, sets custom ID
    * @return UUID of new EHR instance
    * @throws DuplicateObjectException when given party/subject already has an EHR
-   * @throws InternalServerException  when unspecified error occurs
+   * @throws InternalServerException when unspecified error occurs
    */
-  UUID create(EhrStatus status, UUID ehrId);
+  UUID create(UUID ehrId, EhrStatus status);
 
   @Deprecated
   Optional<EhrStatusDto> getEhrStatusEhrScape(UUID ehrUuid, CompositionFormat format);
@@ -72,15 +72,15 @@ public interface EhrService extends BaseService {
   /**
    * Update the EHR_STATUS linked to the given EHR
    *
-   * @param ehrId        ID of linked EHR
-   * @param status       input EHR_STATUS
+   * @param ehrId ID of linked EHR
+   * @param status input EHR_STATUS
    * @param contribution Optional ID of custom contribution. Can be null.
    * @return {@link Optional<EhrStatus>} containing the updated status on success
-   * @throws org.ehrbase.api.exception.ObjectNotFoundException      when given ehrId cannot be found
-   * @throws org.ehrbase.api.exception.InvalidApiParameterException when given status is invalid, e.g. not a valid openEHR RM
-   *                                                                object
+   * @throws org.ehrbase.api.exception.ObjectNotFoundException when given ehrId cannot be found
+   * @throws org.ehrbase.api.exception.InvalidApiParameterException when given status is invalid,
+   *     e.g. not a valid openEHR RM object
    */
-  Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status, UUID contribution);
+  UUID updateStatus(UUID ehrId, EhrStatus status, UUID contribution);
 
   Optional<UUID> findBySubject(String subjectId, String nameSpace);
 

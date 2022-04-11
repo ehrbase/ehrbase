@@ -56,4 +56,34 @@ public abstract class AbstractEhrExtensionPoint implements EhrExtensionPointInte
   public UUID aroundCreation(EhrStatusWithEhrId input, Function<EhrStatusWithEhrId, UUID> chain) {
     return afterCreation(chain.apply(beforeCreation(input)));
   }
+
+  /**
+   * Called before ehrStatus update
+   *
+   * @param input ehr with ehrStatus {@link com.nedap.archie.rm.ehr.EhrStatus} to be created and
+   *     optional ehrId {@link UUID}
+   * @return input to be given to ehrStatus update
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public EhrStatusWithEhrId beforeUpdate(EhrStatusWithEhrId input) {
+    return input;
+  }
+
+  /**
+   * Called after ehrStatus update
+   *
+   * @param output {@link UUID} of the updated ehrStatus
+   * @return {@link UUID} of the updated ehrStatus
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   */
+  public UUID afterUpdate(UUID output) {
+    return output;
+  }
+
+  @Override
+  public UUID aroundUpdate(EhrStatusWithEhrId input, Function<EhrStatusWithEhrId, UUID> chain) {
+    return afterUpdate(chain.apply(beforeUpdate(input)));
+  }
 }
