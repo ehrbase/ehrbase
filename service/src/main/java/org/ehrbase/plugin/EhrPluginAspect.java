@@ -19,7 +19,6 @@ package org.ehrbase.plugin;
 import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 
 import com.nedap.archie.rm.ehr.EhrStatus;
-import java.util.Optional;
 import java.util.UUID;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -59,16 +58,15 @@ public class EhrPluginAspect extends AbstartPluginAspect<EhrExtensionPointInterf
     Object[] args = pjp.getArgs();
     EhrStatusWithEhrId input = new EhrStatusWithEhrId((EhrStatus) args[0], (UUID) args[1]);
 
-    return Optional.of(
-        handleChain(
-            chain,
-            l -> (l::aroundCreation),
-            input,
-            i -> {
-              args[0] = i.getEhrStatus();
-              args[1] = i.getEhrId();
+    return handleChain(
+        chain,
+        l -> (l::aroundCreation),
+        input,
+        i -> {
+          args[0] = i.getEhrStatus();
+          args[1] = i.getEhrId();
 
-              return (UUID) proceed(pjp, args);
-            }));
+          return (UUID) proceed(pjp, args);
+        });
   }
 }
