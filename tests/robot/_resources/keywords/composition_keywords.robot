@@ -682,18 +682,68 @@ get web template by template id
                         Set Test Variable   ${response}    ${resp}
                         Should Be Equal As Strings   ${resp.status_code}   200
 
-get example of web template by template id
+get example of web template by template id (ECIS)
     [Arguments]         ${template_id}      ${responseFormat}
 
     Create Session      ${SUT}    ${ECISURL}    debug=2
     ...                 auth=${CREDENTIALS}    verify=True
-    &{params}=          Create Dictionary     format=${responseFormat}
-    ${resp}=            GET On Session         ${SUT}
+    &{params}          Create Dictionary      format=${responseFormat}
+    ${headers}         Create Dictionary      Accept=application/json
+    ...                                       Content-Type=application/xml
+    ...                                       Prefer=return=representation
+    IF      '${responseFormat}' != 'FLAT'
+            ${resp}            GET On Session         ${SUT}
                         ...     template/${template_id}/example  expected_status=anything   headers=${headers}
                         ...     params=${params}
+    ELSE
+            ${resp}            GET On Session         ${SUT}
+                        ...     template/${template_id}/example  expected_status=anything   headers=${headers}
+    END
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
                         Status Should Be    200
+
+get example of web template by template id (OPENEHR)
+    [Arguments]         ${template_id}      ${responseFormat}
+
+    Create Session      ${SUT}    ${baseurl}    debug=2
+    ...                 auth=${CREDENTIALS}    verify=True
+    &{params}          Create Dictionary     format=${responseFormat}
+    ${headers}         Create Dictionary     Accept=application/json
+    ...                                      Content-Type=application/xml
+    ...                                      Prefer=return=representation
+    IF      '${responseFormat}' != 'FLAT'
+            ${resp}            GET On Session         ${SUT}
+                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
+                                ...     params=${params}
+    ELSE
+             ${resp}            GET On Session         ${SUT}
+                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
+    END
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+                        Status Should Be    200
+
+validate that response body is in format
+    [Documentation]     Check if response body contains representation in format
+    ...                 provided as argument.
+    ...                 Expected format can be JSON or XML.
+    ...                 If format is not provided, JSON is default expected format.
+    ...                 Dependencies:
+    ...                 - `get example of web template by template id (BASE)`
+    ...                 or
+    ...                 - `get example of web template by template id (ECIS)`
+    [Arguments]         ${expectedFormat}=JSON
+                        IF          '${expectedFormat}' == 'JSON'
+                            ${templateName}     Get Value From Json     ${response.json()}
+                            ...     name.value
+                            log to console     ${templateName}
+                        ELSE IF     '${expectedFormat}' == 'XML'
+                            ${xml}     Parse Xml        ${response.text}
+                        ELSE
+                            #log to console      ${response.text}
+                            Should Contain      ${response.text}    family_history/category|terminology
+                        END
 
 get all web templates
     Create Session      ${SUT}    ${ECISURL}    debug=2
