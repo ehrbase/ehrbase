@@ -682,6 +682,18 @@ get web template by template id
                         Set Test Variable   ${response}    ${resp}
                         Should Be Equal As Strings   ${resp.status_code}   200
 
+get example of web template by template id
+    [Arguments]         ${template_id}      ${responseFormat}
+
+    Create Session      ${SUT}    ${ECISURL}    debug=2
+    ...                 auth=${CREDENTIALS}    verify=True
+    &{params}=          Create Dictionary     format=${responseFormat}
+    ${resp}=            GET On Session         ${SUT}
+                        ...     template/${template_id}/example  expected_status=anything   headers=${headers}
+                        ...     params=${params}
+                        log to console      ${resp.content}
+                        Set Test Variable   ${response}    ${resp}
+                        Status Should Be    200
 
 get all web templates
     Create Session      ${SUT}    ${ECISURL}    debug=2

@@ -18,15 +18,16 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Adil Mushtaque*
+Metadata    Authors    *Vladislav Ploaia*
 
-Documentation    COMPOSITION TEST SUITE
+Documentation    TEMPLATE TEST SUITE
 ...
-...              test documentation: https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md
+...              test documentation: to be defined
+...              Created date: 8 April 2022
 
 Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
 Suite Setup  startup SUT
 Suite Teardown  shutdown SUT
 
-Force Tags    Sanity
+Force Tags    Template
