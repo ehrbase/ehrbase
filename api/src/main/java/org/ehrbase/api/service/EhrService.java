@@ -55,9 +55,9 @@ public interface EhrService extends BaseService {
    * Gets latest EHR_STATUS of the given EHR.
    *
    * @param ehrUuid EHR subject
-   * @return Latest EHR_STATUS or empty
+   * @return Latest EHR_STATUS
    */
-  Optional<EhrStatus> getEhrStatus(UUID ehrUuid);
+  EhrStatus getEhrStatus(UUID ehrUuid);
 
   /**
    * Gets particular EHR_STATUS matching the given version Uid.

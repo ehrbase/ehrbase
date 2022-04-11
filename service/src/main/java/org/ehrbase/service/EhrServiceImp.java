@@ -141,7 +141,10 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public Optional<EhrStatusDto> getEhrStatusEhrScape(UUID ehrUuid, CompositionFormat format) {
 
-    return getEhrStatus(ehrUuid).map(s -> from(s, format));
+    if (!hasEhr(ehrUuid)) {
+      return Optional.empty();
+    }
+    return Optional.of(getEhrStatus(ehrUuid)).map(s -> from(s, format));
     }
 
   private EhrStatusDto from(EhrStatus status, CompositionFormat format) {
@@ -164,8 +167,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     return statusDto;
   }
 
-    @Override
-    public Optional<EhrStatus> getEhrStatus(UUID ehrUuid) {
+  @Override
+  public EhrStatus getEhrStatus(UUID ehrUuid) {
         //pre-step: check for valid ehrId
         if (!hasEhr(ehrUuid)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
@@ -174,10 +177,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         try {
 
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUuid);
-            if (ehrAccess == null) {
-                return Optional.empty();
-            }
-            return Optional.of(ehrAccess.getStatus());
+
+      return ehrAccess.getStatus();
 
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -248,7 +249,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         if (ehrAccess.update(getUserUuid(), getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
             throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
 
-    return UUID.fromString(getEhrStatus(ehrId).get().getUid().getRoot().getValue());
+    return UUID.fromString(getEhrStatus(ehrId).getUid().getRoot().getValue());
   }
 
   private void check(EhrStatus status) {
@@ -351,19 +352,20 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public VersionedEhrStatus getVersionedEhrStatus(UUID ehrUid) {
 
-        // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr: has_ehr (an_ehr_id)
-        // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr_status_version: has_ehr_status_version (an_ehr_id, a_version_uid)
+    // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr: has_ehr (an_ehr_id)
+    // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr_status_version: has_ehr_status_version (an_ehr_id,
+    // a_version_uid)
 
-        Optional<EhrStatus> ehrStatus = getEhrStatus(ehrUid);
+    EhrStatus ehrStatus = getEhrStatus(ehrUid);
 
         VersionedEhrStatus versionedEhrStatus = new VersionedEhrStatus();
-        if (ehrStatus.isPresent()) {
-            versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().getRoot().getValue()));
+
+    versionedEhrStatus.setUid(new HierObjectId(ehrStatus.getUid().getRoot().getValue()));
             versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
             versionedEhrStatus.setTimeCreated(new DvDateTime(OffsetDateTime.of(ehrAccess.getStatusAccess().getInitialTimeOfVersionedEhrStatus().toLocalDateTime(),
                     OffsetDateTime.now().getOffset())));
-        }
+
 
         return versionedEhrStatus;
     }
@@ -470,16 +472,16 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     }
     
     private List<Pair<String,UUID>> getSubjectUuids(Collection<String> ehrIds) {
-        return ehrIds.stream()
-            .map(ehrId -> Pair.of(ehrId, getEhrStatus(UUID.fromString(ehrId)).orElse(null)))
-            .map(p -> {
-              if(p.getRight() == null)
-                return Pair.<String,UUID>of(p.getLeft(), null);
+    return ehrIds.stream()
+        .map(ehrId -> Pair.of(ehrId, getEhrStatus(UUID.fromString(ehrId))))
+        .map(
+            p -> {
+              if (p.getRight() == null) return Pair.<String, UUID>of(p.getLeft(), null);
               return Pair.of(
                   p.getLeft(),
                   new PersistedPartyProxy(getDataAccess()).getOrCreate(p.getRight().getSubject()));
             })
-            .collect(Collectors.toList());
+        .collect(Collectors.toList());
     }
     
     @Override

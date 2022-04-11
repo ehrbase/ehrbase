@@ -215,8 +215,9 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         // check for valid format header to produce content accordingly
         MediaType contentType = resolveContentType(accept);
 
-        //Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatusEhrScape(ehrId, CompositionFormat.FLAT);    // older, keep until rework of formatting
-        Optional<EhrStatus> ehrStatus = ehrService.getEhrStatus(ehrId);
+    // Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatusEhrScape(ehrId,
+    // CompositionFormat.FLAT);    // older, keep until rework of formatting
+    Optional<EhrStatus> ehrStatus = Optional.of(ehrService.getEhrStatus(ehrId));
         if (ehrStatus.isEmpty()) {
             return Optional.empty();
         }

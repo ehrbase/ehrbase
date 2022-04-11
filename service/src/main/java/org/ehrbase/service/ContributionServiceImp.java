@@ -379,11 +379,15 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                     try {
                         // TODO-396: add folder handling
                     } catch (Exception ee) { // given version ID is not of type folder - ignoring the exception because it is expected possible outcome
-                        // current end of going through supported types - last step is checking for EHR_STATUS and throwing specific error
-                        ehrService.getEhrStatus(ehrId).ifPresent(st -> {
-                            if (st.getUid().equals(version.getPrecedingVersionUid()))
-                                throw new InvalidApiParameterException("Invalid change type. EHR_STATUS can't be deleted.");
-                        });
+            // current end of going through supported types - last step is checking for EHR_STATUS
+            // and throwing specific error
+            Optional.of(ehrService.getEhrStatus(ehrId))
+                .ifPresent(
+                    st -> {
+                      if (st.getUid().equals(version.getPrecedingVersionUid()))
+                        throw new InvalidApiParameterException(
+                            "Invalid change type. EHR_STATUS can't be deleted.");
+                    });
 
                         // TODO add nested try-catchs for more supported types, for instance folder, when their contribution support gets implemented
                         // TODO last "try catch" in line needs to rethrow for real, as then no matching object would have been found

@@ -169,7 +169,8 @@ public class EhrController extends BaseController {
       }
     }
 
-    //Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatus(ehrId, CompositionFormat.FLAT);    // older, keep until rework of formatting
+    // Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatus(ehrId, CompositionFormat.FLAT);
+    // // older, keep until rework of formatting
     Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatusEhrScape(ehrId, format);
     if (!ehrStatus.isPresent()) {
       return Optional.empty();
