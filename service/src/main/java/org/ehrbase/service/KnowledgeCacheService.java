@@ -160,10 +160,13 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
   @Override
   public String addOperationalTemplate(byte[] content) {
-    return addOperationalTemplateIntern(content, false);
+
+    OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
+
+    return addOperationalTemplateIntern(template, false);
   }
 
-  public String addOperationalTemplateIntern(byte[] content, boolean overwrite) {
+  private OPERATIONALTEMPLATE buildOperationalTemplate(byte[] content) {
     TemplateDocument document;
     try {
       document = TemplateDocument.Factory.parse(new ByteArrayInputStream(content));
@@ -171,7 +174,16 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
       throw new InvalidApiParameterException(e.getMessage());
     }
 
-    OPERATIONALTEMPLATE template = document.getTemplate();
+    return document.getTemplate();
+  }
+
+  @Override
+  public String addOperationalTemplate(OPERATIONALTEMPLATE template) {
+
+    return addOperationalTemplateIntern(template, false);
+  }
+
+  public String addOperationalTemplateIntern(OPERATIONALTEMPLATE template, boolean overwrite) {
 
     validateTemplate(template);
 
@@ -234,7 +246,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   }
 
   public String adminUpdateOperationalTemplate(byte[] content) {
-    return addOperationalTemplateIntern(content, true);
+    OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
+
+    return addOperationalTemplateIntern(template, true);
   }
 
   // invalidates some derived caches like the queryOptMetaDataCache which depend on the template

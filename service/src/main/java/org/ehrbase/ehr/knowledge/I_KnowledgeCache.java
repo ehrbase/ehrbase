@@ -21,19 +21,18 @@
  */
 package org.ehrbase.ehr.knowledge;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.aql.containment.JsonPathQueryResult;
-import org.ehrbase.webtemplate.parser.NodeId;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.webtemplate.parser.NodeId;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface I_KnowledgeCache {
 
@@ -52,8 +51,9 @@ public interface I_KnowledgeCache {
      */
     String addOperationalTemplate(byte[] content);
 
-    List<TemplateMetaData> listAllOperationalTemplates() throws IOException;
+  String addOperationalTemplate(OPERATIONALTEMPLATE template);
 
+    List<TemplateMetaData> listAllOperationalTemplates() throws IOException;
 
 
     /**

@@ -46,6 +46,10 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>opt-1.4</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

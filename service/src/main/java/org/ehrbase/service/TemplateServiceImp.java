@@ -144,9 +144,9 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
                 .orElseThrow(() -> new ObjectNotFoundException("template", "Template with the specified id does not exist"));
     }
 
-    @Override
-    public String create(String content) {
-        return this.knowledgeCacheService.addOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
+  @Override
+  public String create(OPERATIONALTEMPLATE content) {
+    return this.knowledgeCacheService.addOperationalTemplate(content);
     }
 
     /**

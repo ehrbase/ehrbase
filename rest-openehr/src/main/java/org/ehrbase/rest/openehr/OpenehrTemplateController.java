@@ -19,15 +19,20 @@
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
@@ -41,6 +46,7 @@ import org.ehrbase.response.openehr.TemplatesResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
+import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -91,7 +97,16 @@ public class OpenehrTemplateController extends BaseController implements Templat
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Only XML is supported at the moment");
         }
 
-        String templateId = templateService.create(template);
+    TemplateDocument document;
+    try {
+      document =
+          TemplateDocument.Factory.parse(
+              new ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8)));
+    } catch (XmlException | IOException e) {
+      throw new InvalidApiParameterException(e.getMessage());
+    }
+
+    String templateId = templateService.create(document.getTemplate());
 
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/definition/template/adl1.4/" + templateId));
 
