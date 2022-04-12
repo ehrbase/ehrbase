@@ -19,6 +19,7 @@
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.composition.Composition;
+import java.util.Objects;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
@@ -26,7 +27,6 @@ import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
-import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import org.ehrbase.rest.ehrscape.responsedata.TemplateResponseData;
@@ -42,9 +42,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
-import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/rest/ecis/v1/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -78,9 +75,9 @@ public class TemplateController extends BaseController {
     }
 
     @GetMapping(path = "/{templateId}/example")
-    public ResponseEntity<CompositionResponseData> getTemplateExample(
+    public ResponseEntity<String> getTemplateExample(
             @PathVariable(value = "templateId") String templateId,
-            @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
+            @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
 
         if ((format == CompositionFormat.RAW
                 || format == CompositionFormat.EXPANDED
@@ -89,28 +86,11 @@ public class TemplateController extends BaseController {
         }
 
         Composition composition = templateService.buildExample(templateId);
-        CompositionDto compositionDto = new CompositionDto(composition, templateId, UUID.randomUUID(), UUID.randomUUID());
-        StructuredString serialize = compositionService.serialize(compositionDto, format);
+        CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
+        StructuredString serialized = compositionService.serialize(compositionDto, format);
 
-        CompositionResponseData responseDto = new CompositionResponseData();
-        responseDto.setComposition(serialize);
-        responseDto.setAction(Action.RETRIEVE);
-        responseDto.setFormat(format);
-        responseDto.setTemplateId(compositionDto.getTemplateId());
-        responseDto.setCompositionUid(compositionDto.getUuid().toString());
-        responseDto.setEhrId(compositionDto.getEhrId());
-        Meta meta = buildMeta(responseDto.getCompositionUid());
-        responseDto.setMeta(meta);
-
-        return ResponseEntity.ok(responseDto);
-    }
-
-    private Meta buildMeta(String compositionUid) {
-        RestHref url = new RestHref();
-        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/composition/" + compositionUid);
-        Meta meta = new Meta();
-        meta.setHref(url);
-        return meta;
+        MediaType contentType = format == CompositionFormat.XML ? MediaType.APPLICATION_XML :  MediaType.APPLICATION_JSON;
+        return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
     }
 
     @GetMapping(path = "/{templateId}")
