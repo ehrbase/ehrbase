@@ -138,6 +138,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - TEMPLATE-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - HEADER-tests:
           context: org-global
           requires:
@@ -224,6 +230,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
             - CONTRIBUTION-test
@@ -365,6 +372,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - TEMPLATE-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - HEADER-tests:
           context: org-global
           requires:
@@ -445,6 +458,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
             - CONTRIBUTION-test
@@ -624,6 +638,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - TEMPLATE-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - HEADER-tests:
           context: org-global
           requires:
@@ -686,6 +704,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
             - CONTRIBUTION-test
@@ -946,6 +965,17 @@ jobs:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_SHANGHAI"
+
+  TEMPLATE-tests:
+    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-workspace
+      - run-robot-tests:
+          include-tags: "Template"
+          test-suite-path: "TEMPLATE_TESTS"
+          test-suite-name: "TEMPLATE_TESTS"
 
   HEADER-tests:
     executor: docker-py3-java11-postgres

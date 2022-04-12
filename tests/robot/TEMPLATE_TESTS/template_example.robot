@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Created date: 11 April 2022
 
 
 
@@ -43,8 +44,8 @@ Test Example Generator for Templates (ECIS) - XML
     [Tags]      not-ready
     get example of web template by template id (ECIS)      ${template_id}      XML
     validate that response body is in format    XML
-    [Teardown]      TRACE JIRA ISSUE    CDR-xxx
-    ...             Test failed due to wrong response. Not XML format (ECIS)
+    [Teardown]      TRACE GITHUB ISSUE    809
+    ...             Test failed due to wrong response. Not XML format (ECIS). Check previous step.
 
 ###########################################
 
@@ -58,12 +59,13 @@ Test Example Generator for Templates (OPENEHR) - JSON
     get example of web template by template id (OPENEHR)      ${template_id}      JSON
     validate that response body is in format    JSON
 
+#modify this get to have not format=XML but to have in Accept headers application/xml
 Test Example Generator for Templates (OPENEHR) - XML
     [Tags]      not-ready
     get example of web template by template id (OPENEHR)      ${template_id}      XML
     validate that response body is in format    XML
-    [Teardown]      TRACE JIRA ISSUE    CDR-xxx
-    ...             Test failed due to wrong response. Not XML format (OPENEHR)
+    [Teardown]      TRACE GITHUB ISSUE    809
+    ...             Test failed due to wrong response. Not XML format (OPENEHR). Check previous step.
 
 
 *** Keywords ***

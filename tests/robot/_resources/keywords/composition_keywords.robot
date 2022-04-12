@@ -712,10 +712,16 @@ get example of web template by template id (OPENEHR)
     ${headers}         Create Dictionary     Accept=application/json
     ...                                      Content-Type=application/xml
     ...                                      Prefer=return=representation
-    IF      '${responseFormat}' != 'FLAT'
+    IF      '${responseFormat}' == 'JSON'
             ${resp}            GET On Session         ${SUT}
                                 ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
                                 ...     params=${params}
+    ELSE IF      '${responseFormat}' == 'XML'
+            ${headers}         Create Dictionary     Accept=application/xml
+            ...                                      Content-Type=application/xml
+            ...                                      Prefer=return=representation
+            ${resp}            GET On Session         ${SUT}
+                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
     ELSE
              ${resp}            GET On Session         ${SUT}
                                 ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
@@ -740,6 +746,7 @@ validate that response body is in format
                             log to console     ${templateName}
                         ELSE IF     '${expectedFormat}' == 'XML'
                             ${xml}     Parse Xml        ${response.text}
+                            Fail       Bug reported
                         ELSE
                             #log to console      ${response.text}
                             Should Contain      ${response.text}    family_history/category|terminology
