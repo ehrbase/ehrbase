@@ -70,7 +70,7 @@ public class EhrPluginAspect extends AbstartPluginAspect<EhrExtensionPointInterf
   }
 
   /**
-   * Handle Extension-points for Ehr create
+   * Handle Extension-points for EhrStatus update
    *
    * @param pjp
    * @return
@@ -94,6 +94,32 @@ public class EhrPluginAspect extends AbstartPluginAspect<EhrExtensionPointInterf
           args[0] = i.getEhrId();
 
           return (UUID) proceed(pjp, args);
+        });
+  }
+
+  /**
+   * Handle Extension-points for EhrStatus retrieve
+   *
+   * @param pjp
+   * @return
+   * @see <a href="I_EHR_SERVICE in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   */
+  @Around("execution(* org.ehrbase.api.service.EhrService.getEhrStatus(..))")
+  public Object aroundRetrieveEhrStatus(ProceedingJoinPoint pjp) {
+
+    Chain<EhrExtensionPointInterface> chain = getChain();
+
+    Object[] args = pjp.getArgs();
+
+    return handleChain(
+        chain,
+        l -> (l::aroundRetrieve),
+        (UUID) args[0],
+        i -> {
+          args[0] = i;
+
+          return (EhrStatus) proceed(pjp, args);
         });
   }
 

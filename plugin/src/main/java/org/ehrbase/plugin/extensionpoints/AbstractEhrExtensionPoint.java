@@ -16,6 +16,7 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
+import com.nedap.archie.rm.ehr.EhrStatus;
 import java.util.UUID;
 import java.util.function.Function;
 import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
@@ -34,7 +35,7 @@ public abstract class AbstractEhrExtensionPoint implements EhrExtensionPointInte
    *     optional ehrId {@link UUID}
    * @return input to be given to ehr create
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   public EhrStatusWithEhrId beforeCreation(EhrStatusWithEhrId input) {
     return input;
@@ -46,7 +47,7 @@ public abstract class AbstractEhrExtensionPoint implements EhrExtensionPointInte
    * @param output {@link UUID} of the created ehr
    * @return {@link UUID} of the created ehr
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   public UUID afterCreation(UUID output) {
     return output;
@@ -64,7 +65,7 @@ public abstract class AbstractEhrExtensionPoint implements EhrExtensionPointInte
    *     optional ehrId {@link UUID}
    * @return input to be given to ehrStatus update
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   public EhrStatusWithEhrId beforeUpdate(EhrStatusWithEhrId input) {
     return input;
@@ -76,7 +77,7 @@ public abstract class AbstractEhrExtensionPoint implements EhrExtensionPointInte
    * @param output {@link UUID} of the updated ehrStatus
    * @return {@link UUID} of the updated ehrStatus
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   public UUID afterUpdate(UUID output) {
     return output;
@@ -85,5 +86,35 @@ public abstract class AbstractEhrExtensionPoint implements EhrExtensionPointInte
   @Override
   public UUID aroundUpdate(EhrStatusWithEhrId input, Function<EhrStatusWithEhrId, UUID> chain) {
     return afterUpdate(chain.apply(beforeUpdate(input)));
+  }
+
+  /**
+   * Called before ehrStatus update
+   *
+   * @param input ehr with ehrStatus {@link com.nedap.archie.rm.ehr.EhrStatus} to be created and
+   *     optional ehrId {@link UUID}
+   * @return input to be given to ehrStatus update
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   */
+  public UUID beforeRetrieve(UUID input) {
+    return input;
+  }
+
+  /**
+   * Called after ehrStatus retrieve
+   *
+   * @param output {@link EhrStatus} of the ehr
+   * @return {@link EhrStatus} of the ehr
+   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   */
+  public EhrStatus afterRetrieve(EhrStatus output) {
+    return output;
+  }
+
+  @Override
+  public EhrStatus aroundRetrieve(UUID input, Function<UUID, EhrStatus> chain) {
+    return afterRetrieve(chain.apply(beforeRetrieve(input)));
   }
 }
