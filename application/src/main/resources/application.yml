@@ -138,12 +138,6 @@ server:
   # disable-strict-validation: true
 
 
-terminology-server:
-  tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
-  codePath: '$["expansion"]["contains"][*]["code"]'
-  systemPath: '$["expansion"]["contains"][*]["system"]'
-  displayPath: '$["expansion"]["contains"][*]["display"]'
-
 # Configuration of actuator for reporting and health endpoints
 management:
   endpoints:
@@ -197,7 +191,20 @@ ipf:
 # External Terminology Validation Properties
 validation:
   external-terminology:
-    enabled: false
+    enabled: true
+    provider:
+      fhir:
+        type: FHIR
+        url: https://r4.ontoserver.csiro.au/fhir/
+    
+terminology-server:
+  tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
+  codePath: '$["expansion"]["contains"][*]["code"]'
+  systemPath: '$["expansion"]["contains"][*]["system"]'
+  displayPath: '$["expansion"]["contains"][*]["display"]'    
+    
+    
+    
 
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
