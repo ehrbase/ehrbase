@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
@@ -66,7 +65,9 @@ public class QueryController extends BaseController {
         } else {
             throw new InvalidApiParameterException("No query parameter supplied");
         }
-        QueryResponseData responseData = new QueryResponseData(queryService.query(queryString, queryMode, explain, new HashMap<>()));
+    QueryResponseData responseData =
+        new QueryResponseData(
+            queryService.query(queryString, null, queryMode, explain, new HashMap<>()));
         responseData.setAction(Action.EXECUTE);
         return ResponseEntity.ok(responseData);
     }
