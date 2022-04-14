@@ -41,11 +41,9 @@ Test Example Generator for Templates (ECIS) - JSON
     validate that response body is in format    JSON
 
 Test Example Generator for Templates (ECIS) - XML
-    [Tags]      not-ready
+    [Tags]
     get example of web template by template id (ECIS)      ${template_id}      XML
     validate that response body is in format    XML
-    [Teardown]      TRACE GITHUB ISSUE    809
-    ...             Test failed due to wrong response. Not XML format (ECIS). Check previous step.
 
 ###########################################
 
@@ -61,12 +59,9 @@ Test Example Generator for Templates (OPENEHR) - JSON
 
 #modify this get to have not format=XML but to have in Accept headers application/xml
 Test Example Generator for Templates (OPENEHR) - XML
-    [Tags]      not-ready
+    [Tags]
     get example of web template by template id (OPENEHR)      ${template_id}      XML
     validate that response body is in format    XML
-    [Teardown]      TRACE GITHUB ISSUE    809
-    ...             Test failed due to wrong response. Not XML format (OPENEHR). Check previous step.
-
 
 *** Keywords ***
 Upload Template using ECIS endpoint

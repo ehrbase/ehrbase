@@ -746,7 +746,6 @@ validate that response body is in format
                             log to console     ${templateName}
                         ELSE IF     '${expectedFormat}' == 'XML'
                             ${xml}     Parse Xml        ${response.text}
-                            Fail       Bug reported
                         ELSE
                             #log to console      ${response.text}
                             Should Contain      ${response.text}    family_history/category|terminology
