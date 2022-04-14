@@ -191,21 +191,12 @@ ipf:
 # External Terminology Validation Properties
 validation:
   external-terminology:
-    enabled: true
+    enabled: false
     provider:
       fhir:
         type: FHIR
         url: https://r4.ontoserver.csiro.au/fhir/
     
-terminology-server:
-  tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
-  codePath: '$["expansion"]["contains"][*]["code"]'
-  systemPath: '$["expansion"]["contains"][*]["system"]'
-  displayPath: '$["expansion"]["contains"][*]["display"]'    
-    
-    
-    
-
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
   ssl:

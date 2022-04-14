@@ -47,7 +47,6 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
  * @since 1.0.0
  */
 @Configuration
-//@ConditionalOnProperty(name = "validation.external-terminology.enabled", havingValue = "true")
 @EnableConfigurationProperties(ValidationProperties.class)
 @SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
