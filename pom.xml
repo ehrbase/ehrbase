@@ -25,11 +25,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.12</version>
-    </parent>
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
@@ -48,6 +43,7 @@
     </licenses>
 
     <modules>
+        <module>bom</module>
         <module>api</module>
         <module>application</module>
         <module>base</module>
@@ -463,220 +459,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
-
-            <!-- modules -->
-            <dependency>
                 <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>base</artifactId>
+                <artifactId>bom</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>rest-ehr-scape</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>rest-openehr</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>application</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>jooq-pg</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>plugin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <!-- sdk -->
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>response-dto</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>opt-1.4</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>serialisation</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>terminology</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>validation</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>web-template</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>test-data</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>example-generator</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-logging</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-to-slf4j</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.pf4j</groupId>
-                <artifactId>pf4j-spring</artifactId>
-                <version>0.7.0</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${postgressql.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-runtime</artifactId>
-                <version>${antlr4.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jayway.jsonpath</groupId>
-                <artifactId>json-path</artifactId>
-                <version>${json.path.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.nedap.healthcare.archie</groupId>
-                <artifactId>openehr-rm</artifactId>
-                <version>${archie.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-collections4</artifactId>
-                <version>4.1</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>2.8.6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-ui</artifactId>
-                <version>${springdoc-openapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>1.3.2</version>
-            </dependency>
-            <dependency>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-registry-prometheus</artifactId>
-                <version>${prometheus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-web</artifactId>
-                <version>${spring-security.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-config</artifactId>
-                <version>${spring-security.version}</version>
-            </dependency>
-            <dependency>
-                <!-- TODO migrate away from joda -->
-                <groupId>joda-time</groupId>
-                <artifactId>joda-time</artifactId>
-                <version>${joda.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>net.bull.javamelody</groupId>
-                <artifactId>javamelody-spring-boot-starter</artifactId>
-                <version>${javamelody.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
