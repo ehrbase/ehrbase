@@ -18,11 +18,11 @@
 
 *** Settings ***
 Metadata    Version    0.1.0
-Metadata    Authors    *Wladislaw Wagner, Pablo Pazos, Adil Mushtaque*
+Metadata    Authors    *Vladislav Ploaia, Adil Mushtaque*
 
 Documentation    COMPOSITION TEST SUITE
 ...
-...              test documentation: https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR_COMPOSITION.md
+...              test documentation: to be defined
 
 Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 

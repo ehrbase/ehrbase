@@ -30,6 +30,11 @@ public interface TemplateApiSpecification {
     )
     ResponseEntity getTemplateClassic(String openehrVersion, String openehrAuditDetails, String accept, String templateId);
 
+  @Operation(
+      tags = "ADL 1.4 TEMPLATE",
+      summary = "Get an example composition for the specified template")
+  ResponseEntity<String> getTemplateExample(String accept, String templateId);
+
     @Operation(
             tags = "ADL 2 TEMPLATE",
             summary = "Upload a template",

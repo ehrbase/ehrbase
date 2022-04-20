@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.commons.lang3.BooleanUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -72,6 +73,7 @@ import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -876,5 +878,14 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
   public static boolean hasEhr(I_DomainAccess domainAccess, UUID ehrId) {
     return domainAccess.getContext().fetchExists(EHR_, EHR_.ID.eq(ehrId));
+  }
+
+  public static boolean isModifiable(I_DomainAccess domainAccess, UUID ehrId) {
+    return BooleanUtils.isTrue(
+        domainAccess.getContext()
+            .select(STATUS.IS_MODIFIABLE)
+            .from(STATUS)
+            .where(STATUS.EHR_ID.eq(ehrId))
+            .fetchOne(Record1::value1));
   }
 }

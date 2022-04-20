@@ -94,6 +94,10 @@
             <version>0.7.0</version>
         </dependency>
         <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>example-generator</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.yugabyte</groupId>
             <artifactId>jdbc-yugabytedb</artifactId>
         </dependency>

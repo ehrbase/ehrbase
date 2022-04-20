@@ -18,10 +18,15 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.generic.PartyRelated;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.jooq.rmdatavalue.JooqDvCodedText;
 import org.ehrbase.jooq.pg.enums.PartyType;
@@ -32,9 +37,10 @@ import org.ehrbase.service.PersistentTermMapping;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
 
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.generic.PartyRelated;
 
 /**
  * Manages PartyRelated persistence, in particular handles attribute 'relationship' (DvCodedText)
@@ -47,21 +53,41 @@ class PersistedPartyRelated extends PersistedParty {
         super(domainAccess);
     }
 
-
     @Override
     public PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord) {
         //a party identified with a relationship!
-
-        PartyIdentified partyIdentified = (PartyIdentified)new PersistedPartyIdentified(domainAccess).render(partyIdentifiedRecord);
-
+        return partyIdentConvert.apply(
+            (PartyIdentified) new PersistedPartyIdentified(domainAccess).render(partyIdentifiedRecord),
+            partyIdentifiedRecord
+        );
+    }
+    
+    private static final BiFunction<PartyIdentified, PartyIdentifiedRecord, PartyProxy> partyIdentConvert = (pId, pIdRec) -> {
         PartyRelated partyRelated = new PartyRelated();
+          partyRelated.setExternalRef(pId.getExternalRef());
+          partyRelated.setName(pId.getName());
+          partyRelated.setIdentifiers(pId.getIdentifiers());
+          partyRelated.setRelationship(new JooqDvCodedText(pIdRec.getRelationship()).toRmInstance());
+        return partyRelated;      
+    };
 
-        partyRelated.setExternalRef(partyIdentified.getExternalRef());
-        partyRelated.setName(partyIdentified.getName());
-        partyRelated.setIdentifiers(partyIdentified.getIdentifiers());
-        partyRelated.setRelationship(new JooqDvCodedText(partyIdentifiedRecord.getRelationship()).toRmInstance());
-
-        return partyRelated;
+    private I_DomainAccess getDomainAccess() { return domainAccess; }
+    Supplier<PersistedPartyIdentified> persistedPartyIdentifiedCreator = () ->  new PersistedPartyIdentified(getDomainAccess()); 
+    
+    @Override
+    public List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
+      List<PartyProxy> renderMultiple = persistedPartyIdentifiedCreator.get().renderMultiple(partyIdentifiedRecords);
+      
+      return renderMultiple.stream()
+          .map(pp -> (PartyIdentified) pp)
+          .map(pi -> {
+              return partyIdentifiedRecords.stream()
+                  .filter(pir -> pir.getName().equals(pi.getName()))
+                  .findFirst()
+                  .map(pir -> partyIdentConvert.apply(pi, pir))
+                  .orElseThrow(() -> new IllegalStateException());
+          })
+          .collect(Collectors.toList());
     }
 
     @Override
