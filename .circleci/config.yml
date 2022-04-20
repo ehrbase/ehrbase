@@ -1459,7 +1459,7 @@ commands:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-           
+            
   
   
   start-ehrbase-and-run-java-integration-sdk-tests:
