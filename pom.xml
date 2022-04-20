@@ -124,7 +124,8 @@
     </scm>
 
     <properties>
-        <java.version>11</java.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <!-- PostgreSQL Database Properties -->
         <database.host>localhost</database.host>
         <database.port>5432</database.port>

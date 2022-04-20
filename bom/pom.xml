@@ -50,11 +50,20 @@
         <javamelody.version>1.90.0</javamelody.version>
         <jackson-bom.version>2.13.2</jackson-bom.version>
         <spring-security.version>5.5.5</spring-security.version>
+        <junit.version>5.7.2</junit.version>
     </properties>
 
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>bom</artifactId>
@@ -63,9 +72,9 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.version}</version>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -285,7 +294,16 @@
                 <artifactId>javamelody-spring-boot-starter</artifactId>
                 <version>${javamelody.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+
+
         </dependencies>
+
     </dependencyManagement>
 
 
