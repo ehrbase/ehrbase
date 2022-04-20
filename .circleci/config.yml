@@ -1671,6 +1671,7 @@ commands:
           background: true
           command: |
             ls -la
+            mvn install
             EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo ${EHRbase_VERSION}
             java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' > log &
