@@ -1459,9 +1459,9 @@ commands:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
-
-
+           
+  
+  
   start-ehrbase-and-run-java-integration-sdk-tests:
     description: |
       Starts ehrbase server and runs maven test phase using 'slow' profile defined in parent pom.xml
