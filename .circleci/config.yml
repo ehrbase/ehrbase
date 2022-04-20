@@ -1278,6 +1278,7 @@ commands:
       # - cache-out-python-requirements
       - install-maven
       - install-python3-requirements
+      - install-xml-cli-tool
       # - run: jps
       # - run:
       #     name: Wait until EHRbase server is ready
@@ -1293,8 +1294,8 @@ commands:
             echo "OAUTH_RESRCSERVER_URL: $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
             ls -la
             if [ "${SUT}" != "TEST" ]; then
-              mvn install
-              EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            
+              EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
               echo ${EHRbase_VERSION}
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
                    --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
@@ -1469,13 +1470,13 @@ commands:
       Starts ehrbase server and runs maven test phase using 'slow' profile defined in parent pom.xml
       This way only the Java integration tests are executed.
     steps:
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and run SDK's java integration tests
           command: |
             ls -la
             cd ~/projects
-            mvn install
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo ${EHRbase_VERSION}
             java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir'> log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
@@ -1491,12 +1492,13 @@ commands:
       This requires EHRbase + DB to be running during test execution.
     steps:
       - install-maven
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and run all test of SDK
           command: |
             ls -la
-            mvn install
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
@@ -1669,13 +1671,14 @@ commands:
   start-ehrbase-server:
     steps:
       - install-maven
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and wait for it to be ready
           background: true
           command: |
             ls -la
-            mvn install
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+                
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml  )
             echo ${EHRbase_VERSION}
             java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
