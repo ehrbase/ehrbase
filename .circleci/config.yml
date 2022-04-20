@@ -1646,12 +1646,12 @@ commands:
             SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -u /_:project/_:properties/_:ehrbase.sdk.version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u /_:project/_:properties/_:ehrbase.sdk.version -v $SDK_VERSION /bom/pom.xml
       - run:
           name: Show EHRbase's pom
-          command: cat pom.xml
+          command: cat /bom/pom.xml
 
-            
+
   build-and-test-ehrbase:
     steps:
       # - install-maven
