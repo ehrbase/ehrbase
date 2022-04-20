@@ -1452,7 +1452,7 @@ commands:
           command: |
             cd ~/projects/openEHR_SDK
             mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL$(cat /proc/sys/kernel/random/uuid) -DprocessAllModules=true versions:commit
-            mvn install
+             mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
             SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo $SDK_VERSION > SDK_VERSION
             cat SDK_VERSION
