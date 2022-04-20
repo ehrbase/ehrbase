@@ -1449,6 +1449,7 @@ commands:
 
   maven-install-sdk:
     steps:
+      - install-xml-cli-tool
       - run:
           name: Save the version number of locally installed SDK into a file
           command: |
