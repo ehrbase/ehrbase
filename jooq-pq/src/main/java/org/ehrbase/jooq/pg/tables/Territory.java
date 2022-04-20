@@ -108,7 +108,7 @@ public class Territory extends TableImpl<TerritoryRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.TERRITORY_CODE_INDEX);
+        return Arrays.asList(Indexes.EHR_TERRITORY_TWOLETTER_IDX, Indexes.TERRITORY_CODE_INDEX);
     }
 
     @Override

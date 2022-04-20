@@ -53,34 +53,14 @@
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-meta</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <configuration>
-                    <locations>
-                        <location>classpath:db/migration</location>
-                    </locations>
-                    <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-                    <driver>org.postgresql.Driver</driver>
-                    <user>${database.user}</user>
-                    <password>${database.pass}</password>
-                    <defaultSchema>ehr</defaultSchema>
-                    <schemas>
-                        <schema>ehr</schema>
-                    </schemas>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${postgresql.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
             <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
@@ -124,7 +104,7 @@
                                 implementation here, if your database is currently not supported or if you
                                 wish to read the database schema fromBinder a file, such as a Hibernate .hbm.xml
                                 file -->
-                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                            <name>org.jooq.meta.yugabytedb.YugabyteDBDatabase</name>
                             <!-- All elements that are generated fromBinder your schema (A Java regular
                                 expression. Use the pipe to separate several expressions) Watch out for case-sensitivity.
                                 Depending on your database, this might be important! You can storeComposition case-insensitive
@@ -201,7 +181,7 @@
                         </generate>
                         <target>
                             <packageName>org.ehrbase.jooq.pg</packageName>
-                            <directory>target/generated-sources/</directory>
+                            <directory>${project.build.sourceDirectory}</directory>
                         </target>
                     </generator>
                 </configuration>

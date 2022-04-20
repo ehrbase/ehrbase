@@ -4,13 +4,17 @@
 package org.ehrbase.jooq.pg.tables;
 
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import org.ehrbase.jooq.pg.Ehr;
+import org.ehrbase.jooq.pg.Indexes;
 import org.ehrbase.jooq.pg.Keys;
 import org.ehrbase.jooq.pg.tables.records.SystemRecord;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Row3;
@@ -96,6 +100,11 @@ public class System extends TableImpl<SystemRecord> {
     @Override
     public Schema getSchema() {
         return aliased() ? null : Ehr.EHR;
+    }
+
+    @Override
+    public List<Index> getIndexes() {
+        return Arrays.asList(Indexes.EHR_SYSTEM_SETTINGS_IDX);
     }
 
     @Override

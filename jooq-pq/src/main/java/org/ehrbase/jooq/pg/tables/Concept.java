@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.ehrbase.jooq.pg.Ehr;
+import org.ehrbase.jooq.pg.Indexes;
 import org.ehrbase.jooq.pg.Keys;
 import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Row4;
@@ -103,6 +105,11 @@ public class Concept extends TableImpl<ConceptRecord> {
     @Override
     public Schema getSchema() {
         return aliased() ? null : Ehr.EHR;
+    }
+
+    @Override
+    public List<Index> getIndexes() {
+        return Arrays.asList(Indexes.EHR_CONCEPT_ID_LANGUAGE_IDX);
     }
 
     @Override
