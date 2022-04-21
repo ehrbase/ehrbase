@@ -121,8 +121,11 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
   public static I_EntryAccess retrieveInstanceInComposition(I_DomainAccess domainAccess,
       I_CompositionAccess compositionAccess) {
 
-    EntryRecord entryRecord = domainAccess.getContext()
-        .fetchSingle(ENTRY, ENTRY.COMPOSITION_ID.eq(compositionAccess.getId()));
+    Optional<EntryRecord> existingEntry = domainAccess.getContext()
+        .fetchOptional(ENTRY, ENTRY.COMPOSITION_ID.eq(compositionAccess.getId()));
+    if (existingEntry.isEmpty()) {
+      return null;
+    }
 
     //build the list of parameters to recreate the composition
     Map<SystemValue, Object> values = new EnumMap<>(SystemValue.class);
@@ -164,6 +167,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
               compositionAccess.getId().toString() + "::" + domainAccess.getServerConfig()
                   .getNodename() + "::" + version));
 
+      EntryRecord entryRecord = existingEntry.get();
       entryAccess.entryRecord = entryRecord;
       String value = entryRecord.getEntry().data();
       entryAccess.composition = new RawJson().unmarshal(value, Composition.class);
@@ -198,8 +202,11 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     Condition condition = ENTRY_HISTORY.COMPOSITION_ID.eq(compositionHistoryAccess.getId())
         .and(ENTRY_HISTORY.SYS_TRANSACTION.eq(compositionHistoryAccess.getSysTransaction()));
 
-    EntryHistoryRecord entryHistoryRecord = domainAccess.getContext()
-        .fetchSingle(ENTRY_HISTORY, condition);
+    Optional<EntryHistoryRecord> existingEntryHistory = domainAccess.getContext()
+        .fetchOptional(ENTRY_HISTORY, condition);
+    if (existingEntryHistory.isEmpty()) {
+      return null;
+    }
 
     //build the list of parameters to recreate the composition
     Map<SystemValue, Object> values = new EnumMap<>(SystemValue.class);
@@ -218,7 +225,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     values.put(SystemValue.LANGUAGE,
         new CodePhrase(new TerminologyId("ISO_639-1"), compositionHistoryAccess.getLanguageCode()));
     String territory2letters = domainAccess.getContext()
-        .fetchOne(TERRITORY, TERRITORY.CODE.eq(compositionHistoryAccess.getTerritoryCode()))
+        .fetchSingle(TERRITORY, TERRITORY.CODE.eq(compositionHistoryAccess.getTerritoryCode()))
         .getTwoletter();
     values.put(SystemValue.TERRITORY,
         new CodePhrase(new TerminologyId("ISO_3166-1"), territory2letters));
@@ -235,6 +242,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
           compositionId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::"
               + version));
 
+      EntryHistoryRecord entryHistoryRecord = existingEntryHistory.get();
       entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
       entryAccess.entryRecord.from(entryHistoryRecord);
       entryAccess.composition = new RawJson().unmarshal(entryHistoryRecord.getEntry().data(),

@@ -688,11 +688,11 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     Integer versionCounter = getLastVersionNumber(domainAccess, compositionId);
 
     // fetch matching entry
-    CompositionRecord record = domainAccess.getContext()
+    CompositionRecord compositionRecord = domainAccess.getContext()
         .fetchOne(COMPOSITION, COMPOSITION.ID.eq(compositionId));
-    if (record != null) {
+    if (compositionRecord != null) {
       I_CompositionAccess compositionAccess = new CompositionAccess(domainAccess);
-      compositionAccess.setCompositionRecord(record);
+      compositionAccess.setCompositionRecord(compositionRecord);
       compositionAccess.setContent(
           I_EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess));
       versionMap.put(versionCounter, compositionAccess);
