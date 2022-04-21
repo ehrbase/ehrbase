@@ -62,7 +62,7 @@ import org.springframework.util.ResourceUtils;
 @ActiveProfiles({"local", "test"})
 // @EnabledIfEnvironmentVariable(named = "EHRBASE_ABAC_IT_TEST", matches = "true")
 @AutoConfigureMockMvc
-@Disabled
+@Disabled("see https://jira.vitagroup.ag/browse/CDR-368")
 class AbacIntegrationTest {
 
   private static final String ORGA_ID = "f47bfc11-ec8d-412e-aebf-c6953cc23e7d";
