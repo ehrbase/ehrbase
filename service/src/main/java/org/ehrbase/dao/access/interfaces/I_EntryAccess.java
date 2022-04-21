@@ -62,12 +62,12 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      * @return a list of {@link I_EntryAccess}
      * @throws IllegalArgumentException if DB is inconsistent or operation fails
      */
-    static List<I_EntryAccess> retrieveInstanceInComposition(I_DomainAccess domainAccess, I_CompositionAccess compositionAccess) {
+    static I_EntryAccess retrieveInstanceInComposition(I_DomainAccess domainAccess, I_CompositionAccess compositionAccess) {
         return EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess);
     }
 
     // TODO Doc: appears to be explicitly used with versions other than the latest (because accessing only "entry_history" table)
-    static List<I_EntryAccess> retrieveInstanceInCompositionVersion(I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
+    static I_EntryAccess retrieveInstanceInCompositionVersion(I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
         return EntryAccess.retrieveInstanceInCompositionVersion(domainAccess, compositionHistoryAccess, version);
     }
 

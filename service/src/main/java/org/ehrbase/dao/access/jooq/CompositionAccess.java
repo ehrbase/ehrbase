@@ -1,17 +1,11 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School), Luis Marco-Ruiz (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ehrbase.dao.access.jooq;
 
 import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
@@ -40,7 +35,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +42,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -85,18 +78,23 @@ import org.slf4j.LoggerFactory;
  * Operations on the static part of Compositions (eg. non archetyped attributes).
  *
  * @author Christian Chevalley
+ * @author Jake Smolka
+ * @author Luis Marco-Ruiz
+ * @since 1.0
  */
 public class CompositionAccess extends DataAccess implements I_CompositionAccess {
 
+  public static final String COMPOSITION_LITERAL = "composition";
+
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  public static final String COMPOSITION_LITERAL = "composition";
-  // List of Entry DAOs and therefore provides access to all entries of the composition
-  private List<I_EntryAccess> content = new ArrayList<>();
-  private CompositionRecord compositionRecord;
-  private I_ContributionAccess contributionAccess = null; //locally referenced contribution associated to this composition
-  private I_AuditDetailsAccess auditDetailsAccess;  // audit associated with this composition
   private Composition composition;
+  private CompositionRecord compositionRecord;
+
+  private I_EntryAccess entryAccess; // Entry linked to this composition
+  private I_ContributionAccess contributionAccess = null; // locally referenced contribution associated to this composition
+  private I_AuditDetailsAccess auditDetailsAccess;  // audit associated with this composition
+
 
   /**
    * Basic constructor for composition.
@@ -259,17 +257,14 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     compositionRecord.setSysTransaction(Timestamp.valueOf(timestamp));
     compositionRecord.store();
 
-    if (content.isEmpty()) {
-      logger.warn("Composition has no content:");
-    }
-
-    try {
-      for (I_EntryAccess entryAccess : content) {
+    if (entryAccess != null) {
+      try {
         entryAccess.commit(Timestamp.valueOf(timestamp));
+      } catch (Exception exception) {
+        throw new IllegalArgumentException("Could not commit content:" + exception);
       }
-    } catch (Exception exception) {
-      logger.error("Problem in committing content, rolling back, exception:" + exception);
-      throw new IllegalArgumentException("Could not commit content:" + exception);
+    } else {
+      logger.warn("Composition has no entry");
     }
 
     if (!composition.getCategory().getDefiningCode().getCodeString().equals("431")) {
@@ -347,8 +342,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
     result = compositionRecord.update() > 0;
 
-    //updateComposition each entry if required
-    for (I_EntryAccess entryAccess : content) {
+    // Update entry
+    if (entryAccess != null) {
       entryAccess.setCompositionData(composition);
       entryAccess.update(transactionTime, true);
     }
@@ -541,11 +536,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
           domainAccess, id, compositionHistoryAccess.getSysTransaction());
       //adjust context for entries
       if (historicalEventContext != null) {
-        for (I_EntryAccess entryAccess : compositionHistoryAccess.getContent()) {
-          entryAccess.getComposition().setContext(historicalEventContext);
-        }
+        I_EntryAccess entryAccess = compositionHistoryAccess.getContent();
+        entryAccess.getComposition().setContext(historicalEventContext);
       }
-
     }
 
     domainAccess.releaseConnection(connection);
@@ -843,13 +836,18 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
   }
 
   @Override
-  public List<I_EntryAccess> getContent() {
-    return this.content;
+  public I_EntryAccess getContent() {
+    return this.entryAccess;
   }
 
   @Override
-  public void setContent(List<I_EntryAccess> content) {
-    this.content = content;
+  public void setContent(I_EntryAccess content) {
+    this.entryAccess = content;
+
+    if (content != null) {
+      content.setCompositionId(compositionRecord.getId());
+      composition = content.getComposition();
+    }
   }
 
   @Override
@@ -943,29 +941,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
   @Override
   public void setComposition(Composition composition) {
     this.composition = composition;
-  }
-
-  @Override
-  public int addContent(I_EntryAccess entry) {
-    entry.setCompositionId(compositionRecord.getId());
-    content.add(entry);
-
-    if (entry.getComposition() != null) {
-      composition = entry.getComposition();
-    }
-
-    return content.size();
-  }
-
-  @Override
-  public List<UUID> getContentIds() {
-    List<UUID> entryList = new ArrayList<>();
-
-    for (I_EntryAccess entryAccess : content) {
-      entryList.add(entryAccess.getId());
-    }
-
-    return entryList;
   }
 
   @Override
