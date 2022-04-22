@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
-public class TemplatePluginAspect extends AbstartPluginAspect<TemplateExtensionPointInterface> {
+public class TemplatePluginAspect extends AbstractPluginAspect<TemplateExtensionPointInterface> {
 
   public TemplatePluginAspect(ListableBeanFactory beanFactory) {
     super(beanFactory, TemplateExtensionPointInterface.class);
@@ -47,7 +47,7 @@ public class TemplatePluginAspect extends AbstartPluginAspect<TemplateExtensionP
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
    *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.TemplateService.create())")
+  @Around("execution(* org.ehrbase.api.service.TemplateService.create(..))")
   public Object aroundCreateTemplate(ProceedingJoinPoint pjp) {
 
     Chain<TemplateExtensionPointInterface> chain = getChain();

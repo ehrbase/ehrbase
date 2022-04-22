@@ -35,14 +35,14 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
-public class QueryPluginAspect extends AbstartPluginAspect<QueryExtensionPointInterface> {
+public class QueryPluginAspect extends AbstractPluginAspect<QueryExtensionPointInterface> {
 
   public QueryPluginAspect(ListableBeanFactory beanFactory) {
     super(beanFactory, QueryExtensionPointInterface.class);
   }
 
   /**
-   * Handle Extension-points for Template create
+   * Handle Extension-points for Query execute
    *
    * @param pjp
    * @return
@@ -50,7 +50,7 @@ public class QueryPluginAspect extends AbstartPluginAspect<QueryExtensionPointIn
    *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   @Around("execution(* org.ehrbase.api.service.QueryService.query(..))")
-  public Object aroundCreateTemplate(ProceedingJoinPoint pjp) {
+  public Object aroundQueryExecute(ProceedingJoinPoint pjp) {
 
     Chain<QueryExtensionPointInterface> chain = getChain();
 

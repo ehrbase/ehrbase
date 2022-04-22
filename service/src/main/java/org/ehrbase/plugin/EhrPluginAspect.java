@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
-public class EhrPluginAspect extends AbstartPluginAspect<EhrExtensionPointInterface> {
+public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInterface> {
 
   public EhrPluginAspect(ListableBeanFactory beanFactory) {
     super(beanFactory, EhrExtensionPointInterface.class);

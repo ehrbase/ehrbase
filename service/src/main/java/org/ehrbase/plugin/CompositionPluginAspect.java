@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
 public class CompositionPluginAspect
-    extends AbstartPluginAspect<CompositionExtensionPointInterface> {
+    extends AbstractPluginAspect<CompositionExtensionPointInterface> {
 
   public CompositionPluginAspect(ListableBeanFactory beanFactory) {
     super(beanFactory, CompositionExtensionPointInterface.class);

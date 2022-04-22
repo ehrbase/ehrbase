@@ -32,7 +32,7 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 /**
  * @author Stefan Spiska
  */
-public abstract class AbstartPluginAspect<T> {
+public abstract class AbstractPluginAspect<T> {
 
   private final Comparator<Map.Entry<String, T>> EXTENSION_POINTS_COMPARATOR =
       // respect @Order
@@ -47,7 +47,7 @@ public abstract class AbstartPluginAspect<T> {
 
   private final Class<T> clazz;
 
-  protected AbstartPluginAspect(ListableBeanFactory beanFactory, Class<T> clazz) {
+  protected AbstractPluginAspect(ListableBeanFactory beanFactory, Class<T> clazz) {
     this.beanFactory = beanFactory;
     this.clazz = clazz;
   }
@@ -116,10 +116,10 @@ public abstract class AbstartPluginAspect<T> {
    * @param around Get the around Listener from Extension-point
    * @param input Initial Input
    * @param compositionFunction The intercepted Funktion
-   * @param <X> Input of the intercepted Funktion
-   * @param <R> Output of the intercepted Funktion
+   * @param <X> Input of the intercepted function
+   * @param <R> Output of the intercepted function
    * @param <T> Class of the Extension-point
-   * @return output after all Extension-points have been handelt
+   * @return output after all Extension-points have been handled
    */
   protected <X, R> R handleChain(
       Chain<T> chain,
