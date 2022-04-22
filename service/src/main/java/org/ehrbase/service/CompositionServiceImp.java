@@ -248,7 +248,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
    * @param committerId Audit committer; or NULL if contribution is given
    * @param description (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if new one should be created; or ID of given custom contribution
-   * @return Version UID pointing to updated composition
+   * @return UUID pointing to updated composition
    */
   private UUID internalUpdate(
       UUID ehrId,
@@ -458,20 +458,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
 
-  // Helper function to create returnable DTO
-  private Optional<CompositionDto> getCompositionDto(I_CompositionAccess compositionAccess) {
-    if (compositionAccess == null) {
-      return Optional.empty();
-    }
-    final UUID ehrId = compositionAccess.getEhrid();
-    // There is only one EntryAccess per compositionAccess
-    return compositionAccess.getContent().stream()
-        .findAny()
-        .map(
-            i ->
-                new CompositionDto(
-                    i.getComposition(), i.getTemplateId(), i.getCompositionId(), ehrId));
-  }
+
 
   private Optional<Composition> getComposition(I_CompositionAccess compositionAccess) {
     if (compositionAccess == null) {
