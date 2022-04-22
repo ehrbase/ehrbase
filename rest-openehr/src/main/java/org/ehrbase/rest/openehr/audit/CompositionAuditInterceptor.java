@@ -101,7 +101,7 @@ public class CompositionAuditInterceptor extends OpenEhrAuditInterceptor<Composi
     UUID ehrId = compositionService.getEhrId(compositionId);
     return compositionService
         .retrieve(ehrId, compositionId, version)
-        .map(c -> compositionService.from(ehrId, c))
+        .map(c -> CompositionService.from(ehrId, c))
         .map(CompositionDto::getTemplateId)
         .orElse(null);
     }

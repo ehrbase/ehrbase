@@ -11,7 +11,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
 - Implement EHR_STATUS.is_modifiable semantics on service
-  level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
+  level ([#791](https://github.com/ehrbase/ehrbase/pull/791))
 - Added hooks for the plugin system ([#816](https://github.com/ehrbase/ehrbase/pull/816))
 
 ### Changed

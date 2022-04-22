@@ -481,14 +481,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     }
   }
 
-  @Override
-  public CompositionDto from(UUID ehrId, Composition composition) {
-    return new CompositionDto(
-        composition,
-        composition.getArchetypeDetails().getTemplateId().getValue(),
-        UUID.fromString(composition.getUid().getRoot().getValue()),
-        ehrId);
-  }
+
 
   /**
    * Public serializer entry point which will be called with composition dto fetched from database
@@ -692,7 +685,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public VersionedComposition getVersionedComposition(UUID ehrId, UUID composition) {
-    Optional<CompositionDto> dto = retrieve(ehrId, composition, 1).map(c -> from(ehrId, c));
+    Optional<CompositionDto> dto =
+        retrieve(ehrId, composition, 1).map(c -> CompositionService.from(ehrId, c));
 
     VersionedComposition compo = new VersionedComposition();
     if (dto.isPresent()) {

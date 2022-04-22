@@ -105,7 +105,7 @@ public class CompositionController extends BaseController {
     Optional<CompositionDto> compositionDto =
         compositionService
             .retrieve(ehrId, identifier, version)
-            .map(c -> compositionService.from(ehrId, c));
+            .map(c -> CompositionService.from(ehrId, c));
     if (compositionDto.isPresent()) {
 
       // Serialize onto target format

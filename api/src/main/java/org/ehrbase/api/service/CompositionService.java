@@ -34,15 +34,21 @@ import org.ehrbase.response.ehrscape.StructuredString;
 public interface CompositionService extends BaseService, VersionedObjectService<Composition, UUID> {
   /**
    * @param compositionId The {@link UUID} of the composition to be returned.
+   * @param ehrId The {@link UUID} of the ehr wich contains the composition
    * @param version The version to returned. If null return the latest
    * @return
    * @throws InternalServerException
    */
   Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version);
 
+  static CompositionDto from(UUID ehrId, Composition composition) {
 
-
-  CompositionDto from(UUID ehrId, Composition composition);
+    return new CompositionDto(
+        composition,
+        composition.getArchetypeDetails().getTemplateId().getValue(),
+        UUID.fromString(composition.getUid().getRoot().getValue()),
+        ehrId);
+  }
 
   /**
    * Public serializer entry point which will be called with composition dto fetched from database

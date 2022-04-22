@@ -24,6 +24,7 @@ package org.ehrbase.service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -159,17 +160,17 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   }
 
   @Override
-  public String addOperationalTemplate(byte[] content) {
+  public String addOperationalTemplate(InputStream inputStream) {
 
-    OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
+    OPERATIONALTEMPLATE template = buildOperationalTemplate(inputStream);
 
     return addOperationalTemplateIntern(template, false);
   }
 
-  private OPERATIONALTEMPLATE buildOperationalTemplate(byte[] content) {
+  private OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
     TemplateDocument document;
     try {
-      document = TemplateDocument.Factory.parse(new ByteArrayInputStream(content));
+      document = TemplateDocument.Factory.parse(content);
     } catch (XmlException | IOException e) {
       throw new InvalidApiParameterException(e.getMessage());
     }
@@ -246,7 +247,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   }
 
   public String adminUpdateOperationalTemplate(byte[] content) {
-    OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
+    OPERATIONALTEMPLATE template = buildOperationalTemplate(new ByteArrayInputStream(content));
 
     return addOperationalTemplateIntern(template, true);
   }

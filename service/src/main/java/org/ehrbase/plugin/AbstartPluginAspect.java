@@ -32,9 +32,9 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 /**
  * @author Stefan Spiska
  */
-public class AbstartPluginAspect<T> {
+public abstract class AbstartPluginAspect<T> {
 
-  public final Comparator<Map.Entry<String, T>> EXTENSION_POINTS_COMPARATOR =
+  private final Comparator<Map.Entry<String, T>> EXTENSION_POINTS_COMPARATOR =
       // respect @Order
       ((Comparator<Map.Entry<String, T>>)
               (e1, e2) ->
@@ -47,7 +47,7 @@ public class AbstartPluginAspect<T> {
 
   private final Class<T> clazz;
 
-  public AbstartPluginAspect(ListableBeanFactory beanFactory, Class<T> clazz) {
+  protected AbstartPluginAspect(ListableBeanFactory beanFactory, Class<T> clazz) {
     this.beanFactory = beanFactory;
     this.clazz = clazz;
   }

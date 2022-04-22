@@ -99,7 +99,6 @@ public interface VersionedObjectService<T extends Locatable, U> {
    * @param systemId Audit system ID
    * @param committerId Audit committer ID
    * @param description Optional audit description text
-   * @return True if successful
    */
   void delete(
       UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId, String description);
@@ -110,7 +109,6 @@ public interface VersionedObjectService<T extends Locatable, U> {
    * @param ehrId EHR ID of context
    * @param targetObjId ID of target object
    * @param contribution Contribution for operation
-   * @return True if successful
    */
   void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution);
 
@@ -119,7 +117,6 @@ public interface VersionedObjectService<T extends Locatable, U> {
    *
    * @param ehrId EHR ID of context
    * @param targetObjId ID of target object
-   * @return True if successful
    */
   void delete(UUID ehrId, ObjectVersionId targetObjId);
 }

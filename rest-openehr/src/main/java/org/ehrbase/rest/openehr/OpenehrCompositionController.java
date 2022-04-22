@@ -498,7 +498,7 @@ public class OpenehrCompositionController extends BaseController implements
       Optional<CompositionDto> compositionDto =
           compositionService
               .retrieve(ehrId, compositionId, versionNumber)
-              .map(c -> compositionService.from(ehrId, c));
+              .map(c -> CompositionService.from(ehrId, c));
       // TODO how to handle error situation here only with Optional? is there a better way without java 9 Optional.ifPresentOrElse()?
       if (compositionDto.isPresent()) {
         StructuredString ss = compositionService.serialize(compositionDto.get(), format);
