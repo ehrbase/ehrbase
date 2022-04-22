@@ -309,11 +309,19 @@ public class QueryProcessor extends TemplateMetaData {
         if (lateralJoins == null)
             return selectQuery;
 
+        HashSet<String> usedLaterals = new HashSet<>();
+
         for (LateralJoinDefinition lateralJoinDefinition : lateralJoins) {
+
+            if (usedLaterals.contains(lateralJoinDefinition.getTable().getName()+"."+lateralJoinDefinition.getLateralVariable()))
+                continue;
+
             if (lateralJoinDefinition.getCondition() == null)
                 selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType());
             else
                 selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType(), lateralJoinDefinition.getCondition());
+
+            usedLaterals.add(lateralJoinDefinition.getTable().getName()+"."+lateralJoinDefinition.getLateralVariable());
         }
 
         return selectQuery;

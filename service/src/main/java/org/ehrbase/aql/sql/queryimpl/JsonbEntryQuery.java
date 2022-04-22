@@ -130,6 +130,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         boolean setReturningFunctionInWhere = false; //if true, use a subselect
         boolean isRootContent = false; //that is a query path on a full composition starting from the root content
         DataType castTypeAs;
+        boolean isSetReturningFunction = false; //if true, this will be used for lateral joins and mustn't be casted
 
         if (pathResolver.entryRoot(templateId) == null) //case of (invalid) composition with null entry!
             return null;
@@ -156,11 +157,15 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             throw new UnknownVariableException("unknown template:"+templateId);
 
         for (String path: pathSet) {
-
             //check whether the path is valid for this template
             if (!new WebTemplateAqlPath(webTemplate, path, variableDefinition.getPath()).isValid()){
-                continue; //ignore this path as it is not identified in the webtemplate
+                if (clause.equals(Clause.WHERE))
+                    continue; //f.e. NOT EXISTS path
+                else
+                    throw new UnknownVariableException(path); //ignore this path as it is not identified in the webtemplate
             }
+
+            String rightMostJsonbExpression = null;
 
             List<String> itemPathArray = new ArrayList<>();
             itemPathArray.add(pathResolver.entryRoot(templateId));
@@ -189,7 +194,13 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
                 itemPathArray = new NodePredicateCall(itemPathArray).resolve();
             else if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER)) {
-                itemPathArray = new JsonbFunctionCall(itemPathArray, AQL_NODE_ITERATIVE_MARKER, QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION).resolve();
+                JsonbFunctionCall jsonbFunctionCall = new JsonbFunctionCall(itemPathArray, AQL_NODE_ITERATIVE_MARKER, QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION);
+                itemPathArray = jsonbFunctionCall.resolve();
+                //get the jsonb right-most part of the expression
+                if (jsonbFunctionCall.hasRightMostJsonbExpression()){
+                    rightMostJsonbExpression = jsonbFunctionCall.getRightMostJsonbExpression();
+                }
+                isSetReturningFunction = true;
             }
 
             String itemPath = StringUtils.join(itemPathArray.toArray(new String[]{}), ",");
@@ -202,12 +213,14 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             dataTypeFromTemplate.evaluate(templateId, referenceItemPathArray);
 
-            castTypeAs = dataTypeFromTemplate.getIdentifiedType();
+            Field<?> fieldPathItem = null;
 
-            Field<?> fieldPathItem;
+            castTypeAs = isSetReturningFunction ? null : dataTypeFromTemplate.getIdentifiedType();
+
+            //set the determined type with the variable
+            variableDefinition.setSelectType(dataTypeFromTemplate.getIdentifiedType());
+
             if (clause.equals(Clause.SELECT)) {
-                //set the determined type with the variable
-                variableDefinition.setSelectType(castTypeAs);
 
                 if (StringUtils.isNotEmpty(alias))
                     fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, alias);
@@ -219,18 +232,19 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, null);
                 if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
                     fieldPathItem = DSL.field(DSL.select(fieldPathItem));
-            } else
-                throw new IllegalStateException("Unhandled clause:" + clause);
+            }
 
             if (setReturningFunctionInWhere)
                 fieldPathItem = DSL.select(fieldPathItem).asField();
 
             QualifiedAqlField aqlField = new QualifiedAqlField(fieldPathItem,
                                                 dataTypeFromTemplate.getItemType(),
-                                                dataTypeFromTemplate.getItemCategory()
+                                                dataTypeFromTemplate.getItemCategory(),
+                                                rightMostJsonbExpression
                                                 );
 
             fieldList.add(aqlField);
+            isSetReturningFunction = false;
         }
 
         return new MultiFields(variableDefinition, fieldList, templateId);

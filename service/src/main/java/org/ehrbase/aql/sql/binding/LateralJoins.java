@@ -41,7 +41,7 @@ public class LateralJoins {
         if (originalSqlExpression.isBlank())
             return;
 
-        //check for existing lateral join in variable definition
+        //check for existing lateral join in the SAME variable definition
         if (item.getLateralJoinDefinitions(templateId) != null && !item.getLateralJoinDefinitions(templateId).isEmpty()) {
             for (LateralJoinDefinition lateralJoinDefinition : item.getLateralJoinDefinitions(templateId)) {
                 if (lateralJoinDefinition.getSqlExpression().equals(originalSqlExpression)) {
@@ -66,6 +66,11 @@ public class LateralJoins {
         item.setLateralJoinTable(templateId, new LateralJoinDefinition(originalSqlExpression, table, variableAlias, JoinType.JOIN, null, clause));
         item.setAlias(new LateralVariable(tableAlias, variableAlias).alias());
 
+    }
+
+    public void reuse(LateralJoinDefinition lateralJoinDefinition, String templateId, I_VariableDefinition item){
+        item.setLateralJoinTable(templateId, lateralJoinDefinition);
+        item.setAlias(new LateralVariable(lateralJoinDefinition.getTable().getName(), lateralJoinDefinition.getLateralVariable()).alias());
     }
 
     public void create(String templateId, SelectQuery selectSelectStep, I_VariableDefinition item, IQueryImpl.Clause clause) {

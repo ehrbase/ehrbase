@@ -74,7 +74,10 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         Field<?> actual = cut.makeField("IDCR - Immunisation summary.v0", "d", I_VariableDefinitionHelper.build("description[at0001]/items[at0002]/value/value", "test", "d", false, false, false), IQueryImpl.Clause.SELECT).getQualifiedFieldOrLast(0).getSQLField();
 
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
-        assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace("select ("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");
+        assertThat(selectQuery.getQuery().toString()).isEqualToIgnoringWhitespace("select ("+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \"test\"");
+
+        //NB. the remaining part (#>>'{/description[at0001],/items[at0002],0,/value,value}') is not in the query since this used as a lateral join
+
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 

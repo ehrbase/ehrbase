@@ -14,6 +14,7 @@ public class WhereVariable {
     public static final String EHR = "EHR";
     private boolean isFollowedBySQLConditionalOperator = false;
     private WhereBinder.ExistsMode inExists;
+    private String rightMostJsonbExpression = null;
 
     private final PathResolver pathResolver;
 
@@ -50,8 +51,10 @@ public class WhereVariable {
 
         //check if we have already resolved this variable in the select clause
         String alreadyResolvedSQL = lookUpFromSelect(variableDefinition, selectCursor, multiSelectFieldsMap);
-        if (alreadyResolvedSQL != null)
+        if (alreadyResolvedSQL != null) {
+            rightMostJsonbExpression = null; //reinit
             return new TaggedStringBuilder(alreadyResolvedSQL, I_TaggedStringBuilder.TagField.SQLQUERY);
+        }
 
         String className = pathResolver.classNameOf(identifier);
         if (className == null)
@@ -62,7 +65,10 @@ public class WhereVariable {
         if (multiFields == null)
             throw new UnknownVariableException(variableDefinition.toString());
 
-        Field<?> field = multiFields.getQualifiedFieldOrLast(whereCursor).getSQLField();
+        QualifiedAqlField qualifiedAqlField = multiFields.getQualifiedFieldOrLast(whereCursor);
+
+        Field<?> field = qualifiedAqlField.getSQLField();
+        rightMostJsonbExpression = qualifiedAqlField.getRightMostJsonbExpression();
 
         if (field == null)
             return null;
@@ -101,5 +107,13 @@ public class WhereVariable {
 
     public WhereBinder.ExistsMode inExists() {
         return inExists;
+    }
+
+    public String getRightMostJsonbExpression() {
+        return rightMostJsonbExpression;
+    }
+
+    public boolean hasRightMostJsonbExpression(){
+        return rightMostJsonbExpression != null;
     }
 }

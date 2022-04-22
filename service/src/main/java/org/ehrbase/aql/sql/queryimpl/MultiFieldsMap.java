@@ -19,6 +19,8 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import org.ehrbase.aql.sql.binding.MultiFieldsList;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,10 @@ public class MultiFieldsMap {
                 multiMap.put(variableIdentifierPath(multiFields.getVariableDefinition().getIdentifier(),multiFields.getVariableDefinition().getPath()), multiFields);
         }
         return multiMap;
+    }
+
+    public MultiFieldsList asMultiFieldsList(){
+        return new MultiFieldsList(multiFieldsListAsMap.values());
     }
 
     public MultiFields get(String identifierPath){

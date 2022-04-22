@@ -30,9 +30,11 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
  */
 public class JsonbFunctionCall {
 
-    private final List<String> itemPathArray;
+    private List<String> itemPathArray;
     private final String marker;
     private final String function;
+    private String rightJsonbExpressionPart;
+    private String arrayElementPart;
 
     public JsonbFunctionCall(List<String> itemPathArray, String marker, String function) {
         this.itemPathArray = itemPathArray;
@@ -42,18 +44,15 @@ public class JsonbFunctionCall {
 
     public List<String> resolve() {
 
-        List<String> resultList = new ArrayList<>();
-        resultList.addAll(itemPathArray);
-
-        while (resultList.contains(marker)) {
-            resultList = resolveIterativeCall(resultList);
+        while (itemPathArray.contains(marker)) {
+            itemPathArray = resolveIterativeCall();
         }
 
-        return resultList;
+        return itemPathArray;
     }
 
 
-    private List<String> resolveIterativeCall(List<String> itemPathArray) {
+    private List<String> resolveIterativeCall() {
 
         List<String> resultList = new ArrayList<>();
         int startList = 0;
@@ -90,13 +89,7 @@ public class JsonbFunctionCall {
                 endPos = markerPos + 1;
                 resultList.addAll(itemPathArray.subList(endPos, itemPathArray.size()));
             } else {
-                expression.append("#>>");
-                expression.append("'");
-                expression.append("{");
-                endPos = itemPathArray.size();
-                expression.append(StringUtils.join((itemPathArray.subList(markerPos + 1, endPos).toArray(new String[]{})), ","));
-                expression.append("}");
-                expression.append("'");
+                rightJsonbExpressionPart = rightJsonExpression(markerPos);
                 expression.append(")");
                 resultList.add(expression.toString());
             }
@@ -104,5 +97,33 @@ public class JsonbFunctionCall {
             return resultList;
         } else
             return itemPathArray;
+    }
+
+    private String rightJsonExpression(int fromItem){
+        StringBuilder expression = new StringBuilder();
+        int endPos = itemPathArray.size();
+
+        String[] pathItems = itemPathArray.subList(fromItem + 1, endPos).toArray(new String[]{});
+
+        if (pathItems.length == 0)
+            return "";
+
+        expression.append("#>>");
+        expression.append("'");
+        expression.append("{");
+        expression.append(StringUtils.join(pathItems, ","));
+        expression.append("}");
+        expression.append("'");
+
+        return expression.toString();
+    }
+
+
+    public boolean hasRightMostJsonbExpression() {
+        return rightJsonbExpressionPart != null;
+    }
+
+    public String getRightMostJsonbExpression() {
+        return rightJsonbExpressionPart;
     }
 }

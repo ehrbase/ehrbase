@@ -188,6 +188,7 @@ public class WhereBinder {
                     inExists = whereVariable.inExists();
 
                     String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item, multiSelectFieldsMap );
+
                     if (StringUtils.isNotBlank(expanded))
                         taggedStringBuilder.append(expanded);
                     else {
@@ -352,8 +353,10 @@ public class WhereBinder {
 
     private String expandForLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition variableDefinition, MultiFieldsMap multiSelectFieldsMap ){
         String expanded = expandForCondition(encodedVar);
-        if (new SetReturningFunction(expanded).isUsed()){
+        boolean isAlreadyCast = true;
 
+        if (new SetReturningFunction(expanded).isUsed()){
+            isAlreadyCast = false;
             //check if this variable is already defined as a lateral join from the projection (SELECT)
             MultiFields selectFields = multiSelectFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath());
 
@@ -366,11 +369,24 @@ public class WhereBinder {
                 //NB: white space at the end is required since the clause is built with a string builder and space(s) is important!
                 variableDefinition.setAlias(new LateralVariable(lateralJoinDefinition.getTable().getName(),lateralJoinDefinition.getLateralVariable()).alias());
             }
-            else
-                new LateralJoins().create(templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE );
+            else {
+                //check for an existing lateral join for this template
+                LateralJoinDefinition existingLateralJoin = multiSelectFieldsMap.asMultiFieldsList().matchingLateralJoin(templateId, expanded);
+                if (existingLateralJoin != null)
+                    new LateralJoins().reuse(existingLateralJoin, templateId, variableDefinition);
+                else
+                    new LateralJoins().create(templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE);
+            }
 
             expanded = variableDefinition.getAlias();
         }
+
+        if (whereVariable.hasRightMostJsonbExpression())
+            expanded = expanded + whereVariable.getRightMostJsonbExpression();
+
+
+        if (variableDefinition.getSelectType() != null && !isAlreadyCast)
+            expanded = "(" + expanded + ")::" + variableDefinition.getSelectType().getCastTypeName()+" ";
 
         return expanded;
     }
