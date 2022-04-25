@@ -18,20 +18,22 @@
 
 package org.ehrbase.aql.compiler;
 
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
-import org.junit.Test;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
+import org.ehrbase.functional.Try;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
+import org.junit.Test;
+
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
 
 
 public class InvokeVisitorTest {
@@ -40,8 +42,8 @@ public class InvokeVisitorTest {
 	@Test
 	public void shouldVisitInvokeExpressionExpandOperation() {
 		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
-		FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
-		when(mock.expandWithParameters(any(), any())).thenReturn(List.of(
+	  ExternalTerminologyValidation mock = mock(ExternalTerminologyValidation.class);
+		when(mock.expand(any())).thenReturn(List.of(
 				new DvCodedText("Occlusal", new CodePhrase("O")),
 				new DvCodedText("Mesial", new CodePhrase("M")),
 				new DvCodedText("Distoclusal", new CodePhrase("DO")),
@@ -54,7 +56,6 @@ public class InvokeVisitorTest {
 				new DvCodedText("Distoincisal", new CodePhrase("DI")),
 				new DvCodedText("Buccal", new CodePhrase("B"))
 		));
-
 
 		WhereVisitor cut = new WhereVisitor(mock);
 		String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
@@ -133,8 +134,9 @@ public class InvokeVisitorTest {
 	@Test
 	public void shouldVisitInvokeExpressionValidateOperation() {
 		//postman request for expansion is: GET https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/surface
-		FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
-		when(mock.validate(any())).thenReturn(true);
+	  ExternalTerminologyValidation mock = mock(ExternalTerminologyValidation.class);
+		when(mock.validate(any())).thenReturn(Try.success(Boolean.TRUE));
+		
 		WhereVisitor cut = new WhereVisitor(mock);
 		String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
 				"FROM EHR [ehr_id/value='1234'] " +
