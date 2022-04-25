@@ -52,7 +52,8 @@ COPY ./rest-openehr/pom.xml ./rest-openehr/pom.xml
 COPY ./service/pom.xml ./service/pom.xml
 COPY ./test-coverage/pom.xml ./test-coverage/pom.xml
 COPY ./plugin/pom.xml ./plugin/pom.xml
-RUN mvn dependency:go-offline -B
+COPY ./bom/pom.xml ./bom/pom.xml
+# RUN mvn dependency:go-offline -B
 
 # COPY SOURCEFILES
 COPY ./api/src ./api/src
@@ -63,10 +64,10 @@ COPY ./rest-ehr-scape/src ./rest-ehr-scape/src
 COPY ./rest-openehr/src ./rest-openehr/src
 COPY ./service/src ./service/src
 COPY ./plugin/src ./plugin/src
-RUN mvn compile dependency:go-offline \
-    -Dflyway.skip=true \
-    -Djooq.codegen.skip=true \
-    -Dmaven.main.skip
+#RUN mvn compile dependency:go-offline \
+#    -Dflyway.skip=true \
+#    -Djooq.codegen.skip=true \
+#    -Dmaven.main.skip
 
 # START DB AND COMPILE EHRBASE
 RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" && \
