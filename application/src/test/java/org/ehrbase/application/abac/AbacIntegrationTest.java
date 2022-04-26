@@ -43,10 +43,10 @@ import org.apache.commons.io.IOUtils;
 import org.ehrbase.test_data.composition.CompositionTestDataCanonicalJson;
 import org.ehrbase.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -54,22 +54,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.ResourceUtils;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles({"local", "test"})
-@EnabledIfEnvironmentVariable(named = "EHRBASE_ABAC_IT_TEST", matches = "true")
+// @EnabledIfEnvironmentVariable(named = "EHRBASE_ABAC_IT_TEST", matches = "true")
 @AutoConfigureMockMvc
+@Disabled("see https://jira.vitagroup.ag/browse/CDR-368")
 class AbacIntegrationTest {
 
   private static final String ORGA_ID = "f47bfc11-ec8d-412e-aebf-c6953cc23e7d";
 
   @MockBean
   private AbacConfig.AbacCheck abacCheck;
+  @MockBean private BuildProperties buildProperties;
 
   @Autowired
   private MockMvc mockMvc;
@@ -78,9 +78,10 @@ class AbacIntegrationTest {
   private AbacConfig abacConfig;
 
   @Test
-    /*
-     * This test requires a new and clean DB state to run successfully.
-     */
+  /*
+   * This test requires a new and clean DB state to run successfully.
+   */
+
   void testAbacIntegrationTest() throws Exception {
     /*
           ----------------- TEST CONTEXT SETUP -----------------

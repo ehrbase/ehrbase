@@ -18,24 +18,26 @@
 
 package org.ehrbase.aql.compiler;
 
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.support.identification.TerminologyId;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
+import org.ehrbase.validation.terminology.TerminologyParam;
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 
 public class WhereVisitorTest {
 
@@ -43,7 +45,7 @@ public class WhereVisitorTest {
     public void getWhereExpression() {
 
         {
-            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+            WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
             String aql = "select a  from EHR  [ehr_id/value = '26332710-16f3-4b54-aae9-4d11c141388c'] contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
                     "where a/composer/name='Tony Stark'";
             ParseTree tree = QueryHelper.setupParseTree(aql);
@@ -63,7 +65,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+            WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
                     "FROM EHR [ehr_id/value='1234'] " +
                     "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] " +
@@ -86,7 +88,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+            WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
                     "FROM EHR [ehr_id/value='1234'] " +
                     "CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] " +
@@ -112,7 +114,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+            WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
             String aql = "select a  from EHR  [ehr_id/value = '26332710-16f3-4b54-aae9-4d11c141388c'] contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
                     "where a/composer/name='Tony Stark' and a/name/value='Immunisation summary'";
             ParseTree tree = QueryHelper.setupParseTree(aql);
@@ -143,7 +145,7 @@ public class WhereVisitorTest {
         }
 
         {
-            WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+            WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
             String aql = "SELECT o/data[at0002]/events[at0003] AS systolic " +
                     "FROM EHR [ehr_id/value='1234'] " +
                     "CONTAINS COMPOSITION c " +
@@ -178,7 +180,7 @@ public class WhereVisitorTest {
     @Test
     public void testStructuredAST1()
     {
-        WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+        WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
         String aql = "SELECT e " +
                 "FROM EHR e[ehr_id/value='1234'] " +
                 "WHERE ((e/ehr_id/value = '1111' AND e/ehr_id/value = '2222') OR (e/ehr_id/value = '333' OR e/ehr_id/value = '444')) ";
@@ -194,7 +196,7 @@ public class WhereVisitorTest {
     @Test
     public void testEmptyWhereStatement()
     {
-        WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+        WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
         String aql = "select e/ehr_id/value from EHR e";
         ParseTree tree = QueryHelper.setupParseTree(aql);
         cut.visit(tree);
@@ -206,7 +208,7 @@ public class WhereVisitorTest {
     @Test
     public void testEXISTS()
     {
-        WhereVisitor cut = new WhereVisitor(mock(FhirTerminologyServerR4AdaptorImpl.class));
+        WhereVisitor cut = new WhereVisitor(mock(ExternalTerminologyValidation.class));
         String aql = "select c\n" +
                 "from EHR e\n" +
                 "contains COMPOSITION c\n" +
@@ -223,17 +225,21 @@ public class WhereVisitorTest {
 
     @Test
     public void testTerminologyWhereStatement() {
-        FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
-        List<DvCodedText> result = new ArrayList<>();
+        ExternalTerminologyValidation mock = mock(ExternalTerminologyValidation.class);
         TerminologyId terminologyId = new TerminologyId("http://fhir.de/CodeSystem/dimdi/atc");
-        result.add(new DvCodedText("Heparingruppe", new CodePhrase(terminologyId, "B01AB")));
-        result.add(new DvCodedText("Heparin", new CodePhrase(terminologyId, "B01AB01")));
-        result.add(new DvCodedText("Antithrombin III, Antithrombin alfa", new CodePhrase(terminologyId, "B01AB02")));
-        result.add(new DvCodedText("Dalteparin", new CodePhrase(terminologyId, "B01AB04")));
-        result.add(new DvCodedText("Nadroparin", new CodePhrase(terminologyId, "B01AB06")));
+        
+        List<DvCodedText> result = new ArrayList<>();
+          result.add(new DvCodedText("Heparingruppe", new CodePhrase(terminologyId, "B01AB")));
+          result.add(new DvCodedText("Heparin", new CodePhrase(terminologyId, "B01AB01")));
+          result.add(new DvCodedText("Antithrombin III, Antithrombin alfa", new CodePhrase(terminologyId, "B01AB02")));
+          result.add(new DvCodedText("Dalteparin", new CodePhrase(terminologyId, "B01AB04")));
+          result.add(new DvCodedText("Nadroparin", new CodePhrase(terminologyId, "B01AB06")));
 
-        when(mock.expandWithParameters("https: //www.netzwerk-universitaetsmedizin.de/fhir/ValueSet/anticoagulants-atc", "expand"))
-                .thenReturn(result);
+        TerminologyParam tp = TerminologyParam.ofServiceApi("hl7.org/fhir/R4");
+          tp.setParameter("https: //www.netzwerk-universitaetsmedizin.de/fhir/ValueSet/anticoagulants-atc");
+          tp.setOperation("expand");
+
+        when(mock.expand(tp)).thenReturn(result);
 
         WhereVisitor cut = new WhereVisitor(mock);
         String aql = "select  a_a/data[at0002]/items[at0022] " +
@@ -250,9 +256,13 @@ public class WhereVisitorTest {
 
     @Test
     public void testTerminologyWhereStatementNotSupported() {
-        FhirTerminologyServerR4AdaptorImpl mock = mock(FhirTerminologyServerR4AdaptorImpl.class);
+        ExternalTerminologyValidation mock = mock(ExternalTerminologyValidation.class);
 
-        when(mock.expandWithParameters("http://hl7.org/fhir/ValueSet/animal-breeds", "expand"))
+        TerminologyParam tp = TerminologyParam.ofServiceApi("hl7.org/fhir/R4");
+          tp.setParameter("http://hl7.org/fhir/ValueSet/animal-breeds");
+          tp.setOperation("expand");
+        
+        when(mock.expand(tp))
                 .thenThrow(new InternalServerException("Terminology server operation failed:'Error response received from FHIR terminology server. " +
                         "HTTP status: 404. Body: {\\\"resourceType\\\":\\\"OperationOutcome\\\",\\\"issue\\\":[{\\\"severity\\\":\\\"error\\\",\\\"code\\\":\\\"not-found\\\",\\\"diagnostics\\\":\\\"" +
                         "[5389b21a-d873-41d0-8c79-4390796c40bc]: Could not find value set http://hl7.org/fhir/ValueSet/animal-breeds. If this is an implicit value set please make sure the url is correct. " +

@@ -41,7 +41,7 @@ public class TestAqlBase {
         knowledge.addOperationalTemplate(opt);
         opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/LabResults1.opt").readAllBytes();
         knowledge.addOperationalTemplate(opt);
-        opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/Stationärer Versorgungsfall.opt").readAllBytes();
+        opt = new FileInputStream(new String("./src/test/resources/knowledge/operational_templates/Station\u00e4rer Versorgungsfall.opt")).readAllBytes();
         knowledge.addOperationalTemplate(opt);
         opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/nested.en.v1.opt").readAllBytes();
         knowledge.addOperationalTemplate(opt);

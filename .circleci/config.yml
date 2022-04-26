@@ -1278,6 +1278,7 @@ commands:
       # - cache-out-python-requirements
       - install-maven
       - install-python3-requirements
+      - install-xml-cli-tool
       # - run: jps
       # - run:
       #     name: Wait until EHRbase server is ready
@@ -1293,7 +1294,8 @@ commands:
             echo "OAUTH_RESRCSERVER_URL: $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
             ls -la
             if [ "${SUT}" != "TEST" ]; then
-              EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            
+              EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
               echo ${EHRbase_VERSION}
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
                    --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
@@ -1447,32 +1449,35 @@ commands:
 
   maven-install-sdk:
     steps:
+      - install-xml-cli-tool
       - run:
           name: Save the version number of locally installed SDK into a file
           command: |
             cd ~/projects/openEHR_SDK
-            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL$(cat /proc/sys/kernel/random/uuid) versions:commit
-            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL$(cat /proc/sys/kernel/random/uuid) -DprocessAllModules=true versions:commit
+                      
+            SDK_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo $SDK_VERSION > SDK_VERSION
             cat SDK_VERSION
       - run:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
-
-
+              mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
+  
+  
   start-ehrbase-and-run-java-integration-sdk-tests:
     description: |
       Starts ehrbase server and runs maven test phase using 'slow' profile defined in parent pom.xml
       This way only the Java integration tests are executed.
     steps:
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and run SDK's java integration tests
           command: |
             ls -la
             cd ~/projects
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo ${EHRbase_VERSION}
             java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir'> log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
@@ -1488,11 +1493,13 @@ commands:
       This requires EHRbase + DB to be running during test execution.
     steps:
       - install-maven
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and run all test of SDK
           command: |
             ls -la
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
@@ -1646,12 +1653,12 @@ commands:
             SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -u /_:project/_:properties/_:ehrbase.sdk.version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u /_:project/_:properties/_:ehrbase.sdk.version -v $SDK_VERSION bom/pom.xml
       - run:
           name: Show EHRbase's pom
-          command: cat pom.xml
+          command: cat bom/pom.xml
 
-            
+
   build-and-test-ehrbase:
     steps:
       # - install-maven
@@ -1665,12 +1672,14 @@ commands:
   start-ehrbase-server:
     steps:
       - install-maven
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and wait for it to be ready
           background: true
           command: |
             ls -la
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+                
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml  )
             echo ${EHRbase_VERSION}
             java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)

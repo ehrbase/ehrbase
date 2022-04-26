@@ -21,17 +21,21 @@
 
 package org.ehrbase.aql.compiler;
 
-import com.nedap.archie.rm.datavalues.DvCodedText;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
-import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
+import org.ehrbase.functional.Try;
+import org.ehrbase.validation.ConstraintViolationException;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
+import org.ehrbase.validation.terminology.TerminologyParam;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.nedap.archie.rm.datavalues.DvCodedText;
 
 /**
  * Interpret an AQL WHERE clause and set the result into a list of WHERE parts
@@ -39,8 +43,7 @@ import java.util.List;
  *
  * @param <T>
  */
-@SuppressWarnings("unchecked")
-public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
+public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
 
     private static final String MATCHES = "MATCHES";
     public static final String IN = " IN ";
@@ -52,9 +55,9 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
 
 
     private List<Object> whereExpression = new ArrayList<>();
-    private I_OpenehrTerminologyServer tsAdapter;
+    private ExternalTerminologyValidation tsAdapter;
 
-    public WhereVisitor(I_OpenehrTerminologyServer tsAdapter) {
+    public WhereVisitor(ExternalTerminologyValidation tsAdapter) {
         this.tsAdapter = tsAdapter;
     }
 
@@ -153,13 +156,19 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
         assert (ctx.OPEN_PAR().getText().equals("("));
         assert (ctx.CLOSE_PAR().getText().equals(")"));
         List<String> codesList = new ArrayList<>();
+        
         final String operation = ctx.STRING(0).getText().replace("'", "");
-        // final String adapter = ctx.STRING(1).getText();
+        final String adapter = ctx.STRING(1).getText().replace("'", "");
         final String parameters = ctx.STRING(2).getText().replace("'", "");
+        
+        TerminologyParam tp = TerminologyParam.ofServiceApi(adapter);
+            tp.setOperation(operation);
+            tp.setParameter(parameters);
+        
         if (StringUtils.equals(operation, "expand")) {
             try {
-
-                List<DvCodedText> expansion = tsAdapter.expandWithParameters(parameters, operation);
+                tp.useValueSet();
+                List<DvCodedText> expansion = tsAdapter.expand(tp);
                 expansion.forEach((DvCodedText dvCode) -> codesList.add("'" + dvCode.getDefiningCode().getCodeString() + "'"));
                 invokeExpr.addAll(codesList);
             } catch (Exception e) {
@@ -167,8 +176,12 @@ public class WhereVisitor<T, ID> extends AqlBaseVisitor<List<Object>> {
             }
         } else if (StringUtils.equals(operation, "validate")) {
             try {
-                Boolean expansion = tsAdapter.validate(parameters);
-                invokeExpr.add(expansion);
+                Try<Boolean,ConstraintViolationException> expansion = tsAdapter.validate(tp);
+                
+                if(expansion.isSuccess())
+                  expansion.getAsSuccess().consume((b, e) -> invokeExpr.add(b));
+                else
+                  expansion.getAsFailure().consume((b,e) -> invokeExpr.add(Boolean.FALSE));
             } catch (Exception e) {
                 throw new IllegalArgumentException("Terminology server operation failed:'" + e.getMessage() + "'");
             }

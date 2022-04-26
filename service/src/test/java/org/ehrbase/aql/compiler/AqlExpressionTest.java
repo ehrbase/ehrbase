@@ -21,15 +21,15 @@
 
 package org.ehrbase.aql.compiler;
 
-import org.ehrbase.aql.TestAqlBase;
-import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
-import org.jooq.DSLContext;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+
+import org.ehrbase.aql.TestAqlBase;
+import org.ehrbase.dao.jooq.impl.DSLContextHelper;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
+import org.jooq.DSLContext;
+import org.junit.Test;
 
 /**
  * Created by christian on 4/1/2016.
@@ -82,7 +82,7 @@ public class AqlExpressionTest extends TestAqlBase {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(ExternalTerminologyValidation.class)).process();
 
         assertThat(statements.getVariables()).isNotNull();
         assertThat(statements.getWhereClause()).isNotNull();
@@ -100,7 +100,7 @@ public class AqlExpressionTest extends TestAqlBase {
         AqlExpression cut = new AqlExpression().parse(query);
 
         try {
-            new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)
+            new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(ExternalTerminologyValidation.class)
             ).process();
 
             fail("duplicate alias has not been detected");
@@ -128,7 +128,7 @@ public class AqlExpressionTest extends TestAqlBase {
 
         AqlExpression cut = new AqlExpression().parse(query);
 
-        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(FhirTerminologyServerR4AdaptorImpl.class)).process();
+        Statements statements = new Statements(cut.getParseTree(), new Contains(cut.getParseTree(), knowledge).process().getIdentifierMapper(), mock(ExternalTerminologyValidation.class)).process();
 
         assertThat(statements.getWhereClause()).isNotNull();
 

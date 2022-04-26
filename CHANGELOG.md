@@ -10,12 +10,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
-- Implement EHR_STATUS.is_modifiable semantics on service level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
+- Implement EHR_STATUS.is_modifiable semantics on service
+  level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
+- use bom for dependence management  ([#820](https://github.com/ehrbase/ehrbase/pull/820))
 
 ### Changed
 - Upgrade to Spring boot 2.5.12
   see [spring-framework-rce](https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement) ([#800](https://github.com/ehrbase/ehrbase/pull/800))
   .
+- Add unique constraints on `status` and `entry` ([#821](https://github.com/ehrbase/ehrbase/pull/821)).
 
 ### Fixed
 
