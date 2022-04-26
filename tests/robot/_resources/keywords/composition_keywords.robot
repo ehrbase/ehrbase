@@ -672,7 +672,7 @@ get composition by composition_uid
                         Set Test Variable   ${response}    ${resp}
 
 
-get web template by template id
+get web template by template id (ECIS)
     [Arguments]         ${template_id}
 
     Create Session      ${SUT}    ${ECISURL}    debug=2

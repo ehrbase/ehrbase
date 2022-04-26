@@ -29,7 +29,7 @@ Force Tags
 Update an existing event COMPOSITION Feeder Audit and Links values
     upload OPT    all_types/genericFHIRTemplate.opt
     create EHR
-    Get Web Template By Template Id     genericFHIRTemplate
+    get web template by template id (ECIS)     genericFHIRTemplate
     commit composition      format=CANONICAL_JSON
     ...                     composition=composition_feeder_audit.json
     ${template}     Set Variable    genericFHIRTemplate

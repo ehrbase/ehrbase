@@ -47,7 +47,7 @@ Check Headers with Commit Composition
     [Tags]
     create EHR wih x forwarded headers
     check that headers location response has    https   example.com    333
-    Get Web Template By Template Id  ${template_id}
+    get web template by template id (ECIS)  ${template_id}
     commit composition   format=FLAT
     ...                  composition=family_history__.json
     check the successful result of commit composition
