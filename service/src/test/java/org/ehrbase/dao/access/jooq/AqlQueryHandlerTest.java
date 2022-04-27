@@ -25,7 +25,7 @@ import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.dao.access.interfaces.I_DomainAccessTest;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.ehrbase.service.CacheRule;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.tools.jdbc.MockResult;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -47,8 +47,8 @@ public class AqlQueryHandlerTest {
             MockResult[] mock = new MockResult[1];
             mock[0] = new MockResult(0, null);
             return mock;
-        }), testFolder, cacheRule), mock(FhirTerminologyServerR4AdaptorImpl.class));
-    AqlResult aqlResult = cut.process("select e/ehr_id/value from EHR e LIMIT 10 OFFSET 5", null);
+        }), testFolder, cacheRule), mock(ExternalTerminologyValidation.class));
+        AqlResult aqlResult = cut.process("select e/ehr_id/value from EHR e LIMIT 10 OFFSET 5", null);
         assertThat(aqlResult.getExplain().get(0)).hasSize(3).contains("10", "5");
         assertThat(aqlResult.getExplain().get(0).get(0).replaceAll("alias_\\d+", "")).isEqualToIgnoringWhitespace(
                         "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +

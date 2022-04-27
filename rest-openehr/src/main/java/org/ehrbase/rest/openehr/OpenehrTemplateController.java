@@ -38,7 +38,6 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.response.openehr.ResponseData;
 import org.ehrbase.response.openehr.TemplateResponseData;
@@ -166,7 +165,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
     }
 
   @GetMapping(path = "/adl1.4/{template_id}/example")
-  public ResponseEntity<StructuredString> getTemplateExample(
+  public ResponseEntity<String> getTemplateExample(
       @RequestHeader(value = ACCEPT, required = false) String accept,
       @PathVariable(value = "template_id") String templateId) {
         CompositionFormat format = extractCompositionFormat(accept);
@@ -180,13 +179,11 @@ public class OpenehrTemplateController extends BaseController implements Templat
             respHeaders.setContentType(MediaType.APPLICATION_JSON);
         }
 
-    ResponseEntity<StructuredString> body =
-        ResponseEntity.ok()
+    return ResponseEntity.ok()
             .headers(respHeaders)
             .body(
                 compositionService.serialize(
-                    new CompositionDto(composition, templateId, null, null), format));
-    return body;
+                    new CompositionDto(composition, templateId, null, null), format).getValue());
     }
 
     /*

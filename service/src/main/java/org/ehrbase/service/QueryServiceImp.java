@@ -47,6 +47,7 @@ import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.response.ehrscape.query.ResultHolder;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -62,10 +63,10 @@ import org.springframework.web.client.RestClientException;
 public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final FhirTerminologyServerR4AdaptorImpl tsAdapter;
+    private final ExternalTerminologyValidation tsAdapter;
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, ExternalTerminologyValidation tsAdapter) {
 
         super(knowledgeCacheService, context, serverConfig);
         this.tsAdapter = tsAdapter;

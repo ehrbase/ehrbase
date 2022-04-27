@@ -356,13 +356,6 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      */
     void setTerritoryCode(Integer code);
 
-    /**
-     * get the list of entry Ids for this composition
-     *
-     * @return a list of entry {@link UUID}s
-     */
-    List<UUID> getContentIds();
-
     String getFeederAudit();
 
     void setFeederAudit(FeederAudit feederAudit);
@@ -380,22 +373,14 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
     void setContextCompositionId(UUID contextId);
 
     /**
-     * add an entry to the composition
+     * Get the entry linked to the composition.
      *
-     * @param entry {@link I_EntryAccess} instance
-     * @return &gt;0 success
-     */
-    int addContent(I_EntryAccess entry);
-
-    /**
-     * get the list of entries for this composition
-     *
-     * @return the list of entry as {@link I_EntryAccess}
+     * @return the entry
      * @see I_EntryAccess
      */
-    List<I_EntryAccess> getContent();
+    I_EntryAccess getContent();
 
-    void setContent(List<I_EntryAccess> content);
+    void setContent(I_EntryAccess content);
 
     /**
      * set the contribution id for this composition

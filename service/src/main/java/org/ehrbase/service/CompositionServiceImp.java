@@ -124,11 +124,11 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   /**
    * Creation of a new composition. With optional custom contribution, or one will be created.
    *
-   * @param ehrId ID of EHR
-   * @param composition RMObject instance of the given Composition to be created
-   * @param systemId Audit system; or NULL if contribution is given
-   * @param committerId Audit committer; or NULL if contribution is given
-   * @param description (Optional) Audit description; or NULL if contribution is given
+   * @param ehrId          ID of EHR
+   * @param composition    RMObject instance of the given Composition to be created
+   * @param systemId       Audit system; or NULL if contribution is given
+   * @param committerId    Audit committer; or NULL if contribution is given
+   * @param description    (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
    * @return ID of created composition
    * @throws InternalServerException when creation failed
@@ -170,7 +170,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
               0,
               compositionAccess.getId(),
               composition);
-      compositionAccess.addContent(entryAccess);
+      compositionAccess.setContent(entryAccess);
       if (contributionId
           != null) { // in case of custom contribution, set it and invoke commit that allows custom
         // contributions
@@ -276,7 +276,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       validationService.check(composition);
 
       // Check if template ID is not the same in existing and given data -> error
-      String existingTemplateId = compositionAccess.getContent().get(0).getTemplateId();
+      String existingTemplateId = compositionAccess.getContent().getTemplateId();
       String inputTemplateId = composition.getArchetypeDetails().getTemplateId().getValue();
       if (!existingTemplateId.equals(inputTemplateId)) {
         // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
@@ -296,9 +296,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
       // to keep reference to entry to update: pull entry out of composition access and replace
       // composition content with input, then write back to the original access
-      List<I_EntryAccess> contentList = compositionAccess.getContent();
-      contentList.get(0).setCompositionData(composition);
-      compositionAccess.setContent(contentList);
+      I_EntryAccess content = compositionAccess.getContent();
+      content.setCompositionData(composition);
+      compositionAccess.setContent(content);
       compositionAccess.setComposition(composition);
       if (contributionId != null) { // if custom contribution should be set
         compositionAccess.setContributionId(contributionId);
@@ -457,18 +457,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     return I_CompositionAccess.getEhrId(getDataAccess(), compositionId);
   }
 
-
-
-
   private Optional<Composition> getComposition(I_CompositionAccess compositionAccess) {
-    if (compositionAccess == null) {
-      return Optional.empty();
-    } else {
-      return compositionAccess.getContent().stream().findAny().map(I_EntryAccess::getComposition);
-    }
+      return Optional.ofNullable(compositionAccess).map(I_CompositionAccess::getContent).map(I_EntryAccess::getComposition);
   }
-
-
 
   /**
    * Public serializer entry point which will be called with composition dto fetched from database

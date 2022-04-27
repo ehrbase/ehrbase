@@ -2,7 +2,6 @@ package org.ehrbase.rest.openehr.specification;
 
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
-import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.openehr.TemplateResponseData;
 import org.springframework.http.ResponseEntity;
 
@@ -34,7 +33,7 @@ public interface TemplateApiSpecification {
   @Operation(
       tags = "ADL 1.4 TEMPLATE",
       summary = "Get an example composition for the specified template")
-  ResponseEntity<StructuredString> getTemplateExample(String accept, String templateId);
+  ResponseEntity<String> getTemplateExample(String accept, String templateId);
 
     @Operation(
             tags = "ADL 2 TEMPLATE",

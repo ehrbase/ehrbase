@@ -33,7 +33,7 @@ Main flow create Template and GET by Template ID
     [Tags]
     upload OPT ECIS     all_types/ehrn_family_history.opt
     Extract Template_id From OPT File
-    get web template by template id     ${template_id}
+    get web template by template id (ECIS)     ${template_id}
 
 
 Main flow create and GET all Templates

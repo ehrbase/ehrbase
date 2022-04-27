@@ -89,21 +89,23 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-  @GetMapping(path = "/{templateId}/example")
-  public ResponseEntity<StructuredString> getTemplateExample(
-      @PathVariable(value = "templateId") String templateId,
-      @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
+    @GetMapping(path = "/{templateId}/example")
+    public ResponseEntity<String> getTemplateExample(
+            @PathVariable(value = "templateId") String templateId,
+            @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
 
-    if ((format == CompositionFormat.RAW
-        || format == CompositionFormat.EXPANDED
-        || format == CompositionFormat.ECISFLAT)) {
-      throw new InvalidApiParameterException(String.format("Format %s not supported", format));
-    }
+        if ((format == CompositionFormat.RAW
+                || format == CompositionFormat.EXPANDED
+                || format == CompositionFormat.ECISFLAT)) {
+            throw new InvalidApiParameterException(String.format("Format %s not supported", format));
+        }
 
-    Composition composition = templateService.buildExample(templateId);
-    return ResponseEntity.ok(
-        compositionService.serialize(
-            new CompositionDto(composition, templateId, null, null), format));
+        Composition composition = templateService.buildExample(templateId);
+        CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
+        StructuredString serialized = compositionService.serialize(compositionDto, format);
+
+        MediaType contentType = format == CompositionFormat.XML ? MediaType.APPLICATION_XML :  MediaType.APPLICATION_JSON;
+        return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
     }
 
     @GetMapping(path = "/{templateId}")

@@ -24,9 +24,10 @@ Documentation   Examples generator for Templates
 
 Resource        ../_resources/keywords/composition_keywords.robot
 
-#Suite Setup       Precondition
-Suite Teardown      restart SUT
 
+*** Variables ***
+${COMPOSITIONS_PATH_JSON}   ${EXECDIR}/robot/_resources/test_data_sets/compositions/CANONICAL_JSON
+${COMPOSITIONS_PATH_XML}    ${EXECDIR}/robot/_resources/test_data_sets/compositions/CANONICAL_XML
 
 *** Test Cases ***
 Test Example Generator for Templates (ECIS) - FLAT
@@ -35,17 +36,17 @@ Test Example Generator for Templates (ECIS) - FLAT
     get example of web template by template id (ECIS)      ${template_id}      FLAT
     validate that response body is in format    FLAT
 
-Test Example Generator for Templates (ECIS) - JSON
+Test Example Generator for Templates (ECIS) - JSON and Save it
     [Tags]
     get example of web template by template id (ECIS)      ${template_id}      JSON
     validate that response body is in format    JSON
+    Save Response (JSON) To File And Compare Template Ids    ${template_id}     composition_ecis_temp.json
 
-Test Example Generator for Templates (ECIS) - XML
-    [Tags]      not-ready
+Test Example Generator for Templates (ECIS) - XML and Save it
+    [Tags]
     get example of web template by template id (ECIS)      ${template_id}      XML
     validate that response body is in format    XML
-    [Teardown]      TRACE GITHUB ISSUE    809
-    ...             Test failed due to wrong response. Not XML format (ECIS). Check previous step.
+    Save Response (XML) To File And Compare Template Ids    ${template_id}     composition_ecis_temp.xml
 
 ###########################################
 
@@ -54,19 +55,17 @@ Test Example Generator for Templates (OPENEHR) - FLAT
     [Setup]     Upload Template using OPENEHR endpoint
     get example of web template by template id (OPENEHR)      ${template_id}      FLAT
 
-Test Example Generator for Templates (OPENEHR) - JSON
+Test Example Generator for Templates (OPENEHR) - JSON and Save it
     [Tags]
     get example of web template by template id (OPENEHR)      ${template_id}      JSON
     validate that response body is in format    JSON
+    Save Response (JSON) To File And Compare Template Ids       ${template_id}
 
-#modify this get to have not format=XML but to have in Accept headers application/xml
-Test Example Generator for Templates (OPENEHR) - XML
-    [Tags]      not-ready
+Test Example Generator for Templates (OPENEHR) - XML and Save it
+    [Tags]
     get example of web template by template id (OPENEHR)      ${template_id}      XML
     validate that response body is in format    XML
-    [Teardown]      TRACE GITHUB ISSUE    809
-    ...             Test failed due to wrong response. Not XML format (OPENEHR). Check previous step.
-
+    Save Response (XML) To File And Compare Template Ids    ${template_id}
 
 *** Keywords ***
 Upload Template using ECIS endpoint
@@ -78,3 +77,36 @@ Upload Template using OPENEHR endpoint
     [Documentation]     Keyword used to upload Template using OPENEHR endpoint
     upload OPT          nested/nested.opt
     Extract Template_id From OPT File
+
+Save Response (JSON) To File And Compare Template Ids
+    [Documentation]     1. Save response (JSON) to temp file,
+    ...                 2. compare template ids:
+    ...                     - the template example response
+    ...                     with
+    ...                     - the one from file
+    ...                 3. delete temp file.
+    ...                 *Dependency:* composition_keywords.get example of web template by template id (ECIS/OPENEHR)
+    [Arguments]     ${templateId}       ${jsonFile}=composition_openehr_temp.json
+    ${json_str}         Convert JSON To String      ${response.json()}
+    ${tempFilePath}     Set Variable    ${COMPOSITIONS_PATH_JSON}/${jsonFile}
+    Create File         ${tempFilePath}     ${json_str}
+    ${composition_json}     Load JSON From File    ${tempFilePath}
+    ${template_id_saved_file}       Get Value From Json
+    ...         ${composition_json}     $.archetype_details.template_id.value
+    ${template_id_saved_file_str}       Evaluate        "".join(${template_id_saved_file})
+    Should Be Equal As Strings      ${template_id_saved_file_str}
+    ...                             ${templateId}
+    [Teardown]      Run Keyword And Return Status       Remove File     ${tempFilePath}
+
+Save Response (XML) To File And Compare Template Ids
+    [Documentation]     1. Save response (XML) to temp file,
+    ...                 2. Get data from file and check if string contains template id
+    ...                 3. delete temp file.
+    ...                 *Dependency:* composition_keywords.validate that response body is in format
+    [Arguments]     ${templateId}       ${xmlFile}=composition_openehr_temp.xml
+    ${tempFilePath}     Set Variable    ${COMPOSITIONS_PATH_XML}/${xmlFile}
+    Save Xml            ${responseXML}     ${tempFilePath}
+    ${xml_parsed}       Parse Xml       ${tempFilePath}
+    ${xml_string}       Get Element Text     ${xml_parsed}
+    Should Contain    ${xml_string}    ${templateId}    String does not contain template id: ${templateId}
+    [Teardown]      Run Keyword And Return Status       Remove File     ${tempFilePath}
