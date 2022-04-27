@@ -118,7 +118,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public Optional<UUID> create(UUID ehrId, Composition objData) {
-    return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
+    return create(ehrId, objData, getSystemUuid(), getCurrentUserId(), null);
   }
 
   /**
@@ -235,7 +235,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public Optional<UUID> update(UUID ehrId, ObjectVersionId targetObjId, Composition objData) {
-    return update(ehrId, targetObjId, objData, getSystemUuid(), getUserUuid(), null);
+    return update(ehrId, targetObjId, objData, getSystemUuid(), getCurrentUserId(), null);
   }
 
   /**
@@ -365,7 +365,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public void delete(UUID ehrId, ObjectVersionId targetObjId) {
-    delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
+    delete(ehrId, targetObjId, getSystemUuid(), getCurrentUserId(), null);
   }
 
   /**

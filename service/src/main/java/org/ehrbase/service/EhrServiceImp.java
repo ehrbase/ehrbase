@@ -127,7 +127,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
 
         UUID systemId = getSystemUuid();
-        UUID committerId = getUserUuid();
+        UUID committerId = getCurrentUserId();
 
         try {   // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(getDataAccess(), subjectUuid, systemId, null, null, ehrId);
@@ -250,7 +250,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             ehrAccess.setStatus(status);
 
         // execute actual update and check for success
-        if (ehrAccess.update(getUserUuid(), getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
+        if (ehrAccess.update(getCurrentUserId(), getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
             throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
 
     return UUID.fromString(getEhrStatus(ehrId).getUid().getRoot().getValue());

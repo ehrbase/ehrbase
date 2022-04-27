@@ -22,18 +22,19 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.datavalues.DvIdentifier;
+import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.support.identification.GenericId;
+import com.nedap.archie.rm.support.identification.PartyRef;
+import java.util.List;
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.BaseService;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
-import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
+import org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class BaseServiceImp implements BaseService {
 
@@ -68,7 +69,7 @@ public class BaseServiceImp implements BaseService {
    */
   public UUID getSystemUuid() {
     if (systemId == null) {
-      systemId = I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());;
+      systemId = I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
     }
     return systemId;
   }
@@ -79,24 +80,37 @@ public class BaseServiceImp implements BaseService {
    *
    * @return UUID of default user, derived from authenticated user.
    */
-  protected UUID getUserUuid() {
-    var name = authenticationFacade.getAuthentication().getName();
-    List<DvIdentifier> identifiers = new ArrayList<>();
+  protected UUID getCurrentUserId() {
+    var username = authenticationFacade.getAuthentication().getName();
+    var existingUser = new PersistedPartyIdentified(getDataAccess()).findInternalUserId(username);
+    if (existingUser.isEmpty()) {
+      return createInternalUser(username);
+    }
+    return existingUser.get();
+  }
+
+  /**
+   * Creates a new PARTY_IDENTIFIED corresponding to an authenticated user.
+   *
+   * @param username username of the user
+   * @return the id of the newly created user
+   */
+  protected UUID createInternalUser(String username) {
     var identifier = new DvIdentifier();
-    identifier.setId(name);
-    identifier.setIssuer("EHRbase");
-    identifier.setAssigner("EHRbase");
-    identifier.setType("EHRbase Security Authentication User");
-    identifiers.add(identifier);
-    // Following getOrCreate will check for matching party with given UUID, but as it is random, it also checks
-    // for matching name + identifiers. So it will find already created parties for existing users.
-    return new PersistedPartyProxy(getDataAccess())
-        .getOrCreate("EHRbase Internal " + name, UUID.randomUUID().toString(), DEMOGRAPHIC, "User",
-            PARTY, identifiers);
+    identifier.setId(username);
+    identifier.setIssuer(PersistedPartyIdentified.EHRBASE);
+    identifier.setAssigner(PersistedPartyIdentified.EHRBASE);
+    identifier.setType(PersistedPartyIdentified.SECURITY_USER_TYPE);
+
+    PartyRef externalRef =
+        new PartyRef(new GenericId(UUID.randomUUID().toString(), DEMOGRAPHIC), "User", PARTY);
+    PartyIdentified user =
+        new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
+
+    return new PersistedPartyIdentified(getDataAccess()).store(user);
   }
 
   public ServerConfig getServerConfig() {
     return this.serverConfig;
   }
-
 }

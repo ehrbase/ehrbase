@@ -92,7 +92,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
    */
   @Override
   public Optional<FolderDto> create(UUID ehrId, Folder objData) {
-    return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
+    return create(ehrId, objData, getSystemUuid(), getCurrentUserId(), null);
   }
 
   private Optional<FolderDto> internalCreate(UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description,
@@ -148,7 +148,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     // TODO: Refactor to use UID
     I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
     ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
-    ehrAccess.update(getUserUuid(), getSystemUuid(), null, null, ContributionChangeType.MODIFICATION,
+    ehrAccess.update(getCurrentUserId(), getSystemUuid(), null, null, ContributionChangeType.MODIFICATION,
                      EhrServiceImp.DESCRIPTION);
 
     return get(folderId, null);
@@ -176,7 +176,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
    */
   @Override
   public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData) {
-    return update(ehrId, targetObjId, objData, getSystemUuid(), getUserUuid(), null);
+    return update(ehrId, targetObjId, objData, getSystemUuid(), getCurrentUserId(), null);
   }
 
   private Optional<FolderDto> internalUpdate(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID systemId,
@@ -260,7 +260,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
   /** {@inheritDoc} */
   @Override
   public void delete(UUID ehrId, ObjectVersionId targetObjId) {
-    delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
+    delete(ehrId, targetObjId, getSystemUuid(), getCurrentUserId(), null);
     }
 
   private void internalDelete(
