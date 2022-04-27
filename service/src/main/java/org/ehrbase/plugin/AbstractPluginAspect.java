@@ -55,7 +55,7 @@ public abstract class AbstractPluginAspect<EXTENSIONPOINT> {
     this.clazz = clazz;
   }
 
-  @Pointcut("within(org.ehrbase.api.service..*)")
+  @Pointcut("within(org.ehrbase.service..*)")
   public void inServiceLayerPC() {}
 
   /**

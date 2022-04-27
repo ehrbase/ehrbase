@@ -59,7 +59,8 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPoint> {
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
    * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("inServiceLayerPC() && " + "execution(* org.ehrbase.api.service.EhrService.create(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.EhrService.create(..))")
   public Object aroundCreateEhr(ProceedingJoinPoint pjp) {
 
     return proceedWithPluginExtensionPoints(
@@ -77,7 +78,8 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPoint> {
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
    * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("inServiceLayerPC() && " + "execution(* org.ehrbase.api.service.EhrService.updateStatus(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.EhrService.updateStatus(..))")
   public Object aroundUpdateEhrStatus(ProceedingJoinPoint pjp) {
 
     return proceedWithPluginExtensionPoints(
@@ -95,7 +97,8 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPoint> {
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
    * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("inServiceLayerPC() && " + "execution(* org.ehrbase.api.service.EhrService.getEhrStatus(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.EhrService.getEhrStatus(..))")
   public Object aroundRetrieveEhrStatus(ProceedingJoinPoint pjp) {
 
     return proceedWithPluginExtensionPoints(
