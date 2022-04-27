@@ -16,10 +16,7 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
-import com.nedap.archie.rm.ehr.EhrStatus;
-import java.util.UUID;
 import java.util.function.Function;
-import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 /**
@@ -32,30 +29,26 @@ public abstract class AbstractTemplateExtensionPoint implements TemplateExtensio
   /**
    * Called before template create
    *
-   * @param input ehr with ehrStatus {@link EhrStatus} to be created and optional ehrId {@link UUID}
-   * @return input to be given to ehr create
-   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * @param input {@link OPERATIONALTEMPLATE} to be created
+   * @return input to be given to template create
    */
-  public EhrStatusWithEhrId beforeCreation(EhrStatusWithEhrId input) {
+  public OPERATIONALTEMPLATE beforeCreation(OPERATIONALTEMPLATE input) {
     return input;
   }
 
   /**
    * Called after template create
    *
-   * @param output {@link UUID} of the created ehr
-   * @return {@link UUID} of the created ehr
-   * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * @param output template-id
+   * @return template-id
    */
-  public UUID afterCreation(UUID output) {
+  public String afterCreation(String output) {
     return output;
   }
 
   @Override
   public String aroundCreation(
       OPERATIONALTEMPLATE input, Function<OPERATIONALTEMPLATE, String> chain) {
-    return chain.apply(input);
+    return afterCreation(chain.apply(beforeCreation(input)));
   }
 }
