@@ -53,33 +53,23 @@ public class CompositionPluginAspect
    * @param pjp
    * @return
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.CompositionService.create(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.CompositionService.create(..))")
   public Object aroundCreateComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-    CompositionWithEhrId input = new CompositionWithEhrId((Composition) args[1], (UUID) args[0]);
-
     return Optional.of(
-        handleChain(
-            chain,
-            l -> (l::aroundCreation),
-            input,
-            i -> {
+        proceedWithPluginExtensionPoints(
+            pjp,
+            CompositionExtensionPointInterface::aroundCreation,
+            args -> new CompositionWithEhrId((Composition) args[1], (UUID) args[0]),
+            (i, args) -> {
               args[1] = i.getComposition();
               args[0] = i.getEhrId();
-
-              return ((Optional<UUID>) proceed(pjp, args)).orElseThrow();
-            }));
-  }
-
-  private Chain<CompositionExtensionPointInterface> getChain() {
-    Chain<CompositionExtensionPointInterface> chain =
-        buildChain(getExtensionPointInterfaceList(), new CompositionExtensionPointInterface() {});
-    return chain;
+              return args;
+            },
+            ret -> ((Optional<UUID>) ret).orElseThrow()));
   }
 
   /**
@@ -88,30 +78,26 @@ public class CompositionPluginAspect
    * @param pjp
    * @return
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.CompositionService.update(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.CompositionService.update(..))")
   public Object aroundUpdateComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-    CompositionWithEhrIdAndPreviousVersion input =
-        new CompositionWithEhrIdAndPreviousVersion(
-            (Composition) args[2], (ObjectVersionId) args[1], (UUID) args[0]);
 
     return Optional.of(
-        handleChain(
-            chain,
-            l -> (l::aroundUpdate),
-            input,
-            i -> {
+        proceedWithPluginExtensionPoints(
+            pjp,
+            CompositionExtensionPointInterface::aroundUpdate,
+            args -> new CompositionWithEhrIdAndPreviousVersion(
+                (Composition) args[2], (ObjectVersionId) args[1], (UUID) args[0]),
+            (i, args) -> {
               args[2] = i.getComposition();
               args[1] = i.getPreviousVersion();
               args[0] = i.getEhrId();
-
-              return ((Optional<UUID>) proceed(pjp, args)).orElseThrow();
-            }));
+              return args;
+            },
+            ret -> ((Optional<UUID>) ret).orElseThrow()));
   }
 
   /**
@@ -120,28 +106,22 @@ public class CompositionPluginAspect
    * @param pjp
    * @return
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.CompositionService.delete(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.CompositionService.delete(..))")
   public void aroundDeleteComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-    CompositionVersionIdWithEhrId input =
-        new CompositionVersionIdWithEhrId((ObjectVersionId) args[1], (UUID) args[0]);
-
-    handleChain(
-        chain,
-        l -> (l::aroundDelete),
-        input,
-        i -> {
+    proceedWithPluginExtensionPoints(
+        pjp,
+        CompositionExtensionPointInterface::aroundDelete,
+        args -> new CompositionVersionIdWithEhrId((ObjectVersionId) args[1], (UUID) args[0]),
+        (i, args) -> {
           args[1] = i.getVersionId();
           args[0] = i.getEhrId();
-
-          proceed(pjp, args);
-          return (Void) null;
-        });
+          return args;
+        },
+        Void.class::cast);
   }
 
   /**
@@ -150,27 +130,21 @@ public class CompositionPluginAspect
    * @param pjp
    * @return
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.CompositionService.retrieve(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.CompositionService.retrieve(..))")
   public Object aroundRetrieveComposition(ProceedingJoinPoint pjp) {
 
-    Chain<CompositionExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-    CompositionIdWithVersionAndEhrId input =
-        new CompositionIdWithVersionAndEhrId((UUID) args[0], (UUID) args[1], (Integer) args[2]);
-
-    return handleChain(
-        chain,
-        l -> (l::aroundRetrieve),
-        input,
-        i -> {
+    return proceedWithPluginExtensionPoints(
+        pjp,
+        CompositionExtensionPointInterface::aroundRetrieve,
+        args -> new CompositionIdWithVersionAndEhrId((UUID) args[0], (UUID) args[1], (Integer) args[2]),
+        (i, args) -> {
           args[2] = i.getVersion();
           args[1] = i.getCompositionId();
           args[0] = i.getEhrId();
-
-          return (Optional<Composition>) proceed(pjp, args);
+          return args;
         });
   }
 

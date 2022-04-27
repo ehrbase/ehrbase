@@ -24,7 +24,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.ehrbase.plugin.dto.QueryWithParameters;
 import org.ehrbase.plugin.extensionpoints.QueryExtensionPointInterface;
-import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -47,31 +46,19 @@ public class QueryPluginAspect extends AbstractPluginAspect<QueryExtensionPointI
    * @param pjp
    * @return
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.QueryService.query(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.QueryService.query(..))")
   public Object aroundQueryExecute(ProceedingJoinPoint pjp) {
-
-    Chain<QueryExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-
-    QueryWithParameters queryWithParameters =
-        new QueryWithParameters((String) args[0], (Map<String, Object>) args[1]);
-
-    return handleChain(
-        chain,
-        l -> (l::aroundQueryExecution),
-        queryWithParameters,
-        i -> {
+    return proceedWithPluginExtensionPoints(
+        pjp,
+        QueryExtensionPointInterface::aroundQueryExecution,
+        args -> new QueryWithParameters((String) args[0], (Map<String, Object>) args[1]),
+        (i, args) -> {
           args[0] = i.getQuery();
           args[1] = i.getParameters();
-
-          return (QueryResultDto) proceed(pjp, args);
+          return args;
         });
-  }
-
-  private Chain<QueryExtensionPointInterface> getChain() {
-    return buildChain(getExtensionPointInterfaceList(), new QueryExtensionPointInterface() {});
   }
 }

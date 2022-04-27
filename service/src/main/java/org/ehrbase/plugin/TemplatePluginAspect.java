@@ -45,27 +45,19 @@ public class TemplatePluginAspect extends AbstractPluginAspect<TemplateExtension
    * @param pjp
    * @return
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.TemplateService.create(..))")
+  @Around("inServiceLayerPC() && " +
+          "execution(* org.ehrbase.api.service.TemplateService.create(..))")
   public Object aroundCreateTemplate(ProceedingJoinPoint pjp) {
 
-    Chain<TemplateExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-
-    return handleChain(
-        chain,
-        l -> (l::aroundCreation),
-        (OPERATIONALTEMPLATE) args[0],
-        i -> {
+    return proceedWithPluginExtensionPoints(
+        pjp,
+        TemplateExtensionPointInterface::aroundCreation,
+        args -> (OPERATIONALTEMPLATE) args[0],
+        (i, args) -> {
           args[0] = i;
-
-          return (String) proceed(pjp, args);
+          return args;
         });
-  }
-
-  private Chain<TemplateExtensionPointInterface> getChain() {
-    return buildChain(getExtensionPointInterfaceList(), new TemplateExtensionPointInterface() {});
   }
 }

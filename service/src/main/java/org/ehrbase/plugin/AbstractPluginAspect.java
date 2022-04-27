@@ -16,14 +16,15 @@
 
 package org.ehrbase.plugin;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.function.TriFunction;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Pointcut;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.plugin.extensionpoints.CompositionExtensionPointInterface;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -32,25 +33,30 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 /**
  * @author Stefan Spiska
  */
-public abstract class AbstractPluginAspect<T> {
+/*TODO: maybe we should add the Ordered interface, so derived aspects will be evaluated in a predictable order in
+   relation to other aspects we might have or add later for other features or even through a plugin?*/
+public abstract class AbstractPluginAspect<EXTENSIONPOINT> {
 
-  private final Comparator<Map.Entry<String, T>> EXTENSION_POINTS_COMPARATOR =
+  private final Comparator<Map.Entry<String, EXTENSIONPOINT>> EXTENSION_POINTS_COMPARATOR =
       // respect @Order
-      ((Comparator<Map.Entry<String, T>>)
-              (e1, e2) ->
-                  AnnotationAwareOrderComparator.INSTANCE.compare(e1.getValue(), e2.getValue()))
+      ((Comparator<Map.Entry<String, EXTENSIONPOINT>>)
+          (e1, e2) ->
+              AnnotationAwareOrderComparator.INSTANCE.compare(e1.getValue(), e2.getValue()))
           .reversed()
           // ensure constant ordering
           .thenComparing(Map.Entry::getKey);
 
   protected final ListableBeanFactory beanFactory;
 
-  private final Class<T> clazz;
+  private final Class<EXTENSIONPOINT> clazz;
 
-  protected AbstractPluginAspect(ListableBeanFactory beanFactory, Class<T> clazz) {
+  protected AbstractPluginAspect(ListableBeanFactory beanFactory, Class<EXTENSIONPOINT> clazz) {
     this.beanFactory = beanFactory;
     this.clazz = clazz;
   }
+
+  @Pointcut("within(org.ehrbase.api.service..*)")
+  public void inServiceLayerPC() {}
 
   /**
    * Proceed with Error handling.
@@ -67,7 +73,7 @@ public abstract class AbstractPluginAspect<T> {
       throw e;
     } catch (Exception e) {
       // should never happen
-      throw new InternalServerException("Expedition in Plugin Aspect ", e);
+      throw new InternalServerException("Exception in Plugin Aspect ", e);
     } catch (Throwable e) {
       // should never happen
       throw new InternalServerException(e.getMessage());
@@ -77,7 +83,7 @@ public abstract class AbstractPluginAspect<T> {
   /**
    * @return Order List of {@link CompositionExtensionPointInterface} in Context.
    */
-  protected List<T> getExtensionPointInterfaceList() {
+  protected List<EXTENSIONPOINT> getActiveExtensionPointsOrderedDesc() {
 
     return beanFactory.getBeansOfType(clazz).entrySet().stream()
         .sorted(EXTENSION_POINTS_COMPARATOR)
@@ -86,61 +92,65 @@ public abstract class AbstractPluginAspect<T> {
   }
 
   /**
-   * Convert List of Extension-points to chain.
+   * Proceeds with the invocation by calling the given method on all extension points in ascending order and then the
+   * service method (analog to Spring AOP aspects behaviour).
    *
-   * @param extensionPointInterfaceList
-   * @param identity Extension-point which represents Identity.
-   * @param <T> Class of the Extension-point
-   * @return
+   * @param pjp
+   * @param extensionPointMethod Method that is part of Type EXTENSIONPOINT to call
+   * @param argsToInputObj       Function to convert from an Object array to the input type IN used by extensionPointMethod
+   * @param setArgs              Function to set/modify the Object array used for {@link ProceedingJoinPoint}::proceed using
+   *                             an object of type IN
+   * @param <IN>                 POJO Type used by extensionPointMethod for argument aggregation
+   * @param <OUT>                return type of extensionPointMethod and the service method invocation represented by pjp
+   * @return result of passing the method call through all extension points to the service layer and processing the return
+   * value back through all extension points
    */
-  protected Chain<T> buildChain(Collection<T> extensionPointInterfaceList, T identity) {
-    Chain<T> chain = new Chain<>();
-    // Add fist dummy Extension-point so the code path is the same weather there are
-    // Extension-points or not.
-    chain.current = identity;
-    Chain<T> first = chain;
-
-    for (T point : extensionPointInterfaceList) {
-      Chain<T> next = new Chain<>();
-      next.current = point;
-      chain.next = next;
-      chain = next;
-    }
-    return first;
+  protected <IN, OUT> OUT proceedWithPluginExtensionPoints(ProceedingJoinPoint pjp,
+                                                           TriFunction<EXTENSIONPOINT, IN, Function<IN, OUT>, OUT> extensionPointMethod,
+                                                           Function<Object[], IN> argsToInputObj,
+                                                           BiFunction<IN, Object[], Object[]> setArgs) {
+    return proceedWithPluginExtensionPoints(pjp, extensionPointMethod, argsToInputObj, setArgs, ret -> (OUT) ret);
   }
 
   /**
-   * Execute chain of responsibility
+   * Proceeds with the invocation by calling the given method on all extension points in ascending order and then the
+   * service method (analog to Spring AOP aspects behaviour).
    *
-   * @param chain Fist chain
-   * @param around Get the around Listener from Extension-point
-   * @param input Initial Input
-   * @param compositionFunction The intercepted Funktion
-   * @param <X> Input of the intercepted function
-   * @param <R> Output of the intercepted function
-   * @param <T> Class of the Extension-point
-   * @return output after all Extension-points have been handled
+   * @param pjp
+   * @param extensionPointMethod Method that is part of Type EXTENSIONPOINT to call
+   * @param argsToInputObj       Function to convert from an Object array to the input type IN used by extensionPointMethod
+   * @param setArgs              Function to set/modify the Object array used for {@link ProceedingJoinPoint}::proceed using
+   *                             an object of type IN
+   * @param afterProceed         function to apply to adapt the return value of the service call to the return type of the
+   *                             extension point method (OUT)
+   * @param <IN>                 POJO Type used by extensionPointMethod for argument aggregation
+   * @param <OUT>                return type of extensionPointMethod and in most cases the service method invocation
+   *                             represented by pjp
+   * @return result of passing the method call through all extension points to the service layer and processing the return
+   * value back through all extension points
    */
-  protected <X, R> R handleChain(
-      Chain<T> chain,
-      Function<T, BiFunction<X, Function<X, R>, R>> around,
-      X input,
-      Function<X, R> compositionFunction) {
+  protected <IN, OUT> OUT proceedWithPluginExtensionPoints(ProceedingJoinPoint pjp,
+                                                           TriFunction<EXTENSIONPOINT, IN, Function<IN, OUT>, OUT> extensionPointMethod,
+                                                           Function<Object[], IN> argsToInputObj,
+                                                           BiFunction<IN, Object[], Object[]> setArgs,
+                                                           Function<Object, OUT> afterProceed) {
 
-    if (chain.next != null) {
-      return handleChain(
-          chain.next,
-          around,
-          input,
-          i -> around.apply(chain.current).apply(i, compositionFunction));
-    } else {
-      return around.apply(chain.current).apply(input, compositionFunction);
+    List<EXTENSIONPOINT> extensionPoints = getActiveExtensionPointsOrderedDesc();
+    if (extensionPoints.isEmpty()) {
+      return afterProceed.apply(proceed(pjp, pjp.getArgs()));
     }
-  }
 
-  protected static class Chain<T> {
+    IN inputArgsObj = argsToInputObj.apply(pjp.getArgs());
+    //last extension point (first in the list) will hand over to the service layer
+    Function<IN, OUT> callChain = in -> afterProceed.apply(proceed(pjp, setArgs.apply(in, pjp.getArgs())));
+    //set up extension points to hand over to the next one of lower priority
+    for (int i = 0; i < extensionPoints.size() - 1; i++) {
+      final EXTENSIONPOINT ep = extensionPoints.get(i);
+      final Function<IN, OUT> lastCall = callChain;
+      callChain = in -> extensionPointMethod.apply(ep, in, lastCall);
+    }
 
-    T current;
-    Chain<T> next;
+    //actually execute the first extension point method
+    return extensionPointMethod.apply(extensionPoints.get(extensionPoints.size() - 1), inputArgsObj, callChain);
   }
 }

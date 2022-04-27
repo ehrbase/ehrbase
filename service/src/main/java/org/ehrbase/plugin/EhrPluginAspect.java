@@ -20,6 +20,8 @@ import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 
 import com.nedap.archie.rm.ehr.EhrStatus;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -37,6 +39,14 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
 public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInterface> {
 
+  private static final Function<Object[], EhrStatusWithEhrId>             STATUS_WITH_ID_INPUT_FUNCTION    =
+      args -> new EhrStatusWithEhrId((EhrStatus) args[1], (UUID) args[0]);
+  private static final BiFunction<EhrStatusWithEhrId, Object[], Object[]> STATUS_WITH_ID_SET_ARGS_FUNCTION = (i, args) -> {
+    args[1] = i.getEhrStatus();
+    args[0] = i.getEhrId();
+    return args;
+  };
+
   public EhrPluginAspect(ListableBeanFactory beanFactory) {
     super(beanFactory, EhrExtensionPointInterface.class);
   }
@@ -47,26 +57,16 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInter
    * @param pjp
    * @return
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.EhrService.create(..))")
+  @Around("inServiceLayerPC() && " + "execution(* org.ehrbase.api.service.EhrService.create(..))")
   public Object aroundCreateEhr(ProceedingJoinPoint pjp) {
 
-    Chain<EhrExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-    EhrStatusWithEhrId input = new EhrStatusWithEhrId((EhrStatus) args[1], (UUID) args[0]);
-
-    return handleChain(
-        chain,
-        l -> (l::aroundCreation),
-        input,
-        i -> {
-          args[1] = i.getEhrStatus();
-          args[0] = i.getEhrId();
-
-          return (UUID) proceed(pjp, args);
-        });
+    return proceedWithPluginExtensionPoints(
+        pjp,
+        EhrExtensionPointInterface::aroundCreation,
+        STATUS_WITH_ID_INPUT_FUNCTION,
+        STATUS_WITH_ID_SET_ARGS_FUNCTION);
   }
 
   /**
@@ -75,26 +75,16 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInter
    * @param pjp
    * @return
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.EhrService.updateStatus(..))")
+  @Around("inServiceLayerPC() && " + "execution(* org.ehrbase.api.service.EhrService.updateStatus(..))")
   public Object aroundUpdateEhrStatus(ProceedingJoinPoint pjp) {
 
-    Chain<EhrExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-    EhrStatusWithEhrId input = new EhrStatusWithEhrId((EhrStatus) args[1], (UUID) args[0]);
-
-    return handleChain(
-        chain,
-        l -> (l::aroundUpdate),
-        input,
-        i -> {
-          args[1] = i.getEhrStatus();
-          args[0] = i.getEhrId();
-
-          return (UUID) proceed(pjp, args);
-        });
+    return proceedWithPluginExtensionPoints(
+        pjp,
+        EhrExtensionPointInterface::aroundUpdate,
+        STATUS_WITH_ID_INPUT_FUNCTION,
+        STATUS_WITH_ID_SET_ARGS_FUNCTION);
   }
 
   /**
@@ -103,27 +93,18 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInter
    * @param pjp
    * @return
    * @see <a href="I_EHR_SERVICE in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  @Around("execution(* org.ehrbase.api.service.EhrService.getEhrStatus(..))")
+  @Around("inServiceLayerPC() && " + "execution(* org.ehrbase.api.service.EhrService.getEhrStatus(..))")
   public Object aroundRetrieveEhrStatus(ProceedingJoinPoint pjp) {
 
-    Chain<EhrExtensionPointInterface> chain = getChain();
-
-    Object[] args = pjp.getArgs();
-
-    return handleChain(
-        chain,
-        l -> (l::aroundRetrieve),
-        (UUID) args[0],
-        i -> {
+    return proceedWithPluginExtensionPoints(
+        pjp,
+        EhrExtensionPointInterface::aroundRetrieve,
+        args -> (UUID) args[0],
+        (i, args) -> {
           args[0] = i;
-
-          return (EhrStatus) proceed(pjp, args);
+          return args;
         });
-  }
-
-  private Chain<EhrExtensionPointInterface> getChain() {
-    return buildChain(getExtensionPointInterfaceList(), new EhrExtensionPointInterface() {});
   }
 }
