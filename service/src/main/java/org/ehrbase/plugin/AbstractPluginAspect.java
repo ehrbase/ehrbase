@@ -71,12 +71,9 @@ public abstract class AbstractPluginAspect<EXTENSIONPOINT> {
     } catch (RuntimeException e) {
       // Simple rethrow to handle in Controller layer
       throw e;
-    } catch (Exception e) {
-      // should never happen
-      throw new InternalServerException("Exception in Plugin Aspect ", e);
     } catch (Throwable e) {
       // should never happen
-      throw new InternalServerException(e.getMessage());
+      throw new InternalServerException(e.getMessage(), e);
     }
   }
 
