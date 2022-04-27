@@ -42,7 +42,7 @@ Test Example Generator for Templates (ECIS) - JSON and Save it
     validate that response body is in format    JSON
     Save Response (JSON) To File And Compare Template Ids    ${template_id}     composition_ecis_temp.json
 
-Test Example Generator for Templates (ECIS) - XML
+Test Example Generator for Templates (ECIS) - XML and Save it
     [Tags]
     get example of web template by template id (ECIS)      ${template_id}      XML
     validate that response body is in format    XML
@@ -61,7 +61,7 @@ Test Example Generator for Templates (OPENEHR) - JSON and Save it
     validate that response body is in format    JSON
     Save Response (JSON) To File And Compare Template Ids       ${template_id}
 
-Test Example Generator for Templates (OPENEHR) - XML
+Test Example Generator for Templates (OPENEHR) - XML and Save it
     [Tags]
     get example of web template by template id (OPENEHR)      ${template_id}      XML
     validate that response body is in format    XML
