@@ -26,7 +26,7 @@ import org.pf4j.ExtensionPoint;
  *
  * @author Stefan Spiska
  */
-public interface QueryExtensionPointInterface extends ExtensionPoint {
+public interface QueryExtensionPoint extends ExtensionPoint {
 
   /**
    * Intercept Query execution
@@ -35,7 +35,7 @@ public interface QueryExtensionPointInterface extends ExtensionPoint {
    * @param chain next Extension Point
    * @return {@link QueryResultDto} result of the query
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
   default QueryResultDto aroundQueryExecution(
       QueryWithParameters input, Function<QueryWithParameters, QueryResultDto> chain) {

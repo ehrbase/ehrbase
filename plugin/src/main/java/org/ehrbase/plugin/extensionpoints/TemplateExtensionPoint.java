@@ -25,7 +25,7 @@ import org.pf4j.ExtensionPoint;
  *
  * @author Stefan Spiska
  */
-public interface TemplateExtensionPointInterface extends ExtensionPoint {
+public interface TemplateExtensionPoint extends ExtensionPoint {
 
   /**
    * Intercept Template create
@@ -34,7 +34,7 @@ public interface TemplateExtensionPointInterface extends ExtensionPoint {
    * @param chain next Extension Point
    * @return templateId of the created template
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
   default String aroundCreation(
       OPERATIONALTEMPLATE input, Function<OPERATIONALTEMPLATE, String> chain) {

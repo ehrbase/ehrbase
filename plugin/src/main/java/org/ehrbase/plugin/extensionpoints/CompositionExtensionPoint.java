@@ -30,11 +30,11 @@ import org.pf4j.ExtensionPoint;
 /**
  * Extension Point for Composition handling.
  *
- * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
- *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
  * @author Stefan Spiska
+ * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+ * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
  */
-public interface CompositionExtensionPointInterface extends ExtensionPoint {
+public interface CompositionExtensionPoint extends ExtensionPoint {
 
   /**
    * Intercept Composition create

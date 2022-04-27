@@ -21,7 +21,7 @@ import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.ehrbase.plugin.extensionpoints.TemplateExtensionPointInterface;
+import org.ehrbase.plugin.extensionpoints.TemplateExtensionPoint;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -33,10 +33,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
-public class TemplatePluginAspect extends AbstractPluginAspect<TemplateExtensionPointInterface> {
+public class TemplatePluginAspect extends AbstractPluginAspect<TemplateExtensionPoint> {
 
   public TemplatePluginAspect(ListableBeanFactory beanFactory) {
-    super(beanFactory, TemplateExtensionPointInterface.class);
+    super(beanFactory, TemplateExtensionPoint.class);
   }
 
   /**
@@ -53,7 +53,7 @@ public class TemplatePluginAspect extends AbstractPluginAspect<TemplateExtension
 
     return proceedWithPluginExtensionPoints(
         pjp,
-        TemplateExtensionPointInterface::aroundCreation,
+        TemplateExtensionPoint::aroundCreation,
         args -> (OPERATIONALTEMPLATE) args[0],
         (i, args) -> {
           args[0] = i;

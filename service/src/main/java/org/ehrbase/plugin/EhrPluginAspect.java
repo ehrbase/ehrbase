@@ -26,7 +26,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
-import org.ehrbase.plugin.extensionpoints.EhrExtensionPointInterface;
+import org.ehrbase.plugin.extensionpoints.EhrExtensionPoint;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
-public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInterface> {
+public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPoint> {
 
   private static final Function<Object[], EhrStatusWithEhrId>             STATUS_WITH_ID_INPUT_FUNCTION    =
       args -> new EhrStatusWithEhrId((EhrStatus) args[1], (UUID) args[0]);
@@ -48,7 +48,7 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInter
   };
 
   public EhrPluginAspect(ListableBeanFactory beanFactory) {
-    super(beanFactory, EhrExtensionPointInterface.class);
+    super(beanFactory, EhrExtensionPoint.class);
   }
 
   /**
@@ -64,7 +64,7 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInter
 
     return proceedWithPluginExtensionPoints(
         pjp,
-        EhrExtensionPointInterface::aroundCreation,
+        EhrExtensionPoint::aroundCreation,
         STATUS_WITH_ID_INPUT_FUNCTION,
         STATUS_WITH_ID_SET_ARGS_FUNCTION);
   }
@@ -82,7 +82,7 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInter
 
     return proceedWithPluginExtensionPoints(
         pjp,
-        EhrExtensionPointInterface::aroundUpdate,
+        EhrExtensionPoint::aroundUpdate,
         STATUS_WITH_ID_INPUT_FUNCTION,
         STATUS_WITH_ID_SET_ARGS_FUNCTION);
   }
@@ -100,7 +100,7 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPointInter
 
     return proceedWithPluginExtensionPoints(
         pjp,
-        EhrExtensionPointInterface::aroundRetrieve,
+        EhrExtensionPoint::aroundRetrieve,
         args -> (UUID) args[0],
         (i, args) -> {
           args[0] = i;

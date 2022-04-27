@@ -25,11 +25,11 @@ import org.pf4j.ExtensionPoint;
 /**
  * Extension Point for Ehr handling.
  *
- * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
- *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
  * @author Stefan Spiska
+ * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
+ * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
  */
-public interface EhrExtensionPointInterface extends ExtensionPoint {
+public interface EhrExtensionPoint extends ExtensionPoint {
 
   /**
    * Intercept Ehr create

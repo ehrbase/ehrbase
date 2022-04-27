@@ -29,7 +29,7 @@ import org.ehrbase.plugin.dto.CompositionIdWithVersionAndEhrId;
 import org.ehrbase.plugin.dto.CompositionVersionIdWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
-import org.ehrbase.plugin.extensionpoints.CompositionExtensionPointInterface;
+import org.ehrbase.plugin.extensionpoints.CompositionExtensionPoint;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -41,10 +41,10 @@ import org.springframework.stereotype.Component;
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
 public class CompositionPluginAspect
-    extends AbstractPluginAspect<CompositionExtensionPointInterface> {
+    extends AbstractPluginAspect<CompositionExtensionPoint> {
 
   public CompositionPluginAspect(ListableBeanFactory beanFactory) {
-    super(beanFactory, CompositionExtensionPointInterface.class);
+    super(beanFactory, CompositionExtensionPoint.class);
   }
 
   /**
@@ -62,7 +62,7 @@ public class CompositionPluginAspect
     return Optional.of(
         proceedWithPluginExtensionPoints(
             pjp,
-            CompositionExtensionPointInterface::aroundCreation,
+            CompositionExtensionPoint::aroundCreation,
             args -> new CompositionWithEhrId((Composition) args[1], (UUID) args[0]),
             (i, args) -> {
               args[1] = i.getComposition();
@@ -88,7 +88,7 @@ public class CompositionPluginAspect
     return Optional.of(
         proceedWithPluginExtensionPoints(
             pjp,
-            CompositionExtensionPointInterface::aroundUpdate,
+            CompositionExtensionPoint::aroundUpdate,
             args -> new CompositionWithEhrIdAndPreviousVersion(
                 (Composition) args[2], (ObjectVersionId) args[1], (UUID) args[0]),
             (i, args) -> {
@@ -114,7 +114,7 @@ public class CompositionPluginAspect
 
     proceedWithPluginExtensionPoints(
         pjp,
-        CompositionExtensionPointInterface::aroundDelete,
+        CompositionExtensionPoint::aroundDelete,
         args -> new CompositionVersionIdWithEhrId((ObjectVersionId) args[1], (UUID) args[0]),
         (i, args) -> {
           args[1] = i.getVersionId();
@@ -138,7 +138,7 @@ public class CompositionPluginAspect
 
     return proceedWithPluginExtensionPoints(
         pjp,
-        CompositionExtensionPointInterface::aroundRetrieve,
+        CompositionExtensionPoint::aroundRetrieve,
         args -> new CompositionIdWithVersionAndEhrId((UUID) args[0], (UUID) args[1], (Integer) args[2]),
         (i, args) -> {
           args[2] = i.getVersion();

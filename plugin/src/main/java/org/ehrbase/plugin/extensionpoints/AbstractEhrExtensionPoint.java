@@ -22,20 +22,20 @@ import java.util.function.Function;
 import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
 
 /**
- * Provides After and Before Interceptors for {@link EhrExtensionPointInterface}
+ * Provides After and Before Interceptors for {@link EhrExtensionPoint}
  *
  * @author Stefan Spiska
  */
-public abstract class AbstractEhrExtensionPoint implements EhrExtensionPointInterface {
+public abstract class AbstractEhrExtensionPoint implements EhrExtensionPoint {
 
   /**
    * Called before ehr create
    *
    * @param input ehr with ehrStatus {@link com.nedap.archie.rm.ehr.EhrStatus} to be created and
-   *     optional ehrId {@link UUID}
+   *              optional ehrId {@link UUID}
    * @return input to be given to ehr create
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   public EhrStatusWithEhrId beforeCreation(EhrStatusWithEhrId input) {
     return input;

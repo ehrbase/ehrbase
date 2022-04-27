@@ -26,7 +26,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Pointcut;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.plugin.extensionpoints.CompositionExtensionPointInterface;
+import org.ehrbase.plugin.extensionpoints.CompositionExtensionPoint;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
@@ -78,7 +78,7 @@ public abstract class AbstractPluginAspect<EXTENSIONPOINT> {
   }
 
   /**
-   * @return Order List of {@link CompositionExtensionPointInterface} in Context.
+   * @return Order List of {@link CompositionExtensionPoint} in Context.
    */
   protected List<EXTENSIONPOINT> getActiveExtensionPointsOrderedDesc() {
 

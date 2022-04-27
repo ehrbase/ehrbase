@@ -21,11 +21,11 @@ import org.ehrbase.plugin.dto.QueryWithParameters;
 import org.ehrbase.response.ehrscape.QueryResultDto;
 
 /**
- * Provides After and Before Interceptors for {@link QueryExtensionPointInterface}
+ * Provides After and Before Interceptors for {@link QueryExtensionPoint}
  *
  * @author Stefan Spiska
  */
-public abstract class AbstractQueryExtensionPoint implements QueryExtensionPointInterface {
+public abstract class AbstractQueryExtensionPoint implements QueryExtensionPoint {
 
   /**
    * Called before Query execution

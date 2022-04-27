@@ -23,7 +23,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.ehrbase.plugin.dto.QueryWithParameters;
-import org.ehrbase.plugin.extensionpoints.QueryExtensionPointInterface;
+import org.ehrbase.plugin.extensionpoints.QueryExtensionPoint;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -34,10 +34,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")
-public class QueryPluginAspect extends AbstractPluginAspect<QueryExtensionPointInterface> {
+public class QueryPluginAspect extends AbstractPluginAspect<QueryExtensionPoint> {
 
   public QueryPluginAspect(ListableBeanFactory beanFactory) {
-    super(beanFactory, QueryExtensionPointInterface.class);
+    super(beanFactory, QueryExtensionPoint.class);
   }
 
   /**
@@ -53,7 +53,7 @@ public class QueryPluginAspect extends AbstractPluginAspect<QueryExtensionPointI
   public Object aroundQueryExecute(ProceedingJoinPoint pjp) {
     return proceedWithPluginExtensionPoints(
         pjp,
-        QueryExtensionPointInterface::aroundQueryExecution,
+        QueryExtensionPoint::aroundQueryExecution,
         args -> new QueryWithParameters((String) args[0], (Map<String, Object>) args[1]),
         (i, args) -> {
           args[0] = i.getQuery();

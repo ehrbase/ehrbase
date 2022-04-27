@@ -23,11 +23,11 @@ import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 /**
- * Provides After and Before Interceptors for {@link TemplateExtensionPointInterface}
+ * Provides After and Before Interceptors for {@link TemplateExtensionPoint}
  *
  * @author Stefan Spiska
  */
-public abstract class AbstractTemplateExtensionPoint implements TemplateExtensionPointInterface {
+public abstract class AbstractTemplateExtensionPoint implements TemplateExtensionPoint {
 
   /**
    * Called before template create
@@ -35,7 +35,7 @@ public abstract class AbstractTemplateExtensionPoint implements TemplateExtensio
    * @param input ehr with ehrStatus {@link EhrStatus} to be created and optional ehrId {@link UUID}
    * @return input to be given to ehr create
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   public EhrStatusWithEhrId beforeCreation(EhrStatusWithEhrId input) {
     return input;

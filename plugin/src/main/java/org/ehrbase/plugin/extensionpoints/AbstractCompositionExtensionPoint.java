@@ -26,21 +26,20 @@ import org.ehrbase.plugin.dto.CompositionWithEhrId;
 import org.ehrbase.plugin.dto.CompositionWithEhrIdAndPreviousVersion;
 
 /**
- * Provides After and Before Interceptors for {@link CompositionExtensionPointInterface}
+ * Provides After and Before Interceptors for {@link CompositionExtensionPoint}
  *
  * @author Stefan Spiska
  */
-public abstract class AbstractCompositionExtensionPoint
-    implements CompositionExtensionPointInterface {
+public abstract class AbstractCompositionExtensionPoint implements CompositionExtensionPoint {
 
   /**
    * Called before Composition create
    *
    * @param input {@link com.nedap.archie.rm.composition.Composition} to be created in ehr with
-   *     ehrId {@link UUID}
+   *              ehrId {@link UUID}
    * @return input to be given to Composition create
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
   public CompositionWithEhrId beforeCreation(CompositionWithEhrId input) {
     return input;
