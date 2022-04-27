@@ -672,7 +672,7 @@ get composition by composition_uid
                         Set Test Variable   ${response}    ${resp}
 
 
-get web template by template id
+get web template by template id (ECIS)
     [Arguments]         ${template_id}
 
     Create Session      ${SUT}    ${ECISURL}    debug=2
@@ -714,14 +714,15 @@ get example of web template by template id (OPENEHR)
     ...                                      Prefer=return=representation
     IF      '${responseFormat}' == 'JSON'
             ${resp}            GET On Session         ${SUT}
-                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
-                                ...     params=${params}
+                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything
+                                ...     headers=${headers}      params=${params}
     ELSE IF      '${responseFormat}' == 'XML'
             ${headers}         Create Dictionary     Accept=application/xml
             ...                                      Content-Type=application/xml
             ...                                      Prefer=return=representation
             ${resp}            GET On Session         ${SUT}
-                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
+                                ...     definition/template/adl1.4/${template_id}/example
+                                ...     expected_status=anything        headers=${headers}
     ELSE
              ${resp}            GET On Session         ${SUT}
                                 ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
@@ -746,6 +747,7 @@ validate that response body is in format
                             log to console     ${templateName}
                         ELSE IF     '${expectedFormat}' == 'XML'
                             ${xml}     Parse Xml        ${response.text}
+                            Set Test Variable       ${responseXML}      ${xml}
                         ELSE
                             #log to console      ${response.text}
                             Should Contain      ${response.text}    family_history/category|terminology
