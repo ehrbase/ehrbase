@@ -29,7 +29,7 @@ Force Tags
 *** Test Cases ***
 Alternative flow 3 get COMPOSITION at version cover different versions
 
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR
 

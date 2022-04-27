@@ -47,7 +47,7 @@ ADMIN - Delete Contribution
     Connect With DB
     check contribution admin delete table counts initially
     # preparing and provisioning
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
     prepare new request session    JSON    Prefer=return=representation
     create supernew ehr
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}

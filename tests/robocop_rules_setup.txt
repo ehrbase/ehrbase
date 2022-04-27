@@ -1,0 +1,7 @@
+-e wrong-case-in-keyword-name
+-e ignored-data
+-e empty-tags
+-e missing-doc-test-case
+-e missing-space-after-comment
+-c too-many-calls-in-test-case:max_calls:25
+-c too-many-calls-in-keyword:max_calls:35

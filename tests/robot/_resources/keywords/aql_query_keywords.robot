@@ -527,15 +527,15 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results
     ...                 - committing Compositions for each EHR record
     ...                 - injecting real data into 'expected result sets'
 
-    upload OPT      minimal/minimal_admin.opt
-    upload OPT      minimal/minimal_observation.opt
-    upload OPT      minimal/minimal_instruction.opt
-    upload OPT      minimal/minimal_evaluation.opt
-    upload OPT      minimal/minimal_action.opt
-    upload OPT      minimal/minimal_action_2.opt
+    Upload OPT      minimal/minimal_admin.opt
+    Upload OPT      minimal/minimal_observation.opt
+    Upload OPT      minimal/minimal_instruction.opt
+    Upload OPT      minimal/minimal_evaluation.opt
+    Upload OPT      minimal/minimal_action.opt
+    Upload OPT      minimal/minimal_action_2.opt
     ### REL TO https://github.com/ehrbase/ehrbase/issues/643
     ###upload OPT      all_types/Test_all_types.opt
-    upload OPT    all_types/Test_all_types_v2.opt
+    Upload OPT    all_types/Test_all_types_v2.opt
 
     Populate SUT with Test-Data and Prepare Expected Results    1    ${ehr data sets}/ehr_status_01.json
     Populate SUT with Test-Data and Prepare Expected Results    2    ${ehr data sets}/ehr_status_02.json

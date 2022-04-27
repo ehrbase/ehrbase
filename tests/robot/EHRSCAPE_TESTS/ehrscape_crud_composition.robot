@@ -17,58 +17,54 @@
 # Author: Vladislav Ploaia
 
 
-
 *** Settings ***
-Documentation   EHRScape Tests
-...             Documentation URL to be defined
+Documentation       EHRScape Tests
+...                 Documentation URL to be defined
 
-Resource        ../_resources/keywords/composition_keywords.robot
+Resource            ../_resources/keywords/composition_keywords.robot
 
 Suite Teardown      restart SUT
 
 
 *** Test Cases ***
 Main flow create and update Composition
-    [Tags]
-    Create Template     all_types/ehrn_family_history.opt
-    Extract Template_id From OPT File
-    get web template by template id (ECIS)     ${template_id}
+    Create Template    all_types/ehrn_family_history.opt
+    Extract Template Id From OPT File
+    Get Web Template By Template Id (ECIS)    ${template_id}
     create EHR
-    ${externalTemplate}     Set Variable    ${template_id}
-    Set Test Variable       ${externalTemplate}
+    ${externalTemplate}    Set Variable    ${template_id}
+    Set Test Variable    ${externalTemplate}
     ## Create action
-    commit composition      format=FLAT
-    ...                     composition=ehrn_family_history__.json
-    ...                     extTemplateId=true
+    commit composition    format=FLAT
+    ...    composition=ehrn_family_history__.json
+    ...    extTemplateId=true
     check the successful result of commit composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     ## Update action
-    Update Composition (FLAT)   new_version_of_composition=ehrn_family_history.v2__.json
+    Update Composition (FLAT)    new_version_of_composition=ehrn_family_history.v2__.json
     ## Get action
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
 
-
 Main flow create and delete Composition
-    [Tags]
-    Create Template     all_types/family_history.opt
-    Extract Template_id From OPT File
-    get web template by template id (ECIS)     ${template_id}
+    Create Template    all_types/family_history.opt
+    Extract Template Id From OPT File
+    Get Web Template By Template Id (ECIS)    ${template_id}
     create EHR
-    ${externalTemplate}     Set Variable    ${template_id}
-    Set Test Variable       ${externalTemplate}
-    commit composition      format=FLAT
-    ...                     composition=family_history__.json
-    ...                     extTemplateId=true
+    ${externalTemplate}    Set Variable    ${template_id}
+    Set Test Variable    ${externalTemplate}
+    commit composition    format=FLAT
+    ...    composition=family_history__.json
+    ...    extTemplateId=true
     check the successful result of commit composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     ## Delete action
     delete composition    ${composition_uid}    ehrScape=true
     get deleted composition (EHRScape)
-    [Teardown]      TRACE JIRA ISSUE    CDR-324
+    [Teardown]    TRACE JIRA ISSUE    CDR-324
 
 
 *** Keywords ***
 Create Template
-    [Arguments]     ${fileLocation}
-    upload OPT ECIS     ${fileLocation}
+    [Arguments]    ${fileLocation}
+    Upload OPT ECIS    ${fileLocation}

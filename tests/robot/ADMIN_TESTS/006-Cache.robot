@@ -280,7 +280,7 @@ upload valid OPT
     prepare new request session    XML
     
     get valid OPT file    ${opt file}
-    extract template_id from OPT file
+    Extract Template Id From OPT File
 
     ${resp}=            REST.POST    /definition/template/adl1.4    data=${VALID DATA SETS}/${opt file}
                         ...          headers=${headers}
