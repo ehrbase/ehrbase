@@ -16,9 +16,12 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import org.ehrbase.plugin.dto.EhrStatusVersionRequestParameters;
 import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
 
 /**
@@ -89,32 +92,34 @@ public abstract class AbstractEhrExtensionPoint implements EhrExtensionPoint {
   }
 
   /**
-   * Called before ehrStatus update
+   * Called before ehrStatus retrieval
    *
    * @param input ehr with ehrStatus {@link com.nedap.archie.rm.ehr.EhrStatus} to be created and
-   *     optional ehrId {@link UUID}
+   *              optional ehrId {@link UUID}
    * @return input to be given to ehrStatus update
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  public UUID beforeRetrieve(UUID input) {
+  public EhrStatusVersionRequestParameters beforeRetrieveAtVersion(EhrStatusVersionRequestParameters input) {
     return input;
   }
 
   /**
-   * Called after ehrStatus retrieve
+   * Called after ehrStatus retrieval
    *
    * @param output {@link EhrStatus} of the ehr
    * @return {@link EhrStatus} of the ehr
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
-  public EhrStatus afterRetrieve(EhrStatus output) {
+  public Optional<OriginalVersion<EhrStatus>> afterRetrieveAtVersion(Optional<OriginalVersion<EhrStatus>> output) {
     return output;
   }
 
   @Override
-  public EhrStatus aroundRetrieve(UUID input, Function<UUID, EhrStatus> chain) {
-    return afterRetrieve(chain.apply(beforeRetrieve(input)));
+  public Optional<OriginalVersion<EhrStatus>> aroundRetrieveAtVersion(EhrStatusVersionRequestParameters input,
+                                                                      Function<EhrStatusVersionRequestParameters,
+                                                                          Optional<OriginalVersion<EhrStatus>>> chain) {
+    return afterRetrieveAtVersion(chain.apply(beforeRetrieveAtVersion(input)));
   }
 }

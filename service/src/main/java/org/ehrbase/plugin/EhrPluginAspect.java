@@ -25,6 +25,7 @@ import java.util.function.Function;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.ehrbase.plugin.dto.EhrStatusVersionRequestParameters;
 import org.ehrbase.plugin.dto.EhrStatusWithEhrId;
 import org.ehrbase.plugin.extensionpoints.EhrExtensionPoint;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -98,15 +99,17 @@ public class EhrPluginAspect extends AbstractPluginAspect<EhrExtensionPoint> {
    * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   @Around("inServiceLayerPC() && " +
-          "execution(* org.ehrbase.api.service.EhrService.getEhrStatus(..))")
-  public Object aroundRetrieveEhrStatus(ProceedingJoinPoint pjp) {
+          "execution(* org.ehrbase.api.service.EhrService.getEhrStatusAtVersion(..))")
+  public Object aroundRetrieveEhrStatusAtVersion(ProceedingJoinPoint pjp) {
 
     return proceedWithPluginExtensionPoints(
         pjp,
-        EhrExtensionPoint::aroundRetrieve,
-        args -> (UUID) args[0],
+        EhrExtensionPoint::aroundRetrieveAtVersion,
+        args -> new EhrStatusVersionRequestParameters((UUID) args[0], (UUID) args[1], (int) args[2]),
         (i, args) -> {
-          args[0] = i;
+          args[0] = i.getEhrId();
+          args[1] = i.getEhrStatusId();
+          args[2] = i.getEhrStatusVersion();
           return args;
         });
   }
