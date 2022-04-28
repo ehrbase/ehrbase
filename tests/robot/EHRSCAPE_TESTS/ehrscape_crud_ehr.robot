@@ -30,10 +30,10 @@ Suite Teardown      restart SUT
 
 *** Test Cases ***
 Main flow create EHR
-    [Tags]      not-ready
+    [Tags]
     upload OPT ECIS     all_types/ehrn_family_history.opt
     Extract Template_id From OPT File
-    get web template by template id     ${template_id}
+    get web template by template id (ECIS)     ${template_id}
     create ECIS EHR
     ${externalTemplate}     Set Variable    ${template_id}
     Set Test Variable       ${externalTemplate}
@@ -45,6 +45,14 @@ Main flow create and get EHR
     ...     As soon as CDR-331 is fixed, EHR must be created with EHRScape endpoint.
     #below keyword is used to create EHR with
     Create EHR From Valid Data Set      1   true    true    provided    not provided    not provided
+    [Teardown]      TRACE JIRA ISSUE    CDR-331
+
+Main flow create get and update EHR status
+    [Tags]      not-ready
+    [Documentation]     Create EHR, Get it and update EHR status
+    ...     Blocked by CDR-331
+    Fail     Create EHR using ecis endpoint is blocked by CDR-331
+    [Teardown]      TRACE JIRA ISSUE    CDR-331
 
 *** Keywords ***
 ##Below keywords are for EHR creation on OpenEHR endpoint:

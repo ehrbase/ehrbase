@@ -21,30 +21,38 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.aql.compiler.*;
+import org.ehrbase.aql.compiler.AqlExpression;
+import org.ehrbase.aql.compiler.AqlExpressionWithParameters;
+import org.ehrbase.aql.compiler.AuditVariables;
+import org.ehrbase.aql.compiler.Contains;
+import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.service.FhirTerminologyServerR4AdaptorImpl;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.Record;
 import org.jooq.Result;
-
-import java.util.*;
 
 /**
  * Created by christian on 6/9/2016.
  */
 public class AqlQueryHandler extends DataAccess {
 
-    private I_OpenehrTerminologyServer tsAdapter;
+    private ExternalTerminologyValidation tsAdapter;
     private Map<String, Set<Object>> auditResultMap = new HashMap<>(); //we add a map of audit related data (f.e. ehr_id/value)
 
-    public AqlQueryHandler(I_DomainAccess domainAccess, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
+    public AqlQueryHandler(I_DomainAccess domainAccess, ExternalTerminologyValidation tsAdapter) {
         super(domainAccess);
         this.tsAdapter = tsAdapter;
     }

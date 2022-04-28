@@ -32,7 +32,7 @@ Main flow create and update Composition
     [Tags]
     Create Template     all_types/ehrn_family_history.opt
     Extract Template_id From OPT File
-    get web template by template id     ${template_id}
+    get web template by template id (ECIS)     ${template_id}
     create EHR
     ${externalTemplate}     Set Variable    ${template_id}
     Set Test Variable       ${externalTemplate}
@@ -53,7 +53,7 @@ Main flow create and delete Composition
     [Tags]
     Create Template     all_types/family_history.opt
     Extract Template_id From OPT File
-    get web template by template id     ${template_id}
+    get web template by template id (ECIS)     ${template_id}
     create EHR
     ${externalTemplate}     Set Variable    ${template_id}
     Set Test Variable       ${externalTemplate}

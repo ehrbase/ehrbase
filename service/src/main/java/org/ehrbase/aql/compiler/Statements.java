@@ -18,6 +18,8 @@
 
 package org.ehrbase.aql.compiler;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.ehrbase.aql.containment.IdentifierMapper;
@@ -26,9 +28,7 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
 import org.ehrbase.aql.sql.queryimpl.attribute.ehr.EhrResolver;
-import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-
-import java.util.List;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 
 @SuppressWarnings({"java:S3740"})
 public class Statements {
@@ -42,9 +42,9 @@ public class Statements {
 
     private Integer limitAttribute;
     private Integer offsetAttribute;
-    private I_OpenehrTerminologyServer tsAdapter;
+    private ExternalTerminologyValidation tsAdapter;
 
-    public Statements(ParseTree parseTree, IdentifierMapper identifierMapper, I_OpenehrTerminologyServer tsAdapter) {
+    public Statements(ParseTree parseTree, IdentifierMapper identifierMapper, ExternalTerminologyValidation tsAdapter) {
         this.parseTree = parseTree;
         this.identifierMapper = identifierMapper;
         this.tsAdapter = tsAdapter;
