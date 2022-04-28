@@ -68,7 +68,7 @@ public abstract class AbstractPluginAspect<EXTENSIONPOINT> {
   protected Object proceed(ProceedingJoinPoint pjp, Object[] args) {
     try {
       return pjp.proceed(args);
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | Error e) {
       // Simple rethrow to handle in Controller layer
       throw e;
     } catch (Throwable e) {
