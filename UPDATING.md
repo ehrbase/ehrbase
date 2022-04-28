@@ -17,3 +17,13 @@ alter database ehrbase SET intervalstyle = 'iso_8601';
 ```
 
 If an old version of the scripts was used this statement needs to be run manually.
+
+## EHRbase 0.21.0
+
+Prior to release 0.21.0, EHRbase contained a bug that creates a new internal user for each request.
+
+The Flyway migration script `V70__check_duplicate_users.sql` ensures that the database does not
+contain any duplicate user.
+
+If EHRbase failed to start because of Flyway migration, please run the script `merge_duplicate_users.sql` (
+located in `base/db-setup`) in order to fix the issue.
