@@ -9,10 +9,10 @@ Test Teardown  Reset Mock Server
 
 
 *** Variables ***
-${MOCK_URL}     http://localhost:8080/ehrbase/rest/openehr/v1
-${ENDPOINT}  /definition/template/adl1.4/family_history/example
+${MOCK_URL}     http://localhost:1080
+${ENDPOINT}  /endpoint
 &{BODY}  var1=value1  var2=value2
-&{HEADERS}  Accept=application/json  Content-Type=application/xml  Prefer=return=representation
+&{HEADERS}  Content-type=application/json  Cache-Control=max-age\=3600
 &{INPUT_HEADERS}  Content-type=application/json  Cache-Control=max-age\=3600  Length=0
 ${MOCK_REQ}  {"method": "GET", "path": "${ENDPOINT}"}
 ${MOCK_RSP}  {"statusCode": 200}
@@ -249,6 +249,7 @@ Success On Retrieve Expectations
     Should Contain  ${rsp_str}  GET
     Should Contain  ${rsp_str}  ${ENDPOINT}
 
+
 *** Keywords ***
 Create Sessions
     Create Session  server  ${MOCK_URL}
@@ -262,8 +263,12 @@ Send GET Expect Success
     [Arguments]  ${endpoint}=${ENDPOINT}  ${response_headers}=${None}  ${response_body}=${None}
     ${rsp}=  Get Request  server  ${endpoint}
     Should Be Equal As Strings  ${rsp.status_code}  200
-    Run Keyword If   ${response_headers != None}  Verify Response Headers  ${response_headers}  ${rsp.headers}
-    Run Keyword If   ${response_body != None}  Verify Response Body  ${response_body}  ${rsp.json()}
+    IF      ${response_headers != None}
+        Verify Response Headers  ${response_headers}  ${rsp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body  ${response_body}  ${rsp.json()}
+    END
 
 Send GET Expect Failure
     [Arguments]  ${endpoint}=${ENDPOINT}  ${response_code}=404
