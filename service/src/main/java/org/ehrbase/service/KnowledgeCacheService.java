@@ -22,7 +22,6 @@
  */
 package org.ehrbase.service;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
@@ -242,12 +241,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   private void precalculateQueries(String templateId) {
     getQueryOptMetaData(templateId).findAllContainmentCombinations().stream()
         .filter(nodeIds -> !nodeIds.isEmpty() &&
-            nodeIds.size() <= cacheOptions.getPreBuildQueriesDepth())
+                           nodeIds.size() <= cacheOptions.getPreBuildQueriesDepth())
         .forEach(nodeIds -> resolveForTemplate(templateId, nodeIds));
   }
 
-  public String adminUpdateOperationalTemplate(byte[] content) {
-    OPERATIONALTEMPLATE template = buildOperationalTemplate(new ByteArrayInputStream(content));
+  public String adminUpdateOperationalTemplate(InputStream content) {
+    OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
 
     return addOperationalTemplateIntern(template, true);
   }

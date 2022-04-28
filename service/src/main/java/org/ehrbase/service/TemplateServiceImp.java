@@ -17,6 +17,8 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -60,135 +63,141 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TemplateServiceImp extends BaseServiceImp implements TemplateService {
 
-    private final KnowledgeCacheService knowledgeCacheService;
-    private final CompositionService compositionService;
+  private final KnowledgeCacheService knowledgeCacheService;
+  private final CompositionService    compositionService;
 
-    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, CompositionService compositionService) {
-        super(knowledgeCacheService, context, serverConfig);
-        this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
-        this.compositionService = compositionService;
-    }
+  public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig,
+                            CompositionService compositionService) {
+    super(knowledgeCacheService, context, serverConfig);
+    this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
+    this.compositionService = compositionService;
+  }
 
-    @Override
-    public List<TemplateMetaDataDto> getAllTemplates() {
-        return knowledgeCacheService.listAllOperationalTemplates().stream().map(this::mapToDto).collect(Collectors.toList());
-    }
+  @Override
+  public List<TemplateMetaDataDto> getAllTemplates() {
+    return knowledgeCacheService.listAllOperationalTemplates().stream().map(this::mapToDto).collect(Collectors.toList());
+  }
 
-    private TemplateMetaDataDto mapToDto(TemplateMetaData data) {
-        TemplateMetaDataDto dto = new TemplateMetaDataDto();
-        dto.setCreatedOn(data.getCreatedOn());
+  private TemplateMetaDataDto mapToDto(TemplateMetaData data) {
+    TemplateMetaDataDto dto = new TemplateMetaDataDto();
+    dto.setCreatedOn(data.getCreatedOn());
 
-        Optional<OPERATIONALTEMPLATE> operationalTemplate = Optional.ofNullable(data.getOperationaltemplate());
-        dto.setTemplateId(
-                operationalTemplate.map(OPERATIONALTEMPLATE::getTemplateId)
-                        .map(OBJECTID::getValue)
-                        .orElse(null));
-        dto.setArchetypeId(
-                operationalTemplate.map(OPERATIONALTEMPLATE::getDefinition)
-                        .map(CARCHETYPEROOT::getArchetypeId)
-                        .map(OBJECTID::getValue)
-                        .orElse(null));
+    Optional<OPERATIONALTEMPLATE> operationalTemplate = Optional.ofNullable(data.getOperationaltemplate());
+    dto.setTemplateId(
+        operationalTemplate.map(OPERATIONALTEMPLATE::getTemplateId)
+            .map(OBJECTID::getValue)
+            .orElse(null));
+    dto.setArchetypeId(
+        operationalTemplate.map(OPERATIONALTEMPLATE::getDefinition)
+            .map(CARCHETYPEROOT::getArchetypeId)
+            .map(OBJECTID::getValue)
+            .orElse(null));
 
-        dto.setConcept(operationalTemplate.map(OPERATIONALTEMPLATE::getConcept).orElse(null));
-        return dto;
-    }
+    dto.setConcept(operationalTemplate.map(OPERATIONALTEMPLATE::getConcept).orElse(null));
+    return dto;
+  }
 
   @Override
   public Composition buildExample(String templateId) {
-        WebTemplate webTemplate = findTemplate(templateId);
-        Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
+    WebTemplate webTemplate = findTemplate(templateId);
+    Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
 
-        ExampleGeneratorConfig object = new ExampleGeneratorConfig();
+    ExampleGeneratorConfig object = new ExampleGeneratorConfig();
 
-        DefaultValues defaultValues = new DefaultValues();
-        defaultValues.addDefaultValue(DefaultValuePath.TIME, OffsetDateTime.now());
+    DefaultValues defaultValues = new DefaultValues();
+    defaultValues.addDefaultValue(DefaultValuePath.TIME, OffsetDateTime.now());
     defaultValues.addDefaultValue(
         DefaultValuePath.LANGUAGE,
         FlatHelper.findEnumValueOrThrow(webTemplate.getDefaultLanguage(), Language.class));
-        defaultValues.addDefaultValue(DefaultValuePath.TERRITORY, Territory.DE);
+    defaultValues.addDefaultValue(DefaultValuePath.TERRITORY, Territory.DE);
     defaultValues.addDefaultValue(DefaultValuePath.SETTING, Setting.OTHER_CARE);
     defaultValues.addDefaultValue(DefaultValuePath.COMPOSER_NAME, "Max Mustermann");
 
-        ExampleGeneratorToCompositionWalker walker = new ExampleGeneratorToCompositionWalker();
-        walker.walk(composition, object, webTemplate, defaultValues, templateId);
+    ExampleGeneratorToCompositionWalker walker = new ExampleGeneratorToCompositionWalker();
+    walker.walk(composition, object, webTemplate, defaultValues, templateId);
 
     composition.setTerritory(Territory.DE.toCodePhrase());
     return composition;
+  }
+
+  @Override
+  public WebTemplate findTemplate(String templateId) {
+    try {
+      return knowledgeCacheService.getQueryOptMetaData(templateId);
+    } catch (NullPointerException e) {
+      throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
+    } catch (Exception e) {
+      throw new InternalServerException("Could not generate web template", e);
+    }
+  }
+
+  @Override
+  public String findOperationalTemplate(String templateId, OperationalTemplateFormat format)
+      throws ObjectNotFoundException, InvalidApiParameterException, InternalServerException {
+    if (format != OperationalTemplateFormat.XML) {
+      throw new InvalidApiParameterException("Requested operational template type not supported");
     }
 
-    @Override
-    public WebTemplate findTemplate(String templateId) {
-        try {
-            return knowledgeCacheService.getQueryOptMetaData(templateId);
-        } catch (NullPointerException e) {
-            throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
-        } catch (Exception e) {
-            throw new InternalServerException("Could not generate web template", e);
-        }
-    }
+    Optional<OPERATIONALTEMPLATE> existingTemplate = this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
 
-    @Override
-    public String findOperationalTemplate(String templateId, OperationalTemplateFormat format) throws ObjectNotFoundException, InvalidApiParameterException, InternalServerException {
-        if (format != OperationalTemplateFormat.XML) {
-            throw new InvalidApiParameterException("Requested operational template type not supported");
-        }
-
-        Optional<OPERATIONALTEMPLATE> existingTemplate = this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
-
-        return existingTemplate
-                .map(template -> {
-                    XmlOptions opts = new XmlOptions();
-                    opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
-                    return template.xmlText(opts);
-                })
-                .orElseThrow(() -> new ObjectNotFoundException("template", "Template with the specified id does not exist"));
-    }
+    return existingTemplate
+        .map(template -> {
+          XmlOptions opts = new XmlOptions();
+          opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
+          return template.xmlText(opts);
+        })
+        .orElseThrow(() -> new ObjectNotFoundException("template", "Template with the specified id does not exist"));
+  }
 
   @Override
   public String create(OPERATIONALTEMPLATE content) {
     return this.knowledgeCacheService.addOperationalTemplate(content);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean adminDeleteTemplate(String templateId) {
+    Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
+    if (existingTemplate.isEmpty()) {
+      throw new ObjectNotFoundException("ADMIN TEMPLATE", String.format(
+          "Operational template with id %s not found.", templateId
+      ));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean adminDeleteTemplate(String templateId) {
-        Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
-        if (existingTemplate.isEmpty()) {
-            throw new ObjectNotFoundException("ADMIN TEMPLATE", String.format(
-                    "Operational template with id %s not found.", templateId
-            ));
-        }
+    // Delete template if not used
+    return knowledgeCacheService.deleteOperationalTemplate(existingTemplate.get());
+  }
 
-        // Delete template if not used
-        return knowledgeCacheService.deleteOperationalTemplate(existingTemplate.get());
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String adminUpdateTemplate(String templateId, String content) {
+    Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
+
+    // Check if template exists
+    if (existingTemplate.isEmpty()) {
+      throw new ObjectNotFoundException(
+          "ADMIN TEMPLATE UPDATE",
+          String.format("Template with id %s does not exist", templateId)
+      );
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String adminUpdateTemplate(String templateId, String content) {
-        Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
-
-        // Check if template exists
-        if (existingTemplate.isEmpty()) {
-            throw new ObjectNotFoundException(
-                    "ADMIN TEMPLATE UPDATE",
-                    String.format("Template with id %s does not exist", templateId)
-            );
-        }
-
-        // Replace content
-        return knowledgeCacheService.adminUpdateOperationalTemplate(content.getBytes(StandardCharsets.UTF_8));
+    try (InputStream in = IOUtils.toInputStream(content, StandardCharsets.UTF_8)) {
+      // Replace content
+      return knowledgeCacheService.adminUpdateOperationalTemplate(in);
+    } catch (IOException e) {
+      throw new InternalServerException(e.getMessage(), e);
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int adminDeleteAllTemplates() {
-        return this.knowledgeCacheService.deleteAllOperationalTemplates();
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int adminDeleteAllTemplates() {
+    return this.knowledgeCacheService.deleteAllOperationalTemplates();
+  }
 }
