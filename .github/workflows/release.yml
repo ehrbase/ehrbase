@@ -1,0 +1,113 @@
+# Create a Release
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "optional: version to release"
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          # This will be used by git in all further steps
+          # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Calculate realise version
+        run: |
+          if [ -z "${{ github.event.inputs.version }}" ]
+          then
+            v=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml" | sed 's/-SNAPSHOT//')
+            echo ${{ github.repository }}
+          else
+            v=${{ github.event.inputs.version }}
+          fi
+          echo "realise version ${v}"
+          # Set as Environment for all further steps 
+          echo "VERSION=${v}" >> $GITHUB_ENV
+
+      - name: Create Release Branch
+        run: |
+          # Config git
+          git config --global user.email "bot@ehrbase.org"
+          git config --global user.name "bot"
+          # create branch
+          git checkout -b release/v${VERSION}
+          # Update version
+          mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
+          #edit changelog
+          replace="s/\[unreleased\]/\[${VERSION}\]/"
+          sed -i ${replace} CHANGELOG.md
+          replace="s/...HEAD/\...v${VERSION}/"
+          sed -i ${replace} CHANGELOG.md
+          # commit & push
+          git add -A
+          git commit -m "release ${VERSION}: updated version to ${VERSION}"
+          git push -u origin release/v${VERSION}     
+      # wait for status of commit to change from pending
+      - name: Wait for ci pipeline
+        run: |
+          STATUS="pending"
+          # Get commit last commit of release branch
+          COMMIT=$(git rev-parse HEAD)
+          echo "Listen for commit $COMMIT"
+          WAITED="0"
+          # Time between calls
+          SLEEP_TIME="60"
+          while [ "$STATUS" == "pending" ] && [ "$WAITED" -le 1800 ]
+          do
+           sleep ${SLEEP_TIME}
+           WAITED=$((WAITED+SLEEP_TIME))
+           STATUS=$(gh api /repos/${{ github.repository  }}/commits/"${COMMIT}"/status -q .state)
+          echo "status : $STATUS"
+          echo "waited  $WAITED s"
+          done
+          echo "status : $STATUS"
+          if [ "$STATUS" != "success" ]
+           then exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Merge into Main
+        run: |
+          git checkout master
+          git pull
+          git merge --no-ff release/v${VERSION}
+          git tag  -a  -m "v${VERSION}" "v${VERSION}"
+          git push --follow-tags
+
+      - name: Create Release
+        run: |
+          gh release create "v${VERSION}" -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.repository  }} --target master
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Merge into dev
+        run: |
+          # increment minor version and add SNAPSHOT
+          ARRAY_VERSION=( ${VERSION//./ } )
+          git checkout  release/v${VERSION}
+          NEXT_VERSION=${ARRAY_VERSION[0]}.$((ARRAY_VERSION[1]+1)).0-SNAPSHOT
+          echo "next version: $NEXT_VERSION"
+          # update version
+          mvn versions:set -DnewVersion=${NEXT_VERSION} -DprocessAllModules=true
+          #edit changelog
+          sed -i '5i ## [unreleased]\n ### Added \n ### Fixed \n' CHANGELOG.md
+          replace="$ a \[unreleased\]: https:\/\/github.com\/ehrbase\/ehrbase\/compare\/v$VERSION...HEAD"
+          sed -i ${replace} CHANGELOG.md
+          git add -A
+          git commit -m " updated version to ${NEXT_VERSION}"
+          git checkout develop
+          git pull
+          git merge --no-ff release/v${VERSION}
+          git push
+
+
