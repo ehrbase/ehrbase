@@ -25,16 +25,27 @@ ${CODE_SYSTEM_LOOKUP_ENDPOINT}     /fhir/CodeSystem/$lookup
 *** Keywords ***
 GET Create Mock Expectation - CodeSystem - Lookup operation
     [Documentation]     Create Mock Expectation for GET CodeSystem using Lookup operation.
-    ...     Takes 1 argument: mockResponse - json file with expected response body.
-    [Arguments]     ${mockResponse}=${None}
-    &{params}   Create Dictionary     system=http://loinc.org   code=1963-8
+    ...     Takes 3 arguments:
+    ...     - mockResponse - json file with expected response body
+    ...     - invalidParameter - decision on invalid parameter to be sent (code, system, empty, None)
+    ...     - statusCode - Example: 200, 400, 404...
+    [Arguments]     ${mockResponse}=${None}     ${invalidParameter}=${None}     ${statusCode}=200
+    IF      '${invalidParameter}' == 'code'
+        &{params}   Create Dictionary     system=http://loinc.org   code=1111-9
+    ELSE IF     '${invalidParameter}' == 'system'
+        &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=1963-8
+    ELSE IF     '${invalidParameter}' == 'empty'
+        &{params}   Create Dictionary     ${None}   ${None}
+    ELSE
+        &{params}   Create Dictionary     system=http://loinc.org   code=1963-8
+    END
     &{req}      Create Mock Request Matcher    GET     ${CODE_SYSTEM_LOOKUP_ENDPOINT}   params=&{params}
 
     IF      ${mockResponse != None}
         ${file}     Get File    ${mockResponse}
         ${fileContentInJSON}    evaluate  json.loads($file)    json
         &{rsp}      Create Mock Response
-        ...     status_code=200     body=${fileContentInJSON}
+        ...     status_code=${statusCode}     body=${fileContentInJSON}
     ELSE
         Set Variable    ${rsp}      ${None}
     END
@@ -42,11 +53,12 @@ GET Create Mock Expectation - CodeSystem - Lookup operation
 
 Send GET Expect Success - CodeSystem - Lookup
     [Documentation]     Send request using GET method for CodeSystem, with Lookup operation.
-    ...     There are 4 optional parameters:
+    ...     There are 3 optional parameters:
     ...     - endpoint (define the endpoint to be reached)
     ...     - response_headers  (define the expected response headers)
     ...     - response_body (define expected response body)
-    [Arguments]  ${endpoint}=${CODE_SYSTEM_LOOKUP_ENDPOINT}  ${response_headers}=${None}  ${response_body}=${None}
+    [Arguments]  ${endpoint}=${CODE_SYSTEM_LOOKUP_ENDPOINT}  ${response_headers}=${None}
+    ...     ${response_body}=${None}
     &{params}   Create Dictionary     system=http://loinc.org   code=1963-8
     ${resp}     GET On Session
     ...     server
@@ -62,6 +74,84 @@ Send GET Expect Success - CodeSystem - Lookup
     END
     Log To Console      ${resp.json()}
     #${jsonResponseContent}    evaluate  json.loads($resp.content)    json
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
+Send GET Expect Failure - CodeSystem - Lookup (Invalid Code)
+    [Documentation]     Send request using GET method for CodeSystem, with Lookup operation
+    ...     (Invalid code).
+    ...     There are 3 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - response_headers  (define the expected response headers)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${CODE_SYSTEM_LOOKUP_ENDPOINT}  ${response_headers}=${None}
+    ...     ${response_body}=${None}
+    &{params}   Create Dictionary     system=http://loinc.org   code=1111-9
+    ${resp}     GET On Session
+    ...     server
+    ...     ${endpoint}
+    ...     params=&{params}
+    ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    404
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
+Send GET Expect Failure - CodeSystem - Lookup (Invalid System URL)
+    [Documentation]     Send request using GET method for CodeSystem, with Lookup operation
+    ...     (Invalid System URL).
+    ...     There are 3 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - response_headers  (define the expected response headers)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${CODE_SYSTEM_LOOKUP_ENDPOINT}  ${response_headers}=${None}
+    ...     ${response_body}=${None}
+    &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=1111-9
+    ${resp}     GET On Session
+    ...     server
+    ...     ${endpoint}
+    ...     params=&{params}
+    ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    404
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
+Send GET Expect Failure - CodeSystem - Lookup (Missing Code And System URL)
+    [Documentation]     Send request using GET method for CodeSystem, with Lookup operation
+    ...     (Missing Code And System URL).
+    ...     There are 3 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - response_headers  (define the expected response headers)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${CODE_SYSTEM_LOOKUP_ENDPOINT}  ${response_headers}=${None}
+    ...     ${response_body}=${None}
+    &{params}   Create Dictionary     ${None}   ${None}
+    ${resp}     GET On Session
+    ...     server
+    ...     ${endpoint}
+    ...     params=&{params}
+    ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    400
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
     Set Test Variable   ${response}    ${resp.json()}
     Log To Console      ${response}
 
