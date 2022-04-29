@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation   CodeSystem lookup operation coverage by Robot Test Suite
+Documentation   CodeSystem lookup operation coverage by Robot Test Suite, using Mockup Server
 ...
 Metadata        TOP_TEST_SUITE    MOCK_FHIR_TESTS
 

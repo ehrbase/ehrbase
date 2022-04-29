@@ -111,7 +111,7 @@ create new EHR
         &{prms}=            Create Dictionary   subjectId=74777-1259
                             ...                 subjectNamespace=testIssuer
 
-        &{resp}=            POST On Session     ${SUT}   ${ECISURL}/ehr   params=&{prms}
+        ${resp}=            POST On Session     ${SUT}   ${ECISURL}/ehr   params=&{prms}
                             Status Should Be    201
 
                             extract ehr_id from response (JSON)
