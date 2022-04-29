@@ -67,7 +67,7 @@ ADMIN - Delete EHR with composition
     Connect With DB
     check ehr admin delete table counts
     # preparing and provisioning
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
     create supernew ehr
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
@@ -85,7 +85,7 @@ ADMIN - Delete EHR with two compositions
     Connect With DB
     check ehr admin delete table counts
     # preparing and provisioning
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
     create supernew ehr
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
@@ -104,7 +104,7 @@ ADMIN - Delete EHR with directory
     Connect With DB
     check ehr admin delete table counts
     # preparing and provisioning
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
     create supernew ehr
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}

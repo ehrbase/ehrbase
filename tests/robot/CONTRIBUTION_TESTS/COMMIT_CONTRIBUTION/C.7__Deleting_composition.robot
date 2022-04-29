@@ -55,7 +55,7 @@ Force Tags    refactor
 *** Test Cases ***
 Alternative flow 6: commit CONTRIBUTIONS deleting a COMPOSITION
 
-    upload OPT    minimal/minimal_admin.opt
+    Upload OPT    minimal/minimal_admin.opt
     create EHR
     commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
     check response: is positive - returns version id

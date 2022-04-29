@@ -29,7 +29,7 @@ Force Tags
 *** Test Cases ***
 Alternative flow update existing event COMPOSITION when EHR status is_modifiable False
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
 
     create EHR
 

@@ -244,15 +244,15 @@ Preconditions (PART 2) - Generate Test-Data and Expected-Results (MINIMAL SET)
     ...                 - injecting live data into some 'query blueprints'
 
     # comment: Populate SUT with Test-Data and Prepare Expected Results
-    upload OPT    minimal/minimal_admin.opt
-    upload OPT    minimal/minimal_observation.opt
-    upload OPT    minimal/minimal_instruction.opt
-    upload OPT    minimal/minimal_evaluation.opt
-    upload OPT    minimal/minimal_action.opt
-    upload OPT    minimal/minimal_action_2.opt
+    Upload OPT    minimal/minimal_admin.opt
+    Upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_instruction.opt
+    Upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_action.opt
+    Upload OPT    minimal/minimal_action_2.opt
     ### REL TO https://github.com/ehrbase/ehrbase/issues/643
     ###upload OPT    all_types/Test_all_types.opt
-    upload OPT    all_types/Test_all_types_v2.opt
+    Upload OPT    all_types/Test_all_types_v2.opt
 
     Create EHR Record On The Server    1    ${ehr data sets}/ehr_status_01.json
     Commit Compo     1    1    ${compo data sets}/minimal_admin_1.composition.json

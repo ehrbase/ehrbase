@@ -28,7 +28,7 @@ Force Tags
 
 *** Test Cases ***
 Alternative flow delete event COMPOSITION when EHR status is_modifiable is False
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     create EHR
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
     check content of composition (JSON)

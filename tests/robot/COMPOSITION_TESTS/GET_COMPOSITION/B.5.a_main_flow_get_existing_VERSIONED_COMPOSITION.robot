@@ -29,7 +29,7 @@ Force Tags      COMPOSITION_get_versioned
 *** Test Cases ***
 Main flow get existing VERSIONED COMPOSITION
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     create EHR
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
     check existence and content of composition

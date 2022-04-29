@@ -59,5 +59,5 @@ Main flow create new event COMPOSITION STRUCTURED
 
 *** Keywords ***
 Precondition
-    upload OPT    nested/nested.opt
+    Upload OPT    nested/nested.opt
     create EHR
