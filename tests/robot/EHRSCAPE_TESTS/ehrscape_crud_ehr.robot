@@ -28,30 +28,37 @@ Suite Teardown      restart SUT
 
 
 *** Test Cases ***
-Main flow create EHR
+Main Flow Create EHR
+    [Tags]    PostEhr    EHRSCAPE
     Upload OPT ECIS    all_types/ehrn_family_history.opt
     Extract Template Id From OPT File
     Get Web Template By Template Id (ECIS)    ${template_id}
     Create ECIS EHR
+    Log     ${response.json()}
+    ${ehrId}    Collections.Get From Dictionary    ${response.json()}    ehrId
+    Set Suite Variable      ${ehr_id}       ${ehrId}
     ${externalTemplate}    Set Variable    ${template_id}
     Set Test Variable    ${externalTemplate}
-    [Teardown]    TRACE JIRA ISSUE    CDR-331
 
-Main flow create and get EHR
-    [Documentation]    Below keyword used to create EHR with OpenEHR endpoint.
-    ...    As soon as CDR-331 is fixed, EHR must be created with EHRScape endpoint.
+Get EHR Using Ehr Id And By Subject Id, Namespace
+    [Documentation]    1. Get existing EHR using Ehr Id.
+    ...     2. Get existing EHR using Subject Id and Subject Namespace criteria.
+    ...     *Dependency*: Test Case -> Main Flow Create EHR, ehr_id suite variable.
+    [Tags]    GetEhr    EHRSCAPE
+    Retrieve EHR By Ehr Id (ECIS)
+    Retrieve EHR By Subject Id And Subject Namespace (ECIS)
+    ...     subject_id=74777-1259      subject_namespace=testIssuer
+
+Get EHR And Update EHR Status
+    [Documentation]    Create EHR, Get it and update EHR status.
     [Tags]    not-ready
-    #below keyword is used to create EHR with
-    Create EHR From Valid Data Set    1    true    true    provided    not provided    not provided
-    [Teardown]    TRACE JIRA ISSUE    CDR-331
+    #extract ehr_id from response (JSON)     ehrScape=true
+    #extract system_id from response (JSON)
+    #extract subject_id from response (JSON)
+    #extract ehrstatus_uid (JSON)
+    #extract ehr_status from response (JSON)
 
-Main flow create get and update EHR status
-    [Documentation]    Create EHR, Get it and update EHR status
-    ...    Blocked by CDR-331
-    [Tags]    not-ready
-    Fail    Create EHR using ecis endpoint is blocked by CDR-331
-    [Teardown]    TRACE JIRA ISSUE    CDR-331
-
+    set ehr_status of EHR       ehrScape=true
 
 *** Keywords ***
 ##Below keywords are for EHR creation on OpenEHR endpoint:
@@ -130,12 +137,12 @@ randomize subject_id in test-data-set
     ${subject_id}    generate random id
     ${body}    Load JSON From File    ${EXECDIR}/robot/_resources/test_data_sets/ehr/${test_data_set}
     ${body}    Update Value To Json    ${body}    $..subject.external_ref.id.value    ${subject_id}
-    RETURN    ${body}
+    [RETURN]    ${body}
 
 generate random id
     # ${uuid}    Evaluate    str(uuid.uuid4())    uuid
     ${uuid}    Set Variable    ${{str(uuid.uuid4())}}
-    RETURN    ${uuid}
+    [RETURN]    ${uuid}
 
 validate response
     [Arguments]    ${No.}    ${queryable}    ${modifiable}    ${subject}    ${other_details}    ${ehrid}
