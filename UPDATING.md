@@ -1,6 +1,6 @@
 # Updating EHRbase
 
-This file documents any backwards-incompatible changes in EHRBase deployment and
+This file documents any backwards-incompatible changes in EHRBase and
 assists users migrating to a new version.
 
 ## EHRbase 0.19.0
@@ -16,4 +16,4 @@ Scripts provided ensure this encoding is done properly (see `base/db-setup`) wit
 alter database ehrbase SET intervalstyle = 'iso_8601';
 ```
 
-If an old version of the scripts was used this statement needs to be run manually
+If an old version of the scripts was used this statement needs to be run manually.
