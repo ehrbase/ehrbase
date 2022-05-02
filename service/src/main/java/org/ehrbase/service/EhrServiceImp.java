@@ -156,14 +156,16 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     }
     statusDto.setModifiable(status.isModifiable());
     statusDto.setQueryable(status.isQueryable());
-    if (format.equals(CompositionFormat.XML)) {
-      statusDto.setOtherDetails(
-          new StructuredString(
-              new CanonicalXML().marshal(status.getOtherDetails()), StructuredStringFormat.XML));
-    } else {
-      statusDto.setOtherDetails(
-          new StructuredString(
-              new CanonicalJson().marshal(status.getOtherDetails()), StructuredStringFormat.JSON));
+    if (status.getOtherDetails() != null) {
+      if (format.equals(CompositionFormat.XML)) {
+        statusDto.setOtherDetails(
+            new StructuredString(
+                new CanonicalXML().marshal(status.getOtherDetails()), StructuredStringFormat.XML));
+      } else {
+        statusDto.setOtherDetails(
+            new StructuredString(
+                new CanonicalJson().marshal(status.getOtherDetails()), StructuredStringFormat.JSON));
+      }
     }
 
     return statusDto;
