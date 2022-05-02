@@ -122,7 +122,7 @@ upload valid OPT
     prepare new request session    XML
     ...                            Prefer=return=representation
     get valid OPT file      ${opt file}
-    extract template_id from OPT file
+    Extract Template Id From OPT File
     upload OPT file
     server accepted OPT
     OPT is stored as it was uploaded

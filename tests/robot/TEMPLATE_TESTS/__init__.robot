@@ -1,3 +1,4 @@
+*** Comments ***
 # Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
 #
 # This file is part of Project EHRbase
@@ -15,19 +16,17 @@
 # limitations under the License.
 
 
-
 *** Settings ***
-Metadata    Version    0.1.0
-Metadata    Authors    *Vladislav Ploaia*
-
-Documentation    TEMPLATE TEST SUITE
+Documentation       TEMPLATE TEST SUITE
 ...
-...              test documentation: to be defined
-...              Created date: 8 April 2022
+...                 test documentation: to be defined
+...                 Created date: 8 April 2022
+Metadata            Version    0.1.0
+Metadata            Authors    *Vladislav Ploaia*
 
-Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
+Resource            ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
+Suite Setup         startup SUT
+Suite Teardown      shutdown SUT
 
-Force Tags    Template
+Force Tags          template

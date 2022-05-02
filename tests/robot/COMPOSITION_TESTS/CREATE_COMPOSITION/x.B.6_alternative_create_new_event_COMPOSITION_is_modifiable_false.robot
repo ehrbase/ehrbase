@@ -50,5 +50,5 @@ Main flow create new event COMPOSITION FLAT
 
 *** Keywords ***
 Precondition
-    upload OPT    nested/nested.opt
+    Upload OPT    nested/nested.opt
     create EHR

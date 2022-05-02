@@ -18,6 +18,7 @@ package org.ehrbase.rest.ehrscape.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -78,8 +79,7 @@ public class EhrController extends BaseController {
       @RequestParam(value = "subjectNamespace", required = false) String subjectNamespace,
       @RequestParam(value = "committerId", required = false) String committerId,
       @RequestParam(value = "committerName", required = false) String committerName,
-      @RequestHeader(value = "Content-Type", required = false) String contentType,
-      @RequestBody(required = false) String content) {
+      @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
     // subjectId and subjectNamespace are not required by EhrScape spec but without those parameters a 400 error shall be returned
     if ((subjectId == null) || (subjectNamespace == null)) {
@@ -87,11 +87,14 @@ public class EhrController extends BaseController {
     } else if ((subjectId.isEmpty()) || (subjectNamespace.isEmpty())) {
       throw new InvalidApiParameterException("subjectId or subjectNamespace emtpy");
     }
-    EhrStatus ehrStatus = extractEhrStatus(content);
-    PartySelf partySelf = new PartySelf(
-        new PartyRef(new HierObjectId(subjectId), subjectNamespace, null));
-    ehrStatus.setSubject(partySelf);
-    UUID ehrId = ehrService.create(null, ehrStatus);
+
+    var subject = new PartySelf(new PartyRef(new HierObjectId(subjectId), subjectNamespace, "PERSON"));
+    var status = new EhrStatus();
+    status.setArchetypeNodeId("openEHR-EHR-EHR_STATUS.generic.v1");
+    status.setName(new DvText("EHR Status"));
+    status.setSubject(subject);
+
+    UUID ehrId = ehrService.create(null, status);
 
     // TODO: use config file or alike to set the basic api path
     URI url = URI.create(getBaseEnvLinkURL() + "/rest/ecis/v1/ehr/" + ehrId.toString());

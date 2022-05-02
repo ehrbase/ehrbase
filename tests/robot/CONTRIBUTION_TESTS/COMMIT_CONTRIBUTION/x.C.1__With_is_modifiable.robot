@@ -51,7 +51,7 @@ Resource        ../../_resources/keywords/generic_keywords.robot
 *** Test Cases ***
 Main flow: successfully commit CONTRIBUTION with EHR status Modifiable True
 
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
     create EHR
     update EHR: set ehr-status modifiable    ${TRUE}
     commit CONTRIBUTION (JSON)  minimal/minimal_evaluation.contribution.json
@@ -62,7 +62,7 @@ Main flow: successfully commit CONTRIBUTION with EHR status Modifiable True
 
 Main flow: does not allow to commit CONTRIBUTION with EHR status Modifiable False
 
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
     create EHR
     update EHR: set ehr-status modifiable    ${FALSE}
     commit CONTRIBUTION (JSON) is modifiable false  minimal/minimal_evaluation.contribution.json

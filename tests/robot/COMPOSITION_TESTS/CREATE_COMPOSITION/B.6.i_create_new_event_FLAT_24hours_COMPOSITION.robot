@@ -98,7 +98,7 @@ Create new event COMPOSITION FLAT with 24 Hours Average - -24 value
 
 *** Keywords ***
 Precondition
-    upload OPT    all_types/opt_24h_average.opt
+    Upload OPT    all_types/opt_24h_average.opt
     create EHR
 
 Create Composition With 24 Hours Average - Invalid Value

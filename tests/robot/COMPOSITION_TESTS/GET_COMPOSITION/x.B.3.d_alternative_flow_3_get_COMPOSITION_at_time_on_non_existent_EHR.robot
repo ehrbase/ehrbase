@@ -30,7 +30,7 @@ Force Tags
 Alternative flow 3 get COMPOSITION at time, on non-existent EHR
     [Tags]     
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
 
     # Create fake EHR
     generate random ehr_id

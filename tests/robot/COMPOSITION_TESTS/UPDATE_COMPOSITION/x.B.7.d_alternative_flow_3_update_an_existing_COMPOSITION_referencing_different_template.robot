@@ -30,8 +30,8 @@ Force Tags
 Alternative flow 3 update an existing persistent COMPOSITION referencing different template
 
     # comment: Upload multiple OPTs
-    upload OPT    minimal_persistent/persistent_minimal.opt
-    upload OPT    minimal_persistent/persistent_minimal_2.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal_2.opt
 
     create EHR    XML
 

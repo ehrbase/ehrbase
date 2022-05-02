@@ -155,7 +155,7 @@ retrieve single OPT
     prepare new request session    XML
     ...                            Prefer=return=representation
     get valid OPT file                  ${opt file}
-    extract template_id from OPT file
+    Extract Template Id From OPT File
     retrieve OPT by template_id         ${template_id}
     verify content of OPT
     [Teardown]                          Clean Up Suite Variables
