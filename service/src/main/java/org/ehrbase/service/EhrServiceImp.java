@@ -150,8 +150,10 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
   private EhrStatusDto from(EhrStatus status, CompositionFormat format) {
 
     EhrStatusDto statusDto = new EhrStatusDto();
-    statusDto.setSubjectId(status.getSubject().getExternalRef().getId().getValue());
-    statusDto.setSubjectNamespace(status.getSubject().getExternalRef().getNamespace());
+    if (status.getSubject().getExternalRef() != null) {
+      statusDto.setSubjectId(status.getSubject().getExternalRef().getId().getValue());
+      statusDto.setSubjectNamespace(status.getSubject().getExternalRef().getNamespace());
+    }
     statusDto.setModifiable(status.isModifiable());
     statusDto.setQueryable(status.isQueryable());
     if (format.equals(CompositionFormat.XML)) {
@@ -470,8 +472,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public UUID getSubjectUuid(String ehrId) {
         return getSubjectUuids(List.of(ehrId)).get(0).getRight();
     }
-    
-    private List<Pair<String,UUID>> getSubjectUuids(Collection<String> ehrIds) {
+
+  private List<Pair<String,UUID>> getSubjectUuids(Collection<String> ehrIds) {
     return ehrIds.stream()
         .map(ehrId -> Pair.of(ehrId, getEhrStatus(UUID.fromString(ehrId))))
         .map(
@@ -483,18 +485,18 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             })
         .collect(Collectors.toList());
     }
-    
-    @Override
+
+  @Override
     public List<String> getSubjectExtRefs(Collection<String> ehrIds) {
         List<UUID> nonNullVal = getSubjectUuids(ehrIds).stream()
           .filter(p -> p.getRight() != null)
           .map(p -> p.getRight())
           .collect(Collectors.toList());
-        
-        if(nonNullVal.size() == 0)
+
+    if(nonNullVal.size() == 0)
             return Collections.emptyList();
-        
-        return new PersistedPartyProxy(getDataAccess()).retrieveMany(nonNullVal).stream()
+
+    return new PersistedPartyProxy(getDataAccess()).retrieveMany(nonNullVal).stream()
             .map(p -> p.getExternalRef())
             .filter(p -> p != null)
             .map(p -> p.getId().getValue())
