@@ -30,7 +30,7 @@ Force Tags
 Main flow get existing COMPOSITION latest
     [Tags]    
 
-    upload OPT      minimal/minimal_observation.opt
+    Upload OPT      minimal/minimal_observation.opt
 
     create EHR
 

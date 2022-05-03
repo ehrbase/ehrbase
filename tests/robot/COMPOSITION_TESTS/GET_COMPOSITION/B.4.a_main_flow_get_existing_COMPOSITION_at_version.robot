@@ -37,7 +37,7 @@ Force Tags
 Main flow get existing COMPOSITION at version
     [Tags]     
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     create EHR
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
     update composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.v2.xml

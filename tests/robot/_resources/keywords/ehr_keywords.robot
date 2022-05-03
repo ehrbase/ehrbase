@@ -110,6 +110,9 @@ create new EHR
     ELSE
         &{prms}=            Create Dictionary   subjectId=74777-1259
                             ...                 subjectNamespace=testIssuer
+                            #...                 modifiable=true
+                            #...                 queryable=true
+                            #...                 otherDetails=not provided
 
         ${resp}=            POST On Session     ${SUT}   ${ECISURL}/ehr   params=&{prms}
                             Status Should Be    201
@@ -328,6 +331,17 @@ retrieve EHR by ehr_id
 
                         Integer     response status         200
 
+Retrieve EHR By Ehr Id (ECIS)
+    [Documentation]     Retrieves EHR with specified ehr_id (ECIS endpoint).
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    &{headers}      Create Dictionary       Accept=application/json
+    &{resp}=            REST.GET    ${ECISURL}/ehr/${ehr_id}    headers=&{headers}
+
+                        Output Debug Info To Console
+
+                        Integer     response status         200
 
 retrieve EHR by subject_id
     [Documentation]     Retrieves EHR with specified subject_id and namespace.
@@ -340,6 +354,18 @@ retrieve EHR by subject_id
                         Output     response
                         Integer    response status    200
 
+Retrieve EHR By Subject Id And Subject Namespace (ECIS)
+    [Documentation]     Retrieves EHR with specified subject_id and namespace.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `subject_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random subject_id`
+    [Arguments]         ${subject_id}=74777-1259      ${subject_namespace}=testIssuer
+    &{headers}      Create Dictionary       Accept=application/json
+    &{resp}=            REST.GET    ${ECISURL}/ehr?subjectId=${subject_id}&subjectNamespace=${subject_namespace}
+    ...     headers=&{headers}
+                        Output     response
+                        Integer    response status    200
 
 check content of retrieved EHR (JSON)
 
@@ -518,26 +544,40 @@ set ehr_status of EHR
     ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_status` as JSON
     ...                             object e.g. `extract ehr_status from response (JSON)`
-
+    [Arguments]      ${ehrScape}=false
     # NOTE: alternatively u can save json to file and then pass this file to RESTinstance
     # ${ehrstatus}=       Load JSON From File   ehr_status.json
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
+    IF      '${ehrScape}' != 'false'
+        &{resp}=            REST.PUT    ${ECISURL}/ehr/${ehr_id}/status    ${ehr_status}
+                            ...         headers={"Content-Type": "application/json"}
+                            ...         headers={"Prefer": "return=representation"}
+                            ...         headers={"If-Match": "${ehrstatus_uid}"}
 
-    &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
-                        ...         headers={"Content-Type": "application/json"}
-                        ...         headers={"Prefer": "return=representation"}
-                        ...         headers={"If-Match": "${ehrstatus_uid}"}
+                                        # TODO: spec says "If-Match: {preceding_version_uid}"
+                                        #       but we don't have this !!!
+                                        # So what should be used as {preceding_version_uid} ???
 
-                                    # TODO: spec says "If-Match: {preceding_version_uid}"
-                                    #       but we don't have this !!!
-                                    # So what should be used as {preceding_version_uid} ???
+                            Set Test Variable    ${response}    ${resp}
 
-                        Set Test Variable    ${response}    ${resp}
+                            Output Debug Info To Console
+                            Integer    response status    200
+    ELSE
+        &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
+                            ...         headers={"Content-Type": "application/json"}
+                            ...         headers={"Prefer": "return=representation"}
+                            ...         headers={"If-Match": "${ehrstatus_uid}"}
 
-                        Output Debug Info To Console
-                        Integer    response status    200
+                                        # TODO: spec says "If-Match: {preceding_version_uid}"
+                                        #       but we don't have this !!!
+                                        # So what should be used as {preceding_version_uid} ???
 
+                            Set Test Variable    ${response}    ${resp}
+
+                            Output Debug Info To Console
+                            Integer    response status    200
+    END
 
 update ehr_status of fake EHR (w/o body)
 
@@ -570,9 +610,15 @@ update ehr_status of fake EHR (with body)
 extract ehr_id from response (JSON)
     [Documentation]     Extracts ehr_id from response of preceding request.
     ...                 DEPENDENCY: `create new EHR`
-
-    ${ehr_id}=          String       response body ehr_id value
-
+    [Arguments]     ${ehrScape}=false
+    IF      '${ehrScape}' != 'false'
+        ${ehrId}        Collections.Get From Dictionary     ${response.json()}      ehrId
+                        Set Suite Variable    ${ehr_id}     ${ehrId}
+                        Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}
+                        Return From Keyword
+    ELSE
+        ${ehr_id}       String       response body ehr_id value
+    END
                         Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}[0]
 
                         Set Suite Variable    ${ehr_id}     ${ehr_id}[0]
@@ -582,12 +628,19 @@ extract ehr_id from response (JSON)
 extract system_id from response (JSON)
     [Documentation]     Extracts `system_id` from response of preceding request.
     ...                 DEPENDENCY: `create new EHR`
-
-    ${system_id}=       String       response body system_id value
+    [Arguments]     ${ehrScape}=false
+    IF      '${ehrScape}' != 'false'
+        ${system_id}        Collections.Get From Dictionary     ${response.json()}      ehrId
+                        Set Suite Variable    ${ehr_id}     ${ehrId}
+                        Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}
+                        Return From Keyword
+    ELSE
+        ${system_id}=       String       response body system_id value
 
                         Log To Console    \n\tDEBUG OUTPUT - SYSTEM_ID: \n\t${system_id}[0]
 
                         Set Suite Variable    ${system_id}   ${system_id}[0]
+    END
 
 check that headers location response has
    [Documentation]      Extract `Protocol, Host, Port` from Location headers response of preceding request.

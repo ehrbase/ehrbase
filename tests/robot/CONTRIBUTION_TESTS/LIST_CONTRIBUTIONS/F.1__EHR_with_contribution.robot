@@ -47,7 +47,7 @@ Force Tags    refactor
 *** Test Cases ***
 Main flow: get CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION
 
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
     create EHR
     commit CONTRIBUTION (JSON)    minimal/minimal_evaluation.contribution.json
     retrieve CONTRIBUTION by contribution_uid (JSON)

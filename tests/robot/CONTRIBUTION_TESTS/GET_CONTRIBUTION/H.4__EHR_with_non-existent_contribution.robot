@@ -47,7 +47,7 @@ Force Tags
 *** Test Cases ***
 Alternative flow 3: get CONTRIBUTION on an EHR with CONTRIBUTIONS, by wrong CONTRIBUTION uid
 
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
 
     create EHR
 

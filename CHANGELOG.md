@@ -13,6 +13,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Implement EHR_STATUS.is_modifiable semantics on service
   level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
 - use bom for dependence management  ([#820](https://github.com/ehrbase/ehrbase/pull/820))
+- add  Release action  ([#831](https://github.com/ehrbase/ehrbase/pull/831)
 
 ### Changed
 - Upgrade to Spring boot 2.5.12
@@ -23,6 +24,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
+- Fix validation errors in ECIS EHR endpoint ([#828](https://github.com/ehrbase/ehrbase/pull/828)) 
 
 ## [0.20.0] (beta)
 

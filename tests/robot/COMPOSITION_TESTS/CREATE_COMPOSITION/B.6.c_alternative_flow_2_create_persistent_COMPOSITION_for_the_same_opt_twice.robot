@@ -77,5 +77,5 @@ Alternative flow 2 create persistent COMPOSITION for the same opt twice STRUCTUR
 
 *** Keywords ***
 Precondition
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
     create EHR
