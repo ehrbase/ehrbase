@@ -71,7 +71,8 @@ public interface EhrExtensionPoint extends ExtensionPoint {
    * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_service_interface</a>
    */
   default Optional<OriginalVersion<EhrStatus>> aroundRetrieveAtVersion(EhrStatusVersionRequestParameters input,
-                                                                       Function<EhrStatusVersionRequestParameters, Optional<OriginalVersion<EhrStatus>>> chain) {
+                                                                       Function<EhrStatusVersionRequestParameters,
+                                                                           Optional<OriginalVersion<EhrStatus>>> chain) {
     return chain.apply(input);
   }
 }
