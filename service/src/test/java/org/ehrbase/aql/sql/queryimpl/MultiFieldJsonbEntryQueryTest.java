@@ -19,24 +19,17 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
-import org.apache.commons.io.IOUtils;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import java.io.IOException;
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.ehr.knowledge.TemplateTestData;
-import org.jooq.Field;
-import org.jooq.Record1;
-import org.jooq.SelectSelectStep;
-import org.jooq.impl.DSL;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class MultiFieldJsonbEntryQueryTest extends TestAqlBase {
 
@@ -45,8 +38,8 @@ public class MultiFieldJsonbEntryQueryTest extends TestAqlBase {
     @Before
     public void setUp() throws IOException {
 
-        //add test template with non unique paths to identified node
-        knowledge.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.NON_UNIQUE_AQL_PATH.getStream()));
+    // add test template with non unique paths to identified node
+    knowledge.addOperationalTemplate(TemplateTestData.NON_UNIQUE_AQL_PATH.getStream());
 
         String query =
                 "select\n" +

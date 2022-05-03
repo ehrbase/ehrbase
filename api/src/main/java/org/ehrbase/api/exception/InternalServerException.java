@@ -29,11 +29,11 @@ public class InternalServerException extends RuntimeException {
         super(message);
     }
 
-    public InternalServerException(String message, Exception cause) {
+    public InternalServerException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public InternalServerException(Exception cause) {
+    public InternalServerException(Throwable cause) {
         super(cause);
     }
 }

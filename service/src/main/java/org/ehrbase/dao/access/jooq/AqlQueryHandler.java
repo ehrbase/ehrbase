@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.AqlExpressionWithParameters;
@@ -43,6 +43,7 @@ import org.ehrbase.service.KnowledgeCacheService;
 import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.springframework.lang.Nullable;
 
 /**
  * Created by christian on 6/9/2016.
@@ -57,16 +58,17 @@ public class AqlQueryHandler extends DataAccess {
         this.tsAdapter = tsAdapter;
     }
 
+  public AqlResult process(String query, @Nullable Map<String, Object> parameters) {
+    AqlExpression aqlExpression;
 
-    public AqlResult process(String query) {
-        AqlExpression aqlExpression = new AqlExpression().parse(query);
-        return execute(aqlExpression);
-    }
+    if (MapUtils.isEmpty(parameters)) {
+      aqlExpression = new AqlExpression().parse(query);
+    } else {
 
-    public AqlResult process(String query, Map<String, Object> parameters) {
-        AqlExpression aqlExpression = new AqlExpressionWithParameters().parse(query, parameters);
-        return execute(aqlExpression);
+      aqlExpression = new AqlExpressionWithParameters().parse(query, parameters);
     }
+    return execute(aqlExpression);
+  }
 
     @SuppressWarnings("unchecked")
     private AqlResult execute(AqlExpression aqlExpression){
