@@ -81,7 +81,8 @@ public class EhrController extends BaseController {
       @RequestParam(value = "committerName", required = false) String committerName,
       @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
-    // subjectId and subjectNamespace are not required by EhrScape spec but without those parameters a 400 error shall be returned
+    // subjectId and subjectNamespace are not required by EhrScape spec but without those parameters a 400 error shall be
+    // returned
     if ((subjectId == null) || (subjectNamespace == null)) {
       throw new InvalidApiParameterException("subjectId or subjectNamespace missing");
     } else if ((subjectId.isEmpty()) || (subjectNamespace.isEmpty())) {
@@ -106,8 +107,8 @@ public class EhrController extends BaseController {
 
   @GetMapping
   public ResponseEntity<EhrResponseData> getEhr(@RequestParam(value = "subjectId") String subjectId,
-      @RequestParam(value = "subjectNamespace") String subjectNamespace,
-      @RequestHeader(value = "Content-Type", required = false) String contentType) {
+                                                @RequestParam(value = "subjectNamespace") String subjectNamespace,
+                                                @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
     Optional<UUID> ehrId = ehrService.findBySubject(subjectId, subjectNamespace);
     return ehrId.flatMap(i -> buildEhrResponseData(i, Action.RETRIEVE, contentType))
@@ -116,7 +117,7 @@ public class EhrController extends BaseController {
 
   @GetMapping(path = "/{uuid}")
   public ResponseEntity<EhrResponseData> getEhr(@PathVariable("uuid") UUID ehrId,
-      @RequestHeader(value = "Content-Type", required = false) String contentType) {
+                                                @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
     return Optional.ofNullable(ehrId)
         .flatMap(i -> buildEhrResponseData(i, Action.RETRIEVE, contentType)).map(ResponseEntity::ok)
@@ -125,8 +126,9 @@ public class EhrController extends BaseController {
 
   @PutMapping(path = "/{uuid}/status")
   public ResponseEntity<EhrResponseData> updateStatus(@PathVariable("uuid") UUID ehrId,
-      @RequestBody() String ehrStatus,
-      @RequestHeader(value = "Content-Type", required = false) String contentType) {
+                                                      @RequestBody() String ehrStatus,
+                                                      @RequestHeader(value = "Content-Type", required = false)
+                                                      String contentType) {
 
     ehrService.updateStatus(ehrId, extractEhrStatus(ehrStatus), null);
     return Optional.ofNullable(ehrId)
@@ -136,10 +138,26 @@ public class EhrController extends BaseController {
 
   private EhrStatus extractEhrStatus(@RequestBody String content) {
     EhrStatus ehrStatus = new EhrStatus();
+    ehrStatus.setArchetypeNodeId("openEHR-EHR-EHR_STATUS.generic.v1");
+    ehrStatus.setName(new DvText("EHR Status"));
 
     if (StringUtils.isNotBlank(content)) {
       Gson json = new GsonBuilder().create();
       Map<String, Object> atributes = json.fromJson(content, Map.class);
+
+      Optional<String> subjectId =
+          Optional.ofNullable(atributes.get("subjectId"))
+              .map(String.class::cast)
+              .filter(StringUtils::isNotBlank);
+      Optional<String> subjectNamespace =
+          Optional.ofNullable(atributes.get("subjectNamespace"))
+              .map(String.class::cast)
+              .filter(StringUtils::isNotBlank);
+      if (subjectId.isEmpty() || subjectNamespace.isEmpty()) {
+        throw new InvalidApiParameterException("subjectId or subjectNamespace missing");
+      }
+      PartySelf subject = new PartySelf(new PartyRef(new HierObjectId(subjectId.get()), subjectNamespace.get(), "PERSON"));
+      ehrStatus.setSubject(subject);
 
       if (atributes.containsKey(MODIFIABLE)) {
         ehrStatus.setModifiable((Boolean) atributes.get(MODIFIABLE));
@@ -153,7 +171,7 @@ public class EhrController extends BaseController {
   }
 
   private Optional<EhrResponseData> buildEhrResponseData(UUID ehrId, Action create,
-      String contentType) {
+                                                         String contentType) {
     // check for valid format header to produce content accordingly
     CompositionFormat format;
     if (contentType == null) {
