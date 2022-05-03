@@ -69,8 +69,8 @@ public class CompositionController extends BaseController {
       @RequestBody String content) {
 
     if ((format == CompositionFormat.FLAT
-        || format == CompositionFormat.STRUCTURED
-        || format == CompositionFormat.ECISFLAT)
+         || format == CompositionFormat.STRUCTURED
+         || format == CompositionFormat.ECISFLAT)
         && StringUtils.isEmpty(templateId)) {
       throw new InvalidApiParameterException(
           String.format("Template Id needs to specified for format %s", format));
@@ -116,7 +116,9 @@ public class CompositionController extends BaseController {
       responseDto.setAction(Action.RETRIEVE);
       responseDto.setFormat(format);
       responseDto.setTemplateId(compositionDto.get().getTemplateId());
-      responseDto.setCompositionUid(compositionDto.get().getUuid().toString());
+      String fullUid = compositionDto.get().getUuid() + "::" + compositionService.getServerConfig().getNodename() + "::"
+                       + compositionService.getLastVersionNumber(compositionDto.get().getUuid());
+      responseDto.setCompositionUid(fullUid);
       responseDto.setEhrId(compositionDto.get().getEhrId());
       Meta meta = buildMeta(responseDto.getCompositionUid());
       responseDto.setMeta(meta);
@@ -128,13 +130,14 @@ public class CompositionController extends BaseController {
 
   @PutMapping(path = "/{uid}")
   public ResponseEntity<ActionRestResponseData> update(@PathVariable("uid") String compositionUid,
-      @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
-      @RequestParam(value = "templateId", required = false) String templateId,
-      @RequestBody String content) {
+                                                       @RequestParam(value = "format", defaultValue = "XML")
+                                                       CompositionFormat format,
+                                                       @RequestParam(value = "templateId", required = false) String templateId,
+                                                       @RequestBody String content) {
 
     if ((format == CompositionFormat.FLAT
-        || format == CompositionFormat.STRUCTURED
-        || format == CompositionFormat.ECISFLAT)
+         || format == CompositionFormat.STRUCTURED
+         || format == CompositionFormat.ECISFLAT)
         && StringUtils.isEmpty(templateId)) {
       throw new InvalidApiParameterException(
           String.format("Template Id needs to specified for format %s", format));
