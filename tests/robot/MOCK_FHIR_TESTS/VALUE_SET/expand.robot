@@ -109,6 +109,7 @@ Value Set GET Using Expand Operation - Count With Minus
     ...     processing
     Should Be Equal As Strings     ${response["issue"][0]["diagnostics"]}
     ...     Invalid value for count
+    [Teardown]      Reset Mock Server
 
 *** Keywords ***
 Create Sessions
