@@ -13,19 +13,21 @@ ${MOCK_CODE_SYSTEM_PATH}    ${EXECDIR}/robot/_resources/test_data_sets/mocks/cod
 
 
 *** Test Cases ***
-CODE SYSTEM GET Using Lookup Operation - Valid Code and System URL
-    [Documentation]     Get CodeSystem using lookup operation, with valid code and system URL.
+CODE SYSTEM GET Using Lookup Operation - Valid Code And System URL
+    [Documentation]     Get CodeSystem using lookup operation,
+    ...     with valid code and system URL. Positive flow.
     [Tags]      Mock    CODESYSTEM      Positive      Lookup
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_success.json
     ...     None    200
-    Send GET Expect Success - CodeSystem - Lookup
-    Should Contain      ${response["parameter"][0]["valueString"]}
+    Send GET Expect Success - CodeSystem
+    Should Be Equal As Strings      ${response["parameter"][0]["valueString"]}
     ...      Bicarbonate [Moles/volume] in Serum or Plasma
     [Teardown]      Reset Mock Server
 
 CODE SYSTEM GET Using Lookup Operation - Valid System URL - Invalid Code
-    [Documentation]     Get CodeSystem using lookup operation, with valid system URL, but invalid code.
+    [Documentation]     Get CodeSystem using lookup operation,
+    ...     with valid system URL, but invalid code. Negative flow.
     [Tags]      Mock    CODESYSTEM      Negative      Lookup
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_code_not_found.json
@@ -36,24 +38,27 @@ CODE SYSTEM GET Using Lookup Operation - Valid System URL - Invalid Code
     [Teardown]      Reset Mock Server
 
 CODE SYSTEM GET Using Lookup Operation - Valid Code - Invalid System URL
-    [Documentation]     Get CodeSystem using lookup operation, with valid code URL, but invalid system URL.
+    [Documentation]     Get CodeSystem using lookup operation,
+    ...     with valid code URL, but invalid system URL. Negative flow.
     [Tags]      Mock    CODESYSTEM      Negative      Lookup
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_system_url_not_found.json
     ...     system   404
     Send GET Expect Failure - CodeSystem - Lookup (Invalid System URL)
     Should Contain     ${response["issue"][0]["diagnostics"]}
-    ...     Code system http://notexistingsystemurl.org could not be resolved. It does not appear to be indexed.
+    ...     Code system http://notexistingsystemurl.org could not be resolved.
+    ...     It does not appear to be indexed.
     [Teardown]      Reset Mock Server
 
-CODE SYSTEM GET Using Lookup Operation - Missing Code and System URL Params
-    [Documentation]     Get CodeSystem using lookup operation, code and system url not provided.
+CODE SYSTEM GET Using Lookup Operation - Missing Code And System URL Params
+    [Documentation]     Get CodeSystem using lookup operation,
+    ...     code and system url not provided. Negative flow.
     [Tags]      Mock    CODESYSTEM      Negative      Lookup
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_missing_code_and_system_url.json
     ...     empty   400
     Send GET Expect Failure - CodeSystem - Lookup (Missing Code And System URL)
-    Should Contain     ${response["issue"][0]["diagnostics"]}
+    Should Be Equal As Strings     ${response["issue"][0]["diagnostics"]}
     ...     Either a code and system or a coding are required.
     [Teardown]      Reset Mock Server
 

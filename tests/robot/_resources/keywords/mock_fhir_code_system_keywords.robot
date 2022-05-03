@@ -20,6 +20,7 @@ Resource        ../suite_settings.robot
 
 *** Variables ***
 ${CODE_SYSTEM_LOOKUP_ENDPOINT}     /fhir/CodeSystem/$lookup
+${CODE_SYSTEM_VALIDATE_CODE_ENDPOINT}     /fhir/CodeSystem/$validate-code
 
 
 *** Keywords ***
@@ -51,7 +52,7 @@ GET Create Mock Expectation - CodeSystem - Lookup operation
     END
     Create Mock Expectation     ${req}      ${rsp}
 
-Send GET Expect Success - CodeSystem - Lookup
+Send GET Expect Success - CodeSystem
     [Documentation]     Send request using GET method for CodeSystem, with Lookup operation.
     ...     There are 3 optional parameters:
     ...     - endpoint (define the endpoint to be reached)
@@ -73,7 +74,6 @@ Send GET Expect Success - CodeSystem - Lookup
         Verify Response Body        ${response_body}        ${resp.json()}
     END
     Log To Console      ${resp.json()}
-    #${jsonResponseContent}    evaluate  json.loads($resp.content)    json
     Set Test Variable   ${response}    ${resp.json()}
     Log To Console      ${response}
 
@@ -103,6 +103,58 @@ Send GET Expect Failure - CodeSystem - Lookup (Invalid Code)
     Set Test Variable   ${response}    ${resp.json()}
     Log To Console      ${response}
 
+Send GET Expect Failure - CodeSystem - Validate Code (Invalid Code)
+    [Documentation]     Send request using GET method for CodeSystem, with Lookup operation
+    ...     (Invalid code).
+    ...     There are 3 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - response_headers  (define the expected response headers)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${CODE_SYSTEM_VALIDATE_CODE_ENDPOINT}  ${response_headers}=${None}
+    ...     ${response_body}=${None}
+    &{params}   Create Dictionary     system=http://loinc.org   code=1111-9
+    ${resp}     GET On Session
+    ...     server
+    ...     ${endpoint}
+    ...     params=&{params}
+    ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    200
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
+Send GET Expect Failure - CodeSystem - Validate Code (Invalid System URL)
+    [Documentation]     Send request using GET method for CodeSystem, with Lookup operation
+    ...     (Invalid System URL).
+    ...     There are 3 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - response_headers  (define the expected response headers)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${CODE_SYSTEM_VALIDATE_CODE_ENDPOINT}  ${response_headers}=${None}
+    ...     ${response_body}=${None}
+    &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=1963-8
+    ${resp}     GET On Session
+    ...     server
+    ...     ${endpoint}
+    ...     params=&{params}
+    ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    404
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
 Send GET Expect Failure - CodeSystem - Lookup (Invalid System URL)
     [Documentation]     Send request using GET method for CodeSystem, with Lookup operation
     ...     (Invalid System URL).
@@ -112,7 +164,7 @@ Send GET Expect Failure - CodeSystem - Lookup (Invalid System URL)
     ...     - response_body (define expected response body)
     [Arguments]  ${endpoint}=${CODE_SYSTEM_LOOKUP_ENDPOINT}  ${response_headers}=${None}
     ...     ${response_body}=${None}
-    &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=1111-9
+    &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=1963-8
     ${resp}     GET On Session
     ...     server
     ...     ${endpoint}
@@ -154,6 +206,60 @@ Send GET Expect Failure - CodeSystem - Lookup (Missing Code And System URL)
     Log To Console      ${resp.json()}
     Set Test Variable   ${response}    ${resp.json()}
     Log To Console      ${response}
+
+Send GET Expect Failure - CodeSystem - Validate Code (Missing Code And System URL)
+    [Documentation]     Send request using GET method for CodeSystem, with Lookup operation
+    ...     (Missing Code And System URL).
+    ...     There are 3 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - response_headers  (define the expected response headers)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${CODE_SYSTEM_VALIDATE_CODE_ENDPOINT}  ${response_headers}=${None}
+    ...     ${response_body}=${None}
+    &{params}   Create Dictionary     ${None}   ${None}
+    ${resp}     GET On Session
+    ...     server
+    ...     ${endpoint}
+    ...     params=&{params}
+    ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    400
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
+GET Create Mock Expectation - CodeSystem - Validate Code operation
+    [Documentation]     Create Mock Expectation for GET CodeSystem using Validate-Code operation.
+    ...     Takes 3 arguments:
+    ...     - mockResponse - json file with expected response body
+    ...     - invalidParameter - decision on invalid parameter to be sent (code, system, empty, None)
+    ...     - statusCode - Example: 200, 400, 404...
+    [Arguments]     ${mockResponse}=${None}     ${invalidParameter}=${None}     ${statusCode}=200
+    IF      '${invalidParameter}' == 'code'
+        &{params}   Create Dictionary     system=http://loinc.org   code=1111-9
+    ELSE IF     '${invalidParameter}' == 'system'
+        &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=1963-8
+    ELSE IF     '${invalidParameter}' == 'empty'
+        &{params}   Create Dictionary     ${None}   ${None}
+    ELSE
+        &{params}   Create Dictionary     system=http://loinc.org   code=1963-8
+    END
+    &{req}      Create Mock Request Matcher    GET     ${CODE_SYSTEM_VALIDATE_CODE_ENDPOINT}   params=&{params}
+
+    IF      ${mockResponse != None}
+        ${file}     Get File    ${mockResponse}
+        ${fileContentInJSON}    evaluate  json.loads($file)    json
+        &{rsp}      Create Mock Response
+        ...     status_code=${statusCode}     body=${fileContentInJSON}
+    ELSE
+        Set Variable    ${rsp}      ${None}
+    END
+    Create Mock Expectation     ${req}      ${rsp}
 
 Verify Response Headers
     [Arguments]     ${expected}    ${actual}

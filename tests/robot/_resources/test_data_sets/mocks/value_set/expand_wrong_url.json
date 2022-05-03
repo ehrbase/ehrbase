@@ -1,0 +1,10 @@
+{
+    "resourceType": "OperationOutcome",
+    "issue": [
+        {
+            "severity": "error",
+            "code": "not-found",
+            "diagnostics": "[78a0be9c-16f2-48ab-b8d4-8af714e33217]: Could not find value set http://testurl.org. If this is an implicit value set please make sure the url is correct. Implicit values sets for different code systems are specified in https://www.hl7.org/fhir/terminologies-systems.html ."
+        }
+    ]
+}
