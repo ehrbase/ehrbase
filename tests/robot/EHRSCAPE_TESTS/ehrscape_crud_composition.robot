@@ -54,7 +54,6 @@ Main flow create and update Composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
     Set Test Variable   ${response}    ${response.json()}
-    #Should Contain      ${response["compositionUid"]}   ${composition_uid}
     Should Contain      ${response["compositionUid"]}   ${compoUidURL}
 
 Main flow create and delete Composition
