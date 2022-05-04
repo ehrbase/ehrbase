@@ -30,6 +30,7 @@ Suite Teardown      restart SUT
 
 *** Test Cases ***
 Main Flow Create EHR
+    [Documentation]     Create EHR using EHRScape endpoint.
     [Tags]    PostEhr    EHRSCAPE
     Upload OPT ECIS    all_types/ehrn_family_history.opt
     Extract Template Id From OPT File
