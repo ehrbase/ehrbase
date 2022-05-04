@@ -41,7 +41,9 @@ Main flow create and update Composition
     check the successful result of commit composition
     Set Test Variable   ${response}    ${response.json()}
     ${compoUid}     Set Variable     ${response["compositionUid"]}
-    Should Contain      ${compoUid}      ::1
+    ${compoUidWithURL}  Fetch From Left     ${compoUid}         ::1
+    ${compoUidURL}      Fetch From Right    ${compoUidWithURL}  ::
+    Should Contain      ${compoUid}      ${compoUidURL}
     ## Get composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     Set Test Variable   ${response}    ${response.json()}
@@ -53,7 +55,7 @@ Main flow create and update Composition
     check composition exists
     Set Test Variable   ${response}    ${response.json()}
     #Should Contain      ${response["compositionUid"]}   ${composition_uid}
-    Should Contain      ${response["compositionUid"]}   ::2
+    Should Contain      ${response["compositionUid"]}   ${compoUidURL}
 
 Main flow create and delete Composition
     [Documentation]     Create and Update Composition using EHRScape endpoints.
@@ -68,7 +70,9 @@ Main flow create and delete Composition
     check the successful result of commit composition
     Set Test Variable   ${response}     ${response.json()}
     ${compoUid}     Set Variable        ${response["compositionUid"]}
-    Should Contain      ${compoUid}     ::1
+    ${compoUidWithURL}  Fetch From Left     ${compoUid}         ::1
+    ${compoUidURL}      Fetch From Right    ${compoUidWithURL}  ::
+    Should Contain      ${compoUid}     ${compoUidURL}
     (FLAT) get composition by composition_uid       ${composition_uid}
     ## Delete action
     delete composition  ${composition_uid}      ehrScape=true
