@@ -39,7 +39,11 @@ Main flow create and update Composition
     ...    composition=ehrn_family_history__.json
     ...    extTemplateId=true
     check the successful result of commit composition
+    Set Test Variable   ${response}    ${response.json()}
+    ${compoUid}     Set Variable     ${response["compositionUid"]}
     (FLAT) get composition by composition_uid    ${composition_uid}
+    Set Test Variable   ${response}    ${response.json()}
+    Should Be Equal As Strings    ${compoUid}   ${response["composition"]["family_history/_uid"]}
     ## Update action
     Update Composition (FLAT)    new_version_of_composition=ehrn_family_history.v2__.json
     ## Get action
