@@ -28,45 +28,50 @@ Suite Teardown      restart SUT
 
 *** Test Cases ***
 Main flow create and update Composition
-    [Documentation]
+    [Documentation]     Create and Update Composition using EHRScape endpoints.
     Create Template     all_types/ehrn_family_history.opt
     Extract Template Id From OPT File
-    Get Web Template By Template Id (ECIS)    ${template_id}
+    Get Web Template By Template Id (ECIS)      ${template_id}
     create EHR
     Set Test Variable   ${externalTemplate}     ${template_id}
     ## Create action
-    commit composition    format=FLAT
+    commit composition  format=FLAT
     ...    composition=ehrn_family_history__.json
     ...    extTemplateId=true
     check the successful result of commit composition
     Set Test Variable   ${response}    ${response.json()}
     ${compoUid}     Set Variable     ${response["compositionUid"]}
-    Should Contain     ${compoUid}      ::local.ehrbase.org::1
+    Should Contain      ${compoUid}      ::local.ehrbase.org::1
     ## Get composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     Set Test Variable   ${response}    ${response.json()}
-    Should Be Equal As Strings    ${compoUid}   ${response["composition"]["family_history/_uid"]}
+    Should Be Equal As Strings    ${compoUid}   ${response["compositionUid"]}
     ## Update composition
     Update Composition (FLAT)    new_version_of_composition=ehrn_family_history.v2__.json
     ## Get composition after update
     (FLAT) get composition by composition_uid    ${composition_uid}
-    Set Test Variable   ${response}    ${response.json()}
-    Should Be Equal As Strings    ${compoUid}   ${response["composition"]["family_history/_uid"]}
     check composition exists
+    Set Test Variable   ${response}    ${response.json()}
+    #Should Contain      ${response["compositionUid"]}   ${composition_uid}
+    Should Contain      ${response["compositionUid"]}   ::local.ehrbase.org::2
 
 Main flow create and delete Composition
+    [Documentation]     Create and Update Composition using EHRScape endpoints.
     Create Template    all_types/family_history.opt
     Extract Template Id From OPT File
-    Get Web Template By Template Id (ECIS)    ${template_id}
+    Get Web Template By Template Id (ECIS)      ${template_id}
     create EHR
     Set Test Variable   ${externalTemplate}     ${template_id}
     commit composition    format=FLAT
     ...    composition=family_history__.json
     ...    extTemplateId=true
     check the successful result of commit composition
-    (FLAT) get composition by composition_uid    ${composition_uid}
+    Set Test Variable   ${response}     ${response.json()}
+    ${compoUid}     Set Variable        ${response["compositionUid"]}
+    Should Contain      ${compoUid}     ::local.ehrbase.org::1
+    (FLAT) get composition by composition_uid       ${composition_uid}
     ## Delete action
-    delete composition    ${composition_uid}    ehrScape=true
+    delete composition  ${composition_uid}      ehrScape=true
     get deleted composition (EHRScape)
     [Teardown]    TRACE JIRA ISSUE    CDR-324
 
