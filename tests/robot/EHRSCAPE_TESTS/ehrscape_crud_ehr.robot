@@ -24,6 +24,7 @@ Documentation       EHRScape Tests
 Resource            ../_resources/keywords/composition_keywords.robot
 Resource            ../_resources/keywords/ehr_keywords.robot
 
+Suite Setup         restart SUT
 Suite Teardown      restart SUT
 
 
@@ -51,118 +52,12 @@ Get EHR Using Ehr Id And By Subject Id, Namespace
 
 Get EHR And Update EHR Status
     [Documentation]    Create EHR, Get it and update EHR status.
-    [Tags]    not-ready
-    #extract ehr_id from response (JSON)     ehrScape=true
-    #extract system_id from response (JSON)
-    #extract subject_id from response (JSON)
-    #extract ehrstatus_uid (JSON)
-    #extract ehr_status from response (JSON)
-
-    set ehr_status of EHR       ehrScape=true
-
-*** Keywords ***
-##Below keywords are for EHR creation on OpenEHR endpoint:
-create ehr from data table
-    [Arguments]    ${subject}    ${is_modifiable}    ${is_queryable}    ${status_code}
-
-    prepare new request session    Prefer=return=representation
-
-    compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}
-    POST /ehr    ${ehr_status}
-    check response    ${status_code}    ${is_modifiable}    ${is_queryable}
-
-POST /ehr
-    [Arguments]    ${body}=${None}
-    &{response}    REST.POST    /ehr    ${body}
-    Output Debug Info To Console
-
-check response
-    [Arguments]    ${status_code}    ${is_modifiable}    ${is_queryable}
-    Integer    response status    ${status_code}
-
-    # comment: changes is_modif./is_quer. to default expected values - boolean true
-    IF    $is_modifiable=="${EMPTY}"
-        ${is_modifiable}    Set Variable    ${TRUE}
-    ELSE
-        ${is_modifiable}    Set Variable    ${None}
-    END
-    IF    $is_queryable=="${EMPTY}"
-        ${is_queryable}    Set Variable    ${TRUE}
-    ELSE
-        ${is_queryable}    Set Variable    ${None}
-    END
-    Boolean    response body ehr_status is_modifiable    ${is_modifiable}
-    Boolean    response body ehr_status is_queryable    ${is_queryable}
-
-compose ehr_status
-    [Arguments]    ${subject}    ${is_modifiable}    ${is_queryable}
-
-    set ehr_status subject    ${subject}
-    set is_queryable / is_modifiable    ${is_modifiable}    ${is_queryable}
-    Set Test Variable    ${ehr_status}    ${ehr_status}
-
-Create EHR From Valid Data Set
-    [Arguments]    ${No.}    ${queryable}    ${modifiable}    ${subject}    ${other_details}    ${ehrid}
-    prepare new request session    Prefer=return=representation
-    compose ehr payload    ${No.}    ${other_details}    ${modifiable}    ${queryable}
-    create ehr    ${ehrid}
-    validate response
-    ...    ${No.}
-    ...    ${queryable}
-    ...    ${modifiable}
-    ...    ${subject}
-    ...    ${other_details}
-    ...    ${ehrid}
-
-compose ehr payload
-    [Arguments]    ${No.}    ${other_details}    ${modifiable}    ${queryable}
-    Log To Console    \n\nData Set No.: ${No.} \n\n
-
-    # comment: use 000_ehr_status.json as blueprint for payload witho other_details
-    IF    "${other_details}" == "not provided"
-        ${payload}    randomize subject_id in test-data-set    valid/000_ehr_status.json
-
-        # comment: use 000_ehr_status_with_other_details.json for payload with other_details
-    ELSE IF    "${other_details}" == "provided"
-        ${payload}    randomize subject_id in test-data-set    valid/000_ehr_status_with_other_details.json
-    END
-
-    ${payload=}    Update Value To Json    ${payload}    $.is_modifiable    ${modifiable}
-    ${payload}    Update Value To Json    ${payload}    $.is_queryable    ${queryable}
-    Output    ${payload}
-    Set Test Variable    ${payload}    ${payload}
-
-randomize subject_id in test-data-set
-    [Arguments]    ${test_data_set}
-    ${subject_id}    generate random id
-    ${body}    Load JSON From File    ${EXECDIR}/robot/_resources/test_data_sets/ehr/${test_data_set}
-    ${body}    Update Value To Json    ${body}    $..subject.external_ref.id.value    ${subject_id}
-    [RETURN]    ${body}
-
-generate random id
-    # ${uuid}    Evaluate    str(uuid.uuid4())    uuid
-    ${uuid}    Set Variable    ${{str(uuid.uuid4())}}
-    [RETURN]    ${uuid}
-
-validate response
-    [Arguments]    ${No.}    ${queryable}    ${modifiable}    ${subject}    ${other_details}    ${ehrid}
-    Log Many    ${No.}    ${queryable}    ${modifiable}    ${subject}    ${other_details}    ${ehrid}
-    Integer    response status    201
-    Object    response body system_id
-    Object    response body ehr_id
-    String    response body ehr_id value
-    Object    response body time_created
-    Object    response body ehr_status
-    Object    response body ehr_status name
-    String    response body ehr_status name value
-    String    response body ehr_status archetype_node_id
-    Object    response body ehr_status subject
-
-    Boolean    response body ehr_status is_modifiable    ${modifiable}
-    Boolean    response body ehr_status is_queryable    ${queryable}
-
-    IF    "${other_details}" == "not provided"
-        Missing    response body ehr_status other_details
-    ELSE IF    "${other_details}" == "provided"
-        Object    response body ehr_status other_details
-    END
+    [Tags]    UpdateEhrStatus   EHRSCAPE
+    ${ehr_status_json}      Load JSON From File
+                            ...     ${VALID EHR DATA SETS}/000_ehr_status_ecis.json
+    Update EHR Status (ECIS)    ${ehr_id}   ${ehr_status_json}
+    Should Be Equal As Strings  ${response["body"]["action"]}    UPDATE
+    Should Be Equal             ${response["body"]["ehrStatus"]["modifiable"]}          ${True}
+    Should Be Equal             ${response["body"]["ehrStatus"]["queryable"]}           ${True}
+    Should Be Equal As Strings  ${response["body"]["ehrStatus"]["subjectId"]}           74777-1258
+    Should Be Equal As Strings  ${response["body"]["ehrStatus"]["subjectNamespace"]}    testIssuerModified
