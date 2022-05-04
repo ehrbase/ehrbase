@@ -28,12 +28,12 @@ Suite Teardown      restart SUT
 
 *** Test Cases ***
 Main flow create and update Composition
-    Create Template    all_types/ehrn_family_history.opt
+    [Documentation]
+    Create Template     all_types/ehrn_family_history.opt
     Extract Template Id From OPT File
     Get Web Template By Template Id (ECIS)    ${template_id}
     create EHR
-    ${externalTemplate}    Set Variable    ${template_id}
-    Set Test Variable    ${externalTemplate}
+    Set Test Variable   ${externalTemplate}     ${template_id}
     ## Create action
     commit composition    format=FLAT
     ...    composition=ehrn_family_history__.json
@@ -41,13 +41,17 @@ Main flow create and update Composition
     check the successful result of commit composition
     Set Test Variable   ${response}    ${response.json()}
     ${compoUid}     Set Variable     ${response["compositionUid"]}
+    Should Contain     ${compoUid}      ::local.ehrbase.org::1
+    ## Get composition
     (FLAT) get composition by composition_uid    ${composition_uid}
     Set Test Variable   ${response}    ${response.json()}
     Should Be Equal As Strings    ${compoUid}   ${response["composition"]["family_history/_uid"]}
-    ## Update action
+    ## Update composition
     Update Composition (FLAT)    new_version_of_composition=ehrn_family_history.v2__.json
-    ## Get action
+    ## Get composition after update
     (FLAT) get composition by composition_uid    ${composition_uid}
+    Set Test Variable   ${response}    ${response.json()}
+    Should Be Equal As Strings    ${compoUid}   ${response["composition"]["family_history/_uid"]}
     check composition exists
 
 Main flow create and delete Composition
@@ -55,8 +59,7 @@ Main flow create and delete Composition
     Extract Template Id From OPT File
     Get Web Template By Template Id (ECIS)    ${template_id}
     create EHR
-    ${externalTemplate}    Set Variable    ${template_id}
-    Set Test Variable    ${externalTemplate}
+    Set Test Variable   ${externalTemplate}     ${template_id}
     commit composition    format=FLAT
     ...    composition=family_history__.json
     ...    extTemplateId=true
