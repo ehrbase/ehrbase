@@ -129,13 +129,6 @@
         <database.user>ehrbase</database.user>
         <database.pass>ehrbase</database.pass>
         <database.name>ehrbase</database.name>
-        <jacoco.version>0.8.7</jacoco.version>
-        <surefire.version>3.0.0-M5</surefire.version>
-        <failsafe.version>3.0.0-M5</failsafe.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-
-
         <test.profile>unit</test.profile>
     </properties>
 
@@ -166,7 +159,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
+                <version>${maven-jacoco-plugin.version}</version>
                 <executions>
                     <!-- SET ARG LINE PROPERTY FOR SUREFIRE -->
                     <execution>
@@ -195,7 +188,7 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
+                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <skipTests>true</skipTests>
                     <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
@@ -223,7 +216,7 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe.version}</version>
+                <version>${maven-failsafe-plugin.version}</version>
                 <configuration>
                     <skipITs>${skipIntegrationTests}</skipITs>
                     <additionalClasspathElements>
@@ -357,6 +350,4 @@
             </build>
         </profile>
     </profiles>
-
-
 </project>
