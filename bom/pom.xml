@@ -39,7 +39,6 @@
         <spring.version>2.5.12</spring.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <postgressql.version>42.3.3</postgressql.version>
-        <ehrbase.sdk.version>1.19.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
         <joda.version>2.10.13</joda.version>
         <jacoco.version>0.8.7</jacoco.version>
@@ -51,6 +50,8 @@
         <jackson-bom.version>2.13.2</jackson-bom.version>
         <spring-security.version>5.5.5</spring-security.version>
         <junit.version>5.7.2</junit.version>
+        <!-- not used erhbase but needed for the version plugin -->
+        <log4j.version>2.17.2</log4j.version>
     </properties>
 
     <distributionManagement>
@@ -94,10 +95,11 @@
             <dependency>
                 <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>bom</artifactId>
-                <version>${ehrbase.sdk.version}</version>
+                <version>1.19.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
@@ -158,65 +160,23 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- sdk -->
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>response-dto</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>opt-1.4</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>serialisation</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>terminology</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>validation</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>web-template</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>test-data</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>example-generator</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-                <scope>compile</scope>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-logging</artifactId>
+                <version>${spring.version}</version>
                 <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-to-slf4j</artifactId>
-                    </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
                 </exclusions>
             </dependency>
 
@@ -285,6 +245,7 @@
             <dependency>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.9.10</version>
             </dependency>
             <dependency>
                 <groupId>io.micrometer</groupId>
