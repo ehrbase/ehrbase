@@ -50,6 +50,7 @@
         <jackson-bom.version>2.13.2</jackson-bom.version>
         <spring-security.version>5.5.5</spring-security.version>
         <junit.version>5.7.2</junit.version>
+        <ehrbase.sdk.version>1.19.0-SNAPSHOT</ehrbase.sdk.version>
         <!-- not used erhbase but needed for the version plugin -->
         <log4j.version>2.17.2</log4j.version>
     </properties>
@@ -95,7 +96,7 @@
             <dependency>
                 <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>bom</artifactId>
-                <version>1.19.0-SNAPSHOT</version>
+                <version>${ehrbase.sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
