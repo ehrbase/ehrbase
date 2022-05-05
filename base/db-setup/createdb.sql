@@ -1,9 +1,25 @@
--- Use this script following the creation and *migrations* of ehrbase db for CLOUD deployment
--- Since most cloud service providers (AWS, AZURE, Digital Ocean) support managed PostgreSQL server instances
--- they generally don't support current extensions: temporal_tables and jsquery (as of 23/09/2019).
--- create database and roles (you might see an error here, these can be ignored)
--- the first section of the script is similar to createdb.sql
--- See README for more details re required application configuration
+-- This script needs to be run as database superuser in order to create the database
+-- These operations can not be run by Flyway as they require super user privileged
+-- and/or can not be installed inside a transaction.
+--
+-- Extentions are installed in a separate schema called 'ext'
+--
+-- For production servers these operations should be performed by a configuration
+-- management system.
+--
+-- If the username, password or database is changed, they also need to be changed
+-- in the root pom.xml file.
+--
+-- On *NIX run this using:
+--
+--   sudo -u postgres psql < createdb.sql
+--
+-- You only have to run this script once.
+--
+-- THIS WILL NOT CREATE THE ENTIRE DATABASE!
+-- It only contains those operations which require superuser privileges.
+-- The actual database schema is managed by flyway.
+--
 
 CREATE ROLE ehrbase WITH LOGIN PASSWORD 'ehrbase';
 CREATE
@@ -11,7 +27,6 @@ DATABASE ehrbase ENCODING 'UTF-8' TEMPLATE template0;
 GRANT ALL PRIVILEGES ON DATABASE
 ehrbase TO ehrbase;
 
--- install the extensions
 \c
 ehrbase
 CREATE SCHEMA IF NOT EXISTS ehr AUTHORIZATION ehrbase;
