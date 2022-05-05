@@ -20,9 +20,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -247,13 +245,8 @@ public class OpenehrQueryController extends BaseController
     Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
     
     //get the query and pass it to the service
-    if (parameters != null && !parameters.isEmpty()) {
       queryResponseData = new QueryResponseData(
           queryService.query(aql, parameters, QueryMode.AQL, false, auditResultMap));
-    } else {
-      queryResponseData = new QueryResponseData(
-          queryService.query(aql, QueryMode.AQL, false, auditResultMap));
-    }
 
     // Enriches request attributes with EhrId(s) for later audit processing
     request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE,
@@ -315,8 +308,9 @@ public class OpenehrQueryController extends BaseController
       queryResponseData = new QueryResponseData(
           queryService.query(query, parameters, QueryMode.AQL, false, auditResultMap));
     } else {
-      queryResponseData = new QueryResponseData(
-          queryService.query(query, QueryMode.AQL, false, auditResultMap));
+      queryResponseData =
+          new QueryResponseData(
+              queryService.query(query, null, QueryMode.AQL, false, auditResultMap));
     }
 
     // Enriches request attributes with EhrId(s) for later audit processing

@@ -16,33 +16,28 @@
 
 package org.ehrbase.plugin.extensionpoints;
 
-import org.ehrbase.plugin.dto.CompositionWithEhrId;
+import java.util.function.Function;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.pf4j.ExtensionPoint;
 
-import java.util.UUID;
-import java.util.function.Function;
-
 /**
- * Extension Point for Component handling.
+ * Extension Point for Template handling.
  *
- * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
- *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
  * @author Stefan Spiska
  */
-public interface CompositionExtensionPointInterface extends ExtensionPoint {
+public interface TemplateExtensionPoint extends ExtensionPoint {
 
   /**
-   * Intercept Composition create
+   * Intercept Template create
    *
-   * @param input {@link com.nedap.archie.rm.composition.Composition} to be created in ehr with
-   *     ehrId {@link UUID}
+   * @param input {@link OPERATIONALTEMPLATE} to be created
    * @param chain next Extension Point
-   * @return {@link UUID} of the created Composition
+   * @return templateId of the created template
    * @see <a href="I_EHR_COMPOSITION in openEHR Platform Service
-   *     Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
+   * Model">https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_i_ehr_composition_interface</a>
    */
-  default UUID aroundCreation(
-      CompositionWithEhrId input, Function<CompositionWithEhrId, UUID> chain) {
+  default String aroundCreation(
+      OPERATIONALTEMPLATE input, Function<OPERATIONALTEMPLATE, String> chain) {
     return chain.apply(input);
   }
 }

@@ -19,7 +19,11 @@
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.composition.Composition;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
@@ -32,6 +36,7 @@ import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import org.ehrbase.rest.ehrscape.responsedata.TemplateResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.TemplatesResponseData;
 import org.ehrbase.webtemplate.filter.Filter;
+import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +72,17 @@ public class TemplateController extends BaseController {
 
     @PostMapping()
     public ResponseEntity<TemplatesResponseData> createTemplate(@RequestBody() String content) {
-        templateService.create(content);
+
+    TemplateDocument document;
+    try {
+      document =
+          TemplateDocument.Factory.parse(
+              new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+    } catch (XmlException | IOException e) {
+      throw new InvalidApiParameterException(e.getMessage());
+    }
+
+    templateService.create(document.getTemplate());
         TemplatesResponseData responseData = new TemplatesResponseData();
         responseData.setAction(Action.LIST);
         responseData.setTemplates(templateService.getAllTemplates());

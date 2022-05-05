@@ -16,48 +16,52 @@
 
 package org.ehrbase.plugin.dto;
 
-import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Wrapper for {@link com.nedap.archie.rm.composition.Composition} with ehrId {@link UUID}
+ * Wrapper for composition version {@link ObjectVersionId} ehrId {@link UUID}
  *
  * @author Stefan Spiska
  */
-public class CompositionWithEhrId {
+public class CompositionVersionIdWithEhrId {
 
-  private final Composition composition;
   private final UUID ehrId;
+  private final ObjectVersionId versionId;
 
-  public CompositionWithEhrId(Composition composition, UUID ehrId) {
-    this.composition = composition;
+  public CompositionVersionIdWithEhrId(ObjectVersionId versionId, UUID ehrId) {
     this.ehrId = ehrId;
-  }
-
-  public Composition getComposition() {
-    return composition;
+    this.versionId = versionId;
   }
 
   public UUID getEhrId() {
     return ehrId;
   }
 
+  public ObjectVersionId getVersionId() {
+    return versionId;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    CompositionWithEhrId that = (CompositionWithEhrId) o;
-    return Objects.equals(composition, that.composition) && Objects.equals(ehrId, that.ehrId);
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CompositionVersionIdWithEhrId that = (CompositionVersionIdWithEhrId) o;
+    return Objects.equals(ehrId, that.ehrId) && Objects.equals(versionId, that.versionId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(composition, ehrId);
+    return Objects.hash(ehrId, versionId);
   }
 
   @Override
   public String toString() {
-    return "CompositionMergeInput{" + "composition=" + composition + ", ehrId=" + ehrId + '}';
+    return "CompositionVersionIdWithEhrId{" + "ehrId=" + ehrId + ", versionId=" + versionId + '}';
   }
 }

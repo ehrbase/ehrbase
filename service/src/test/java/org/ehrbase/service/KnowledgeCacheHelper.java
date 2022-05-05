@@ -18,13 +18,11 @@
 
 package org.ehrbase.service;
 
-import org.apache.commons.io.IOUtils;
+import java.io.File;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.opt.query.TemplateTestData;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
 
 /**
  * Created by christian on 5/10/2018.
@@ -43,7 +41,7 @@ public class KnowledgeCacheHelper {
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
         KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
-        knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+    knowledgeCacheService.addOperationalTemplate(TemplateTestData.IMMUNISATION_SUMMARY.getStream());
         return knowledgeCacheService;
     }
 

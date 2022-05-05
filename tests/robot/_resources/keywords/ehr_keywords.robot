@@ -538,46 +538,39 @@ get versioned ehr_status of EHR by version uid
                         # ...         headers={"If-Match": null}
                         Set Test Variable    ${response}    ${resp}
 
+Update EHR Status (ECIS)
+    [Documentation]     Sets status of EHR with given `ehr_id` (ECIS endpoint).
+    [Arguments]     ${ehr_id}       ${ehr_status_body}
+    &{resp}         REST.PUT        ${ECISURL}/ehr/${ehr_id}/status    body=${ehr_status_body}
+                    ...     headers={"Content-Type": "application/json"}
+                    ...     headers={"Accept": "application/json"}
+                    Should Be Equal As Strings     ${resp.status}   200
+                    Set Test Variable       ${response}     ${resp}
+                    Output Debug Info To Console
 
 set ehr_status of EHR
     [Documentation]     Sets status of EHR with given `ehr_id`.
     ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_status` as JSON
     ...                             object e.g. `extract ehr_status from response (JSON)`
-    [Arguments]      ${ehrScape}=false
+    #[Arguments]      ${ehrScape}=false
     # NOTE: alternatively u can save json to file and then pass this file to RESTinstance
     # ${ehrstatus}=       Load JSON From File   ehr_status.json
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
-    IF      '${ehrScape}' != 'false'
-        &{resp}=            REST.PUT    ${ECISURL}/ehr/${ehr_id}/status    ${ehr_status}
-                            ...         headers={"Content-Type": "application/json"}
-                            ...         headers={"Prefer": "return=representation"}
-                            ...         headers={"If-Match": "${ehrstatus_uid}"}
+    &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
+                        ...         headers={"Content-Type": "application/json"}
+                        ...         headers={"Prefer": "return=representation"}
+                        ...         headers={"If-Match": "${ehrstatus_uid}"}
 
-                                        # TODO: spec says "If-Match: {preceding_version_uid}"
-                                        #       but we don't have this !!!
-                                        # So what should be used as {preceding_version_uid} ???
+                                    # TODO: spec says "If-Match: {preceding_version_uid}"
+                                    #       but we don't have this !!!
+                                    # So what should be used as {preceding_version_uid} ???
 
-                            Set Test Variable    ${response}    ${resp}
+                        Set Test Variable    ${response}    ${resp}
 
-                            Output Debug Info To Console
-                            Integer    response status    200
-    ELSE
-        &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
-                            ...         headers={"Content-Type": "application/json"}
-                            ...         headers={"Prefer": "return=representation"}
-                            ...         headers={"If-Match": "${ehrstatus_uid}"}
-
-                                        # TODO: spec says "If-Match: {preceding_version_uid}"
-                                        #       but we don't have this !!!
-                                        # So what should be used as {preceding_version_uid} ???
-
-                            Set Test Variable    ${response}    ${resp}
-
-                            Output Debug Info To Console
-                            Integer    response status    200
-    END
+                        Output Debug Info To Console
+                        Integer    response status    200
 
 update ehr_status of fake EHR (w/o body)
 
