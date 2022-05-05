@@ -6,7 +6,7 @@ Metadata        TOP_TEST_SUITE    MOCK_FHIR_TESTS
 Resource        ../../_resources/keywords/mock_fhir_code_system_keywords.robot
 Suite Setup     Create Sessions
 Suite Teardown  Reset Mock Server
-
+Force Tags      Mock    CODESYSTEM      ValidateCode
 
 *** Variables ***
 ${MOCK_CODE_SYSTEM_PATH}    ${EXECDIR}/robot/_resources/test_data_sets/mocks/code_system
@@ -16,7 +16,7 @@ ${MOCK_CODE_SYSTEM_PATH}    ${EXECDIR}/robot/_resources/test_data_sets/mocks/cod
 CODE SYSTEM GET Using Validate Code Operation - Valid Code And System URL
     [Documentation]     Get CodeSystem using validate-code operation,
     ...     with valid code and system URL. Positive flow.
-    [Tags]      Mock    CODESYSTEM      Positive      ValidateCode
+    [Tags]  Positive
     GET Create Mock Expectation - CodeSystem - Validate Code operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/validate_code_success.json
     ...     None    200
@@ -30,7 +30,7 @@ CODE SYSTEM GET Using Validate Code Operation - Valid Code And System URL
 CODE SYSTEM GET Using Validate Code Operation - Valid System URL - Invalid Code
     [Documentation]     Get CodeSystem using validate-code operation,
     ...     with valid system URL, but invalid code. Negative flow.
-    [Tags]      Mock    CODESYSTEM      Negative      ValidateCode
+    [Tags]  Negative
     GET Create Mock Expectation - CodeSystem - Validate Code operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/validate_code_code_not_found.json
     ...     code   200
@@ -45,7 +45,7 @@ CODE SYSTEM GET Using Validate Code Operation - Valid System URL - Invalid Code
 CODE SYSTEM GET Using Validate Code Operation - Valid Code - Invalid System URL
     [Documentation]     Get CodeSystem using validate-code operation,
     ...     with valid code URL, but invalid system URL. Negative flow.
-    [Tags]      Mock    CODESYSTEM      Negative      ValidateCode
+    [Tags]  Negative
     GET Create Mock Expectation - CodeSystem - Validate Code operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/validate_code_system_url_not_found.json
     ...     system   404
@@ -62,7 +62,7 @@ CODE SYSTEM GET Using Validate Code Operation - Valid Code - Invalid System URL
 CODE SYSTEM GET Using Validate Code Operation - Missing Code And System URL Params
     [Documentation]     Get CodeSystem using validate-code operation,
     ...     code and system url not provided. Negative flow.
-    [Tags]      Mock    CODESYSTEM      Negative      ValidateCode
+    [Tags]  Negative
     GET Create Mock Expectation - CodeSystem - Validate Code operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/validate_code_missing_code_and_system_url.json
     ...     empty   400

@@ -22,6 +22,8 @@ Resource        ../suite_settings.robot
 
 *** Variables ***
 ${VALUE_SET_EXPAND_ENDPOINT}     /fhir/ValueSet/$expand
+${VALUE_SET_VALIDATE_CODE_ENDPOINT}     /fhir/ValueSet/idiosyncratic-adverse-reaction-type-1.0.0/$validate-code
+${VALUE_SET_ENDPOINT}     /fhir/ValueSet/idiosyncratic-adverse-reaction-type-1.0.0
 ${VALID_URL_PARAMETER}      http://terminology.hl7.org/ValueSet/v3-HL7StandardVersionCode
 
 
@@ -56,7 +58,57 @@ GET Create Mock Expectation - ValueSet - Expand Operation
     END
     Create Mock Expectation     ${req}      ${rsp}
 
-Send GET - ValueSet
+GET Create Mock Expectation - ValueSet - Validate Code operation
+    [Documentation]     Create Mock Expectation for GET ValueSet using Validate-Code operation.
+    ...     Takes 3 arguments:
+    ...     - mockResponse - json file with expected response body
+    ...     - invalidParameter - decision on invalid parameter to be sent (code, system, empty, None)
+    ...     - statusCode - Example: 200, 400, 404...
+    [Arguments]     ${mockResponse}=${None}     ${invalidParameter}=${None}     ${statusCode}=200
+    IF      '${invalidParameter}' == 'code'
+        &{params}   Create Dictionary     system=http://snomed.info/sct   code=111101111
+    ELSE IF     '${invalidParameter}' == 'system'
+        &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=281647001
+    ELSE IF     '${invalidParameter}' == 'empty'
+        &{params}   Create Dictionary     ${None}   ${None}
+    ELSE
+        &{params}   Create Dictionary     system=http://snomed.info/sct   code=281647001
+    END
+    &{req}      Create Mock Request Matcher    GET     ${VALUE_SET_VALIDATE_CODE_ENDPOINT}   params=&{params}
+
+    IF      ${mockResponse != None}
+        ${file}     Get File    ${mockResponse}
+        ${fileContentInJSON}    evaluate  json.loads($file)    json
+        &{rsp}      Create Mock Response
+        ...     status_code=${statusCode}     body=${fileContentInJSON}
+    ELSE
+        Set Variable    ${rsp}      ${None}
+    END
+    Create Mock Expectation     ${req}      ${rsp}
+
+GET Create Mock Expectation - ValueSet - By Id
+    [Documentation]     Create Mock Expectation for GET ValueSet using ValueSet Id.
+    ...     Takes 3 arguments:
+    ...     - mockResponse - json file with expected response body
+    ...     - existingId - decision on ValueSet Id. Can be: true, false.
+    ...     - statusCode - Example: 200, 404
+    [Arguments]     ${mockResponse}=${None}     ${existingId}=true     ${statusCode}=200
+    IF      '${existingId}' != 'true'
+        &{req}      Create Mock Request Matcher    GET     /fhir/ValueSet/not-existing-value-set-id
+    ELSE
+        &{req}      Create Mock Request Matcher    GET     ${VALUE_SET_ENDPOINT}
+    END
+    IF      ${mockResponse != None}
+        ${file}     Get File    ${mockResponse}
+        ${fileContentInJSON}    evaluate  json.loads($file)    json
+        &{rsp}      Create Mock Response
+        ...     status_code=${statusCode}     body=${fileContentInJSON}
+    ELSE
+        Set Variable    ${rsp}      ${None}
+    END
+    Create Mock Expectation     ${req}      ${rsp}
+
+Send GET - ValueSet - Expand
     [Documentation]     Send request using GET method for ValueSet, with expand operation.
     ...     There are 5 optional parameters:
     ...     - endpoint (define the endpoint to be reached)
@@ -81,6 +133,74 @@ Send GET - ValueSet
     ...     ${endpoint}
     ...     params=&{params}
     ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    ${statusCode}
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
+Send GET - ValueSet - Validate Code
+    [Documentation]     Send request using GET method for ValueSet, with expand operation.
+    ...     There are 5 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - statusCode (define expected response code)
+    ...     - response_headers (define the expected response headers)
+    ...     - invalidParameter (emptyUrl/wrongUrl/countMinus - in case negative flow result is expected)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${VALUE_SET_EXPAND_ENDPOINT}   ${statusCode}=200  ${response_headers}=${None}
+    ...     ${invalidParameter}=${None}     ${response_body}=${None}
+    IF      '${invalidParameter}' == 'code'
+        &{params}   Create Dictionary     system=http:http://snomed.info/sct   code=111101111
+    ELSE IF     '${invalidParameter}' == 'system'
+        &{params}   Create Dictionary     system=http://notexistingsystemurl.org   code=281647001
+    ELSE IF     '${invalidParameter}' == 'empty'
+        &{params}   Create Dictionary     ${None}   ${None}
+    ELSE
+        &{params}   Create Dictionary     system=http://snomed.info/sct   code=281647001
+    END
+    ${resp}     GET On Session
+    ...     server
+    ...     ${endpoint}
+    ...     params=&{params}
+    ...     expected_status=anything   headers=${response_headers}
+    Status Should Be    ${statusCode}
+    IF      ${response_headers != None}
+        Verify Response Headers     ${response_headers}     ${resp.headers}
+    END
+    IF      ${response_body != None}
+        Verify Response Body        ${response_body}        ${resp.json()}
+    END
+    Log To Console      ${resp.json()}
+    Set Test Variable   ${response}    ${resp.json()}
+    Log To Console      ${response}
+
+Send GET - ValueSet - By Id
+    [Documentation]     Send request using GET method for ValueSet, using ValueSet Id.
+    ...     There are 5 optional parameters:
+    ...     - endpoint (define the endpoint to be reached)
+    ...     - statusCode (define expected response code)
+    ...     - response_headers (define the expected response headers)
+    ...     - existingId (true/false)
+    ...     - response_body (define expected response body)
+    [Arguments]  ${endpoint}=${VALUE_SET_ENDPOINT}   ${statusCode}=200  ${response_headers}=${None}
+    ...     ${existingId}=true     ${response_body}=${None}
+    &{params}       Create Dictionary     Accept=application/json
+    IF      '${existingId}' != 'true'
+        ${resp}     GET On Session
+        ...     server
+        ...     /fhir/ValueSet/not-existing-value-set-id
+        ...     expected_status=anything   headers=${response_headers}      params=${params}
+    ELSE
+        ${resp}     GET On Session
+        ...     server
+        ...     ${endpoint}
+        ...     expected_status=anything   headers=${response_headers}      params=${params}
+    END
     Status Should Be    ${statusCode}
     IF      ${response_headers != None}
         Verify Response Headers     ${response_headers}     ${resp.headers}

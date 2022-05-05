@@ -6,6 +6,7 @@ Metadata        TOP_TEST_SUITE    MOCK_FHIR_TESTS
 Resource        ../../_resources/keywords/mock_fhir_code_system_keywords.robot
 Suite Setup     Create Sessions
 Suite Teardown  Reset Mock Server
+Force Tags      Mock    CODESYSTEM      Lookup
 
 
 *** Variables ***
@@ -16,19 +17,19 @@ ${MOCK_CODE_SYSTEM_PATH}    ${EXECDIR}/robot/_resources/test_data_sets/mocks/cod
 CODE SYSTEM GET Using Lookup Operation - Valid Code And System URL
     [Documentation]     Get CodeSystem using lookup operation,
     ...     with valid code and system URL. Positive flow.
-    [Tags]      Mock    CODESYSTEM      Positive      Lookup
+    [Tags]  Positive
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_success.json
     ...     None    200
     Send GET Expect Success - CodeSystem
     Should Be Equal As Strings      ${response["parameter"][0]["valueString"]}
-    ...      Bicarbonate [Moles/volume] in Serum or Plasma
+    ...     Bicarbonate [Moles/volume] in Serum or Plasma
     [Teardown]      Reset Mock Server
 
 CODE SYSTEM GET Using Lookup Operation - Valid System URL - Invalid Code
     [Documentation]     Get CodeSystem using lookup operation,
     ...     with valid system URL, but invalid code. Negative flow.
-    [Tags]      Mock    CODESYSTEM      Negative      Lookup
+    [Tags]  Negative
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_code_not_found.json
     ...     code   404
@@ -40,7 +41,7 @@ CODE SYSTEM GET Using Lookup Operation - Valid System URL - Invalid Code
 CODE SYSTEM GET Using Lookup Operation - Valid Code - Invalid System URL
     [Documentation]     Get CodeSystem using lookup operation,
     ...     with valid code URL, but invalid system URL. Negative flow.
-    [Tags]      Mock    CODESYSTEM      Negative      Lookup
+    [Tags]  Negative
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_system_url_not_found.json
     ...     system   404
@@ -53,7 +54,7 @@ CODE SYSTEM GET Using Lookup Operation - Valid Code - Invalid System URL
 CODE SYSTEM GET Using Lookup Operation - Missing Code And System URL Params
     [Documentation]     Get CodeSystem using lookup operation,
     ...     code and system url not provided. Negative flow.
-    [Tags]      Mock    CODESYSTEM      Negative      Lookup
+    [Tags]  Negative
     GET Create Mock Expectation - CodeSystem - Lookup operation
     ...     ${MOCK_CODE_SYSTEM_PATH}/lookup_missing_code_and_system_url.json
     ...     empty   400

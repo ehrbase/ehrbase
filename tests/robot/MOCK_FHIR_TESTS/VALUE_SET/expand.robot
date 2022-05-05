@@ -6,7 +6,7 @@ Metadata        TOP_TEST_SUITE    MOCK_FHIR_TESTS
 Resource        ../../_resources/keywords/mock_fhir_value_set_keywords.robot
 Suite Setup     Create Sessions
 Suite Teardown  Reset Mock Server
-
+Force Tags      Mock    VALUESET    Expand
 
 *** Variables ***
 ${MOCK_VALUE_SET_PATH}    ${EXECDIR}/robot/_resources/test_data_sets/mocks/value_set
@@ -18,11 +18,11 @@ Value Set GET Using Expand Operation - Positive
     ...     with valid:
     ...     - url, count, includeDesignations, activeOnly values.
     ...     Positive flow.
-    [Tags]      Mock    VALUESET      Positive      Expand
+    [Tags]  Positive
     GET Create Mock Expectation - ValueSet - Expand Operation
     ...     ${MOCK_VALUE_SET_PATH}/expand_success.json
     ...     None    200
-    Send GET - ValueSet
+    Send GET - ValueSet - Expand
     ...     endpoint=${VALUE_SET_EXPAND_ENDPOINT}   statusCode=200
     Should Be Equal As Strings      ${response["expansion"]["parameter"][1]["valueInteger"]}
     ...     25
@@ -39,11 +39,11 @@ Value Set GET Using Expand Operation - Positive - Count Is Zero
     ...     - url
     ...     - count=0
     ...     Positive flow.
-    [Tags]      Mock    VALUESET      Positive      Expand
+    [Tags]  Positive
     GET Create Mock Expectation - ValueSet - Expand Operation
     ...     ${MOCK_VALUE_SET_PATH}/expand_count_zero.json
     ...     None    200
-    Send GET - ValueSet
+    Send GET - ValueSet - Expand
     ...     endpoint=${VALUE_SET_EXPAND_ENDPOINT}   statusCode=200
     Should Be Equal As Strings      ${response["expansion"]["parameter"][1]["valueInteger"]}
     ...     0
@@ -54,11 +54,11 @@ Value Set GET Using Expand Operation - Empty URL
     ...     with empty:
     ...     - url value.
     ...     Negative flow.
-    [Tags]      Mock    VALUESET      Negative      Expand
+    [Tags]  Negative
     GET Create Mock Expectation - ValueSet - Expand Operation
     ...     ${MOCK_VALUE_SET_PATH}/expand_empty_url.json
     ...     emptyUrl    400
-    Send GET - ValueSet
+    Send GET - ValueSet - Expand
     ...     endpoint=${VALUE_SET_EXPAND_ENDPOINT}   invalidParameter=emptyUrl
     ...     statusCode=400
     Should Be Equal As Strings      ${response["issue"][0]["severity"]}
@@ -74,11 +74,11 @@ Value Set GET Using Expand Operation - Wrong URL
     ...     with wrong:
     ...     - url value.
     ...     Negative flow.
-    [Tags]      Mock    VALUESET      Negative      Expand
+    [Tags]  Negative
     GET Create Mock Expectation - ValueSet - Expand Operation
     ...     ${MOCK_VALUE_SET_PATH}/expand_wrong_url.json
     ...     wrongUrl    404
-    Send GET - ValueSet
+    Send GET - ValueSet - Expand
     ...     endpoint=${VALUE_SET_EXPAND_ENDPOINT}   invalidParameter=wrongUrl
     ...     statusCode=404
     Should Be Equal As Strings      ${response["issue"][0]["severity"]}
@@ -96,11 +96,11 @@ Value Set GET Using Expand Operation - Count With Minus
     [Documentation]     Get ValueSet using expand operation,
     ...     with count value containing minus sign.
     ...     Negative flow.
-    [Tags]      Mock    VALUESET      Negative      Expand
+    [Tags]  Negative
     GET Create Mock Expectation - ValueSet - Expand Operation
     ...     ${MOCK_VALUE_SET_PATH}/expand_count_with_minus_sign.json
     ...     countMinus    422
-    Send GET - ValueSet
+    Send GET - ValueSet - Expand
     ...     endpoint=${VALUE_SET_EXPAND_ENDPOINT}   invalidParameter=countMinus
     ...     statusCode=422
     Should Be Equal As Strings     ${response["issue"][0]["severity"]}

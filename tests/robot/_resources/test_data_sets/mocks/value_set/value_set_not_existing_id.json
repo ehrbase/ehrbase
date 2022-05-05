@@ -1,0 +1,8 @@
+{
+  "resourceType": "OperationOutcome",
+  "issue": [ {
+  "severity": "error",
+  "code": "not-found",
+  "diagnostics": "[3b7e8938-7f60-4de1-9af0-39bd09b6b8e4]: ValueSet not found: not-existing-value-set-id"
+  } ]
+}
