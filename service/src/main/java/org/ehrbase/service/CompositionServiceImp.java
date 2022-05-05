@@ -611,25 +611,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     }
   }
 
-  /**
-   * Internal helper funcition to read UID from given composition input in stated format.
-   *
-   * @param content Composition input
-   * @param format  Composition format
-   * @return the uid of the composition
-   */
-  @Override
-  public String getUidFromInputComposition(String content, CompositionFormat format)
-      throws IllegalArgumentException, InternalServerException, UnexpectedSwitchCaseException {
-
-    Composition composition = buildComposition(content, format, null);
-    if (composition.getUid() == null) {
-      return null;
-    } else {
-      return composition.getUid().toString();
-    }
-  }
-
   @Override
   public String getTemplateIdFromInputComposition(String content, CompositionFormat format) {
     Composition composition = buildComposition(content, format, null);
