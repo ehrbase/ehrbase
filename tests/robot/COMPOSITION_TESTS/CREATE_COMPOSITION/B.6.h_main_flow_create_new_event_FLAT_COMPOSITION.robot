@@ -38,5 +38,5 @@ Main flow create new event COMPOSITION FLAT
 
 *** Keywords ***
 Precondition
-    upload OPT    all_types/ehrn_vital_signs.v2.opt
+    Upload OPT    all_types/ehrn_vital_signs.v2.opt
     create EHR

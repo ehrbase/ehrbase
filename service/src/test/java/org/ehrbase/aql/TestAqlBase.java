@@ -1,5 +1,6 @@
 package org.ehrbase.aql;
 
+import java.io.FileInputStream;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
@@ -11,8 +12,6 @@ import org.jooq.DSLContext;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.FileInputStream;
 
 public class TestAqlBase {
 
@@ -36,20 +35,31 @@ public class TestAqlBase {
             e.printStackTrace();
         }
 
-        //add template to knowledgeCache
-        byte[] opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/Patientenaufenthalt.opt").readAllBytes();
+    // add template to knowledgeCache
+    var opt =
+        new FileInputStream(
+            "./src/test/resources/knowledge/operational_templates/Patientenaufenthalt.opt");
         knowledge.addOperationalTemplate(opt);
-        opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/LabResults1.opt").readAllBytes();
+    opt =
+        new FileInputStream("./src/test/resources/knowledge/operational_templates/LabResults1.opt");
         knowledge.addOperationalTemplate(opt);
-        opt = new FileInputStream(new String("./src/test/resources/knowledge/operational_templates/Station\u00e4rer Versorgungsfall.opt")).readAllBytes();
+    opt =
+        new FileInputStream(
+            "./src/test/resources/knowledge/operational_templates/Stationärer Versorgungsfall.opt");
         knowledge.addOperationalTemplate(opt);
-        opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/nested.en.v1.opt").readAllBytes();
+    opt =
+        new FileInputStream(
+            "./src/test/resources/knowledge/operational_templates/nested.en.v1.opt");
         knowledge.addOperationalTemplate(opt);
-        opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/Virologischer_Befund.opt").readAllBytes();
+    opt =
+        new FileInputStream(
+            "./src/test/resources/knowledge/operational_templates/Virologischer_Befund.opt");
         knowledge.addOperationalTemplate(opt);
-        opt = new FileInputStream("./src/test/resources/knowledge/opt/Vital Signs Encounter (Composition).opt").readAllBytes();
+    opt =
+        new FileInputStream(
+            "./src/test/resources/knowledge/opt/Vital Signs Encounter (Composition).opt");
         knowledge.addOperationalTemplate(opt);
-        opt = new FileInputStream("./src/test/resources/knowledge/opt/minimal_instruction.opt").readAllBytes();
+    opt = new FileInputStream("./src/test/resources/knowledge/opt/minimal_instruction.opt");
         knowledge.addOperationalTemplate(opt);
 
         //tests require a terminology service

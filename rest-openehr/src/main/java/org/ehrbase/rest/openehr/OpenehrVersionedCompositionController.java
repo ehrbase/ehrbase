@@ -107,7 +107,8 @@ public class OpenehrVersionedCompositionController extends BaseController
         // check if parameters are valid
         checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
 
-        RevisionHistory revisionHistory = compositionService.getRevisionHistoryOfVersionedComposition(versionedCompoUid);
+    RevisionHistory revisionHistory =
+        compositionService.getRevisionHistoryOfVersionedComposition(ehrId, versionedCompoUid);
 
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
@@ -196,7 +197,8 @@ public class OpenehrVersionedCompositionController extends BaseController
     private ResponseEntity<OriginalVersionResponseData<Composition>> getOriginalVersionResponseDataResponseEntity(String accept,
         UUID ehrId, UUID versionedObjectId, int version) {
 
-        Optional<OriginalVersion<Composition>> compositionOriginalVersion = compositionService.getOriginalVersionComposition(versionedObjectId, version);
+    Optional<OriginalVersion<Composition>> compositionOriginalVersion =
+        compositionService.getOriginalVersionComposition(ehrId, versionedObjectId, version);
         UUID contributionId = compositionOriginalVersion
             .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
             .orElseThrow(() -> new InvalidApiParameterException("Couldn't retrieve Composition with given parameters"));

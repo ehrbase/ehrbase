@@ -59,5 +59,5 @@ Alternative flow 4 create new invalid persistent COMPOSITION STRUCTURED
 
 *** Keywords ***
 Precondition
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
     create EHR

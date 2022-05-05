@@ -49,7 +49,7 @@ Force Tags    refactor    future
 *** Test Cases ***
 Alternative flow 7: commit CONTRIBUTIONS for versioning, but second commit contains errors
 
-    upload OPT    minimal/minimal_admin.opt
+    Upload OPT    minimal/minimal_admin.opt
     create EHR
     commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
     check response: is positive - returns version id

@@ -34,12 +34,12 @@ Suite Teardown  restart SUT
 Main flow Sanity Tests for FLAT Compositions
     [Tags]
     create EHR
-    get web template by template id (ECIS)  ${template_id}
+    Get Web Template By Template Id (ECIS)  ${template_id}
     commit composition   format=FLAT
     ...                  composition=family_history__.json
     check the successful result of commit composition
     (FLAT) get composition by composition_uid    ${composition_uid}
-    get web template by template id (ECIS)  ${template_id}
+    Get Web Template By Template Id (ECIS)  ${template_id}
     (FLAT) get composition by composition_uid    ${composition_uid}
     Update Composition (FLAT)  family_history.v2__.json
     (FLAT) get composition by composition_uid    ${composition_uid}
@@ -61,7 +61,7 @@ Main flow Sanity Tests for FLAT Compositions
 Main flow Sanity Tests for Canonical JSON Compositions
     [Tags]
     create EHR
-    get web template by template id (ECIS)  ${template_id}
+    Get Web Template By Template Id (ECIS)  ${template_id}
     commit composition   format=CANONICAL_JSON
     ...                  composition=nested.en.v1__full_without_links.json
     check the successful result of commit composition
@@ -91,7 +91,7 @@ Main flow Sanity Tests for Canonical JSON Compositions
 Main flow Sanity Tests for Canonical XML Compositions
     [Tags]
     create EHR
-    get web template by template id (ECIS)  ${template_id}
+    Get Web Template By Template Id (ECIS)  ${template_id}
     commit composition   format=CANONICAL_XML
     ...                  composition=nested.en.v1__full_without_links.xml
     check the successful result of commit composition
@@ -123,5 +123,5 @@ Main flow Sanity Tests for Canonical XML Compositions
 Precondition
     Upload OPT    all_types/family_history.opt
     Upload OPT    nested/nested.opt
-    upload OPT    minimal/minimal_observation.opt
-    Extract Template_id From OPT File
+    Upload OPT    minimal/minimal_observation.opt
+    Extract Template Id From OPT File

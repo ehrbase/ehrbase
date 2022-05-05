@@ -47,5 +47,5 @@ Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist TDD
 
 *** Keywords ***
 Precondition
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
     create EHR

@@ -17,6 +17,10 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
+import java.net.URI;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
@@ -25,11 +29,6 @@ import org.ehrbase.rest.openehr.audit.support.CompositionAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.net.URI;
-import java.util.UUID;
 
 /**
  * Concrete implementation of {@link OpenEhrAuditInterceptor} for Composition API.
@@ -99,9 +98,11 @@ public class CompositionAuditInterceptor extends OpenEhrAuditInterceptor<Composi
         if (version == null || version == 0) {
             version = compositionService.getLastVersionNumber(compositionId);
         }
-        return compositionService.retrieve(compositionId, version)
-                .map(CompositionDto::getTemplateId)
-                .orElse(null);
-
+    UUID ehrId = compositionService.getEhrId(compositionId);
+    return compositionService
+        .retrieve(ehrId, compositionId, version)
+        .map(c -> CompositionService.from(ehrId, c))
+        .map(CompositionDto::getTemplateId)
+        .orElse(null);
     }
 }
