@@ -42,6 +42,8 @@ jobs:
           git checkout -b release/v${VERSION}
           # Update version
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
+          #Update sdk version to release 
+          mvn versions:use-releases  -Dincludes=org.ehrbase.openehr.sdk:*
           #edit changelog
           replace="s/\[unreleased\]/\[${VERSION}\]/"
           sed -i ${replace} CHANGELOG.md
@@ -50,7 +52,7 @@ jobs:
           # commit & push
           git add -A
           git commit -m "release ${VERSION}: updated version to ${VERSION}"
-          git push -u origin release/v${VERSION}     
+          git push -u origin release/v${VERSION}
       # wait for status of commit to change from pending
       - name: Wait for ci pipeline
         run: |
@@ -99,6 +101,8 @@ jobs:
           echo "next version: $NEXT_VERSION"
           # update version
           mvn versions:set -DnewVersion=${NEXT_VERSION} -DprocessAllModules=true
+          #update sdk to latest snapshot
+          mvn versions:use-latest-versions  -Dincludes=org.ehrbase.openehr.sdk:*  -DallowSnapshots=true
           #edit changelog
           sed -i '5i ## [unreleased]\n ### Added \n ### Fixed \n' CHANGELOG.md
           replace="$ a \[unreleased\]: https:\/\/github.com\/ehrbase\/ehrbase\/compare\/v$VERSION...HEAD"
