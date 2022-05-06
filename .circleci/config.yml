@@ -1023,7 +1023,6 @@ jobs:
     steps:
       - checkout
       - restore-workspace
-#      - run-mock-server
       - run-robot-tests:
           include-tags: "MOCKSUITE"
           test-suite-path: "MOCK_FHIR_TESTS"
@@ -1754,14 +1753,6 @@ commands:
       - attach_workspace:
           at: /home/circleci/
 
-  run-mock-server:
-    steps:
-      - run:
-          name: Run MockServer
-          command: |
-            docker run -d --rm -p 1080:1080 mockserver/mockserver
-          when: always
-
   save-openehr-sdk-repo:
     steps:
       - persist_to_workspace:
@@ -2302,6 +2293,9 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
+        environment:
+          MOCKSERVER_SERVER_PORT: 1080
+          MOCKSERVER_LOG_LEVEL: DEBUG
 
   docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin:
     working_directory: ~/projects
