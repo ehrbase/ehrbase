@@ -138,6 +138,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - TEMPLATE-tests:
           context: org-global
           requires:
@@ -236,6 +242,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
@@ -379,6 +386,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - TEMPLATE-tests:
           context: org-global
           requires:
@@ -471,6 +484,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
@@ -652,6 +666,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - TEMPLATE-tests:
           context: org-global
           requires:
@@ -722,6 +740,7 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
@@ -984,6 +1003,17 @@ jobs:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_SHANGHAI"
+
+  COMPOSITION-tests-15:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-workspace
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_ism_transitions"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_15"
 
   TEMPLATE-tests:
     executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
