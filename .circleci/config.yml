@@ -1759,7 +1759,7 @@ commands:
       - run:
           name: Run MockServer
           command: |
-            run -d --rm -p 1080:1080 mockserver/mockserver
+            docker run -d --rm -p 1080:1080 mockserver/mockserver
           when: always
 
   save-openehr-sdk-repo:
@@ -2287,6 +2287,10 @@ executors:
     working_directory: ~/projects
     docker:
       - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+      - image: ehrbase/ehrbase-postgres:13.4
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
