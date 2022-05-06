@@ -1759,7 +1759,7 @@ commands:
       - run:
           name: Run MockServer
           command: |
-            docker run -d --rm -p 1080:1080 mockserver/mockserver
+            run -d --rm -p 1080:1080 mockserver/mockserver
           when: always
 
   save-openehr-sdk-repo:
