@@ -17,11 +17,10 @@
  */
 package org.ehrbase.application.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "server")
@@ -60,15 +59,8 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
         return aqlConfig.getIterationScanDepth();
     }
 
-    @Override
-    public Boolean getUseJsQuery() {
-        return aqlConfig.getUseJsQuery();
-    }
 
-    @Override
-    public void setUseJsQuery(boolean b) {
-        aqlConfig.setUseJsQuery(b);
-    }
+
 
     public AqlConfig getAqlConfig() {
         return aqlConfig;
@@ -80,13 +72,10 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
 
     public static class AqlConfig {
 
-        private Boolean useJsQuery;
+
         private String ignoreIterativeNodeList;
         private Integer iterationScanDepth = 1;
 
-        public Boolean getUseJsQuery() {
-            return useJsQuery;
-        }
 
         public String getIgnoreIterativeNodeList() {
             return ignoreIterativeNodeList;
@@ -96,9 +85,7 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
             return iterationScanDepth;
         }
 
-        public void setUseJsQuery(Boolean useJsQuery) {
-            this.useJsQuery = useJsQuery;
-        }
+
 
         public void setIgnoreIterativeNodeList(String ignoreIterativeNodeList) {
             this.ignoreIterativeNodeList = ignoreIterativeNodeList;

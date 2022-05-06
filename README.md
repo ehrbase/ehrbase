@@ -53,24 +53,10 @@ These instructions will get you a copy of the project up and running on your loc
 
 You will need Java JDK/JRE 11 (preferably openJDK: e.g. from https://adoptopenjdk.net/)
 
-You will need a Postgres Database (Docker image or local installation). We recommend the Docker image to get started quickly.
+You will need a Postgres Database (at least Version 10.4, Version 13 recommended) (Docker image or local installation).
+We recommend the Docker
+image to get started quickly.
 
-When installing locally, the Postgres Database (at least Version 10.4) needs the following extensions:
- * [temporal tables](https://github.com/arkhipov/temporal_tables) 
-    ```bash
-     git clone https://github.com/arkhipov/temporal_tables.git
-     make
-     sudo make install
-     make installcheck
-     ```
- * [jsquery](https://github.com/postgrespro/jsquery) 
-     ```bash
-     git clone https://github.com/postgrespro/jsquery.git
-     cd jsquery
-     make USE_PGXS=1
-     sudo make USE_PGXS=1 install
-     make USE_PGXS=1 installcheck
-    ```
 
 ### Installing
 
