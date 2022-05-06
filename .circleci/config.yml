@@ -156,6 +156,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - TERMINOLOGY-MOCK-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -233,6 +239,7 @@ workflows:
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -390,6 +397,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - TERMINOLOGY-MOCK-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -461,6 +474,7 @@ workflows:
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -650,6 +664,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - TERMINOLOGY-MOCK-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - CONTRIBUTION-test:
           context: org-global
           requires:
@@ -707,6 +725,7 @@ workflows:
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -998,6 +1017,17 @@ jobs:
           include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
           test-suite-name: "EHRSCAPE"
+
+  TERMINOLOGY-MOCK-tests:
+    executor: docker-mock-server
+    steps:
+      - checkout
+      - restore-workspace
+      - run-mock-server
+      - run-robot-tests:
+          include-tags: "MOCKSUITE"
+          test-suite-path: "MOCK_FHIR_TESTS"
+          test-suite-name: "TERMINOLOGY_MOCK"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
@@ -1724,6 +1754,13 @@ commands:
       - attach_workspace:
           at: /home/circleci/
 
+  run-mock-server:
+    steps:
+      - run:
+          name: Run MockServer
+          command: |
+            docker run -d --rm -p 1080:1080 mockserver/mockserver
+          when: always
 
   save-openehr-sdk-repo:
     steps:
@@ -2245,6 +2282,18 @@ executors:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           PGDATA: /tmp
+
+  docker-mock-server:
+    working_directory: ~/projects
+    docker:
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+      - image: mockserver/mockserver:5.13.2
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
 
   docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin:
     working_directory: ~/projects
