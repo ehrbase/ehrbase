@@ -27,6 +27,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Suite Setup       Precondition
 Suite Teardown  restart SUT
 
+Force Tags      COMPOSITION_ism_transitions
 
 *** Test Cases ***
 Create Composition With Valid ISM Transition
