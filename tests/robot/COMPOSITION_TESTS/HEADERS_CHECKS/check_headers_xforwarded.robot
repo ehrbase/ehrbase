@@ -26,25 +26,22 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Resource        ../../_resources/keywords/aql_query_keywords.robot
 Resource        ../../_resources/keywords/directory_keywords.robot
 
-Suite Setup       Precondition
+Suite Setup     Precondition
 Suite Teardown  restart SUT
 
 
 *** Test Cases ***
 Check Headers with (JSON)
-    [Tags]
     create EHR wih x forwarded headers
     check that headers location response has    https   example.com    333
     [Teardown]    restart SUT
 
 Check Headers with (XML)
-    [Tags]
     create EHR wih x forwarded headers   XML
     check that headers location response has    https   example.com    333
     [Teardown]    restart SUT
 
 Check Headers with Commit Composition
-    [Tags]
     create EHR wih x forwarded headers
     check that headers location response has    https   example.com    333
     Get Web Template By Template Id (ECIS)  ${template_id}
