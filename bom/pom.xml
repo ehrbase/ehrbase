@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ Copyright (c) 2022. vitasystems GmbH and Hannover Medical School.
   ~
@@ -19,7 +20,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.ehrbase.openehr</groupId>
@@ -28,29 +28,30 @@
     <packaging>pom</packaging>
 
     <properties>
+        <antlr4.version>4.9.3</antlr4.version>
         <archie.version>2.0.1</archie.version>
+        <assertj.core>3.22.0</assertj.core>
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-        <assertj.core>3.22.0</assertj.core>
-        <json.path.version>2.7.0</json.path.version>
-        <jooq.version>3.16.5</jooq.version>
-        <spring.version>2.5.12</spring.version>
-        <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
-        <postgressql.version>42.3.3</postgressql.version>
         <ehrbase.sdk.version>1.19.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
-        <joda.version>2.10.13</joda.version>
-        <jacoco.version>0.8.7</jacoco.version>
-        <surefire.version>3.0.0-M5</surefire.version>
-        <failsafe.version>3.0.0-M5</failsafe.version>
-        <prometheus.version>1.8.2</prometheus.version>
-        <antlr4.version>4.9.3</antlr4.version>
-        <javamelody.version>1.90.0</javamelody.version>
         <jackson-bom.version>2.13.2</jackson-bom.version>
-        <spring-security.version>5.5.5</spring-security.version>
+        <javamelody.version>1.90.0</javamelody.version>
+        <joda.version>2.10.13</joda.version>
+        <jooq.version>3.16.5</jooq.version>
+        <json-path.version>2.7.0</json-path.version>
         <junit.version>5.7.2</junit.version>
+        <maven-dependency-plugin.version>3.3.0</maven-dependency-plugin.version>
+        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
+        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
+        <maven-jacoco-plugin.version>0.8.7</maven-jacoco-plugin.version>
+        <maven-nexus-staging-plugin.version>1.6.8</maven-nexus-staging-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+        <postgressql.version>42.3.3</postgressql.version>
+        <prometheus.version>1.8.2</prometheus.version>
+        <spring-boot.version>2.5.12</spring-boot.version>
+        <spring-security.version>5.5.5</spring-security.version>
+        <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
     </properties>
 
     <distributionManagement>
@@ -75,19 +76,14 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
     </repositories>
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.version}</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -250,7 +246,7 @@
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>
                 <artifactId>json-path</artifactId>
-                <version>${json.path.version}</version>
+                <version>${json-path.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.nedap.healthcare.archie</groupId>
@@ -353,16 +349,13 @@
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
-
-
         </plugins>
-
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>${maven-dependency-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -377,7 +370,7 @@
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>${nexus-staging-maven-plugin.version}</version>
+                    <version>${maven-nexus-staging-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>com.spotify</groupId>
@@ -432,7 +425,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>2.6.6</version>
+                    <version>${spring-boot.version}</version>
                     <configuration>
                         <mainClass>org.ehrbase.application.EhrBase</mainClass>
                     </configuration>
@@ -452,10 +445,8 @@
                     </executions>
                 </plugin>
             </plugins>
-
         </pluginManagement>
     </build>
-
 
     <profiles>
         <profile>
@@ -479,5 +470,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>
