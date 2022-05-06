@@ -1,0 +1,92 @@
+{
+    "resourceType": "Parameters",
+    "parameter": [
+        {
+            "name": "display",
+            "valueString": "Bicarbonate [Moles/volume] in Serum or Plasma"
+        },
+        {
+            "name": "name",
+            "valueString": "LOINC v2.72"
+        },
+        {
+            "name": "version",
+            "valueString": "2.72"
+        },
+        {
+            "name": "property",
+            "part": [
+                {
+                    "name": "code",
+                    "valueCode": "parent"
+                },
+                {
+                    "name": "value",
+                    "valueCode": "LP386569-0"
+                }
+            ]
+        },
+        {
+            "name": "designation",
+            "part": [
+                {
+                    "name": "language",
+                    "valueCode": "en"
+                },
+                {
+                    "name": "use",
+                    "valueCoding": {
+                        "system": "http://terminology.hl7.org/CodeSystem/designation-usage",
+                        "code": "display"
+                    }
+                },
+                {
+                    "name": "value",
+                    "valueString": "Bicarbonate [Moles/volume] in Serum or Plasma"
+                }
+            ]
+        },
+        {
+            "name": "designation",
+            "part": [
+                {
+                    "name": "language",
+                    "valueCode": "en"
+                },
+                {
+                    "name": "use",
+                    "valueCoding": {
+                        "system": "http://snomed.info/sct",
+                        "code": "900000000000003001",
+                        "display": "Fully specified name"
+                    }
+                },
+                {
+                    "name": "value",
+                    "valueString": "Bicarbonate:SCnc:Pt:Ser/Plas:Qn:"
+                }
+            ]
+        },
+        {
+            "name": "designation",
+            "part": [
+                {
+                    "name": "language",
+                    "valueCode": "en"
+                },
+                {
+                    "name": "use",
+                    "valueCoding": {
+                        "system": "http://snomed.info/sct",
+                        "code": "900000000000013009",
+                        "display": "Synonym"
+                    }
+                },
+                {
+                    "name": "value",
+                    "valueString": "HCO3 SerPl-sCnc"
+                }
+            ]
+        }
+    ]
+}

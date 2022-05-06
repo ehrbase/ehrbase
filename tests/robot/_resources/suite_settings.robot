@@ -32,6 +32,7 @@ Library     JSONLibrary
 Library     DateTime
 Library     DatabaseLibrary
 Library     distutils.util
+Library     MockServerLibrary
 
 Library     libraries/dockerlib.py
 Library     libraries/jsonlib.py
@@ -40,7 +41,7 @@ Library     libraries/composition_validation_lib.py
 
 Resource    keywords/generic_keywords.robot
 Variables   variables/sut_config.py
-            ...    ${SUT}    ${AUTH_TYPE}    ${NODOCKER}
+...         ${SUT}    ${AUTH_TYPE}    ${NODOCKER}
 
 
 
@@ -48,8 +49,9 @@ Variables   variables/sut_config.py
 # ${hip_baseurl_v1}     http://localhost:8080/ehrbase/rest/ecis/v1
 # ${template_id}    IDCR%20-%20Immunisation%20summary.v0        # TODO: @wlad rm if nothing breaks
 # ${invalid_ehr_id}    123
-${BASE_URL}              http://localhost:8080/ehrbase/rest/openehr/v1
+${BASE_URL}             http://localhost:8080/ehrbase/rest/openehr/v1
 # ${ADMIN_BASE_URL}        http://localhost:8080/ehrbase/rest/admin
+${MOCK_URL}             http://localhost:1080
 ${PROJECT_ROOT}          ${EXECDIR}${/}..
 ${POM_FILE}              ${PROJECT_ROOT}${/}pom.xml
 ${CREATING_SYSTEM_ID}    ${NODENAME}
