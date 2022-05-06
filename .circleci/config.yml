@@ -837,7 +837,7 @@ jobs:
       - checkout
       - restore-workspace
       - run-robot-tests:
-          include-tags: "compositionANDcomposition_createANDism_transitions"
+          include-tags: "compositionANDcomposition_createANDcomposition_ism_transitions"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_1"
 
