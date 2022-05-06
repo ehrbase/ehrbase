@@ -1023,7 +1023,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
-      - run-mock-server
+#      - run-mock-server
       - run-robot-tests:
           include-tags: "MOCKSUITE"
           test-suite-path: "MOCK_FHIR_TESTS"
@@ -2294,6 +2294,10 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
       - image: mockserver/mockserver:5.13.2
         auth:
           username: $DOCKER_USER
