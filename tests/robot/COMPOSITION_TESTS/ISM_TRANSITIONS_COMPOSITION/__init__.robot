@@ -26,4 +26,4 @@ Documentation    COMPOSITION TEST SUITE
 
 Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags    ISM_TRANSITIONS
+Force Tags    ISM_transitions
