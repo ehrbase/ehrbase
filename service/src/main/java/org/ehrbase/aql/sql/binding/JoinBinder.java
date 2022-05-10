@@ -212,6 +212,7 @@ public class JoinBinder implements IJoinBinder {
         joinEventContext(selectQuery);
         Table<PartyIdentifiedRecord> facilityTable = facilityRef;
         selectQuery.addJoin(facilityTable,
+                JoinType.LEFT_OUTER_JOIN,
                 EVENT_CONTEXT.FACILITY
                         .eq(DSL.field(facilityTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))));
         facilityJoined = true;
