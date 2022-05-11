@@ -18,22 +18,23 @@
 *** Settings ***
 Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
-
 Resource        ../../_resources/keywords/composition_keywords.robot
-
-Force Tags
 
 
 *** Test Cases ***
 Get Existing COMPOSITION And Check All Values
     [Documentation]     Create, Get and validate that all values were returned,
-    ...     for newly created composition.
+    ...     for newly created composition, after Get operation.
+    ...     This compares Get composition result with expected json.
     ...     Test case for bug: https://jira.vitagroup.ag/browse/CDR-373
     [Tags]  Positive
     Upload OPT    all_types/SSIAD PRIeSM.opt
     create EHR
+    Set Test Variable    ${flat_composition_file_name}   SSIAD PRIeSM__.json
     commit composition   format=FLAT
-    ...                  composition=SSIAD PRIeSM__.json
+    ...                  composition=${flat_composition_file_name}
     check the successful result of commit composition   nesting
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
+    Set Test Variable   ${template_id}      ssiad_priesm
+    Compare content of compositions with the Original (FLAT)  ${COMPO DATA SETS}/FLAT/ssiad_priesm_expected_values.json
