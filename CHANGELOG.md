@@ -14,6 +14,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - use bom for dependence management  ([#820](https://github.com/ehrbase/ehrbase/pull/820))
 - add  Release action  ([#831](https://github.com/ehrbase/ehrbase/pull/831)
 - Added hooks for the plugin system ([#816](https://github.com/ehrbase/ehrbase/pull/816))
+- Added index to `party_identified` to improve performance of find EHR by subject-id ([857](https://github.com/ehrbase/ehrbase/pull/857)))
 
 ### Changed
 - Upgrade to Spring boot 2.5.12
