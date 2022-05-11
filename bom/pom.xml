@@ -27,6 +27,76 @@
     <version>0.21.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>EHRbase</name>
+    <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
+    <url>https://ehrbase.org</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+
+    <scm>
+        <connection>scm:git:git://github.com/ehrbase/ehrbase.git</connection>
+        <developerConnection>scm:git:ssh://github.com:ehrbase/ehrbase.git</developerConnection>
+        <url>https://github.com/ehrbase/ehrbase</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Stefan Spiska</name>
+            <email>stefan.spiska@vitagroup.ag</email>
+            <organization>vitasystems GmbH</organization>
+            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Axel Siebert</name>
+            <email>axel.siebert@vitasystems.de</email>
+            <organization>vitasystems GmbH</organization>
+            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Wladislaw Wagner</name>
+            <email>wladislaw.wagner@vitasystems.de</email>
+            <organization>vitasystems GmbH</organization>
+            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Luis Marco-Ruiz</name>
+            <email>luis.marco-ruiz@plri.de</email>
+            <organization>Hannover Medical School</organization>
+            <organizationUrl>https://plri.de/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Jake Smolka</name>
+            <email>jake.smolka@plri.de</email>
+            <organization>Hannover Medical School</organization>
+            <organizationUrl>https://plri.de/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Pablo Pazos</name>
+            <email>pablo.pazos@cabolabs.com</email>
+            <organization>Hannover Medical School</organization>
+            <organizationUrl>https://plri.de/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Christian Chevalley</name>
+            <email>christian@adoc.co.th</email>
+            <organization>Hannover Medical School</organization>
+            <organizationUrl>https://plri.de/</organizationUrl>
+        </developer>
+        <developer>
+            <name>Renaud Subiger</name>
+            <email>renaud.subiger.ext@vitagroup.ag</email>
+            <organization>vitasystems GmbH</organization>
+            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+        </developer>
+    </developers>
+
+
     <properties>
         <antlr4.version>4.9.3</antlr4.version>
         <archie.version>2.0.1</archie.version>
