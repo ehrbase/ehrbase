@@ -1,0 +1,10 @@
+{
+    "resourceType": "OperationOutcome",
+    "issue": [
+        {
+            "severity": "error",
+            "code": "not-found",
+            "diagnostics": "[4caea470-313d-46cc-990b-a19072fd5e8e]: Code system http://notexistingsystemurl.org could not be resolved. It does not appear to be indexed."
+        }
+    ]
+}

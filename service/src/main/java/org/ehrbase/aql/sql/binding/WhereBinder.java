@@ -21,22 +21,28 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.LateralVariable;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.queryimpl.*;
+import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
+import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
+import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.MultiFieldsMap;
+import org.ehrbase.aql.sql.queryimpl.VariablePath;
 import org.ehrbase.aql.sql.queryimpl.value_field.ISODateTime;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.serialisation.dbencoding.CompositionSerializer;
-import org.jooq.*;
+import org.jooq.Condition;
+import org.jooq.Field;
 import org.jooq.impl.DSL;
-
-import java.util.*;
-
-import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_USE_JSQUERY;
 
 /**
  * Bind the abstract WHERE clause parameters into a SQL expression
@@ -90,7 +96,8 @@ public class WhereBinder {
         this.domainAccess = domainAccess;
     }
 
-    private TaggedStringBuilder encodeWhereVariable(int whereCursor, MultiFieldsMap multiFieldsMap, I_VariableDefinition variableDefinition, boolean forceSQL, String compositionName) {
+  private TaggedStringBuilder encodeWhereVariable(
+      int whereCursor, MultiFieldsMap multiFieldsMap, I_VariableDefinition variableDefinition) {
         String identifier = variableDefinition.getIdentifier();
         String className = pathResolver.classNameOf(identifier);
         if (className == null)
@@ -98,50 +105,12 @@ public class WhereBinder {
 
         Field<?> field = multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getQualifiedFieldOrLast(whereCursor).getSQLField();
 
-        //EHR-327: if force SQL is set to true via environment, jsquery extension is not required
-        //this allows to deploy on AWS since jsquery is not supported by this provider
-        Boolean usePgExtensions;
-        if (System.getenv(ENV_AQL_USE_JSQUERY) != null)
-            usePgExtensions = Boolean.parseBoolean(System.getenv(ENV_AQL_USE_JSQUERY));
-        else if (domainAccess.getServerConfig().getUseJsQuery() != null)
-            usePgExtensions = domainAccess.getServerConfig().getUseJsQuery();
-        else
-            usePgExtensions = false;
-
-        if (forceSQL || Boolean.FALSE.equals(usePgExtensions)) {
-
-            if (field == null)
-                return null;
+    if (field == null) {
+      return null;
+    }
             return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
-        } else {
-            switch (className) {
-                case COMPOSITION:
-                    if (variableDefinition.getPath().startsWith(CONTENT)) {
-                        TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
-                        if (compositionName != null && taggedStringBuilder.startWith(CompositionSerializer.TAG_COMPOSITION)) {
-                            //add the composition name into the composition predicate
-                            taggedStringBuilder.replace("]", " and name/value='" + compositionName + "']");
-                        }
-                        return taggedStringBuilder;
-                    }
-                    break;
-                case EHR:
-                    if (field == null)
-                        return null;
-                    isFollowedBySQLConditionalOperator = true;
-                    return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
 
-                default:
-                    if (compositionAttributeQuery.isCompositionAttributeItemStructure(multiFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath()).getTemplateId(), identifier)){
-                        return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
-                    }
-                    else {
-                        return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.JSQUERY);
-                    }
-            }
-            throw new IllegalStateException("Unhandled class name:"+className);
-        }
     }
 
     private TaggedStringBuilder buildWhereCondition(int whereCursor, MultiFieldsMap multiFieldsMap, TaggedStringBuilder taggedBuffer, List<Object> item) {
@@ -149,8 +118,9 @@ public class WhereBinder {
             if (part instanceof String)
                 taggedBuffer.append((String) part);
             else if (part instanceof VariableDefinition) {
-                //substitute the identifier
-                TaggedStringBuilder taggedStringBuilder = encodeWhereVariable(whereCursor, multiFieldsMap, (VariableDefinition) part, false, null);
+        // substitute the identifier
+        TaggedStringBuilder taggedStringBuilder =
+            encodeWhereVariable(whereCursor, multiFieldsMap, (VariableDefinition) part);
                 if (taggedStringBuilder != null) {
                     taggedBuffer.append(taggedStringBuilder.toString());
                     taggedBuffer.setTagField(taggedStringBuilder.getTagField());
@@ -237,7 +207,8 @@ public class WhereBinder {
                 //look ahead and check if followed by a sql operator
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
-                    TaggedStringBuilder encodedVar = encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, true, null);
+          TaggedStringBuilder encodedVar =
+              encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item);
                     String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item, multiSelectFieldsMap );
                     if (StringUtils.isNotBlank(expanded))
                         taggedStringBuilder.append(expanded);
@@ -253,13 +224,21 @@ public class WhereBinder {
                             compositionName = compositionNameValue(((I_VariableDefinition) item).getIdentifier());
 
                         if (compositionName != null) {
-                            taggedStringBuilder = encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, false, compositionName);
+              taggedStringBuilder =
+                  encodeWhereVariable(
+                      whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item);
                         } else
                             throw new IllegalArgumentException("A composition name/value is required to resolve where statement when querying for a whole composition");
                     } else {
                         //if the path contains node predicate expression uses a SQL syntax instead of jsquery
                         if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
-                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item, multiSelectFieldsMap );
+              String expanded =
+                  expandForLateral(
+                      templateId,
+                      encodeWhereVariable(
+                          whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item),
+                      (I_VariableDefinition) item,
+                      multiSelectFieldsMap);
                             if (StringUtils.isNotBlank(expanded)) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;
@@ -271,7 +250,13 @@ public class WhereBinder {
                             isFollowedBySQLConditionalOperator = true;
                             requiresJSQueryClosure = false;
                         } else {
-                            String expanded = expandForLateral(templateId, encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item, true, null), (I_VariableDefinition)item, multiSelectFieldsMap );
+              String expanded =
+                  expandForLateral(
+                      templateId,
+                      encodeWhereVariable(
+                          whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item),
+                      (I_VariableDefinition) item,
+                      multiSelectFieldsMap);
                             if (StringUtils.isNotBlank(expanded)) {
                                 taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
                                 inSubqueryOperator = false;

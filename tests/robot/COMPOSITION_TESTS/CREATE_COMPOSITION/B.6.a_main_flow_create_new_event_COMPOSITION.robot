@@ -57,6 +57,7 @@ Main flow create new event COMPOSITION STRUCTURED
     ...                  composition=nested.en.v1__full.json
     check the successful result of commit composition   nesting
 
+
 *** Keywords ***
 Precondition
     Upload OPT    nested/nested.opt

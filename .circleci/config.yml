@@ -138,6 +138,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - TEMPLATE-tests:
           context: org-global
           requires:
@@ -151,6 +157,12 @@ workflows:
             - QUERYSERVICE-test-1
 
       - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - TERMINOLOGY-MOCK-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -230,9 +242,11 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -372,6 +386,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - TEMPLATE-tests:
           context: org-global
           requires:
@@ -385,6 +405,12 @@ workflows:
             - QUERYSERVICE-test-2
 
       - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - TERMINOLOGY-MOCK-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -458,9 +484,11 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -638,6 +666,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - TEMPLATE-tests:
           context: org-global
           requires:
@@ -647,6 +679,10 @@ workflows:
           requires:
             - build package ehrbase with locally built sdk from sync-branch
       - EHRScape-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
+      - TERMINOLOGY-MOCK-tests:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
@@ -704,9 +740,11 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
             - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -966,6 +1004,17 @@ jobs:
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_SHANGHAI"
 
+  COMPOSITION-tests-15:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-workspace
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_ism_transitions"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_15"
+
   TEMPLATE-tests:
     executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
     # executor: machine-ubuntu-2004
@@ -998,6 +1047,16 @@ jobs:
           include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
           test-suite-name: "EHRSCAPE"
+
+  TERMINOLOGY-MOCK-tests:
+    executor: docker-mock-server
+    steps:
+      - checkout
+      - restore-workspace
+      - run-robot-tests:
+          include-tags: "MOCKSUITE"
+          test-suite-path: "MOCK_FHIR_TESTS"
+          test-suite-name: "TERMINOLOGY_MOCK"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
@@ -1724,7 +1783,6 @@ commands:
       - attach_workspace:
           at: /home/circleci/
 
-
   save-openehr-sdk-repo:
     steps:
       - persist_to_workspace:
@@ -2245,6 +2303,29 @@ executors:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           PGDATA: /tmp
+
+  docker-mock-server:
+    working_directory: ~/projects
+    docker:
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+      - image: mockserver/mockserver:5.13.2
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          MOCKSERVER_SERVER_PORT: 1080
+          MOCKSERVER_LOG_LEVEL: DEBUG
 
   docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin:
     working_directory: ~/projects

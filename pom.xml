@@ -37,17 +37,6 @@
     <version>0.21.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>EHRbase</name>
-    <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
-    <url>https://ehrbase.org</url>
-
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
     <modules>
         <module>bom</module>
         <module>api</module>
@@ -62,79 +51,17 @@
     </modules>
 
 
-    <developers>
-        <developer>
-            <name>Stefan Spiska</name>
-            <email>stefan.spiska@vitagroup.ag</email>
-            <organization>vitasystems GmbH</organization>
-            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Axel Siebert</name>
-            <email>axel.siebert@vitasystems.de</email>
-            <organization>vitasystems GmbH</organization>
-            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Wladislaw Wagner</name>
-            <email>wladislaw.wagner@vitasystems.de</email>
-            <organization>vitasystems GmbH</organization>
-            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Luis Marco-Ruiz</name>
-            <email>luis.marco-ruiz@plri.de</email>
-            <organization>Hannover Medical School</organization>
-            <organizationUrl>https://plri.de/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Jake Smolka</name>
-            <email>jake.smolka@plri.de</email>
-            <organization>Hannover Medical School</organization>
-            <organizationUrl>https://plri.de/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Pablo Pazos</name>
-            <email>pablo.pazos@cabolabs.com</email>
-            <organization>Hannover Medical School</organization>
-            <organizationUrl>https://plri.de/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Christian Chevalley</name>
-            <email>christian@adoc.co.th</email>
-            <organization>Hannover Medical School</organization>
-            <organizationUrl>https://plri.de/</organizationUrl>
-        </developer>
-        <developer>
-            <name>Renaud Subiger</name>
-            <email>renaud.subiger.ext@vitagroup.ag</email>
-            <organization>vitasystems GmbH</organization>
-            <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
-        </developer>
-    </developers>
-
-    <scm>
-        <connection>scm:git:git://github.com/ehrbase/ehrbase.git</connection>
-        <developerConnection>scm:git:ssh://github.com:ehrbase/ehrbase.git</developerConnection>
-        <url>https://github.com/ehrbase/ehrbase</url>
-    </scm>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- PostgreSQL Database Properties -->
         <database.host>localhost</database.host>
         <database.port>5432</database.port>
         <database.user>ehrbase</database.user>
         <database.pass>ehrbase</database.pass>
         <database.name>ehrbase</database.name>
-        <jacoco.version>0.8.7</jacoco.version>
-        <surefire.version>3.0.0-M5</surefire.version>
-        <failsafe.version>3.0.0-M5</failsafe.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-
-
         <test.profile>unit</test.profile>
     </properties>
 
@@ -165,7 +92,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
+                <version>${maven-jacoco-plugin.version}</version>
                 <executions>
                     <!-- SET ARG LINE PROPERTY FOR SUREFIRE -->
                     <execution>
@@ -194,7 +121,7 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
+                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <skipTests>true</skipTests>
                     <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
@@ -222,7 +149,7 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe.version}</version>
+                <version>${maven-failsafe-plugin.version}</version>
                 <configuration>
                     <skipITs>${skipIntegrationTests}</skipITs>
                     <additionalClasspathElements>
@@ -356,6 +283,4 @@
             </build>
         </profile>
     </profiles>
-
-
 </project>
