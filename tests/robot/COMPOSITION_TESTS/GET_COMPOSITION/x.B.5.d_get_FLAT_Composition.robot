@@ -38,7 +38,18 @@ Main flow has existing COMPOSITION (FLAT)
     (FLAT) get composition by composition_uid    ${composition_uid}
     check composition exists
 
-
+Create Two Compositions With Health Care Facility Provided And Not Provided
+    [Documentation]     Create first composition with health_care_facility provided;
+    ...     Create second composition with health_care_facility not provided;
+    ...     Apply AQL query to get EHR a/uid/value and a/context/health_care_facility/name
+    [Tags]  not-ready
+    create EHR
+    commit composition   format=FLAT_OPENEHR
+    ...                  composition=minimal_action.en.v1__health_care_facility_select_populated.json
+    check the successful result of commit composition
+    commit composition   format=FLAT_OPENEHR
+    ...                  composition=minimal_action.en.v1__health_care_facility_select_missing.json
+    check the successful result of commit composition
 
 Data driven tests for Compare content of compositions with the Original (FLAT)
     [Tags]  600  not-ready  bug
@@ -64,4 +75,5 @@ Create and compare content of flat compositions
 Precondition
     Upload OPT    nested/nested.opt
     Upload OPT    all_types/ehrn_vital_signs.v2.opt
+    Upload OPT    minimal/minimal_action.opt
     create EHR

@@ -1,0 +1,24 @@
+{
+	"meta": {
+		"_type": "RESULTSET",
+		"_created": "2019-10-17T23:27:23.785Z",
+		"_executed_aql": "SELECT a/uid/value as composition_uid, a/context/health_care_facility/name FROM EHR e CONTAINS COMPOSITION a CONTAINS ACTION a0[openEHR-EHR-ACTION.minimal.v1]"
+	},
+	"q": "SELECT a/uid/value as composition_uid, a/context/health_care_facility/name FROM EHR e CONTAINS COMPOSITION a CONTAINS ACTION a0[openEHR-EHR-ACTION.minimal.v1]",
+	"columns": [
+		{
+			"path": "/uid/value",
+			"name": "composition_uid"
+		},
+		{
+			"path": "/context/health_care_facility/name",
+			"name": "#1"
+		}
+	],
+	"rows": [
+		[
+			"78dba268-b3b7-4d48-89bd-61705c8d84bd::local.ehrbase.org::1",
+			"Hospital A"
+		]
+	]
+}

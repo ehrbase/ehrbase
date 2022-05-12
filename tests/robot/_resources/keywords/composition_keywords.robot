@@ -280,7 +280,11 @@ commit composition
 
     Set Suite Variable    ${template_id}    ${template}
 
-    ${file}=           Get File   ${COMPO DATA SETS}/${format}/${composition}
+    IF      '${format}' == 'FLAT_OPENEHR'
+        ${file}=           Get File   ${COMPO DATA SETS}/FLAT/${composition}
+    ELSE
+        ${file}=           Get File   ${COMPO DATA SETS}/${format}/${composition}
+    END
 
     &{headers}=        Create Dictionary   Prefer=return=${prefer}
     ...                openEHR-VERSION.lifecycle_state=${lifecycle}
@@ -313,6 +317,17 @@ commit composition
         &{params}       Create Dictionary     format=FLAT   ehrId=${ehr_id}     templateId=${template_id}
         Create Session      ${SUT}    ${ECISURL}    debug=2
         ...                 auth=${CREDENTIALS}    verify=True
+    ELSE IF   '${format}'=='FLAT_OPENEHR'
+        Set To Dictionary   ${headers}   Content-Type=application/json
+        Set To Dictionary   ${headers}   Accept=application/json
+        IF  '${extTemplateId}' == 'true'
+            ${template_id}      Set Variable   ${externalTemplate}
+            ${template}      Set Variable   ${externalTemplate}
+            Set Suite Variable    ${template_id}    ${template}
+        END
+        &{params}       Create Dictionary     format=FLAT   ehrId=${ehr_id}     templateId=${template_id}
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
     ELSE IF   '${format}'=='TDD'
         Create Session      ${SUT}    ${BASEURL}    debug=2
         ...                 auth=${CREDENTIALS}    verify=True
@@ -325,10 +340,12 @@ commit composition
         Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
     END
 
-    IF   '${format}'=='FLAT'
-    ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
+    IF          '${format}'=='FLAT'
+        ${resp}     POST On Session     ${SUT}   composition   params=${params}
+        ...     expected_status=anything   data=${file}   headers=${headers}
     ELSE
-    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
+        ${resp}     POST On Session     ${SUT}   /ehr/${ehr_id}/composition
+        ...     expected_status=anything   data=${file}   headers=${headers}
     END
 
     Set Test Variable   ${response}     ${resp}
