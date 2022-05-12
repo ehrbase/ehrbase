@@ -583,8 +583,6 @@ Populate SUT with Test-Data and Prepare Expected Results
     Commit Compo    18    ${ehr_index}    ${compo data sets}/minimal_action2_2.composition.json
     # Commit Compo    19    ${ehr_index}    ${compo data sets}/minimal_action2_3.composition.json
 
-
-
 Create EHR Record On The Server
     [Arguments]         ${ehr_index}    ${payload}
 

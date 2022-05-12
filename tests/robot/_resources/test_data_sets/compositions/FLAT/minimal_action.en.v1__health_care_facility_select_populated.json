@@ -1,0 +1,17 @@
+{
+"ctx/language": "en",
+"ctx/territory": "US",
+"ctx/composer_name": "Silvia Blake",
+"ctx/id_namespace": "HOSPITAL-NS",
+"ctx/id_scheme": "HOSPITAL-NS",
+"ctx/health_care_facility|id_scheme": "HOSPITAL-NS",
+"ctx/health_care_facility|name": "Hospital A",
+"ctx/health_care_facility|id_namespace": "HOSPITAL-NS",
+"ctx/health_care_facility|id": "71a44d35-06a7-4e36-82f6-3e0f915a8eb5",
+"minimal/minimal:0/ism_transition/current_state|code": "532",
+"minimal/minimal:0/ism_transition/current_state|value": "completed",
+"minimal/minimal:0/multimedia": "http://med.tube.com/sample",
+"minimal/minimal:0/multimedia|mediatype": "application/pdf",
+"minimal/minimal:0/multimedia|size": 504903212,
+"minimal/minimal:0/time": "2021-11-10T14:08:05.928Z"
+}
