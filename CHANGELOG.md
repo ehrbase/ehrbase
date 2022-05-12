@@ -22,6 +22,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   .
 - Add unique constraints on `status` and `entry` ([#821](https://github.com/ehrbase/ehrbase/pull/821)).
 - Removed Postgres with extensions setup ([#840](https://github.com/ehrbase/ehrbase/pull/840))
+- Upgrade openEHR_SDK to version 1.19.0 see  https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 
 ### Fixed
 
