@@ -672,7 +672,7 @@ get composition by composition_uid
                         Set Test Variable   ${response}    ${resp}
 
 
-get web template by template id
+Get Web Template By Template Id (ECIS)
     [Arguments]         ${template_id}
 
     Create Session      ${SUT}    ${ECISURL}    debug=2
@@ -682,7 +682,7 @@ get web template by template id
                         Set Test Variable   ${response}    ${resp}
                         Should Be Equal As Strings   ${resp.status_code}   200
 
-get example of web template by template id (ECIS)
+Get Example Of Web Template By Template Id (ECIS)
     [Arguments]         ${template_id}      ${responseFormat}
 
     Create Session      ${SUT}    ${ECISURL}    debug=2
@@ -703,7 +703,7 @@ get example of web template by template id (ECIS)
                         Set Test Variable   ${response}    ${resp}
                         Status Should Be    200
 
-get example of web template by template id (OPENEHR)
+Get Example Of Web Template By Template Id (OPENEHR)
     [Arguments]         ${template_id}      ${responseFormat}
 
     Create Session      ${SUT}    ${baseurl}    debug=2
@@ -714,14 +714,15 @@ get example of web template by template id (OPENEHR)
     ...                                      Prefer=return=representation
     IF      '${responseFormat}' == 'JSON'
             ${resp}            GET On Session         ${SUT}
-                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
-                                ...     params=${params}
+                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything
+                                ...     headers=${headers}      params=${params}
     ELSE IF      '${responseFormat}' == 'XML'
             ${headers}         Create Dictionary     Accept=application/xml
             ...                                      Content-Type=application/xml
             ...                                      Prefer=return=representation
             ${resp}            GET On Session         ${SUT}
-                                ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
+                                ...     definition/template/adl1.4/${template_id}/example
+                                ...     expected_status=anything        headers=${headers}
     ELSE
              ${resp}            GET On Session         ${SUT}
                                 ...     definition/template/adl1.4/${template_id}/example  expected_status=anything   headers=${headers}
@@ -730,7 +731,7 @@ get example of web template by template id (OPENEHR)
                         Set Test Variable   ${response}    ${resp}
                         Status Should Be    200
 
-validate that response body is in format
+Validate Response Body Has Format
     [Documentation]     Check if response body contains representation in format
     ...                 provided as argument.
     ...                 Expected format can be JSON or XML.
@@ -746,12 +747,13 @@ validate that response body is in format
                             log to console     ${templateName}
                         ELSE IF     '${expectedFormat}' == 'XML'
                             ${xml}     Parse Xml        ${response.text}
+                            Set Test Variable       ${responseXML}      ${xml}
                         ELSE
                             #log to console      ${response.text}
                             Should Contain      ${response.text}    family_history/category|terminology
                         END
 
-get all web templates
+Get All Web Templates
     Create Session      ${SUT}    ${ECISURL}    debug=2
     ...                 auth=${CREDENTIALS}    verify=True
     ${resp}=            GET On Session          ${SUT}  template  expected_status=anything   headers=${headers}
@@ -762,7 +764,7 @@ get all web templates
                         Set Suite Variable      ${xml}
 
 
-check if get templates response has
+Check If Get Templates Response Has
     [Arguments]         @{templatesIDList}
     [Documentation]     Verify in Get Template response if templates are present.
     ...                 DEPENDENCY: `get all web templates`
@@ -1113,7 +1115,7 @@ delete non-existent composition
                         Should Be Equal As Strings   ${resp.status_code}   404
 
 
-upload OPT
+Upload OPT
     [Arguments]     ${opt_file}
 
     # TODO: rm comments
@@ -1129,7 +1131,7 @@ upload OPT
                         upload OPT file
                         server accepted OPT
 
-upload OPT ECIS
+Upload OPT ECIS
     [Arguments]     ${opt_file}
 
     # TODO: rm comments
@@ -1163,7 +1165,7 @@ create EHR
     ...                 AND             extract ehr_id from response (XML)
     ...                 AND             extract ehrstatus_uid (XML)
 
-create ECIS EHR
+Create ECIS EHR
     [Arguments]
     create new EHR      ehrScape=True
     # ...                 AND             extract ehr_id from response (JSON)
@@ -1223,7 +1225,7 @@ create EHR and commit a composition for versioned composition tests
     create new EHR
     Should Be Equal As Strings    ${response.status}    201
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     commit composition (JSON)    minimal/minimal_observation.composition.participations.extdatetimes.xml
 
 

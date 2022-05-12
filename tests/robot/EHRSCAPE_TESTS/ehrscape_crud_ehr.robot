@@ -17,124 +17,48 @@
 # Author: Vladislav Ploaia
 
 
-
 *** Settings ***
-Documentation   EHRScape Tests
-...             Documentation URL to be defined
+Documentation       EHRScape Tests
+...                 Documentation URL to be defined
 
-Resource        ../_resources/keywords/composition_keywords.robot
-Resource        ../_resources/keywords/ehr_keywords.robot
+Resource            ../_resources/keywords/composition_keywords.robot
+Resource            ../_resources/keywords/ehr_keywords.robot
 
+Suite Setup         restart SUT
 Suite Teardown      restart SUT
 
 
 *** Test Cases ***
-Main flow create EHR
-    [Tags]      not-ready
-    upload OPT ECIS     all_types/ehrn_family_history.opt
-    Extract Template_id From OPT File
-    get web template by template id     ${template_id}
-    create ECIS EHR
-    ${externalTemplate}     Set Variable    ${template_id}
-    Set Test Variable       ${externalTemplate}
-    [Teardown]      TRACE JIRA ISSUE    CDR-331
+Main Flow Create EHR
+    [Documentation]     Create EHR using EHRScape endpoint.
+    [Tags]    PostEhr    EHRSCAPE
+    Upload OPT ECIS    all_types/ehrn_family_history.opt
+    Extract Template Id From OPT File
+    Get Web Template By Template Id (ECIS)    ${template_id}
+    Create ECIS EHR
+    Log     ${response.json()}
+    ${ehrId}    Collections.Get From Dictionary    ${response.json()}    ehrId
+    Set Suite Variable      ${ehr_id}       ${ehrId}
+    ${externalTemplate}    Set Variable    ${template_id}
+    Set Test Variable    ${externalTemplate}
 
-Main flow create and get EHR
-    [Tags]      not-ready
-    [Documentation]     Below keyword used to create EHR with OpenEHR endpoint.
-    ...     As soon as CDR-331 is fixed, EHR must be created with EHRScape endpoint.
-    #below keyword is used to create EHR with
-    Create EHR From Valid Data Set      1   true    true    provided    not provided    not provided
+Get EHR Using Ehr Id And By Subject Id, Namespace
+    [Documentation]    1. Get existing EHR using Ehr Id.
+    ...     2. Get existing EHR using Subject Id and Subject Namespace criteria.
+    ...     *Dependency*: Test Case -> Main Flow Create EHR, ehr_id suite variable.
+    [Tags]    GetEhr    EHRSCAPE
+    Retrieve EHR By Ehr Id (ECIS)
+    Retrieve EHR By Subject Id And Subject Namespace (ECIS)
+    ...     subject_id=74777-1259      subject_namespace=testIssuer
 
-*** Keywords ***
-##Below keywords are for EHR creation on OpenEHR endpoint:
-create ehr from data table
-    [Arguments]         ${subject}  ${is_modifiable}  ${is_queryable}  ${status_code}
-
-                        prepare new request session    Prefer=return=representation
-
-                        compose ehr_status    ${subject}    ${is_modifiable}    ${is_queryable}
-                        POST /ehr    ${ehr_status}
-                        check response    ${status_code}    ${is_modifiable}    ${is_queryable}
-
-POST /ehr
-    [Arguments]         ${body}=${None}
-    &{response}=        REST.POST    /ehr    ${body}
-                        Output Debug Info To Console
-
-check response
-    [Arguments]         ${status_code}    ${is_modifiable}    ${is_queryable}
-                        Integer    response status    ${status_code}
-
-    # comment: changes is_modif./is_quer. to default expected values - boolean true
-    ${is_modifiable}=   Run Keyword If    $is_modifiable=="${EMPTY}"    Set Variable    ${TRUE}
-    ${is_queryable}=    Run Keyword If  $is_queryable=="${EMPTY}"    Set Variable    ${TRUE}
-                        Boolean    response body ehr_status is_modifiable    ${is_modifiable}
-                        Boolean    response body ehr_status is_queryable    ${is_queryable}
-
-compose ehr_status
-    [Arguments]         ${subject}    ${is_modifiable}    ${is_queryable}
-
-                        set ehr_status subject    ${subject}
-                        set is_queryable / is_modifiable    ${is_modifiable}    ${is_queryable}
-                        Set Test Variable    ${ehr_status}    ${ehr_status}
-
-Create EHR From Valid Data Set
-    [Arguments]     ${No.}  ${queryable}    ${modifiable}    ${subject}   ${other_details}    ${ehrid}
-                    prepare new request session    Prefer=return=representation
-                    compose ehr payload    ${No.}    ${other_details}    ${modifiable}    ${queryable}
-                    create ehr    ${ehrid}
-                    validate response    ${No.}  ${queryable}    ${modifiable}    ${subject}   ${other_details}    ${ehrid}
-
-compose ehr payload
-    [Arguments]     ${No.}    ${other_details}    ${modifiable}    ${queryable}
-                    Log To Console    \n\nData Set No.: ${No.} \n\n
-
-    # comment: use 000_ehr_status.json as blueprint for payload witho other_details
-    IF    "${other_details}" == "not provided"
-        ${payload}=    randomize subject_id in test-data-set    valid/000_ehr_status.json
-
-    # comment: use 000_ehr_status_with_other_details.json for payload with other_details
-    ELSE IF    "${other_details}" == "provided"
-        ${payload}=    randomize subject_id in test-data-set    valid/000_ehr_status_with_other_details.json
-    END
-
-    ${payload=}     Update Value To Json    ${payload}  $.is_modifiable    ${modifiable}
-    ${payload}=     Update Value To Json    ${payload}  $.is_queryable    ${queryable}
-                    Output    ${payload}
-                    Set Test Variable    ${payload}    ${payload}
-
-randomize subject_id in test-data-set
-    [Arguments]         ${test_data_set}
-    ${subject_id}=      generate random id
-    ${body}=            Load JSON From File    ${EXECDIR}/robot/_resources/test_data_sets/ehr/${test_data_set}
-    ${body}=            Update Value To Json    ${body}  $..subject.external_ref.id.value  ${subject_id}
-    [RETURN]            ${body}
-
-generate random id
-    # ${uuid}=            Evaluate    str(uuid.uuid4())    uuid
-    ${uuid}=            Set Variable    ${{str(uuid.uuid4())}}
-    [RETURN]            ${uuid}
-
-validate response
-    [Arguments]    ${No.}  ${queryable}    ${modifiable}    ${subject}   ${other_details}    ${ehrid}
-    Log Many    ${No.}  ${queryable}    ${modifiable}    ${subject}   ${other_details}    ${ehrid}
-    Integer    response status    201
-    Object     response body system_id
-    Object     response body ehr_id
-    String     response body ehr_id value
-    Object     response body time_created
-    Object     response body ehr_status
-    Object     response body ehr_status name
-    String     response body ehr_status name value
-    String     response body ehr_status archetype_node_id
-    Object     response body ehr_status subject
-
-    Boolean    response body ehr_status is_modifiable    ${modifiable}
-    Boolean    response body ehr_status is_queryable    ${queryable}
-
-    IF    "${other_details}" == "not provided"
-        Missing    response body ehr_status other_details
-    ELSE IF    "${other_details}" == "provided"
-        Object    response body ehr_status other_details
-    END
+Get EHR And Update EHR Status
+    [Documentation]    Create EHR, Get it and update EHR status.
+    [Tags]    UpdateEhrStatus   EHRSCAPE
+    ${ehr_status_json}      Load JSON From File
+                            ...     ${VALID EHR DATA SETS}/000_ehr_status_ecis.json
+    Update EHR Status (ECIS)    ${ehr_id}   ${ehr_status_json}
+    Should Be Equal As Strings  ${response["body"]["action"]}    UPDATE
+    Should Be Equal             ${response["body"]["ehrStatus"]["modifiable"]}          ${True}
+    Should Be Equal             ${response["body"]["ehrStatus"]["queryable"]}           ${True}
+    Should Be Equal As Strings  ${response["body"]["ehrStatus"]["subjectId"]}           74777-1258
+    Should Be Equal As Strings  ${response["body"]["ehrStatus"]["subjectNamespace"]}    testIssuerModified

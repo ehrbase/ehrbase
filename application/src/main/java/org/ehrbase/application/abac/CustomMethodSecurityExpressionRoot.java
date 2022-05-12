@@ -18,27 +18,6 @@ package org.ehrbase.application.abac;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.service.CompositionService;
-import org.ehrbase.api.service.ContributionService;
-import org.ehrbase.api.service.EhrService;
-import org.ehrbase.application.abac.AbacConfig.AbacCheck;
-import org.ehrbase.application.abac.AbacConfig.AbacType;
-import org.ehrbase.application.abac.AbacConfig.Policy;
-import org.ehrbase.application.abac.AbacConfig.PolicyParameter;
-import org.ehrbase.aql.compiler.AuditVariables;
-import org.ehrbase.response.ehrscape.CompositionDto;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.openehr.OriginalVersionResponseData;
-import org.ehrbase.rest.BaseController;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.expression.SecurityExpressionRoot;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +29,25 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.api.service.ContributionService;
+import org.ehrbase.api.service.EhrService;
+import org.ehrbase.application.abac.AbacConfig.AbacCheck;
+import org.ehrbase.application.abac.AbacConfig.AbacType;
+import org.ehrbase.application.abac.AbacConfig.Policy;
+import org.ehrbase.application.abac.AbacConfig.PolicyParameter;
+import org.ehrbase.aql.compiler.AuditVariables;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.openehr.OriginalVersionResponseData;
+import org.ehrbase.rest.BaseController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.expression.SecurityExpressionRoot;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 /**
  * Implementation of custom security expression, to be used in e.g. @PreAuthorize(..) to allow ABAC
@@ -342,9 +340,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
             // try if this is the Delete composition case. Payload would contain the UUID of the compo.
             ObjectVersionId versionId = new ObjectVersionId((String) payload);
             UUID compositionUid = UUID.fromString(versionId.getRoot().getValue());
-            Optional<CompositionDto> compoDto = compositionService.retrieve(compositionUid, null);
+            Optional<Composition> compoDto =
+                compositionService.retrieve(
+                    compositionService.getEhrId(compositionUid), compositionUid, null);
             if (compoDto.isPresent()) {
-              Composition c = compoDto.get().getComposition();
+              Composition c = compoDto.get();
               if (c.getArchetypeDetails() != null && c.getArchetypeDetails().getTemplateId() != null) {
                 requestMap.put(TEMPLATE, c.getArchetypeDetails().getTemplateId().getValue());
               }

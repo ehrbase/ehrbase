@@ -50,7 +50,7 @@ Force Tags    refactor
 *** Test Cases ***
 Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITION>
 
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
     create EHR
     commit CONTRIBUTION (JSON)  minimal/minimal_evaluation.contribution.json
     check response: is positive - returns version id
@@ -61,7 +61,7 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITIO
 
 Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITION> withtout accept header
 
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
     create EHR
     commit CONTRIBUTION without accept header  minimal/minimal_evaluation.contribution.json
     check response: is positive - returns version id

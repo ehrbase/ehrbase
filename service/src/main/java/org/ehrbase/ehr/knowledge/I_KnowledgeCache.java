@@ -21,6 +21,13 @@
  */
 package org.ehrbase.ehr.knowledge;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -28,32 +35,26 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.webtemplate.parser.NodeId;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
 public interface I_KnowledgeCache {
 
     String TEMPLATE_ID = "templateId";
 
     Set<String> getAllTemplateIds();
 
-    /**
-     * Adds operational template to system and also in current cache.
-     *
-     * @param content operational template input
-     * @return resulting template ID, when successful
-     * @throws InvalidApiParameterException when input can't be pared to OPT instance
-     * @throws StateConflictException       when template with same template ID is already in the system
-     * @throws InternalServerException      when an unspecified problem occurs
-     */
-    String addOperationalTemplate(byte[] content);
+  /**
+   * Adds operational template to system and also in current cache.
+   *
+   * @param content operational template input
+   * @return resulting template ID, when successful
+   * @throws InvalidApiParameterException when input can't be pared to OPT instance
+   * @throws StateConflictException when template with same template ID is already in the system
+   * @throws InternalServerException when an unspecified problem occurs
+   */
+  String addOperationalTemplate(InputStream content);
+
+  String addOperationalTemplate(OPERATIONALTEMPLATE template);
 
     List<TemplateMetaData> listAllOperationalTemplates() throws IOException;
-
 
 
     /**

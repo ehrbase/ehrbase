@@ -30,7 +30,7 @@ Force Tags
 Alternative flow 2 get COMPOSITION at time, COMPOSITION doesnt exist
     [Tags]     
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
 
     create EHR    XML
 

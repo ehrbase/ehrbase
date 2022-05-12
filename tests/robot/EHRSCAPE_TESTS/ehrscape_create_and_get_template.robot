@@ -17,35 +17,31 @@
 # Author: Vladislav Ploaia
 
 
-
 *** Settings ***
-Documentation   EHRScape Tests
-...             Documentation URL to be defined
+Documentation       EHRScape Tests
+...                 Documentation URL to be defined
 
-Resource        ../_resources/keywords/composition_keywords.robot
+Resource            ../_resources/keywords/composition_keywords.robot
 
-#Suite Setup         Precondition
+#Suite Setup    Precondition
 Suite Teardown      restart SUT
 
 
 *** Test Cases ***
 Main flow create Template and GET by Template ID
-    [Tags]
-    upload OPT ECIS     all_types/ehrn_family_history.opt
-    Extract Template_id From OPT File
-    get web template by template id     ${template_id}
-
+    Upload OPT ECIS    all_types/ehrn_family_history.opt
+    Extract Template Id From OPT File
+    Get Web Template By Template Id (ECIS)    ${template_id}
 
 Main flow create and GET all Templates
-    [Tags]
-    upload OPT ECIS     all_types/family_history.opt
+    Upload OPT ECIS    all_types/family_history.opt
     Status Should Be    200
-    Extract Template_id From OPT File
+    Extract Template Id From OPT File
     ${template1}    Set Variable    ${template_id}
-    upload OPT ECIS     minimal/minimal_observation.opt
+    Upload OPT ECIS    minimal/minimal_observation.opt
     Status Should Be    200
-    Extract Template_id From OPT File
+    Extract Template Id From OPT File
     ${template2}    Set Variable    ${template_id}
-    get all web templates
-    check if get templates response has
-    ...     ${template1}    ${template2}
+    Get All Web Templates
+    Check If Get Templates Response Has
+    ...    ${template1}    ${template2}

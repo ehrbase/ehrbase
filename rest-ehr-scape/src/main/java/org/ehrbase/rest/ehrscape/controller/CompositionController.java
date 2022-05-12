@@ -19,6 +19,10 @@
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.net.URI;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -26,15 +30,23 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
-import org.ehrbase.rest.ehrscape.responsedata.*;
+import org.ehrbase.rest.ehrscape.responsedata.Action;
+import org.ehrbase.rest.ehrscape.responsedata.ActionRestResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.CompositionWriteRestResponseData;
+import org.ehrbase.rest.ehrscape.responsedata.Meta;
+import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(
@@ -57,8 +69,8 @@ public class CompositionController extends BaseController {
       @RequestBody String content) {
 
     if ((format == CompositionFormat.FLAT
-        || format == CompositionFormat.STRUCTURED
-        || format == CompositionFormat.ECISFLAT)
+         || format == CompositionFormat.STRUCTURED
+         || format == CompositionFormat.ECISFLAT)
         && StringUtils.isEmpty(templateId)) {
       throw new InvalidApiParameterException(
           String.format("Template Id needs to specified for format %s", format));
@@ -89,7 +101,11 @@ public class CompositionController extends BaseController {
       version = getCompositionVersion(compositionUid); // version number is inorder: 1, 2, 3 etc.
     }
 
-    Optional<CompositionDto> compositionDto = compositionService.retrieve(identifier, version);
+    UUID ehrId = compositionService.getEhrId(identifier);
+    Optional<CompositionDto> compositionDto =
+        compositionService
+            .retrieve(ehrId, identifier, version)
+            .map(c -> CompositionService.from(ehrId, c));
     if (compositionDto.isPresent()) {
 
       // Serialize onto target format
@@ -100,7 +116,9 @@ public class CompositionController extends BaseController {
       responseDto.setAction(Action.RETRIEVE);
       responseDto.setFormat(format);
       responseDto.setTemplateId(compositionDto.get().getTemplateId());
-      responseDto.setCompositionUid(compositionDto.get().getUuid().toString());
+      String fullUid = compositionDto.get().getUuid() + "::" + compositionService.getServerConfig().getNodename() + "::"
+                       + compositionService.getLastVersionNumber(compositionDto.get().getUuid());
+      responseDto.setCompositionUid(fullUid);
       responseDto.setEhrId(compositionDto.get().getEhrId());
       Meta meta = buildMeta(responseDto.getCompositionUid());
       responseDto.setMeta(meta);
@@ -112,13 +130,14 @@ public class CompositionController extends BaseController {
 
   @PutMapping(path = "/{uid}")
   public ResponseEntity<ActionRestResponseData> update(@PathVariable("uid") String compositionUid,
-      @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
-      @RequestParam(value = "templateId", required = false) String templateId,
-      @RequestBody String content) {
+                                                       @RequestParam(value = "format", defaultValue = "XML")
+                                                       CompositionFormat format,
+                                                       @RequestParam(value = "templateId", required = false) String templateId,
+                                                       @RequestBody String content) {
 
     if ((format == CompositionFormat.FLAT
-        || format == CompositionFormat.STRUCTURED
-        || format == CompositionFormat.ECISFLAT)
+         || format == CompositionFormat.STRUCTURED
+         || format == CompositionFormat.ECISFLAT)
         && StringUtils.isEmpty(templateId)) {
       throw new InvalidApiParameterException(
           String.format("Template Id needs to specified for format %s", format));
@@ -126,7 +145,7 @@ public class CompositionController extends BaseController {
 
     ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
     UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
-    UUID ehrId = getEhrId(compositionIdentifier);
+    UUID ehrId = compositionService.getEhrId(compositionIdentifier);
 
     var compoObj = compositionService.buildComposition(content, format, templateId);
 
@@ -148,7 +167,7 @@ public class CompositionController extends BaseController {
 
     ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
     UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
-    UUID ehrId = getEhrId(compositionIdentifier);
+    UUID ehrId = compositionService.getEhrId(compositionIdentifier);
 
     compositionService.delete(ehrId, objectVersionId);
     ActionRestResponseData responseData = new ActionRestResponseData();
@@ -157,14 +176,6 @@ public class CompositionController extends BaseController {
     return ResponseEntity.ok(responseData);
   }
 
-  private UUID getEhrId(UUID compositionId) {
-    // EhrScape API doesn't have access to the EHR ID here, so it needs to be retrieved.
-    // Version 1 is enough because EHR never changes & it is always available.
-    Optional<CompositionDto> dtoOptionalForEhr = compositionService.retrieve(compositionId, 1);
-    return dtoOptionalForEhr
-        .orElseThrow(() -> new InvalidApiParameterException("Invalid composition ID."))
-        .getEhrId();
-  }
 
   private ObjectVersionId getLatestVersionId(UUID compositionId) {
     // EhrScape API doesn't have access to the "If-Match" header or previous version, so it needs to

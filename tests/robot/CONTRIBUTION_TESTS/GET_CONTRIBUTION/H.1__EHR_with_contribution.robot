@@ -47,7 +47,7 @@ Force Tags    refactor
 *** Test Cases ***
 Main flow: get existing CONTRIBUTION
 
-    upload OPT    minimal/minimal_evaluation.opt
+    Upload OPT    minimal/minimal_evaluation.opt
 
     create EHR
 

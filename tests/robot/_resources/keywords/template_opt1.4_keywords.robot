@@ -61,7 +61,7 @@ get invalid OPT file
                         Log Element          ${expected}
 
 
-extract template_id from OPT file
+Extract Template Id From OPT File
     [Documentation]     Extracts template_id from OPT (XML) file which was obtained
     ...                 with `get valid/invalid OPT file` keywords
 
@@ -127,7 +127,7 @@ retrieve versioned OPT
 
     prepare new request session    XML
     get valid OPT file                  ${opt file}
-    extract template_id from OPT file
+    Extract Template Id From OPT File
     retrieve OPT by template_id         ${template_id}
     verify server response
     [Teardown]                          Clean Up Suite Variables

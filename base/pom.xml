@@ -28,39 +28,11 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.21.0-SNAPSHOT</version>
+        <version>0.22.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>base</artifactId>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <configuration>
-                    <locations>
-                        <location>classpath:db/migration</location>
-                    </locations>
-                    <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-                    <driver>org.postgresql.Driver</driver>
-                    <user>${database.user}</user>
-                    <password>${database.pass}</password>
-                    <defaultSchema>ehr</defaultSchema>
-                    <schemas>
-                        <schema>ehr</schema>
-                    </schemas>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${postgresql.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>

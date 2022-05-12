@@ -21,9 +21,9 @@ RUN mkdir -p ${PGDATA}; \
 
 # COPY DB SETUP SCRIPT
 # START DB AND LET THE SCRIPT DO ALL REQUIRED CONFIGURATION
-COPY base/db-setup/cloud-db-setup.sql /postgres/cloud-db-setup.sql
+COPY base/db-setup/createdb.sql /postgres/createdb.sql
 RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" && \
-    su - postgres -c "psql < /postgres/cloud-db-setup.sql" && \
+    su - postgres -c "psql < /postgres/createdb.sql" && \
     su - postgres -c "pg_ctl -D ${PGDATA} -w stop"
 
 # INSTALL JAVA 11 JDK
@@ -52,6 +52,7 @@ COPY ./rest-openehr/pom.xml ./rest-openehr/pom.xml
 COPY ./service/pom.xml ./service/pom.xml
 COPY ./test-coverage/pom.xml ./test-coverage/pom.xml
 COPY ./plugin/pom.xml ./plugin/pom.xml
+COPY ./bom/pom.xml ./bom/pom.xml
 RUN mvn dependency:go-offline -B
 
 # COPY SOURCEFILES

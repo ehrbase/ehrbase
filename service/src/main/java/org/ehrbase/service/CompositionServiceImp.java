@@ -118,17 +118,17 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public Optional<UUID> create(UUID ehrId, Composition objData) {
-    return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
+    return create(ehrId, objData, getSystemUuid(), getCurrentUserId(), null);
   }
 
   /**
    * Creation of a new composition. With optional custom contribution, or one will be created.
    *
-   * @param ehrId ID of EHR
-   * @param composition RMObject instance of the given Composition to be created
-   * @param systemId Audit system; or NULL if contribution is given
-   * @param committerId Audit committer; or NULL if contribution is given
-   * @param description (Optional) Audit description; or NULL if contribution is given
+   * @param ehrId          ID of EHR
+   * @param composition    RMObject instance of the given Composition to be created
+   * @param systemId       Audit system; or NULL if contribution is given
+   * @param committerId    Audit committer; or NULL if contribution is given
+   * @param description    (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
    * @return ID of created composition
    * @throws InternalServerException when creation failed
@@ -170,7 +170,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
               0,
               compositionAccess.getId(),
               composition);
-      compositionAccess.addContent(entryAccess);
+      compositionAccess.setContent(entryAccess);
       if (contributionId
           != null) { // in case of custom contribution, set it and invoke commit that allows custom
         // contributions
@@ -214,7 +214,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             description,
             null);
 
-    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
+    return Optional.of(compoId);
   }
 
   @Override
@@ -230,28 +230,27 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             null,
             null,
             contribution);
-    return Optional.of(UUID.fromString(compoId.getObjectId().getValue()));
+    return Optional.of(compoId);
   }
 
   @Override
   public Optional<UUID> update(UUID ehrId, ObjectVersionId targetObjId, Composition objData) {
-    return update(ehrId, targetObjId, objData, getSystemUuid(), getUserUuid(), null);
+    return update(ehrId, targetObjId, objData, getSystemUuid(), getCurrentUserId(), null);
   }
 
   /**
    * Update of an existing composition. With optional custom contribution, or existing one will be
    * updated.
    *
-   * @param compositionId  ID of existing composition
-   * @param composition    RMObject instance of the given Composition which represents the new
-   *                       version
-   * @param systemId       Audit system; or NULL if contribution is given
-   * @param committerId    Audit committer; or NULL if contribution is given
-   * @param description    (Optional) Audit description; or NULL if contribution is given
+   * @param compositionId ID of existing composition
+   * @param composition RMObject instance of the given Composition which represents the new version
+   * @param systemId Audit system; or NULL if contribution is given
+   * @param committerId Audit committer; or NULL if contribution is given
+   * @param description (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if new one should be created; or ID of given custom contribution
-   * @return Version UID pointing to updated composition
+   * @return UUID pointing to updated composition
    */
-  private ObjectVersionId internalUpdate(
+  private UUID internalUpdate(
       UUID ehrId,
       UUID compositionId,
       Composition composition,
@@ -270,18 +269,14 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         throw new ObjectNotFoundException(
             I_CompositionAccess.class.getName(), "Could not find composition: " + compositionId);
       }
-
-      if (!ehrId.equals(compositionAccess.getEhrid())) {
-        throw new ObjectNotFoundException("COMPOSITION",
-                                          String.format("EHR with id %s does not contain composition with id %s", ehrId,
-                                                        compositionAccess.getEhrid()));
-      }
+      // check that the  composition is actually in the ehr
+      checkCompositionIsInEhr(ehrId, compositionAccess);
 
       // validate RM composition
       validationService.check(composition);
 
       // Check if template ID is not the same in existing and given data -> error
-      String existingTemplateId = compositionAccess.getContent().get(0).getTemplateId();
+      String existingTemplateId = compositionAccess.getContent().getTemplateId();
       String inputTemplateId = composition.getArchetypeDetails().getTemplateId().getValue();
       if (!existingTemplateId.equals(inputTemplateId)) {
         // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
@@ -301,9 +296,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
       // to keep reference to entry to update: pull entry out of composition access and replace
       // composition content with input, then write back to the original access
-      List<I_EntryAccess> contentList = compositionAccess.getContent();
-      contentList.get(0).setCompositionData(composition);
-      compositionAccess.setContent(contentList);
+      I_EntryAccess content = compositionAccess.getContent();
+      content.setCompositionData(composition);
+      compositionAccess.setContent(content);
       compositionAccess.setComposition(composition);
       if (contributionId != null) { // if custom contribution should be set
         compositionAccess.setContributionId(contributionId);
@@ -333,20 +328,27 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     if (!result) {
       throw new InternalServerException("Update failed on composition:" + compositionId);
     }
-    return new ObjectVersionId(
-        compositionId.toString(),
-        this.getServerConfig().getNodename(),
-        getLastVersionNumber(compositionId).toString());
+    return compositionId;
+  }
+
+  private void checkCompositionIsInEhr(UUID ehrId, I_CompositionAccess compositionAccess) {
+    if (!ehrId.equals(compositionAccess.getEhrid())) {
+      throw new ObjectNotFoundException(
+          "COMPOSITION",
+          String.format(
+              "EHR with id %s does not contain composition with id %s",
+              ehrId, compositionAccess.getEhrid()));
+    }
   }
 
   @Override
-  public boolean delete(
+  public void delete(
       UUID ehrId,
       ObjectVersionId targetObjId,
       UUID systemId,
       UUID committerId,
       String description) {
-    return internalDelete(
+    internalDelete(
         ehrId,
         UUID.fromString(targetObjId.getObjectId().getValue()),
         systemId,
@@ -356,28 +358,27 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-    return internalDelete(
+  public void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
+    internalDelete(
         ehrId, UUID.fromString(targetObjId.getObjectId().getValue()), null, null, null, contribution);
   }
 
   @Override
-  public boolean delete(UUID ehrId, ObjectVersionId targetObjId) {
-    return delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
+  public void delete(UUID ehrId, ObjectVersionId targetObjId) {
+    delete(ehrId, targetObjId, getSystemUuid(), getCurrentUserId(), null);
   }
 
   /**
    * Deletion of an existing composition. With optional custom contribution, or existing one will be
    * updated.
    *
-   * @param compositionId  ID of existing composition
-   * @param systemId       Audit system; or NULL if contribution is given
-   * @param committerId    Audit committer; or NULL if contribution is given
-   * @param description    (Optional) Audit description; or NULL if contribution is given
+   * @param compositionId ID of existing composition
+   * @param systemId Audit system; or NULL if contribution is given
+   * @param committerId Audit committer; or NULL if contribution is given
+   * @param description (Optional) Audit description; or NULL if contribution is given
    * @param contributionId NULL if is not needed, or ID of given custom contribution
-   * @return Time of deletion, if successful
    */
-  private boolean internalDelete(
+  private void internalDelete(
       UUID ehrId,
       UUID compositionId,
       UUID systemId,
@@ -399,12 +400,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       throw new ObjectNotFoundException(
           I_CompositionAccess.class.getName(), "Could not find composition:" + compositionId);
     }
-
-    if (!ehrId.equals(compositionAccess.getEhrid())) {
-      throw new ObjectNotFoundException("COMPOSITION",
-                                        String.format("EHR with id %s does not contain composition with id %s", ehrId,
-                                                      compositionAccess.getEhrid()));
-    }
+    // check that the  composition is actually in the ehr
+    checkCompositionIsInEhr(ehrId, compositionAccess);
 
     int result;
     if (contributionId != null) { // if custom contribution should be set
@@ -428,14 +425,15 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     if (result <= 0) {
       throw new InternalServerException(
           "Delete failed on composition:" + compositionAccess.getId());
-    } else {
-      return true;
     }
   }
 
   @Override
-  public Optional<CompositionDto> retrieve(UUID compositionId, Integer version)
+  public Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version)
       throws InternalServerException {
+
+    // check that the ehr exists
+    ehrService.checkEhrExists(ehrId);
 
     final I_CompositionAccess compositionAccess;
     if (version != null) {
@@ -446,37 +444,21 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
           I_CompositionAccess.retrieveCompositionVersion(
               getDataAccess(), compositionId, getLastVersionNumber(compositionId));
     }
-    return getCompositionDto(compositionAccess);
+
+    // check that the composition is actually in the ehr
+    if (compositionAccess != null) {
+      checkCompositionIsInEhr(ehrId, compositionAccess);
+    }
+    return getComposition(compositionAccess);
   }
 
-  // TODO: untested because not needed, yet
   @Override
-  public Optional<CompositionDto> retrieveByTimestamp(UUID compositionId, LocalDateTime timestamp) {
-    I_CompositionAccess compositionAccess;
-    try {
-      compositionAccess =
-          I_CompositionAccess.retrieveInstanceByTimestamp(
-              getDataAccess(), compositionId, Timestamp.valueOf(timestamp));
-    } catch (Exception e) {
-      throw new InternalServerException(e);
-    }
-
-    return getCompositionDto(compositionAccess);
+  public UUID getEhrId(UUID compositionId) {
+    return I_CompositionAccess.getEhrId(getDataAccess(), compositionId);
   }
 
-  // Helper function to create returnable DTO
-  private Optional<CompositionDto> getCompositionDto(I_CompositionAccess compositionAccess) {
-    if (compositionAccess == null) {
-      return Optional.empty();
-    }
-    final UUID ehrId = compositionAccess.getEhrid();
-    // There is only one EntryAccess per compositionAccess
-    return compositionAccess.getContent().stream()
-        .findAny()
-        .map(
-            i ->
-                new CompositionDto(
-                    i.getComposition(), i.getTemplateId(), i.getCompositionId(), ehrId));
+  private Optional<Composition> getComposition(I_CompositionAccess compositionAccess) {
+      return Optional.ofNullable(compositionAccess).map(I_CompositionAccess::getContent).map(I_EntryAccess::getComposition);
   }
 
   /**
@@ -681,7 +663,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public VersionedComposition getVersionedComposition(UUID ehrId, UUID composition) {
-    Optional<CompositionDto> dto = retrieve(composition, 1);
+    Optional<CompositionDto> dto =
+        retrieve(ehrId, composition, 1).map(c -> CompositionService.from(ehrId, c));
 
     VersionedComposition compo = new VersionedComposition();
     if (dto.isPresent()) {
@@ -706,14 +689,14 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
   }
 
   @Override
-  public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID composition) {
+  public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition) {
     // get number of versions
     int versions = getLastVersionNumber(composition);
     // fetch each version and add to revision history
     RevisionHistory revisionHistory = new RevisionHistory();
     for (int i = 1; i <= versions; i++) {
       Optional<OriginalVersion<Composition>> compoVersion =
-          getOriginalVersionComposition(composition, i);
+          getOriginalVersionComposition(ehrUid, composition, i);
       compoVersion.ifPresent(
           compositionOriginalVersion ->
               revisionHistory.addItem(
@@ -757,7 +740,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
   @Override
   public Optional<OriginalVersion<Composition>> getOriginalVersionComposition(
-      UUID versionedObjectUid, int version) {
+      UUID ehrUid, UUID versionedObjectUid, int version) {
     // check for valid version parameter
     if ((version == 0)
         || I_CompositionAccess.getLastVersionNumber(getDataAccess(), versionedObjectUid)
@@ -811,10 +794,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
               versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
     }
 
-    Optional<CompositionDto> compositionDto = retrieve(versionedObjectUid, version);
+    Optional<Composition> compositionDto = retrieve(ehrUid, versionedObjectUid, version);
     Composition composition = null;
     if (compositionDto.isPresent()) {
-      composition = compositionDto.get().getComposition();
+      composition = compositionDto.get();
     }
 
     OriginalVersion<Composition> versionComposition =

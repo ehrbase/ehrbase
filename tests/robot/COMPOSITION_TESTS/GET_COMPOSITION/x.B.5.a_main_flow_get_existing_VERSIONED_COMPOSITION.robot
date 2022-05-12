@@ -29,7 +29,7 @@ Force Tags      COMPOSITION_get_versioned
 *** Test Cases ***
 Main flow get existing VERSIONED COMPOSITION XML
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     create EHR    XML
     commit composition (XML)    minimal/minimal_observation.composition.participations.extdatetimes.xml
     get versioned composition by uid    XML    ${versioned_object_uid}
