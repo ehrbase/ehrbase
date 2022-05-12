@@ -30,7 +30,7 @@ Suite Teardown    restart SUT
 *** Test Cases ***
 Main flow has existing COMPOSITION (FLAT)
     [Tags]
-    upload OPT    all_types/ehrn_vital_signs.v2.opt
+    Upload OPT    all_types/ehrn_vital_signs.v2.opt
     create EHR
     commit composition   format=FLAT
     ...                  composition=ehrn_vital_signs.v2__.json

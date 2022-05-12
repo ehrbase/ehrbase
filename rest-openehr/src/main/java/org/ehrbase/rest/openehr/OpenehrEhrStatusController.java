@@ -145,9 +145,7 @@ public class OpenehrEhrStatusController extends BaseController
     }
 
     // update EHR_STATUS and check for success
-    Optional<EhrStatus> updateStatus = ehrService.updateStatus(ehrId, ehrStatus, null);
-    EhrStatus status = updateStatus.orElseThrow(
-        () -> new InvalidApiParameterException("Could not update EHR_STATUS"));
+    UUID statusUid = ehrService.updateStatus(ehrId, ehrStatus, null);
 
     // update and prepare current version number
     String newLatestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
@@ -160,7 +158,8 @@ public class OpenehrEhrStatusController extends BaseController
     List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG,
         LAST_MODIFIED);   // whatever is required by REST spec
     Optional<InternalResponse<EhrStatusResponseData>> respData;   // variable to overload with more specific object if requested
-    UUID statusUid = UUID.fromString(status.getUid().getValue().split("::")[0]);
+
+
 
     respData = buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version,
         accept, headerList);

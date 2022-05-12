@@ -17,49 +17,47 @@
 package org.ehrbase.plugin.dto;
 
 import com.nedap.archie.rm.composition.Composition;
-
 import java.util.Objects;
 import java.util.UUID;
 
 /**
+ * Wrapper for {@link com.nedap.archie.rm.composition.Composition} with ehrId {@link UUID}
+ *
  * @author Stefan Spiska
  */
 public class CompositionWithEhrId {
 
-    private final Composition composition;
-    private final UUID ehrId;
+  private final Composition composition;
+  private final UUID ehrId;
 
-    public CompositionWithEhrId(Composition composition, UUID ehrId) {
-        this.composition = composition;
-        this.ehrId = ehrId;
-    }
+  public CompositionWithEhrId(Composition composition, UUID ehrId) {
+    this.composition = composition;
+    this.ehrId = ehrId;
+  }
 
-    public Composition getComposition() {
-        return composition;
-    }
+  public Composition getComposition() {
+    return composition;
+  }
 
-    public UUID getEhrId() {
-        return ehrId;
-    }
+  public UUID getEhrId() {
+    return ehrId;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CompositionWithEhrId that = (CompositionWithEhrId) o;
-        return Objects.equals(composition, that.composition) && Objects.equals(ehrId, that.ehrId);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CompositionWithEhrId that = (CompositionWithEhrId) o;
+    return Objects.equals(composition, that.composition) && Objects.equals(ehrId, that.ehrId);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(composition, ehrId);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(composition, ehrId);
+  }
 
-    @Override
-    public String toString() {
-        return "CompositionMergeInput{" +
-                "composition=" + composition +
-                ", ehrId=" + ehrId +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "CompositionMergeInput{" + "composition=" + composition + ", ehrId=" + ehrId + '}';
+  }
 }

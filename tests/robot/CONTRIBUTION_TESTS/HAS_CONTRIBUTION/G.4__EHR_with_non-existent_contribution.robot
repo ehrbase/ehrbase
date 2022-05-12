@@ -47,7 +47,7 @@ Force Tags    refactor
 *** Test Cases ***
 Alternative flow 3: has CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION doesn't exist
 
-    upload OPT    minimal/minimal_instruction.opt
+    Upload OPT    minimal/minimal_instruction.opt
     create EHR
     commit CONTRIBUTION (JSON)    minimal/minimal_instruction.contribution.json
     retrieve CONTRIBUTION by fake contri_uid (JSON)

@@ -18,14 +18,27 @@
 
 package org.ehrbase.service;
 
+import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
+import static org.ehrbase.dao.access.util.FolderUtils.doesAnyIdInFolderStructureMatch;
+import static org.ehrbase.dao.access.util.FolderUtils.uuidMatchesObjectVersionId;
+
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
@@ -45,481 +58,456 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
-
 @Service
 @Transactional
 public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
-    @Autowired
-    FolderServiceImp(
-            KnowledgeCacheService knowledgeCacheService,
-            DSLContext context,
-            ServerConfig serverConfig) {
-        super(knowledgeCacheService, context, serverConfig);
+  private final EhrService ehrService;
+
+  @Autowired
+  FolderServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig,
+                   EhrService ehrService) {
+    super(knowledgeCacheService, context, serverConfig);
+    this.ehrService = ehrService;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description) {
+    return internalCreate(ehrId, objData, systemId, committerId, description, null);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID contribution) {
+    return internalCreate(ehrId, objData, null, null, null, contribution);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> create(UUID ehrId, Folder objData) {
+    return create(ehrId, objData, getSystemUuid(), getCurrentUserId(), null);
+  }
+
+  private Optional<FolderDto> internalCreate(UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description,
+                                             UUID contribution) {
+    /*Note:
+     The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
+     in every necessary case */
+
+    // Check for existence of EHR record
+    ehrService.checkEhrExistsAndIsModifiable(ehrId);
+
+    // Check for duplicate directories
+    if (ehrService.getDirectoryId(ehrId) != null) {
+      throw new StateConflictException(String.format("EHR with id %s already contains a directory.", ehrId.toString()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID systemId, UUID committerId,
-        String description) {
-        return internalCreate(ehrId, objData, systemId, committerId, description, null);
+    // Check of there are name conflicts on each folder level
+    checkSiblingNameConflicts(objData);
+
+    // Save current time which will be used as transaction time
+    Timestamp currentTimeStamp = Timestamp.from(Instant.now());
+
+    // Contribution handling - create new one or retrieve existing, if ID is given
+    I_ContributionAccess contributionAccess;
+    if (contribution == null) {
+      contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), ehrId);
+    } else {
+      contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contribution);
+      // Copy values from contribution to folder's audit
+      systemId = contributionAccess.getAuditsSystemId();
+      committerId = contributionAccess.getAuditsCommitter();
+      description = contributionAccess.getAuditsDescription();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID contribution) {
-        return internalCreate(ehrId, objData, null, null, null, contribution);
+    if (systemId == null || committerId == null) {
+      throw new InternalServerException("Error on contribution handling for folder creation.");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> create(UUID ehrId, Folder objData) {
-        return create(ehrId, objData, getSystemUuid(), getUserUuid(), null);
+    // Get first FolderAccess instance
+    I_FolderAccess folderAccess =
+        FolderAccess.buildNewFolderAccessHierarchy(getDataAccess(), objData, currentTimeStamp, ehrId, contributionAccess);
+    ObjectVersionId folderId;
+    if (contribution == null) {
+      folderId = new ObjectVersionId(
+          folderAccess.commit(LocalDateTime.now(), systemId, committerId, description).toString() + "::" +
+          getServerConfig().getNodename() + "::1");
+    } else {
+      folderId = new ObjectVersionId(
+          (folderAccess.commit(LocalDateTime.now(), contribution).toString() + "::" + getServerConfig().getNodename() + "::1"));
+    }
+    // Save root directory id to ehr entry
+    // EHR must exist at this point, so no null check
+    // TODO: Refactor to use UID
+    I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+    ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
+    ehrAccess.update(getCurrentUserId(), getSystemUuid(), null, null, ContributionChangeType.MODIFICATION,
+                     EhrServiceImp.DESCRIPTION);
+
+    return get(folderId, null);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID systemId, UUID committerId,
+                                    String description) {
+    return internalUpdate(ehrId, targetObjId, objData, systemId, committerId, description, null);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID contribution) {
+    return internalUpdate(ehrId, targetObjId, objData, null, null, null, contribution);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData) {
+    return update(ehrId, targetObjId, objData, getSystemUuid(), getCurrentUserId(), null);
+  }
+
+  private Optional<FolderDto> internalUpdate(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID systemId,
+                                             UUID committerId, String description, UUID contribution) {
+    var timestamp = LocalDateTime.now();
+
+    /*Note:
+     The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
+     in every necessary case */
+
+    // Check for existence of EHR record and make sure the folder is actually part of the EHR
+    ehrService.checkEhrExistsAndIsModifiable(ehrId);
+    checkFolderWithIdExistsInEhr(ehrId, targetObjId);
+
+    // Check of there are name conflicts on each folder level
+    checkSiblingNameConflicts(objData);
+
+    // Get existing root folder
+    I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), targetObjId);
+
+    // Set update data on root folder
+    FolderUtils.updateFolder(objData, folderAccess);
+
+    // Delete sub folders and all their sub folder, as well as their linked entities
+    if (contribution == null) {
+      folderAccess.getSubfoldersList()
+          .forEach(
+              (sf, sa) -> internalDelete(ehrId, new ObjectVersionId(sf.toString()), systemId, committerId, description, null,
+                                         false));
+    } else {
+      folderAccess.getSubfoldersList().forEach(
+          (sf, sa) -> internalDelete(ehrId, new ObjectVersionId(sf.toString()), null, null, null, contribution, false));
+    }
+    // Clear sub folder list
+    folderAccess.getSubfoldersList().clear();
+
+    // Create FolderAccess instances for sub folders if there are any
+    if (objData.getFolders() != null && !objData.getFolders().isEmpty()) {
+
+      // Create new sub folders list
+      objData.getFolders().forEach(childFolder -> folderAccess.getSubfoldersList().put(UUID.randomUUID(),
+                                                                                       FolderAccess.buildNewFolderAccessHierarchy(
+                                                                                           getDataAccess(), childFolder,
+                                                                                           Timestamp.from(Instant.now()), ehrId,
+                                                                                           ((FolderAccess) folderAccess).getContributionAccess())));
     }
 
-    private Optional<FolderDto> internalCreate(UUID ehrId, Folder objData, UUID systemId, UUID committerId,
-        String description, UUID contribution) {
-
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-        if (ehrAccess == null) {
-            throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
-        }
-
-        // Check of there are name conflicts on each folder level
-        checkSiblingNameConflicts(objData);
-
-        // Save current time which will be used as transaction time
-        Timestamp currentTimeStamp = Timestamp.from(Instant.now());
-
-        // Contribution handling - create new one or retrieve existing, if ID is given
-        I_ContributionAccess contributionAccess;
-        if (contribution == null) {
-            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), ehrId);
-        } else {
-            contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contribution);
-            // Copy values from contribution to folder's audit
-            systemId = contributionAccess.getAuditsSystemId();
-            committerId = contributionAccess.getAuditsCommitter();
-            description = contributionAccess.getAuditsDescription();
-        }
-
-        if (systemId == null || committerId == null) {
-            throw new InternalServerException("Error on contribution handling for folder creation.");
-        }
-
-        // Get first FolderAccess instance
-        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
-            getDataAccess(),
-            objData,
-            currentTimeStamp,
-            ehrId,
-            contributionAccess
-        );
-        ObjectVersionId folderId;
-        if (contribution == null) {
-            folderId = new ObjectVersionId(
-                folderAccess.commit(LocalDateTime.now(), systemId, committerId, description).toString()
-                    + "::" + getServerConfig().getNodename()
-                    + "::1"
-            );
-        } else {
-            folderId = new ObjectVersionId((folderAccess.commit(LocalDateTime.now(), contribution).toString()
-                + "::" + getServerConfig().getNodename()
-                + "::1"
-            ));
-        }
-        // Save root directory id to ehr entry
-        // TODO: Refactor to use UID
-        ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
-        ehrAccess.update(getUserUuid(), getSystemUuid(), null, null, ContributionChangeType.MODIFICATION, EhrServiceImp.DESCRIPTION);
-
-        return get(folderId, null);
+    // Send update to access layer which updates the hierarchy recursive
+    boolean success;
+    if (contribution == null) {
+      success = folderAccess.update(timestamp, systemId, committerId, description, ContributionChangeType.MODIFICATION);
+    } else {
+      success = folderAccess.update(timestamp, contribution);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID systemId, UUID committerId,
-        String description) {
-        return internalUpdate(ehrId, targetObjId, objData, systemId, committerId, description, null);
+    if (success) {
+      return createDto(folderAccess, getLastVersionNumber(targetObjId), true);
+    } else {
+      return Optional.empty();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID contribution) {
-        return internalUpdate(ehrId, targetObjId, objData, null, null, null, contribution);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void delete(
+      UUID ehrId,
+      ObjectVersionId targetObjId,
+      UUID systemId,
+      UUID committerId,
+      String description) {
+    internalDelete(ehrId, targetObjId, systemId, committerId, description, null, true);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
+    internalDelete(ehrId, targetObjId, null, null, null, contribution, true);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void delete(UUID ehrId, ObjectVersionId targetObjId) {
+    delete(ehrId, targetObjId, getSystemUuid(), getCurrentUserId(), null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData) {
-        return update(ehrId, targetObjId, objData, getSystemUuid(), getUserUuid(), null);
+  private void internalDelete(
+      UUID ehrId,ObjectVersionId folderId,
+      UUID systemId,
+      UUID committerId,
+      String description,
+      UUID contribution, boolean withEhrCheck) {
+    /*Note:
+     The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
+     in every necessary case */
+    if (withEhrCheck) {//provide the option to skip the EHR checks for subfolder deletes while updating
+
+      ehrService.checkEhrExistsAndIsModifiable(ehrId);
+      checkFolderWithIdExistsInEhr(ehrId, folderId);
     }
 
-    private Optional<FolderDto> internalUpdate(
-        UUID ehrId,
-        ObjectVersionId targetObjId,
-        Folder objData,
-        UUID systemId,
-        UUID committerId,
-        String description,
-        UUID contribution
-        ) {
-        var timestamp = LocalDateTime.now();
-
-        // Check of there are name conflicts on each folder level
-        checkSiblingNameConflicts(objData);
-
-        // Get existing root folder
-        I_FolderAccess
-            folderAccess
-            = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), targetObjId);
-
-        // Set update data on root folder
-        FolderUtils.updateFolder(objData, folderAccess);
-
-        // Delete sub folders and all their sub folder, as well as their linked entities
-        if (contribution == null) {
-            folderAccess.getSubfoldersList().forEach((sf, sa) ->
-                delete(ehrId, new ObjectVersionId(sf.toString()), systemId,
-                    committerId, description));
-        } else {
-            folderAccess.getSubfoldersList().forEach((sf, sa) ->
-                delete(ehrId, new ObjectVersionId(sf.toString()), contribution));
-        }
-        // Clear sub folder list
-        folderAccess.getSubfoldersList().clear();
-
-        // Create FolderAccess instances for sub folders if there are any
-        if (objData.getFolders() != null && !objData.getFolders().isEmpty()) {
-
-            // Create new sub folders list
-            objData.getFolders()
-                .forEach(childFolder -> folderAccess.getSubfoldersList()
-                    .put(
-                        UUID.randomUUID(),
-                        FolderAccess.buildNewFolderAccessHierarchy(
-                            getDataAccess(),
-                            childFolder,
-                            Timestamp.from(Instant.now()),
-                            ehrId,
-                            ((FolderAccess) folderAccess).getContributionAccess())));
-        }
-
-        // Send update to access layer which updates the hierarchy recursive
-        boolean success;
-        if (contribution == null) {
-            success = folderAccess.update(timestamp, systemId, committerId, description, ContributionChangeType.MODIFICATION);
-        } else {
-            success = folderAccess.update(timestamp, contribution);
-        }
-
-        if (success) {
-            return createDto(folderAccess, getLastVersionNumber(targetObjId), true);
-        } else {
-            return Optional.empty();
-        }
-
+    //first remove the folders reference from EHR if necessary
+    if (uuidMatchesObjectVersionId(ehrService.getDirectoryId(ehrId), folderId)) {
+      ehrService.removeDirectory(ehrId);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId,
-        String description) {
-        return internalDelete(targetObjId, systemId, committerId, description, null);
+    //delete the folder
+    I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+
+    var timestamp = LocalDateTime.now();
+
+    int result;
+    if (contribution == null) {
+      result = folderAccess.delete(timestamp, systemId, committerId, description);
+    } else {
+      result = folderAccess.delete(timestamp, contribution);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-        return internalDelete(targetObjId, null, null, null, contribution);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean delete(UUID ehrId, ObjectVersionId targetObjId) {
-        return delete(ehrId, targetObjId, getSystemUuid(), getUserUuid(), null);
-    }
-
-    private boolean internalDelete(ObjectVersionId folderId, UUID systemId, UUID committerId, String description, UUID contribution) {
-
-        I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
-
-        var timestamp = LocalDateTime.now();
-
-        int result;
-        if (contribution == null) {
-            result = folderAccess.delete(timestamp, systemId, committerId, description);
-        } else {
-            result = folderAccess.delete(timestamp, contribution);
-        }
-
-        if (result > 0) {
-            return true;
-        } else {
+    if (result <= 0) {
             // Not found and bad argument exceptions are handled before thus this case can only occur on unknown errors
             // On the server side
             throw new InternalServerException("Error during deletion of folder " + folderId);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> get(ObjectVersionId folderId, String path) {
 
-        I_FolderAccess folderAccess;
-        Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
-        if (version == null) {
-            // Get the latest object
-            folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
-            version = getLastVersionNumber(folderId);
-        } else {
-            // Get timestamp for version
-            Timestamp versionTimestamp = FolderAccess.getTimestampForVersion(getDataAccess(), folderId, version);
-            folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId, versionTimestamp);
-        }
-
-        I_FolderAccess withExtractedPath = extractPath(folderAccess, path);
-
-        return createDto(withExtractedPath, version, path == null || path.equals("/"));
+  private void checkFolderWithIdExistsInEhr(UUID ehrId, ObjectVersionId folderId) {
+    UUID ehrRootDirectoryId = ehrService.getDirectoryId(ehrId);
+    if (ehrRootDirectoryId == null) {
+      throw new PreconditionFailedException(
+          String.format("EHR with id %s does not contain a directory. Maybe it has been deleted?", ehrId.toString()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path) {
+    I_FolderAccess folderAccess =
+        I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), new ObjectVersionId(ehrRootDirectoryId.toString()));
 
-        // Get the latest entry for folder
-        I_FolderAccess latest = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
-        I_FolderAccess withExtractedPath;
+    if (!doesAnyIdInFolderStructureMatch(folderAccess, folderId)) {
+      throw new PreconditionFailedException(
+          String.format("Folder with id %s is not part of EHR with id %s", folderId.getValue(), ehrId));
+    }
+  }
 
-        if (latest == null) {
-            throw new ObjectNotFoundException(
-                    "FOLDER",
-                    String.format("Folder with id %s could not be found", folderId.toString())
-            );
-        }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> get(ObjectVersionId folderId, String path) {
 
-        Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
-
-        // Check if timestamp is newer or equal than found folder
-        if (timestamp.after(latest.getFolderSysTransaction()) || timestamp.equals(latest.getFolderSysTransaction())) {
-            if (version == null) {
-                version = getLastVersionNumber(folderId);
-            }
-            withExtractedPath = extractPath(latest, path);
-        } else {
-            // Get the target timestamp version and data
-            version = getVersionNumberForTimestamp(folderId, timestamp);
-            I_FolderAccess versionAtTime = FolderHistoryAccess.getInstanceForExistingFolder(
-                    getDataAccess(),
-                    folderId,
-                    timestamp
-            );
-            withExtractedPath = extractPath(versionAtTime, path);
-        }
-
-        return createDto(withExtractedPath, version, path == null || path.equals("/"));
+    I_FolderAccess folderAccess;
+    Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
+    if (version == null) {
+      // Get the latest object
+      folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+      version = getLastVersionNumber(folderId);
+    } else {
+      // Get timestamp for version
+      Timestamp versionTimestamp = FolderAccess.getTimestampForVersion(getDataAccess(), folderId, version);
+      folderAccess = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId, versionTimestamp);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<FolderDto> getLatest(ObjectVersionId folderId, String path) {
+    I_FolderAccess withExtractedPath = extractPath(folderAccess, path);
 
-        I_FolderAccess folderAccess = I_FolderAccess.getInstanceForExistingFolder(
-                getDataAccess(),
-                folderId,
-                Timestamp.from(Instant.now())
-        );
-        Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
+    return createDto(withExtractedPath, version, path == null || path.equals("/"));
+  }
 
-        if (version == null) {
-            version = getLastVersionNumber(folderId);
-        }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> getByTimeStamp(ObjectVersionId folderId, Timestamp timestamp, String path) {
 
-        return createDto(folderAccess, version, path == null || path.equals("/"));
+    // Get the latest entry for folder
+    I_FolderAccess latest = I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId);
+    I_FolderAccess withExtractedPath;
+
+    if (latest == null) {
+      throw new ObjectNotFoundException("FOLDER", String.format("Folder with id %s could not be found", folderId.toString()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public StructuredString serialize(Folder folder, StructuredStringFormat format) {
+    Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
 
-        // TODO: Create structure of sub folders recursively including items
-
-        StructuredString folderString;
-        switch (format) {
-            case XML:
-                folderString = new StructuredString(
-                        new CanonicalXML().marshal(folder, false),
-                        StructuredStringFormat.XML);
-                break;
-            case JSON:
-                folderString = new StructuredString(
-                        new CanonicalJson().marshal(folder),
-                        StructuredStringFormat.JSON);
-                break;
-            default:
-                throw new UnexpectedSwitchCaseException(
-                        "Unsupported target format for serialization of folders: " + format);
-        }
-
-        return folderString;
+    // Check if timestamp is newer or equal than found folder
+    if (timestamp.after(latest.getFolderSysTransaction()) || timestamp.equals(latest.getFolderSysTransaction())) {
+      if (version == null) {
+        version = getLastVersionNumber(folderId);
+      }
+      withExtractedPath = extractPath(latest, path);
+    } else {
+      // Get the target timestamp version and data
+      version = getVersionNumberForTimestamp(folderId, timestamp);
+      I_FolderAccess versionAtTime = FolderHistoryAccess.getInstanceForExistingFolder(getDataAccess(), folderId, timestamp);
+      withExtractedPath = extractPath(versionAtTime, path);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Integer getLastVersionNumber(ObjectVersionId folderId) {
+    return createDto(withExtractedPath, version, path == null || path.equals("/"));
+  }
 
-        return FolderAccess.getLastVersionNumber(getDataAccess(), folderId);
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Optional<FolderDto> getLatest(ObjectVersionId folderId, String path) {
+
+    I_FolderAccess folderAccess =
+        I_FolderAccess.getInstanceForExistingFolder(getDataAccess(), folderId, Timestamp.from(Instant.now()));
+    Integer version = FolderUtils.extractVersionNumberFromObjectVersionId(folderId);
+
+    if (version == null) {
+      version = getLastVersionNumber(folderId);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Integer getVersionNumberForTimestamp(
-            ObjectVersionId folderId,
-            Timestamp timestamp
-    ) {
+    return createDto(folderAccess, version, path == null || path.equals("/"));
+  }
 
-        return FolderAccess.getVersionNumberAtTime(getDataAccess(), folderId, timestamp);
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public StructuredString serialize(Folder folder, StructuredStringFormat format) {
+
+    // TODO: Create structure of sub folders recursively including items
+
+    StructuredString folderString;
+    switch (format) {
+      case XML:
+        folderString = new StructuredString(new CanonicalXML().marshal(folder, false), StructuredStringFormat.XML);
+        break;
+      case JSON:
+        folderString = new StructuredString(new CanonicalJson().marshal(folder), StructuredStringFormat.JSON);
+        break;
+      default:
+        throw new UnexpectedSwitchCaseException("Unsupported target format for serialization of folders: " + format);
     }
 
-    /**
-     * Generates a {@link FolderDto} for response if a folder could be found. In other cases it
-     * returns an empty {@link Optional}.
-     *
-     * @param folderAccess - The {@link I_FolderAccess} containing the data
-     * @return {@link Optional<FolderDto>}
-     */
-    private Optional<FolderDto> createDto(I_FolderAccess folderAccess, int version, boolean isRoot) {
+    return folderString;
+  }
 
-        if (folderAccess == null) {
-            return Optional.empty();
-        }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Integer getLastVersionNumber(ObjectVersionId folderId) {
 
-        Folder folder = createFolderObject(folderAccess);
-        // Set the root uid to a valid version_uid
-        if (isRoot) {
-            folder.setUid(new ObjectVersionId(
-                    String.format(
-                                "%s::%s::%s",
-                                folderAccess.getFolderId().toString(),
-                                this.getServerConfig().getNodename(),
-                                version
-                            )
-            ));
-        }
+    return FolderAccess.getLastVersionNumber(getDataAccess(), folderId);
+  }
 
-        return Optional.of(new FolderDto(folder));
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Integer getVersionNumberForTimestamp(ObjectVersionId folderId, Timestamp timestamp) {
+
+    return FolderAccess.getVersionNumberAtTime(getDataAccess(), folderId, timestamp);
+  }
+
+  /**
+   * Generates a {@link FolderDto} for response if a folder could be found. In other cases it
+   * returns an empty {@link Optional}.
+   *
+   * @param folderAccess - The {@link I_FolderAccess} containing the data
+   * @return {@link Optional<FolderDto>}
+   */
+  private Optional<FolderDto> createDto(I_FolderAccess folderAccess, int version, boolean isRoot) {
+
+    if (folderAccess == null) {
+      return Optional.empty();
     }
 
-    /**
-     * Traverses recursively through the sub folders of a given FolderAccess and Returns a Folder RM
-     * Object for internal usage with all sub folders and items which belong to the folder
-     * structure.
-     *
-     * @param folderAccess - Folder dao containing the target folder record
-     * @return Folder object
-     */
-    private Folder createFolderObject(I_FolderAccess folderAccess) {
-
-        Folder result = new Folder(
-                new HierObjectId(
-                        String.format(
-                                "%s::%s",
-                                folderAccess.getFolderId().toString(),
-                                this.getServerConfig().getNodename()
-                        )
-                ),
-                folderAccess.getFolderArchetypeNodeId(),
-                new DvText(folderAccess.getFolderName()),
-                folderAccess.getFolderDetails(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                folderAccess.getItems(),
-                null
-        );
-
-        // Handle sub folder list recursively
-        if (!folderAccess.getSubfoldersList()
-                .isEmpty()) {
-
-            result.setFolders(folderAccess.getSubfoldersList()
-                    .values()
-                    .stream()
-                    .map(this::createFolderObject)
-                    .collect(Collectors.toList()));
-
-        }
-
-        return result;
+    Folder folder = createFolderObject(folderAccess);
+    // Set the root uid to a valid version_uid
+    if (isRoot) {
+      folder.setUid(new ObjectVersionId(
+          String.format("%s::%s::%s", folderAccess.getFolderId().toString(), this.getServerConfig().getNodename(), version)));
     }
 
-    /**
-     * If a path was sent by the client the folderAccess retrieved from database will be iterated recursive to find a
-     * given sub folder. If the path is empty or contains only one forward slash the root folder will be returned.
-     * Trailing slashes at the end of a path will be ignored. If the path cannot be found an ObjectNotFound exception
-     * will be thrown which can be handled by the controller layer.
-     *
-     * @param folderAccess - Retrieved result folder hierarchy from database
-     * @param path - Path to identify desired sub folder
-     * @return folderAccess containing the sub folder and its sub tree if path can be found
-     */
-    private I_FolderAccess extractPath(I_FolderAccess folderAccess, String path) {
-        // Handle path if sent by client
-        if (path != null && !"/".equals(path)) {
-            // Trim starting forward slash
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
-        }
+    return Optional.of(new FolderDto(folder));
+  }
 
-        return folderAccess;
+  /**
+   * Traverses recursively through the sub folders of a given FolderAccess and Returns a Folder RM
+   * Object for internal usage with all sub folders and items which belong to the folder
+   * structure.
+   *
+   * @param folderAccess - Folder dao containing the target folder record
+   * @return Folder object
+   */
+  private Folder createFolderObject(I_FolderAccess folderAccess) {
+
+    Folder result = new Folder(
+        new HierObjectId(String.format("%s::%s", folderAccess.getFolderId().toString(), this.getServerConfig().getNodename())),
+        folderAccess.getFolderArchetypeNodeId(), new DvText(folderAccess.getFolderName()), folderAccess.getFolderDetails(),
+        null, null, null, null, null, folderAccess.getItems(), null);
+
+    // Handle sub folder list recursively
+    if (!folderAccess.getSubfoldersList().isEmpty()) {
+
+      result.setFolders(
+          folderAccess.getSubfoldersList().values().stream().map(this::createFolderObject).collect(Collectors.toList()));
+
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @Override
-    public void adminDeleteFolder(UUID folderId) {
-        I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
-        folderAccess.adminDeleteFolder();
+    return result;
+  }
+
+  /**
+   * If a path was sent by the client the folderAccess retrieved from database will be iterated recursive to find a
+   * given sub folder. If the path is empty or contains only one forward slash the root folder will be returned.
+   * Trailing slashes at the end of a path will be ignored. If the path cannot be found an ObjectNotFound exception
+   * will be thrown which can be handled by the controller layer.
+   *
+   * @param folderAccess - Retrieved result folder hierarchy from database
+   * @param path         - Path to identify desired sub folder
+   * @return folderAccess containing the sub folder and its sub tree if path can be found
+   */
+  private I_FolderAccess extractPath(I_FolderAccess folderAccess, String path) {
+    // Handle path if sent by client
+    if (path != null && !"/".equals(path)) {
+      // Trim starting forward slash
+      if (path.startsWith("/")) {
+        path = path.substring(1);
+      }
+      folderAccess = FolderUtils.getPath(folderAccess, 0, path.split("/"));
     }
+
+    return folderAccess;
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @Override
+  public void adminDeleteFolder(UUID folderId) {
+    I_FolderAccess folderAccess = I_FolderAccess.retrieveInstanceForExistingFolder(getDataAccess(), folderId);
+    folderAccess.adminDeleteFolder();
+  }
 }

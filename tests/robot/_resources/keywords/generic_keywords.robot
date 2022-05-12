@@ -379,6 +379,22 @@ set request headers
 
                         Set Suite Variable   ${headers}    ${headers}
 
+check response: is negative indicating does not allow modification
+        [Arguments]     ${responseType}=JSON
+                        Status Should Be        409
+                        IF      '${responseType}' == 'JSON'
+                            Set Test Variable       ${body}    ${response.json()}
+                            Set Test Variable       ${error_message}    ${body['message']}
+                        END
+                        IF      '${responseType}' == 'XML'
+                            ${xml}          Parse Xml               ${response.text}
+                            ${err_type}     Get Element Text        ${xml}      error
+                            ${err_msg}      Get Element Text        ${xml}      message
+                            Set Test Variable       ${body}
+                            ...         Error: ${err_type} , Message: ${err_msg}
+                            Set Test Variable       ${error_message}    ${err_msg}
+                        END
+                        Should Contain      ${error_message}        does not allow modification
 
 server sanity check
     [Documentation]     Sends a GET request to ${HEARTBEAT_URL} to check whether
@@ -668,8 +684,14 @@ TRACE GITHUB ISSUE
                     # Run Keyword If    '${type}'=='not-ready'    Set Tags    not-ready
 
 
+TRACE JIRA ISSUE
+    [Arguments]     ${JIRA_ISSUE}
+    ...             ${message}=Next step fails due to a bug!
+    ...             ${loglevel}=ERROR
+                    Log    ${message} | <a href="https://jira.vitagroup.ag/browse/${JIRA_ISSUE}">JIRA ISSUE ${JIRA_ISSUE}</a>
+                    ...    level=${loglevel}    html=True
 
-
+                    Set Tags    not-ready   ${JIRA_ISSUE}
 
 
 

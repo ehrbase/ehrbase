@@ -57,7 +57,8 @@ Main flow create new event COMPOSITION STRUCTURED
     ...                  composition=nested.en.v1__full.json
     check the successful result of commit composition   nesting
 
+
 *** Keywords ***
 Precondition
-    upload OPT    nested/nested.opt
+    Upload OPT    nested/nested.opt
     create EHR

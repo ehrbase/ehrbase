@@ -18,26 +18,31 @@
 
 package org.ehrbase.api.service;
 
-import org.ehrbase.api.definitions.QueryMode;
-import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
-import org.ehrbase.response.ehrscape.QueryResultDto;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.ehrbase.api.definitions.QueryMode;
+import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
+import org.ehrbase.response.ehrscape.QueryResultDto;
 
 public interface QueryService extends BaseService {
-    /**
-     * simple query where the full json expression contains both query (key = 'q') and optional
-     * parameters (key = 'query-parameters')
-      * @param queryString
-     * @param queryMode
-     * @param explain
-     * @return
-     */
-    QueryResultDto query(String queryString, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap);
-
-    QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap);
+  /**
+   * simple query where the full json expression contains both query (key = 'q') and optional
+   * parameters (key = 'query-parameters')
+   *
+   * @param queryString
+   * @param queryMode
+   * @param explain
+   * @param parameters optional parameters
+   * @return
+   */
+  QueryResultDto query(
+      String queryString,
+      Map<String, Object> parameters,
+      QueryMode queryMode,
+      boolean explain,
+      Map<String, Set<Object>> auditResultMap);
 
     //=== DEFINITION: manage stored queries
     List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);

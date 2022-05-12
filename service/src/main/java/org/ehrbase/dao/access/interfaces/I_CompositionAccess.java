@@ -21,26 +21,40 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+import static org.ehrbase.jooq.pg.Tables.CONCEPT;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
+import static org.ehrbase.jooq.pg.Tables.LANGUAGE;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+import static org.ehrbase.jooq.pg.Tables.TERRITORY;
+
 import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.dao.access.jooq.CompositionAccess;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
-import org.ehrbase.jooq.pg.tables.records.*;
-import org.jooq.Result;
-import org.jooq.Table;
-import org.jooq.exception.DataAccessException;
-
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.dao.access.jooq.CompositionAccess;
+import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
+import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
+import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
+import org.ehrbase.jooq.pg.tables.records.ParticipationRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.ehrbase.jooq.pg.tables.records.TerritoryRecord;
+import org.jooq.Record1;
+import org.jooq.Result;
+import org.jooq.Table;
+import org.jooq.exception.DataAccessException;
 
 /**
  * Composition Access Layer Interface<br>
@@ -242,6 +256,18 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
         return !domainAccess.getContext().selectFrom(LANGUAGE).where(LANGUAGE.CODE.equal(languageCode)).fetch().isEmpty();
     }
 
+  static UUID getEhrId(I_DomainAccess domainAccess, UUID compositionId) {
+    return Optional.ofNullable(
+            domainAccess
+                .getContext()
+                .select(COMPOSITION.EHR_ID)
+                .from(COMPOSITION)
+                .where(COMPOSITION.ID.equal(compositionId))
+                .fetchOne())
+        .map(Record1::component1)
+        .orElse(null);
+  }
+
     Timestamp getSysTransaction();
 
     /**
@@ -330,13 +356,6 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      */
     void setTerritoryCode(Integer code);
 
-    /**
-     * get the list of entry Ids for this composition
-     *
-     * @return a list of entry {@link UUID}s
-     */
-    List<UUID> getContentIds();
-
     String getFeederAudit();
 
     void setFeederAudit(FeederAudit feederAudit);
@@ -354,22 +373,14 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
     void setContextCompositionId(UUID contextId);
 
     /**
-     * add an entry to the composition
+     * Get the entry linked to the composition.
      *
-     * @param entry {@link I_EntryAccess} instance
-     * @return &gt;0 success
-     */
-    int addContent(I_EntryAccess entry);
-
-    /**
-     * get the list of entries for this composition
-     *
-     * @return the list of entry as {@link I_EntryAccess}
+     * @return the entry
      * @see I_EntryAccess
      */
-    List<I_EntryAccess> getContent();
+    I_EntryAccess getContent();
 
-    void setContent(List<I_EntryAccess> content);
+    void setContent(I_EntryAccess content);
 
     /**
      * set the contribution id for this composition

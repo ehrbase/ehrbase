@@ -25,7 +25,6 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
-import org.ehrbase.aql.parser.AqlParser;
 
 import java.util.BitSet;
 

@@ -54,7 +54,7 @@ Force Tags    refactor
 *** Test Cases ***
 Alternative flow 5: commit CONTRIBUTIONS versioning persistent COMPOSITION
 
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
     create EHR
     commit CONTRIBUTION (JSON)    minimal_persistent/minimal_persistent.contribution.json
     check response: is positive - returns version id

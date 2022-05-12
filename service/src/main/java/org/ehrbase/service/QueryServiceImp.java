@@ -20,6 +20,7 @@ package org.ehrbase.service;
 
 import static java.lang.String.format;
 
+import com.google.gson.JsonElement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.BadGatewayException;
@@ -47,6 +47,7 @@ import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.response.ehrscape.query.ResultHolder;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -57,17 +58,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-import com.google.gson.JsonElement;
-
 @Service
 @SuppressWarnings("unchecked")
 public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final FhirTerminologyServerR4AdaptorImpl tsAdapter;
+    private final ExternalTerminologyValidation tsAdapter;
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
+    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, ExternalTerminologyValidation tsAdapter) {
 
         super(knowledgeCacheService, context, serverConfig);
         this.tsAdapter = tsAdapter;
@@ -75,24 +74,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
     private static BiConsumer<Map<?,?>,String> checkNonNull = (map, errMsg) -> { if(map == null) throw new IllegalArgumentException(errMsg); };
     
-    @Override
-    public QueryResultDto query(String queryString, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap) {
 
-        switch (queryMode) {
-            case SQL:
-                return querySql(queryString);
-
-            case AQL:
-                return queryAql(
-                    queryString,
-                    explain,
-                    () -> new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString),
-                    auditResultMap);
-
-            default:
-                throw new IllegalArgumentException("Invalid query mode:"+queryMode);
-        }
-    }
 
     @Override
     public QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap) {

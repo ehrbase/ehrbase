@@ -68,7 +68,7 @@ Validate of compositions
     check status_code of commit composition    ${status_code}
 
 Precondition
-    upload OPT    validation/clinical_content_validation.opt
+    Upload OPT    validation/clinical_content_validation.opt
     create EHR
 
 Postcondition

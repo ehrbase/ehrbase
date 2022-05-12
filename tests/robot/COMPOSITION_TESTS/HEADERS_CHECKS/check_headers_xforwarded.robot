@@ -26,28 +26,25 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Resource        ../../_resources/keywords/aql_query_keywords.robot
 Resource        ../../_resources/keywords/directory_keywords.robot
 
-Suite Setup       Precondition
+Suite Setup     Precondition
 Suite Teardown  restart SUT
 
 
 *** Test Cases ***
 Check Headers with (JSON)
-    [Tags]
     create EHR wih x forwarded headers
     check that headers location response has    https   example.com    333
     [Teardown]    restart SUT
 
 Check Headers with (XML)
-    [Tags]
     create EHR wih x forwarded headers   XML
     check that headers location response has    https   example.com    333
     [Teardown]    restart SUT
 
 Check Headers with Commit Composition
-    [Tags]
     create EHR wih x forwarded headers
     check that headers location response has    https   example.com    333
-    Get Web Template By Template Id  ${template_id}
+    Get Web Template By Template Id (ECIS)  ${template_id}
     commit composition   format=FLAT
     ...                  composition=family_history__.json
     check the successful result of commit composition
@@ -59,5 +56,5 @@ Check Headers with Commit Composition
 Precondition
     Upload OPT    all_types/family_history.opt
     Upload OPT    nested/nested.opt
-    upload OPT    minimal/minimal_observation.opt
-    Extract Template_id From OPT File
+    Upload OPT    minimal/minimal_observation.opt
+    Extract Template Id From OPT File

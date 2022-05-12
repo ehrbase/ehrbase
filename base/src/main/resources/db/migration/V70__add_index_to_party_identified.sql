@@ -1,0 +1,1 @@
+CREATE INDEX party_identified_namespace_value_idx ON party_identified(party_ref_namespace, party_ref_value);

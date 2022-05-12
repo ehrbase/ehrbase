@@ -43,7 +43,7 @@ public class FieldResolutionContext {
     public FieldResolutionContext(DSLContext context, String serverNodeId, String identifier, I_VariableDefinition variableDefinition, IQueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entryRoot) {
         this.identifier = identifier;
         this.variableDefinition = variableDefinition;
-        this.withAlias = clause.equals(IQueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;
+        this.withAlias = clause.equals(IQueryImpl.Clause.SELECT) && (variableDefinition.getPath() != null || variableDefinition.getAlias() != null) ;
         this.clause = clause;
         this.context = context;
         this.serverNodeId = serverNodeId;

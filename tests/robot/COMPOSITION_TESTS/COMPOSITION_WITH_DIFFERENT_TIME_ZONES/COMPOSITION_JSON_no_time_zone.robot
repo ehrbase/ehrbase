@@ -30,7 +30,7 @@ Force Tags
 COMPOSITION JSON with no time zone using Get
     [Tags]    dtz
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
 
     create EHR
 
@@ -45,7 +45,7 @@ COMPOSITION JSON with no time zone using Get
 COMPOSITION JSON with no time zone using AQL
     [Tags]    dtz
 
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
 
     create EHR
 

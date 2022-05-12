@@ -22,8 +22,8 @@
  */
 package org.ehrbase.service;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -159,19 +159,31 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   }
 
   @Override
-  public String addOperationalTemplate(byte[] content) {
-    return addOperationalTemplateIntern(content, false);
+  public String addOperationalTemplate(InputStream inputStream) {
+
+    OPERATIONALTEMPLATE template = buildOperationalTemplate(inputStream);
+
+    return addOperationalTemplateIntern(template, false);
   }
 
-  public String addOperationalTemplateIntern(byte[] content, boolean overwrite) {
+  private OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
     TemplateDocument document;
     try {
-      document = TemplateDocument.Factory.parse(new ByteArrayInputStream(content));
+      document = TemplateDocument.Factory.parse(content);
     } catch (XmlException | IOException e) {
       throw new InvalidApiParameterException(e.getMessage());
     }
 
-    OPERATIONALTEMPLATE template = document.getTemplate();
+    return document.getTemplate();
+  }
+
+  @Override
+  public String addOperationalTemplate(OPERATIONALTEMPLATE template) {
+
+    return addOperationalTemplateIntern(template, false);
+  }
+
+  public String addOperationalTemplateIntern(OPERATIONALTEMPLATE template, boolean overwrite) {
 
     validateTemplate(template);
 
@@ -229,12 +241,14 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
   private void precalculateQueries(String templateId) {
     getQueryOptMetaData(templateId).findAllContainmentCombinations().stream()
         .filter(nodeIds -> !nodeIds.isEmpty() &&
-            nodeIds.size() <= cacheOptions.getPreBuildQueriesDepth())
+                           nodeIds.size() <= cacheOptions.getPreBuildQueriesDepth())
         .forEach(nodeIds -> resolveForTemplate(templateId, nodeIds));
   }
 
-  public String adminUpdateOperationalTemplate(byte[] content) {
-    return addOperationalTemplateIntern(content, true);
+  public String adminUpdateOperationalTemplate(InputStream content) {
+    OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
+
+    return addOperationalTemplateIntern(template, true);
   }
 
   // invalidates some derived caches like the queryOptMetaDataCache which depend on the template

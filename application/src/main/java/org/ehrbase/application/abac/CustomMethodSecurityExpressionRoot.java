@@ -18,27 +18,6 @@ package org.ehrbase.application.abac;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.service.CompositionService;
-import org.ehrbase.api.service.ContributionService;
-import org.ehrbase.api.service.EhrService;
-import org.ehrbase.application.abac.AbacConfig.AbacCheck;
-import org.ehrbase.application.abac.AbacConfig.AbacType;
-import org.ehrbase.application.abac.AbacConfig.Policy;
-import org.ehrbase.application.abac.AbacConfig.PolicyParameter;
-import org.ehrbase.aql.compiler.AuditVariables;
-import org.ehrbase.response.ehrscape.CompositionDto;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.openehr.OriginalVersionResponseData;
-import org.ehrbase.rest.BaseController;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.expression.SecurityExpressionRoot;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,6 +28,26 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.api.service.ContributionService;
+import org.ehrbase.api.service.EhrService;
+import org.ehrbase.application.abac.AbacConfig.AbacCheck;
+import org.ehrbase.application.abac.AbacConfig.AbacType;
+import org.ehrbase.application.abac.AbacConfig.Policy;
+import org.ehrbase.application.abac.AbacConfig.PolicyParameter;
+import org.ehrbase.aql.compiler.AuditVariables;
+import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.openehr.OriginalVersionResponseData;
+import org.ehrbase.rest.BaseController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.expression.SecurityExpressionRoot;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 /**
  * Implementation of custom security expression, to be used in e.g. @PreAuthorize(..) to allow ABAC
@@ -244,7 +243,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
    * @param requestMap ABAC request attribute map to add the result
    */
   @SuppressWarnings("unchecked")
-  private boolean patientHandling(JwtAuthenticationToken jwt, String subject,
+  boolean patientHandling(JwtAuthenticationToken jwt, String subject,
       Map<String, Object> requestMap, String type, Object payload) {
 
     if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
@@ -253,46 +252,33 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
     }
     String tokenPatient = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
 
-    if (type.equals(BaseController.QUERY)) {
-      // special case of type QUERY, where multiple subjects are possible
-      if (payload instanceof Map) {
-        if (((Map<?, ?>) payload).containsKey(AuditVariables.EHR_PATH)) {
-          Set<UUID> ehrs = (Set<UUID>) ((Map<?, ?>) payload).get(AuditVariables.EHR_PATH);
-          Set<String> patientSet = new HashSet<>();
-          for (UUID ehr : ehrs) {
-            String subjectId = ehrService.getSubjectExtRef(ehr.toString());
-            // check if patient token is available and if it matches OR internal reference is null
-            if (tokenPatient.equals(subjectId) || subjectId == null) {
-              // matches OR EHR's external ref is null, so add our subject from token
-              patientSet.add(tokenPatient);
-            } else {
-              // doesn't match -> requesting data for patient X with token for patient Y
-              return false;
-            }
-
-          }
-          // put result set into the requestMap and exit
-          requestMap.put(PATIENT, patientSet);
-          return true;
-        } else {
-          throw new InternalServerException("ABAC: AQL audit patient data unavailable.");
-        }
-      } else {
-        throw new InternalServerException("ABAC: AQL audit patient data malformed.");
-      }
+    boolean isQuery = type.equals(BaseController.QUERY);
+    
+    if(!isQuery && (tokenPatient.equals(subject) || subject == null)) {
+        requestMap.put(PATIENT, tokenPatient);
+        return true;
+    } else if(!isQuery)
+        return false;
+    else if(!(payload instanceof Map))
+      throw new InternalServerException("ABAC: AQL audit patient data malformed.");
+    else {
+      if(((Map<?, ?>) payload).containsKey(AuditVariables.EHR_PATH)) {
+        Set<UUID> ehrs = (Set<UUID>) ((Map<?, ?>) payload).get(AuditVariables.EHR_PATH);
+        List<String> allSubjectExtRefs = ehrService.getSubjectExtRefs(ehrs.stream().map(UUID::toString).collect(Collectors.toList()));
+        boolean isValidRefs = allSubjectExtRefs.stream()
+            .map(tokenPatient::equals)
+            .reduce(true, (b1, b2) -> b1 && b2);
+        
+        if(!isValidRefs)
+          return false;
+        
+        Set<String> patientSet = new HashSet<>();
+        patientSet.add(tokenPatient);
+        requestMap.put(PATIENT, patientSet);
+        return true;
+      } else
+        throw new InternalServerException("ABAC: AQL audit patient data unavailable.");
     }
-
-    // in all other cases just handle the one String "subject" variable
-    // check if matches (to block accessing patient X with token from patient Y) OR null reference
-    if (tokenPatient.equals(subject) || subject == null) {
-      // matches OR EHR's external ref is null, so add our subject from token
-      requestMap.put(PATIENT, tokenPatient);
-    } else {
-      // doesn't match -> requesting data for patient X with token for patient Y
-      return false;
-    }
-
-    return true;
   }
 
   /**
@@ -354,9 +340,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
             // try if this is the Delete composition case. Payload would contain the UUID of the compo.
             ObjectVersionId versionId = new ObjectVersionId((String) payload);
             UUID compositionUid = UUID.fromString(versionId.getRoot().getValue());
-            Optional<CompositionDto> compoDto = compositionService.retrieve(compositionUid, null);
+            Optional<Composition> compoDto =
+                compositionService.retrieve(
+                    compositionService.getEhrId(compositionUid), compositionUid, null);
             if (compoDto.isPresent()) {
-              Composition c = compoDto.get().getComposition();
+              Composition c = compoDto.get();
               if (c.getArchetypeDetails() != null && c.getArchetypeDetails().getTemplateId() != null) {
                 requestMap.put(TEMPLATE, c.getArchetypeDetails().getTemplateId().getValue());
               }

@@ -78,7 +78,7 @@ Cardinality of SECTION class with parameters
     check status_code of commit composition    ${status_code}
 
 Precondition
-    upload OPT    validation/cardinality_of_section.opt
+    Upload OPT    validation/cardinality_of_section.opt
     create EHR
 
 Postcondition

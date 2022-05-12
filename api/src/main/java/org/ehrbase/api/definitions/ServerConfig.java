@@ -14,9 +14,6 @@ public interface ServerConfig {
 
     Integer getAqlDepth();
 
-    Boolean getUseJsQuery();
-
-    void setUseJsQuery(boolean b);
 
     public boolean isDisableStrictValidation();
 }

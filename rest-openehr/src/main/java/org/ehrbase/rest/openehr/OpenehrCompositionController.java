@@ -18,9 +18,23 @@ package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Supplier;
+import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -38,16 +52,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.function.Supplier;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
@@ -108,11 +123,19 @@ public class OpenehrCompositionController extends BaseController implements
 
     if (Optional.ofNullable(prefer).map(i -> i.equals(RETURN_REPRESENTATION))
         .orElse(false)) {      // null safe way to test prefer header
-      respData = buildCompositionResponseData(compositionUuid, 0, accept, uri, headerList,
-          () -> new CompositionResponseData(null, null));
+      respData =
+          buildCompositionResponseData(
+              ehrId,
+              compositionUuid,
+              0,
+              accept,
+              uri,
+              headerList,
+              () -> new CompositionResponseData(null, null));
     } else {    // "minimal" is default fallback
-      respData = buildCompositionResponseData(compositionUuid, 0, accept, uri, headerList,
-          () -> null);
+      respData =
+          buildCompositionResponseData(
+              ehrId, compositionUuid, 0, accept, uri, headerList, () -> null);
     }
 
     // Enriches request attributes with current compositionId for later audit processing
@@ -177,8 +200,7 @@ public class OpenehrCompositionController extends BaseController implements
     try {
       Composition compoObj = compositionService.buildComposition(composition, compositionFormat,
           null);
-      // TODO should have EHR as parameter and check for existence as precondition - see EHR-245 (no
-      // direct EHR access in this controller)
+
       // ifMatch header has to be tested for correctness already above
 
       var compositionVersionUid =
@@ -197,13 +219,25 @@ public class OpenehrCompositionController extends BaseController implements
       UUID compositionId = extractVersionedObjectUidFromVersionUid(compositionVersionUid);
       if (RETURN_REPRESENTATION.equals(prefer)) {
         // both options extract needed info from versionUid
-        respData = buildCompositionResponseData(compositionId,
-            extractVersionFromVersionUid(compositionVersionUid), accept, uri, headerList,
-            () -> new CompositionResponseData(null, null));
+        respData =
+            buildCompositionResponseData(
+                ehrId,
+                compositionId,
+                extractVersionFromVersionUid(compositionVersionUid),
+                accept,
+                uri,
+                headerList,
+                () -> new CompositionResponseData(null, null));
       } else {    // "minimal" is default fallback
-        respData = buildCompositionResponseData(compositionId,
-            extractVersionFromVersionUid(compositionVersionUid), accept, uri, headerList,
-            () -> null);
+        respData =
+            buildCompositionResponseData(
+                ehrId,
+                compositionId,
+                extractVersionFromVersionUid(compositionVersionUid),
+                accept,
+                uri,
+                headerList,
+                () -> null);
       }
 
       // Enriches request attributes with current compositionId for later audit processing
@@ -241,11 +275,13 @@ public class OpenehrCompositionController extends BaseController implements
     HttpHeaders headers = new HttpHeaders();
 
     // check if this composition in given preceding version is available
-    compositionService.retrieve(extractVersionedObjectUidFromVersionUid(precedingVersionUid), 1)
+    compositionService
+        .retrieve(ehrId, extractVersionedObjectUidFromVersionUid(precedingVersionUid), 1)
         .orElseThrow(
-            () -> new ObjectNotFoundException("composition",
-                "No EHR with the supplied ehr_id or no COMPOSITION with the supplied preceding_version_uid.")
-        ); // TODO check for ehr + composition match as well - wow to to that? should be part of deletion, according to openEHR platform spec --> postponed, see EHR-265
+            () ->
+                new ObjectNotFoundException(
+                    "composition",
+                    "No EHR with the supplied ehr_id or no COMPOSITION with the supplied preceding_version_uid.")); // TODO check for ehr + composition match as well - wow to to that? should be part of deletion, according to openEHR platform spec --> postponed, see EHR-265
 
     // TODO check if already deleted - how is that saved / retrievable? --> postponed, see EHR-264
         /*if () {
@@ -285,13 +321,16 @@ public class OpenehrCompositionController extends BaseController implements
       // Enriches request attributes with current compositionId for later audit processing
       request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
       request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE,
-          extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+                           extractVersionedObjectUidFromVersionUid(precedingVersionUid));
 
       return ResponseEntity.noContent().headers(headers).build();
     } catch (ObjectNotFoundException e) {
       // if composition not available at all --> 404
       throw new ObjectNotFoundException("composition",
-          "No EHR with the supplied ehr_id or no COMPOSITION with the supplied preceding_version_uid.");
+                                        "No EHR with the supplied ehr_id or no COMPOSITION with the supplied " +
+                                        "preceding_version_uid.");
+    } catch (StateConflictException e) {
+      throw e;
     } catch (Exception e) {
       throw new InternalServerException("Deleting of composition failed", e);
     }
@@ -370,9 +409,15 @@ public class OpenehrCompositionController extends BaseController implements
     List<String> headerList = Arrays.asList(LOCATION, ETAG,
         LAST_MODIFIED);   // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
 
-    Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(
-        compositionUid, version, accept, uri, headerList,
-        () -> new CompositionResponseData(null, null));
+    Optional<InternalResponse<CompositionResponseData>> respData =
+        buildCompositionResponseData(
+            ehrId,
+            compositionUid,
+            version,
+            accept,
+            uri,
+            headerList,
+            () -> new CompositionResponseData(null, null));
 
     // Enriches request attributes with ehrId, compositionId and version for later audit processing
     request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
@@ -392,18 +437,25 @@ public class OpenehrCompositionController extends BaseController implements
    * Builder method to prepare appropriate HTTP response. Flexible to either allow minimal or full
    * representation of resource.
    *
-   * @param <T>           Type of the response body
+   * @param <T> Type of the response body
+   * @param ehrId
    * @param compositionId ID of the composition
-   * @param version       0 if latest, otherwise integer of specific version.
-   * @param accept        Format the response should be delivered in, as given by request
-   * @param uri           Location of resource
-   * @param headerList    List of headers to be set for response
-   * @param factory       Lambda function to constructor of desired object
+   * @param version 0 if latest, otherwise integer of specific version.
+   * @param accept Format the response should be delivered in, as given by request
+   * @param uri Location of resource
+   * @param headerList List of headers to be set for response
+   * @param factory Lambda function to constructor of desired object
    * @return
    */
-  private <T extends CompositionResponseData> Optional<InternalResponse<T>> buildCompositionResponseData(
-      UUID compositionId, Integer version, String accept, URI uri, List<String> headerList,
-      Supplier<T> factory) {
+  private <T extends CompositionResponseData>
+      Optional<InternalResponse<T>> buildCompositionResponseData(
+          UUID ehrId,
+          UUID compositionId,
+          Integer version,
+          String accept,
+          URI uri,
+          List<String> headerList,
+          Supplier<T> factory) {
     // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via lambda request
     T minimalOrRepresentation = factory.get();
 
@@ -443,8 +495,10 @@ public class OpenehrCompositionController extends BaseController implements
         versionNumber = compositionService.getLastVersionNumber(compositionId);
       }
 
-      Optional<CompositionDto> compositionDto = compositionService.retrieve(compositionId,
-          versionNumber);
+      Optional<CompositionDto> compositionDto =
+          compositionService
+              .retrieve(ehrId, compositionId, versionNumber)
+              .map(c -> CompositionService.from(ehrId, c));
       // TODO how to handle error situation here only with Optional? is there a better way without java 9 Optional.ifPresentOrElse()?
       if (compositionDto.isPresent()) {
         StructuredString ss = compositionService.serialize(compositionDto.get(), format);

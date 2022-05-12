@@ -39,18 +39,19 @@ ${INVALID DIR DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets
 # [ SUCEED CREATING ]
 
 create DIRECTORY (JSON)
-    [Arguments]         ${valid_test_data_set}
+    [Arguments]         ${valid_test_data_set}      ${isModifiable}=${TRUE}
                         Set Suite Variable  ${KEYWORD NAME}  CREATE DIRECTORY (JSON)
 
                         load valid dir test-data-set    ${valid_test_data_set}
-
-                        POST /ehr/ehr_id/directory    JSON
-
-                        Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
-                        Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
-                        Set Suite Variable  ${preceding_version_uid}  ${version_uid}
-
-                        capture point in time    of_first_version
+                        IF      '${isModifiable}' == '${TRUE}'
+                            POST /ehr/ehr_id/directory    JSON
+                            Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
+                            Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
+                            Set Suite Variable  ${preceding_version_uid}  ${version_uid}
+                            capture point in time    of_first_version
+                        ELSE
+                            POST /ehr/ehr_id/directory    JSON
+                        END
 
 
 create DIRECTORY JSON) - w/o Prefer header
@@ -120,18 +121,21 @@ create the same DIRECTORY again (JSON)
 # [ SUCCEED UPDATING ]
 
 update DIRECTORY (JSON)
-    [Arguments]         ${valid_test_data_set}
+    [Arguments]         ${valid_test_data_set}      ${isModifiable}=${TRUE}
                         Set Test Variable  ${KEYWORD NAME}  UPDATE DIRECTORY (JSON)
 
                         load valid dir test-data-set    ${valid_test_data_set}
 
                         PUT /ehr/ehr_id/directory    JSON
+                        IF      '${isModifiable}' == '${TRUE}'
+                            Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
+                            Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
+                            Set Suite Variable  ${preceding_version_uid}  ${version_uid}
+                            capture point in time    of_updated_version
+                        ELSE
+                            Output Debug Info:  Update directory with EHR status is_modifiable=False
+                        END
 
-                        Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
-                        Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
-                        Set Suite Variable  ${preceding_version_uid}  ${version_uid}
-
-                        capture point in time    of_updated_version
 
 
 update DIRECTORY (JSON) - w/o Prefer header

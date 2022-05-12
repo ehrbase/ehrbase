@@ -19,21 +19,48 @@
 
 package org.ehrbase.service;
 
+import static org.ehrbase.jooq.pg.Routines.partyUsage;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.*;
+import com.nedap.archie.rm.generic.Attestation;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
-import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_EhrAccess;
+import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
@@ -43,6 +70,7 @@ import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
 import org.ehrbase.util.PartyUtils;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -51,19 +79,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Routines.partyUsage;
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 @Service(value = "ehrService")
 @Transactional()
@@ -87,24 +102,12 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
     }
 
-    @Override
-    public UUID create(EhrStatus status, UUID ehrId) {
+  @Override
+  public UUID create(UUID ehrId, EhrStatus status) {
 
-        try {
-            validationService.check(status);
-        } catch (Exception e) {
-            // rethrow if this class, but wrap all others in InternalServerException
-            if (e.getClass().equals(UnprocessableEntityException.class))
-                throw (UnprocessableEntityException) e;
-            if (e.getClass().equals(IllegalArgumentException.class))
-                throw new ValidationException(e);
-            if (e.getClass().equals(ValidationException.class))
-                throw e;
-            else
-                throw new InternalServerException(e);
-        }
+    check(status);
 
-        if (status == null) {   // in case of new status with default values
+    if (status == null) { // in case of new status with default values
             status = new EhrStatus();
             status.setSubject(new PartySelf(null));
             status.setModifiable(true);
@@ -124,7 +127,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
 
         UUID systemId = getSystemUuid();
-        UUID committerId = getUserUuid();
+        UUID committerId = getCurrentUserId();
 
         try {   // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(getDataAccess(), subjectUuid, systemId, null, null, ehrId);
@@ -137,31 +140,39 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
     @Override
     public Optional<EhrStatusDto> getEhrStatusEhrScape(UUID ehrUuid, CompositionFormat format) {
-        EhrStatusDto statusDto = new EhrStatusDto();
-        try {
 
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUuid);
-            if (ehrAccess == null) {
-                return Optional.empty();
-            }
-
-            PartyProxy partyProxy = new PersistedPartyProxy(getDataAccess()).retrieve(ehrAccess.getParty());
-
-            statusDto.setSubjectId(partyProxy.getExternalRef().getId().getValue());
-            statusDto.setSubjectNamespace(partyProxy.getExternalRef().getNamespace());
-            statusDto.setModifiable(ehrAccess.isModifiable());
-            statusDto.setQueryable(ehrAccess.isQueryable());
-            statusDto.setOtherDetails(new StructuredString(new CanonicalJson().marshal(ehrAccess.getOtherDetails()), StructuredStringFormat.JSON));
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new InternalServerException(e);
-        }
-        return Optional.of(statusDto);
+    if (!hasEhr(ehrUuid)) {
+      return Optional.empty();
+    }
+    return Optional.of(getEhrStatus(ehrUuid)).map(s -> from(s, format));
     }
 
-    @Override
-    public Optional<EhrStatus> getEhrStatus(UUID ehrUuid) {
+  private EhrStatusDto from(EhrStatus status, CompositionFormat format) {
+
+    EhrStatusDto statusDto = new EhrStatusDto();
+    if (status.getSubject().getExternalRef() != null) {
+      statusDto.setSubjectId(status.getSubject().getExternalRef().getId().getValue());
+      statusDto.setSubjectNamespace(status.getSubject().getExternalRef().getNamespace());
+    }
+    statusDto.setModifiable(status.isModifiable());
+    statusDto.setQueryable(status.isQueryable());
+    if (status.getOtherDetails() != null) {
+      if (format.equals(CompositionFormat.XML)) {
+        statusDto.setOtherDetails(
+            new StructuredString(
+                new CanonicalXML().marshal(status.getOtherDetails()), StructuredStringFormat.XML));
+      } else {
+        statusDto.setOtherDetails(
+            new StructuredString(
+                new CanonicalJson().marshal(status.getOtherDetails()), StructuredStringFormat.JSON));
+      }
+    }
+
+    return statusDto;
+  }
+
+  @Override
+  public EhrStatus getEhrStatus(UUID ehrUuid) {
         //pre-step: check for valid ehrId
         if (!hasEhr(ehrUuid)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
@@ -170,10 +181,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         try {
 
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUuid);
-            if (ehrAccess == null) {
-                return Optional.empty();
-            }
-            return Optional.of(ehrAccess.getStatus());
+
+      return ehrAccess.getStatus();
 
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -221,50 +230,47 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         return Optional.of(versionStatus);
     }
 
-    @Override
-    public Optional<EhrStatus> updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
+  @Override
+  public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
 
-        try {
-            validationService.check(status);
-        } catch (Exception e) {
-            // rethrow if this class, but wrap all others in InternalServerException
-            if (e.getClass().equals(UnprocessableEntityException.class))
-                throw (UnprocessableEntityException) e;
-            if (e.getClass().equals(IllegalArgumentException.class))
-                throw new ValidationException(e);
-            if (e.getClass().equals(ValidationException.class))
-                throw e;
-            else
-                throw new InternalServerException(e);
-        }
+    check(status);
 
-        //pre-step: check for valid ehrId
-        if (!hasEhr(ehrId)) {
+    // pre-step: check for valid ehrId
+    if (!hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
         I_EhrAccess ehrAccess;
         try {
             ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-        } catch (Exception e) {
-            throw new InternalServerException(e);
-        }
-        if (ehrAccess == null) {
-            return Optional.empty();
-        }
-        if (status != null) {
-            ehrAccess.setStatus(status);
-        }
-
-        // execute actual update and check for success
-        if (ehrAccess.update(getUserUuid(), getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
-            throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
-
-        return getEhrStatus(ehrId);
+    } catch (Exception e) {
+      throw new InternalServerException(e);
     }
 
-    @Override
-    public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
+            ehrAccess.setStatus(status);
+
+        // execute actual update and check for success
+        if (ehrAccess.update(getCurrentUserId(), getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION).equals(false))
+            throw new InternalServerException("Problem updating EHR_STATUS"); //unexpected problem. expected ones are thrown inside of update()
+
+    return UUID.fromString(getEhrStatus(ehrId).getUid().getRoot().getValue());
+  }
+
+  private void check(EhrStatus status) {
+    try {
+      validationService.check(status);
+    } catch (Exception e) {
+      // rethrow if this class, but wrap all others in InternalServerException
+      if (e.getClass().equals(UnprocessableEntityException.class))
+        throw (UnprocessableEntityException) e;
+      if (e.getClass().equals(IllegalArgumentException.class)) throw new ValidationException(e);
+      if (e.getClass().equals(ValidationException.class)) throw e;
+      else throw new InternalServerException(e);
+    }
+  }
+
+  @Override
+  public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
         UUID subjectUuid = new PersistedPartyRef(getDataAccess()).findInDB(subjectId, nameSpace);
         return Optional.ofNullable(I_EhrAccess.retrieveInstanceBySubject(getDataAccess(), subjectUuid));
     }
@@ -333,6 +339,15 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         return I_EhrAccess.hasEhr(getDataAccess(), ehrId);
     }
 
+
+    @Override
+    /*TODO This method should be cached...
+    For contributions it may be called n times where n is the number of versions in the contribution which will in turn mean
+    n SQL queries are performed*/
+    public boolean isModifiable(UUID ehrId) {
+        return I_EhrAccess.isModifiable(getDataAccess(), ehrId);
+    }
+
     @Override
     public boolean hasStatus(UUID statusId) {
         return I_StatusAccess.exists(getDataAccess(), statusId);
@@ -341,19 +356,20 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public VersionedEhrStatus getVersionedEhrStatus(UUID ehrUid) {
 
-        // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr: has_ehr (an_ehr_id)
-        // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr_status_version: has_ehr_status_version (an_ehr_id, a_version_uid)
+    // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr: has_ehr (an_ehr_id)
+    // FIXME VERSIONED_OBJECT_POC: Pre_has_ehr_status_version: has_ehr_status_version (an_ehr_id,
+    // a_version_uid)
 
-        Optional<EhrStatus> ehrStatus = getEhrStatus(ehrUid);
+    EhrStatus ehrStatus = getEhrStatus(ehrUid);
 
         VersionedEhrStatus versionedEhrStatus = new VersionedEhrStatus();
-        if (ehrStatus.isPresent()) {
-            versionedEhrStatus.setUid(new HierObjectId(ehrStatus.get().getUid().getRoot().getValue()));
+
+    versionedEhrStatus.setUid(new HierObjectId(ehrStatus.getUid().getRoot().getValue()));
             versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
             I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
             versionedEhrStatus.setTimeCreated(new DvDateTime(OffsetDateTime.of(ehrAccess.getStatusAccess().getInitialTimeOfVersionedEhrStatus().toLocalDateTime(),
                     OffsetDateTime.now().getOffset())));
-        }
+
 
         return versionedEhrStatus;
     }
@@ -454,17 +470,44 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         Routines.deleteOrphanHistory(getDataAccess().getContext().configuration());
     }
 
-
     @Override
     public UUID getSubjectUuid(String ehrId) {
-        Optional<EhrStatus> status = getEhrStatus(UUID.fromString(ehrId));
-        return status.map(ehrStatus -> new PersistedPartyProxy(getDataAccess())
-            .getOrCreate(ehrStatus.getSubject())).orElse(null);
+        return getSubjectUuids(List.of(ehrId)).get(0).getRight();
+    }
+
+  private List<Pair<String,UUID>> getSubjectUuids(Collection<String> ehrIds) {
+    return ehrIds.stream()
+        .map(ehrId -> Pair.of(ehrId, getEhrStatus(UUID.fromString(ehrId))))
+        .map(
+            p -> {
+              if (p.getRight() == null) return Pair.<String, UUID>of(p.getLeft(), null);
+              return Pair.of(
+                  p.getLeft(),
+                  new PersistedPartyProxy(getDataAccess()).getOrCreate(p.getRight().getSubject()));
+            })
+        .collect(Collectors.toList());
+    }
+
+  @Override
+    public List<String> getSubjectExtRefs(Collection<String> ehrIds) {
+        List<UUID> nonNullVal = getSubjectUuids(ehrIds).stream()
+          .filter(p -> p.getRight() != null)
+          .map(p -> p.getRight())
+          .collect(Collectors.toList());
+
+    if(nonNullVal.size() == 0)
+            return Collections.emptyList();
+
+    return new PersistedPartyProxy(getDataAccess()).retrieveMany(nonNullVal).stream()
+            .map(p -> p.getExternalRef())
+            .filter(p -> p != null)
+            .map(p -> p.getId().getValue())
+            .collect(Collectors.toList());
     }
 
     @Override
     public String getSubjectExtRef(String ehrId) {
-        return Optional.ofNullable(new PersistedPartyProxy(getDataAccess()).retrieve(getSubjectUuid(ehrId)).getExternalRef())
-            .map(p -> p.getId().getValue()).orElse(null);
+        List<String> extRefs = getSubjectExtRefs(List.of(ehrId));
+        return extRefs.size() == 0 ? null : extRefs.get(0);
     }
 }

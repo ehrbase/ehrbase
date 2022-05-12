@@ -16,17 +16,29 @@
 
 package org.ehrbase.application.config.validation;
 
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+
 import org.apache.http.client.HttpClient;
+import org.ehrbase.functional.Try;
+import org.ehrbase.validation.ConstraintViolation;
+import org.ehrbase.validation.ConstraintViolationException;
 import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.validation.terminology.ExternalTerminologyValidationChain;
 import org.ehrbase.validation.terminology.FhirTerminologyValidation;
+import org.ehrbase.validation.terminology.TerminologyParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.nedap.archie.rm.datavalues.DvCodedText;
 
 /**
  * {@link Configuration} for external terminology validation.
@@ -35,16 +47,17 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.0.0
  */
 @Configuration
-@ConditionalOnProperty(name = "validation.external-terminology.enabled", havingValue = "true")
 @EnableConfigurationProperties(ValidationProperties.class)
 @SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
-
   private final ValidationProperties properties;
-
   private final HttpClient httpClient;
+  
+//  @Autowired
+  @Value("${validation.external-terminology.enabled}")
+  private Boolean enableExternalValidation;
 
   public ValidationConfiguration(ValidationProperties properties, HttpClient httpClient) {
     this.properties = properties;
@@ -53,6 +66,27 @@ public class ValidationConfiguration {
 
   @Bean
   public ExternalTerminologyValidation externalTerminologyValidator() {
+    if(!enableExternalValidation) {
+      return new ExternalTerminologyValidation() {
+        private final String ERR_MSG = "External terminology validation is disabled, consider to enable it";
+        private final ConstraintViolation err = new ConstraintViolation(ERR_MSG);
+        
+        public Try<Boolean, ConstraintViolationException> validate(TerminologyParam param) {
+          return Try.failure(new ConstraintViolationException(List.of(err)));
+        }
+        
+        public boolean supports(TerminologyParam param) {
+          logger.warn(ERR_MSG);
+          return false;
+        }
+        
+        public List<DvCodedText> expand(TerminologyParam param) {
+          logger.warn(ERR_MSG);
+          return Collections.emptyList();
+        }
+      };
+    }
+    
     Map<String, ValidationProperties.Provider> providers = properties.getProvider();
 
     if (providers.isEmpty()) {
