@@ -18,58 +18,62 @@
 
 package org.ehrbase.dao.access.jooq.party;
 
+import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.jooq.pg.enums.PartyType;
-import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
-import org.jdom2.IllegalAddException;
-import org.jooq.Record;
 
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.jooq.pg.enums.PartyType;
+import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.jdom2.IllegalAddException;
+import org.jooq.Record;
 
 /**
  * PARTY_IDENTIFIED DB operations
  */
-class PersistedPartyIdentified extends PersistedParty {
+public class PersistedPartyIdentified extends PersistedParty {
 
-    PersistedPartyIdentified(I_DomainAccess domainAccess) {
+    public static final String SECURITY_USER_TYPE = "EHRbase Security Authentication User";
+
+    public static final String EHRBASE = "EHRbase";
+
+    public PersistedPartyIdentified(I_DomainAccess domainAccess) {
         super(domainAccess);
     }
 
     private static final String ERR_MISSING_PROXY = "Missing PartyProxy for PartyIdentifiedRecord[%s]";
-    
+
     @Override
     public PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord) {
         return renderMultiple(List.of(partyIdentifiedRecord)).stream()
             .findFirst()
             .orElseThrow(() -> new IllegalAddException(String.format(ERR_MISSING_PROXY, partyIdentifiedRecord.getId())));
     }
-    
+
     @Override
     public List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
-      
+
         List<Pair<PartyIdentifiedRecord, List<DvIdentifier>>> partyIdPair = new PartyIdentifiers(domainAccess).retrieveMultiple(partyIdentifiedRecords);
-        
+
         return partyIdPair.stream()
             .map(pair -> {
-                PartyIdentifiedRecord pir = pair.getLeft(); 
-                
+                PartyIdentifiedRecord pir = pair.getLeft();
+
                 PartyRef partyRef = Optional.ofNullable(pir.getPartyRefType())
                     .map(ref -> new PartyRef(new PersistedObjectId().fromDB(pir), pir.getPartyRefNamespace(), pir.getPartyRefType()))
                     .orElse(null);
-              
+
                 List<DvIdentifier> identifierList = pair.getRight();
                 return new PartyIdentified(partyRef, pir.getName(), identifierList.isEmpty() ? null : identifierList);
             })
@@ -133,4 +137,12 @@ class PersistedPartyIdentified extends PersistedParty {
         return uuid;
     }
 
+    public Optional<UUID> findInternalUserId(String username) {
+        var condition = IDENTIFIER.ID_VALUE.eq(username)
+            .and(IDENTIFIER.TYPE_NAME.eq(SECURITY_USER_TYPE))
+            .and(IDENTIFIER.ISSUER.eq(EHRBASE))
+            .and(IDENTIFIER.ASSIGNER.eq(EHRBASE));
+        return domainAccess.getContext().fetchOptional(IDENTIFIER, condition)
+            .map(IdentifierRecord::getParty);
+    }
 }

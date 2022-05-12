@@ -26,6 +26,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
+- Fix duplicate users issue ([#826](https://github.com/ehrbase/ehrbase/pull/826)).
 - Fix validation errors in ECIS EHR endpoint ([#828](https://github.com/ehrbase/ehrbase/pull/828)) 
 - Fix 400 error in ECIS EHR update ([#834](https://github.com/ehrbase/ehrbase/pull/834))
 
