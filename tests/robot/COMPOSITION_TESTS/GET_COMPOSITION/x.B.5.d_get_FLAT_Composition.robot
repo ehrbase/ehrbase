@@ -40,6 +40,9 @@ Create Two Compositions With Health Care Facility Provided And Not Provided - AQ
     ...     Create second composition with health_care_facility not provided;
     ...     Apply AQL query to get EHR a/uid/value and a/context/health_care_facility/name.
     ...     In rows, first array should contain Hospital A and second array should contain null.
+    ...     - https://github.com/ehrbase/ehrbase/issues/848
+    ...     Second query checks the resulted columns data.
+    ...     - https://github.com/ehrbase/ehrbase/issues/787
     create EHR
     commit composition   format=FLAT
     ...                  composition=minimal_action.en.v1__health_care_facility_select_populated.json
@@ -47,7 +50,8 @@ Create Two Compositions With Health Care Facility Provided And Not Provided - AQ
     commit composition   format=FLAT
     ...                  composition=minimal_action.en.v1__health_care_facility_select_missing.json
     check the successful result of commit composition
-    ${query1}=    Catenate
+
+    ${query1}       Catenate
     ...     SELECT a/uid/value as composition_uid,
     ...     a/context/health_care_facility/name as healthcare_facility_name
     ...     FROM EHR e contains COMPOSITION
@@ -56,7 +60,15 @@ Create Two Compositions With Health Care Facility Provided And Not Provided - AQ
     POST /query/aql (REST)     JSON
     Should Be Equal As Strings     ${response body["rows"][0][1]}   Hospital A
     Should Be Equal     ${response body["rows"][1][1]}      ${None}
-
+    ## Cover issue: https://github.com/ehrbase/ehrbase/issues/787
+    ${query2}       Catenate
+    ...     SELECT c as COMPOSITION
+    ...     FROM EHR e
+    ...     CONTAINS composition c
+    Set Test Variable    ${payload}    {"q": "${query2}"}
+    POST /query/aql (REST)     JSON
+    Should Be Equal As Strings     ${response body["columns"][0]["path"]}   c
+    Should Be Equal As Strings     ${response body["columns"][0]["name"]}   COMPOSITION
 
 Data driven tests for Compare content of compositions with the Original (FLAT)
     [Tags]  600  not-ready  bug
