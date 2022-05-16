@@ -61,60 +61,52 @@ public interface CompositionService extends BaseService, VersionedObjectService<
    */
   StructuredString serialize(CompositionDto composition, CompositionFormat format);
 
-    Integer getLastVersionNumber(UUID compositionId);
+  Integer getLastVersionNumber(UUID compositionId);
 
-    /**
-     * Helper function to read UUID from given composition input in stated format.
-     * @param content Composition input
-     * @param format Composition format
-     * @return The UUID or null when not available.
-     */
-    String getUidFromInputComposition(String content, CompositionFormat format);
+  /**
+   * Helper function to read the template ID from given composition input in stated format.
+   * @param content Composition input
+   * @param format Composition format
+   * @return The UUID or null when not available.
+   */
+  String getTemplateIdFromInputComposition(String content, CompositionFormat format);
 
-    /**
-     * Helper function to read the template ID from given composition input in stated format.
-     * @param content Composition input
-     * @param format Composition format
-     * @return The UUID or null when not available.
-     */
-    String getTemplateIdFromInputComposition(String content, CompositionFormat format);
+  /**
+   * Gets the version of a composition that is closest in time before timestamp
+   * @param compositionId UUID (versioned_object_id) of composition
+   * @param timestamp Given time
+   * @return Version closest in time before given timestamp, or `null` in case of error.
+   */
+  Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
 
-    /**
-     * Gets the version of a composition that is closest in time before timestamp
-     * @param compositionId UUID (versioned_object_id) of composition
-     * @param timestamp Given time
-     * @return Version closest in time before given timestamp, or `null` in case of error.
-     */
-    Integer getVersionByTimestamp(UUID compositionId, LocalDateTime timestamp);
+  /**
+   * Checks if given ID is a valid composition ID.
+   * @param versionedObjectId ID to check
+   * @return True if ID exists
+   * @throws ObjectNotFoundException if ID does not exist
+   */
+  boolean exists(UUID versionedObjectId);
 
-    /**
-     * Checks if given ID is a valid composition ID.
-     * @param versionedObjectId ID to check
-     * @return True if ID exists
-     * @throws ObjectNotFoundException if ID does not exist
-     */
-    boolean exists(UUID versionedObjectId);
+  /**
+   * Checks if given composition ID is ID of a logically deleted composition.
+   * @param versionedObjectId ID to check
+   * @return True if deleted, false if not
+   */
+  boolean isDeleted(UUID versionedObjectId);
 
-    /**
-     * Checks if given composition ID is ID of a logically deleted composition.
-     * @param versionedObjectId ID to check
-     * @return True if deleted, false if not
-     */
-    boolean isDeleted(UUID versionedObjectId);
+  /**
+   * Admin method to delete a Composition from the DB. See EHRbase Admin API specification for details.
+   * @param compositionId Composition to delete
+   */
+  void adminDelete(UUID compositionId);
 
-    /**
-     * Admin method to delete a Composition from the DB. See EHRbase Admin API specification for details.
-     * @param compositionId Composition to delete
-     */
-    void adminDelete(UUID compositionId);
-
-    /**
-     * Gets version container Composition associated with given EHR and Composition ID.
-     * @param ehrUid Given EHR ID
-     * @param composition Given Composition ID
-     * @return Version container object
-     */
-    VersionedComposition getVersionedComposition(UUID ehrUid, UUID composition);
+  /**
+   * Gets version container Composition associated with given EHR and Composition ID.
+   * @param ehrUid Given EHR ID
+   * @param composition Given Composition ID
+   * @return Version container object
+   */
+  VersionedComposition getVersionedComposition(UUID ehrUid, UUID composition);
 
   /**
    * Gets revision history of given composition.
@@ -134,7 +126,7 @@ public interface CompositionService extends BaseService, VersionedObjectService<
   Optional<OriginalVersion<Composition>> getOriginalVersionComposition(
       UUID ehrUid, UUID versionedObjectUid, int version);
 
-    Composition buildComposition(String content, CompositionFormat format, String templateId);
+  Composition buildComposition(String content, CompositionFormat format, String templateId);
 
   UUID getEhrId(UUID compositionId);
 }

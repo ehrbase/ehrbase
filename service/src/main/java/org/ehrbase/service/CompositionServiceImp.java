@@ -16,19 +16,6 @@
 
 package org.ehrbase.service;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.ehr.VersionedComposition;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -38,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -70,6 +58,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.Attestation;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * {@link CompositionService} implementation.
@@ -608,25 +610,6 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
       throw new InternalServerException("Invalid version number calculated.");
     } else {
       return version;
-    }
-  }
-
-  /**
-   * Internal helper funcition to read UID from given composition input in stated format.
-   *
-   * @param content Composition input
-   * @param format  Composition format
-   * @return the uid of the composition
-   */
-  @Override
-  public String getUidFromInputComposition(String content, CompositionFormat format)
-      throws IllegalArgumentException, InternalServerException, UnexpectedSwitchCaseException {
-
-    Composition composition = buildComposition(content, format, null);
-    if (composition.getUid() == null) {
-      return null;
-    } else {
-      return composition.getUid().toString();
     }
   }
 
