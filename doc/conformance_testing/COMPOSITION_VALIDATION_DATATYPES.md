@@ -1518,7 +1518,9 @@ DV_INTERVAL.upper
 > NOTE: different duration implementations might affect the DV_DURATION related test cases. For instance, some implementations might not support `days` in the same duration
 > expression that contains `months`, since there is no exact correspondence between the number of `days` and `months` (months could have 28, 29, 30 or 31 days). Then other
 > implementations might simplify the `month` measurement to be 30 days. This also happens with some implementations that consider a `day` is exactly `24 hours` as a simplification.
-> It is worth mentioning that openEHR provides means for calculating this based on averages... TODO
+> It is worth mentioning that openEHR provides means for calculating this based on averages, in DV_DURATION.magnitude(), which is implemented in terms of Iso8601_duration.to_seconds(),
+> and uses Time_Definitions.Average_days_in_year as an approximation to the numbers of days in a year, and Time_Definitions.Average_days_in_month as an approximation to the numbers of
+> days in a month. So to normalize an expression that is P1Y3M5D to `days` we would have `1 * Average_days_in_year + 3 * Average_days_in_month + 5`.
 > So in case the SUT has an implementation decision to be considered, the developers should mention it in the Conformance Statement Document.
 
 Until RM 1.0.4, durations respect exactly the ISO 8601 durations. From RM 1.1.0, there are two exceptions: 
@@ -1537,6 +1539,7 @@ in this clause.
 > ...
 > EXAMPLE 7 '-P2M1D' is equivalent to 'P-2M-1D'.
 
+
 ### 4.2.1. Test case DV_DURATION open constraint
 
 | value           | expected | violated constraints | comment |
@@ -1554,7 +1557,6 @@ in this clause.
 | P3M1W           | rejected | invalid ISO 8601-1 duration: weeks symbol can't be mixed with other symbols | only if RM < 1.1.0 |
 | -P2M            | accepted | | only if RM >= 1.1.0 |
 | -P2M            | rejected | invalid ISO 8601-1 duration: negative durations are not supported | only if RM < 1.1.0 |
-
 
 
 ### 4.2.2. Test case DV_DURATION fields allowed constraint
@@ -1635,8 +1637,11 @@ Note that time expressions in openEHR are considered an absolute point in time f
 
 This case is when DV_TIME matches {*}.
 
-> NOTE 1: the decimal mark for the seconds fraction could be `,` (comma) or `.` (period) at in-memory and storage representations of time expressions, but since in most popular exchange formats the `.` is preferred, and considering the implementation of these test cases will surelly use those exchange formats, we only specify test data sets which use the decimal mark `.`. Nevetheless, the `,` is totally valid at in-memory and storage levels.
-> In the same line, basic and extended formats are allowed at in-memory and storage representations. Basic format being the time parts without any separators and the extended being the parts with separatos `:` (colon). The extended format is also preferred by the most common exchange fornats, so only test data sets using extended format will be specified.
+> NOTE 1: the decimal mark for the seconds fraction could be `,` (comma) or `.` (period) at in-memory and storage representations of time expressions, but since in most popular exchange formats
+> the `.` is preferred, and considering the implementation of these test cases will surelly use those exchange formats, we only specify test data sets which use the decimal mark `.`.
+> Nevetheless, the `,` is totally valid at in-memory and storage levels.
+> In the same line, basic and extended formats are allowed at in-memory and storage representations. Basic format being the time parts without any separators and the extended being the parts
+> with separatos `:` (colon). The extended format is also preferred by the most common exchange fornats, so only test data sets using extended format will be specified.
 
 > NOTE 2: "There is no limit on the number of decimal places for the decimal fraction. However, the number of decimal places needs to be agreed to by the communicating parties." [REF](https://en.wikipedia.org/wiki/ISO_8601#Times)
 
@@ -1644,7 +1649,9 @@ This case is when DV_TIME matches {*}.
 
 > NOTE 4: if no timezone information is included, the time expression is considered `local time`.
 
-> NOTE 5: one clarification about the seconds fraction in ISO8601 is that is not exactly an expression of milliseconds as the AOM specification implies considering the `millisecond_validity` fields. For instance `.5` represents half a second, which is indeed 500 milliseconds but `.5` is not syntactically `500 ms`, or `.333333` represents one third of a second, and syntactilclly `333333` goes beyond the precision of milliseconds which is just 3 digits long. Consider `.33333` is totally valid in ISO8601 for the seconds fraction (see NOTE 2).
+> NOTE 5: one clarification about the seconds fraction in ISO8601 is that is not exactly an expression of milliseconds as the AOM specification implies considering the `millisecond_validity`
+> fields. For instance `.5` represents half a second, which is indeed 500 milliseconds but `.5` is not syntactically `500 ms`, or `.333333` represents one third of a second, and syntactically
+> `333333` goes beyond the precision of milliseconds which is just 3 digits long. Consider `.33333` is totally valid in ISO8601 for the seconds fraction (see NOTE 2).
 
 | value                  | expected | violated constraints          |
 |------------------------|----------|-------------------------------|
@@ -1669,6 +1676,8 @@ This case is when DV_TIME matches {*}.
 | T10:30:47.5-03:00      | accepted |                               |
 | T10:30:47.333-03:00    | accepted |                               |
 | T10:30:47.333333-03:00 | accepted |                               |
+| T10.5                  | rejected | [openEHR doesn't allow fractional hours in partial time expressions](https://specifications.openehr.org/releases/BASE/latest/foundation_types.html#_primitive_time_types), even though it's allowed by ISO 8601 |
+| T10:05.5               | rejected | [openEHR doesn't allow fractional minutes in partial time expressions](https://specifications.openehr.org/releases/BASE/latest/foundation_types.html#_primitive_time_types), even though it's allowed by ISO 8601 |
 
 
 ### 4.3.2. Test case DV_TIME validity kind constraint
@@ -1999,6 +2008,16 @@ DV_DATE constraints are defined by C_DATE, which specifies two types of constrai
 
 > NOTE 2: by the ISO8601 standard, only years >1582 are valid, since that was the year in which the Gregorian Calendar was put in place. For representing other years, there should be a mutual agreement between information interchange partners.
 
+Some exceptions to ISO 8601 specs is that in openEHR date/time/duration types, which dates back to RM 1.0.2 (and maybe before that):
+
+> ISO 8601 semantics not used in openEHR include:
+> • “expanded” dates, which have year numbers of greater than 4 digits, and may be negative; in openEHR, only 4-digit year numbers are assumed;
+> • the YYYY-WW-DD method of expressing dates (since this is imprecise and difficult to compute with due to variable week starting dates, and not required in health);
+> • partial date/times with fractional minutes or hours, e.g. hh,hhh or mm,mm; in openEHR, only fractional seconds are supported;
+> • the interval syntax. Intervals of date/times are supported in openEHR, but their syntax form is defined by ADL, and is standardised across all comparable types, not just dates and times.
+
+Following those rules, will include test data sets that break the openEHR rules, even if those are ISO 8601 valid, the SUT should mark them as invalid.
+
 ### 4.4.1. Test case DV_DATE open constraint
 
 | value                  | expected | violated constraints          |
@@ -2012,6 +2031,8 @@ DV_DATE constraints are defined by C_DATE, which specifies two types of constrai
 | 2021-10-24             | accepted |                               |
 | 2021-10-00             | rejected | ISO8601: day in 01..31        |
 | 2021-10-32             | rejected | ISO8601: day in 01..31        |
+| +001985-04             | rejected | expanded ISO 8601-1 dates are not supported in openEHR (see exceptions above) |
+| 1985-W15-5             | rejected | week dates are allowed in ISO 8601-1 but are not supported in openEHR (see exceptions above) |
 
 
 <b id="footnote1">1</b>: this is the author's interpretation of a minimal valid date in the context of openEHR noting the description of [C_DATE](https://specifications.openehr.org/releases/AM/Release-2.2.0/AOM1.4.html#_c_date_class): "There is no validity flag for ‘year’, since it must always be by definition mandatory in order to have a sensible date at all.". Though the ISO standard seems to allow partial year expressions. [↩](#empty_date)
