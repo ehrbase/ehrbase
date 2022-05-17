@@ -1515,21 +1515,46 @@ DV_INTERVAL.upper
 
 ## 4.2. quantity.date_time.DV_DURATION
 
-> NOTE: different duration implementations might affect the DV_DURATION related test cases. For instance, some implementations might not support `days` in the same duration expression that contains `months`, since there is no exact correspondence between the number of `days` and `months` (months could have 28, 29, 30 or 31 days). Then other implementations might simplify the `month` measurement to be 30 days. This also happens with some implementations that consider a `day` is exactly `24 hours` as a simplification. So in case the SUT has an implementation decision to be considered, the developers should mention it in the Conformance Statement Document.
+> NOTE: different duration implementations might affect the DV_DURATION related test cases. For instance, some implementations might not support `days` in the same duration
+> expression that contains `months`, since there is no exact correspondence between the number of `days` and `months` (months could have 28, 29, 30 or 31 days). Then other
+> implementations might simplify the `month` measurement to be 30 days. This also happens with some implementations that consider a `day` is exactly `24 hours` as a simplification.
+> It is worth mentioning that openEHR provides means for calculating this based on averages... TODO
+> So in case the SUT has an implementation decision to be considered, the developers should mention it in the Conformance Statement Document.
+
+Until RM 1.0.4, durations respect exactly the ISO 8601 durations. From RM 1.1.0, there are two exceptions: 
+
+1. a negative sign may be used before a Duration, for example `-P10D`, meaning '10 days before [origin]', where the 'origin' is a timepoint understood as the origin for the duration;
+2. the `W` designator may be mixed with other designators.
+
+Note those exceptions are invalid in terms of ISO 8601-1_2019, but, those are valid in terms for ISO 8601-2_2019, which defines some extensions to the ISO 8601-1 standard. From ISO 8601-2:
+
+> Expressions in the following four examples below are not valid in ISO 8601-1, but are valid as specified
+in this clause.
+> 
+> EXAMPLE 3 'P3W2D', duration of three weeks and two days, which is 23 days (equivalent to the expression 'P23D'). In ISO 8601-1, ["W"] is not permitted to occur along with any other component.
+> 
+> EXAMPLE 4 'P5Y10W', duration of five years and ten weeks.
+> ...
+> EXAMPLE 7 '-P2M1D' is equivalent to 'P-2M-1D'.
 
 ### 4.2.1. Test case DV_DURATION open constraint
 
-| value           | expected | violated constraints |
-|-----------------|----------|----------------------|
-| NULL            | rejected | DV_DURATION.value is mandatory in the RM |
-| 1Y              | rejected | wrong ISO 8601 duration: missing duration desingator 'P' |         
-| P1Y             | accepted | |
-| P1Y3M           | accepted | |
-| P1W             | accepted | |
-| P1Y3M4D         | accepted | |
-| P1Y3M4DT2H      | accepted | |
-| P1Y3M4DT2H14M   | accepted | |
-| P1Y3M4DT2H14M5S | accepted | |
+| value           | expected | violated constraints | comment |
+|-----------------|----------|----------------------|---------|
+| NULL            | rejected | DV_DURATION.value is mandatory in the RM ||
+| 1Y              | rejected | invalid ISO 8601-1 duration: missing duration desingator 'P' ||
+| P1Y             | accepted | ||
+| P1Y3M           | accepted | ||
+| P1W             | accepted | ||
+| P1Y3M4D         | accepted | ||
+| P1Y3M4DT2H      | accepted | ||
+| P1Y3M4DT2H14M   | accepted | ||
+| P1Y3M4DT2H14M5S | accepted | ||
+| P3M1W           | accepted | | only if RM >= 1.1.0 |
+| P3M1W           | rejected | invalid ISO 8601-1 duration: weeks symbol can't be mixed with other symbols | only if RM < 1.1.0 |
+| -P2M            | accepted | | only if RM >= 1.1.0 |
+| -P2M            | rejected | invalid ISO 8601-1 duration: negative durations are not supported | only if RM < 1.1.0 |
+
 
 
 ### 4.2.2. Test case DV_DURATION fields allowed constraint
