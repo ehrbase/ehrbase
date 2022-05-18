@@ -32,6 +32,8 @@ workflows:
   # WORKFLOW 1/3
   build-and-test:
     jobs:
+      - check-codestyle:
+          context: org-global
       - build-ehrbase:
           context: org-global
           filters:
@@ -41,7 +43,7 @@ workflows:
                 - master
                 - /sync\/.*/
                 - /feature/sync\/.*/
-      
+
       - run-SDK-integration-tests:
           context: org-global
           requires:
@@ -77,7 +79,7 @@ workflows:
           requires:
             - build-ehrbase
             - QUERYSERVICE-test-1
-      
+
       - COMPOSITION-tests-5:
           context: org-global
           requires:
@@ -202,7 +204,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-      
+
       # - QUERYSERVICE-smoke:
       #     context: org-global
       #     # requires:
@@ -212,7 +214,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-      
+
       - SECURITY-test:
           context: org-global
           requires:
@@ -325,7 +327,7 @@ workflows:
           requires:
             - build-ehrbase
             - QUERYSERVICE-test-2
-      
+
       - COMPOSITION-tests-5:
           context: org-global
           requires:
@@ -590,13 +592,15 @@ workflows:
       ///  - MERGE BOTH PRs AT THE SAME TIME!                             ///
       ///                                                                 ///
       //////////////////////////////////////////////////////////////////////
-    
+
     # when:
     #   or:
     #     - equal: [ sync/*, << pipeline.git.branch >> ]
     #     - equal: [ feature/sync/*, << pipeline.git.branch >> ]
 
     jobs:
+      - check-codestyle:
+          context: org-global
       - build package ehrbase with locally built sdk from sync-branch:
           filters:
             branches:
@@ -804,6 +808,15 @@ jobs:
       - save-sdk-test-results
 
 
+  check-codestyle:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - install-maven
+      - maven-check-codestyle
+
+
   build-ehrbase:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
@@ -875,7 +888,7 @@ jobs:
   COMPOSITION-tests-3:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
-    steps:      
+    steps:
       - checkout
       - restore-workspace
       - run-robot-tests:
@@ -893,7 +906,7 @@ jobs:
           include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_4"
-    
+
   COMPOSITION-tests-5:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
@@ -1122,7 +1135,7 @@ jobs:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
-  
+
 
   QUERYSERVICE-test-2:
     # executor: docker-py3-java11-postgres
@@ -1148,7 +1161,7 @@ jobs:
             - ehrbasedb-dump-v8
       # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
       - run: echo "FORCE GENERATION OF TEST-DATA AND EXPECTED RESULTS!" > /tmp/DATA_CHANGED_NOTICE
-      - run: 
+      - run:
           name: CHECK IF EXPECTED-RESULT TEMPLATES HAVE CHANGED AND REGENERATE TEST-DATA IF NEEDED
           command: |
             FILE=/tmp/DATA_CHANGED_NOTICE
@@ -1185,8 +1198,8 @@ jobs:
           key: ehrbasedb-dump-v8-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
           paths:
             - /tmp/ehrbasedb_dump.sql
-  
-  
+
+
   SECURITY-test:
     executor: machine-ubuntu-2004
     environment:
@@ -1202,7 +1215,7 @@ jobs:
           include-tags: "SECURITY_oauth"
           # test-suite-path: ""
           test-suite-name: "SECURITY"
-        
+
   ADMIN-test:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
@@ -1261,7 +1274,7 @@ jobs:
               --name "EHRbase Code Coverage w/ All Tests (Unit, SDK, Robot)"
       - store_artifacts:
           path:  ~/projects/test-coverage/overall-coverage-report
-            
+
       - sonarcloud/scan:
           cache_version: 1       # NOTE: increment this value to force cache rebuild
 
@@ -1302,14 +1315,14 @@ commands:
         enum: ["DEV", "DEV -v AUTH_TYPE:OAUTH", "ADMIN-DEV", "TEST", "TEST -v AUTH_TYPE:OAUTH", "ADMIN-TEST"]
         default: "DEV"
         type: enum
-      
+
       nodename:
         description: | 
           EHRbase's "CREATING_SYSTEM_ID". It can be set from cli when starting server .jar, i.e.:
           `java -jar application.jar --server.nodename=local.ehrbase.org`
         default: "circleci.ehrbase.org"
         type: string
-      
+
       allow-template-overwrite:
         description:  Sets EHRbase's cli option `--system.allow-template-overwrite=true`
         default: true
@@ -1434,7 +1447,7 @@ commands:
       - attach_workspace:
           at: /home/circleci/
 
-          
+
   merge-robot-outputs:
     description: Merge Robot Results from Parallel Tests
     steps:
@@ -1524,7 +1537,7 @@ commands:
             cd ~/projects/openEHR_SDK
               mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
   
-  
+
   start-ehrbase-and-run-java-integration-sdk-tests:
     description: |
       Starts ehrbase server and runs maven test phase using 'slow' profile defined in parent pom.xml
@@ -1586,7 +1599,7 @@ commands:
           paths:
             - projects/test-coverage/target/jacoco-sdk-it-coverage.exec
 
-  
+
   generate-sdk-it-coverage-report:
     description: Generates human readable reports from jacoco-sdk-it-coverage.exec
     steps:
@@ -1675,7 +1688,7 @@ commands:
             find ~/projects/openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/sdk-test-results/unit-tests/ \;
             find ~/projects/openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/sdk-test-results/unit-tests/ \;
           when: always
-  
+
 
   collect-sdk-integrationtest-results:
     steps:
@@ -1687,7 +1700,7 @@ commands:
             find ~/projects/openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/sdk-test-results/integration-tests/ \;
           when: always
 
-    
+
   save-sdk-test-results:
     steps:
       - store_test_results:
@@ -1777,7 +1790,7 @@ commands:
             - projects/test-coverage/target
             - projects/tests/requirements.txt
 
- 
+
   restore-workspace:
     steps:
       - attach_workspace:
@@ -1789,7 +1802,7 @@ commands:
           root: /home/circleci
           paths:
             - projects/openEHR_SDK
-            
+
 
   collect-ehrbase-unittest-results:
     steps:
@@ -1809,7 +1822,7 @@ commands:
       - store_artifacts:
           path: ~/ehrbase-test-results
 
-  
+
   # WARNING: don't use these two steps in production
   #          use them for pipeline debugging only!
   cache-in-ehrbase-workspace:
@@ -1862,17 +1875,17 @@ commands:
             rm -f /tmp/openjdk-11.tar.gz
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
-  
+
   install-maven:
     description: Install Maven tool only if it's not already installed
     steps:
-      - run: 
+      - run:
           name: Install Maven tool
           command: |
             sudo killall -9 apt-get || true
             sudo apt -y update
             [ -f /usr/bin/mvn ] && echo "Maven is already installed." || sudo apt install maven -y
-  
+
   install-and-configure-keycloak:
     description: Setups a Keycloak Docker instance and restores a previously exportd configuration.
     steps:
@@ -2061,6 +2074,14 @@ commands:
           command: |
             cd ~/projects
             mvn package -U    # -DskipTests
+  maven-check-codestyle:
+    description: Run spotless plugin check goal
+    steps:
+      - run:
+          name: Package Maven app
+          command: |
+            cd ~/projects
+            mvn com.diffplug.spotless:spotless-maven-plugin:check
 
 
 
@@ -2715,7 +2736,7 @@ executors:
 #       - store_artifacts:
 #           path: ~/projects/tests/results/
 
-# ## Nightly builds example 
+# ## Nightly builds example
 # workflows:
 #   version: 2
 #   nightly:

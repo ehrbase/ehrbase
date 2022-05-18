@@ -202,6 +202,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.22.5</version>
+                <configuration>
+                    <java>
+                        <palantirJavaFormat>
+                            <version>2.24.0</version>
+                        </palantirJavaFormat>
+                    </java>
+                </configuration>
+            </plugin>
         </plugins>
 
 
