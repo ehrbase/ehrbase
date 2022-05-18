@@ -9,6 +9,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.1]
+
+### Fixed
+
+- Fixed update script for user consolidation ([#865](https://github.com/ehrbase/ehrbase/pull/865))  
+
 ## [0.21.0]
 
 ### Added
@@ -469,6 +475,8 @@ the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
+[0.21.1]: https://github.com/ehrbase/ehrbase/compare/v0.21.0...v0.21.1
+
 [0.21.0]: https://github.com/ehrbase/ehrbase/compare/v0.20.0...v0.21.0
 
 [0.20.0]: https://github.com/ehrbase/ehrbase/compare/v0.19.0...v0.20.0
@@ -504,4 +512,5 @@ the next release this file will provide a proper overview.
 [0.10.0]: https://github.com/ehrbase/ehrbase/compare/v0.9.0...v0.10.0
 
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.21.0...HEAD
+
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.21.1...HEAD
