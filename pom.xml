@@ -56,6 +56,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <license-header.dir>./</license-header.dir>
         <!-- PostgreSQL Database Properties -->
         <database.host>localhost</database.host>
         <database.port>5432</database.port>
@@ -208,9 +209,13 @@
                 <version>2.22.5</version>
                 <configuration>
                     <java>
+                        <toggleOffOn />
                         <palantirJavaFormat>
                             <version>2.24.0</version>
                         </palantirJavaFormat>
+                        <licenseHeader>
+                            <file>${license-header.dir}/license-header</file>
+                        </licenseHeader>
                     </java>
                 </configuration>
             </plugin>
