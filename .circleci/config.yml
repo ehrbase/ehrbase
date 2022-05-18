@@ -34,6 +34,13 @@ workflows:
     jobs:
       - check-codestyle:
           context: org-global
+          filters:
+            branches:
+              ignore:
+                - /release\/.*/
+                - master
+                - /sync\/.*/
+                - /feature/sync\/.*/
       - build-ehrbase:
           context: org-global
           filters:
@@ -600,7 +607,11 @@ workflows:
 
     jobs:
       - check-codestyle:
-          context: org-global
+          filters:
+            branches:
+              only:
+                - /^sync\/.*/
+                - /^feature\/sync\/.*/
       - build package ehrbase with locally built sdk from sync-branch:
           filters:
             branches:
@@ -2078,7 +2089,7 @@ commands:
     description: Run spotless plugin check goal
     steps:
       - run:
-          name: Package Maven app
+          name: Run spotless plugin check goal
           command: |
             cd ~/projects
             mvn com.diffplug.spotless:spotless-maven-plugin:check
