@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.21.1-SNAPSHOT</version>
+        <version>0.21.1</version>
     </parent>
 
     <artifactId>rest-ehr-scape</artifactId>
