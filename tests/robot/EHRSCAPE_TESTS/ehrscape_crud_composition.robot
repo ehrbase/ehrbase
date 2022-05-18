@@ -1,5 +1,4 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School),
-# Nataliya Flusman (Solit Clouds), Nikita Danilin (Solit Clouds)
+# Copyright (c) 2022 Vladislav Ploaia
 #
 # This file is part of Project EHRbase
 #
@@ -71,12 +70,12 @@ Main flow create and delete Composition
     ${compoUid}     Set Variable        ${response["compositionUid"]}
     ${compoUidWithURL}  Fetch From Left     ${compoUid}         ::1
     ${compoUidURL}      Fetch From Right    ${compoUidWithURL}  ::
-    Should Contain      ${compoUid}     ${compoUidURL}
+    Should Contain      ${compoUid}         ${compoUidURL}
     (FLAT) get composition by composition_uid       ${composition_uid}
     ## Delete action
     delete composition  ${composition_uid}      ehrScape=true
     get deleted composition (EHRScape)
-    [Teardown]    TRACE JIRA ISSUE    CDR-324
+    [Teardown]    TRACE JIRA ISSUE    CDR-409
 
 
 *** Keywords ***

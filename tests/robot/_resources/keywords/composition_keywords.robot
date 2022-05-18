@@ -325,10 +325,12 @@ commit composition
         Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
     END
 
-    IF   '${format}'=='FLAT'
-    ${resp}=            POST On Session     ${SUT}   composition   params=${params}  expected_status=anything   data=${file}   headers=${headers}
+    IF          '${format}'=='FLAT'
+        ${resp}     POST On Session     ${SUT}   composition   params=${params}
+        ...     expected_status=anything   data=${file}   headers=${headers}
     ELSE
-    ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
+        ${resp}     POST On Session     ${SUT}   /ehr/${ehr_id}/composition
+        ...     expected_status=anything   data=${file}   headers=${headers}
     END
 
     Set Test Variable   ${response}     ${resp}
@@ -1100,9 +1102,9 @@ get deleted composition
 get deleted composition (EHRScape)
     [Documentation]     The deleted compo should not exist
     ...                 204 is the code for deleted - as per openEHR REST spec:
-    ...                 https://www.ehrscape.com/reference.html#_composition
+    #...                 https://www.ehrscape.com/reference.html#_composition
 
-    ${resp}=            GET On Session           ${SUT}   /composition/${composition_uid}   expected_status=anything
+    ${resp}=            GET On Session          ${SUT}   /composition/${composition_uid}   expected_status=anything
                         log to console          ${resp.content}
                         Status Should Be        204
 
