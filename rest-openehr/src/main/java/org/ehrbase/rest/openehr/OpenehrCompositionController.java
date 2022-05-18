@@ -16,8 +16,6 @@
 
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -30,7 +28,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 import javax.servlet.http.HttpServletRequest;
+
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -63,6 +63,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
@@ -183,61 +186,51 @@ public class OpenehrCompositionController extends BaseController implements
       throw new PreconditionFailedException(
           "If-Match header does not match latest existing version");
     }
-
+    
+    Composition compoObj = compositionService.buildComposition(composition, compositionFormat, null);
     // If body already contains a composition uid it must match the {versioned_object_uid} in request url
-    Optional<String> inputUuid = Optional.ofNullable(
-        compositionService.getUidFromInputComposition(composition, compositionFormat));
+    Optional<String> inputUuid = getUidFrom(compoObj);
     inputUuid.ifPresent(id -> {
       // TODO currently the this part of the spec is implemented as "the request body's composition version_uid must be compatible to the given versioned_object_uid"
       // TODO it is further unclear what exactly the REST spec's "match" means, see: https://github.com/openEHR/specifications-ITS-REST/issues/83
-      if (!versionedObjectUid.equals(extractVersionedObjectUidFromVersionUid(id))) {
-        throw new PreconditionFailedException(
-            "UUID from input must match given versioned_object_uid in request URL");
-      }
+      if (!versionedObjectUid.equals(extractVersionedObjectUidFromVersionUid(id)))
+        throw new PreconditionFailedException("UUID from input must match given versioned_object_uid in request URL");
     });
 
     Optional<InternalResponse<CompositionResponseData>> respData = Optional.empty();   // variable to overload with more specific object if requested
     try {
-      Composition compoObj = compositionService.buildComposition(composition, compositionFormat,
-          null);
-
       // ifMatch header has to be tested for correctness already above
+      var compositionVersionUid = compositionService.update(ehrId, new ObjectVersionId(ifMatch), compoObj)
+        .orElseThrow(() -> new InternalServerException("Failed to create composition"))
+        .toString();
 
-      var compositionVersionUid =
-          compositionService
-              .update(ehrId, new ObjectVersionId(ifMatch), compoObj)
-              .orElseThrow(() -> new InternalServerException("Failed to create composition"))
-              .toString();
+      var uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + compositionVersionUid));
 
-      var uri = URI.create(this.encodePath(
-          getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/"
-              + compositionVersionUid));
-
-      List<String> headerList = Arrays.asList(LOCATION, ETAG,
-          LAST_MODIFIED);   // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
+      // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
+      List<String> headerList = Arrays.asList(LOCATION, ETAG, LAST_MODIFIED);
 
       UUID compositionId = extractVersionedObjectUidFromVersionUid(compositionVersionUid);
+      
       if (RETURN_REPRESENTATION.equals(prefer)) {
         // both options extract needed info from versionUid
-        respData =
-            buildCompositionResponseData(
-                ehrId,
-                compositionId,
-                extractVersionFromVersionUid(compositionVersionUid),
-                accept,
-                uri,
-                headerList,
-                () -> new CompositionResponseData(null, null));
-      } else {    // "minimal" is default fallback
-        respData =
-            buildCompositionResponseData(
-                ehrId,
-                compositionId,
-                extractVersionFromVersionUid(compositionVersionUid),
-                accept,
-                uri,
-                headerList,
-                () -> null);
+        respData = buildCompositionResponseData(
+          ehrId,
+          compositionId,
+          extractVersionFromVersionUid(compositionVersionUid),
+          accept,
+          uri,
+          headerList,
+          () -> new CompositionResponseData(null, null));
+      } else {
+        // "minimal" is default fallback
+        respData = buildCompositionResponseData(
+          ehrId,
+          compositionId,
+          extractVersionFromVersionUid(compositionVersionUid),
+          accept,
+          uri,
+          headerList,
+          () -> null);
       }
 
       // Enriches request attributes with current compositionId for later audit processing
@@ -249,13 +242,13 @@ public class OpenehrCompositionController extends BaseController implements
     }   // composition input not parsable / buildable -> bad request handled by BaseController class
 
     // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
-    return respData.map(
-            i -> Optional.ofNullable(i.getResponseData()).map(StructuredString::getValue)
-                .map(j -> ResponseEntity.ok().headers(i.getHeaders()).body(j))
-                // when the body is empty
-                .orElse(ResponseEntity.noContent().headers(i.getHeaders()).build()))
-        // when no response could be created at all
-        .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    return respData
+      .map(i -> Optional.ofNullable(i.getResponseData())
+        .map(StructuredString::getValue)
+        .map(j -> ResponseEntity.ok().headers(i.getHeaders()).body(j))
+        .orElse(ResponseEntity.noContent().headers(i.getHeaders()).build())
+      )
+      .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
   }
 
   @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
@@ -522,4 +515,8 @@ public class OpenehrCompositionController extends BaseController implements
     return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
   }
 
+  private Optional<String> getUidFrom(Composition composition) {
+    return Optional.ofNullable(composition.getUid()).map(uid -> uid.toString());
+  }
+  
 }
