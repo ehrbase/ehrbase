@@ -68,6 +68,7 @@ Test Example Generator For Templates (ECIS) - Get Annotations from Example
     Extract Template Id From OPT File
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
+    PerformChecksOnAnnotation
     #Should Contain
     #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.comment
     #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.helpText
@@ -120,3 +121,40 @@ Save Response (XML) To File And Compare Template Ids
     ${xml_string}    Get Element Text    ${xml_parsed}
     Should Contain    ${xml_string}    ${templateId}    String does not contain template id: ${templateId}
     [Teardown]    Run Keyword And Return Status    Remove File    ${tempFilePath}
+
+ApplyJSONLocatorAndReturnResult
+    [Documentation]     Apply JSON path on result and return JSON Path evaluation
+    [Arguments]     ${children_id_with_annotation}      ${annotation_key}=comment
+    ${returnValue}  Get Value From Json     ${response}
+    ...     $.webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='${children_id_with_annotation}')].annotations.${annotation_key}
+    ${lenReturnValue}   Get Length  ${returnValue}
+    Should Be True      ${lenReturnValue} > 0
+    [Return]    ${returnValue}
+
+PerformChecksOnAnnotation
+    [Documentation]     Store JSON Path evaluation to variables.
+    ...     Dependency: keyword -> Get Web Template By Template Id (ECIS)
+    ${startDateAnnotationComment}       ApplyJSONLocatorAndReturnResult         start_date
+    ${quitDateAnnotationComment}        ApplyJSONLocatorAndReturnResult         quit_date
+    ${overallUseAnnotationComment}      ApplyJSONLocatorAndReturnResult         overall_use
+    ${packDefinitionAnnotationComment}      ApplyJSONLocatorAndReturnResult     pack_definition
+    ${startDateAnnotationHelpText}          ApplyJSONLocatorAndReturnResult     start_date          helpText
+    ${quitDateAnnotationHelpText}           ApplyJSONLocatorAndReturnResult     quit_date           helpText
+    ${overallUseAnnotationHelpText}         ApplyJSONLocatorAndReturnResult     overall_use         helpText
+    ${packDefinitionAnnotationHelpText}     ApplyJSONLocatorAndReturnResult     pack_definition     helpText
+    ${startDateAnnotationValidation}        ApplyJSONLocatorAndReturnResult     start_date          validation
+    ${quitDateAnnotationValidation}         ApplyJSONLocatorAndReturnResult     quit_date           validation
+    ${overallUseAnnotationValidation}       ApplyJSONLocatorAndReturnResult     overall_use         validation
+    ${packDefinitionAnnotationValidation}   ApplyJSONLocatorAndReturnResult     pack_definition     validation
+    Log     ${startDateAnnotationComment}           console=yes
+    Log     ${quitDateAnnotationComment}            console=yes
+    Log     ${overallUseAnnotationComment}          console=yes
+    Log     ${packDefinitionAnnotationComment}      console=yes
+    Log     ${startDateAnnotationHelpText}          console=yes
+    Log     ${quitDateAnnotationHelpText}           console=yes
+    Log     ${overallUseAnnotationHelpText}         console=yes
+    Log     ${packDefinitionAnnotationHelpText}     console=yes
+    Log     ${startDateAnnotationValidation}        console=yes
+    Log     ${quitDateAnnotationValidation}         console=yes
+    Log     ${overallUseAnnotationValidation}       console=yes
+    Log     ${packDefinitionAnnotationValidation}   console=yes
