@@ -62,7 +62,7 @@ Test Example Generator for Templates (OPENEHR) - XML and Save it
     Save Response (XML) To File And Compare Template Ids    ${template_id}
 
 Test Example Generator For Templates (ECIS) - Get Annotations from Example
-    [Documentation]     Create template, get it and check if additional annotations are present.
+    [Documentation]     Create template, get example and check if additional annotations are present.
     [Tags]      not-ready
     Upload OPT ECIS    all_types/tobacco_smoking_summary.v0.opt
     Extract Template Id From OPT File
@@ -72,6 +72,7 @@ Test Example Generator For Templates (ECIS) - Get Annotations from Example
     #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.comment
     #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.helpText
     #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.validation
+    #Example: $.['blocks'][?(@.block_id == 'image')]['image_url']
     #Save Response (JSON) To File And Compare Template Ids    ${template_id}
     [Teardown]    TRACE JIRA ISSUE    CDR-410
 
