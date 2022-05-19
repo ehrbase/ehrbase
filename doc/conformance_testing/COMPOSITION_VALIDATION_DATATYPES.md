@@ -1541,19 +1541,22 @@ Note those exceptions are invalid in terms of ISO 8601-1_2019, but, those are va
 
 ### 4.2.1. Test case DV_DURATION open constraint
 
-| value           | expected | violated constraints                                         |
-|-----------------|----------|--------------------------------------------------------------|
-| NULL            | rejected | DV_DURATION.value is mandatory in the RM                     |
-| 1Y              | rejected | invalid ISO 8601-1 duration: missing duration desingator 'P' |
-| P1Y             | accepted |                                                              |
-| P1Y3M           | accepted |                                                              |
-| P1W             | accepted |                                                              |
-| P1Y3M4D         | accepted |                                                              |
-| P1Y3M4DT2H      | accepted |                                                              |
-| P1Y3M4DT2H14M   | accepted |                                                              |
-| P1Y3M4DT2H14M5S | accepted |                                                              |
-| P3M1W           | accepted |                                                              |
-| -P2M            | accepted |                                                              |
+| value              | expected | violated constraints                                         |
+|--------------------|----------|--------------------------------------------------------------|
+| NULL               | rejected | DV_DURATION.value is mandatory in the RM                     |
+| 1Y                 | rejected | invalid ISO 8601-1 duration: missing duration desingator 'P' |
+| P1Y                | accepted |                                                              |
+| P1Y3M              | accepted |                                                              |
+| P1W                | accepted |                                                              |
+| P1Y3M4D            | accepted |                                                              |
+| P1Y3M4DT2H         | accepted |                                                              |
+| P1Y3M4DT2H14M      | accepted |                                                              |
+| P1Y3M4DT2H14M5S    | accepted |                                                              |
+| P1Y3M4DT2H14M15.5S | accepted |                                                              |
+| P1Y3M4DT2H14.5M    | rejected | openEHR: fractions for minutes are not allowed               |
+| P1Y3M4DT2.5H       | rejected | openEHR: fractions for hours are not allowed                 |
+| P3M1W              | accepted |                                                              |
+| -P2M               | accepted |                                                              |
 
 
 ### 4.2.2. Test case DV_DURATION xxx_allowed field constraints
@@ -1578,12 +1581,13 @@ The `xxx_allowed` fields are defined in the `C_DURATION` class, which allows to 
 | P1Y3M15DT23H35M22S   | true          | true           | true          | true         | true          | true            | false           | true                       | rejected | C_DURATION.seconds_allowed |
 | P1Y3M15DT23H35M22.5S | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
 | P1Y3M15DT23H35M22.5S | true          | true           | true          | true         | true          | true            | true            | false                      | rejected | C_DURATION.fractional_seconds_allowed |
-
 | P1W3D                | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
 | P1W3D                | true          | true           | false         | true         | true          | true            | true            | true                       | rejected | C_DURATION.weeks_allowed |
 
 
 ### 4.2.3. Test case DV_DURATION range constraint
+
+Note to compare, the DV_DURATION.magnitude() should be used, which will calculate the seconds in the duration based on the avg. days in year and days in month.
 
 | value             | range.lower    | range.upper    | expected | violated constraints   |
 |-------------------|----------------|----------------|----------|------------------------|
@@ -1601,7 +1605,7 @@ The `xxx_allowed` fields are defined in the `C_DURATION` class, which allows to 
 | P1Y2M             | P2Y            | P50Y           | rejected | C_DURATION.range.lower |
 | P1Y20M            | P0Y            | P50Y           | accepted |                        |
 | P1Y20M            | P1Y            | P50Y           | accepted |                        |
-| P1Y20M            | P2Y            | P50Y           | ??? | TBD: it is not clear if the 20M are transformed to years to be compared with the range limits that only have years or if years in the value are compared with years in the range limits and if there are no limits for months in the range limits then the months in the value are not constrainted. |
+| P1Y20M            | P2Y            | P50Y           | accepted |                        |
 | P2W               | P0W            | P3W            | accepted |                        |
 | P2W               | P2W            | P3W            | accepted |                        |
 | P2W               | P3W            | P3W            | rejected | C_DURATION.range.lower |
