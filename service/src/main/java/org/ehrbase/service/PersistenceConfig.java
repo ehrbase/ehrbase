@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.service;
 
-
+import javax.sql.DataSource;
 import org.jooq.ExecuteContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.*;
@@ -33,8 +32,6 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.sql.DataSource;
-
 @Configuration
 @EnableTransactionManagement
 public class PersistenceConfig {
@@ -43,18 +40,15 @@ public class PersistenceConfig {
         @Override
         public void exception(ExecuteContext context) {
             SQLDialect dialect = context.configuration().dialect();
-            SQLExceptionTranslator translator
-                    = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
-            context.exception(translator
-                    .translate("Access database using Jooq", context.sql(), context.sqlException()));
+            SQLExceptionTranslator translator = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
+            context.exception(
+                    translator.translate("Access database using Jooq", context.sql(), context.sqlException()));
         }
     }
-
 
     @Qualifier("dataSource")
     @Autowired
     private DataSource dataSource;
-
 
     public TransactionAwareDataSourceProxy transactionAwareDataSource() {
         return new TransactionAwareDataSourceProxy(dataSource);
@@ -86,7 +80,6 @@ public class PersistenceConfig {
         DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
         jooqConfiguration.set(connectionProvider());
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
-
 
         SQLDialect dialect = SQLDialect.POSTGRES;
         jooqConfiguration.set(dialect);

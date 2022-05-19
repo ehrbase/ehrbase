@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Vitasystems GmbH and Christian Chevalley Hannover Medical School.
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,13 +29,13 @@ public class PersistentCodePhrase {
         this.rmCodePhrase = rmCodePhrase;
     }
 
-    public CodePhraseRecord encode(){
-        if (rmCodePhrase == null)
-            return null;
+    public CodePhraseRecord encode() {
+        if (rmCodePhrase == null) return null;
         return new CodePhraseRecord(rmCodePhrase.getTerminologyId().getValue(), rmCodePhrase.getCodeString());
     }
 
-    public CodePhrase decode(CodePhraseRecord codePhraseRecord){
-        return new CodePhrase(new TerminologyId(codePhraseRecord.getTerminologyIdValue()), codePhraseRecord.getCodeString());
+    public CodePhrase decode(CodePhraseRecord codePhraseRecord) {
+        return new CodePhrase(
+                new TerminologyId(codePhraseRecord.getTerminologyIdValue()), codePhraseRecord.getCodeString());
     }
 }

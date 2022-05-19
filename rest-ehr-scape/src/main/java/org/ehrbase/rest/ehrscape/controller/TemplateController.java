@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.composition.Composition;
@@ -49,17 +48,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/rest/ecis/v1/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(
+        path = "/rest/ecis/v1/template",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class TemplateController extends BaseController {
 
     private final TemplateService templateService;
-  private final CompositionService compositionService;
+    private final CompositionService compositionService;
 
-  @Autowired
-  public TemplateController(
-      TemplateService templateService, CompositionService compositionService) {
+    @Autowired
+    public TemplateController(TemplateService templateService, CompositionService compositionService) {
         this.templateService = Objects.requireNonNull(templateService);
-    this.compositionService = Objects.requireNonNull(compositionService);
+        this.compositionService = Objects.requireNonNull(compositionService);
     }
 
     @GetMapping()
@@ -73,16 +73,15 @@ public class TemplateController extends BaseController {
     @PostMapping()
     public ResponseEntity<TemplatesResponseData> createTemplate(@RequestBody() String content) {
 
-    TemplateDocument document;
-    try {
-      document =
-          TemplateDocument.Factory.parse(
-              new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-    } catch (XmlException | IOException e) {
-      throw new InvalidApiParameterException(e.getMessage());
-    }
+        TemplateDocument document;
+        try {
+            document =
+                    TemplateDocument.Factory.parse(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+        } catch (XmlException | IOException e) {
+            throw new InvalidApiParameterException(e.getMessage());
+        }
 
-    templateService.create(document.getTemplate());
+        templateService.create(document.getTemplate());
         TemplatesResponseData responseData = new TemplatesResponseData();
         responseData.setAction(Action.LIST);
         responseData.setTemplates(templateService.getAllTemplates());
@@ -104,7 +103,8 @@ public class TemplateController extends BaseController {
         CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
         StructuredString serialized = compositionService.serialize(compositionDto, format);
 
-        MediaType contentType = format == CompositionFormat.XML ? MediaType.APPLICATION_XML :  MediaType.APPLICATION_JSON;
+        MediaType contentType =
+                format == CompositionFormat.XML ? MediaType.APPLICATION_XML : MediaType.APPLICATION_JSON;
         return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
     }
 

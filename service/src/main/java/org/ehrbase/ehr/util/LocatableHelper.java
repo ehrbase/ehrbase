@@ -1,5 +1,7 @@
 /*
- * Copyright 2015-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2015-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +17,9 @@
  */
 package org.ehrbase.ehr.util;
 
-
-import org.ehrbase.webtemplate.parser.AqlPath;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.ehrbase.webtemplate.parser.AqlPath;
 
 /**
  * Utility class for path manipulation.
@@ -30,13 +30,11 @@ import java.util.stream.Collectors;
  */
 public class LocatableHelper {
 
-    private LocatableHelper() {
-    }
+    private LocatableHelper() {}
 
     public static List<String> dividePathIntoSegments(String path) {
         var aqlPath = AqlPath.parse(path);
-        return aqlPath.getNodes()
-                .stream()
+        return aqlPath.getNodes().stream()
                 .map(aqlNode -> {
                     StringBuilder sb = new StringBuilder();
                     aqlNode.appendFormat(sb, AqlPath.OtherPredicatesFormat.SHORTED);

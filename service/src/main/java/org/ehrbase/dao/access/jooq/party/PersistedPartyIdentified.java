@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.jooq.party;
 
 import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
@@ -57,36 +56,44 @@ public class PersistedPartyIdentified extends PersistedParty {
     @Override
     public PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord) {
         return renderMultiple(List.of(partyIdentifiedRecord)).stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalAddException(String.format(ERR_MISSING_PROXY, partyIdentifiedRecord.getId())));
+                .findFirst()
+                .orElseThrow(
+                        () -> new IllegalAddException(String.format(ERR_MISSING_PROXY, partyIdentifiedRecord.getId())));
     }
 
     @Override
     public List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
 
-        List<Pair<PartyIdentifiedRecord, List<DvIdentifier>>> partyIdPair = new PartyIdentifiers(domainAccess).retrieveMultiple(partyIdentifiedRecords);
+        List<Pair<PartyIdentifiedRecord, List<DvIdentifier>>> partyIdPair =
+                new PartyIdentifiers(domainAccess).retrieveMultiple(partyIdentifiedRecords);
 
         return partyIdPair.stream()
-            .map(pair -> {
-                PartyIdentifiedRecord pir = pair.getLeft();
+                .map(pair -> {
+                    PartyIdentifiedRecord pir = pair.getLeft();
 
-                PartyRef partyRef = Optional.ofNullable(pir.getPartyRefType())
-                    .map(ref -> new PartyRef(new PersistedObjectId().fromDB(pir), pir.getPartyRefNamespace(), pir.getPartyRefType()))
-                    .orElse(null);
+                    PartyRef partyRef = Optional.ofNullable(pir.getPartyRefType())
+                            .map(ref -> new PartyRef(
+                                    new PersistedObjectId().fromDB(pir),
+                                    pir.getPartyRefNamespace(),
+                                    pir.getPartyRefType()))
+                            .orElse(null);
 
-                List<DvIdentifier> identifierList = pair.getRight();
-                return new PartyIdentified(partyRef, pir.getName(), identifierList.isEmpty() ? null : identifierList);
-            })
-            .collect(Collectors.toList());
+                    List<DvIdentifier> identifierList = pair.getRight();
+                    return new PartyIdentified(
+                            partyRef, pir.getName(), identifierList.isEmpty() ? null : identifierList);
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
     public UUID store(PartyProxy partyProxy) {
         PartyRefValue partyRefValue = new PartyRefValue(partyProxy).attributes();
 
-        //store a new party identified
-        UUID partyIdentifiedUuid = domainAccess.getContext()
-                .insertInto(PARTY_IDENTIFIED,
+        // store a new party identified
+        UUID partyIdentifiedUuid = domainAccess
+                .getContext()
+                .insertInto(
+                        PARTY_IDENTIFIED,
                         PARTY_IDENTIFIED.NAME,
                         PARTY_IDENTIFIED.PARTY_REF_NAMESPACE,
                         PARTY_IDENTIFIED.PARTY_REF_VALUE,
@@ -94,7 +101,8 @@ public class PersistedPartyIdentified extends PersistedParty {
                         PARTY_IDENTIFIED.PARTY_REF_TYPE,
                         PARTY_IDENTIFIED.PARTY_TYPE,
                         PARTY_IDENTIFIED.OBJECT_ID_TYPE)
-                .values(((PartyIdentified)partyProxy).getName(),
+                .values(
+                        ((PartyIdentified) partyProxy).getName(),
                         partyRefValue.getNamespace(),
                         partyRefValue.getValue(),
                         partyRefValue.getScheme(),
@@ -102,9 +110,10 @@ public class PersistedPartyIdentified extends PersistedParty {
                         PartyType.party_identified,
                         partyRefValue.getObjectIdType())
                 .returning(PARTY_IDENTIFIED.ID)
-                .fetchOne().getId();
-        //store identifiers
-        new PartyIdentifiers(domainAccess).store((PartyIdentified)partyProxy, partyIdentifiedUuid);
+                .fetchOne()
+                .getId();
+        // store identifiers
+        new PartyIdentifiers(domainAccess).store((PartyIdentified) partyProxy, partyIdentifiedUuid);
 
         return partyIdentifiedUuid;
     }
@@ -120,29 +129,28 @@ public class PersistedPartyIdentified extends PersistedParty {
     public UUID findInDB(PartyProxy partyProxy) {
         UUID uuid = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
 
-        //check that name matches the one already stored in DB, otherwise throw an exception (conflicting identification)
-        if (uuid != null){
+        // check that name matches the one already stored in DB, otherwise throw an exception (conflicting
+        // identification)
+        if (uuid != null) {
             Record record = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(uuid));
-            if (record == null)
-                throw new InternalServerException("Inconsistent PartyIdentified UUID:"+uuid);
+            if (record == null) throw new InternalServerException("Inconsistent PartyIdentified UUID:" + uuid);
             if (!record.get(PARTY_IDENTIFIED.NAME).equals(((PartyIdentified) partyProxy).getName()))
                 throw new IllegalArgumentException(
-                        "Conflicting identification, existing name was:"+
-                                record.get(PARTY_IDENTIFIED.NAME) +
-                        ", but found passed name:"+
-                                ((PartyIdentified) partyProxy).getName());
-
+                        "Conflicting identification, existing name was:" + record.get(PARTY_IDENTIFIED.NAME)
+                                + ", but found passed name:"
+                                + ((PartyIdentified) partyProxy).getName());
         }
 
         return uuid;
     }
 
     public Optional<UUID> findInternalUserId(String username) {
-        var condition = IDENTIFIER.ID_VALUE.eq(username)
-            .and(IDENTIFIER.TYPE_NAME.eq(SECURITY_USER_TYPE))
-            .and(IDENTIFIER.ISSUER.eq(EHRBASE))
-            .and(IDENTIFIER.ASSIGNER.eq(EHRBASE));
-        return domainAccess.getContext().fetchOptional(IDENTIFIER, condition)
-            .map(IdentifierRecord::getParty);
+        var condition = IDENTIFIER
+                .ID_VALUE
+                .eq(username)
+                .and(IDENTIFIER.TYPE_NAME.eq(SECURITY_USER_TYPE))
+                .and(IDENTIFIER.ISSUER.eq(EHRBASE))
+                .and(IDENTIFIER.ASSIGNER.eq(EHRBASE));
+        return domainAccess.getContext().fetchOptional(IDENTIFIER, condition).map(IdentifierRecord::getParty);
     }
 }

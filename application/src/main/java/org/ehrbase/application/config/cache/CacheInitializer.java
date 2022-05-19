@@ -1,5 +1,7 @@
 /*
- * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2021-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.config.cache;
 
 import javax.annotation.PostConstruct;
@@ -29,17 +30,17 @@ import org.slf4j.LoggerFactory;
  */
 public class CacheInitializer {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private final KnowledgeCacheService knowledgeCacheService;
+    private final KnowledgeCacheService knowledgeCacheService;
 
-  public CacheInitializer(KnowledgeCacheService knowledgeCacheService) {
-    this.knowledgeCacheService = knowledgeCacheService;
-  }
+    public CacheInitializer(KnowledgeCacheService knowledgeCacheService) {
+        this.knowledgeCacheService = knowledgeCacheService;
+    }
 
-  @PostConstruct
-  public void initialize() {
-    logger.info("Initializing EHRbase caches");
-    knowledgeCacheService.initializeCaches();
-  }
+    @PostConstruct
+    public void initialize() {
+        logger.info("Initializing EHRbase caches");
+        knowledgeCacheService.initializeCaches();
+    }
 }

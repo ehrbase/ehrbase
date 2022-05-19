@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,6 +29,7 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
     @Min(1025)
     @Max(65536)
     private int port;
+
     private String nodename = "local.ehrbase.org";
     private AqlConfig aqlConfig;
     private boolean disableStrictValidation = false;
@@ -59,9 +60,6 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
         return aqlConfig.getIterationScanDepth();
     }
 
-
-
-
     public AqlConfig getAqlConfig() {
         return aqlConfig;
     }
@@ -72,10 +70,8 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
 
     public static class AqlConfig {
 
-
         private String ignoreIterativeNodeList;
         private Integer iterationScanDepth = 1;
-
 
         public String getIgnoreIterativeNodeList() {
             return ignoreIterativeNodeList;
@@ -84,8 +80,6 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
         public Integer getIterationScanDepth() {
             return iterationScanDepth;
         }
-
-
 
         public void setIgnoreIterativeNodeList(String ignoreIterativeNodeList) {
             this.ignoreIterativeNodeList = ignoreIterativeNodeList;
