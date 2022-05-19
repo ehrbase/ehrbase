@@ -1103,9 +1103,9 @@ get deleted composition
 get deleted composition (EHRScape)
     [Documentation]     The deleted compo should not exist
     ...                 204 is the code for deleted - as per openEHR REST spec:
-    ...                 https://www.ehrscape.com/reference.html#_composition
+    #...                 https://www.ehrscape.com/reference.html#_composition
 
-    ${resp}=            GET On Session           ${SUT}   /composition/${composition_uid}   expected_status=anything
+    ${resp}=            GET On Session          ${SUT}   /composition/${composition_uid}   expected_status=anything
                         log to console          ${resp.content}
                         Status Should Be        204
 

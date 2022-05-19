@@ -35,14 +35,22 @@ join duplicate_user d on (d.id_value = i.id_value and d.replacement != i.party);
 
 update ehr.audit_details
 set committer = r.replacement
-from ehr.party_identified pi
-inner join temp_replacements r on r.party = pi.id;
+from temp_replacements r
+where r.party = committer;
 
 delete
 from ehr.identifier pi
 where pi.party IN
       (select r.party
        from temp_replacements r);
+
+--temporarily remove foreign keys
+alter table ehr.audit_details drop constraint audit_details_committer_fkey;
+alter table ehr.identifier drop constraint identifier_party_fkey;
+alter table ehr.composition drop constraint composition_composer_fkey;
+alter table ehr.event_context drop constraint event_context_facility_fkey;
+alter table ehr.participation drop constraint participation_performer_fkey;
+alter table ehr.status drop constraint status_party_fkey;
 
 delete
 from ehr.party_identified pi
@@ -54,3 +62,17 @@ drop table temp_replacements;
 
 create index identifier_value_idx on ehr.identifier (id_value);
 
+--reinstate foreign keys
+alter table ehr.audit_details add constraint audit_details_committer_fkey
+    foreign key (committer) references ehr.party_identified (id);
+alter table ehr.identifier add constraint identifier_party_fkey
+    foreign key (party) references ehr.party_identified (id)
+        on delete cascade;
+alter table ehr.composition add constraint composition_composer_fkey
+    foreign key (composer) references ehr.party_identified (id);
+alter table ehr.event_context add constraint event_context_facility_fkey
+    foreign key (facility) references ehr.party_identified (id);
+alter table ehr.participation add constraint participation_performer_fkey
+    foreign key (performer) references ehr.party_identified (id);
+alter table ehr.status add constraint status_party_fkey
+    foreign key (party) references ehr.party_identified (id);
