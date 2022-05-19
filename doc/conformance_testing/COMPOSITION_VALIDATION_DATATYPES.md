@@ -1519,19 +1519,18 @@ DV_INTERVAL.upper
 > expression that contains `months`, since there is no exact correspondence between the number of `days` and `months` (months could have 28, 29, 30 or 31 days). Then other
 > implementations might simplify the `month` measurement to be 30 days. This also happens with some implementations that consider a `day` is exactly `24 hours` as a simplification.
 > It is worth mentioning that openEHR provides means for calculating this based on averages, in DV_DURATION.magnitude(), which is implemented in terms of Iso8601_duration.to_seconds(),
-> and uses Time_Definitions.Average_days_in_year as an approximation to the numbers of days in a year, and Time_Definitions.Average_days_in_month as an approximation to the numbers of
+> it uses `Time_Definitions.Average_days_in_year` as an approximation to the numbers of days in a year, and `Time_Definitions.Average_days_in_month` as an approximation to the numbers of
 > days in a month. So to normalize an expression that is P1Y3M5D to `days` we would have `1 * Average_days_in_year + 3 * Average_days_in_month + 5`.
-> So in case the SUT has an implementation decision to be considered, the developers should mention it in the Conformance Statement Document.
+> In case the SUT has an implementation decision to be considered, the developers should mention it in the Conformance Statement Document.
 
-Until RM 1.0.4, durations respect exactly the ISO 8601 durations. From RM 1.1.0, there are two exceptions: 
+The openEHR specifications have two exceptions to the ISO 8601-1 rules:
 
-1. a negative sign may be used before a Duration, for example `-P10D`, meaning '10 days before [origin]', where the 'origin' is a timepoint understood as the origin for the duration;
-2. the `W` designator may be mixed with other designators.
+1. a negative sign may be used before a Duration expression, for example `-P10D`, meaning '10 days before [origin]', where the 'origin' is a timepoint understood as the origin for the duration;
+2. the `W` designator may be mixed with other designators in the duration expression.
 
 Note those exceptions are invalid in terms of ISO 8601-1_2019, but, those are valid in terms for ISO 8601-2_2019, which defines some extensions to the ISO 8601-1 standard. From ISO 8601-2:
 
-> Expressions in the following four examples below are not valid in ISO 8601-1, but are valid as specified
-in this clause.
+> Expressions in the following four examples below are not valid in ISO 8601-1, but are valid as specified in this clause.
 > 
 > EXAMPLE 3 'P3W2D', duration of three weeks and two days, which is 23 days (equivalent to the expression 'P23D'). In ISO 8601-1, ["W"] is not permitted to occur along with any other component.
 > 
@@ -1542,45 +1541,46 @@ in this clause.
 
 ### 4.2.1. Test case DV_DURATION open constraint
 
-| value           | expected | violated constraints | comment |
-|-----------------|----------|----------------------|---------|
-| NULL            | rejected | DV_DURATION.value is mandatory in the RM ||
-| 1Y              | rejected | invalid ISO 8601-1 duration: missing duration desingator 'P' ||
-| P1Y             | accepted | ||
-| P1Y3M           | accepted | ||
-| P1W             | accepted | ||
-| P1Y3M4D         | accepted | ||
-| P1Y3M4DT2H      | accepted | ||
-| P1Y3M4DT2H14M   | accepted | ||
-| P1Y3M4DT2H14M5S | accepted | ||
-| P3M1W           | accepted | | only if RM >= 1.1.0 |
-| P3M1W           | rejected | invalid ISO 8601-1 duration: weeks symbol can't be mixed with other symbols | only if RM < 1.1.0 |
-| -P2M            | accepted | | only if RM >= 1.1.0 |
-| -P2M            | rejected | invalid ISO 8601-1 duration: negative durations are not supported | only if RM < 1.1.0 |
+| value           | expected | violated constraints                                         |
+|-----------------|----------|--------------------------------------------------------------|
+| NULL            | rejected | DV_DURATION.value is mandatory in the RM                     |
+| 1Y              | rejected | invalid ISO 8601-1 duration: missing duration desingator 'P' |
+| P1Y             | accepted |                                                              |
+| P1Y3M           | accepted |                                                              |
+| P1W             | accepted |                                                              |
+| P1Y3M4D         | accepted |                                                              |
+| P1Y3M4DT2H      | accepted |                                                              |
+| P1Y3M4DT2H14M   | accepted |                                                              |
+| P1Y3M4DT2H14M5S | accepted |                                                              |
+| P3M1W           | accepted |                                                              |
+| -P2M            | accepted |                                                              |
 
 
-### 4.2.2. Test case DV_DURATION fields allowed constraint
+### 4.2.2. Test case DV_DURATION xxx_allowed field constraints
 
-The `allowed` fields are defined in the `C_DURATION` class, which allows to constraint the DV_DURATION.value attribute.
+The `xxx_allowed` fields are defined in the `C_DURATION` class, which allows to constraint the `DV_DURATION.value` attribute.
 
-| value              | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | expected | violated constraints     |
-|--------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|----------------------------|----------|--------------------------|
-| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
-| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | rejected | C_DURATION.years_allowed |
-| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
-| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | rejected | C_DURATION.months_allowed |
-| P1Y3M15D           | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
-| P1Y3M15D           | true          | true           | true          | false        | true          | true            | true            | ???                        | rejected | C_DURATION.days_allowed |
-| P1W                | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
-| P7W                | true          | true           | false         | true         | true          | true            | true            | ???                        | rejected | C_DURATION.weeks_allowed |
-| P1Y3M15DT23H       | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
-| P1Y3M15DT23H       | true          | true           | true          | true         | false         | true            | true            | ???                        | rejected | C_DURATION.hours_allowed |
-| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
-| P1Y3M15DT23H35M    | true          | true           | true          | true         | true          | false           | true            | ???                        | rejected | C_DURATION.minutes_allowed |
-| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | true            | ???                        | accepted |  |
-| P1Y3M15DT23H35M22S | true          | true           | true          | true         | true          | true            | false           | ???                        | rejected | C_DURATION.seconds_allowed |
+| value                | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | expected | violated constraints     |
+|----------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|----------------------------|----------|--------------------------|
+| P1Y                  | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1Y                  | false         | true           | true          | true         | true          | true            | true            | true                       | rejected | C_DURATION.years_allowed |
+| P1Y3M                | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1Y3M                | true          | false          | true          | true         | true          | true            | true            | true                       | rejected | C_DURATION.months_allowed |
+| P1Y3M15D             | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1Y3M15D             | true          | true           | true          | false        | true          | true            | true            | true                       | rejected | C_DURATION.days_allowed |
+| P1W                  | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P7W                  | true          | true           | false         | true         | true          | true            | true            | true                       | rejected | C_DURATION.weeks_allowed |
+| P1Y3M15DT23H         | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1Y3M15DT23H         | true          | true           | true          | true         | false         | true            | true            | true                       | rejected | C_DURATION.hours_allowed |
+| P1Y3M15DT23H35M      | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1Y3M15DT23H35M      | true          | true           | true          | true         | true          | false           | true            | true                       | rejected | C_DURATION.minutes_allowed |
+| P1Y3M15DT23H35M22S   | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1Y3M15DT23H35M22S   | true          | true           | true          | true         | true          | true            | false           | true                       | rejected | C_DURATION.seconds_allowed |
+| P1Y3M15DT23H35M22.5S | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1Y3M15DT23H35M22.5S | true          | true           | true          | true         | true          | true            | true            | false                      | rejected | C_DURATION.fractional_seconds_allowed |
 
-> NOTE: the `fractional_seconds_allowed` field is not so clear since the ISO8601 would allow fractions on the lowest order component, which means if the duration lowest component is `minutes` then it's valid to have `5.23M`. Also consider in programming languages like Java, a duration string with fractions on other fields than seconds can't be parsed (for instance using https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-)
+| P1W3D                | true          | true           | true          | true         | true          | true            | true            | true                       | accepted |  |
+| P1W3D                | true          | true           | false         | true         | true          | true            | true            | true                       | rejected | C_DURATION.weeks_allowed |
 
 
 ### 4.2.3. Test case DV_DURATION range constraint
