@@ -1,5 +1,7 @@
 /*
- * Copyright 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.web;
 
 import org.springframework.core.Ordered;
@@ -29,7 +30,4 @@ import org.springframework.web.filter.ForwardedHeaderFilter;
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ForwardFilter extends ForwardedHeaderFilter {
-
-
-}
+public class ForwardFilter extends ForwardedHeaderFilter {}

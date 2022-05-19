@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,11 +22,10 @@ import com.nedap.archie.json.JacksonUtil;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.generic.AuditDetails;
+import java.util.*;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
-
-import java.util.*;
 
 /**
  * Helper class to collect helper methods for contribution processing.
@@ -40,7 +38,7 @@ public class ContributionServiceHelper {
      * @param format Format of given input
      * @return Map split at first level of input, so access to the version list and audit is directly possible
      */
-    static public Map<String, Object> splitContent(String content, CompositionFormat format) {
+    public static Map<String, Object> splitContent(String content, CompositionFormat format) {
         switch (format) {
             case JSON:
                 return new CanonicalJson().unmarshalToMap(content);
@@ -48,7 +46,6 @@ public class ContributionServiceHelper {
             default:
                 throw new UnexpectedSwitchCaseException(format);
         }
-
     }
 
     /**
@@ -71,10 +68,12 @@ public class ContributionServiceHelper {
                         if (versionRmObject instanceof Version) {
                             versionsList.add((Version) versionRmObject);
                         } else {
-                            throw new IllegalArgumentException("Wrong input. At least one VERSION in this contribution is invalid.");
+                            throw new IllegalArgumentException(
+                                    "Wrong input. At least one VERSION in this contribution is invalid.");
                         }
                     } catch (JsonProcessingException e) {
-                        throw new IllegalArgumentException("Error while processing given json input: " + e.getMessage());
+                        throw new IllegalArgumentException(
+                                "Error while processing given json input: " + e.getMessage());
                     }
                 }
                 break;
@@ -97,7 +96,7 @@ public class ContributionServiceHelper {
         switch (format) {
             case JSON:
                 String json = null;
-                try {   // TODO CONTRIBUTION: round trip ((string->)object->string->object) really necessary?
+                try { // TODO CONTRIBUTION: round trip ((string->)object->string->object) really necessary?
                     json = JacksonUtil.getObjectMapper().writeValueAsString(content);
                 } catch (JsonProcessingException e) {
                     throw new IllegalArgumentException("Error while processing given json input: " + e.getMessage());
