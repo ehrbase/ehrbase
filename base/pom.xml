@@ -33,6 +33,9 @@
 
     <artifactId>base</artifactId>
 
+    <properties>
+        <license-header.dir>../</license-header.dir>
+    </properties>
 
     <dependencies>
         <dependency>

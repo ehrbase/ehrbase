@@ -35,6 +35,11 @@
 
     <name>jooq-pq</name>
 
+
+    <properties>
+        <license-header.dir>../</license-header.dir>
+    </properties>
+
     <dependencies>
         <!-- Generation of the DB  -->
         <dependency>
