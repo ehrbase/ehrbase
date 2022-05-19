@@ -746,7 +746,8 @@ Validate Response Body Has Format
                         IF          '${expectedFormat}' == 'JSON'
                             ${templateName}     Get Value From Json     ${response.json()}
                             ...     name.value
-                            log to console     ${templateName}
+                            log to console      ${templateName}
+                            Set Test Variable   ${response}     ${response.json()}
                         ELSE IF     '${expectedFormat}' == 'XML'
                             ${xml}     Parse Xml        ${response.text}
                             Set Test Variable       ${responseXML}      ${xml}

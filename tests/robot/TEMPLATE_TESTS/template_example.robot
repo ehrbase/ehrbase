@@ -61,6 +61,19 @@ Test Example Generator for Templates (OPENEHR) - XML and Save it
     Validate Response Body Has Format    XML
     Save Response (XML) To File And Compare Template Ids    ${template_id}
 
+Test Example Generator For Templates (ECIS) - Get Annotations from Example
+    [Documentation]     Create template, get it and check if additional annotations are present.
+    [Tags]      not-ready
+    Upload OPT ECIS    all_types/tobacco_smoking_summary.v0.opt
+    Extract Template Id From OPT File
+    Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
+    Validate Response Body Has Format    JSON
+    #Should Contain
+    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.comment
+    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.helpText
+    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.validation
+    #Save Response (JSON) To File And Compare Template Ids    ${template_id}
+    [Teardown]    TRACE JIRA ISSUE    CDR-410
 
 *** Keywords ***
 Upload Template Using ECIS Endpoint
@@ -82,7 +95,8 @@ Save Response (JSON) To File And Compare Template Ids
     ...    3. delete temp file.
     ...    *Dependency:* composition_keywords.get example of web template by template id (ECIS/OPENEHR)
     [Arguments]    ${templateId}    ${jsonFile}=composition_openehr_temp.json
-    ${json_str}    Convert JSON To String    ${response.json()}
+    #${json_str}    Convert JSON To String    ${response.json()}
+    ${json_str}    Convert JSON To String    ${response}
     ${tempFilePath}    Set Variable    ${COMPOSITIONS_PATH_JSON}/${jsonFile}
     Create File    ${tempFilePath}    ${json_str}
     ${composition_json}    Load JSON From File    ${tempFilePath}
