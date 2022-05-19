@@ -209,7 +209,10 @@
                 <version>2.22.5</version>
                 <configuration>
                     <java>
-                        <toggleOffOn />
+                        <toggleOffOn>
+                            <off>@format:off</off>
+                            <on>@format:on</on>
+                        </toggleOffOn>
                         <palantirJavaFormat>
                             <version>2.24.0</version>
                         </palantirJavaFormat>
