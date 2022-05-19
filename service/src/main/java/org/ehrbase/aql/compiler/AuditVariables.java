@@ -1,43 +1,40 @@
 /*
- *  Copyright (c) 2020 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- *  This file is part of project EHRbase
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- *
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
- *   software distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and  limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.ehrbase.aql.compiler;
 
+import java.util.*;
 import org.ehrbase.aql.definition.FunctionDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-
-import java.util.*;
 
 public class AuditVariables {
 
     public static final String AUDIT_VARIABLE_PREFIX = "$__AUDIT_";
     public static final String EHR_PATH = "ehr_id/value";
     public static final String TEMPLATE_PATH = "archetype_details/template_id/value";
-    //a list of audit variables needed if not present
-    //defined as: path, alias, usual symbol
-    //NB. only the path is relevant for identification
+    // a list of audit variables needed if not present
+    // defined as: path, alias, usual symbol
+    // NB. only the path is relevant for identification
     public static final String[][] requiredAuditVariables = {
-            {EHR_PATH, AUDIT_VARIABLE_PREFIX+"EHR_ID", "e"},
-            {TEMPLATE_PATH, AUDIT_VARIABLE_PREFIX+"TEMPLATE_ID", "c"}
+        {EHR_PATH, AUDIT_VARIABLE_PREFIX + "EHR_ID", "e"},
+        {TEMPLATE_PATH, AUDIT_VARIABLE_PREFIX + "TEMPLATE_ID", "c"}
     };
 
-    //set of path to skip whenever used in aggregate function
+    // set of path to skip whenever used in aggregate function
     private Set<String> skipList;
 
     public AuditVariables() {
@@ -49,18 +46,17 @@ public class AuditVariables {
      * @param variable
      * @return
      */
-    public boolean isAuditVariable(I_VariableDefinition variable){
+    public boolean isAuditVariable(I_VariableDefinition variable) {
 
         boolean retval = false;
 
-        for (String[] auditVarDef: requiredAuditVariables) {
-            if (variable instanceof FunctionDefinition){
-                //check if this function uses an audit variable
-                if (variable.getPath().contains(auditVarDef[0])){
+        for (String[] auditVarDef : requiredAuditVariables) {
+            if (variable instanceof FunctionDefinition) {
+                // check if this function uses an audit variable
+                if (variable.getPath().contains(auditVarDef[0])) {
                     skipList.add(auditVarDef[0]);
                 }
-            }
-            else if (variable.getPath() != null && variable.getPath().equals(auditVarDef[0])) {
+            } else if (variable.getPath() != null && variable.getPath().equals(auditVarDef[0])) {
                 retval = true;
                 break;
             }
@@ -70,10 +66,9 @@ public class AuditVariables {
     }
 
     public void addResults(Map<String, Set<Object>> auditResultMap, String path, Set<Object> resultSetForVariable) {
-        //check if this path is not to be skipped
-        if (!skipList.contains(path)){
+        // check if this path is not to be skipped
+        if (!skipList.contains(path)) {
             auditResultMap.put(path, resultSetForVariable);
         }
-
     }
 }

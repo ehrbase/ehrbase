@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2020 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,10 @@
  */
 package org.ehrbase.aql.containment;
 
-import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.webtemplate.parser.NodeId;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 /**
  * Process jsonpath queries on WebTemplates
@@ -41,11 +40,10 @@ public class Templates {
      * @return
      */
     public List<JsonPathQueryResult> resolve(List<NodeId> jsonQueryExpression) {
-        if (jsonQueryExpression == null)
-            return null;
+        if (jsonQueryExpression == null) return null;
 
         List<JsonPathQueryResult> jsonPathQueryResults = new ArrayList<>();
-        //traverse the templates and identify the ones satisfying the query
+        // traverse the templates and identify the ones satisfying the query
         for (String templateId : knowledgeCache.getAllTemplateIds()) {
             JsonPathQueryResult result = resolveForTemplate(templateId, jsonQueryExpression);
             if (result != null) {
@@ -64,7 +62,7 @@ public class Templates {
      */
     public JsonPathQueryResult resolveForTemplate(String templateId, List<NodeId> jsonQueryExpression) {
 
-       /*
+        /*
         Map<String, Object> results = new OptJsonPath(knowledgeCache).evaluate(templateId,jsonQueryExpression);
         JsonPathQueryResult jsonPathQueryResult = knowledgeCache.resolveForTemplate(templateId, jsonQueryExpression);
 

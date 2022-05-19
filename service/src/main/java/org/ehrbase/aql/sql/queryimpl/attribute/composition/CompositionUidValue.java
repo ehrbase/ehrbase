@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION_HISTORY;
+
+import java.util.UUID;
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
@@ -28,10 +31,6 @@ import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.COMPOSITION_HISTORY;
-
 public class CompositionUidValue extends CompositionAttribute {
 
     public CompositionUidValue(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
@@ -39,18 +38,14 @@ public class CompositionUidValue extends CompositionAttribute {
     }
 
     @Override
-    public Field<?> sqlField(){
-        if (fieldContext.getClause() == IQueryImpl.Clause.WHERE)
-            filterSetup.setCompositionIdFiltered(true);
-        else
-            compositionIdFieldSetup.setCompositionIdField(true);
+    public Field<?> sqlField() {
+        if (fieldContext.getClause() == IQueryImpl.Clause.WHERE) filterSetup.setCompositionIdFiltered(true);
+        else compositionIdFieldSetup.setCompositionIdField(true);
 
         joinSetup.setJoinComposition(true);
 
-        if (fieldContext.isWithAlias())
-            return uid();
-        else
-            return rawUid();
+        if (fieldContext.isWithAlias()) return uid();
+        else return rawUid();
     }
 
     @Override
@@ -60,16 +55,18 @@ public class CompositionUidValue extends CompositionAttribute {
 
     private Field<?> uid() {
 
-        //use inline SQL as it seems coalesce is not going through with POSTGRES dialect
+        // use inline SQL as it seems coalesce is not going through with POSTGRES dialect
         SelectQuery<?> subSelect = fieldContext.getContext().selectQuery();
         subSelect.addSelect(DSL.count());
         subSelect.addFrom(COMPOSITION_HISTORY);
-        subSelect.addConditions(JoinBinder.compositionRecordTable.field("id", UUID.class).eq(COMPOSITION_HISTORY.ID));
+        subSelect.addConditions(
+                JoinBinder.compositionRecordTable.field("id", UUID.class).eq(COMPOSITION_HISTORY.ID));
         subSelect.addGroupBy(COMPOSITION_HISTORY.ID);
 
         String coalesceVersion = "1 + COALESCE(\n(" + subSelect + "), 0)";
 
-        return aliased(DSL.field(JoinBinder.compositionRecordTable.field("id")
+        return aliased(DSL.field(
+                JoinBinder.compositionRecordTable.field("id")
                         + "||"
                         + DSL.val("::")
                         + "||"
@@ -77,9 +74,8 @@ public class CompositionUidValue extends CompositionAttribute {
                         + "||"
                         + DSL.val("::")
                         + "||"
-                        + DSL.field(coalesceVersion)
-                , SQLDataType.VARCHAR));
-
+                        + DSL.field(coalesceVersion),
+                SQLDataType.VARCHAR));
     }
 
     private Field<?> rawUid() {

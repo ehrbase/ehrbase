@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.ehr.ehrstatus;
-
 
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
@@ -32,12 +31,14 @@ public class EhrStatusOtherDetails extends EhrStatusAttribute {
     }
 
     @Override
-    public Field<?> sqlField(){
-        String variablePath = fieldContext.getVariableDefinition().getPath().substring("ehr_status/other_details".length());
-        if (variablePath.startsWith("/"))
-            variablePath = variablePath.substring(1);
+    public Field<?> sqlField() {
+        String variablePath =
+                fieldContext.getVariableDefinition().getPath().substring("ehr_status/other_details".length());
+        if (variablePath.startsWith("/")) variablePath = variablePath.substring(1);
 
-        return new EhrStatusJson(fieldContext, joinSetup).forJsonPath("other_details/"+variablePath).sqlField();
+        return new EhrStatusJson(fieldContext, joinSetup)
+                .forJsonPath("other_details/" + variablePath)
+                .sqlField();
     }
 
     @Override

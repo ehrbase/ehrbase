@@ -1,5 +1,7 @@
 /*
- * Copyright 2020-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2020-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.sql.queryimpl.value_field;
 
+import java.util.function.Function;
 import org.jooq.Field;
 import org.jooq.Function2;
 import org.jooq.Function3;
 import org.jooq.Function4;
 import org.jooq.TableField;
-
-import java.util.function.Function;
 
 /**
  * @author Christian Chevalley
@@ -31,8 +31,7 @@ import java.util.function.Function;
 @SuppressWarnings("java:S3740")
 public class Functions {
 
-    private Functions() {
-    }
+    private Functions() {}
 
     public static Field apply(Object function, TableField<?, ?>... tableField) {
         if (function == null) {

@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School), and Luis Marco-Ruiz (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,14 +18,13 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.generic.AuditDetails;
+import java.sql.Timestamp;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.ContributionAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-
-import java.sql.Timestamp;
-import java.util.UUID;
 
 /**
  * Access layer to Contributions
@@ -45,7 +40,12 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @return a new minimal {@link I_ContributionAccess}
      */
     static I_ContributionAccess getInstance(I_DomainAccess domain, UUID ehrId) {
-        return new ContributionAccess(domain.getContext(), domain.getKnowledgeManager(), domain.getIntrospectService(), domain.getServerConfig(), ehrId);
+        return new ContributionAccess(
+                domain.getContext(),
+                domain.getKnowledgeManager(),
+                domain.getIntrospectService(),
+                domain.getServerConfig(),
+                ehrId);
     }
 
     /**
@@ -70,7 +70,8 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @param state String representation of contribution state
      * @return @link UUID} of committed contribution
      */
-    UUID commit(Timestamp transactionTime, ContributionDataType contributionType, ContributionDef.ContributionState state);
+    UUID commit(
+            Timestamp transactionTime, ContributionDataType contributionType, ContributionDef.ContributionState state);
 
     /**
      * Commits given input as contribution record. Embeds creation of audit for this commit. All parameters are optional and will be provided with default values if NULL.
@@ -85,7 +86,14 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @return {@link UUID} of committed contribution
      * @throws InternalServerException when contribution couldn't be created because of an internal problem
      */
-    UUID commit(Timestamp transactionTime, UUID committerId, UUID systemId, ContributionDataType contributionType, ContributionDef.ContributionState contributionState, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
+    UUID commit(
+            Timestamp transactionTime,
+            UUID committerId,
+            UUID systemId,
+            ContributionDataType contributionType,
+            ContributionDef.ContributionState contributionState,
+            I_ConceptAccess.ContributionChangeType contributionChangeType,
+            String description);
 
     /**
      * Update with embedded audit update.
@@ -98,7 +106,14 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @param description            Description (part of AuditDetails)
      * @return  True for success
      */
-    Boolean update(Timestamp transactionTime, UUID committerId, UUID systemId, String contributionType, String contributionState, String contributionChangeType, String description);
+    Boolean update(
+            Timestamp transactionTime,
+            UUID committerId,
+            UUID systemId,
+            String contributionType,
+            String contributionState,
+            String contributionChangeType,
+            String description);
 
     /**
      * Update with embedded audit update.
@@ -111,7 +126,14 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @param description            Description (part of AuditDetails)
      * @return True for success
      */
-    Boolean update(Timestamp transactionTime, UUID committerId, UUID systemId, ContributionDataType contributionType, ContributionDef.ContributionState contributionState, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
+    Boolean update(
+            Timestamp transactionTime,
+            UUID committerId,
+            UUID systemId,
+            ContributionDataType contributionType,
+            ContributionDef.ContributionState contributionState,
+            I_ConceptAccess.ContributionChangeType contributionChangeType,
+            String description);
 
     /**
      * commit the contribution with a certifying signature<br>

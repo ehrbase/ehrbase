@@ -1,16 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,11 +17,10 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import java.util.UUID;
 import org.ehrbase.dao.access.jooq.CompositionAccess;
 import org.ehrbase.dao.access.jooq.CompositionHistoryAccess;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
-
-import java.util.UUID;
 
 /**
  * Stripped down DAO interface to perform some `*_history` table related actions. Composition access handling in general is

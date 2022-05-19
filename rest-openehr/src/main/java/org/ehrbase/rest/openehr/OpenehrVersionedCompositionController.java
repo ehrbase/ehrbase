@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -56,7 +55,9 @@ import org.springframework.web.bind.annotation.RestController;
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
 @RestController
-@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_composition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(
+        path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_composition",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrVersionedCompositionController extends BaseController
         implements VersionedCompositionApiSpecification {
 
@@ -65,7 +66,8 @@ public class OpenehrVersionedCompositionController extends BaseController
     private final ContributionService contributionService;
 
     @Autowired
-    public OpenehrVersionedCompositionController(EhrService ehrService, CompositionService compositionService, ContributionService contributionService) {
+    public OpenehrVersionedCompositionController(
+            EhrService ehrService, CompositionService compositionService, ContributionService contributionService) {
         this.ehrService = Objects.requireNonNull(ehrService);
         this.compositionService = Objects.requireNonNull(compositionService);
         this.contributionService = Objects.requireNonNull(contributionService);
@@ -84,7 +86,8 @@ public class OpenehrVersionedCompositionController extends BaseController
         // check if parameters are valid
         checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
 
-        VersionedComposition versionedComposition = compositionService.getVersionedComposition(ehrId, versionedCompoUid);
+        VersionedComposition versionedComposition =
+                compositionService.getVersionedComposition(ehrId, versionedCompoUid);
 
         VersionedObjectResponseData<Composition> response = new VersionedObjectResponseData<>(versionedComposition);
 
@@ -107,8 +110,8 @@ public class OpenehrVersionedCompositionController extends BaseController
         // check if parameters are valid
         checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
 
-    RevisionHistory revisionHistory =
-        compositionService.getRevisionHistoryOfVersionedComposition(ehrId, versionedCompoUid);
+        RevisionHistory revisionHistory =
+                compositionService.getRevisionHistoryOfVersionedComposition(ehrId, versionedCompoUid);
 
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
@@ -124,10 +127,10 @@ public class OpenehrVersionedCompositionController extends BaseController
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @Override
     public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByVersionUid(
-        @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @PathVariable(value = "ehr_id") String ehrIdString,
-        @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-        @PathVariable(value = "version_uid") String versionUid) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
+            @PathVariable(value = "version_uid") String versionUid) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -164,7 +167,9 @@ public class OpenehrVersionedCompositionController extends BaseController
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-            @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
+            @RequestParam(value = "version_at_time", required = false)
+                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    LocalDateTime versionAtTime) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -184,7 +189,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     private void checkForValidEhrAndCompositionParameter(UUID ehrId, UUID versionedCompoUid) {
         // check if EHR is valid
-        if(!ehrService.hasEhr(ehrId)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
@@ -194,21 +199,24 @@ public class OpenehrVersionedCompositionController extends BaseController
         }
     }
 
-    private ResponseEntity<OriginalVersionResponseData<Composition>> getOriginalVersionResponseDataResponseEntity(String accept,
-        UUID ehrId, UUID versionedObjectId, int version) {
+    private ResponseEntity<OriginalVersionResponseData<Composition>> getOriginalVersionResponseDataResponseEntity(
+            String accept, UUID ehrId, UUID versionedObjectId, int version) {
 
-    Optional<OriginalVersion<Composition>> compositionOriginalVersion =
-        compositionService.getOriginalVersionComposition(ehrId, versionedObjectId, version);
+        Optional<OriginalVersion<Composition>> compositionOriginalVersion =
+                compositionService.getOriginalVersionComposition(ehrId, versionedObjectId, version);
         UUID contributionId = compositionOriginalVersion
-            .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
-            .orElseThrow(() -> new InvalidApiParameterException("Couldn't retrieve Composition with given parameters"));
+                .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
+                .orElseThrow(
+                        () -> new InvalidApiParameterException("Couldn't retrieve Composition with given parameters"));
 
         Optional<ContributionDto> optionalContributionDto = contributionService.getContribution(ehrId, contributionId);
-        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() -> new InternalServerException("Couldn't fetch contribution for existing Composition")); // shouldn't happen
+        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() -> new InternalServerException(
+                "Couldn't fetch contribution for existing Composition")); // shouldn't happen
 
         OriginalVersionResponseData<Composition> originalVersionResponseData = new OriginalVersionResponseData<>(
-            compositionOriginalVersion.orElseThrow(() -> new InternalServerException("Composition exists but can't be retrieved as Original Version.")),
-            contributionDto);
+                compositionOriginalVersion.orElseThrow(() ->
+                        new InternalServerException("Composition exists but can't be retrieved as Original Version.")),
+                contributionDto);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
