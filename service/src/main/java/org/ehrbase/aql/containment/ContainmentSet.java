@@ -1,16 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.containment;
 
-import org.apache.commons.collections4.set.ListOrderedSet;
-
 import java.util.List;
+import org.apache.commons.collections4.set.ListOrderedSet;
 
 /**
  * Define the set of containments for a CONTAINS clause
@@ -36,7 +31,7 @@ import java.util.List;
  */
 public class ContainmentSet {
 
-    private int serial; //for debugging purpose only
+    private int serial; // for debugging purpose only
     private Containment enclosing;
     private ContainmentSet parentSet;
     private ListOrderedSet<Object> containmentList = new ListOrderedSet<>();
@@ -66,28 +61,21 @@ public class ContainmentSet {
         if (!containmentList.isEmpty()) {
             boolean comma = false;
             for (Object item : containmentList) {
-                if (comma)
-                    sb.append(",");
+                if (comma) sb.append(",");
 
                 comma = true;
 
-                if (item instanceof Containment)
-                    sb.append(item);
+                if (item instanceof Containment) sb.append(item);
                 else if (item instanceof ContainOperator) {
                     sb.append(((ContainOperator) item).getOperator());
                 } else if (item instanceof String) {
                     sb.append(item);
-                } else
-                    sb.append("-- Unhandled Item Type --");
-
+                } else sb.append("-- Unhandled Item Type --");
             }
-        } else
-            sb.append("--EMPTY SET--");
+        } else sb.append("--EMPTY SET--");
 
-        if (parentSet != null)
-            sb.append("<<<IN PARENT#" + parentSet.serial);
-        else
-            sb.append("<<< ROOT");
+        if (parentSet != null) sb.append("<<<IN PARENT#" + parentSet.serial);
+        else sb.append("<<< ROOT");
         return sb.toString();
     }
 
@@ -114,5 +102,4 @@ public class ContainmentSet {
     public Containment getEnclosing() {
         return enclosing;
     }
-
 }

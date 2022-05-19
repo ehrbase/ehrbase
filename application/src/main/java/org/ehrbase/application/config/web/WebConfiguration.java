@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.config.web;
 
 import org.ehrbase.api.service.CompositionService;
@@ -48,8 +47,11 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     private final CompositionService compositionService;
 
-    public WebConfiguration(CorsProperties properties, AuditContext auditContext,
-                            EhrService ehrService, CompositionService compositionService) {
+    public WebConfiguration(
+            CorsProperties properties,
+            AuditContext auditContext,
+            EhrService ehrService,
+            CompositionService compositionService) {
         this.properties = properties;
         this.auditContext = auditContext;
         this.ehrService = ehrService;
@@ -63,24 +65,20 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .combine(properties.toCorsConfiguration());
+        registry.addMapping("/**").combine(properties.toCorsConfiguration());
     }
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         if (auditContext.isAuditEnabled()) {
             // Composition endpoint
-            registry
-                    .addInterceptor(new CompositionAuditInterceptor(auditContext, ehrService, compositionService))
+            registry.addInterceptor(new CompositionAuditInterceptor(auditContext, ehrService, compositionService))
                     .addPathPatterns("/rest/openehr/v1/**/composition/**");
             // Ehr endpoint
-            registry
-                    .addInterceptor(new EhrAuditInterceptor(auditContext, ehrService))
+            registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService))
                     .addPathPatterns("/rest/openehr/v1/ehr", "/rest/openehr/v1/ehr/*");
             // Query endpoint
-            registry
-                    .addInterceptor(new QueryAuditInterceptor(auditContext, ehrService))
+            registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService))
                     .addPathPatterns("/rest/openehr/v1/query/**");
         }
     }

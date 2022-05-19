@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryimpl.value_field;
 
+import java.util.Optional;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
@@ -25,9 +26,7 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import java.util.Optional;
-
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public class SimpleAttribute extends CompositionAttribute {
 
     protected Field tableField;
@@ -41,13 +40,10 @@ public class SimpleAttribute extends CompositionAttribute {
     public Field<?> sqlField() {
         Field actualField;
 
-        if (type.isPresent())
-            actualField = DSL.field(tableField+"::"+type.get());
-        else
-            actualField = DSL.field(tableField);
+        if (type.isPresent()) actualField = DSL.field(tableField + "::" + type.get());
+        else actualField = DSL.field(tableField);
 
         return as(actualField);
-
     }
 
     @Override
@@ -56,8 +52,7 @@ public class SimpleAttribute extends CompositionAttribute {
     }
 
     public SimpleAttribute forTableField(String pgtype, Field tableField) {
-        if (pgtype != null)
-            type = Optional.of(pgtype);
+        if (pgtype != null) type = Optional.of(pgtype);
 
         this.tableField = tableField;
         return this;

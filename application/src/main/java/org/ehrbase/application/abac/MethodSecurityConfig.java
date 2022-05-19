@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Jake Smolka (Hannover Medical School) and Vitasystems GmbH.
+ * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.abac;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,19 +28,18 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 
-  private final AbacConfig abacConfig;
+    private final AbacConfig abacConfig;
 
-  public MethodSecurityConfig(AbacConfig abacConfig) {
-    this.abacConfig = abacConfig;
-  }
+    public MethodSecurityConfig(AbacConfig abacConfig) {
+        this.abacConfig = abacConfig;
+    }
 
-  /**
-   * Registration of custom SpEL expressions, here to include ABAC checks.
-   */
-  @Override
-  protected MethodSecurityExpressionHandler createExpressionHandler() {
-    // "null" for beans here, but autowiring will make the beans available on runtime
-    return new CustomMethodSecurityExpressionHandler(abacConfig, null, null, null, null);
-  }
-
+    /**
+     * Registration of custom SpEL expressions, here to include ABAC checks.
+     */
+    @Override
+    protected MethodSecurityExpressionHandler createExpressionHandler() {
+        // "null" for beans here, but autowiring will make the beans available on runtime
+        return new CustomMethodSecurityExpressionHandler(abacConfig, null, null, null, null);
+    }
 }

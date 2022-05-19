@@ -1,16 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,14 +20,13 @@ package org.ehrbase.dao.access.interfaces;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.util.Map;
+import java.util.UUID;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.jooq.StatusAccess;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
-
-import java.sql.Timestamp;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Status access layer interface<br>
@@ -94,7 +90,8 @@ public interface I_StatusAccess extends I_VersionedCRUD {
      * @return a map of {@link I_StatusAccess} and their version ID, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<ObjectVersionId, I_StatusAccess> retrieveInstanceByContribution(I_DomainAccess domainAccess, UUID contributionId, String node) {
+    static Map<ObjectVersionId, I_StatusAccess> retrieveInstanceByContribution(
+            I_DomainAccess domainAccess, UUID contributionId, String node) {
         return StatusAccess.retrieveInstanceByContribution(domainAccess, contributionId, node);
     }
 
@@ -125,7 +122,8 @@ public interface I_StatusAccess extends I_VersionedCRUD {
      * @param description Optional description
      * @param changeType Change type of operation
      */
-    void setAuditAndContributionAuditValues(UUID systemId, UUID committerId, String description, ContributionChangeType changeType);
+    void setAuditAndContributionAuditValues(
+            UUID systemId, UUID committerId, String description, ContributionChangeType changeType);
 
     /**
      * Get latest version number of EHR_STATUS by versioned object UID.

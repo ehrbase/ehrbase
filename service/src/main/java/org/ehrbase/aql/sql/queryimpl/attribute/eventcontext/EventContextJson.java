@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
+import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
+
+import java.util.Optional;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
@@ -24,10 +27,6 @@ import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
-
-import java.util.Optional;
-
-import static org.ehrbase.jooq.pg.tables.EventContext.EVENT_CONTEXT;
 
 public class EventContextJson extends EventContextAttribute {
 
@@ -39,18 +38,17 @@ public class EventContextJson extends EventContextAttribute {
 
     @Override
     public Field<?> sqlField() {
-        //query the json representation of EVENT_CONTEXT and cast the result as TEXT
+        // query the json representation of EVENT_CONTEXT and cast the result as TEXT
         Field jsonEventContext;
 
         if (jsonPath.isPresent())
-            jsonEventContext = new GenericJsonField(fieldContext, joinSetup).forJsonPath(jsonPath.get()).eventContext(EVENT_CONTEXT.ID);
-        else
-            jsonEventContext =  new GenericJsonField(fieldContext, joinSetup).eventContext(EVENT_CONTEXT.ID);
+            jsonEventContext = new GenericJsonField(fieldContext, joinSetup)
+                    .forJsonPath(jsonPath.get())
+                    .eventContext(EVENT_CONTEXT.ID);
+        else jsonEventContext = new GenericJsonField(fieldContext, joinSetup).eventContext(EVENT_CONTEXT.ID);
 
-        if (fieldContext.isWithAlias())
-            return aliased(DSL.field(jsonEventContext));
-        else
-            return defaultAliased(jsonEventContext);
+        if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonEventContext));
+        else return defaultAliased(jsonEventContext);
     }
 
     @Override
@@ -58,7 +56,7 @@ public class EventContextJson extends EventContextAttribute {
         return this;
     }
 
-    public EventContextJson forJsonPath(String jsonPath){
+    public EventContextJson forJsonPath(String jsonPath) {
         if (jsonPath == null || jsonPath.isEmpty()) {
             this.jsonPath = Optional.empty();
             return this;

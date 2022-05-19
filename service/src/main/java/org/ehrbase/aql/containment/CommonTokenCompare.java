@@ -1,5 +1,7 @@
 /*
- * Copyright 2020-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2020-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.containment;
 
 import org.antlr.v4.runtime.CommonToken;
@@ -28,15 +29,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  */
 public class CommonTokenCompare {
 
-  private final ParseTree token;
+    private final ParseTree token;
 
-  public CommonTokenCompare(ParseTree token) {
-    this.token = token;
-  }
+    public CommonTokenCompare(ParseTree token) {
+        this.token = token;
+    }
 
-  public boolean isEquals(int value) {
-    return (token instanceof TerminalNode
-        && (token.getPayload()) instanceof CommonToken
-        && ((CommonToken) (token.getPayload())).getType() == value);
-  }
+    public boolean isEquals(int value) {
+        return (token instanceof TerminalNode
+                && (token.getPayload()) instanceof CommonToken
+                && ((CommonToken) (token.getPayload())).getType() == value);
+    }
 }

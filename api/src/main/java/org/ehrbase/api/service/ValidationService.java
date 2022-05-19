@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
@@ -32,29 +31,28 @@ import com.nedap.archie.rm.ehr.EhrStatus;
  */
 public interface ValidationService {
 
-  /**
-   * check a composition based on the operation template constraints
-   *
-   * @param templateID  the template Id (String)
-   * @param composition the RM composition
-   * @throws Exception if the validation fails or the template cannot be resolved
-   */
-  void check(String templateID, Composition composition) throws Exception;
+    /**
+     * check a composition based on the operation template constraints
+     *
+     * @param templateID  the template Id (String)
+     * @param composition the RM composition
+     * @throws Exception if the validation fails or the template cannot be resolved
+     */
+    void check(String templateID, Composition composition) throws Exception;
 
-  /**
-   * initially check if the composition is valid for further processing
-   *
-   * @param composition
-   * @throws IllegalArgumentException
-   */
-  void check(Composition composition) throws Exception;
+    /**
+     * initially check if the composition is valid for further processing
+     *
+     * @param composition
+     * @throws IllegalArgumentException
+     */
+    void check(Composition composition) throws Exception;
 
-  /**
-   * initially check if ehrstatus is valid for further processing
-   *
-   * @param ehrStatus
-   * @throws IllegalArgumentException
-   */
-  void check(EhrStatus ehrStatus);
-
+    /**
+     * initially check if ehrstatus is valid for further processing
+     *
+     * @param ehrStatus
+     * @throws IllegalArgumentException
+     */
+    void check(EhrStatus ehrStatus);
 }

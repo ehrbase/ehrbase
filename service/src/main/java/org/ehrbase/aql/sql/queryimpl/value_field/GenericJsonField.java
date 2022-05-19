@@ -1,5 +1,7 @@
 /*
- * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.sql.queryimpl.value_field;
 
+import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonArraySplitElements;
+import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItem;
+import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItemAsText;
+import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathParameters;
+import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
+import static org.ehrbase.aql.sql.queryimpl.value_field.Functions.apply;
+
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
 import org.ehrbase.aql.sql.queryimpl.FunctionBasedNodePredicateCall;
 import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
@@ -36,21 +51,6 @@ import org.jooq.JSON;
 import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
-
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-
-import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonArraySplitElements;
-import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItem;
-import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItemAsText;
-import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathParameters;
-import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
-import static org.ehrbase.aql.sql.queryimpl.value_field.Functions.apply;
 
 /**
  * @author Christian Chevalley
@@ -93,8 +93,10 @@ public class GenericJsonField extends RMObjectAttribute {
 
     public Field partyRef(Field<String> namespace, Field<String> type, Field<String> scheme, Field<String> value) {
         String rmType = "PARTY_REF";
-        Function4<Field<String>, Field<String>, Field<String>, Field<String>, Field<JSON>> function = Routines::jsPartyRef;
-        return jsonField(rmType, function, (TableField) namespace, (TableField) type, (TableField) scheme, (TableField) value);
+        Function4<Field<String>, Field<String>, Field<String>, Field<String>, Field<JSON>> function =
+                Routines::jsPartyRef;
+        return jsonField(
+                rmType, function, (TableField) namespace, (TableField) type, (TableField) scheme, (TableField) value);
     }
 
     public Field dvDateTime(Field<Timestamp> dateTime, Field<String> timeZoneId) {
@@ -136,56 +138,55 @@ public class GenericJsonField extends RMObjectAttribute {
             List<String> tokenized = Arrays.asList(jsonpathParameters(jsonPath.get()));
 
             if (tokenized.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
-                //replace the ITERATIVE_MARKERs by default index
+                // replace the ITERATIVE_MARKERs by default index
                 Collections.replaceAll(tokenized, ITERATIVE_MARKER, "'0'");
                 jsonField = new FunctionBasedNodePredicateCall(fieldContext, tokenized).resolve(function, tableFields);
             } else if (tokenized.contains(ITERATIVE_MARKER))
                 jsonField = fieldWithJsonArrayIteration(configuration, tokenized, function, tableFields);
             else
-                jsonField =
-                        DSL.field(
-                                jsonpathItemAsText(configuration, DSL.field(apply(function, tableFields).toString()).cast(JSONB.class),
-                                        tokenized.toArray(new String[]{})));
+                jsonField = DSL.field(jsonpathItemAsText(
+                        configuration,
+                        DSL.field(apply(function, tableFields).toString()).cast(JSONB.class),
+                        tokenized.toArray(new String[] {})));
 
-        } else
-            jsonField = DSL.field(apply(function, tableFields).toString()).cast(String.class);
+        } else jsonField = DSL.field(apply(function, tableFields).toString()).cast(String.class);
 
-        //check if the SQL expression contains a set returned in a WHERE clause (implying a lateral join)
-        if (jsonField.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION) && fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
+        // check if the SQL expression contains a set returned in a WHERE clause (implying a lateral join)
+        if (jsonField.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION)
+                && fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
             jsonField = DSL.field(DSL.select(jsonField));
 
         return as(DSL.field(jsonField));
     }
 
-    private Field fieldWithJsonArrayIteration(Configuration configuration, List<String> tokenized, Object function, TableField... tableFields) {
+    private Field fieldWithJsonArrayIteration(
+            Configuration configuration, List<String> tokenized, Object function, TableField... tableFields) {
 
-        String[] prefix = tokenized.subList(0, tokenized.indexOf(ITERATIVE_MARKER)).toArray(new String[]{});
-        String[] remaining = tokenized.subList(tokenized.indexOf(ITERATIVE_MARKER) + 1, tokenized.size()).toArray(new String[]{});
+        String[] prefix =
+                tokenized.subList(0, tokenized.indexOf(ITERATIVE_MARKER)).toArray(new String[] {});
+        String[] remaining = tokenized
+                .subList(tokenized.indexOf(ITERATIVE_MARKER) + 1, tokenized.size())
+                .toArray(new String[] {});
 
-        //initial
+        // initial
         Field field = jsonpathItem(
                 configuration,
                 DSL.field(apply(function, tableFields).toString()).cast(JSONB.class),
-                prefix
-        );
+                prefix);
 
         while (remaining.length > 0) {
             List<String> tokens = Arrays.asList(remaining.clone());
             if (tokens.contains(ITERATIVE_MARKER)) {
-                prefix = tokens.subList(0, tokens.indexOf(ITERATIVE_MARKER)).toArray(new String[]{});
-                remaining = tokens.subList(tokens.indexOf(ITERATIVE_MARKER) + 1, tokens.size()).toArray(new String[]{});
+                prefix = tokens.subList(0, tokens.indexOf(ITERATIVE_MARKER)).toArray(new String[] {});
+                remaining = tokens.subList(tokens.indexOf(ITERATIVE_MARKER) + 1, tokens.size())
+                        .toArray(new String[] {});
             } else {
                 prefix = remaining;
-                remaining = new String[]{};
+                remaining = new String[] {};
             }
 
-            field = DSL.field(
-                    jsonpathItemAsText(
-                            configuration,
-                            jsonArraySplitElements(configuration, field.cast(JSONB.class)),
-                            prefix
-                    )
-            );
+            field = DSL.field(jsonpathItemAsText(
+                    configuration, jsonArraySplitElements(configuration, field.cast(JSONB.class)), prefix));
         }
 
         return field;
@@ -224,5 +225,4 @@ public class GenericJsonField extends RMObjectAttribute {
         this.jsonPath = Optional.of(new JsonbSelect(Arrays.asList(path)).field());
         return this;
     }
-
 }
