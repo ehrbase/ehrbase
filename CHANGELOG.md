@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
  ### Added 
+- Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
  ### Fixed 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
