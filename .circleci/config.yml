@@ -820,7 +820,7 @@ jobs:
 
 
   check-codestyle:
-    executor: docker-py3-java11-postgres
+    executor: docker-python3-java11
     # executor: machine-ubuntu-2004
     steps:
       - checkout
