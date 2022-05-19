@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.jooq;
+
+import static org.ehrbase.jooq.pg.tables.AuditDetails.AUDIT_DETAILS;
 
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
@@ -25,7 +26,9 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.TerminologyId;
-import java.util.Locale;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.*;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
@@ -33,12 +36,6 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.tables.AuditDetails.AUDIT_DETAILS;
 
 public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAccess {
 
@@ -49,7 +46,12 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
     }
 
-    public AuditDetailsAccess(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
+    public AuditDetailsAccess(
+            I_DomainAccess dataAccess,
+            UUID systemId,
+            UUID committer,
+            I_ConceptAccess.ContributionChangeType changeType,
+            String description) {
         super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
         auditDetailsRecord.setSystemId(systemId);
@@ -63,13 +65,14 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
         AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(dataAccess);
 
         try {
-            auditDetailsAccess.auditDetailsRecord = dataAccess.getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
+            auditDetailsAccess.auditDetailsRecord =
+                    dataAccess.getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
         } catch (Exception e) {
             throw new InternalServerException("fetching audit_details failed", e);
         }
 
-        if (auditDetailsAccess.auditDetailsRecord == null)  // FIXME can this even happen?
-            return null;
+        if (auditDetailsAccess.auditDetailsRecord == null) // FIXME can this even happen?
+        return null;
 
         return auditDetailsAccess;
     }
@@ -85,7 +88,8 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public UUID commit(Timestamp transactionTime) {
         auditDetailsRecord.setTimeCommitted(transactionTime);
-        auditDetailsRecord.setTimeCommittedTzid(ZonedDateTime.now().getZone().getId()); // extracting only TZ, ignoring now() itself
+        auditDetailsRecord.setTimeCommittedTzid(
+                ZonedDateTime.now().getZone().getId()); // extracting only TZ, ignoring now() itself
         int result = auditDetailsRecord.insert();
         if (result == 1) {
             return auditDetailsRecord.getId();
@@ -101,8 +105,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     @Override
     public UUID commit(UUID systemId, UUID committerId, String description) {
-        if (systemId == null || committerId == null)
-            throw new IllegalArgumentException("arguments not optional");
+        if (systemId == null || committerId == null) throw new IllegalArgumentException("arguments not optional");
 
         auditDetailsRecord.setSystemId(systemId);
         auditDetailsRecord.setCommitter(committerId);
@@ -125,7 +128,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
         if (force || auditDetailsRecord.changed()) {
             auditDetailsRecord.setId(UUID.randomUUID()); // force to create new entry from old values
-            //auditDetailsRecord.setTimeCommitted(transactionTime); // TODO-447: does this make query CI tests fail?
+            // auditDetailsRecord.setTimeCommitted(transactionTime); // TODO-447: does this make query CI tests fail?
             result = auditDetailsRecord.insert() == 1;
         }
 
@@ -148,15 +151,12 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     }
 
     @Override
-    public Boolean update(UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
-        if (systemId != null)
-            setSystemId(systemId);
-        if (committer != null)
-            setCommitter(committer);
-        if (changeType != null)
-            setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
-        if (description != null)
-            setDescription(description);
+    public Boolean update(
+            UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
+        if (systemId != null) setSystemId(systemId);
+        if (committer != null) setCommitter(committer);
+        if (changeType != null) setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
+        if (description != null) setDescription(description);
 
         return update();
     }
@@ -198,7 +198,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     }
 
     @Override
-    public void setChangeType(I_ConceptAccess.ContributionChangeType changeType){
+    public void setChangeType(I_ConceptAccess.ContributionChangeType changeType) {
         auditDetailsRecord.setChangeType(ContributionChangeType.valueOf(changeType.name()));
     }
 
@@ -208,7 +208,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     }
 
     @Override
-    public void setDescription(String description){
+    public void setDescription(String description) {
         auditDetailsRecord.setDescription(description);
     }
 
@@ -237,8 +237,13 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
         String systemId = getSystemId().toString();
         PartyProxy party = new PersistedPartyProxy(this).retrieve(getCommitter());
         DvDateTime time = new DvDateTime(getTimeCommitted().toLocalDateTime());
-        DvCodedText changeType = new DvCodedText(getChangeType().getLiteral(),
-            new CodePhrase(new TerminologyId("openehr"), Integer.toString(I_ConceptAccess.ContributionChangeType.valueOf(getChangeType().getLiteral().toUpperCase()).getCode())));
+        DvCodedText changeType = new DvCodedText(
+                getChangeType().getLiteral(),
+                new CodePhrase(
+                        new TerminologyId("openehr"),
+                        Integer.toString(I_ConceptAccess.ContributionChangeType.valueOf(
+                                        getChangeType().getLiteral().toUpperCase())
+                                .getCode())));
         DvText description = new DvText(getDescription());
         return new AuditDetails(systemId, party, time, changeType, description);
     }

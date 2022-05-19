@@ -1,5 +1,7 @@
 /*
- * Copyright 2020-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2020-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.jooq.binding;
 
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Types;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jooq.Binding;
 import org.jooq.BindingGetResultSetContext;
 import org.jooq.BindingGetSQLInputContext;
@@ -27,17 +38,6 @@ import org.jooq.BindingSetStatementContext;
 import org.jooq.Converter;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
-
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.Types;
-import java.time.OffsetDateTime;
-import java.util.AbstractMap;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 /**
  * Binding <T> = Object (unknown DB type), and <U> = {@link AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>} (user type) for "sys_period" column (of STATUS table).
@@ -72,7 +72,7 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
 
                     OffsetDateTime lower = OffsetDateTime.parse(lowerStr);
 
-                    if (upperStr != null) {   // can be empty
+                    if (upperStr != null) { // can be empty
                         upperStr = upperStr.replace(" ", "T");
                         OffsetDateTime upper = OffsetDateTime.parse(upperStr);
                         return new AbstractMap.SimpleEntry<>(lower, upper);
@@ -92,8 +92,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
 
                 String lower = userObject.getKey().format(ISO_OFFSET_DATE_TIME).replace("T", " ");
                 String upper = "";
-                if (userObject.getValue() != null)  // upper bound can be empty
-                    upper = userObject.getValue().format(ISO_OFFSET_DATE_TIME).replace("T", " ");
+                if (userObject.getValue() != null) // upper bound can be empty
+                upper = userObject.getValue().format(ISO_OFFSET_DATE_TIME).replace("T", " ");
 
                 if (upper.isEmpty()) {
                     return "[\"" + lower + "\",)";
@@ -125,13 +125,13 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      * @throws SQLException when SQL execution failed
      */
     @Override
-    public void sql(BindingSQLContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
+    public void sql(BindingSQLContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx)
+            throws SQLException {
         // Depending on how you generate your SQL, you may need to explicitly distinguish
         // between jOOQ generating bind variables or inlined literals.
         if (ctx.render().paramType() == ParamType.INLINED)
             ctx.render().visit(DSL.inline(ctx.convert(converter()).value())).sql("::tstzrange");
-        else
-            ctx.render().sql("?::tstzrange");
+        else ctx.render().sql("?::tstzrange");
     }
 
     /**
@@ -141,7 +141,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      * @throws SQLException when SQL execution failed
      */
     @Override
-    public void register(BindingRegisterContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
+    public void register(BindingRegisterContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx)
+            throws SQLException {
         ctx.statement().registerOutParameter(ctx.index(), Types.VARCHAR);
     }
 
@@ -152,8 +153,11 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      * @throws SQLException when SQL execution failed
      */
     @Override
-    public void set(BindingSetStatementContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
-        ctx.statement().setString(ctx.index(), Objects.toString(ctx.convert(converter()).value(), null));
+    public void set(BindingSetStatementContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx)
+            throws SQLException {
+        ctx.statement()
+                .setString(
+                        ctx.index(), Objects.toString(ctx.convert(converter()).value(), null));
     }
 
     /**
@@ -163,7 +167,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      * @throws SQLException when SQL execution failed
      */
     @Override
-    public void get(BindingGetResultSetContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
+    public void get(BindingGetResultSetContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx)
+            throws SQLException {
         ctx.convert(converter()).value(ctx.resultSet().getString(ctx.index()));
     }
 
@@ -174,7 +179,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      * @throws SQLException when SQL execution failed
      */
     @Override
-    public void get(BindingGetStatementContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
+    public void get(BindingGetStatementContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx)
+            throws SQLException {
         ctx.convert(converter()).value(ctx.statement().getString(ctx.index()));
     }
 
@@ -185,7 +191,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      * @throws SQLException when SQL execution failed
      */
     @Override
-    public void get(BindingGetSQLInputContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
+    public void get(BindingGetSQLInputContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx)
+            throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
@@ -196,7 +203,8 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
      * @throws SQLException when SQL execution failed
      */
     @Override
-    public void set(BindingSetSQLOutputContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx) throws SQLException {
+    public void set(BindingSetSQLOutputContext<AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> ctx)
+            throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 }

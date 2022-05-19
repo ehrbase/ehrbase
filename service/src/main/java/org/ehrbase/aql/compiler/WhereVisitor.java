@@ -1,16 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,12 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.compiler;
 
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.apache.commons.lang3.StringUtils;
@@ -34,8 +30,6 @@ import org.ehrbase.functional.Try;
 import org.ehrbase.validation.ConstraintViolationException;
 import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.validation.terminology.TerminologyParam;
-
-import com.nedap.archie.rm.datavalues.DvCodedText;
 
 /**
  * Interpret an AQL WHERE clause and set the result into a list of WHERE parts
@@ -52,7 +46,6 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
     private static final String CLOSING_CURL = "}";
     private static final String CLOSING_PAR = ")";
     private static final String COMMA = ",";
-
 
     private List<Object> whereExpression = new ArrayList<>();
     private ExternalTerminologyValidation tsAdapter;
@@ -97,7 +90,8 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
 
     private void parsePathContext(AqlParser.IdentifiedPathContext identifiedPathContext) {
         if (identifiedPathContext.objectPath() == null)
-            throw new IllegalArgumentException("WHERE variable should be a path, found:'" + identifiedPathContext.getText() + "'");
+            throw new IllegalArgumentException(
+                    "WHERE variable should be a path, found:'" + identifiedPathContext.getText() + "'");
         String path = identifiedPathContext.objectPath().getText();
         String identifier = identifiedPathContext.IDENTIFIER().getText();
         String alias = null;
@@ -108,7 +102,7 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
     @Override
     public List<Object> visitValueListItems(AqlParser.ValueListItemsContext ctx) {
         List<Object> operand = new ArrayList<>();
-        int counter = 0; //to detect the last occurrence
+        int counter = 0; // to detect the last occurrence
         for (ParseTree tree : ctx.children) {
             if (tree instanceof AqlParser.OperandContext) {
                 AqlParser.OperandContext operandContext = (AqlParser.OperandContext) tree;
@@ -128,12 +122,9 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
                         operand.add(",");
                     }
                     operand.remove(operand.size() - 1);
-                } else if (operandContext.PARAMETER() != null)
-                    operand.add("** unsupported operand: PARAMETER **");
-                else
-                    operand.add("** unsupported operand: " + operandContext.getText());
-                if (++counter < ctx.children.size())
-                    operand.add(",");
+                } else if (operandContext.PARAMETER() != null) operand.add("** unsupported operand: PARAMETER **");
+                else operand.add("** unsupported operand: " + operandContext.getText());
+                if (++counter < ctx.children.size()) operand.add(",");
             } else if (tree instanceof AqlParser.ValueListItemsContext) {
                 List<Object> token = visitValueListItems((AqlParser.ValueListItemsContext) tree);
                 operand.addAll(token);
@@ -142,11 +133,9 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
         return operand;
     }
 
-
     @Override
     public List<Object> visitInvokeOperand(AqlParser.InvokeOperandContext ctx) {
         return visitChildren(ctx);
-
     }
 
     @Override
@@ -156,32 +145,31 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
         assert (ctx.OPEN_PAR().getText().equals("("));
         assert (ctx.CLOSE_PAR().getText().equals(")"));
         List<String> codesList = new ArrayList<>();
-        
+
         final String operation = ctx.STRING(0).getText().replace("'", "");
         final String adapter = ctx.STRING(1).getText().replace("'", "");
         final String parameters = ctx.STRING(2).getText().replace("'", "");
-        
+
         TerminologyParam tp = TerminologyParam.ofServiceApi(adapter);
-            tp.setOperation(operation);
-            tp.setParameter(parameters);
-        
+        tp.setOperation(operation);
+        tp.setParameter(parameters);
+
         if (StringUtils.equals(operation, "expand")) {
             try {
                 tp.useValueSet();
                 List<DvCodedText> expansion = tsAdapter.expand(tp);
-                expansion.forEach((DvCodedText dvCode) -> codesList.add("'" + dvCode.getDefiningCode().getCodeString() + "'"));
+                expansion.forEach((DvCodedText dvCode) ->
+                        codesList.add("'" + dvCode.getDefiningCode().getCodeString() + "'"));
                 invokeExpr.addAll(codesList);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Terminology server operation failed:'" + e.getMessage() + "'");
             }
         } else if (StringUtils.equals(operation, "validate")) {
             try {
-                Try<Boolean,ConstraintViolationException> expansion = tsAdapter.validate(tp);
-                
-                if(expansion.isSuccess())
-                  expansion.getAsSuccess().consume((b, e) -> invokeExpr.add(b));
-                else
-                  expansion.getAsFailure().consume((b,e) -> invokeExpr.add(Boolean.FALSE));
+                Try<Boolean, ConstraintViolationException> expansion = tsAdapter.validate(tp);
+
+                if (expansion.isSuccess()) expansion.getAsSuccess().consume((b, e) -> invokeExpr.add(b));
+                else expansion.getAsFailure().consume((b, e) -> invokeExpr.add(Boolean.FALSE));
             } catch (Exception e) {
                 throw new IllegalArgumentException("Terminology server operation failed:'" + e.getMessage() + "'");
             }
@@ -199,21 +187,18 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
                 if (token.equalsIgnoreCase(MATCHES)) {
                     isMatchExpr = true;
                     whereExpression.add(IN);
-                } else if (token.equals(OPEN_CURL) && isMatchExpr)
-                    whereExpression.add(OPEN_PAR);
+                } else if (token.equals(OPEN_CURL) && isMatchExpr) whereExpression.add(OPEN_PAR);
                 else if (token.equals(CLOSING_CURL) && isMatchExpr) {
-                    //if the last element in expression is a comma, overwrite it with a closing parenthesis
+                    // if the last element in expression is a comma, overwrite it with a closing parenthesis
                     if (whereExpression.get(whereExpression.size() - 1).equals(COMMA))
                         whereExpression.set(whereExpression.size() - 1, CLOSING_PAR);
-                    else
-                        whereExpression.add(CLOSING_PAR);
-                    isMatchExpr = false; //closure
-                } else
-                    whereExpression.add(token);
+                    else whereExpression.add(CLOSING_PAR);
+                    isMatchExpr = false; // closure
+                } else whereExpression.add(token);
 
             } else if (tree instanceof AqlParser.IdentifiedOperandContext) {
                 AqlParser.IdentifiedOperandContext operandContext = (AqlParser.IdentifiedOperandContext) tree;
-                //translate/substitute operand
+                // translate/substitute operand
                 for (ParseTree child : operandContext.children) {
                     if (child instanceof AqlParser.OperandContext || child instanceof TerminalNodeImpl) {
                         whereExpression.add(child.getText());
@@ -240,7 +225,8 @@ public class WhereVisitor extends AqlBaseVisitor<List<Object>> {
         WhereClauseUtil whereClauseUtil = new WhereClauseUtil(whereExpression);
 
         if (!whereClauseUtil.isBalancedBlocks())
-            throw new IllegalArgumentException("Unbalanced block in WHERE clause missing:'" + whereClauseUtil.getUnbalanced() + "'");
+            throw new IllegalArgumentException(
+                    "Unbalanced block in WHERE clause missing:'" + whereClauseUtil.getUnbalanced() + "'");
 
         return whereExpression;
     }

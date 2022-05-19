@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.DefaultColumnId;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 public class ConstantField {
 
     private final I_VariableDefinition variableDefinition;
@@ -35,14 +35,12 @@ public class ConstantField {
     Field<?> toSql() {
         Field<?> field;
 
-        ConstantDefinition constantDefinition = (ConstantDefinition)variableDefinition;
-        if (constantDefinition.getValue() == null) //assume NULL
-            field = DSL.field("NULL");
-        else
-            field = DSL.field(DSL.val(constantDefinition.getValue()));
+        ConstantDefinition constantDefinition = (ConstantDefinition) variableDefinition;
+        if (constantDefinition.getValue() == null) // assume NULL
+        field = DSL.field("NULL");
+        else field = DSL.field(DSL.val(constantDefinition.getValue()));
 
-        if (constantDefinition.getAlias() != null)
-            field = field.as(constantDefinition.getAlias());
+        if (constantDefinition.getAlias() != null) field = field.as(constantDefinition.getAlias());
         else {
             String defaultAlias = DefaultColumnId.value(constantDefinition);
             field = field.as("/" + defaultAlias);

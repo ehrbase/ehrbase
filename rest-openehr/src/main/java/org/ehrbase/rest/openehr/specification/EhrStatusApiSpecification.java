@@ -1,5 +1,7 @@
 /*
- * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2021-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr.specification;
 
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -35,55 +36,41 @@ import org.springframework.http.ResponseEntity;
 @SuppressWarnings({"unused", "java:S107"})
 public interface EhrStatusApiSpecification {
 
-  @Operation(
-      summary = "Get EHR_STATUS version by time",
-      externalDocs = @ExternalDocumentation(
-          url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get"
-      ),
-      responses = {
-          @ApiResponse(responseCode = "200"),
-          @ApiResponse(responseCode = "400"),
-          @ApiResponse(responseCode = "404")
-      }
-  )
-  ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(
-      UUID ehrId,
-      String versionAtTime,
-      String accept);
+    @Operation(
+            summary = "Get EHR_STATUS version by time",
+            externalDocs =
+                    @ExternalDocumentation(
+                            url =
+                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get"),
+            responses = {
+                @ApiResponse(responseCode = "200"),
+                @ApiResponse(responseCode = "400"),
+                @ApiResponse(responseCode = "404")
+            })
+    ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(UUID ehrId, String versionAtTime, String accept);
 
-  @Operation(
-      summary = "Get EHR_STATUS by version id",
-      externalDocs = @ExternalDocumentation(
-          url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get-1"
-      ),
-      responses = {
-          @ApiResponse(responseCode = "200"),
-          @ApiResponse(responseCode = "404")
-      }
-  )
-  ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(
-      UUID ehrId,
-      String versionUid,
-      String accept);
+    @Operation(
+            summary = "Get EHR_STATUS by version id",
+            externalDocs =
+                    @ExternalDocumentation(
+                            url =
+                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get-1"),
+            responses = {@ApiResponse(responseCode = "200"), @ApiResponse(responseCode = "404")})
+    ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(UUID ehrId, String versionUid, String accept);
 
-  @Operation(
-      summary = "Update EHR_STATUS",
-      externalDocs = @ExternalDocumentation(
-          url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-put"
-      ),
-      responses = {
-          @ApiResponse(responseCode = "200"),
-          @ApiResponse(responseCode = "204"),
-          @ApiResponse(responseCode = "400"),
-          @ApiResponse(responseCode = "404"),
-          @ApiResponse(responseCode = "412")
-      }
-  )
-  ResponseEntity<EhrStatusResponseData> updateEhrStatus(
-      UUID ehrId,
-      String versionUid,
-      String prefer,
-      String accept,
-      String contentType,
-      EhrStatus ehrStatus);
+    @Operation(
+            summary = "Update EHR_STATUS",
+            externalDocs =
+                    @ExternalDocumentation(
+                            url =
+                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-put"),
+            responses = {
+                @ApiResponse(responseCode = "200"),
+                @ApiResponse(responseCode = "204"),
+                @ApiResponse(responseCode = "400"),
+                @ApiResponse(responseCode = "404"),
+                @ApiResponse(responseCode = "412")
+            })
+    ResponseEntity<EhrStatusResponseData> updateEhrStatus(
+            UUID ehrId, String versionUid, String prefer, String accept, String contentType, EhrStatus ehrStatus);
 }
