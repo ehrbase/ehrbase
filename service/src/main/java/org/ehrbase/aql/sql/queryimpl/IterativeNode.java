@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,28 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.sql.queryimpl;
 
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.ehr.util.LocatableHelper;
-import org.ehrbase.service.IntrospectService;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_DEPTH;
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_IGNORE_NODE;
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.ehr.util.LocatableHelper;
+import org.ehrbase.service.IntrospectService;
+
 /**
  * Created by christian on 5/9/2018.
  */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452","java:S1075","java:S135"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452", "java:S1075", "java:S135"})
 public class IterativeNode implements IIterativeNode {
 
-    private List<String> ignoreIterativeNode; //f.e. '/content' '/events' etc.
+    private List<String> ignoreIterativeNode; // f.e. '/content' '/events' etc.
     private final List<String> unbounded;
     private Integer depth;
     private final I_DomainAccess domainAccess;
@@ -65,7 +62,7 @@ public class IterativeNode implements IIterativeNode {
             for (int i = unbounded.size() - 1; i >= 0; i--) {
                 String aqlPath = unbounded.get(i);
 
-                //check if this path is not excluded
+                // check if this path is not excluded
                 List<String> aqlPathSegments = LocatableHelper.dividePathIntoSegments(aqlPath);
 
                 boolean ignoreThisAqlPath = false;
@@ -75,23 +72,18 @@ public class IterativeNode implements IIterativeNode {
                             ignoreThisAqlPath = true;
                             break;
                         }
-
                     }
                 }
 
-                if (ignoreThisAqlPath)
-                    continue;
+                if (ignoreThisAqlPath) continue;
 
                 if (path.startsWith(aqlPath) && !aqlPath.matches("^.*(value|name)$")) {
                     int pos = aqlPathInJsonbArray(aqlPathSegments, segmentedPath);
                     retarray.add(pos);
-                    if (retarray.size() >= depth)
-                        break;
+                    if (retarray.size() >= depth) break;
                 }
-
             }
         }
-
 
         return retarray.toArray(new Integer[0]);
     }
@@ -100,19 +92,19 @@ public class IterativeNode implements IIterativeNode {
 
         List<String> resultingPath = new ArrayList<>(segmentedPath);
 
-        Arrays.stream(clipPos).sorted(Comparator.reverseOrder()).collect(Collectors.toList()).forEach(pos -> {
-            if (pos == resultingPath.size())
-                resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
-            else if (!resultingPath.get(pos).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
-                if (resultingPath.get(pos).equals("0"))
-                    //substitution
-                    resultingPath.set(pos, AQL_NODE_ITERATIVE_MARKER);
-                else
-                    resultingPath.add(pos, AQL_NODE_ITERATIVE_MARKER);
-            }
-        });
+        Arrays.stream(clipPos)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList())
+                .forEach(pos -> {
+                    if (pos == resultingPath.size()) resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
+                    else if (!resultingPath.get(pos).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
+                        if (resultingPath.get(pos).equals("0"))
+                            // substitution
+                            resultingPath.set(pos, AQL_NODE_ITERATIVE_MARKER);
+                        else resultingPath.add(pos, AQL_NODE_ITERATIVE_MARKER);
+                    }
+                });
         return resultingPath;
-
     }
 
     /**
@@ -127,16 +119,16 @@ public class IterativeNode implements IIterativeNode {
             try {
                 Integer.parseInt(item);
             } catch (Exception e) {
-                //not an index, add into the list
+                // not an index, add into the list
                 if (!item.startsWith("/composition")) {
                     if (item.startsWith("/")) {
-                        //skip structure containers that are specific to DB encoding (that is: /events/events[openEHR...])
-                        //this also applies to /activities
+                        // skip structure containers that are specific to DB encoding (that is:
+                        // /events/events[openEHR...])
+                        // this also applies to /activities
                         if (!item.equals("/events") && !item.equals("/activities")) {
                             resultPath.add(item.substring(1));
                         }
-                    } else
-                        resultPath.add(item);
+                    } else resultPath.add(item);
                 }
             }
         }
@@ -157,18 +149,20 @@ public class IterativeNode implements IIterativeNode {
                 retval++;
             } catch (Exception e) {
 
-                if (jsonbSegmented.get(retval).equals("/events") || jsonbSegmented.get(retval).equals("/activities")) {
-                    retval++; //skip this structural item
+                if (jsonbSegmented.get(retval).equals("/events")
+                        || jsonbSegmented.get(retval).equals("/activities")) {
+                    retval++; // skip this structural item
                     continue;
                 }
 
                 try {
                     if (jsonbSegmented.get(retval).startsWith("/"))
                         assert jsonbSegmented.get(retval).substring(1).equals(aqlSegmented.get(aqlSegIndex));
-                    else
-                        assert jsonbSegmented.get(retval).equals(aqlSegmented.get(aqlSegIndex));
+                    else assert jsonbSegmented.get(retval).equals(aqlSegmented.get(aqlSegIndex));
                 } catch (Exception e1) {
-                    throw new IllegalArgumentException("Drift in locating array marker: aql:" + aqlSegmented.get(aqlSegIndex) + ", jsonb:" + jsonbSegmented.get(retval) + ", @index:" + retval);
+                    throw new IllegalArgumentException(
+                            "Drift in locating array marker: aql:" + aqlSegmented.get(aqlSegIndex) + ", jsonb:"
+                                    + jsonbSegmented.get(retval) + ", @index:" + retval);
                 }
 
                 retval++;
@@ -178,45 +172,40 @@ public class IterativeNode implements IIterativeNode {
         return retval;
     }
 
-    private void initAqlRuntimeParameters(){
+    private void initAqlRuntimeParameters() {
         ignoreIterativeNode = new ArrayList<>();
         if (System.getenv(ENV_AQL_ARRAY_IGNORE_NODE) != null) {
-            ignoreIterativeNode = Arrays.asList(System.getenv(ENV_AQL_ARRAY_IGNORE_NODE).split(","));
-        } else if (domainAccess.getServerConfig().getAqlIterationSkipList() != null && !domainAccess.getServerConfig().getAqlIterationSkipList().isBlank()){
-            ignoreIterativeNode.addAll(Arrays.asList(domainAccess.getServerConfig().getAqlIterationSkipList().split(",")));
-        }
-        else
-            ignoreIterativeNode = Arrays.asList("^/content.*", "^/events.*");
+            ignoreIterativeNode =
+                    Arrays.asList(System.getenv(ENV_AQL_ARRAY_IGNORE_NODE).split(","));
+        } else if (domainAccess.getServerConfig().getAqlIterationSkipList() != null
+                && !domainAccess.getServerConfig().getAqlIterationSkipList().isBlank()) {
+            ignoreIterativeNode.addAll(Arrays.asList(
+                    domainAccess.getServerConfig().getAqlIterationSkipList().split(",")));
+        } else ignoreIterativeNode = Arrays.asList("^/content.*", "^/events.*");
 
         if (System.getenv(ENV_AQL_ARRAY_DEPTH) != null) {
             depth = Integer.parseInt(System.getenv(ENV_AQL_ARRAY_DEPTH));
-        }
-        else if (domainAccess.getServerConfig().getAqlDepth() != null)
+        } else if (domainAccess.getServerConfig().getAqlDepth() != null)
             depth = domainAccess.getServerConfig().getAqlDepth();
-        else
-            depth = 1;
+        else depth = 1;
     }
 
     public List<String> iterativeForArrayAttributeValues(List<String> itemPathArray) {
         List<String> resultingPath = new ArrayList<>();
 
         for (String node : itemPathArray) {
-            if (node.contains("feeder_system_item_ids")){
+            if (node.contains("feeder_system_item_ids")) {
                 List<String> faItems = Arrays.asList(node.split(",").clone());
-                if (faItems.size() > 2){
-                    //insert a iterative marker for function resolution
-                    for (String faNode: faItems) {
+                if (faItems.size() > 2) {
+                    // insert a iterative marker for function resolution
+                    for (String faNode : faItems) {
                         resultingPath.add(faNode);
-                        if (faNode.equals("feeder_system_item_ids")){
+                        if (faNode.equals("feeder_system_item_ids")) {
                             resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
                         }
                     }
-                }
-                else
-                    resultingPath.add(node);
-            }
-            else
-                resultingPath.add(node);
+                } else resultingPath.add(node);
+            } else resultingPath.add(node);
         }
         return resultingPath;
     }

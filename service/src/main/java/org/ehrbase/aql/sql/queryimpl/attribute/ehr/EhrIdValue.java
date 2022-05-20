@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.ehr;
 
+import static org.ehrbase.jooq.pg.Tables.EHR_;
+
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
@@ -25,8 +27,6 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import static org.ehrbase.jooq.pg.Tables.EHR_;
-
 public class EhrIdValue extends EhrAttribute {
 
     public EhrIdValue(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
@@ -34,7 +34,7 @@ public class EhrIdValue extends EhrAttribute {
     }
 
     @Override
-    public Field<?> sqlField(){
+    public Field<?> sqlField() {
         ehrSetup.setContainsEhrId(true);
         ehrSetup.setEhrIdAlias(effectiveAlias());
         if (fieldContext.getPathResolver().hasPathExpression()) {
@@ -42,18 +42,17 @@ public class EhrIdValue extends EhrAttribute {
             if (fieldContext.isWithAlias()) {
                 return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
             } else
-                return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
+                return defaultAliased(
+                        DSL.field(JoinBinder.ehrRecordTable.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
         } else if (!joinSetup.isContainsEhrStatus()) {
             joinSetup.setJoinEhr(true);
             if (fieldContext.isWithAlias()) {
                 return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-            } else
-                return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+            } else return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
         } else {
             if (fieldContext.isWithAlias()) {
                 return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-            } else
-                return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+            } else return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
         }
     }
 
@@ -61,5 +60,4 @@ public class EhrIdValue extends EhrAttribute {
     public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
-
 }

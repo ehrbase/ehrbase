@@ -675,11 +675,26 @@ get composition by composition_uid
 
 
 Get Web Template By Template Id (ECIS)
-    [Arguments]         ${template_id}
+    [Arguments]         ${template_id}      ${responseFormat}=default
 
     Create Session      ${SUT}    ${ECISURL}    debug=2
     ...                 auth=${CREDENTIALS}    verify=True
-    ${resp}=            GET On Session         ${SUT}  template/${template_id}  expected_status=anything   headers=${headers}
+    IF          '${responseFormat}' == 'JSON'
+        &{params}           Create Dictionary       format=JSON
+        &{headers}          Create Dictionary       Content-Type=application/json
+        ...     Prefer=return=representation        Accept=application/json
+        ${resp}             GET On Session         ${SUT}  template/${template_id}
+        ...     expected_status=anything   headers=${headers}   params=${params}
+    ELSE IF     '${responseFormat}' == 'XML'
+        &{params}           Create Dictionary       format=XML
+        &{headers}          Create Dictionary       Content-Type=application/xml
+        ...     Prefer=return=representation        Accept=application/xml
+        ${resp}             GET On Session          ${SUT}  template/${template_id}
+        ...     expected_status=anything   headers=${headers}   params=${params}
+    ELSE
+        ${resp}             GET On Session         ${SUT}  template/${template_id}
+        ...     expected_status=anything   headers=${headers}
+    END
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
                         Should Be Equal As Strings   ${resp.status_code}   200
@@ -746,7 +761,8 @@ Validate Response Body Has Format
                         IF          '${expectedFormat}' == 'JSON'
                             ${templateName}     Get Value From Json     ${response.json()}
                             ...     name.value
-                            log to console     ${templateName}
+                            log to console      ${templateName}
+                            Set Test Variable   ${response}     ${response.json()}
                         ELSE IF     '${expectedFormat}' == 'XML'
                             ${xml}     Parse Xml        ${response.text}
                             Set Test Variable       ${responseXML}      ${xml}

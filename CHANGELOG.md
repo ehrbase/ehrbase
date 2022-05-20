@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
 ### Added
+- Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
 ### Changed
 ### Fixed
 

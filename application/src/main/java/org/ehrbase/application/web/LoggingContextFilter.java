@@ -1,5 +1,7 @@
 /*
- * Copyright 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.web;
 
 import java.io.IOException;
@@ -40,23 +41,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class LoggingContextFilter extends OncePerRequestFilter {
 
-  @Override
-  protected void doFilterInternal(@NonNull HttpServletRequest request,
-      @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain)
-      throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
 
-    try {
-      MDC.put("traceId", generateId());
-      logger.trace("Set traceId for current request");
+        try {
+            MDC.put("traceId", generateId());
+            logger.trace("Set traceId for current request");
 
-      filterChain.doFilter(request, response);
-    } finally {
-      MDC.remove("traceId");
+            filterChain.doFilter(request, response);
+        } finally {
+            MDC.remove("traceId");
+        }
     }
-  }
 
-  private String generateId() {
-    return UUID.randomUUID().toString();
-  }
+    private String generateId() {
+        return UUID.randomUUID().toString();
+    }
 }

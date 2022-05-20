@@ -1,30 +1,27 @@
 /*
- *  Copyright (c) 2020 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- *  This file is part of project EHRbase
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- *
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
- *   software distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and  limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.ehrbase.aql.sql.queryimpl;
-
-import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.jooq.Field;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.jooq.Field;
 
 public class MultiFields {
 
@@ -44,17 +41,16 @@ public class MultiFields {
         this(variableDefinition, new QualifiedAqlField(field), templateId);
     }
 
-    public static MultiFields asNull(I_VariableDefinition variableDefinition, String templateId, IQueryImpl.Clause clause){
+    public static MultiFields asNull(
+            I_VariableDefinition variableDefinition, String templateId, IQueryImpl.Clause clause) {
         String alias = variableDefinition.getAlias();
 
-        if (clause.equals(IQueryImpl.Clause.WHERE))
-            alias = null;
+        if (clause.equals(IQueryImpl.Clause.WHERE)) alias = null;
         else {
-            if (alias == null)
-                alias = DefaultColumnId.value(variableDefinition);
+            if (alias == null) alias = DefaultColumnId.value(variableDefinition);
         }
 
-        Field<?> nullField =  new NullField(variableDefinition, alias).instance();
+        Field<?> nullField = new NullField(variableDefinition, alias).instance();
         return new MultiFields(variableDefinition, nullField, templateId);
     }
 
@@ -72,37 +68,35 @@ public class MultiFields {
         return useEntryTable;
     }
 
-    public int fieldsSize(){
+    public int fieldsSize() {
         return fields.size();
     }
 
-    private QualifiedAqlField getQualifiedField(int index){
+    private QualifiedAqlField getQualifiedField(int index) {
         return fields.get(index);
     }
 
-    public Iterator<QualifiedAqlField> iterator(){
+    public Iterator<QualifiedAqlField> iterator() {
         return fields.iterator();
     }
 
-    public QualifiedAqlField getLastQualifiedField(){
-        if (fieldsSize() > 0)
-            return fields.get(fieldsSize() - 1);
+    public QualifiedAqlField getLastQualifiedField() {
+        if (fieldsSize() > 0) return fields.get(fieldsSize() - 1);
         else
-            return new QualifiedAqlField(new NullField(variableDefinition, DefaultColumnId.value(variableDefinition)).instance());
+            return new QualifiedAqlField(
+                    new NullField(variableDefinition, DefaultColumnId.value(variableDefinition)).instance());
     }
 
-    public QualifiedAqlField getQualifiedFieldOrLast(int index){
-        if (index >= fieldsSize())
-            return getLastQualifiedField();
-        else
-            return getQualifiedField(index);
+    public QualifiedAqlField getQualifiedFieldOrLast(int index) {
+        if (index >= fieldsSize()) return getLastQualifiedField();
+        else return getQualifiedField(index);
     }
 
-    public int size(){
+    public int size() {
         return fields.size();
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return fields.isEmpty();
     }
 

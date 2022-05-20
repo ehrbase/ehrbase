@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,50 +23,55 @@ import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryimpl.MultiFields;
 
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 public class ExpressionField {
 
     private final I_VariableDefinition variableDefinition;
     private final JsonbEntryQuery jsonbEntryQuery;
     private final CompositionAttributeQuery compositionAttributeQuery;
 
-    public ExpressionField(I_VariableDefinition variableDefinition, JsonbEntryQuery jsonbEntryQuery, CompositionAttributeQuery compositionAttributeQuery) {
+    public ExpressionField(
+            I_VariableDefinition variableDefinition,
+            JsonbEntryQuery jsonbEntryQuery,
+            CompositionAttributeQuery compositionAttributeQuery) {
         this.variableDefinition = variableDefinition;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.compositionAttributeQuery = compositionAttributeQuery;
     }
 
-   MultiFields toSql(String className, String templateId, String identifier, IQueryImpl.Clause clause) {
+    MultiFields toSql(String className, String templateId, String identifier, IQueryImpl.Clause clause) {
 
         MultiFields aqlFields;
 
-        if (new FieldConstantHandler(variableDefinition).isConstant()){
-            return new MultiFields(variableDefinition, new FieldConstantHandler(variableDefinition).field(), templateId);
+        if (new FieldConstantHandler(variableDefinition).isConstant()) {
+            return new MultiFields(
+                    variableDefinition, new FieldConstantHandler(variableDefinition).field(), templateId);
         }
 
         switch (className) {
-            //COMPOSITION attributes
+                // COMPOSITION attributes
             case "COMPOSITION":
-                CompositionAttribute compositionAttribute = new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
+                CompositionAttribute compositionAttribute =
+                        new CompositionAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
                 aqlFields = compositionAttribute.toSql(variableDefinition, templateId, identifier);
                 break;
-            // EHR attributes
+                // EHR attributes
             case "EHR":
                 aqlFields = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
                 break;
-            // other, f.e. CLUSTER, ADMIN_ENTRY, OBSERVATION etc.
+                // other, f.e. CLUSTER, ADMIN_ENTRY, OBSERVATION etc.
             default:
                 // other_details f.e.
-                if (compositionAttributeQuery.isCompositionAttributeItemStructure(templateId, variableDefinition.getIdentifier())) {
-                    ContextualAttribute contextualAttribute = new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
+                if (compositionAttributeQuery.isCompositionAttributeItemStructure(
+                        templateId, variableDefinition.getIdentifier())) {
+                    ContextualAttribute contextualAttribute =
+                            new ContextualAttribute(compositionAttributeQuery, jsonbEntryQuery, clause);
                     aqlFields = contextualAttribute.toSql(templateId, variableDefinition);
-                }
-                else {
+                } else {
                     // all other that are supported as simpleClassExpr (most common resolution)
                     LocatableItem locatableItem = new LocatableItem(compositionAttributeQuery, jsonbEntryQuery, clause);
                     aqlFields = locatableItem.toSql(templateId, variableDefinition);
-                    if (!aqlFields.isEmpty())
-                        aqlFields.setUseEntryTable(true);
+                    if (!aqlFields.isEmpty()) aqlFields.setUseEntryTable(true);
                 }
                 break;
         }

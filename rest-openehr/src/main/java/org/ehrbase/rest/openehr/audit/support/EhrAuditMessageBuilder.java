@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH.
+ * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,12 @@ import org.springframework.http.HttpMethod;
 public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditMessageBuilder> {
 
     public EhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
-        super(auditContext, auditDataset, resolveEventActionCode(auditDataset.getMethod()), EventIdCode.PatientRecord, null);
+        super(
+                auditContext,
+                auditDataset,
+                resolveEventActionCode(auditDataset.getMethod()),
+                EventIdCode.PatientRecord,
+                null);
     }
 
     protected static EventActionCode resolveEventActionCode(HttpMethod method) {
@@ -46,7 +51,11 @@ public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditM
     }
 
     public EhrAuditMessageBuilder addPatientParticipantObjectIdentification(OpenEhrAuditDataset auditDataset) {
-        delegate.addPatientParticipantObject(auditDataset.getUniquePatientParticipantObjectId(), null, null, resolveLifeCycle(auditDataset.getMethod()));
+        delegate.addPatientParticipantObject(
+                auditDataset.getUniquePatientParticipantObjectId(),
+                null,
+                null,
+                resolveLifeCycle(auditDataset.getMethod()));
         return this;
     }
 
@@ -58,7 +67,8 @@ public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditM
             case GET:
                 return ParticipantObjectDataLifeCycle.Disclosure;
             default:
-                throw new IllegalArgumentException("Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
+                throw new IllegalArgumentException(
+                        "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
         }
     }
 }

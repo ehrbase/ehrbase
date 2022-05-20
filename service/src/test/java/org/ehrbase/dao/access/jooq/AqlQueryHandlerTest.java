@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.jooq;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-
 public class AqlQueryHandlerTest {
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
@@ -43,17 +41,22 @@ public class AqlQueryHandlerTest {
     @Test
     @Ignore("see https://github.com/ehrbase/project_management/issues/375")
     public void process() throws Exception {
-        AqlQueryHandler cut = new AqlQueryHandler(I_DomainAccessTest.buildDomainAccess(DSLContextHelper.buildContext(ctx -> {
-            MockResult[] mock = new MockResult[1];
-            mock[0] = new MockResult(0, null);
-            return mock;
-        }), testFolder, cacheRule), mock(ExternalTerminologyValidation.class));
+        AqlQueryHandler cut = new AqlQueryHandler(
+                I_DomainAccessTest.buildDomainAccess(
+                        DSLContextHelper.buildContext(ctx -> {
+                            MockResult[] mock = new MockResult[1];
+                            mock[0] = new MockResult(0, null);
+                            return mock;
+                        }),
+                        testFolder,
+                        cacheRule),
+                mock(ExternalTerminologyValidation.class));
         AqlResult aqlResult = cut.process("select e/ehr_id/value from EHR e LIMIT 10 OFFSET 5", null);
         assertThat(aqlResult.getExplain().get(0)).hasSize(3).contains("10", "5");
-        assertThat(aqlResult.getExplain().get(0).get(0).replaceAll("alias_\\d+", "")).isEqualToIgnoringWhitespace(
-                        "select \"ehr_join\".\"id\" as \"/ehr_id/value\" " +
-                        "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" " +
-                        "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" " +
-                        "limit ? offset ?");
+        assertThat(aqlResult.getExplain().get(0).get(0).replaceAll("alias_\\d+", ""))
+                .isEqualToIgnoringWhitespace("select \"ehr_join\".\"id\" as \"/ehr_id/value\" "
+                        + "from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" "
+                        + "right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" "
+                        + "limit ? offset ?");
     }
 }

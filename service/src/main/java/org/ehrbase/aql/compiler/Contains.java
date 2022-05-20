@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.compiler;
 
+import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.ehrbase.aql.containment.ContainPropositions;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.service.KnowledgeCacheService;
-
-import java.util.Set;
 
 /**
  * main entry point for CONTAINS clause resolution
@@ -34,7 +32,7 @@ public class Contains {
     private ParseTree parseTree;
     private IdentifierMapper identifierMapper;
 
-    //list of templates satisfying the CONTAINS expressions
+    // list of templates satisfying the CONTAINS expressions
     private Set<String> templates;
 
     private final KnowledgeCacheService knowledgeCache;
@@ -58,7 +56,6 @@ public class Contains {
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(queryCompilerPass1, parseTree);
 
-
         ContainPropositions containPropositions = queryCompilerPass1.containPropositions();
         containPropositions.evaluate(knowledgeCache);
         this.templates = containPropositions.resolvedTemplates();
@@ -69,8 +66,7 @@ public class Contains {
         return this;
     }
 
-
-    //for tests purpose
+    // for tests purpose
     public Set<String> getTemplates() {
         return templates;
     }
@@ -86,5 +82,4 @@ public class Contains {
     public boolean hasContains() {
         return hasContains;
     }
-
 }

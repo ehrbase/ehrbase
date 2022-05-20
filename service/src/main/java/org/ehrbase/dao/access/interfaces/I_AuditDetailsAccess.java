@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.generic.AuditDetails;
+import java.sql.Timestamp;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-
-import java.sql.Timestamp;
-import java.util.UUID;
 
 public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
@@ -50,7 +48,12 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
      * @return new access instance
      * @throws InternalServerException if creating or retrieving system failed
      */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
+    static I_AuditDetailsAccess getInstance(
+            I_DomainAccess dataAccess,
+            UUID systemId,
+            UUID committer,
+            I_ConceptAccess.ContributionChangeType changeType,
+            String description) {
         return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
     }
 
@@ -81,11 +84,13 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
      * @param description Optional
      * @return Indicating success of operation
      */
-    Boolean update(UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
+    Boolean update(
+            UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
 
     UUID getId();
 
     void setSystemId(UUID systemId);
+
     UUID getSystemId();
 
     /**

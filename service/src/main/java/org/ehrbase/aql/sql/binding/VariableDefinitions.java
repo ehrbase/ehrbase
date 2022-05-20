@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,13 +17,12 @@
  */
 package org.ehrbase.aql.sql.binding;
 
+import java.util.Iterator;
+import java.util.List;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 
-import java.util.Iterator;
-import java.util.List;
-
-public class VariableDefinitions implements Iterator<I_VariableDefinition>{
+public class VariableDefinitions implements Iterator<I_VariableDefinition> {
 
     private final List<I_VariableDefinition> variableDefinitionList;
     private Iterator<I_VariableDefinition> iterator;
@@ -33,7 +32,7 @@ public class VariableDefinitions implements Iterator<I_VariableDefinition>{
         iterator = variableDefinitionList.iterator();
     }
 
-    public Iterator<I_VariableDefinition> iterator(){
+    public Iterator<I_VariableDefinition> iterator() {
         return variableDefinitionList.iterator();
     }
 
@@ -47,37 +46,35 @@ public class VariableDefinitions implements Iterator<I_VariableDefinition>{
         return iterator.next();
     }
 
-    public boolean exists(I_VariableDefinition variableDefinition){
+    public boolean exists(I_VariableDefinition variableDefinition) {
         Iterator<I_VariableDefinition> variableDefinitionIterator = variableDefinitionList.iterator();
 
-        while (variableDefinitionIterator.hasNext()){
-            if (variableDefinitionIterator.next().equals(variableDefinition)){
+        while (variableDefinitionIterator.hasNext()) {
+            if (variableDefinitionIterator.next().equals(variableDefinition)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean isDistinct(String variableAlias){
+    public boolean isDistinct(String variableAlias) {
         Iterator<I_VariableDefinition> variableDefinitionIterator = variableDefinitionList.iterator();
 
-        while (variableDefinitionIterator.hasNext()){
+        while (variableDefinitionIterator.hasNext()) {
             I_VariableDefinition variableDefinition = variableDefinitionIterator.next();
-            if (variableDefinition instanceof VariableDefinition && variableDefinition.getAlias().equals(variableAlias))
-                return variableDefinition.isDistinct();
+            if (variableDefinition instanceof VariableDefinition
+                    && variableDefinition.getAlias().equals(variableAlias)) return variableDefinition.isDistinct();
         }
         return false;
     }
 
-    public boolean hasDistinctOperator(){
+    public boolean hasDistinctOperator() {
         Iterator<I_VariableDefinition> variableDefinitionIterator = variableDefinitionList.iterator();
 
-        while (variableDefinitionIterator.hasNext()){
+        while (variableDefinitionIterator.hasNext()) {
             I_VariableDefinition variableDefinition = variableDefinitionIterator.next();
-            if (variableDefinition.isDistinct())
-                return true;
+            if (variableDefinition.isDistinct()) return true;
         }
         return false;
     }
-
 }

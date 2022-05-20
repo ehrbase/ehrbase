@@ -1,5 +1,7 @@
 /*
- * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.jooq.binding;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Types;
+import java.util.Objects;
+import java.util.Optional;
 import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.jooq.Binding;
 import org.jooq.BindingGetResultSetContext;
@@ -30,12 +36,6 @@ import org.jooq.Converter;
 import org.jooq.JSONB;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
-
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.Types;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Binding <T> = Object (unknown DB type), and <U> = {@link ItemStructure} (user type) for "other_details" column (of STATUS table).
@@ -96,8 +96,7 @@ public class OtherDetailsJsonbBinder implements Binding<JSONB, ItemStructure> {
         // between jOOQ generating bind variables or inlined literals.
         if (ctx.render().paramType() == ParamType.INLINED)
             ctx.render().visit(DSL.inline(ctx.convert(converter()).value())).sql("::jsonb");
-        else
-            ctx.render().sql("?::jsonb");
+        else ctx.render().sql("?::jsonb");
     }
 
     /**
@@ -119,7 +118,9 @@ public class OtherDetailsJsonbBinder implements Binding<JSONB, ItemStructure> {
      */
     @Override
     public void set(BindingSetStatementContext<ItemStructure> ctx) throws SQLException {
-        ctx.statement().setString(ctx.index(), Objects.toString(ctx.convert(converter()).value(), null));
+        ctx.statement()
+                .setString(
+                        ctx.index(), Objects.toString(ctx.convert(converter()).value(), null));
     }
 
     /**
