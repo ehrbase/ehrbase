@@ -120,7 +120,7 @@ Composition Datatyps Validation (Conformance Testing)
   - [4.1. Reference UML](#41-reference-uml)
   - [4.2. quantity.date_time.DV_DURATION](#42-quantitydate_timedv_duration)
     - [4.2.1. Test case DV_DURATION open constraint](#421-test-case-dv_duration-open-constraint)
-    - [4.2.2. Test case DV_DURATION fields allowed constraint](#422-test-case-dv_duration-fields-allowed-constraint)
+    - [4.2.2. Test case DV_DURATION xxx_allowed field constraints](#422-test-case-dv_duration-xxx_allowed-field-constraints)
     - [4.2.3. Test case DV_DURATION range constraint](#423-test-case-dv_duration-range-constraint)
     - [4.2.4. Test case DV_DURATION fields allowed and range constraints combined](#424-test-case-dv_duration-fields-allowed-and-range-constraints-combined)
   - [4.3. quantity.date_time.DV_TIME](#43-quantitydate_timedv_time)
@@ -1587,7 +1587,7 @@ The `xxx_allowed` fields are defined in the `C_DURATION` class, which allows to 
 
 ### 4.2.3. Test case DV_DURATION range constraint
 
-Note to compare, the DV_DURATION.magnitude() should be used, which will calculate the seconds in the duration based on the avg. days in year and days in month.
+In order to compare durations, the DV_DURATION.magnitude() should be used, which will calculate the seconds in the duration based on the avg. days in year and days in month. If the SUT does calculate the `magnitude()` in a different way, it should be stated in the Conformance Statement Document.
 
 | value             | range.lower    | range.upper    | expected | violated constraints   |
 |-------------------|----------------|----------------|----------|------------------------|
@@ -1609,24 +1609,27 @@ Note to compare, the DV_DURATION.magnitude() should be used, which will calculat
 | P2W               | P0W            | P3W            | accepted |                        |
 | P2W               | P2W            | P3W            | accepted |                        |
 | P2W               | P3W            | P3W            | rejected | C_DURATION.range.lower |
+| P2W3D             | P3W            | P4W            | rejected | C_DURATION.range.lower |
+| P2W8D             | P3W            | P4W            | accepted |                        |
+| P2W15D            | P3W            | P4W            | rejected | C_DURATION.range.upper |
 
 
 ### 4.2.4. Test case DV_DURATION fields allowed and range constraints combined
 
 In the AOM specification it is allowed to combine allowed and range: "Both range and the constraint pattern can be set at the same time, corresponding to the ADL constraint PWD/|P0W..P50W|. (https://specifications.openehr.org/releases/AM/Release-2.2.0/AOM1.4.html#_c_duration_class)"
 
-| value              | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | range.lower | range.upper | expected | violated constraints     |
-|--------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|----------------------------|-------------|-------------|----------|--------------------------|
-| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | accepted |                                     |
-| P1Y                | true          | true           | true          | true         | true          | true            | true            | ???                        | P2Y         | P50Y        | rejected | C_DURATION.range.lower                                 |
-| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | P0Y         | P50Y        | rejected | C_DURATION.years_allowed                         |
-| P1Y                | false         | true           | true          | true         | true          | true            | true            | ???                        | P2Y         | P50Y        | rejected | C_DURATION.years_allowed, C_DURATION.range.lower |
-| P1Y3M              | true          | true           | true          | true         | true          | true            | Ftrue            | ???                        | P1Y         | P50Y        | accepted |                                     |
-| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P1Y         | P50Y        | rejected | C_DURATION.months_allowed                        |
-| P1Y3M              | true          | true           | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.lower                                 |
-| P1Y3M              | true          | false          | true          | true         | true          | true            | true            | ???                        | P3Y         | P50Y        | rejected | C_DURATION.months_allowed. C_DURATION.lower      |
+| value             | years_allowed | months_allowed | weeks_allowed | days_allowed | hours_allowed | minutes_allowed | seconds_allowed | fractional_seconds_allowed | range.lower | range.upper | expected | violated constraints                             |
+|-------------------|---------------|----------------|---------------|--------------|---------------|-----------------|-----------------|----------------------------|-------------|-------------|----------|--------------------------------------------------|
+| P1Y               | true          | true           | true          | true         | true          | true            | true            | true                       | P0Y         | P50Y        | accepted |                                                  |
+| P1Y               | true          | true           | true          | true         | true          | true            | true            | true                       | P2Y         | P50Y        | rejected | C_DURATION.range.lower                           |
+| P1Y               | false         | true           | true          | true         | true          | true            | true            | true                       | P0Y         | P50Y        | rejected | C_DURATION.years_allowed                         |
+| P1Y               | false         | true           | true          | true         | true          | true            | true            | true                       | P2Y         | P50Y        | rejected | C_DURATION.years_allowed, C_DURATION.range.lower |
+| P1Y3M             | true          | true           | true          | true         | true          | true            | true            | true                       | P1Y         | P50Y        | accepted |                                                  |
+| P1Y3M             | true          | false          | true          | true         | true          | true            | true            | true                       | P1Y         | P50Y        | rejected | C_DURATION.months_allowed                        |
+| P1Y3M             | true          | true           | true          | true         | true          | true            | true            | true                       | P3Y         | P50Y        | rejected | C_DURATION.lower                                 |
+| P1Y3M             | true          | false          | true          | true         | true          | true            | true            | true                       | P3Y         | P50Y        | rejected | C_DURATION.months_allowed. C_DURATION.lower      |
+| PT2M43.5S         | true          | true           | true          | true         | true          | true            | true            | false                      | PT1M        | PT60M       | rejected | C_DURATION.fractional_seconds_allowed            |
 
-> NOTE: the `fractional_seconds_allowed` field is not so clear since the ISO8601 would allow fractions on the lowest order component, which means if the duration lowest component is `minutes` then it's valid to have `5.23M`. Also consider in programming languages like Java, a duration string with fractions on other fields than seconds can't be parsed (for instance using https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-)
 
 
 ## 4.3. quantity.date_time.DV_TIME
