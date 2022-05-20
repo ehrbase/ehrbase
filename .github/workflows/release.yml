@@ -12,6 +12,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Install the sdk the local repo so maven version plugin can find them
+      - name: Checkout SDK main
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ehrbase/openEHR_SDK
+          ref: master
+          # This will be used by git in all further steps
+          # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: install sdk main
+        run: mvn install -Dmaven.test.skip=true
+      # Install the sdk the local repo so maven version plugin can find them
+      - name: Checkout SDK dev
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ehrbase/openEHR_SDK
+          ref: develop
+          # This will be used by git in all further steps
+          # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: install sdk dev
+        run: mvn install -Dmaven.test.skip=true
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -44,7 +69,12 @@ jobs:
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
           #Update sdk version latest release 
           mvn versions:update-properties  -Dincludes=org.ehrbase.openehr.sdk:*
+          sdk_version=$( grep -oPm1 "(?<=<ehrbase.sdk.version>)[^<]+" "bom/pom.xml")
+          echo ${sdk_version}
           #edit changelog
+          replace="0,/Changed/{s/Changed/Changed \n - Upgrade openEHR_SDK to version ${sdk_version} see https:\/\/github.com\/ehrbase\/openEHR_SDK\/blob\/develop\/CHANGELOG.md/}"
+          echo "${replace}"
+          sed -i "${replace}" CHANGELOG.md
           replace="s/\[unreleased\]/\[${VERSION}\]/"
           sed -i ${replace} CHANGELOG.md
           replace="s/...HEAD/\...v${VERSION}/"
@@ -104,7 +134,7 @@ jobs:
           #update sdk to latest snapshot
           mvn versions:update-properties  -Dincludes=org.ehrbase.openehr.sdk:*  -DallowSnapshots=true
           #edit changelog
-          sed -i '5i ## [unreleased]\n ### Added \n ### Fixed \n' CHANGELOG.md
+          sed -i '7i ## [unreleased]\n ### Added\n ### Changed \n ### Fixed \n' CHANGELOG.md
           replace="$ a \[unreleased\]: https:\/\/github.com\/ehrbase\/ehrbase\/compare\/v$VERSION...HEAD"
           sed -i "${replace}" CHANGELOG.md
           git add -A
