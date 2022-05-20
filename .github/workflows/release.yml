@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Install the sdk the local repo so maven version plugin can find them
+      # Install the sdk main in the local repo so maven version plugin can find them
       - name: Checkout SDK main
         uses: actions/checkout@v3
         with:
@@ -24,7 +24,7 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - name: install sdk main
         run: mvn install -Dmaven.test.skip=true
-      # Install the sdk the local repo so maven version plugin can find them
+      # Install the sdk dev in the local repo so maven version plugin can find them
       - name: Checkout SDK dev
         uses: actions/checkout@v3
         with:
