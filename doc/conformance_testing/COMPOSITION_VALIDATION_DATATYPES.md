@@ -368,7 +368,7 @@ In this case the DV_CODED_TEXT is constrained by a CONSTRAINT_REF. For the CONST
 
 ## 2.4. text.DV_PARAGRAPH
 
-// TBD: this DB is not used or supported by modeling tools, see https://discourse.openehr.org/t/is-dv-paragraph-used/2187
+Since this DB is not used or supported by modeling tools, this conformance test suite doesn't define test cases for valdiating this data type. For more info, see https://discourse.openehr.org/t/is-dv-paragraph-used/2187
 
 
 # 3. quantity
@@ -545,7 +545,7 @@ The C_DV_QUANTITY is present in the OPT and has a value for `property`, but does
 
 ## 3.6. quantity.DV_PROPORTION
 
-The DV_PROPORTION is contrained by a C_COMPLEX_OBJECT, which internally has C_REAL constraints for `numerator` and `denominator`. C_REAL defines two types of constraints: range and list of values. Though current modeling tools only allow range contraints. For the `type` atribute, a C_INTEGER constraint is used, which can hold list and range constraints but modeling tools only use the list.
+The DV_PROPORTION is constrained by a C_COMPLEX_OBJECT, which internally has C_REAL constraints for `numerator` and `denominator`. C_REAL defines two types of constraints: range and list of values. Though current modeling tools only allow range constraints. For the `type` atribute, a C_INTEGER constraint is used, which can hold list and range constraints but modeling tools only use the list.
 
 This type has intrinsic constraints that should be semantically consistent depending on the value of the numerator, denominator, precision and type attributes. For instance, this if type = 2, the denominator value should be 100 and can't be anything else. In te table below we express the valid combinations of attribute values.
 
@@ -814,7 +814,7 @@ The DV_INTERVAL<DV_DATE_TIME> constraint is {*}.
 
 > NOTE: the C_DATE_TIME has invariants that define if a higher precision component is optional or prohibited, lower precision components should be optional or prohibited. In other words, if `month` is optional, `day`, `hours`, `minutes`, etc. are optional or prohibited. These invariants should be checked in an archetype editor and template editor, we consider the following tests to follow those rules without checking them, since that is related to archetype/template validation, not with data validation.
 
-> NOTE: if different components of each lower/upper date time expression fail the validity constraint for `mandatory`, the only required contraint violated to be reported is the higher precision one, since it implies the lower precision components will also fail. For instance if the hour, second and millisecond are `mandatory`, and the corresponding date time expression doesn't have hour, it is accepted if the reported constraints violated is only the hour_validity, and optionally the SUT can report the minute_validity, second_validity and millisecond_validity constraints as violated too. In the data sets below we show all the constraints violated.
+> NOTE: if different components of each lower/upper date time expression fail the validity constraint for `mandatory`, the only required constraint violated to be reported is the higher precision one, since it implies the lower precision components will also fail. For instance if the hour, second and millisecond are `mandatory`, and the corresponding date time expression doesn't have hour, it is accepted if the reported constraints violated is only the hour_validity, and optionally the SUT can report the minute_validity, second_validity and millisecond_validity constraints as violated too. In the data sets below we show all the constraints violated.
 
 | lower      | upper      | lower_unbounded | upper_unbounded | lower_included | upper_included | month_val. (lower) | day_val. (lower) | month_val. (upper) | day_val. (upper) | hour_val. (lower) | minute_val. (lower) | second_val. (lower) | millisecond_val. (lower) | timezone_val. (lower) | hour_val. (upper) | minute_val. (upper) | second_val. (upper) | millisecond_val. (upper) | timezone_val. (upper) | expected | constraints violated          |
 |:----------:|:----------:|-----------------|-----------------|----------------|----------------|--------------------|------------------|--------------------|------------------|-------------------|---------------------|---------------------|-------------------------|-----------------------|-------------------|---------------------|---------------------|--------------------------|-----------------------|----------|-------------------------------|
@@ -1034,15 +1034,16 @@ TBD: combinations of other values for validity.
 
 | lower         | upper         | lower_unbounded | upper_unbounded | lower_included | upper_included | C_TIME.range (lower)      | C_TIME.range (upper)       | expected | constraints violated      |
 |:-------------:|:-------------:|-----------------|-----------------|----------------|----------------|---------------------------|----------------------------|----------|---------------------------|
-| T10           | T11           | false           | false           | true           | true           | T09..T11                  | T10..T12                   | accepted |    |
-| T10:00        | T11:00        | false           | false           | true           | true           | T09:00..T11:00            | T10:00..T12:00             | accepted |    |
-| T10:00:00     | T11:00:00     | false           | false           | true           | true           | T09:00:00..T11:00:00      | T10:00:00..T12:00:00       | accepted |    |
-| T10:00:00.5   | T11:00:00.5   | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0  | T10:00:00.0..T12:00:00.0   | accepted |    |
-| T10:00:00.5Z  | T11:00:00.5Z  | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0Z | T10:00:00.0Z..T12:00:00.0Z | accepted |    |
-| T10           | T11           | false           | false           | true           | true           | T11..T12                  | T11..T12                   | rejected | C_TIME.range (lower) |
-| T10           | T12           | false           | false           | true           | true           | T10..T11                  | T10..T11                   | rejected | C_TIME.range (upper) |
+| T10           | T11           | false           | false           | true           | true           | T09..T11                  | T10..T12                   | accepted |                           |
+| T10:00        | T11:00        | false           | false           | true           | true           | T09:00..T11:00            | T10:00..T12:00             | accepted |                           |
+| T10:00:00     | T11:00:00     | false           | false           | true           | true           | T09:00:00..T11:00:00      | T10:00:00..T12:00:00       | accepted |                           |
+| T10:00:00.5   | T11:00:00.5   | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0  | T10:00:00.0..T12:00:00.0   | accepted |                           |
+| T10:00:00.5Z  | T11:00:00.5Z  | false           | false           | true           | true           | T09:00:00.0..T11:00:00.0Z | T10:00:00.0Z..T12:00:00.0Z | accepted |                           |
+| T10           | T11           | false           | false           | true           | true           | T11..T12                  | T11..T12                   | rejected | C_TIME.range (lower)      |
+| T10           | T12           | false           | false           | true           | true           | T10..T11                  | T10..T11                   | rejected | C_TIME.range (upper)      |
+| null          | T11           | true            | false           | false          | true           | T09..T11                  | T10..T12                   | rejected | C_TIME.range (lower)      |
+| T10           | null          | false           | true            | true           | false          | T09..T11                  | T10..T12                   | accepted | C_TIME.range (upper)      |
 
-TBD: more fail cases
 
 
 ## 3.12. quantity.DV_INTERVAL<DV_DURATION>
@@ -1636,9 +1637,9 @@ In the AOM specification it is allowed to combine allowed and range: "Both range
 
 DV_TIME constraints are defined by C_TIME, which specifies two types of constraints: validity kind and range. The validity kind constraints are expressed in terms of mandatory/optional/prohibited flags for each part of the time expression: minute, second, millisecond and timezone. The range constraint is an Interval<Time>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
 
-> NOTE: the Time class mentioned in the AOM specification is actually the [Iso8601_date_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_iso8601_date_time_class) class. This is a known bug in the specs.
+> NOTE: the Time class mentioned in the AOM 1.4 specification is actually the [Iso8601_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_iso8601_time_class) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs. So in C_TIME, range being an Interval<Time> should be an Interval<Iso8601_time>.
 
-Note that time expressions in openEHR are considered an absolute point in time from the start of the current day, that is `T10` represents `10:00:00.000` AM in the local timezone.
+Time expressions in openEHR are considered an absolute point in time from the start of the current day, that is `T10` represents `10:00:00.000` AM in the local timezone.
 
 ### 4.3.1. Test case DV_TIME open constraint
 
@@ -1657,39 +1658,39 @@ This case is when DV_TIME matches {*}.
 > NOTE 4: if no timezone information is included, the time expression is considered `local time`.
 
 > NOTE 5: one clarification about the seconds fraction in ISO8601 is that is not exactly an expression of milliseconds as the AOM specification implies considering the `millisecond_validity`
-> fields. For instance `.5` represents half a second, which is indeed 500 milliseconds but `.5` is not syntactically `500 ms`, or `.333333` represents one third of a second, and syntactically
+> field. For instance `.5` represents half a second, which is indeed 500 milliseconds but `.5` is not syntactically `500 ms`, or `.333333` represents one third of a second, and syntactically
 > `333333` goes beyond the precision of milliseconds which is just 3 digits long. Consider `.33333` is totally valid in ISO8601 for the seconds fraction (see NOTE 2).
 
-| value                  | expected | violated constraints          |
-|------------------------|----------|-------------------------------|
-| NULL                   | rejected | RM/Schema: value is mandatory |
-| ''                     | rejected | ISO8601: at least minutes are required |
-| T10                    | accepted |                               |
-| T48                    | rejected | ISO8601: hours in 0..23       |
-| T10:30                 | accepted |                               |
-| T10:95                 | rejected | ISO8601: minutes in 0..59     |
-| T10:30:47              | accepted |                               |
-| T10:30:78              | rejected | ISO8601: seconds in 0..59     |
-| T10:30:47.5            | accepted |                               |
-| T10:30:47.333          | accepted |                               |
-| T10:30:47.333333       | accepted |                               |
-| T10:30:47Z             | accepted |                               |
-| T10:30:78Z             | rejected | ISO8601: seconds in 0..59     |
-| T10:30:47.5Z           | accepted |                               |
-| T10:30:47.333Z         | accepted |                               |
-| T10:30:47.333333Z      | accepted |                               |
-| T10:30:47-03:00        | accepted |                               |
-| T10:30:78-03:00        | rejected | ISO8601: seconds in 0..59     |
-| T10:30:47.5-03:00      | accepted |                               |
-| T10:30:47.333-03:00    | accepted |                               |
-| T10:30:47.333333-03:00 | accepted |                               |
-| T10.5                  | rejected | [openEHR doesn't allow fractional hours in partial time expressions](https://specifications.openehr.org/releases/BASE/latest/foundation_types.html#_primitive_time_types), even though it's allowed by ISO 8601 |
-| T10:05.5               | rejected | [openEHR doesn't allow fractional minutes in partial time expressions](https://specifications.openehr.org/releases/BASE/latest/foundation_types.html#_primitive_time_types), even though it's allowed by ISO 8601 |
+| value                  | expected | violated constraints                 |
+|------------------------|----------|--------------------------------------|
+| NULL                   | rejected | RM/Schema: value is mandatory        |
+| ''                     | rejected | ISO8601: at least hours are required |
+| T10                    | accepted |                                      |
+| T48                    | rejected | ISO8601: hours in 0..23              |
+| T10:30                 | accepted |                                      |
+| T10:95                 | rejected | ISO8601: minutes in 0..59            |
+| T10:30:47              | accepted |                                      |
+| T10:30:78              | rejected | ISO8601: seconds in 0..59            |
+| T10:30:47.5            | accepted |                                      |
+| T10:30:47.333          | accepted |                                      |
+| T10:30:47.333333       | accepted |                                      |
+| T10:30:47Z             | accepted |                                      |
+| T10:30:78Z             | rejected | ISO8601: seconds in 0..59            |
+| T10:30:47.5Z           | accepted |                                      |
+| T10:30:47.333Z         | accepted |                                      |
+| T10:30:47.333333Z      | accepted |                                      |
+| T10:30:47-03:00        | accepted |                                      |
+| T10:30:78-03:00        | rejected | ISO8601: seconds in 0..59            |
+| T10:30:47.5-03:00      | accepted |                                      |
+| T10:30:47.333-03:00    | accepted |                                      |
+| T10:30:47.333333-03:00 | accepted |                                      |
+| T10.5                  | rejected | [openEHR doesn't allow fractional hours in partial time expressions](https://specifications.openehr.org/releases/BASE/latest/foundation_types.html#_primitive_time_types), an openEHR exception over the ISO 8601 spec |
+| T10:05.5               | rejected | [openEHR doesn't allow fractional minutes in partial time expressions](https://specifications.openehr.org/releases/BASE/latest/foundation_types.html#_primitive_time_types), an openEHR exception over the ISO 8601 spec |
 
 
 ### 4.3.2. Test case DV_TIME validity kind constraint
 
-> NOTE: the C_TIME has invariants that define if a higher precision component is optional or prohibited, lower precision components should be optional or prohibited. In other words, if `hour` is optional or prohibited, `minute`, `second` and `millisecond` should be optional or prohibited. These invariants should be checked in an archetype editor and template editor, we consider the following tests to follow those rules without checking them, since that is related to archetype/template validation, not with data validation.
+> NOTE: the C_TIME has invariants that define if a lower precision component is optional or prohibited (e.g. minutes) then the higher precision components (e.g. seconds) should be optional or prohibited. In other words, if `minutes` is optional then `seconds` should be optional or prohibited. These invariants should be checked in an archetype/template editor, since that is part of archetype/template validation. Here we consider the archetypes and templates used are valid.
 
 | value                  | minute_validity | second_validity | millisecond_validity | timezone_validity | expected | violated constraints               |
 |------------------------|-----------------|-----------------|----------------------|-------------------|----------|------------------------------------|
@@ -1781,11 +1782,14 @@ This case is when DV_TIME matches {*}.
 
 The C_TIME.range constraint is an Interval<Time>, which are both [Foundation Types](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html).
 
-> NOTE: the Time class mentioned in the AOM specification is actually the [Iso8601_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_time_types) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs.
+> NOTE: the Time class mentioned in the AOM 1.4 specification is actually the [Iso8601_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_iso8601_time_class) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs. So in C_TIME, range being an Interval<Time> should be an Interval<Iso8601_time>.
 
-TBD: we need to clarify if T10 is referring to the whole 10th hour or to 10:00:00 omitting the rest of the time components, because it could be a similar case as we have with the date expressions: can only compare expressions that have exactly the same components.
+> NOTE: there is an open issue in the comparability of two date/time/datetime expressions with different precisions but shared values for the components they contain. For instance, in ISO 8601-1_2019, the expression `T23:20` is referring to a specific hour and minute, and `T23` is referring to a specific hour. Then, numerically, it's not possible to say if `T23 < T23:20` or if `T23 > T23:20`. That is because the expressions represent different time components, which are really intervals of time, and one interval contains the oher (the 23rd hour of the day contains the minute 23:30). Though when the precisions are not the same but there are no shared components, then the expressions are comparable, for instance we can say `T22 < T2320`, because all the minutes and seconds in the 22nd hour of the day come before the minute 23:20. Similarly we can say `T22:45 < T23`, since the whole minute 22:45 comes before all minutes and seconds in the 23rd hour of the day. This issue is currently being discussed in the openEHR SEC because it changes the definition of the method is_strictly_comparable_to() for DV_DATE, DV_TIME and DV_DATE_TIME. This is commented here because this test case needs to compare time expressions to be able to check the range constraint.
+>
+> Besides noting that reduced precision time expressions represent an interval or range when those reduced precision time expressions are used as limits for an openEHR Interval, then it seems reasonable to interpret the whole range as the interval defined by the beginning of the lower limit and the end of the upper limit. For instance `T11` represents the whole 11th hour of the day, from start to end, and `T23` represents the whole 23rd hour of the day from start to end, then `T11..T23` represents all hours, minutes and seconds from the start of hour 11 to the end of hour 23 (yes the end not the start!). So something that might be counterintuitive by using this interpretation is: in this notation is `T23:30` would be contained in the `T11..T23` interval, though it is not strictly comparable to `T23`.
+> 
+> More about these considerations in the [openEHR discourse](https://discourse.openehr.org/t/conformance-data-validation-question-counterintuitive-c-time-range-constraints/2637).
 
-TBD: there is an open question about strictly comparability between time expressions with different components. Is "T10" comparable to "T00:00"?
 
 | value                  | C_TIME.range               | expected | violated constraints          |
 |------------------------|----------------------------|----------|-------------------------------|
@@ -2030,7 +2034,7 @@ Following those rules, will include test data sets that break the openEHR rules,
 | value                  | expected | violated constraints          |
 |------------------------|----------|-------------------------------|
 | NULL                   | rejected | RM/Schema: value is mandatory |
-| ''                     | rejected | ISO8601: at least year is required <sup id="empty_date">[1](#footnote1)</sup> |
+| ''                     | rejected | openEHR RM/AOM: at least year is required <sup id="empty_date">[1](#footnote1)</sup> |
 | 2021                   | accepted |                               |
 | 2021-10                | accepted |                               |
 | 2021-00                | rejected | ISO8601: month in 01..12      |
@@ -2042,7 +2046,7 @@ Following those rules, will include test data sets that break the openEHR rules,
 | 1985-W15-5             | rejected | week dates are allowed in ISO 8601-1 but are not supported in openEHR (see exceptions above) |
 
 
-<b id="footnote1">1</b>: this is the author's interpretation of a minimal valid date in the context of openEHR noting the description of [C_DATE](https://specifications.openehr.org/releases/AM/Release-2.2.0/AOM1.4.html#_c_date_class): "There is no validity flag for ‘year’, since it must always be by definition mandatory in order to have a sensible date at all.". Though the ISO standard seems to allow partial year expressions. [↩](#empty_date)
+<b id="footnote1">1</b>: this is the author's interpretation of a minimal valid date in the context of openEHR noting the description of [C_DATE](https://specifications.openehr.org/releases/AM/Release-2.2.0/AOM1.4.html#_c_date_class): "There is no validity flag for ‘year’, since it must always be by definition mandatory in order to have a sensible date at all.". Though the ISO 8601 standard allows partial year expressions like `198` to denoted the `80's` and `19` to denote de `1900's`. [↩](#empty_date)
 
 
 ### 4.4.2. Test Case DV_DATE validity kind constraint
@@ -2066,7 +2070,6 @@ Following those rules, will include test data sets that break the openEHR rules,
 | 2021-10-24             | optional       | optional       | accepted |                               |
 | 2021-10-24             | mandatory      | prohibited     | rejected | day_validity                  |
 | 2021-10-24             | prohibited     | prohibited     | rejected | month_validity, day_validity  |
-
 
 
 ### 4.4.3. Test Case DV_DATE validity range constraint
@@ -2105,7 +2108,7 @@ DV_DATE_TIME constraints are defined by C_DATE_TIME, which specifies two types o
 | value                            | expected | violated constraints               |
 |----------------------------------|----------|------------------------------------|
 | NULL                             | rejected | RM/Schema: value is mandatory      |
-| ''                               | rejected | ISO8601: at least year is required |
+| ''                               | rejected | openEHR RM/AOM: at least year is required |
 | 2021                             | accepted |                                    |
 | 2021-10                          | accepted |                                    |
 | 2021-00                          | rejected | ISO8601: month in 01..12           |
@@ -2133,7 +2136,7 @@ DV_DATE_TIME constraints are defined by C_DATE_TIME, which specifies two types o
 | 2021-10-24T10:30:47.333-03:00    | accepted |                                    |
 | 2021-10-24T10:30:47.333333-03:00 | accepted |                                    |
 
-> NOTE: to verify the date time expressiosn we used this [regex](https://regex101.com/r/pYQJaW/1), you will note the rejected values don't match the regex.
+> NOTE: to verify the date time expressions we used this [regex](https://regex101.com/r/pYQJaW/1), you will note the rejected values don't match the regex.
 
 
 ### 4.5.2. Test Case DV_DATE_TIME validity kind constraint
@@ -2344,26 +2347,30 @@ The C_DATE_TIME.range constraint is an Interval<Date_time>, which are both [Foun
 > NOTE: the Date_time class mentioned in the AOM specification is actually the [Iso8601_date_time](https://specifications.openehr.org/releases/BASE/Release-1.2.0/foundation_types.html#_time_types) class. This is a [known bug](https://openehr.atlassian.net/browse/SPECPR-380) in the specs.
 
 
-| value                  | C_DATE_TIME.range               | expected | violated constraints          |
-|------------------------|---------------------------------|----------|-------------------------------|
-| 2021                   | 1900..2030                      | accepted |                               |
-| 2021                   | 2022..2030                      | rejected | C_DATE_TIME.range             |
-| 2021                   | 1900..2020                      | rejected | C_DATE_TIME.range             |
+| value                  | C_DATE_TIME.range               | expected | violated constraints          | note         |
+|------------------------|---------------------------------|----------|-------------------------------|--------------|
+| 2021                   | 1900..2030                      | accepted |                               |              |
+| 2021                   | 2022..2030                      | rejected | C_DATE_TIME.range             |              |
+| 2021                   | 1900..2020                      | rejected | C_DATE_TIME.range             |              |
 
-| value                  | C_DATE_TIME.range               | expected | violated constraints          |
-|------------------------|---------------------------------|----------|-------------------------------|
-| 2021-10                | 1900-03..2030-07                | accepted |                               |
-| 2021-10                | 2022-03..2030-07                | rejected | C_DATE_TIME.range             |
-| 2021-10                | 1900-03..2020-07                | rejected | C_DATE_TIME.range             |
+| value                  | C_DATE_TIME.range               | expected | violated constraints          |              |
+|------------------------|---------------------------------|----------|-------------------------------|--------------|
+| 2021-10                | 1900-03..2030-07                | accepted |                               |              |
+| 2021-10                | 2022-03..2030-07                | rejected | C_DATE_TIME.range             |              |
+| 2021-10                | 1900-03..2020-07                | rejected | C_DATE_TIME.range             |              |
 
-| value                  | C_DATE_TIME.range               | expected | violated constraints          |
-|------------------------|---------------------------------|----------|-------------------------------|
-| 2021-10-24             | 1900-03-13..2030-07-09          | accepted |                               |
-| 2021-10-24             | 2022-03-13..2030-07-09          | rejected | C_DATE_TIME.range             |
-| 2021-10-24             | 1900-03-13..2020-07-09          | rejected | C_DATE_TIME.range             |
+| value                  | C_DATE_TIME.range               | expected | violated constraints          |              |
+|------------------------|---------------------------------|----------|-------------------------------|--------------|
+| 2021-10-24             | 1900-03-13..2030-07-09          | accepted |                               |              |
+| 2021-10-24             | 2022-03-13..2030-07-09          | rejected | C_DATE_TIME.range             |              |
+| 2021-10-24             | 1900-03-13..2020-07-09          | rejected | C_DATE_TIME.range             |              |
 
-
-TBD: there is an open question about strictly comparability between time expressions with different components. Is "T10" comparable to "T00:00"?
+| value                  | C_DATE_TIME.range               | expected | violated constraints          |              |
+|------------------------|---------------------------------|----------|-------------------------------|--------------|
+| 2021-05                | 1900..2030                      | accepted |                               |              |
+| 2021-05                | 2022..2030                      | rejected | C_DATE_TIME.range             |              |
+| 2021-05                | 1900..2021                      | accepted |                               | 1900..2021 is interpreted as 1900-01-01..2021-12-31, so 2021-05 is contained in that range |
+| 2021                   | 2020-07..2022-03                | accepted |                               | 2020-07..2022-03 is interpreted as 2020-07-01..2022-03-31, and 2021 is 2021-01-01..2021-12-31, which is fully contained in the range constraint |
 
 | value                  | C_DATE_TIME.range                              | expected | violated constraints          |
 |------------------------|------------------------------------------------|----------|-------------------------------|
