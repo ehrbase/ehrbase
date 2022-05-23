@@ -837,6 +837,7 @@ get revision history of versioned composition of EHR by UID
     &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/revision_history
                         ...         headers={"Accept": "application/json"}
                         Set Test Variable    ${response}    ${resp}
+                        Log     ${response}
 
 
 get version of versioned composition of EHR by UID and time
