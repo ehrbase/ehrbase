@@ -70,6 +70,7 @@ Force Tags      COMPOSITION_get_versioned
 
 
 3. Get Correct Ordered Revision History of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
+    [Tags]      not-ready
     [Documentation]     Testing with two versions like above, but checking the response more thoroughly.
 
     create EHR and commit a composition for versioned composition tests
