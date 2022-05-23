@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH.
+ * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,8 +35,12 @@ import org.springframework.http.HttpMethod;
 public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<CompositionAuditMessageBuilder> {
 
     public CompositionAuditMessageBuilder(AuditContext auditContext, CompositionAuditDataset auditDataset) {
-        super(auditContext, auditDataset, resolveEventActionCode(auditDataset.getMethod()),
-                OpenEhrEventIdCode.COMPOSITION, resolveEventType(auditDataset.getMethod()));
+        super(
+                auditContext,
+                auditDataset,
+                resolveEventActionCode(auditDataset.getMethod()),
+                OpenEhrEventIdCode.COMPOSITION,
+                resolveEventType(auditDataset.getMethod()));
     }
 
     private static EventActionCode resolveEventActionCode(HttpMethod method) {
@@ -69,7 +73,8 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<C
         }
     }
 
-    public CompositionAuditMessageBuilder addCompositionParticipantObjectIdentification(CompositionAuditDataset auditDataset) {
+    public CompositionAuditMessageBuilder addCompositionParticipantObjectIdentification(
+            CompositionAuditDataset auditDataset) {
         delegate.addParticipantObjectIdentification(
                 ParticipantObjectIdTypeCode.URI,
                 auditDataset.getTemplateId(),
@@ -83,7 +88,8 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<C
         return this;
     }
 
-    public CompositionAuditMessageBuilder addPatientParticipantObjectIdentification(CompositionAuditDataset auditDataset) {
+    public CompositionAuditMessageBuilder addPatientParticipantObjectIdentification(
+            CompositionAuditDataset auditDataset) {
         delegate.addPatientParticipantObject(auditDataset.getUniquePatientParticipantObjectId(), null, null, null);
         return this;
     }
@@ -99,7 +105,8 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<C
             case DELETE:
                 return null;
             default:
-                throw new IllegalArgumentException("Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
+                throw new IllegalArgumentException(
+                        "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
         }
     }
 }

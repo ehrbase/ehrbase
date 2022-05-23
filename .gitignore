@@ -217,3 +217,5 @@ vulnerability_analysis.json
 # Docker
 .pgdata
 application/.pgdata
+/plugin_dir/
+/plugin_config_dir/

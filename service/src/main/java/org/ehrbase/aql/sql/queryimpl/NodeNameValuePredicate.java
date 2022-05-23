@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.sql.queryimpl;
 
-import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
-
 import java.util.List;
+import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 
 /**
  * Created by christian on 5/9/2018.
@@ -34,14 +32,13 @@ public class NodeNameValuePredicate {
     }
 
     public List<String> path(List<String> jqueryPath, String nodeId) {
-        //do the formatting to allow name/value node predicate processing
+        // do the formatting to allow name/value node predicate processing
         String predicate = nodePredicate.predicate();
         jqueryPath.add(new NodePredicate(nodeId).removeNameValuePredicate());
-        //encode it to prepare for plpgsql function call: marker followed by the name/value predicate
+        // encode it to prepare for plpgsql function call: marker followed by the name/value predicate
         jqueryPath.add(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER);
         jqueryPath.add(predicate);
 
         return jqueryPath;
     }
-
 }

@@ -46,7 +46,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
     Connect With DB
     check composition admin delete table counts initially
     # preparing and provisioning
-    upload OPT    minimal/minimal_observation.opt
+    Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
     create supernew ehr
     Set Test Variable  ${ehr_id}  ${response.body.ehr_id.value}
@@ -64,7 +64,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
     ...                    (DELETE /ehr/${ehr_id}/composition/${uid}) \n\n
     ...                 2. Delete the same composition again via admin endpoint \n\n
     ...                    (DELETE /admin/ehr/${ehr_id}/composition/${versioned_object_uid} \n\n
-    upload OPT    minimal/minimal_admin.opt
+    Upload OPT    minimal/minimal_admin.opt
     create new EHR (XML)
     commit composition (XML)    minimal/minimal_admin.composition.extdatetimes.xml
     delete composition    ${version_uid}

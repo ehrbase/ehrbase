@@ -29,7 +29,7 @@ Force Tags
 *** Test Cases ***
 Alternative flow 1 update an existing persistent COMPOSITION
 
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
 
     create EHR
 

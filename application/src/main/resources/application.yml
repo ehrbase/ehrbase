@@ -112,13 +112,15 @@ admin-api:
   allowDeleteAll: false
   context-path: /rest/admin
 
+# Logging Properties
 logging:
   level:
-    org.springframework: INFO
-    de.vitasystems: TRACE
-    com.ethercis: DEBUG
-    org.jooq: INFO
-    net.sf.ehcache: TRACE
+    org.ehcache: info
+    org.jooq: info
+    org.jooq.Constants: warn
+    org.springframework: info
+  pattern:
+    console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X]){faint} %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
 
 server:
   # Optional custom server nodename
@@ -135,12 +137,6 @@ server:
   # Option to disable strict invariant validation.
   # disable-strict-validation: true
 
-
-terminology-server:
-  tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
-  codePath: '$["expansion"]["contains"][*]["code"]'
-  systemPath: '$["expansion"]["contains"][*]["system"]'
-  displayPath: '$["expansion"]["contains"][*]["display"]'
 
 # Configuration of actuator for reporting and health endpoints
 management:
@@ -196,7 +192,11 @@ ipf:
 validation:
   external-terminology:
     enabled: false
-
+    provider:
+      fhir:
+        type: FHIR
+        url: https://r4.ontoserver.csiro.au/fhir/
+    
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
   ssl:
@@ -205,3 +205,10 @@ client:
 # JavaMelody
 javamelody:
   enabled: false
+
+#  plugin configuration
+plugin-manager:
+  plugin-dir: ./plugin_dir
+  plugin-config-dir: ./plugin_config_dir
+  enable: false
+  plugin-context-path: /plugin

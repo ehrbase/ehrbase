@@ -89,23 +89,44 @@ check response of 'update EHR' (JSON)
 create new EHR
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
     ...                 DEPENDENCY: `prepare new request session`
+    [Arguments]         ${ehrScape}=False
 
-    &{resp}=            REST.POST    ${baseurl}/ehr
-                        Integer      response status    201
+    IF      '${ehrScape}' == 'False'
+        &{resp}=            REST.POST    ${baseurl}/ehr
+                            Integer      response status    201
 
-                        extract ehr_id from response (JSON)
-                        extract system_id from response (JSON)
+                            extract ehr_id from response (JSON)
+                            extract system_id from response (JSON)
 
-                        # TODO: @WLAD check Github Issue #272
-                        # extract subject_id from response (JSON)
+                            # TODO: @WLAD check Github Issue #272
+                            # extract subject_id from response (JSON)
 
-                        extract ehr_status from response (JSON)
-                        extract ehrstatus_uid (JSON)
+                            extract ehr_status from response (JSON)
+                            extract ehrstatus_uid (JSON)
 
-                        Set Suite Variable    ${response}    ${resp}
+                            Set Suite Variable    ${response}    ${resp}
 
-                        Output Debug Info To Console  # NOTE: won't work with content-type=XML
+                            Output Debug Info To Console  # NOTE: won't work with content-type=XML
+    ELSE
+        &{prms}=            Create Dictionary   subjectId=74777-1259
+                            ...                 subjectNamespace=testIssuer
+                            #...                 modifiable=true
+                            #...                 queryable=true
+                            #...                 otherDetails=not provided
 
+        ${resp}=            POST On Session     ${SUT}   ${ECISURL}/ehr   params=&{prms}
+                            Status Should Be    201
+
+                            extract ehr_id from response (JSON)
+                            extract system_id from response (JSON)
+
+                            extract ehr_status from response (JSON)
+                            extract ehrstatus_uid (JSON)
+
+                            Set Suite Variable    ${response}    ${resp}
+
+                            Output Debug Info To Console  # NOTE: won't work with content-type=XML
+    END
 
 #TODO: @WLAD  rename KW name when refactor this resource file
 create supernew ehr
@@ -310,6 +331,17 @@ retrieve EHR by ehr_id
 
                         Integer     response status         200
 
+Retrieve EHR By Ehr Id (ECIS)
+    [Documentation]     Retrieves EHR with specified ehr_id (ECIS endpoint).
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `ehr_id` e.g.
+    ...                             - `create new EHR`
+    &{headers}      Create Dictionary       Accept=application/json
+    &{resp}=            REST.GET    ${ECISURL}/ehr/${ehr_id}    headers=&{headers}
+
+                        Output Debug Info To Console
+
+                        Integer     response status         200
 
 retrieve EHR by subject_id
     [Documentation]     Retrieves EHR with specified subject_id and namespace.
@@ -322,6 +354,18 @@ retrieve EHR by subject_id
                         Output     response
                         Integer    response status    200
 
+Retrieve EHR By Subject Id And Subject Namespace (ECIS)
+    [Documentation]     Retrieves EHR with specified subject_id and namespace.
+    ...                 DEPENDENCY: `prepare new request session` and keywords that
+    ...                             create and expose an `subject_id` e.g.
+    ...                             - `create new EHR`
+    ...                             - `generate random subject_id`
+    [Arguments]         ${subject_id}=74777-1259      ${subject_namespace}=testIssuer
+    &{headers}      Create Dictionary       Accept=application/json
+    &{resp}=            REST.GET    ${ECISURL}/ehr?subjectId=${subject_id}&subjectNamespace=${subject_namespace}
+    ...     headers=&{headers}
+                        Output     response
+                        Integer    response status    200
 
 check content of retrieved EHR (JSON)
 
@@ -494,18 +538,26 @@ get versioned ehr_status of EHR by version uid
                         # ...         headers={"If-Match": null}
                         Set Test Variable    ${response}    ${resp}
 
+Update EHR Status (ECIS)
+    [Documentation]     Sets status of EHR with given `ehr_id` (ECIS endpoint).
+    [Arguments]     ${ehr_id}       ${ehr_status_body}
+    &{resp}         REST.PUT        ${ECISURL}/ehr/${ehr_id}/status    body=${ehr_status_body}
+                    ...     headers={"Content-Type": "application/json"}
+                    ...     headers={"Accept": "application/json"}
+                    Should Be Equal As Strings     ${resp.status}   200
+                    Set Test Variable       ${response}     ${resp}
+                    Output Debug Info To Console
 
 set ehr_status of EHR
     [Documentation]     Sets status of EHR with given `ehr_id`.
     ...                 DEPENDENCY: `prepare new request session` and keywords that
     ...                             create and expose an `ehr_status` as JSON
     ...                             object e.g. `extract ehr_status from response (JSON)`
-
+    #[Arguments]      ${ehrScape}=false
     # NOTE: alternatively u can save json to file and then pass this file to RESTinstance
     # ${ehrstatus}=       Load JSON From File   ehr_status.json
                         # Log To Console    ${ehr_status}
                         # Log To Console    ${ehr_status}[0]
-
     &{resp}=            REST.PUT    ${baseurl}/ehr/${ehr_id}/ehr_status    ${ehr_status}
                         ...         headers={"Content-Type": "application/json"}
                         ...         headers={"Prefer": "return=representation"}
@@ -519,7 +571,6 @@ set ehr_status of EHR
 
                         Output Debug Info To Console
                         Integer    response status    200
-
 
 update ehr_status of fake EHR (w/o body)
 
@@ -552,9 +603,15 @@ update ehr_status of fake EHR (with body)
 extract ehr_id from response (JSON)
     [Documentation]     Extracts ehr_id from response of preceding request.
     ...                 DEPENDENCY: `create new EHR`
-
-    ${ehr_id}=          String       response body ehr_id value
-
+    [Arguments]     ${ehrScape}=false
+    IF      '${ehrScape}' != 'false'
+        ${ehrId}        Collections.Get From Dictionary     ${response.json()}      ehrId
+                        Set Suite Variable    ${ehr_id}     ${ehrId}
+                        Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}
+                        Return From Keyword
+    ELSE
+        ${ehr_id}       String       response body ehr_id value
+    END
                         Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}[0]
 
                         Set Suite Variable    ${ehr_id}     ${ehr_id}[0]
@@ -564,13 +621,97 @@ extract ehr_id from response (JSON)
 extract system_id from response (JSON)
     [Documentation]     Extracts `system_id` from response of preceding request.
     ...                 DEPENDENCY: `create new EHR`
-
-    ${system_id}=       String       response body system_id value
+    [Arguments]     ${ehrScape}=false
+    IF      '${ehrScape}' != 'false'
+        ${system_id}        Collections.Get From Dictionary     ${response.json()}      ehrId
+                        Set Suite Variable    ${ehr_id}     ${ehrId}
+                        Log To Console    \n\tDEBUG OUTPUT - EHR_ID: \n\t${ehr_id}
+                        Return From Keyword
+    ELSE
+        ${system_id}=       String       response body system_id value
 
                         Log To Console    \n\tDEBUG OUTPUT - SYSTEM_ID: \n\t${system_id}[0]
 
                         Set Suite Variable    ${system_id}   ${system_id}[0]
+    END
 
+check that headers location response has
+   [Documentation]      Extract `Protocol, Host, Port` from Location headers response of preceding request.
+   ...                  DEPENDENCY: `create new EHR`
+   ...                  Expected result is the list of arguments, in the following order:
+   ...                  Protocol  Host  Port
+   ...                  Example of arguments: https  example.com  333
+   ...                  Takes a list of 3 arguments, to compare expected with actual location protocol, host, port values.
+   [Arguments]          @{expectedLocationInfo}
+   @{tokenized_uri}         Split String    ${response.headers.Location}   /
+   ${tmpProtocol}          Remove String   ${tokenized_uri}[0]     :
+   ${locationProtocol}      Set Variable     ${tmpProtocol}
+   ${tmpHost}              Set Variable     ${tokenized_uri}[2]
+   @{hostPortList}          Split String     ${tmpHost}     :
+   ${locationHost}          Set Variable        ${hostPortList}[0]
+   ${locationPort}          Set Variable       ${hostPortList}[1]
+   Should be equal as strings    ${expectedLocationInfo}[0]    ${locationProtocol}
+   Should be equal as strings    ${expectedLocationInfo}[1]    ${locationHost}
+   Should be equal as strings    ${expectedLocationInfo}[2]    ${locationPort}
+   Log To Console    \n\tDEBUG OUTPUT - Location Protocol: \n\t${locationProtocol}
+   Log To Console    \n\tDEBUG OUTPUT - Location Host: \n\t${locationHost}
+   Log To Console    \n\tDEBUG OUTPUT - Location Port: \n\t${locationPort}
+   Set Suite Variable    ${locationProtocol}
+   Set Suite Variable    ${locationHost}
+   Set Suite Variable    ${locationPort}
+
+check that composition headers location response has
+   [Documentation]      Extract `Protocol, Host, Port` from Location headers response of preceding request.
+   ...                  DEPENDENCY: `commit composition`
+   ...                  Expected result is the list of arguments, in the following order:
+   ...                  Protocol  Host  Port
+   ...                  Example of arguments: https  example.com  333
+   ...                  Takes a list of 3 arguments, to compare expected with actual location protocol, host, port values.
+   [Arguments]          @{expectedLocationInfo}
+   ${fullLocation}   Set Variable    ${response.headers['Location']}
+   @{tokenized_uri}         Split String    ${fullLocation}   /
+   ${tmpProtocol}          Remove String   ${tokenized_uri}[0]     :
+   ${locationProtocol}      Set Variable     ${tmpProtocol}
+   ${tmpHost}              Set Variable     ${tokenized_uri}[2]
+   @{hostPortList}          Split String     ${tmpHost}     :
+   ${locationHost}          Set Variable        ${hostPortList}[0]
+   ${locationPort}          Set Variable       ${hostPortList}[1]
+   Should be equal as strings    ${expectedLocationInfo}[0]    ${locationProtocol}
+   Should be equal as strings    ${expectedLocationInfo}[1]    ${locationHost}
+   Should be equal as strings    ${expectedLocationInfo}[2]    ${locationPort}
+   Log To Console    \n\tDEBUG OUTPUT - Location Protocol: \n\t${locationProtocol}
+   Log To Console    \n\tDEBUG OUTPUT - Location Host: \n\t${locationHost}
+   Log To Console    \n\tDEBUG OUTPUT - Location Port: \n\t${locationPort}
+   Set Suite Variable    ${locationProtocol}
+   Set Suite Variable    ${locationHost}
+   Set Suite Variable    ${locationPort}
+
+check that composition body location response has
+   [Documentation]      Extract `Protocol, Host, Port` from Location body response of preceding request.
+   ...                  DEPENDENCY: `commit composition`
+   ...                  Expected result is the list of arguments, in the following order:
+   ...                  Protocol  Host  Port
+   ...                  Example of arguments: https  example.com  333
+   ...                  Takes a list of 3 arguments, to compare expected with actual location protocol, host, port values.
+   [Arguments]          @{expectedLocationInfo}
+   ${metaObj}      Get From Dictionary     ${response.json()}      meta
+   ${fullLocation}      Set Variable    ${metaObj['href']['url']}
+   @{tokenized_uri}         Split String    ${fullLocation}   /
+   ${tmpProtocol}          Remove String   ${tokenized_uri}[0]     :
+   ${locationProtocol}      Set Variable     ${tmpProtocol}
+   ${tmpHost}              Set Variable     ${tokenized_uri}[2]
+   @{hostPortList}          Split String     ${tmpHost}     :
+   ${locationHost}          Set Variable        ${hostPortList}[0]
+   ${locationPort}          Set Variable       ${hostPortList}[1]
+   Should be equal as strings    ${expectedLocationInfo}[0]    ${locationProtocol}
+   Should be equal as strings    ${expectedLocationInfo}[1]    ${locationHost}
+   Should be equal as strings    ${expectedLocationInfo}[2]    ${locationPort}
+   Log To Console    \n\tDEBUG OUTPUT - Location Protocol: \n\t${locationProtocol}
+   Log To Console    \n\tDEBUG OUTPUT - Location Host: \n\t${locationHost}
+   Log To Console    \n\tDEBUG OUTPUT - Location Port: \n\t${locationPort}
+   Set Suite Variable    ${locationProtocol}
+   Set Suite Variable    ${locationHost}
+   Set Suite Variable    ${locationPort}
 
 extract subject_id from response (JSON)
     [Documentation]     Extracts subject_id from response of preceding request.

@@ -1,0 +1,10 @@
+{
+    "resourceType": "OperationOutcome",
+    "issue": [
+        {
+            "severity": "error",
+            "code": "not-found",
+            "diagnostics": "[27073ed6-2ce3-440c-a46c-cf15f8aba201]: The code 1111-9 (http://loinc.org:2.72) was not found."
+        }
+    ]
+}

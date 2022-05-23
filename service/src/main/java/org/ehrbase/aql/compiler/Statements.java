@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.compiler;
 
+import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.ehrbase.aql.containment.IdentifierMapper;
@@ -26,9 +26,7 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
 import org.ehrbase.aql.sql.queryimpl.attribute.ehr.EhrResolver;
-import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-
-import java.util.List;
+import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 
 @SuppressWarnings({"java:S3740"})
 public class Statements {
@@ -42,9 +40,9 @@ public class Statements {
 
     private Integer limitAttribute;
     private Integer offsetAttribute;
-    private I_OpenehrTerminologyServer tsAdapter;
+    private ExternalTerminologyValidation tsAdapter;
 
-    public Statements(ParseTree parseTree, IdentifierMapper identifierMapper, I_OpenehrTerminologyServer tsAdapter) {
+    public Statements(ParseTree parseTree, IdentifierMapper identifierMapper, ExternalTerminologyValidation tsAdapter) {
         this.parseTree = parseTree;
         this.identifierMapper = identifierMapper;
         this.tsAdapter = tsAdapter;
@@ -58,9 +56,8 @@ public class Statements {
 
         whereClause = visitWhere();
 
-        //from Contains
-        if (identifierMapper.hasEhrContainer())
-            appendEhrPredicate(identifierMapper.getEhrContainer());
+        // from Contains
+        if (identifierMapper.hasEhrContainer()) appendEhrPredicate(identifierMapper.getEhrContainer());
 
         topAttributes = queryCompilerPass2.getTopAttributes();
         orderAttributes = queryCompilerPass2.getOrderAttributes();
@@ -77,10 +74,9 @@ public class Statements {
     }
 
     private void appendEhrPredicate(FromEhrDefinition.EhrPredicate ehrPredicate) {
-        if (ehrPredicate == null)
-            return;
+        if (ehrPredicate == null) return;
 
-        //append field, operator and value to the where clause
+        // append field, operator and value to the where clause
         if (!whereClause.isEmpty()) {
             whereClause.add("and");
         }
@@ -94,8 +90,16 @@ public class Statements {
     }
 
     public VariableDefinitions getVariables() {
-        boolean containsNonEhrVariable = variables.stream().map(I_VariableDefinition::getIdentifier).map(s -> identifierMapper.getContainer(s)).anyMatch(c -> c != null && !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
-        boolean containsOnlyEhrAttributes = variables.stream().filter(v -> identifierMapper.getContainer(v.getIdentifier()) != null && identifierMapper.getContainer(v.getIdentifier()).getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class))
+        boolean containsNonEhrVariable = variables.stream()
+                .map(I_VariableDefinition::getIdentifier)
+                .map(s -> identifierMapper.getContainer(s))
+                .anyMatch(c -> c != null && !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
+        boolean containsOnlyEhrAttributes = variables.stream()
+                .filter(v -> identifierMapper.getContainer(v.getIdentifier()) != null
+                        && identifierMapper
+                                .getContainer(v.getIdentifier())
+                                .getClass()
+                                .isAssignableFrom(FromEhrDefinition.EhrPredicate.class))
                 .allMatch(v -> EhrResolver.isEhrAttribute(v.getPath()));
 
         // Force distinct If only contains ehr variables
@@ -125,8 +129,7 @@ public class Statements {
         variables.add(variableDefinition);
     }
 
-    public String getParsedExpression(){
+    public String getParsedExpression() {
         return parseTree.getText();
-
     }
 }

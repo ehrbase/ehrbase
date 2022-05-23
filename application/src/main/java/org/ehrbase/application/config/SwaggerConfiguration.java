@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ehrbase.application.config;
 
 import io.swagger.v3.oas.models.ExternalDocumentation;
@@ -54,10 +71,10 @@ public class SwaggerConfiguration {
     @Bean
     public OpenAPI ehrBaseOpenAPI() {
         return new OpenAPI()
-                .info(
-                        new Info()
-                                .title("EHRbase API")
-                                .description("EHRbase implements the [official openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and "
+                .info(new Info()
+                        .title("EHRbase API")
+                        .description(
+                                "EHRbase implements the [official openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and "
                                         + "a subset of the [EhrScape API](https://www.ehrscape.com/). "
                                         + "Additionally, EHRbase provides a custom `status` heartbeat endpoint, "
                                         + "an [Admin API](https://ehrbase.readthedocs.io/en/latest/03_development/07_admin/index.html) (if activated) "
@@ -66,14 +83,12 @@ public class SwaggerConfiguration {
                                         + "Please select the definition in the top right."
                                         + " "
                                         + "Note: The openEHR REST API and the EhrScape API are documented in their official documentation, not here. Please refer to their separate documentation.")
-                                .version("v1")
-                                .license(
-                                        new License()
-                                                .name("Apache 2.0")
-                                                .url("https://github.com/ehrbase/ehrbase/blob/develop/LICENSE.md")))
-                .externalDocs(
-                        new ExternalDocumentation()
-                                .description("EHRbase Documentation")
-                                .url("https://ehrbase.readthedocs.io/"));
+                        .version("v1")
+                        .license(new License()
+                                .name("Apache 2.0")
+                                .url("https://github.com/ehrbase/ehrbase/blob/develop/LICENSE.md")))
+                .externalDocs(new ExternalDocumentation()
+                        .description("EHRbase Documentation")
+                        .url("https://ehrbase.readthedocs.io/"));
     }
 }

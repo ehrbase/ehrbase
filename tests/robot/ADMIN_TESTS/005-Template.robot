@@ -283,7 +283,7 @@ upload valid OPT
     prepare new request session    XML
     ...    Prefer=return=representation
     get valid OPT file    ${opt file}
-    extract template_id from OPT file
+    Extract Template Id From OPT File
     upload OPT file
     Set Test Variable    ${response}    ${response}
     server accepted OPT
@@ -329,7 +329,7 @@ validate DELETE response - 204 deleted
 
 validate DELETE response - 422 unprocessable entity
                         Integer    response status   422
-                        String     response body error
+                        String     response body message
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
 
@@ -340,7 +340,7 @@ validate DELETE ALL response - 204 deleted ${amount}
 
 validate DELETE ALL response - 422 unprocessable entity
                         Integer    response status   422
-                        String     response body error
+                        String     response body message
                         ...        pattern=Cannot delete template minimal_admin.en.v1 since the following compositions are still using it.*
 
 

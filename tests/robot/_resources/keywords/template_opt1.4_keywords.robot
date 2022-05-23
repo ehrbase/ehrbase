@@ -61,7 +61,7 @@ get invalid OPT file
                         Log Element          ${expected}
 
 
-extract template_id from OPT file
+Extract Template Id From OPT File
     [Documentation]     Extracts template_id from OPT (XML) file which was obtained
     ...                 with `get valid/invalid OPT file` keywords
 
@@ -95,12 +95,19 @@ upload invalid OPT
 upload OPT file
     [Documentation]     Uploads OPT file which was obtained with one of the Keywords
     ...                 `get valid OPT file` or `get invalid OPT file`
-
     ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
                         Set Suite Variable    ${response}    ${resp}
                         # Log To Console      ${resp.content}
 
+upload OPT file ECIS
+    [Documentation]     Uploads OPT file which was obtained with one of the Keywords
+    ...                 `get valid OPT file` or `get invalid OPT file`
+
+    ${resp}=            POST On Session      ${SUT}    ${ECISURL}/template   expected_status=anything
+                        ...                  data=${file}    headers=${headers}
+                        Set Suite Variable    ${response}    ${resp}
+                        # Log To Console      ${resp.content}
 
 upload OPT file with version parameter
     # to be implemented
@@ -120,7 +127,7 @@ retrieve versioned OPT
 
     prepare new request session    XML
     get valid OPT file                  ${opt file}
-    extract template_id from OPT file
+    Extract Template Id From OPT File
     retrieve OPT by template_id         ${template_id}
     verify server response
     [Teardown]                          Clean Up Suite Variables
@@ -132,7 +139,9 @@ verify server response
 
 
 server accepted OPT
-                        Should Be Equal As Strings    ${response.status_code}   201
+                        @{expectedStatusCodesList}      Create List     200     201
+                        ${string_status_code}    Convert To String    ${response.status_code}
+                        List Should Contain Value   ${expectedStatusCodesList}      ${string_status_code}
 
 
 server rejected OPT with status code ${status code}

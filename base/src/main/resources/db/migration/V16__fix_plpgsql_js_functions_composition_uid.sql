@@ -14,4 +14,4 @@ BEGIN
 END
 $$;
 
-alter function composition_uid(uuid, text) owner to ehrbase;
+-- alter function composition_uid(uuid, text) owner to ehrbase;

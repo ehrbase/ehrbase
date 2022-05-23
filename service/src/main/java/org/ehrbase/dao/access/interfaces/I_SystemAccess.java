@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2015-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,18 +17,20 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.jooq.SystemAccess;
-import org.jooq.meta.derby.sys.Sys;
-
-import java.util.UUID;
-
 import static org.ehrbase.jooq.pg.Tables.SYSTEM;
 
+import java.util.UUID;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.jooq.SystemAccess;
+
 /**
- * System access layer interface
- * Created by Christian Chevalley on 4/21/2015.
+ * System access layer interface.
+ *
+ * @author Christian Chevalley
+ * @author Jake Smolka
+ * @since 1.0
  */
+@SuppressWarnings("java:S114")
 public interface I_SystemAccess extends I_SimpleCRUD {
 
     static I_SystemAccess getInstance(I_DomainAccess domainAccess, String description, String settings) {
@@ -79,8 +77,8 @@ public interface I_SystemAccess extends I_SimpleCRUD {
      * Try to retrieve system with given input. If not available create instance.
      *
      * @param domainAccess Data Access Object
-     * @param description Optional description, can be NULL to use default
-     * @param settings a string describing the system (arbitrary convention)
+     * @param description  Optional description, can be NULL to use default
+     * @param settings     a string describing the system (arbitrary convention)
      * @return UUID of system entry
      */
     static UUID createOrRetrieveInstanceId(I_DomainAccess domainAccess, String description, String settings) {

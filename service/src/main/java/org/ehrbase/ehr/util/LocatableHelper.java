@@ -1,16 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2015-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,30 +17,29 @@
  */
 package org.ehrbase.ehr.util;
 
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+import org.ehrbase.webtemplate.parser.AqlPath;
 
 /**
- * ETHERCIS Project ehrservice
- * Created by Christian Chevalley on 8/18/2015.
+ * Utility class for path manipulation.
+ *
+ * @author Christian Chevalley
+ * @author Renaud Subiger
+ * @since 1.0
  */
 public class LocatableHelper {
 
+    private LocatableHelper() {}
 
     public static List<String> dividePathIntoSegments(String path) {
-        List<String> segments = new ArrayList<String>();
-        StringTokenizer tokens = new StringTokenizer(path, "/");
-        while (tokens.hasMoreTokens()) {
-            String next = tokens.nextToken();
-            if (next.matches(".+\\[.+[^\\]]$")) {
-                do {
-                    next = next + "/" + tokens.nextToken();
-                } while (!next.matches(".*]$"));
-            }
-            segments.add(next);
-        }
-        return segments;
+        var aqlPath = AqlPath.parse(path);
+        return aqlPath.getNodes().stream()
+                .map(aqlNode -> {
+                    StringBuilder sb = new StringBuilder();
+                    aqlNode.appendFormat(sb, AqlPath.OtherPredicatesFormat.SHORTED);
+                    return sb.toString();
+                })
+                .collect(Collectors.toList());
     }
 }

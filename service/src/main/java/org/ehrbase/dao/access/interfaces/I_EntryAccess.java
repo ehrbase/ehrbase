@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School), Luis Marco-Ruiz (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,21 +17,18 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
+
 import com.nedap.archie.rm.composition.Composition;
+import java.util.Map;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EntryAccess;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.jooq.JSONB;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
-
 /**
- * Entry (Composition Content) access layer
- * Created by Christian Chevalley on 4/21/2015.
+ * Entry (Composition Content) access layer Created by Christian Chevalley on 4/21/2015.
  */
 public interface I_EntryAccess extends I_SimpleCRUD {
 
@@ -50,24 +43,34 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      * @return an access layer instance
      * @see Composition
      */
-    static I_EntryAccess getNewInstance(I_DomainAccess domain, String templateId, Integer sequence, UUID compositionId, Composition composition) {
+    static I_EntryAccess getNewInstance(
+            I_DomainAccess domain, String templateId, Integer sequence, UUID compositionId, Composition composition) {
         return new EntryAccess(domain, templateId, sequence, compositionId, composition);
     }
 
     /**
-     * retrieve the list of entries for a composition
+     * Retrieve the {@link I_EntryAccess} linked to given composition.
      *
      * @param domainAccess      SQL context
      * @param compositionAccess a composition access interface instance
-     * @return a list of {@link I_EntryAccess}
+     * @return the entry access
      * @throws IllegalArgumentException if DB is inconsistent or operation fails
      */
-    static List<I_EntryAccess> retrieveInstanceInComposition(I_DomainAccess domainAccess, I_CompositionAccess compositionAccess) {
+    static I_EntryAccess retrieveInstanceInComposition(
+            I_DomainAccess domainAccess, I_CompositionAccess compositionAccess) {
         return EntryAccess.retrieveInstanceInComposition(domainAccess, compositionAccess);
     }
 
-    // TODO Doc: appears to be explicitly used with versions other than the latest (because accessing only "entry_history" table)
-    static List<I_EntryAccess> retrieveInstanceInCompositionVersion(I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
+    /**
+     * Retrieve the {@link I_EntryAccess} linked to given composition history.
+     *
+     * @param domainAccess             SQL context
+     * @param compositionHistoryAccess the composition history access instance
+     * @param version                  the version of the composition
+     * @return the entry access
+     */
+    static I_EntryAccess retrieveInstanceInCompositionVersion(
+            I_DomainAccess domainAccess, I_CompositionAccess compositionHistoryAccess, int version) {
         return EntryAccess.retrieveInstanceInCompositionVersion(domainAccess, compositionHistoryAccess, version);
     }
 
@@ -79,7 +82,11 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      * @return count of deleted
      */
     static Integer deleteFromComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        return domainAccess.getContext().delete(ENTRY).where(ENTRY.COMPOSITION_ID.eq(compositionId)).execute();
+        return domainAccess
+                .getContext()
+                .delete(ENTRY)
+                .where(ENTRY.COMPOSITION_ID.eq(compositionId))
+                .execute();
     }
 
     /**
@@ -128,8 +135,7 @@ public interface I_EntryAccess extends I_SimpleCRUD {
     JSONB getEntryJson();
 
     /**
-     * get the entry category record id<br>
-     * Category attribute is a DvCodedText
+     * get the entry category record id<br> Category attribute is a DvCodedText
      *
      * @return {@link org.ehrbase.jooq.pg.udt.DvCodedText} of category concept
      */
@@ -182,14 +188,12 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      *
      * @return archetype ID as string
      */
-
     String getArchetypeId();
 
     String getRmVersion();
 
     /**
-     * get the Item Type as a literal<br>
-     * Item type is one of
+     * get the Item Type as a literal<br> Item type is one of
      * <ul>
      * <li>section</li>
      * <li>care_entry</li>
@@ -207,6 +211,4 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      * @see Composition
      */
     void setCompositionData(Composition composition);
-
-
 }

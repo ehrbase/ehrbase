@@ -51,24 +51,10 @@ These instructions will get you a copy of the project up and running on your loc
 
 You will need Java JDK/JRE 11 (preferably openJDK: e.g. from https://adoptopenjdk.net/)
 
-You will need a Postgres Database (Docker image or local installation). We recommend the Docker image to get started quickly.
+You will need a Postgres Database (at least Version 10.4, Version 13 recommended) (Docker image or local installation).
+We recommend the Docker
+image to get started quickly.
 
-When installing locally, the Postgres Database (at least Version 10.4) needs the following extensions:
- * [temporal tables](https://github.com/arkhipov/temporal_tables) 
-    ```bash
-     git clone https://github.com/arkhipov/temporal_tables.git
-     make
-     sudo make install
-     make installcheck
-     ```
- * [jsquery](https://github.com/postgrespro/jsquery) 
-     ```bash
-     git clone https://github.com/postgrespro/jsquery.git
-     cd jsquery
-     make USE_PGXS=1
-     sudo make USE_PGXS=1 install
-     make USE_PGXS=1 installcheck
-    ```
 
 ### Installing
 
@@ -130,6 +116,68 @@ Two roles are available: a user role, and admin role. By default, these roles ar
 `ADMIN`. The names of these roles can be customised through the `SECURITY_OAUTH2USERROLE` and `SECURITY_OAUTH2ADMINROLE`
 environment variables. Users should have their roles assigned accordingly, either in the `realm_access.roles` or `scope`
 claim of the JWT used for authentication.
+
+## Contributing
+
+### Codestyle/Formatting
+EHRbase java sourcecode is using [palantir-java-format](https://github.com/palantir/palantir-java-format) codestyle. 
+The formatting is checked and applied using the [spotless-maven-plugin](https://github.com/diffplug/spotless/tree/main/plugin-maven). 
+To apply the codestyle run the `com.diffplug.spotless:spotless-maven-plugin:apply` maven goal in the root directory of the project.
+To check if the code conforms to the codestyle run the `com.diffplug.spotless:spotless-maven-plugin:check` maven goal in the root directory of the project.
+These maven goals can also be run for a single module by running them in the modules' subdirectory.
+
+To make sure all code conforms to the codestyle, the "check-codestyle" check is run on all pull requests. 
+Pull requests not passing this check shall not be merged.
+
+If you wish to automatically apply the formatting on commit for *.java files, a simple pre-commit hook script "pre-commit.sh" is available in the root directory of this repository.
+To enable the hook you can either copy the script to or create a symlink for it at `.git/hooks/pre-commit`. 
+The git hook will run the "apply" goal for the whole project, but formatting changes will only be staged for already staged files, to avoid including unrelated changes.
+
+In case there is a section of code that you carefully formatted in a special way the formatting can be turned off for that section like this:
+```
+everything here will be reformatted..
+
+// @formatter:off
+
+    This is not affected by spotless-plugin reformatting...
+            And will stay as is it is!
+
+// @formatter:on
+
+everything here will be reformatted..
+```
+Please be aware that `@formatter:off/on` should only be used on rare occasions to increase readability of complex code and shall be looked at critically when reviewing merge requests.
+
+## Running the tests
+
+This command will run all tests from `tests/robot` folder.
+DB and server application will be started/stopped by the tests accordingly. You *must not* start them by hand.
+
+> NOTE: Make sure you meet the PREREQUISITES mentioned in tests/README.md prior to test execution.
+>
+> Please Check the README in `tests` folder for more details.
+
+```bash
+cd tests
+./run_local_tests.sh
+```
+
+
+## Deployment
+
+ 1. `java -jar application/target/application-*.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
+ 2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
+
+## Updating
+
+Before updating to a new version of EHRBase check UPDATING.md for any backwards-incompatible changes and additional
+steps needed in EHRBase. New Releases may introduce DB changes. It is thus recommend to make a DB backup before
+updating.
+
+## Built With
+
+* [Maven](https://maven.apache.org/) - Dependency Management
+
 
 ----
 

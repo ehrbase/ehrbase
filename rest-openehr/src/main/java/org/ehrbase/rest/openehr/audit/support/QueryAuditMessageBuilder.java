@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH.
+ * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest.openehr.audit.support;
 
+import java.nio.charset.StandardCharsets;
 import org.ehrbase.rest.openehr.audit.OpenEhrEventIdCode;
 import org.ehrbase.rest.openehr.audit.QueryAuditDataset;
 import org.openehealth.ipf.commons.audit.AuditContext;
@@ -24,8 +25,6 @@ import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectIdTypeCode;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCode;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectTypeCodeRole;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for Query AuditMessages.

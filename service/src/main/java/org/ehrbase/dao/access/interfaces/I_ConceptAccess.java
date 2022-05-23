@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,14 +17,13 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
-import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
+import static org.ehrbase.jooq.pg.Tables.CONCEPT;
+
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
-
 import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.CONCEPT;
+import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
 
 /**
  * access layer to Concepts
@@ -38,7 +33,12 @@ import static org.ehrbase.jooq.pg.Tables.CONCEPT;
 public interface I_ConceptAccess {
 
     enum ContributionChangeType {
-        CREATION(249), AMENDMENT(250), MODIFICATION(251), SYNTHESIS(252), UNKNOWN(253), DELETED(523);
+        CREATION(249),
+        AMENDMENT(250),
+        MODIFICATION(251),
+        SYNTHESIS(252),
+        UNKNOWN(253),
+        DELETED(523);
         final int code;
 
         ContributionChangeType(int code) {
@@ -59,16 +59,24 @@ public interface I_ConceptAccess {
      * @return the record {@link UUID} or null if not found
      */
     static UUID fetchConcept(I_DomainAccess domainAccess, Integer conceptId, String language) {
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(conceptId).and(CONCEPT.LANGUAGE.equal(language))).getId();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(conceptId).and(CONCEPT.LANGUAGE.equal(language)))
+                .getId();
     }
 
     static DvCodedText fetchConceptText(I_DomainAccess domainAccess, UUID uuid) {
         ConceptRecord conceptRecord = domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.ID.eq(uuid));
-        return new DvCodedText(conceptRecord.getDescription(), new CodePhrase(new TerminologyId("openehr"), "" + conceptRecord.getConceptid()));
+        return new DvCodedText(
+                conceptRecord.getDescription(),
+                new CodePhrase(new TerminologyId("openehr"), "" + conceptRecord.getConceptid()));
     }
 
     static String fetchConceptLiteral(I_DomainAccess domainAccess, Integer conceptId, String language) {
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(conceptId).and(CONCEPT.LANGUAGE.equal(language))).getDescription();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(conceptId).and(CONCEPT.LANGUAGE.equal(language)))
+                .getDescription();
     }
 
     static String fetchConceptLiteral(I_DomainAccess domainAccess, UUID uuid) {
@@ -86,14 +94,20 @@ public interface I_ConceptAccess {
     static UUID fetchContributionChangeType(I_DomainAccess domainAccess, String changeTypeStr) {
         ContributionChangeType contributionChangeType = ContributionChangeType.valueOf(changeTypeStr.toUpperCase());
         int code = contributionChangeType.getCode();
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(code).and(CONCEPT.LANGUAGE.equal("en"))).getId();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(code).and(CONCEPT.LANGUAGE.equal("en")))
+                .getId();
     }
 
-    static UUID fetchContributionChangeType(I_DomainAccess domainAccess, ContributionChangeType contributionChangeType) {
-        if (contributionChangeType == null)
-            return null;
+    static UUID fetchContributionChangeType(
+            I_DomainAccess domainAccess, ContributionChangeType contributionChangeType) {
+        if (contributionChangeType == null) return null;
         int code = contributionChangeType.getCode();
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(code).and(CONCEPT.LANGUAGE.equal("en"))).getId();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(code).and(CONCEPT.LANGUAGE.equal("en")))
+                .getId();
     }
 
     /**
@@ -104,7 +118,10 @@ public interface I_ConceptAccess {
      * @return the record {@link UUID}
      */
     static UUID getVlcsDraft(I_DomainAccess domainAccess) {
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(244).and(CONCEPT.LANGUAGE.equal("en"))).getId();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(244).and(CONCEPT.LANGUAGE.equal("en")))
+                .getId();
     }
 
     /**
@@ -115,7 +132,10 @@ public interface I_ConceptAccess {
      * @return the record {@link UUID}
      */
     static UUID getVlcsActive(I_DomainAccess domainAccess) {
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(245).and(CONCEPT.LANGUAGE.equal("en"))).getId();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(245).and(CONCEPT.LANGUAGE.equal("en")))
+                .getId();
     }
 
     /**
@@ -126,7 +146,10 @@ public interface I_ConceptAccess {
      * @return the record {@link UUID}
      */
     static UUID getVlcsInactive(I_DomainAccess domainAccess) {
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(246).and(CONCEPT.LANGUAGE.equal("en"))).getId();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(246).and(CONCEPT.LANGUAGE.equal("en")))
+                .getId();
     }
 
     /**
@@ -137,6 +160,9 @@ public interface I_ConceptAccess {
      * @return the record {@link UUID}
      */
     static UUID getVlcsAwaitingApproval(I_DomainAccess domainAccess) {
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(247).and(CONCEPT.LANGUAGE.equal("en"))).getId();
+        return domainAccess
+                .getContext()
+                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(247).and(CONCEPT.LANGUAGE.equal("en")))
+                .getId();
     }
 }

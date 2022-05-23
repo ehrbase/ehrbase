@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,9 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package db.migration;
 
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.w3c.dom.Document;
@@ -25,28 +31,28 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 /**
  * This migration reads in the terminology.xml file and stores its contents into the database.
  * <p>
  * This replaces the org.ehrbase.dao.access.support.TerminologySetter class
+ *
+ * @author Christian Chevalley
+ * @author Stefan Spiska
+ * @since 1.0
  */
+@SuppressWarnings("java:S101")
 public class V3__terminology extends BaseJavaMigration {
 
     @Override
     public void migrate(Context context) throws Exception {
-        try (InputStream resourceAsStream = getClass().getClassLoader()
-                .getResourceAsStream("terminology.xml")) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("terminology.xml")) {
 
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
             final DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-            final Document document = documentBuilder.parse(resourceAsStream);
+            final Document document = documentBuilder.parse(in);
 
             setTerritory(context.getConnection(), document);
             setLanguage(context.getConnection(), document);
@@ -54,8 +60,7 @@ public class V3__terminology extends BaseJavaMigration {
         }
     }
 
-    private void setTerritory(final Connection connection, final Document document)
-            throws SQLException {
+    private void setTerritory(final Connection connection, final Document document) throws SQLException {
         try (final PreparedStatement statement = connection.prepareStatement(
                 "INSERT INTO ehr.territory(code, twoletter, threeletter, text) VALUES (?, ?, ?, ?)")) {
             final NodeList territory = document.getElementsByTagName("Territory");
@@ -63,8 +68,8 @@ public class V3__terminology extends BaseJavaMigration {
                 final Node item = territory.item(idx);
                 final NamedNodeMap attributes = item.getAttributes();
 
-                final Integer code = Integer
-                        .valueOf(attributes.getNamedItem("NumericCode").getNodeValue());
+                final int code =
+                        Integer.parseInt(attributes.getNamedItem("NumericCode").getNodeValue());
 
                 final String two = attributes.getNamedItem("TwoLetter").getNodeValue();
                 final String three = attributes.getNamedItem("ThreeLetter").getNodeValue();
@@ -79,10 +84,9 @@ public class V3__terminology extends BaseJavaMigration {
         }
     }
 
-    private void setLanguage(final Connection connection, final Document document)
-            throws SQLException {
-        try (final PreparedStatement statement = connection.prepareStatement(
-                "INSERT INTO ehr.language(code, description) VALUES (?, ?)")) {
+    private void setLanguage(final Connection connection, final Document document) throws SQLException {
+        try (final PreparedStatement statement =
+                connection.prepareStatement("INSERT INTO ehr.language(code, description) VALUES (?, ?)")) {
             final NodeList language = document.getElementsByTagName("Language");
             for (int idx = 0; idx < language.getLength(); idx++) {
                 final Node item = language.item(idx);
@@ -98,8 +102,7 @@ public class V3__terminology extends BaseJavaMigration {
         }
     }
 
-    private void setConcept(final Connection connection, final Document document)
-            throws SQLException {
+    private void setConcept(final Connection connection, final Document document) throws SQLException {
         try (final PreparedStatement statement = connection.prepareStatement(
                 "INSERT INTO ehr.concept(conceptId, language, description) VALUES (?, ?, ?)")) {
             final NodeList concept = document.getElementsByTagName("Concept");
@@ -107,8 +110,8 @@ public class V3__terminology extends BaseJavaMigration {
                 final Node item = concept.item(idx);
                 final NamedNodeMap attributes = item.getAttributes();
 
-                final Integer code = Integer
-                        .valueOf(attributes.getNamedItem("ConceptID").getNodeValue());
+                final int code =
+                        Integer.parseInt(attributes.getNamedItem("ConceptID").getNodeValue());
 
                 final String language = attributes.getNamedItem("Language").getNodeValue();
                 final String text = attributes.getNamedItem("Rubric").getNodeValue();
@@ -120,5 +123,4 @@ public class V3__terminology extends BaseJavaMigration {
             }
         }
     }
-
 }

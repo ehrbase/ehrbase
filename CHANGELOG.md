@@ -2,19 +2,82 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
-adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
+to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unrealised]
+## [unreleased]
+### Added
+- Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
+### Changed
+### Fixed
+
+## [0.21.1]
+
+### Fixed
+
+- Fixed update script for user consolidation ([#865](https://github.com/ehrbase/ehrbase/pull/865))  
+
+## [0.21.0]
+
+### Added
+
+- Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
+- Implement EHR_STATUS.is_modifiable semantics on service level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
+- use bom for dependence management  ([#820](https://github.com/ehrbase/ehrbase/pull/820))
+- add  Release action  ([#831](https://github.com/ehrbase/ehrbase/pull/831)
+- Added hooks for the plugin system ([#816](https://github.com/ehrbase/ehrbase/pull/816))
+- Added index to `party_identified` to improve performance of find EHR by subject-id ([857](https://github.com/ehrbase/ehrbase/pull/857)))
+
+### Changed
+- Upgrade to Spring boot 2.5.12
+  see [spring-framework-rce](https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement) ([#800](https://github.com/ehrbase/ehrbase/pull/800))
+  .
+- Add unique constraints on `status` and `entry` ([#821](https://github.com/ehrbase/ehrbase/pull/821)).
+- Removed Postgres with extensions setup ([#840](https://github.com/ehrbase/ehrbase/pull/840))
+- Upgrade openEHR_SDK to version 1.19.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
+### Fixed
+
+- Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
+- Fix duplicate users issue ([#826](https://github.com/ehrbase/ehrbase/pull/826)).
+- Fix validation errors in ECIS EHR endpoint ([#828](https://github.com/ehrbase/ehrbase/pull/828)) 
+- Fix 400 error in ECIS EHR update ([#834](https://github.com/ehrbase/ehrbase/pull/834))
+
+## [0.20.0] (beta)
+
+### Added
+
+- Add Plugins system ([#772](https://github.com/ehrbase/ehrbase/pull/772),
+  [#779](https://github.com/ehrbase/ehrbase/pull/779)).
+- AQL: support `ORDER BY` and `LIMIT [OFFSET]` clauses in any
+  order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
+
+### Changed
+- Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
+- Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
+  and [#796](https://github.com/ehrbase/ehrbase/pull/796)
+- Upgrade openEHR_SDK to version 1.18.0 see  https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
+### Fixed
+
+- Remove unused Operational Template cache ([#759](https://github.com/ehrbase/ehrbase/pull/759)).
+- Allow update/adding/removal of feeder_audit/links on Composition ([#773](https://github.com/ehrbase/ehrbase/pull/773))
+- Add default ASC direction to ORDER BY clause in AQL ([#780](https://github.com/ehrbase/ehrbase/pull/780)).
+- Fix DB Migration scripts. Allow user different then ehrbase ([#795](https://github.com/ehrbase/ehrbase/pull/795)).
+
+## [0.19.0] (beta)
 
 ### Added
 
 - Add Flyway callback to check `IntervalStyle` configuration
   parameter ([#720](https://github.com/ehrbase/ehrbase/pull/720)).
-- Validate RM types used in OPT template ([#739](https://github.com/ehrbase/ehrbase/issues/739))
+- Validate RM types used in OPT template ([#739](https://github.com/ehrbase/ehrbase/issues/739)).
+
 ### Changed
 
-- Upgrade to Archie 1.0.4 ([#719](https://github.com/ehrbase/ehrbase/pull/719))
+- Upgrade to Archie 1.0.4 ([#719](https://github.com/ehrbase/ehrbase/pull/719)).
+- Improve errors and exceptions logging ([#745](https://github.com/ehrbase/ehrbase/pull/745)).
+- Upgrade openEHR_SDK to version 1.17.0 see  https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 
 ### Fixed
 
@@ -28,7 +91,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   parameter ([#722](https://github.com/ehrbase/ehrbase/pull/722)).
 - Fix querying other_participations ([#707](https://github.com/ehrbase/ehrbase/issues/707))
 
-## [0.18.3]
+## [0.18.3] (beta)
 
 ### Added
 
@@ -38,19 +101,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-## [0.18.2]
+## [0.18.2] (beta)
 
 ### Fixed
 
 - updated log4j from 1.15.0 to 1.60.0
 
-## [0.18.1]
+## [0.18.1] (beta)
 
 ### Fixed
 
 - Fix deployment issue with Flyway migration V62__add_entry_history_missing_columns.sql
 
-## [0.18.0]
+## [0.18.0] (beta)
 
 ### Added
 
@@ -80,7 +143,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix issue using DV_DATE_TIME without time-zone (see https://github.com/ehrbase/ehrbase/pull/658)
 - update lg4j version (see https://github.com/ehrbase/ehrbase/pull/702)
 
-## [0.17.2]
+## [0.17.2] (beta)
 
 ### Added
 
@@ -405,18 +468,30 @@ the next release this file will provide a proper overview.
 - AQL queries with partial paths return data in canonical json format (including full compositions)
 - Multimedia data can be correctly stored and retrieved
 - Spring configuration allows setting the System ID
-- Validation of openEHR Terminology (openEHR terminology codes are tested against an internal
-  terminology service)
+- Validation of openEHR Terminology (openEHR terminology codes are tested against an internal terminology service)
 
 ### Fixed
 
-- Order of columns in AQL result sets are now reliably
-  preserved (https://github.com/ehrbase/ehrbase/issues/37)
+- Order of columns in AQL result sets are now reliably preserved (https://github.com/ehrbase/ehrbase/issues/37)
 - Some projection issues for EHR attributes have been resolved in AQL
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.17.2...HEAD
+[0.21.1]: https://github.com/ehrbase/ehrbase/compare/v0.21.0...v0.21.1
+
+[0.21.0]: https://github.com/ehrbase/ehrbase/compare/v0.20.0...v0.21.0
+
+[0.20.0]: https://github.com/ehrbase/ehrbase/compare/v0.19.0...v0.20.0
+
+[0.19.0]: https://github.com/ehrbase/ehrbase/compare/v0.18.3...v0.19.0
+
+[0.18.3]: https://github.com/ehrbase/ehrbase/compare/v0.18.2...v0.18.3
+
+[0.18.2]: https://github.com/ehrbase/ehrbase/compare/v0.18.1...v0.18.2
+
+[0.18.1]: https://github.com/ehrbase/ehrbase/compare/v0.18.0...v0.18.1
+
+[0.18.0]: https://github.com/ehrbase/ehrbase/compare/v0.17.2...v0.18.0
 
 [0.17.2]: https://github.com/ehrbase/ehrbase/compare/v0.17.1...v0.17.2
 
@@ -439,3 +514,5 @@ the next release this file will provide a proper overview.
 [0.10.0]: https://github.com/ehrbase/ehrbase/compare/v0.9.0...v0.10.0
 
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
+
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.21.1...HEAD

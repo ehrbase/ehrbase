@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,26 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.service;
 
-import org.apache.commons.io.IOUtils;
+import java.io.File;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.opt.query.TemplateTestData;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-
 /**
  * Created by christian on 5/10/2018.
  */
-
 public class KnowledgeCacheHelper {
 
-
-    public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule) throws Exception {
-
+    public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule)
+            throws Exception {
 
         File operationalTemplatesemplates = folder.newFolder("operational_templates");
 
@@ -42,14 +37,14 @@ public class KnowledgeCacheHelper {
 
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
-        knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+        KnowledgeCacheService knowledgeCacheService =
+                new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
+        knowledgeCacheService.addOperationalTemplate(TemplateTestData.IMMUNISATION_SUMMARY.getStream());
         return knowledgeCacheService;
     }
 
     public static ServerConfig buildServerConfig() {
         return new ServerConfig() {
-            private boolean useJsQuery = false;
 
             @Override
             public int getPort() {
@@ -57,9 +52,7 @@ public class KnowledgeCacheHelper {
             }
 
             @Override
-            public void setPort(int port) {
-
-            }
+            public void setPort(int port) {}
 
             @Override
             public String getNodename() {
@@ -67,9 +60,7 @@ public class KnowledgeCacheHelper {
             }
 
             @Override
-            public void setNodename(String nodename) {
-
-            }
+            public void setNodename(String nodename) {}
 
             @Override
             public String getAqlIterationSkipList() {
@@ -82,20 +73,9 @@ public class KnowledgeCacheHelper {
             }
 
             @Override
-            public Boolean getUseJsQuery() {
-                return useJsQuery;
-            }
-
-            @Override
-            public void setUseJsQuery(boolean b) {
-                this.useJsQuery = b;
-            }
-
-            @Override
             public boolean isDisableStrictValidation() {
                 return false;
             }
         };
     }
-
 }

@@ -1,16 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2016-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,14 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.query;
-
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.exception.DataAccessException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,76 +26,75 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.exception.DataAccessException;
 
 /**
- * Attempt to use JAVA 8 CompletableFuture
- * Created by christian on 10/13/2016.
+ * Attempt to use JAVA 8 CompletableFuture.
+ *
+ * @author Christian Chevalley
+ * @since 1.0
  */
 public class AsyncAqlQuery implements Supplier<Map<String, Object>> {
 
-    I_DomainAccess domainAccess;
-    String queryString;
-    ExecutorService executorService;
-    ;
+    private final I_DomainAccess domainAccess;
+
+    private final String queryString;
 
     public AsyncAqlQuery(I_DomainAccess domainAccess, String queryString) {
         this.domainAccess = domainAccess;
         this.queryString = queryString;
     }
 
-    public Result<Record> fetchQueryResults() throws Exception {
+    /**
+     * Fetches query result from database.
+     *
+     * @return results fetched from the database
+     * @throws IllegalArgumentException on AQL exception
+     */
+    public Result<Record> fetchQueryResults() {
         try {
-            Result<Record> records = domainAccess.getContext().fetch(queryString);
-            return records;
+            return domainAccess.getContext().fetch(queryString);
         } catch (DataAccessException e) {
-            String message = e.getCause().getMessage();
-            throw new IllegalArgumentException("AQL exception:" + message.replaceAll("\n", ","));
-
+            throw new IllegalArgumentException("Error occurred while executing the AQL statement", e);
         }
     }
 
     public Map<String, Object> toJson(Result<Record> records) {
         Map<String, Object> resultMap = new HashMap<>();
-
         resultMap.put("executedAQL", queryString);
 
-        List<Map> resultList = new ArrayList<>();
-
-        for (Record record : records) {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for (Record current : records) {
             Map<String, Object> fieldMap = new HashMap<>();
-            for (Field field : records.fields()) {
-                fieldMap.put(field.getName(), record.getValue(field));
+            for (Field<?> field : records.fields()) {
+                fieldMap.put(field.getName(), current.getValue(field));
             }
-
             resultList.add(fieldMap);
         }
 
         resultMap.put("resultSet", resultList);
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
         return resultMap;
     }
 
     @Override
     public Map<String, Object> get() {
-        Result<Record> records = null;
-        try {
-            records = fetchQueryResults();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        Result<Record> records = fetchQueryResults();
         if (records != null && !records.isEmpty()) {
-            Map<String, Object> resultMap = toJson(records);
-
-            return resultMap;
-        } else
-            return new HashMap<>();
+            return toJson(records);
+        } else return new HashMap<>();
     }
 
+    /**
+     * Executes the fetch asynchronously.
+     *
+     * @return the query result
+     * @throws InternalServerException if fetching failed
+     */
     public Map<String, Object> fetch() throws ExecutionException, InterruptedException {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         CompletableFuture<Map<String, Object>> fetch = CompletableFuture.supplyAsync(this, executorService);

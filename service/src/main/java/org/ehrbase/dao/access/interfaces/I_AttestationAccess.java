@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,14 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.generic.Attestation;
-import org.ehrbase.dao.access.jooq.AttestationAccess;
-
 import java.util.List;
 import java.util.UUID;
+import org.ehrbase.dao.access.jooq.AttestationAccess;
 
 public interface I_AttestationAccess extends I_SimpleCRUD {
 

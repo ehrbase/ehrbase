@@ -39,10 +39,9 @@ Alternative flow 6 create new event COMPOSITION EHR doesnt exist CANONICAL_XML
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist FLAT
-    [Tags]      594  not-ready  bug
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=nested.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  594  bug  related
     check status_code of commit composition    404
 
 Alternative flow 6 create new event COMPOSITION EHR doesnt exist TDD
@@ -68,10 +67,9 @@ Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist CANONICAL_
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist FLAT
-    [Tags]      595  not-ready  bug
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  595  bug  related
     check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist TDD
@@ -89,6 +87,6 @@ Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist STRUCTURED
 
 *** Keywords ***
 Precondition
-    upload OPT    nested/nested.opt
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    nested/nested.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
     create fake EHR

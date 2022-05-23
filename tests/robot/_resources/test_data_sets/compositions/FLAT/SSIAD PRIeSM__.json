@@ -1,0 +1,21 @@
+{
+"ssiad_priesm/context/start_time": "2022-04-22T13:12:55.617Z",
+"ssiad_priesm/context/setting|code": "238",
+"ssiad_priesm/context/setting|value": "other care",
+"ssiad_priesm/context/setting|terminology": "openehr",
+"ssiad_priesm/pain_evaluation/capacite_de_communication/le_patient_est-il_capable_de_s_exprimer|code": "123",
+"ssiad_priesm/pain_evaluation/capacite_de_communication/le_patient_est-il_capable_de_s_exprimer|value": "Non",
+"ssiad_priesm/pain_evaluation/capacite_de_communication/le_patient_est-il_capable_de_s_exprimer|terminology": "SNOMED-CT",
+"ssiad_priesm/pain_evaluation/capacite_de_communication/language|code": "en",
+"ssiad_priesm/pain_evaluation/capacite_de_communication/language|terminology": "ISO_639-1",
+"ssiad_priesm/pain_evaluation/capacite_de_communication/encoding|code": "UTF-8",
+"ssiad_priesm/pain_evaluation/capacite_de_communication/encoding|terminology": "IANA_character-sets",
+"ssiad_priesm/category|code": "433",
+"ssiad_priesm/category|value": "event",
+"ssiad_priesm/category|terminology": "openehr",
+"ssiad_priesm/composer|name": "Medblocks UI",
+"ssiad_priesm/language|code": "en",
+"ssiad_priesm/language|terminology": "ISO_639-1",
+"ssiad_priesm/territory|code": "IN",
+"ssiad_priesm/territory|terminology": "ISO_3166-1"
+}

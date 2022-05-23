@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,9 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.sql.queryimpl;
 
+import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItemAsText;
+import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
+import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER;
+import static org.ehrbase.aql.sql.queryimpl.value_field.Functions.apply;
+import static org.ehrbase.jooq.pg.Routines.aqlNodeNamePredicate;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.jooq.Configuration;
@@ -25,16 +33,6 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.ehrbase.aql.sql.queryimpl.AqlRoutines.jsonpathItemAsText;
-import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
-import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER;
-import static org.ehrbase.aql.sql.queryimpl.value_field.Functions.apply;
-import static org.ehrbase.jooq.pg.Routines.aqlNodeNamePredicate;
 
 /**
  * Created by christian on 5/9/2018.
@@ -64,22 +62,21 @@ public class FunctionBasedNodePredicateCall {
         return DSL.field(expression.get(0));
     }
 
-
     /**
      * substitute with the node/name predicate function
      * @param itemPathArray
      * @return
      */
-    private List<String> resolveNodePredicateCall(List<String> itemPathArray, Object function, TableField... tableFields) {
+    private List<String> resolveNodePredicateCall(
+            List<String> itemPathArray, Object function, TableField... tableFields) {
         Configuration configuration = fieldContext.getContext().configuration();
         int startList;
-
 
         List<String> expression = new ArrayList<>();
 
         Field nodeField;
 
-        if (!itemPathArray.get(0).replace("\"","").startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
+        if (!itemPathArray.get(0).replace("\"", "").startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
             nodeField = DSL.field(apply(function, tableFields).toString()).cast(JSONB.class);
             startList = 0;
         } else {
@@ -87,54 +84,51 @@ public class FunctionBasedNodePredicateCall {
             startList = 1;
         }
 
-        int markerPos = ArrayUtils.indexOf(itemPathArray.toArray(new String[]{}), QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER, startList);
+        int markerPos = ArrayUtils.indexOf(
+                itemPathArray.toArray(new String[] {}), QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER, startList);
 
-        if (markerPos < 0) //not found
-            markerPos = itemPathArray.size();
+        if (markerPos < 0) // not found
+        markerPos = itemPathArray.size();
 
+        expression.add(aqlNodeNamePredicate(
+                        DSL.field(jsonpathItemAsText(
+                                        configuration,
+                                        nodeField,
+                                        itemPathArray
+                                                .subList(startList, markerPos)
+                                                .toArray(new String[] {})))
+                                .cast(JSONB.class),
+                        DSL.val(itemPathArray.get(markerPos + 1).replace("'", "")),
+                        DSL.val(""))
+                .toString());
 
-        expression.add(
-                    aqlNodeNamePredicate(
-                            DSL.field(
-                                    jsonpathItemAsText(
-                                            configuration,
-                                            nodeField,
-                                            itemPathArray.subList(startList, markerPos).toArray(new String[]{}))
-                            ).cast(JSONB.class),
-                            DSL.val(itemPathArray.get(markerPos+1).replace("'", "")),
-                            DSL.val("")
-                    ).toString()
-        );
-
-        //Locate end tag (end of array or next marker)
+        // Locate end tag (end of array or next marker)
         int endPos = itemPathArray.size();
 
         expression.addAll(Arrays.asList(rightPathExpression(itemPathArray, markerPos, endPos)));
 
-        //end of iteration, wrap up
-        String[] extractPathArguments = expression.subList(1, expression.size()).toArray(new String[]{});
+        // end of iteration, wrap up
+        String[] extractPathArguments = expression.subList(1, expression.size()).toArray(new String[] {});
 
-        if (!expression.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER) && extractPathArguments.length > 0){
+        if (!expression.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)
+                && extractPathArguments.length > 0) {
             List<String> resultList = new ArrayList<>();
-            resultList.add(DSL.field(
-                    jsonpathItemAsText(
-                            configuration,
-                            DSL.field(expression.get(0)).cast(JSONB.class),
-                            extractPathArguments)
-            ).toString());
+            resultList.add(DSL.field(jsonpathItemAsText(
+                            configuration, DSL.field(expression.get(0)).cast(JSONB.class), extractPathArguments))
+                    .toString());
             expression = resultList;
         }
 
         return expression;
-
     }
 
-    private String[] rightPathExpression(List<String> itemPathArray, int from, int to){
-        return itemPathArray.subList(
-                //test if the starting item is an index, then skip it as it is mutually exclusive with node name predicate node selection
-                itemPathArray.get(from + 2).matches("'[0-9]*'|#") ? from + 3 : from + 2,
-                to
-        ).toArray(new String[]{});
+    private String[] rightPathExpression(List<String> itemPathArray, int from, int to) {
+        return itemPathArray
+                .subList(
+                        // test if the starting item is an index, then skip it as it is mutually exclusive with node
+                        // name predicate node selection
+                        itemPathArray.get(from + 2).matches("'[0-9]*'|#") ? from + 3 : from + 2, to)
+                .toArray(new String[] {});
     }
 
     /**
@@ -147,10 +141,8 @@ public class FunctionBasedNodePredicateCall {
         List<String> items = new ArrayList<>();
 
         for (String item : itemPathArray) {
-            if (item.equals(AQL_NODE_ITERATIVE_MARKER))
-                items.add("0");
-            else
-                items.add(item);
+            if (item.equals(AQL_NODE_ITERATIVE_MARKER)) items.add("0");
+            else items.add(item);
         }
 
         return items;

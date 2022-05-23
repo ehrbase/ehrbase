@@ -531,7 +531,17 @@ C-500 Execute Ad-Hoc Query - Get Entries from EHR
     [Tags]              AQL_entry    future
     C/500_query.tmp.json    C/500.tmp.json
 
-
+D-505 Execute Ad-Hoc Query - Get all names values
+    [Tags]
+    [Documentation]     Checks if IndexOutOfBoundsException is not returned
+    execute ad-hoc query    D/505_select_data_without_composition_and_ehr_criteria.json
+    check response: is positive
+    ${resultedNameValuesRows}     Get Value From Json     ${response body}        $.rows..name.value
+    ${length}       Get Length              ${resultedNameValuesRows}
+    Log                 ${length}           console=yes
+    Should Be True      ${length}>5
+    [Teardown]
+    ...     Log     Test for bug: https://github.com/ehrbase/ehrbase/issues/808     console=yes
 
 
 # SPECIAL CASES / REGRESSION TEST (RT) QUERIES

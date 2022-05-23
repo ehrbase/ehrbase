@@ -1,11 +1,31 @@
+/*
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -29,17 +49,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
 @RestController
-@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_ehr_status",
+@RequestMapping(
+        path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_ehr_status",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrVersionedEhrStatusController extends BaseController implements VersionedEhrStatusApiSpecification {
 
@@ -61,7 +76,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
@@ -84,7 +99,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
@@ -106,12 +121,14 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
     public ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByTime(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @RequestParam(value = "version_at_time", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime versionAtTime) {
+            @RequestParam(value = "version_at_time", required = false)
+                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    LocalDateTime versionAtTime) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
@@ -120,18 +137,23 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         if (versionAtTime != null) {
             version = ehrService.getEhrStatusVersionByTimestamp(ehrId, Timestamp.valueOf(versionAtTime));
         } else {
-            version = Integer.parseInt(ehrService.getLatestVersionUidOfStatus(ehrId).split("::")[2]);
+            version = Integer.parseInt(
+                    ehrService.getLatestVersionUidOfStatus(ehrId).split("::")[2]);
         }
 
-        Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);
+        Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion =
+                ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);
         UUID contributionId = ehrStatusOriginalVersion
                 .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
-                .orElseThrow(() -> new InvalidApiParameterException("Couldn't retrieve EhrStatus with given parameters"));
+                .orElseThrow(
+                        () -> new InvalidApiParameterException("Couldn't retrieve EhrStatus with given parameters"));
 
         Optional<ContributionDto> optionalContributionDto = contributionService.getContribution(ehrId, contributionId);
-        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() -> new InternalServerException("Couldn't fetch contribution for existing EhrStatus")); // shouldn't happen
+        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() ->
+                new InternalServerException("Couldn't fetch contribution for existing EhrStatus")); // shouldn't happen
 
-        OriginalVersionResponseData<EhrStatus> originalVersionResponseData = new OriginalVersionResponseData<>(ehrStatusOriginalVersion.get(), contributionDto);
+        OriginalVersionResponseData<EhrStatus> originalVersionResponseData =
+                new OriginalVersionResponseData<>(ehrStatusOriginalVersion.get(), contributionDto);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
@@ -152,7 +174,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // check if EHR is valid
-        if(ehrService.hasEhr(ehrId).equals(Boolean.FALSE)) {
+        if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found.");
         }
 
@@ -166,22 +188,25 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
             throw new InvalidApiParameterException("VERSION UID parameter has wrong format: " + e.getMessage());
         }
 
-        if (version < 1)
-            throw new InvalidApiParameterException("Version can't be negative.");
+        if (version < 1) throw new InvalidApiParameterException("Version can't be negative.");
 
-        if(!ehrService.hasStatus(versionedObjectId)) {
+        if (!ehrService.hasStatus(versionedObjectId)) {
             throw new ObjectNotFoundException("ehr_status", "No EHR_STATUS with given ID can be found.");
         }
 
-        Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion = ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);
+        Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion =
+                ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);
         UUID contributionId = ehrStatusOriginalVersion
                 .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
-                .orElseThrow(() -> new InvalidApiParameterException("Couldn't retrieve EhrStatus with given parameters"));
+                .orElseThrow(
+                        () -> new InvalidApiParameterException("Couldn't retrieve EhrStatus with given parameters"));
 
         Optional<ContributionDto> optionalContributionDto = contributionService.getContribution(ehrId, contributionId);
-        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() -> new InternalServerException("Couldn't fetch contribution for existing EhrStatus")); // shouldn't happen
+        ContributionDto contributionDto = optionalContributionDto.orElseThrow(() ->
+                new InternalServerException("Couldn't fetch contribution for existing EhrStatus")); // shouldn't happen
 
-        OriginalVersionResponseData<EhrStatus> originalVersionResponseData = new OriginalVersionResponseData<>(ehrStatusOriginalVersion.get(), contributionDto);
+        OriginalVersionResponseData<EhrStatus> originalVersionResponseData =
+                new OriginalVersionResponseData<>(ehrStatusOriginalVersion.get(), contributionDto);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));

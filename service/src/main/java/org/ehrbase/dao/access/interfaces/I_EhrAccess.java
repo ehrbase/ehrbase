@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,20 +17,19 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import static org.ehrbase.jooq.pg.Tables.STATUS;
+
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import java.util.Map;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.dao.access.jooq.EhrAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import com.nedap.archie.rm.ehr.EhrStatus;
-
-import java.util.Map;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.STATUS;
 
 /**
  * Ehr access layer<br>
@@ -44,7 +39,7 @@ import static org.ehrbase.jooq.pg.Tables.STATUS;
  */
 public interface I_EhrAccess extends I_SimpleCRUD {
 
-    String TAG_TEMPLATE_ID = "$TEMPLATE_ID$"; //used to serialize template id in json structure
+    String TAG_TEMPLATE_ID = "$TEMPLATE_ID$"; // used to serialize template id in json structure
 
     /**
      * get a new Ehr access layer instance
@@ -58,8 +53,10 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * @return I_EhrAccess
      * @throws InternalServerException if creating or retrieving system failed
      */
-    static I_EhrAccess getInstance(I_DomainAccess domain, UUID partyId, UUID systemId, UUID directoryId, UUID accessId, UUID ehrId) {
-        return new EhrAccess(domain.getContext(), domain.getServerConfig(), partyId, systemId, directoryId, accessId, ehrId);
+    static I_EhrAccess getInstance(
+            I_DomainAccess domain, UUID partyId, UUID systemId, UUID directoryId, UUID accessId, UUID ehrId) {
+        return new EhrAccess(
+                domain.getContext(), domain.getServerConfig(), partyId, systemId, directoryId, accessId, ehrId);
     }
 
     /**
@@ -102,7 +99,8 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * @return UUID of corresponding Ehr or null
      * @throws IllegalArgumentException if retrieving failed for given input
      */
-    static UUID retrieveInstanceBySubjectExternalRef(I_DomainAccess domainAccess, String subjectId, String issuerSpace) {
+    static UUID retrieveInstanceBySubjectExternalRef(
+            I_DomainAccess domainAccess, String subjectId, String issuerSpace) {
         return EhrAccess.retrieveInstanceBySubjectExternalRef(domainAccess, subjectId, issuerSpace);
     }
 
@@ -169,7 +167,7 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * @param ehrId - Target EHR id
      * @return Setting NULL value succeeded
      */
-    static boolean removeDirectory(I_DomainAccess domainAccess, UUID ehrId){
+    static boolean removeDirectory(I_DomainAccess domainAccess, UUID ehrId) {
         return EhrAccess.removeDirectory(domainAccess, ehrId);
     }
 
@@ -185,7 +183,6 @@ public interface I_EhrAccess extends I_SimpleCRUD {
 
     void setQueryable(Boolean queryable);
 
-
     UUID commit(UUID committerId, UUID systemId, String description);
 
     /**
@@ -199,7 +196,13 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * @return True for success
      * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
      */
-    Boolean update(UUID committerId, UUID systemId, UUID contributionId, ContributionDef.ContributionState state, I_ConceptAccess.ContributionChangeType contributionChangeType, String description);
+    Boolean update(
+            UUID committerId,
+            UUID systemId,
+            UUID contributionId,
+            ContributionDef.ContributionState state,
+            I_ConceptAccess.ContributionChangeType contributionChangeType,
+            String description);
 
     /**
      * set access id
@@ -288,5 +291,17 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      */
     static boolean hasEhr(I_DomainAccess domainAccess, UUID ehrId) {
         return EhrAccess.hasEhr(domainAccess, ehrId);
+    }
+
+    /**
+     * Check if the EHR identified by the given ID is marked as modifiable.
+     * Use this method if you do not need a full I_EhrAccess instance.
+     *
+     * @param domainAccess Context
+     * @param ehrId EHR ID to check
+     * @return true if EHR.ehr_status.isModifiable, false otherwise (missing EHR will also return false)
+     */
+    static boolean isModifiable(I_DomainAccess domainAccess, UUID ehrId) {
+        return EhrAccess.isModifiable(domainAccess, ehrId);
     }
 }

@@ -40,10 +40,9 @@ Alternative flow 1 create new persistent COMPOSITION CANONICAL_XML
     check the successful result of commit composition
 
 Alternative flow 1 create new persistent COMPOSITION FLAT
-    [Tags]      595  not-ready  bug
+    [Tags]
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  595  bug
     check the successful result of commit composition   persistent_minimal
 
 Alternative flow 1 create new persistent COMPOSITION TDD
@@ -60,5 +59,5 @@ Alternative flow 1 create new persistent COMPOSITION STRUCTURED
 
 *** Keywords ***
 Precondition
-    upload OPT    minimal_persistent/persistent_minimal.opt
+    Upload OPT    minimal_persistent/persistent_minimal.opt
     create EHR

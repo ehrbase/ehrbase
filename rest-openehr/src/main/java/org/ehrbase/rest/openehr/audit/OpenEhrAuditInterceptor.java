@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Vitasystems GmbH.
+ * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,14 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
+import java.security.Principal;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.EhrService;
@@ -28,15 +36,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.security.Principal;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Base {@link HandlerInterceptor} that provides the common logic for handling audit feature.
@@ -57,15 +56,19 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     }
 
     @Override
-    public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-                             @NonNull Object handler) throws Exception {
+    public boolean preHandle(
+            @NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler)
+            throws Exception {
         request.setAttribute(START_TIME_ATTRIBUTE, Instant.now());
         return true;
     }
 
     @Override
-    public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-                                @NonNull Object handler, Exception ex) {
+    public void afterCompletion(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull Object handler,
+            Exception ex) {
         T auditDataset = createAuditDataset();
         enrichDataset(auditDataset, request, response);
         AuditMessage[] messages = getAuditMessages(auditDataset);
@@ -143,8 +146,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     }
 
     protected Set<String> getPatientNumbers(HttpServletRequest request) {
-        return getEhrIds(request)
-                .stream()
+        return getEhrIds(request).stream()
                 .map(ehrId -> ehrService.getSubjectExtRef(ehrId.toString()))
                 .collect(Collectors.toSet());
     }

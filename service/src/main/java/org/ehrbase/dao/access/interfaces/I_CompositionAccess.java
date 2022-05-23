@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School), Luis Marco-Ruiz (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,26 +17,40 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+import static org.ehrbase.jooq.pg.Tables.CONCEPT;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
+import static org.ehrbase.jooq.pg.Tables.LANGUAGE;
+import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+import static org.ehrbase.jooq.pg.Tables.TERRITORY;
+
 import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.dao.access.jooq.CompositionAccess;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
-import org.ehrbase.jooq.pg.tables.records.*;
-import org.jooq.Result;
-import org.jooq.Table;
-import org.jooq.exception.DataAccessException;
-
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.*;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.dao.access.jooq.CompositionAccess;
+import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
+import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
+import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
+import org.ehrbase.jooq.pg.tables.records.ParticipationRecord;
+import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.ehrbase.jooq.pg.tables.records.TerritoryRecord;
+import org.jooq.Record1;
+import org.jooq.Result;
+import org.jooq.Table;
+import org.jooq.exception.DataAccessException;
 
 /**
  * Composition Access Layer Interface<br>
@@ -48,7 +58,7 @@ import static org.ehrbase.jooq.pg.Tables.*;
  */
 public interface I_CompositionAccess extends I_VersionedCRUD {
 
-    //definitions of aliases used in joins
+    // definitions of aliases used in joins
     String COMPOSITION_JOIN = "composition_join";
     String COMPOSER_JOIN = "composer_ref";
     String COMPOSER_ID = "composer_id";
@@ -105,7 +115,6 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
     String F_CONCEPT_ID = "concept_id";
     String F_CONCEPT_DESCRIPTION = "concept_description";
 
-
     Table<CompositionRecord> compositionRef = COMPOSITION.as(COMPOSITION_JOIN);
     Table<PartyIdentifiedRecord> composerRef = PARTY_IDENTIFIED.as(COMPOSER_JOIN);
     Table<IdentifierRecord> composerId = IDENTIFIER.as(COMPOSER_ID);
@@ -127,7 +136,13 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      * @throws IllegalArgumentException when retrieval failed because of wrong input
      */
     static I_CompositionAccess getNewInstance(I_DomainAccess domain, Composition composition, UUID ehrId) {
-        return new CompositionAccess(domain.getContext(), domain.getKnowledgeManager(), domain.getIntrospectService(), domain.getServerConfig(), composition, ehrId);
+        return new CompositionAccess(
+                domain.getContext(),
+                domain.getKnowledgeManager(),
+                domain.getIntrospectService(),
+                domain.getServerConfig(),
+                composition,
+                ehrId);
     }
 
     /**
@@ -169,7 +184,8 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      * @throws InternalServerException
      * @throws ObjectNotFoundException
      */
-    static I_CompositionAccess retrieveInstanceByTimestamp(I_DomainAccess domainAccess, UUID compositionUid, Timestamp timeCommitted) {
+    static I_CompositionAccess retrieveInstanceByTimestamp(
+            I_DomainAccess domainAccess, UUID compositionUid, Timestamp timeCommitted) {
         return CompositionAccess.retrieveInstanceByTimestamp(domainAccess, compositionUid, timeCommitted);
     }
 
@@ -193,7 +209,8 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      * @return a map of {@link I_CompositionAccess} and their version ID, that match the condition
      * @throws IllegalArgumentException on DB inconsistency
      */
-    static Map<ObjectVersionId, I_CompositionAccess> retrieveInstancesInContribution(I_DomainAccess domainAccess, UUID contributionId, String node) {
+    static Map<ObjectVersionId, I_CompositionAccess> retrieveInstancesInContribution(
+            I_DomainAccess domainAccess, UUID contributionId, String node) {
         return CompositionAccess.retrieveCompositionsInContribution(domainAccess, contributionId, node);
     }
 
@@ -215,7 +232,8 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      * @param compositionId Given composition ID
      * @return Map referencing all versions by their version number
      */
-    static Map<Integer, I_CompositionAccess> getVersionMapOfComposition(I_DomainAccess domainAccess, UUID compositionId) {
+    static Map<Integer, I_CompositionAccess> getVersionMapOfComposition(
+            I_DomainAccess domainAccess, UUID compositionId) {
         return CompositionAccess.getVersionMapOfComposition(domainAccess, compositionId);
     }
 
@@ -232,14 +250,33 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
 
     // TODO: doc! what's the logic behind the returned int code?
     static Integer fetchTerritoryCode(I_DomainAccess domainAccess, String territoryAsString) {
-        Result<TerritoryRecord> result = domainAccess.getContext().selectFrom(TERRITORY).where(TERRITORY.TWOLETTER.equal(territoryAsString)).fetch();
-        if (result.isEmpty())
-            return -1;
+        Result<TerritoryRecord> result = domainAccess
+                .getContext()
+                .selectFrom(TERRITORY)
+                .where(TERRITORY.TWOLETTER.equal(territoryAsString))
+                .fetch();
+        if (result.isEmpty()) return -1;
         return result.get(0).getCode();
     }
 
     static boolean isValidLanguageCode(I_DomainAccess domainAccess, String languageCode) {
-        return !domainAccess.getContext().selectFrom(LANGUAGE).where(LANGUAGE.CODE.equal(languageCode)).fetch().isEmpty();
+        return !domainAccess
+                .getContext()
+                .selectFrom(LANGUAGE)
+                .where(LANGUAGE.CODE.equal(languageCode))
+                .fetch()
+                .isEmpty();
+    }
+
+    static UUID getEhrId(I_DomainAccess domainAccess, UUID compositionId) {
+        return Optional.ofNullable(domainAccess
+                        .getContext()
+                        .select(COMPOSITION.EHR_ID)
+                        .from(COMPOSITION)
+                        .where(COMPOSITION.ID.equal(compositionId))
+                        .fetchOne())
+                .map(Record1::component1)
+                .orElse(null);
     }
 
     Timestamp getSysTransaction();
@@ -330,13 +367,6 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      */
     void setTerritoryCode(Integer code);
 
-    /**
-     * get the list of entry Ids for this composition
-     *
-     * @return a list of entry {@link UUID}s
-     */
-    List<UUID> getContentIds();
-
     String getFeederAudit();
 
     void setFeederAudit(FeederAudit feederAudit);
@@ -354,22 +384,14 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
     void setContextCompositionId(UUID contextId);
 
     /**
-     * add an entry to the composition
+     * Get the entry linked to the composition.
      *
-     * @param entry {@link I_EntryAccess} instance
-     * @return &gt;0 success
-     */
-    int addContent(I_EntryAccess entry);
-
-    /**
-     * get the list of entries for this composition
-     *
-     * @return the list of entry as {@link I_EntryAccess}
+     * @return the entry
      * @see I_EntryAccess
      */
-    List<I_EntryAccess> getContent();
+    I_EntryAccess getContent();
 
-    void setContent(List<I_EntryAccess> content);
+    void setContent(I_EntryAccess content);
 
     /**
      * set the contribution id for this composition

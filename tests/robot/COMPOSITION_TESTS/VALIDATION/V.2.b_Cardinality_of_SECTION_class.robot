@@ -23,7 +23,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Suite Setup       Precondition
 Suite Teardown    Postcondition
 
-Force Tags      282    not-ready    bug
+Force Tags      282
 
 
 *** Variables ***
@@ -78,7 +78,7 @@ Cardinality of SECTION class with parameters
     check status_code of commit composition    ${status_code}
 
 Precondition
-    upload OPT    validation/cardinality_of_section.opt
+    Upload OPT    validation/cardinality_of_section.opt
     create EHR
 
 Postcondition
