@@ -40,7 +40,7 @@ Force Tags      COMPOSITION_get_versioned
     create EHR and commit a composition for versioned composition tests
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Status Should Be    200
+    Should Be Equal As Strings    ${response.status}    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	1
 
@@ -59,7 +59,7 @@ Force Tags      COMPOSITION_get_versioned
     update a composition for versioned composition tests
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Status Should Be    200
+    Should Be Equal As Strings    ${response.status}    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	2
 
@@ -80,7 +80,7 @@ Force Tags      COMPOSITION_get_versioned
     update a composition for versioned composition tests
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Status Should Be    200
+    Should Be Equal As Strings    ${response.status}    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	2
 
@@ -117,7 +117,7 @@ Force Tags      COMPOSITION_get_versioned
     create fake EHR
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Status Should Be    404
+    Should Be Equal As Strings    ${response.status}    404
 
 
 5. Get Revision History of Versioned Composition Of Non-Existing Composition (JSON)
@@ -127,4 +127,4 @@ Force Tags      COMPOSITION_get_versioned
     create fake composition
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Status Should Be    404
+    Should Be Equal As Strings    ${response.status}    404

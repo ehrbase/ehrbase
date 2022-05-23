@@ -71,14 +71,13 @@ Create Two Compositions With Health Care Facility Provided And Not Provided - AQ
     Should Be Equal As Strings     ${response body["columns"][0]["name"]}   COMPOSITION
 
 Data driven tests for Compare content of compositions with the Original (FLAT)
-    [Tags]  600  not-ready  bug
-    [Template]    Create and compare content of flat compositions
+    [Tags]  CDR-415     not-ready   bug
 
     #flat_composition_file_name
-    ehrn_vital_signs.v2__.json
-    nested.en.v1__full.xml.flat.json
+    Create and compare content of flat compositions     ehrn_vital_signs.v2__.json
+    Create and compare content of flat compositions     nested.en.v1__full.xml.flat.json
 
-    TRACE GITHUB ISSUE  600  bug
+    [Teardown]      TRACE JIRA ISSUE    CDR-415
 
 
 *** Keywords ***
