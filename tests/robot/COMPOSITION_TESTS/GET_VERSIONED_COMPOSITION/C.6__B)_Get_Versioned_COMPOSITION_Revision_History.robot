@@ -80,7 +80,7 @@ Force Tags      COMPOSITION_get_versioned
     update a composition for versioned composition tests
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Should Be Equal As Strings    ${response.status}    200
+    Status Should Be    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	2
 
