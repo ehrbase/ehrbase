@@ -40,7 +40,7 @@ Force Tags      COMPOSITION_get_versioned
     create EHR and commit a composition for versioned composition tests
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Should Be Equal As Strings    ${response.status}    200
+    Status Should Be    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	1
 
@@ -49,6 +49,7 @@ Force Tags      COMPOSITION_get_versioned
 
 
 2. Get Revision History Of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
+    [Tags]      not-ready
     [Documentation]    Testing with two versions, so the result should list two history entries.
     ...     Checks if versions are listed in desc order -> Latest modified first.
     ...     Doc: https://specifications.openehr.org/releases/RM/latest/common.html#_revision_history_class
@@ -58,15 +59,16 @@ Force Tags      COMPOSITION_get_versioned
     update a composition for versioned composition tests
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Should Be Equal As Strings    ${response.status}    200
+    Status Should Be    200
     ${length} =    Get Length    ${response.body} 	
     Should Be Equal As Integers 	${length} 	2
 
     ${item1} =    Get From List    ${response.body}    0
-    Should Be Equal As Strings    ${version_uid}    ${item1.version_id.value}
+    Should Be Equal As Strings    ${version_uid[0:-1]}2    ${item1.version_id.value}
 
     ${item2} =    Get From List    ${response.body}    1
-    Should Be Equal As Strings    ${version_uid[0:-1]}2    ${item2.version_id.value}
+    Should Be Equal As Strings    ${version_uid[0:-1]}1    ${item2.version_id.value}
+    [Teardown]      TRACE JIRA ISSUE    CDR-413
 
 
 3. Get Correct Ordered Revision History of Versioned Composition Of Existing EHR With Two Composition Versions (JSON)
@@ -101,7 +103,7 @@ Force Tags      COMPOSITION_get_versioned
 
 
     # comment: check if this one is newer/bigger/higher than the creation timestamp.
-    ${timediff} = 	Subtract Date From Date 	${timestamp2} 	${timestamp1}
+    ${timediff} = 	Subtract Date From Date 	${timestamp1} 	${timestamp2}
 
     # comment: Idea here: newer/higher timestamp - older/lesser timestamp = number larger than 0 IF correct
     Should Be True 	${timediff} > 0
@@ -115,7 +117,7 @@ Force Tags      COMPOSITION_get_versioned
     create fake EHR
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Should Be Equal As Strings    ${response.status}    404
+    Status Should Be    404
 
 
 5. Get Revision History of Versioned Composition Of Non-Existing Composition (JSON)
@@ -125,4 +127,4 @@ Force Tags      COMPOSITION_get_versioned
     create fake composition
 
     get revision history of versioned composition of EHR by UID    ${versioned_object_uid}
-    Should Be Equal As Strings    ${response.status}    404
+    Status Should Be    404
