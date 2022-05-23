@@ -2,13 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
- ### Added 
-- Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
- ### Fixed 
-
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [unreleased]
+### Added
+- Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
+### Changed
+### Fixed
 
 ## [0.21.1]
 
@@ -33,7 +34,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   .
 - Add unique constraints on `status` and `entry` ([#821](https://github.com/ehrbase/ehrbase/pull/821)).
 - Removed Postgres with extensions setup ([#840](https://github.com/ehrbase/ehrbase/pull/840))
-- Upgrade openEHR_SDK to version 1.19.0 see  https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+- Upgrade openEHR_SDK to version 1.19.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 
 ### Fixed
 
