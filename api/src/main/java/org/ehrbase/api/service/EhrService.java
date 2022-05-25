@@ -213,11 +213,7 @@ public interface EhrService extends BaseService {
      */
     default void checkEhrExists(UUID ehrId) {
         if (ehrId == null || !doesEhrExist(ehrId)) {
-            throw new ObjectNotFoundException(
-                    "EHR",
-                    String.format(
-                            "EHR with id %s not found",
-                            Optional.ofNullable(ehrId).map(UUID::toString).orElse("UNKNOWN")));
+            throw new ObjectNotFoundException("EHR", String.format("EHR with id %s not found", ehrId));
         }
     }
 
