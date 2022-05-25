@@ -61,21 +61,18 @@ Test Example Generator for Templates (OPENEHR) - XML and Save it
     Validate Response Body Has Format    XML
     Save Response (XML) To File And Compare Template Ids    ${template_id}
 
-Test Example Generator For Templates (ECIS) - Get Annotations from Example
-    [Documentation]     Create template, get example and check if additional annotations are present.
-    [Tags]      not-ready
-    Upload OPT ECIS    all_types/tobacco_smoking_summary.v0.opt
+Test Example Generator For Template (ECIS) - Specific Template
+    [Documentation]     Create template, get example and check if template is returned.
+    Upload OPT ECIS     all_types/tobacco_smoking_summary.v0.opt
     Extract Template Id From OPT File
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
-    PerformChecksOnAnnotation
-    #Should Contain
-    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.comment
-    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.helpText
-    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.validation
-    #Example: $.['blocks'][?(@.block_id == 'image')]['image_url']
-    #Save Response (JSON) To File And Compare Template Ids    ${template_id}
-    [Teardown]    TRACE JIRA ISSUE    CDR-410
+    #${returnValue0}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[0][*].value
+    #${returnValue1}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[1][*].value
+    #${returnValue2}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[2][*].value
 
 *** Keywords ***
 Upload Template Using ECIS Endpoint

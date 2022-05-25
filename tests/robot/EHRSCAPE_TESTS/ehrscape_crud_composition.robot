@@ -75,7 +75,6 @@ Main flow create and delete Composition
     ## Delete action
     delete composition  ${composition_uid}      ehrScape=true
     get deleted composition (EHRScape)
-    [Teardown]    TRACE JIRA ISSUE    CDR-409
 
 
 *** Keywords ***
