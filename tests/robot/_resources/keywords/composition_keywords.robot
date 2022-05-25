@@ -1118,12 +1118,12 @@ get deleted composition
 
 get deleted composition (EHRScape)
     [Documentation]     The deleted compo should not exist
-    ...                 204 is the code for deleted - as per openEHR REST spec:
-    #...                 https://www.ehrscape.com/reference.html#_composition
+    ...                 404 is the code for deleted - as per openEHR REST spec:
+    ...                 https://www.ehrscape.com/reference.html#_composition
 
     ${resp}=            GET On Session          ${SUT}   /composition/${composition_uid}   expected_status=anything
                         log to console          ${resp.content}
-                        Status Should Be        204
+                        Status Should Be        404
 
 delete non-existent composition
     [Documentation]     DEPENDENCY `prepare new request session`, `generate random composition_uid`
