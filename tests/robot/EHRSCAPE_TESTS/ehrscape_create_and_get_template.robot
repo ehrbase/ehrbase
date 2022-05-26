@@ -62,6 +62,18 @@ Get Template (ECIS) - Get Annotations
     #Save Response (JSON) To File And Compare Template Ids    ${template_id}
     [Teardown]    TRACE JIRA ISSUE    CDR-406
 
+Get Template (ECIS) - Check Default Value Item
+    [Documentation]     Create template, get it and check defaultValue key presence in JSON.
+    [Tags]      not-ready   bug
+    Upload OPT ECIS    all_types/dv_coded_text_default_error.opt
+    Extract Template Id From OPT File
+    Get Web Template By Template Id (ECIS)    ${template_id}    JSON
+    Validate Response Body Has Format    JSON
+    #below validation is failing because of CDR-417, missing defaultValue key in Get Template result.
+    Should Be Equal As Strings
+    ...     ${response['webTemplate']['tree']['children'][2]['children']['defaultValue']}
+    ...     at0006
+    [Teardown]    TRACE JIRA ISSUE    CDR-417
 
 *** Keywords ***
 ApplyJSONLocatorAndReturnResult
