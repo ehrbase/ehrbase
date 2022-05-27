@@ -22,7 +22,7 @@ Documentation       EHRScape Tests
 
 Resource            ../_resources/keywords/composition_keywords.robot
 
-Suite Teardown      restart SUT
+#Suite Teardown      restart SUT
 
 
 *** Test Cases ***
