@@ -1164,7 +1164,11 @@ Upload OPT ECIS
 
                         get valid OPT file    ${opt_file}
                         upload OPT file ECIS
-                        server accepted OPT
+                        IF  '${response.status_code}' != '409'
+                            server accepted OPT
+                        ELSE
+                            server rejected OPT with status code 409
+                        END
 
 create EHR
     [Arguments]         ${accept-header}=JSON
