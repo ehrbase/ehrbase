@@ -76,6 +76,38 @@ Main flow create and delete Composition
     delete composition  ${composition_uid}      ehrScape=true
     get deleted composition (EHRScape)
 
+Create Composition With Period Having Fractional Unit
+    [Documentation]     Create Composition with Fractional Unit, using EHRScape endpoints.
+    [Tags]      not-ready   bug
+    Create Template     all_types/medications_statement.v0.opt
+    Extract Template Id From OPT File
+    Get Web Template By Template Id (ECIS)      ${template_id}
+    create EHR
+    Set Test Variable   ${externalTemplate}     ${template_id}
+    #medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval
+    ${composition_file}         Set Variable    medications_statement.v0__.json
+    ${composition_file_tmp}     Set Variable    medications_statement.v0.tmp__.json
+    ${compo_file_path}          Set Variable    ${COMPO DATA SETS}/FLAT
+
+    ${expected}     Load JSON From File    ${compo_file_path}/${composition_file}
+                    Log     ${expected['medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval']}
+                    Update Value To Json   ${expected}
+                    ...     ['medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval']
+                    ...     P1.5Y
+                    #...     P1.5Y
+    ${json_str}     Convert JSON To String    ${expected}
+    Create File     ${compo_file_path}/${composition_file_tmp}    ${json_str}
+    commit composition    format=FLAT
+    ...    composition=${composition_file_tmp}
+    ...    extTemplateId=true
+    Remove File     ${compo_file_path}/${composition_file_tmp}
+    check the successful result of commit composition
+    (FLAT) get composition by composition_uid       ${composition_uid}
+    Should Be Equal As Strings
+    ...     ${response.json()['composition']['medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval']}
+    ...     P1.5Y
+    [Teardown]      TRACE GITHUB ISSUE    879
+
 
 *** Keywords ***
 Create Template
