@@ -226,26 +226,18 @@ POST /query/aql
 
 
 POST /query/aql (REST)
-    [Arguments]         ${format}   ${ehrScape}=False
+    [Arguments]         ${format}
     [Documentation]     Executes HTTP method POST on /query/aql endpoint
     ...                 DEPENDENCY: following variables have to be in test-level scope:
     ...                 `${payload}`
 
                         prepare new request session    ${format}
-    IF          ${ehrScape} == 'False'
 
-        ${resp}=            REST.POST   /query/aql    ${payload}
-                            ...         headers=${headers}
+    ${resp}             REST.POST   /query/aql    ${payload}
+                        ...         headers=${headers}
 
-                            Integer    response status    200
-                            Set Test Variable   ${response}    ${resp}
-    ELSE IF     ${ehrScape} == 'True'
-        ${resp}=            REST.POST   /query    ${payload}
-                            ...         headers=${headers}
-
-                            Integer    response status    200
-                            Set Test Variable   ${response}    ${resp}
-    END
+                        Integer    response status    200
+                        Set Test Variable   ${response}    ${resp}
     
     # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
     # TODO: rm/comment it out when test stable
@@ -253,6 +245,19 @@ POST /query/aql (REST)
     ${resp_body}=       Output    response body
                         Set Test Variable   ${response body}    ${resp_body}
 
+POST /query (REST) - ECIS
+    [Arguments]         ${format}
+    [Documentation]     Executes HTTP method POST on /query EHRScape endpoint.
+    ...                 DEPENDENCY: following variables have to be in test-level scope:
+    ...                 `${payload}`
+                        &{headers}      Create Dictionary
+                        ...     content=application/json    accept=application/json
+                        Create Session      ${SUT}   ${ECISURL}
+                        ...     debug=2     headers=${headers}      verify=True
+
+    ${resp}             POST On Session     ${SUT}   /query     data=${payload}
+                        Status Should Be    201
+                        Set Test Variable   ${response}     ${resp}
 
 POST /query/{qualified_query_name}/{version}
     No Operation

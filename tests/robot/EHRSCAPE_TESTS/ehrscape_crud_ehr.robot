@@ -43,18 +43,15 @@ Main Flow Create EHR
     ${externalTemplate}    Set Variable    ${template_id}
     Set Test Variable    ${externalTemplate}
     ## Check query endpoint for EHR
-    ${query}=           Catenate
-    ...                 SELECT
-    ...                 e/ehr_id, e/time_created, e/system_id
-    ...                 FROM EHR e
-    Set Test Variable    ${payload}    {"aql": "${query}"}
-    &{headers}      Create Dictionary       content=application/json    accept=application/json
-    Create Session      ${SUT}   ${ECISURL}
-    ...     debug=2     headers=${headers}      verify=True
-    POST /query/aql (REST)    JSON      True
-    Integer    response status    200
-    Log     ${response.json()['ehrId']}
-    Should Contain     ${response.json()['ehrId']}      -
+    #${query}=           Catenate
+    #...                 SELECT
+    #...                 e/ehr_id, e/time_created, e/system_id
+    #...                 FROM EHR e
+    #Set Test Variable    ${payload}    {"aql": "${query}"}
+    #POST /query (REST) - ECIS       JSON
+    #Integer     response status      200
+    #Log     ${response.json()['ehrId']}
+    #Should Contain     ${response.json()['ehrId']}      -
 
 Get EHR Using Ehr Id And By Subject Id, Namespace
     [Documentation]    1. Get existing EHR using Ehr Id.

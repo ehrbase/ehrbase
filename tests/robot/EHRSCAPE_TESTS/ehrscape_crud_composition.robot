@@ -56,20 +56,17 @@ Main flow create and update Composition
     Set Test Variable   ${response}    ${response.json()}
     Should Contain      ${response["compositionUid"]}   ${compoUidURL}
     ## Check query endpoint for COMPOSITION
-    ${query}=           Catenate
-    ...                 SELECT
-    ...                 c as COMPOSITION
-    ...                 FROM EHR e
-    ...                 CONTAINS composition c
-    Set Test Variable    ${payload}    {"aql": "${query}"}
-    &{headers}      Create Dictionary       content=application/json    accept=application/json
-    Create Session      ${SUT}   ${ECISURL}
-    ...     debug=2     headers=${headers}      verify=True
-    POST /query/aql (REST)    JSON      True
-    Integer    response status    200
-    Log     ${response}
-    Should Be Equal As Strings     ${response['action']}   RETRIEVE
-    Should Contain      ${response['compositionUid']}      ${compoUidURL}
+    #${query}=           Catenate
+    #...                 SELECT
+    #...                 c as COMPOSITION
+    #...                 FROM EHR e
+    #...                 CONTAINS composition c
+    #Set Test Variable    ${payload}    {"aql": "${query}"}
+    #POST /query (REST) - ECIS    JSON
+    #Integer    response status    200
+    #Log     ${response.json()}
+    #Should Be Equal As Strings     ${response.json()['action']}   RETRIEVE
+    #Should Contain      ${response.json()['compositionUid']}      ${compoUidURL}
 
 Main flow create and delete Composition
     [Documentation]     Create and Update Composition using EHRScape endpoints.
