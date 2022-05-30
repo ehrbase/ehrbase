@@ -21,8 +21,9 @@ Documentation       EHRScape Tests
 ...                 Documentation URL to be defined
 
 Resource            ../_resources/keywords/composition_keywords.robot
+Resource            ../_resources/keywords/aql_query_keywords.robot
 
-#Suite Teardown      restart SUT
+Suite Teardown      restart SUT
 
 
 *** Test Cases ***
@@ -54,6 +55,21 @@ Main flow create and update Composition
     check composition exists
     Set Test Variable   ${response}    ${response.json()}
     Should Contain      ${response["compositionUid"]}   ${compoUidURL}
+    ## Check query endpoint for COMPOSITION
+    ${query}=           Catenate
+    ...                 SELECT
+    ...                 c as COMPOSITION
+    ...                 FROM EHR e
+    ...                 CONTAINS composition c
+    Set Test Variable    ${payload}    {"aql": "${query}"}
+    &{headers}      Create Dictionary       content=application/json    accept=application/json
+    Create Session      ${SUT}   ${ECISURL}
+    ...     debug=2     headers=${headers}      verify=True
+    POST /query/aql (REST)    JSON      True
+    Integer    response status    200
+    Log     ${response}
+    Should Be Equal As Strings     ${response['action']}   RETRIEVE
+    Should Contain      ${response['compositionUid']}      ${compoUidURL}
 
 Main flow create and delete Composition
     [Documentation]     Create and Update Composition using EHRScape endpoints.
@@ -84,7 +100,6 @@ Create Composition With Period Having Fractional Unit
     Get Web Template By Template Id (ECIS)      ${template_id}
     create EHR
     Set Test Variable   ${externalTemplate}     ${template_id}
-    #medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval
     ${composition_file}         Set Variable    medications_statement.v0__.json
     ${composition_file_tmp}     Set Variable    medications_statement.v0.tmp__.json
     ${compo_file_path}          Set Variable    ${COMPO DATA SETS}/FLAT

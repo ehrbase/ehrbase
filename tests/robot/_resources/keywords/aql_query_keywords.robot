@@ -226,17 +226,26 @@ POST /query/aql
 
 
 POST /query/aql (REST)
-    [Arguments]         ${format}
+    [Arguments]         ${format}   ${ehrScape}=False
     [Documentation]     Executes HTTP method POST on /query/aql endpoint
     ...                 DEPENDENCY: following variables have to be in test-level scope:
     ...                 `${payload}`
 
                         prepare new request session    ${format}
-    ${resp}=            REST.POST   /query/aql    ${payload}
-                        ...         headers=${headers}
+    IF          ${ehrScape} == 'False'
 
-                        Integer    response status    200
-                        Set Test Variable   ${response}    ${resp}
+        ${resp}=            REST.POST   /query/aql    ${payload}
+                            ...         headers=${headers}
+
+                            Integer    response status    200
+                            Set Test Variable   ${response}    ${resp}
+    ELSE IF     ${ehrScape} == 'True'
+        ${resp}=            REST.POST   /query    ${payload}
+                            ...         headers=${headers}
+
+                            Integer    response status    200
+                            Set Test Variable   ${response}    ${resp}
+    END
     
     # UNCOMMENT NEXT BLOCK FOR DEBUGGING (BETTER OUTPUT IN CONSOLE)
     # TODO: rm/comment it out when test stable
