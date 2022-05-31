@@ -676,7 +676,7 @@ TRACE GITHUB ISSUE
     ...             ${message}=Next step fails due to a bug!
     ...             ${loglevel}=ERROR
 
-                    Log    ${message} | <a href="https://github.com/ehrbase/project_management/issues/${GITHUB_ISSUE}">Github ISSUE #${GITHUB_ISSUE}</a>
+                    Log    ${message} | <a href="https://github.com/ehrbase/ehrbase/issues/${GITHUB_ISSUE}">Github ISSUE #${GITHUB_ISSUE}</a>
                     ...    level=${loglevel}    html=True
 
                     Set Tags    not-ready    ${type}    ${GITHUB_ISSUE}

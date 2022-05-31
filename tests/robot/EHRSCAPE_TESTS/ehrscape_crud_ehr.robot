@@ -23,9 +23,10 @@ Documentation       EHRScape Tests
 
 Resource            ../_resources/keywords/composition_keywords.robot
 Resource            ../_resources/keywords/ehr_keywords.robot
+Resource            ../_resources/keywords/aql_query_keywords.robot
 
-Suite Setup         restart SUT
-Suite Teardown      restart SUT
+#Suite Setup         restart SUT
+#Suite Teardown      restart SUT
 
 
 *** Test Cases ***
@@ -41,6 +42,16 @@ Main Flow Create EHR
     Set Suite Variable      ${ehr_id}       ${ehrId}
     ${externalTemplate}    Set Variable    ${template_id}
     Set Test Variable    ${externalTemplate}
+    ## Check query endpoint for EHR
+    #${query}=           Catenate
+    #...                 SELECT
+    #...                 e/ehr_id, e/time_created, e/system_id
+    #...                 FROM EHR e
+    #Set Test Variable    ${payload}    {"aql": "${query}"}
+    #POST /query (REST) - ECIS       JSON
+    #Integer     response status      200
+    #Log     ${response.json()['ehrId']}
+    #Should Contain     ${response.json()['ehrId']}      -
 
 Get EHR Using Ehr Id And By Subject Id, Namespace
     [Documentation]    1. Get existing EHR using Ehr Id.

@@ -24,7 +24,7 @@ Documentation       EHRScape Tests
 Resource            ../_resources/keywords/composition_keywords.robot
 
 #Suite Setup    Precondition
-Suite Teardown      restart SUT
+#Suite Teardown      restart SUT
 
 
 *** Test Cases ***
@@ -37,11 +37,11 @@ Main flow create Template and GET by Template ID
 Main flow create and GET all Templates
     [Documentation]     Upload 2 templates and get all web templates, using ECIS endpoints.
     Upload OPT ECIS     all_types/family_history.opt
-    Status Should Be    200
+    Run Keyword And Return Status   Status Should Be    200
     Extract Template Id From OPT File
     ${template1}        Set Variable    ${template_id}
     Upload OPT ECIS     minimal/minimal_observation.opt
-    Status Should Be    200
+    Run Keyword And Return Status   Status Should Be    200
     Extract Template Id From OPT File
     ${template2}        Set Variable    ${template_id}
     Get All Web Templates
