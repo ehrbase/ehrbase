@@ -21,6 +21,7 @@ Documentation       EHRScape Tests
 ...                 Documentation URL to be defined
 
 Resource            ../_resources/keywords/composition_keywords.robot
+Resource            ../_resources/keywords/aql_query_keywords.robot
 
 #Suite Teardown      restart SUT
 
@@ -54,6 +55,18 @@ Main flow create and update Composition
     check composition exists
     Set Test Variable   ${response}    ${response.json()}
     Should Contain      ${response["compositionUid"]}   ${compoUidURL}
+    ## Check query endpoint for COMPOSITION
+    #${query}=           Catenate
+    #...                 SELECT
+    #...                 c as COMPOSITION
+    #...                 FROM EHR e
+    #...                 CONTAINS composition c
+    #Set Test Variable    ${payload}    {"aql": "${query}"}
+    #POST /query (REST) - ECIS    JSON
+    #Integer    response status    200
+    #Log     ${response.json()}
+    #Should Be Equal As Strings     ${response.json()['action']}   RETRIEVE
+    #Should Contain      ${response.json()['compositionUid']}      ${compoUidURL}
 
 Main flow create and delete Composition
     [Documentation]     Create and Update Composition using EHRScape endpoints.
@@ -78,13 +91,12 @@ Main flow create and delete Composition
 
 Create Composition With Period Having Fractional Unit
     [Documentation]     Create Composition with Fractional Unit, using EHRScape endpoints.
-    [Tags]      not-ready   bug
+    ...     Expect 400 after creation with P1.5Y Fractional unit.
     Create Template     all_types/medications_statement.v0.opt
     Extract Template Id From OPT File
     Get Web Template By Template Id (ECIS)      ${template_id}
     create EHR
     Set Test Variable   ${externalTemplate}     ${template_id}
-    #medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval
     ${composition_file}         Set Variable    medications_statement.v0__.json
     ${composition_file_tmp}     Set Variable    medications_statement.v0.tmp__.json
     ${compo_file_path}          Set Variable    ${COMPO DATA SETS}/FLAT
@@ -101,12 +113,14 @@ Create Composition With Period Having Fractional Unit
     ...    composition=${composition_file_tmp}
     ...    extTemplateId=true
     Remove File     ${compo_file_path}/${composition_file_tmp}
-    check the successful result of commit composition
-    (FLAT) get composition by composition_uid       ${composition_uid}
-    Should Be Equal As Strings
-    ...     ${response.json()['composition']['medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval']}
-    ...     P1.5Y
-    [Teardown]      TRACE GITHUB ISSUE    879
+    Should Be Equal As Strings      ${response.status_code}         400
+    Should Be Equal As Strings      ${response.json()["message"]}   Text cannot be parsed to a Period:P1.5Y
+    #check the successful result of commit composition
+    #(FLAT) get composition by composition_uid       ${composition_uid}
+    #Should Be Equal As Strings
+    #...     ${response.json()['composition']['medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval']}
+    #...     P1.5Y
+    #[Teardown]      TRACE GITHUB ISSUE    879
 
 
 *** Keywords ***
