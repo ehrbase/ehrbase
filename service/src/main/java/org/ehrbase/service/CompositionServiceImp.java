@@ -390,9 +390,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
                 throw new InternalServerException(e);
             }
         }
-        if (result <= 0) {
-            throw new InternalServerException("Delete failed on composition:" + compositionAccess.getId());
-        }
+        if (result <= 0) throw new InternalServerException("Delete failed on composition-loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong:" + compositionAccess.getId());
     }
 
     @Override
