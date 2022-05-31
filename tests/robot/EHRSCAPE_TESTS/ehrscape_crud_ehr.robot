@@ -25,8 +25,8 @@ Resource            ../_resources/keywords/composition_keywords.robot
 Resource            ../_resources/keywords/ehr_keywords.robot
 Resource            ../_resources/keywords/aql_query_keywords.robot
 
-Suite Setup         restart SUT
-Suite Teardown      restart SUT
+#Suite Setup         restart SUT
+#Suite Teardown      restart SUT
 
 
 *** Test Cases ***

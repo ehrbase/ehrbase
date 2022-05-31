@@ -23,7 +23,7 @@ Documentation       EHRScape Tests
 Resource            ../_resources/keywords/composition_keywords.robot
 Resource            ../_resources/keywords/aql_query_keywords.robot
 
-Suite Teardown      restart SUT
+#Suite Teardown      restart SUT
 
 
 *** Test Cases ***
@@ -91,7 +91,7 @@ Main flow create and delete Composition
 
 Create Composition With Period Having Fractional Unit
     [Documentation]     Create Composition with Fractional Unit, using EHRScape endpoints.
-    [Tags]      not-ready   bug
+    ...     Expect 400 after creation with P1.5Y Fractional unit.
     Create Template     all_types/medications_statement.v0.opt
     Extract Template Id From OPT File
     Get Web Template By Template Id (ECIS)      ${template_id}
@@ -113,12 +113,14 @@ Create Composition With Period Having Fractional Unit
     ...    composition=${composition_file_tmp}
     ...    extTemplateId=true
     Remove File     ${compo_file_path}/${composition_file_tmp}
-    check the successful result of commit composition
-    (FLAT) get composition by composition_uid       ${composition_uid}
-    Should Be Equal As Strings
-    ...     ${response.json()['composition']['medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval']}
-    ...     P1.5Y
-    [Teardown]      TRACE GITHUB ISSUE    879
+    Should Be Equal As Strings      ${response.status_code}         400
+    Should Be Equal As Strings      ${response.json()["message"]}   Text cannot be parsed to a Period:P1.5Y
+    #check the successful result of commit composition
+    #(FLAT) get composition by composition_uid       ${composition_uid}
+    #Should Be Equal As Strings
+    #...     ${response.json()['composition']['medications/medication_list/medication_statement:0/timing_-_non-daily/repetition_interval']}
+    #...     P1.5Y
+    #[Teardown]      TRACE GITHUB ISSUE    879
 
 
 *** Keywords ***
