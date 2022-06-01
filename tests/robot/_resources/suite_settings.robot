@@ -42,6 +42,7 @@ Library     libraries/composition_validation_lib.py
 Resource    keywords/generic_keywords.robot
 Variables   variables/sut_config.py
 ...         ${SUT}    ${AUTH_TYPE}    ${NODOCKER}
+Variables   variables/additional_configs.yaml
 
 
 
