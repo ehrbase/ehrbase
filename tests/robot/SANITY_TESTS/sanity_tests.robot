@@ -27,7 +27,7 @@ Resource        ../_resources/keywords/aql_query_keywords.robot
 Resource        ../_resources/keywords/directory_keywords.robot
 
 Suite Setup       Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***
@@ -55,7 +55,7 @@ Main flow Sanity Tests for FLAT Compositions
     check response: is positive
 
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 
 Main flow Sanity Tests for Canonical JSON Compositions
@@ -86,7 +86,7 @@ Main flow Sanity Tests for Canonical JSON Compositions
     execute ad-hoc query    B/102_get_compositions_orderby_name.json
     check response: is positive
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 Main flow Sanity Tests for Canonical XML Compositions
     [Tags]
@@ -115,7 +115,7 @@ Main flow Sanity Tests for Canonical XML Compositions
     execute ad-hoc query    B/102_get_compositions_orderby_name.json
     check response: is positive
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 
 

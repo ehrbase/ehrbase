@@ -1148,7 +1148,11 @@ Upload OPT
 
                         get valid OPT file    ${opt_file}
                         upload OPT file
-                        server accepted OPT
+                        IF  '${response.status_code}' != '409'
+                            server accepted OPT
+                        ELSE
+                            server rejected OPT with status code 409
+                        END
 
 Upload OPT ECIS
     [Arguments]     ${opt_file}
