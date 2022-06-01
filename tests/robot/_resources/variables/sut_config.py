@@ -15,10 +15,8 @@
 # limitations under the License.
 
 import yaml
-import os
 from requests import request
 
-print(os.getcwd())
 with open('robot/_resources/variables/additional_configs.yaml', 'r') as file:
     yaml_content = yaml.safe_load(file)
 
