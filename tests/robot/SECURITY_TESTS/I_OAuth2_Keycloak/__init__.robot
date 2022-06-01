@@ -21,7 +21,7 @@ Documentation    OAuth2 / OpenID-Connect w/ Keycloak
 
 Resource    ../../_resources/suite_settings.robot
 
-Suite Setup    startup SUT
-Suite Teardown    shutdown SUT
+#Suite Setup    startup SUT
+#Suite Teardown    shutdown SUT
 
 Force Tags    SECURITY_oauth
