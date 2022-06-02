@@ -14,9 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import yaml
 from requests import request
 
+with open('robot/_resources/variables/additional_configs.yaml', 'r') as file:
+    yaml_content = yaml.safe_load(file)
+
+GLOBAL_PORT_FROM_YAML = yaml_content['GLOBAL_PORT']
 
 # KEYCLOAK SETTINGS
 HEADER = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -193,7 +197,7 @@ ADMIN_TEST_CONFIG = {
 # @{scapecreds}           %{EHRSCAPE_USER}    %{EHRSCAPE_PASSWORD}
 
 
-def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
+def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!", port=GLOBAL_PORT_FROM_YAML):
     # DEV CONFIG W/ OAUTH
     if (
         sut == "DEV"
@@ -228,6 +232,10 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
         ADMIN_DEV_CONFIG["AUTHORIZATION"] = {
             "Authorization": "Bearer " + ADMIN_DEV_CONFIG["ACCESS_TOKEN"]
         }
+        ADMIN_DEV_CONFIG["BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/openehr/v1"
+        ADMIN_DEV_CONFIG["ECISURL"] = "http://localhost:"+port+"/ehrbase/rest/ecis/v1"
+        ADMIN_DEV_CONFIG["ADMIN_BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/admin"
+        ADMIN_DEV_CONFIG["HEARTBEAT_URL"] = "http://localhost:"+port+"/ehrbase/rest/status"
         return ADMIN_DEV_CONFIG
 
     # TEST CONFIG W/ OAUTH
@@ -242,6 +250,10 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
         TEST_CONFIG["AUTHORIZATION"] = {
             "Authorization": "Bearer " + TEST_CONFIG["ACCESS_TOKEN"]
         }
+        TEST_CONFIG["BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/openehr/v1"
+        TEST_CONFIG["ECISURL"] = "http://localhost:"+port+"/ehrbase/rest/ecis/v1"
+        TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/admin"
+        TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:"+port+"/ehrbase/rest/status"
         return TEST_CONFIG
 
     # ADMIN-TEST CONFIG W/ OAUTH
@@ -256,10 +268,18 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
         ADMIN_TEST_CONFIG["AUTHORIZATION"] = {
             "Authorization": "Bearer " + ADMIN_TEST_CONFIG["ACCESS_TOKEN"]
         }
+        ADMIN_TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
+        ADMIN_TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
+        ADMIN_TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
+        ADMIN_TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
         return ADMIN_TEST_CONFIG
 
     # ADMIN-TEST CONFIG W/ BASIC AUTH
     if sut == "ADMIN-TEST":
+        ADMIN_TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
+        ADMIN_TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
+        ADMIN_TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
+        ADMIN_TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
         return ADMIN_TEST_CONFIG
 
     # DEV CONFIG W/ BASIC AUTH
@@ -276,5 +296,13 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
         return ADMIN_DEV_CONFIG
 
     # TEST CONFIG W/ BASIC AUTH
-    else:
+    #else:
+    #    print(TEST_CONFIG)
+    #    return TEST_CONFIG
+
+    if sut == "TEST" and auth_type == "BASIC":
+        TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
+        TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
+        TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
+        TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
         return TEST_CONFIG
