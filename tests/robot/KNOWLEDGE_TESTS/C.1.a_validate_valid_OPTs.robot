@@ -101,13 +101,6 @@ Versioned
     versioned/Test versioned v2.opt
 
 
-#Removed Optional Elements
-#    [Documentation]    Issues with optional elements.
-#    ...                Server should accept OPTs with missing optional elements as valid.
-#    [Template]         validate valid OPT
-#    removed_optional_elements/minimal_action_removed_language.opt
-
-
 
 # Test Suite Self Test For Debugging
 #     Log To Console    \n
