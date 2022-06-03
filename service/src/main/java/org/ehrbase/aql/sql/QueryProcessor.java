@@ -89,6 +89,7 @@ public class QueryProcessor extends TemplateMetaData {
     private Statements statements;
     private final String serverNodeId;
     private JoinSetup joinSetup = new JoinSetup();
+    private final ActiveTemplates activeTemplates;
 
     public QueryProcessor(
             I_DomainAccess domainAccess,
@@ -101,9 +102,14 @@ public class QueryProcessor extends TemplateMetaData {
         this.contains = contains;
         this.statements = statements;
         this.serverNodeId = serverNodeId;
+        this.activeTemplates = new ActiveTemplates(domainAccess.getContext());
     }
 
     public AqlResult execute() {
+
+        // retrieve the active templates
+        activeTemplates.init();
+
         AqlSelectQuery aqlSelectQuery = buildAqlSelectQuery();
 
         Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery(), null);
@@ -132,7 +138,10 @@ public class QueryProcessor extends TemplateMetaData {
             } else cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
         } else {
             for (String templateId : contains.getTemplates()) {
-                cacheQuery.put(templateId, buildQuerySteps(templateId));
+                // optimize: use only the template that are currently used in the DB!
+                if (!activeTemplates.isInitialized() || activeTemplates.isActive(templateId)) {
+                    cacheQuery.put(templateId, buildQuerySteps(templateId));
+                }
             }
         }
 
