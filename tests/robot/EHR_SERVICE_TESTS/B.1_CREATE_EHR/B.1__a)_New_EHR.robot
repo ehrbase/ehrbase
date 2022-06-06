@@ -115,14 +115,13 @@ MF-021 - Create new EHR (valid ehr_status with other_details)
 
 MF-022 - Create new EHR (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_TABLE
-    [Tags]              162    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     POST /ehr    ${body}
-
-        TRACE GITHUB ISSUE  162  bug
-
     Integer    response status    201
+    # https://github.com/ehrbase/project_management/issues/162
+    #TRACE GITHUB ISSUE  162  bug
+
 
 
 MF-051 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
@@ -170,14 +169,13 @@ MF-053 - Create new EHR providing an ehr_id (valid ehr_status with other_details
 
 MF-054 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_TABLE
-    [Tags]              162    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     PUT /ehr/ehr_id    body=${body}
-
-        TRACE GITHUB ISSUE  162  bug
-
     Integer    response status    201
+    #https://github.com/ehrbase/project_management/issues/162
+    #TRACE GITHUB ISSUE  162  bug
+
 
 
 
