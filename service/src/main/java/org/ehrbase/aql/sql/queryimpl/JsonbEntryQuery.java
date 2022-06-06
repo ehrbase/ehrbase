@@ -41,24 +41,27 @@ import java.util.Set;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
 
 /**
  * Generate an SQL field corresponding to a JSONB data value query
  * Created by christian on 5/6/2016.
  */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452","java:S1075"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452", "java:S1075"})
 public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     public static final String MAGNITUDE = "magnitude";
-  Logger logger = LoggerFactory.getLogger(JsonbEntryQuery.class);
+    Logger logger = LoggerFactory.getLogger(JsonbEntryQuery.class);
 
     private static final String JSONB_PATH_SELECTOR_EXPR = " #>> '{";
     private static final String JSONB_AT_AT_SELECTOR_EXPR = " @@ '";
-    private static final String JSONB_SELECTOR_COMPOSITION_OPEN = ENTRY.ENTRY_ + JSONB_PATH_SELECTOR_EXPR;
+    private static final String JSONB_ENTRY_SELECTOR_COMPOSITION_OPEN = ENTRY.ENTRY_ + JSONB_PATH_SELECTOR_EXPR;
+    private static final String JSONB_CONTEXT_SELECTOR_COMPOSITION_OPEN = EVENT_CONTEXT.OTHER_CONTEXT + JSONB_PATH_SELECTOR_EXPR;
     public static final String JSQUERY_COMPOSITION_OPEN = ENTRY.ENTRY_ + JSONB_AT_AT_SELECTOR_EXPR;
 
     public static final String COMPOSITION = "composition";
     public static final String CONTENT = "content";
+    public static final String OTHER_CONTEXT = "context/other_context";
     public static final String ACTIVITIES = "activities";
     public static final String EVENTS = "events";
     public static final String ITEMS = "items";
@@ -135,7 +138,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             return null;
 
         Set<String> pathSet;
-        if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith(CONTENT)) {
+        if (variableDefinition.getPath() != null && (variableDefinition.getPath().startsWith(CONTENT) || variableDefinition.getPath().startsWith(OTHER_CONTEXT))) {
             pathSet = new MultiPath().asSet("/" + variableDefinition.getPath());
             isRootContent = true;
         } else
@@ -150,7 +153,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         //traverse the set of paths and create the corresponding fields
         List<QualifiedAqlField> fieldList = new ArrayList<>();
 
-        for (String path: pathSet) {
+        for (String path : pathSet) {
             List<String> itemPathArray = new ArrayList<>();
             itemPathArray.add(pathResolver.entryRoot(templateId));
 
@@ -182,11 +185,13 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 itemPathArray = new JsonbFunctionCall(itemPathArray, AQL_NODE_ITERATIVE_MARKER, QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION).resolve();
             }
 
-            String itemPath = StringUtils.join(itemPathArray.toArray(new String[]{}), ",");
+            String itemPath;
+            boolean isContext = itemPathArray.size() > 2 && itemPathArray.get(2).contains("other_context");
+            itemPath = StringUtils.join(itemPathArray.toArray(new String[]{}), ",", isContext ? 3 : 0, itemPathArray.size());
 
-            if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION) && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION))
-                itemPath = wrapQuery(itemPath, JSONB_SELECTOR_COMPOSITION_OPEN, JSONB_SELECTOR_CLOSE);
-
+            if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)
+                    && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION))
+                itemPath = wrapQuery(itemPath, isContext ? JSONB_CONTEXT_SELECTOR_COMPOSITION_OPEN : JSONB_ENTRY_SELECTOR_COMPOSITION_OPEN, JSONB_SELECTOR_CLOSE);
 
             DataTypeFromTemplate dataTypeFromTemplate = new DataTypeFromTemplate(introspectCache, ignoreUnresolvedIntrospect, clause);
 
@@ -216,9 +221,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 fieldPathItem = DSL.select(fieldPathItem).asField();
 
             QualifiedAqlField aqlField = new QualifiedAqlField(fieldPathItem,
-                                                dataTypeFromTemplate.getItemType(),
-                                                dataTypeFromTemplate.getItemCategory()
-                                                );
+                    dataTypeFromTemplate.getItemType(),
+                    dataTypeFromTemplate.getItemCategory()
+            );
 
             fieldList.add(aqlField);
         }
@@ -226,13 +231,12 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         return new MultiFields(variableDefinition, fieldList, templateId);
     }
 
-    private Field<?> buildFieldWithCast(String itemPath, DataType castTypeAs, String alias){
+    private Field<?> buildFieldWithCast(String itemPath, DataType castTypeAs, String alias) {
         Field fieldPathItem;
 
         if (castTypeAs != null) {
             fieldPathItem = DSL.field(itemPath, String.class).cast(castTypeAs).as(alias);
-        }
-        else {
+        } else {
             fieldPathItem = DSL.field(itemPath, String.class).as(alias);
         }
 
@@ -249,7 +253,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         //traverse the set of paths and create the corresponding fields
         List<QualifiedAqlField> fieldList = new ArrayList<>();
 
-        for (String path: pathSet) {
+        for (String path : pathSet) {
             List<String> itemPathArray = new ArrayList<>();
 
             if (pathResolver.entryRoot(templateId) == null) {
@@ -306,7 +310,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             String[] segments = itemPath.split("(?=(,[0-9]*,))");
             //trim the last index expression
             String pathPart = StringUtils.join(ArrayUtils.subarray(segments, 0, segments.length - 1));
-            return QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+ "(" + CONTENT + " #> '{" + pathPart + "}')";
+            return QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION + "(" + CONTENT + " #> '{" + pathPart + "}')";
         } else
             return open + itemPath + close;
 

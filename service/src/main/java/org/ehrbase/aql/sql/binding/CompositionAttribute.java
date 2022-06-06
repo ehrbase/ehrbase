@@ -40,7 +40,7 @@ public class CompositionAttribute {
     public MultiFields toSql(I_VariableDefinition variableDefinition, String templateId, String identifier){
         MultiFields qualifiedAqlFields;
 
-        if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
+        if (variableDefinition.getPath() != null && (variableDefinition.getPath().startsWith("content") || variableDefinition.getPath().startsWith("context/other_context"))) {
             qualifiedAqlFields = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, clause);
             if (qualifiedAqlFields != null)
                 qualifiedAqlFields.setUseEntryTable(true);
