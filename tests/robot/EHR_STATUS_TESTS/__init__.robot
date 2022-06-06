@@ -18,15 +18,15 @@
 
 *** Settings ***
 Metadata    Version    0.4.0
-Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*
+Metadata    Authors    *Wladislaw Wagner*, *Pablo Pazos*, *Vladislav Ploaia*
 Metadata    Created    2019.02.26
-Metadata    Updated    2021.06.10
+Metadata    Updated    2022.06.06
 
 Documentation    https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/EHR.md#c-ehr_status-test-cases
 
 Resource   ../_resources/suite_settings.robot
 
-Suite Setup    startup SUT
-Suite Teardown    shutdown SUT
+#Suite Setup    startup SUT
+#Suite Teardown    shutdown SUT
 
 Force Tags    EHR_STATUS
