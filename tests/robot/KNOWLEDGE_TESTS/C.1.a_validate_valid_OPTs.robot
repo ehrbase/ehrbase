@@ -39,7 +39,7 @@ Metadata        TOP_TEST_SUITE    EHR_STATUS
 Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 
 # Suite Setup  startup OPT SUT
-Suite Teardown  Delete All Templates
+# Suite Teardown  Delete All Templates
 
 Force Tags   OPT14    OPT14_validate    future
 
@@ -99,14 +99,6 @@ Versioned
 
     versioned/Test versioned v1.opt
     versioned/Test versioned v2.opt
-
-
-Removed Optional Elements
-    [Documentation]    Issues with optional elements.
-    ...                Server should accept OPTs with missing optinal elements as vaild.
-    [Template]         validate valid OPT
-
-    removed_optional_elements/minimal_action_removed_language.opt
 
 
 

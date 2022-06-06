@@ -41,7 +41,7 @@ Metadata        TOP_TEST_SUITE    EHR_STATUS
 Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 
 # Suite Setup  startup OPT SUT
-Suite Teardown  Delete All Templates
+# Suite Teardown  Delete All Templates
 
 Force Tags   OPT14    OPT14_retrieve
 
