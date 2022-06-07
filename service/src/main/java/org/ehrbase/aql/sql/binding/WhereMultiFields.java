@@ -40,10 +40,10 @@ import org.ehrbase.service.KnowledgeCacheService;
 @SuppressWarnings({"java:S3776", "java:S135"})
 public class WhereMultiFields {
 
-    private JsonbEntryQuery jsonbEntryQuery;
-    private CompositionAttributeQuery compositionAttributeQuery;
+    private final JsonbEntryQuery jsonbEntryQuery;
+    private final CompositionAttributeQuery compositionAttributeQuery;
     private final List<Object> whereClause;
-    private PathResolver pathResolver;
+    private final PathResolver pathResolver;
 
     public WhereMultiFields(
             JsonbEntryQuery jsonbEntryQuery,

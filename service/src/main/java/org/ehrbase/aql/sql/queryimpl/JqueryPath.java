@@ -23,6 +23,7 @@ import static org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextR
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 import org.ehrbase.ehr.util.LocatableHelper;
 
@@ -52,10 +53,12 @@ public class JqueryPath {
         int offset = 0;
         List<String> segments = LocatableHelper.dividePathIntoSegments(path);
         List<String> jqueryPath = new ArrayList<>();
-        String nodeId = null;
+        String nodeId;
         for (int i = offset; i < segments.size(); i++) {
             nodeId = segments.get(i);
-            nodeId = nodeId.equals(OTHER_CONTEXT.substring(1)) ? nodeId : "/" + nodeId;
+            if (!nodeId.equals(OTHER_CONTEXT.substring(1))) {
+                nodeId = "/" + nodeId;
+            }
 
             encodeTreeMapNodeId(jqueryPath, nodeId);
 
@@ -65,7 +68,9 @@ public class JqueryPath {
             if (pathPart.equals(JsonbEntryQuery.PATH_PART.IDENTIFIER_PATH_PART)) {
                 nodeId = nodePredicate.removeNameValuePredicate();
                 jqueryPath.add(nodeId);
-                if (i <= segments.size() - 1 && isList(nodeId)) jqueryPath.add(defaultIndex);
+                if (i < segments.size() && isList(nodeId)) {
+                    jqueryPath.add(defaultIndex);
+                }
             }
             // VARIABLE_PATH_PART is provided by the user. It may contain name/value node predicate
             // see http://www.openehr.org/releases/QUERY/latest/docs/AQL/AQL.html#_node_predicate
@@ -79,16 +84,21 @@ public class JqueryPath {
                     jqueryPath.add(nodeId);
                 }
 
-                if (isList(nodeId)) jqueryPath.add(defaultIndex);
+                if (isList(nodeId)) {
+                    jqueryPath.add(defaultIndex);
+                }
             }
         }
 
         if (pathPart.equals(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART)) {
             StringBuilder stringBuilder = new StringBuilder();
+            Pattern p = Pattern.compile("[0-9]*|#");
             for (int i = jqueryPath.size() - 1; i >= 0; i--) {
-                if (jqueryPath.get(i).matches("[0-9]*|#")
+                if (jqueryPath.get(i).startsWith("'")
                         || jqueryPath.get(i).contains("[")
-                        || jqueryPath.get(i).startsWith("'")) break;
+                        || p.matcher(jqueryPath.get(i)).matches()) {
+                    break;
+                }
                 String item = jqueryPath.remove(i);
                 stringBuilder.insert(0, item);
             }
@@ -123,8 +133,9 @@ public class JqueryPath {
     }
 
     private static boolean isList(String predicate) {
-        if (predicate.equals(TAG_ACTIVITIES)) return false;
-        for (String identifier : listIdentifier) if (predicate.startsWith(identifier)) return true;
-        return false;
+        if (predicate.equals(TAG_ACTIVITIES)) {
+            return false;
+        }
+        return Arrays.stream(listIdentifier).anyMatch(predicate::startsWith);
     }
 }

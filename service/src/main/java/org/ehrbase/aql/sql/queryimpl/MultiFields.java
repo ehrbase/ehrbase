@@ -29,7 +29,7 @@ public class MultiFields {
     private boolean useEntryTable = false;
     private String rootJsonKey;
     private final String templateId;
-    private I_VariableDefinition variableDefinition; // the variable def for this list of qualified fields
+    private final I_VariableDefinition variableDefinition; // the variable def for this list of qualified fields
 
     public MultiFields(I_VariableDefinition variableDefinition, List<QualifiedAqlField> fields, String templateId) {
         this.fields.addAll(fields);
@@ -81,15 +81,20 @@ public class MultiFields {
     }
 
     public QualifiedAqlField getLastQualifiedField() {
-        if (fieldsSize() > 0) return fields.get(fieldsSize() - 1);
-        else
+        if (fieldsSize() > 0) {
+            return fields.get(fieldsSize() - 1);
+        } else {
             return new QualifiedAqlField(
                     new NullField(variableDefinition, DefaultColumnId.value(variableDefinition)).instance());
+        }
     }
 
     public QualifiedAqlField getQualifiedFieldOrLast(int index) {
-        if (index >= fieldsSize()) return getLastQualifiedField();
-        else return getQualifiedField(index);
+        if (index >= fieldsSize()) {
+            return getLastQualifiedField();
+        } else {
+            return getQualifiedField(index);
+        }
     }
 
     public int size() {
@@ -116,7 +121,7 @@ public class MultiFields {
         return templateId;
     }
 
-    public void replaceField(QualifiedAqlField originalField, Field newField) {
+    public void replaceField(QualifiedAqlField originalField, Field<?> newField) {
         int index = fields.indexOf(originalField);
         QualifiedAqlField originalAqlField = fields.get(index);
         QualifiedAqlField clonedQualifiedField = originalAqlField.duplicate();

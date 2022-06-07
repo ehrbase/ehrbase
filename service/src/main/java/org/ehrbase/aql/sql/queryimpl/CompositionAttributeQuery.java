@@ -48,7 +48,7 @@ import org.jooq.impl.DSL;
 @SuppressWarnings({"java:S3776", "java:S3740"})
 public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl, IJoinBinder {
 
-    private String serverNodeId;
+    private final String serverNodeId;
 
     protected JoinSetup joinSetup = new JoinSetup(); // used to pass join metadata to perform binding
 
@@ -79,7 +79,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                 introspectCache,
                 pathResolver.entryRoot(templateId));
 
-        Field retField;
+        Field<?> retField;
 
         if (clause.equals(Clause.WHERE)) fieldResolutionContext.setWithAlias(false);
 
@@ -87,16 +87,20 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
         if (columnAlias == null) {
             if (clause.equals(Clause.SELECT)) {
-                if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION"))
+                if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("COMPOSITION")) {
                     retField = new FullCompositionJson(fieldResolutionContext, joinSetup).sqlField();
-                else if (pathResolver
+                } else if (pathResolver
                         .classNameOf(variableDefinition.getIdentifier())
-                        .equals("EHR")) retField = new FullEhrJson(fieldResolutionContext, joinSetup).sqlField();
-                else
+                        .equals("EHR")) {
+                    retField = new FullEhrJson(fieldResolutionContext, joinSetup).sqlField();
+                } else {
                     throw new IllegalArgumentException(
                             "Canonical json is not supported at this stage for this Entity, found class:"
                                     + pathResolver.classNameOf(variableDefinition.getIdentifier()));
-            } else retField = null;
+                }
+            } else {
+                retField = null;
+            }
         } else {
             if (pathResolver.classNameOf(variableDefinition.getIdentifier()).equals("EHR")) {
                 retField = new EhrResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
@@ -104,16 +108,18 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                             .classNameOf(variableDefinition.getIdentifier())
                             .equals("COMPOSITION")
                     || isCompositionAttributeItemStructure(templateId, variableDefinition.getIdentifier())) {
-                if (columnAlias.startsWith("composer"))
+                if (columnAlias.startsWith("composer")) {
                     retField = new ComposerResolver(fieldResolutionContext, joinSetup)
                             .sqlField(new AttributePath("composer").redux(columnAlias));
-                else if (columnAlias.startsWith("context"))
+                } else if (columnAlias.startsWith("context")) {
                     retField = new EventContextResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
-                else // assume composition attribute
-                retField = new CompositionResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
-            } else
+                } else { // assume composition attribute
+                    retField = new CompositionResolver(fieldResolutionContext, joinSetup).sqlField(columnAlias);
+                }
+            } else {
                 throw new IllegalArgumentException("INTERNAL: the following class cannot be resolved for AQL querying:"
                         + (pathResolver.classNameOf(variableDefinition.getIdentifier())));
+            }
         }
 
         // generate a lateral table for this select field
@@ -132,7 +138,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                             .getTable()
                             .getName() + "." + variableDefinition.getSubstituteFieldVariable();
             retField = DSL.field(sqlToLateralJoin).as(retField.getName());
-        } else if (fieldResolutionContext.isUsingSetReturningFunction()) retField = DSL.field(DSL.select(retField));
+        } else if (fieldResolutionContext.isUsingSetReturningFunction()) {
+            retField = DSL.field(DSL.select(retField));
+        }
 
         QualifiedAqlField aqlField = new QualifiedAqlField(retField);
 
@@ -154,7 +162,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     }
 
     public boolean isCompositionAttributeItemStructure(String templateId, String identifier) {
-        if (variableTemplatePath(templateId, identifier) == null) return false;
+        if (variableTemplatePath(templateId, identifier) == null) {
+            return false;
+        }
         return variableTemplatePath(templateId, identifier).contains("/context/other_context");
     }
 

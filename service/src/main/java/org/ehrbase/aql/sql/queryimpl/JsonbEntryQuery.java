@@ -89,7 +89,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     private static final String[] listIdentifier = {TAG_CONTENT, TAG_ITEMS, TAG_ACTIVITIES, TAG_EVENTS};
 
-    private boolean ignoreUnresolvedIntrospect = false;
+    private final boolean ignoreUnresolvedIntrospect;
 
     private static String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
 
@@ -122,18 +122,23 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
     @Override
     public MultiFields makeField(
             String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+
+        if (pathResolver.entryRoot(templateId) == null) {
+            // case of (invalid) composition with null entry!
+            return null;
+        }
+
         boolean setReturningFunctionInWhere = false; // if true, use a subselect
-        boolean isRootContent = false; // that is a query path on a full composition starting from the root content
-        DataType castTypeAs = null;
-
-        if (pathResolver.entryRoot(templateId) == null) // case of (invalid) composition with null entry!
-        return null;
-
+        // that is a query path on a full composition starting from the root content
+        boolean isRootContent;
         Set<String> pathSet;
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith(CONTENT)) {
             pathSet = new MultiPath().asSet("/" + variableDefinition.getPath());
             isRootContent = true;
-        } else pathSet = pathResolver.pathOf(templateId, variableDefinition.getIdentifier());
+        } else {
+            pathSet = pathResolver.pathOf(templateId, variableDefinition.getIdentifier());
+            isRootContent = false;
+        }
 
         String alias = clause.equals(Clause.WHERE) ? null : variableDefinition.getAlias();
 
@@ -158,7 +163,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
                 Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
                 itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
-                if (clause.equals(Clause.WHERE)) setReturningFunctionInWhere = true;
+                if (clause.equals(Clause.WHERE)) {
+                    setReturningFunctionInWhere = true;
+                }
             } catch (Exception e) {
                 // do nothing
             }
@@ -190,26 +197,31 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             dataTypeFromTemplate.evaluate(templateId, referenceItemPathArray);
 
-            castTypeAs = dataTypeFromTemplate.getIdentifiedType();
+            final DataType castTypeAs = dataTypeFromTemplate.getIdentifiedType();
 
             Field<?> fieldPathItem;
             if (clause.equals(Clause.SELECT)) {
                 // set the determined type with the variable
                 variableDefinition.setSelectType(castTypeAs);
 
-                if (StringUtils.isNotEmpty(alias)) fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, alias);
-                else {
+                if (StringUtils.isNotEmpty(alias)) {
+                    fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, alias);
+                } else {
                     String tempAlias = DefaultColumnId.value(variableDefinition);
                     fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, tempAlias);
                 }
             } else if (clause.equals(Clause.WHERE)) {
                 fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, null);
-                if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
+                if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER)) {
                     fieldPathItem = DSL.field(DSL.select(fieldPathItem));
-            } else throw new IllegalStateException("Unhandled clause:" + clause);
+                }
+            } else {
+                throw new IllegalStateException("Unhandled clause:" + clause);
+            }
 
-            if (setReturningFunctionInWhere)
+            if (setReturningFunctionInWhere) {
                 fieldPathItem = DSL.select(fieldPathItem).asField();
+            }
 
             QualifiedAqlField aqlField = new QualifiedAqlField(
                     fieldPathItem, dataTypeFromTemplate.getItemType(), dataTypeFromTemplate.getItemCategory());

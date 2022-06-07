@@ -19,21 +19,48 @@ package org.ehrbase.aql.sql;
 
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.compiler.TopAttributes;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.Variables;
-import org.ehrbase.aql.sql.binding.*;
+import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.binding.LimitBinding;
+import org.ehrbase.aql.sql.binding.OrderByField;
+import org.ehrbase.aql.sql.binding.SelectBinder;
+import org.ehrbase.aql.sql.binding.SuperQuery;
+import org.ehrbase.aql.sql.binding.VariableDefinitions;
+import org.ehrbase.aql.sql.binding.WhereMultiFields;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryimpl.*;
+import org.ehrbase.aql.sql.queryimpl.DurationFormatter;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
+import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.MultiFieldsMap;
+import org.ehrbase.aql.sql.queryimpl.MultiFieldsMultiMap;
+import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
-import org.jooq.*;
+import org.jooq.Condition;
+import org.jooq.DSLContext;
+import org.jooq.JoinType;
+import org.jooq.Operator;
+import org.jooq.Param;
 import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.Select;
+import org.jooq.SelectQuery;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 
@@ -62,7 +89,7 @@ public class QueryProcessor extends TemplateMetaData {
     public static class AqlSelectQuery {
         private final SelectQuery<Record> selectQuery;
         private final Collection<List<QuerySteps>> querySteps;
-        private boolean outputWithJson;
+        private final boolean outputWithJson;
 
         AqlSelectQuery(
                 SelectQuery<Record> selectQuery, Collection<List<QuerySteps>> querySteps, boolean outputWithJson) {
@@ -106,7 +133,7 @@ public class QueryProcessor extends TemplateMetaData {
     public AqlResult execute() {
         AqlSelectQuery aqlSelectQuery = buildAqlSelectQuery();
 
-        Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery(), null);
+        Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery());
 
         // if any jsonb data field transform them into raw json
         RawJsonTransform.toRawJson(result);
@@ -242,9 +269,8 @@ public class QueryProcessor extends TemplateMetaData {
                 if (condition != null && condition.equals(DSL.falseCondition()))
                     break; // do not add since it is always false
 
-                List<LateralJoinDefinition> joins = new ArrayList<>();
-
-                joins.addAll(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); // composition attributes
+                List<LateralJoinDefinition> joins =
+                        new ArrayList<>(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); // composition attributes
                 if (!templateId.equals(NIL_TEMPLATE)) {
                     joins.addAll(lateralJoinsSelectClause(templateId, selectCursor)); // select clause fields
                     joins.addAll(lateralJoinsWhereClause(templateId, whereCursor)); // where clause fields
@@ -276,16 +302,19 @@ public class QueryProcessor extends TemplateMetaData {
     }
 
     private SelectQuery<?> setLateralJoins(List<LateralJoinDefinition> lateralJoins, SelectQuery<?> selectQuery) {
-        if (lateralJoins == null) return selectQuery;
+        if (lateralJoins == null) {
+            return selectQuery;
+        }
 
         for (LateralJoinDefinition lateralJoinDefinition : lateralJoins) {
-            if (lateralJoinDefinition.getCondition() == null)
+            if (lateralJoinDefinition.getCondition() == null) {
                 selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType());
-            else
+            } else {
                 selectQuery.addJoin(
                         lateralJoinDefinition.getTable(),
                         lateralJoinDefinition.getJoinType(),
                         lateralJoinDefinition.getCondition());
+            }
         }
 
         return selectQuery;
@@ -296,13 +325,12 @@ public class QueryProcessor extends TemplateMetaData {
 
         // traverse the lateral joins derived from SELECT clause
         for (VariableDefinitions it = statements.getVariables(); it.hasNext(); ) {
-            Object item = it.next();
-            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
-                Set<LateralJoinDefinition> listOfLaterals =
-                        ((I_VariableDefinition) item).getLateralJoinDefinitions(templateId);
-                int index = cursor < listOfLaterals.size() ? cursor : listOfLaterals.size() - 1;
+            I_VariableDefinition item = it.next();
+            if (item != null && item.isLateralJoin(templateId)) {
+                Set<LateralJoinDefinition> listOfLaterals = item.getLateralJoinDefinitions(templateId);
+                int index = Math.min(cursor, listOfLaterals.size() - 1);
                 LateralJoinDefinition encapsulatedLateralJoinDefinition =
-                        ((I_VariableDefinition) item).getLateralJoinDefinition(templateId, index);
+                        item.getLateralJoinDefinition(templateId, index);
                 LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(
                         encapsulatedLateralJoinDefinition.getSqlExpression(),
                         DSL.lateral(encapsulatedLateralJoinDefinition.getTable()),
@@ -318,45 +346,33 @@ public class QueryProcessor extends TemplateMetaData {
     }
 
     private List<LateralJoinDefinition> lateralJoinsWhereClause(String templateId, int cursor) {
-        List<LateralJoinDefinition> lateralJoinsList = new ArrayList<>();
-
-        for (Object item : statements.getWhereClause()) {
-            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
-                if (((I_VariableDefinition) item).getLateralJoinDefinitions(templateId) == null)
-                    throw new IllegalStateException("unresolved lateral join for template:" + templateId + ", path:"
-                            + ((I_VariableDefinition) item).getPath());
-                else if (cursor
-                        > ((I_VariableDefinition) item)
-                                        .getLateralJoinDefinitions(templateId)
-                                        .size()
-                                - 1) continue;
-                // check if lateral join is borrowed from SELECT clause, if so, don't add
-                else if (((I_VariableDefinition) item)
-                        .getLateralJoinDefinition(templateId, cursor)
-                        .getClause()
-                        .equals(IQueryImpl.Clause.SELECT)) continue;
-
-                lateralJoinsList.add(new LateralJoinDefinition(
-                        ((I_VariableDefinition) item)
-                                .getLateralJoinDefinition(templateId, cursor)
-                                .getSqlExpression(),
-                        DSL.lateral(((I_VariableDefinition) item)
-                                .getLateralJoinDefinition(templateId, cursor)
-                                .getTable()),
-                        ((I_VariableDefinition) item).getSubstituteFieldVariable(),
-                        JoinType.JOIN,
-                        null,
-                        IQueryImpl.Clause.WHERE));
-            }
-        }
-
-        return lateralJoinsList;
+        return ((List<?>) statements.getWhereClause())
+                .stream()
+                        .filter(I_VariableDefinition.class::isInstance)
+                        .map(I_VariableDefinition.class::cast)
+                        .filter(vDef -> vDef.isLateralJoin(templateId))
+                        .filter(vDef -> cursor < vDef.getLateralJoinsSize(templateId))
+                        .map(vDef -> {
+                            // check if lateral join is borrowed from SELECT clause, if so, don't add
+                            LateralJoinDefinition joinDef = vDef.getLateralJoinDefinition(templateId, cursor);
+                            if (joinDef.getClause().equals(IQueryImpl.Clause.SELECT)) {
+                                return null;
+                            }
+                            return new LateralJoinDefinition(
+                                    joinDef.getSqlExpression(),
+                                    DSL.lateral(joinDef.getTable()),
+                                    vDef.getSubstituteFieldVariable(),
+                                    JoinType.JOIN,
+                                    null,
+                                    IQueryImpl.Clause.WHERE);
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
     }
 
-    private Result<Record> fetchResultSet(Select<?> select, Result<Record> result) {
-        Result<Record> intermediary;
+    private Result<Record> fetchResultSet(Select<?> select) {
         try {
-            intermediary = (Result<Record>) select.fetch();
+            return (Result<Record>) select.fetch();
         } catch (Exception e) {
 
             String reason = "Could not perform SQL query:" + e.getCause() + ", AQL expression:"
@@ -365,12 +381,6 @@ public class QueryProcessor extends TemplateMetaData {
                     + select.getSQL();
             throw new IllegalArgumentException(reason);
         }
-        if (result != null) {
-            result.addAll(intermediary);
-        } else if (intermediary != null) {
-            result = intermediary;
-        }
-        return result;
     }
 
     private List<List<String>> buildExplain(Select<?> select) {
