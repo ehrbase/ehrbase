@@ -94,7 +94,7 @@ public class QueryProcessor extends TemplateMetaData {
     public static class AqlSelectQuery {
         private final SelectQuery<Record> selectQuery;
         private final Collection<List<QuerySteps>> querySteps;
-        private final boolean outputWithJson;
+        private boolean outputWithJson;
 
         AqlSelectQuery(
                 SelectQuery<Record> selectQuery, Collection<List<QuerySteps>> querySteps, boolean outputWithJson) {
@@ -138,7 +138,7 @@ public class QueryProcessor extends TemplateMetaData {
     public AqlResult execute() {
         AqlSelectQuery aqlSelectQuery = buildAqlSelectQuery();
 
-        Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery());
+        Result<Record> result = fetchResultSet(aqlSelectQuery.getSelectQuery(), null);
 
         // if any jsonb data field transform them into raw json
         RawJsonTransform.toRawJson(result);
@@ -291,8 +291,9 @@ public class QueryProcessor extends TemplateMetaData {
                 if (condition != null && condition.equals(DSL.falseCondition()))
                     break; // do not add since it is always false
 
-                List<LateralJoinDefinition> joins =
-                        new ArrayList<>(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); // composition attributes
+                List<LateralJoinDefinition> joins = new ArrayList<>();
+
+                joins.addAll(lateralJoinsSelectClause(NIL_TEMPLATE, 0)); // composition attributes
                 if (!templateId.equals(NIL_TEMPLATE)) {
                     joins.addAll(lateralJoinsSelectClause(templateId, selectCursor)); // select clause fields
                     joins.addAll(lateralJoinsWhereClause(templateId, whereCursor)); // where clause fields
@@ -354,12 +355,13 @@ public class QueryProcessor extends TemplateMetaData {
 
         // traverse the lateral joins derived from SELECT clause
         for (VariableDefinitions it = statements.getVariables(); it.hasNext(); ) {
-            I_VariableDefinition item = it.next();
-            if (item != null && item.isLateralJoin(templateId)) {
-                Set<LateralJoinDefinition> listOfLaterals = item.getLateralJoinDefinitions(templateId);
+            Object item = it.next();
+            if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
+                Set<LateralJoinDefinition> listOfLaterals =
+                        ((I_VariableDefinition) item).getLateralJoinDefinitions(templateId);
                 int index = cursor < listOfLaterals.size() ? cursor : listOfLaterals.size() - 1;
                 LateralJoinDefinition encapsulatedLateralJoinDefinition =
-                        item.getLateralJoinDefinition(templateId, index);
+                        ((I_VariableDefinition) item).getLateralJoinDefinition(templateId, index);
                 LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(
                         encapsulatedLateralJoinDefinition.getSqlExpression(),
                         DSL.lateral(encapsulatedLateralJoinDefinition.getTable()),
@@ -410,7 +412,7 @@ public class QueryProcessor extends TemplateMetaData {
         return lateralJoinsList;
     }
 
-    private Result<Record> fetchResultSet(Select<?> select) {
+    private Result<Record> fetchResultSet(Select<?> select, Result<Record> result) {
         Result<Record> intermediary;
 
         try {
@@ -423,7 +425,12 @@ public class QueryProcessor extends TemplateMetaData {
                     + select.getSQL();
             throw new IllegalArgumentException(reason);
         }
-        return intermediary;
+        if (result != null) {
+            result.addAll(intermediary);
+        } else if (intermediary != null) {
+            result = intermediary;
+        }
+        return result;
     }
 
     private List<List<String>> buildExplain(Select<?> select) {
