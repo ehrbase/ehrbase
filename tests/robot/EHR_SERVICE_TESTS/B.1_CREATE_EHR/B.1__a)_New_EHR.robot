@@ -115,14 +115,13 @@ MF-021 - Create new EHR (valid ehr_status with other_details)
 
 MF-022 - Create new EHR (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_TABLE
-    [Tags]              162    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     POST /ehr    ${body}
-
-        TRACE GITHUB ISSUE  162  bug
-
     Integer    response status    201
+    # https://github.com/ehrbase/project_management/issues/162
+    #TRACE GITHUB ISSUE  162  bug
+
 
 
 MF-051 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
@@ -170,14 +169,13 @@ MF-053 - Create new EHR providing an ehr_id (valid ehr_status with other_details
 
 MF-054 - Create new EHR providing an ehr_id (valid ehr_status with other_details)
     [Documentation]     Covers happy path with "other_details" _type ITEM_TABLE
-    [Tags]              162    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    valid/005_ehr_status_with_other_details_item_table.json
     PUT /ehr/ehr_id    body=${body}
-
-        TRACE GITHUB ISSUE  162  bug
-
     Integer    response status    201
+    #https://github.com/ehrbase/project_management/issues/162
+    #TRACE GITHUB ISSUE  162  bug
+
 
 
 
@@ -386,7 +384,7 @@ MF-013 - Create new EHR (invalid ehr_status)
     Integer    response status    400
 
 
-MF-014 - Create new EHR (invalid ehr_status)
+MF-014 - Create new EHR (invalid ehr_status - mandatory is_modifiable is missing)
     [Documentation]     Covers case where mandatory is_modifiable is missing
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
@@ -399,7 +397,7 @@ MF-014 - Create new EHR (invalid ehr_status)
     Integer    response status    400
 
 
-MF-015 - Create new EHR (invalid ehr_status)
+MF-015 - Create new EHR (invalid ehr_status - mandatory is_queryable is missing)
     [Documentation]     Covers case where mandatory is_queryable is missing
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
@@ -412,8 +410,8 @@ MF-015 - Create new EHR (invalid ehr_status)
     Integer    response status    400
 
 
-MF-016 - Create new EHR (invalid ehr_status)
-    [Documentation]     Covers case where mandatory is_modifiable and is_queryableis are missing
+MF-016 - Create new EHR (invalid ehr_status - mandatory is_modifiable and is_queryable are missing)
+    [Documentation]     Covers case where mandatory is_modifiable and is_queryable are missing
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
     ${body}=     randomize subject_id in test-data-set    invalid/009_ehr_status_is_mod_and_is_quer_missing.json
@@ -596,7 +594,7 @@ MF-045 - Create new EHR providing an ehr_id (invalid ehr_status)
     Integer    response status    400
 
 
-MF-046 - Create new EHR providing an ehr_id (invalid ehr_status)
+MF-046 - Create new EHR providing an ehr_id (invalid ehr_status - mandatory is_modifiable is missing)
     [Documentation]     Covers case where mandatory is_modifiable is missing
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
@@ -609,7 +607,7 @@ MF-046 - Create new EHR providing an ehr_id (invalid ehr_status)
     Integer    response status    400
 
 
-MF-047 - Create new EHR providing an ehr_id (invalid ehr_status)
+MF-047 - Create new EHR providing an ehr_id (invalid ehr_status - mandatory is_queryable is missing)
     [Documentation]     Covers case where mandatory is_queryable is missing
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
@@ -622,7 +620,7 @@ MF-047 - Create new EHR providing an ehr_id (invalid ehr_status)
     Integer    response status    400
 
 
-MF-048 - Create new EHR providing an ehr_id (invalid ehr_status)
+MF-048 - Create new EHR providing an ehr_id (invalid ehr_status - is_queryable, is_modifiable are missing)
     [Documentation]     Covers case where mandatory is_modifiable and is_queryableis are missing
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
@@ -635,7 +633,7 @@ MF-048 - Create new EHR providing an ehr_id (invalid ehr_status)
     Integer    response status    400
 
 
-MF-050 - Create new EHR providing an ehr_id (invalid ehr_status)
+MF-050 - Create new EHR providing an ehr_id (invalid ehr_status - subject empty)
     [Documentation]     Covers INVALID case where subject is empty JSON
     [Tags]              295    not-ready
     prepare new request session    JSON    Prefer=return=representation
