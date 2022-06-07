@@ -26,7 +26,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Resource        ../../_resources/keywords/generic_keywords.robot
 
 Suite Setup       Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***

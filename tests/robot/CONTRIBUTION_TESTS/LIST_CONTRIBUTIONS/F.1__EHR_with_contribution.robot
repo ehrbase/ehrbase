@@ -53,4 +53,4 @@ Main flow: get CONTRIBUTIONS of existing EHR with a just committed CONTRIBUTION
     retrieve CONTRIBUTION by contribution_uid (JSON)
     check response: is positive with list of 1 contribution(s)
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

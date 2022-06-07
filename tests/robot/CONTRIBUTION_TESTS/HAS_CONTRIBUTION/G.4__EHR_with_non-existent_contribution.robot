@@ -52,4 +52,4 @@ Alternative flow 3: has CONTRIBUTION, EHR with CONTRIBUTIONS, but CONTRIBUTION d
     commit CONTRIBUTION (JSON)    minimal/minimal_instruction.contribution.json
     retrieve CONTRIBUTION by fake contri_uid (JSON)
     check response: is negative indicating non-existent contribution_uid
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
