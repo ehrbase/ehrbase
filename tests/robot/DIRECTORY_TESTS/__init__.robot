@@ -26,7 +26,7 @@ Documentation    DIRECTORY SERVICE TEST SUITE
 
 Resource    ${CURDIR}${/}../_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup  startup SUT
+#Suite Teardown  shutdown SUT
 
 Force Tags    DIRECTORY
