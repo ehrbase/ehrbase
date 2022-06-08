@@ -34,4 +34,4 @@ Alternative flow delete event COMPOSITION when EHR status is_modifiable is False
     check content of composition (JSON)
     update EHR: set ehr-status modifiable    ${FALSE}
     delete composition - invalid - is modifiable false    ${preceding_version_uid}
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

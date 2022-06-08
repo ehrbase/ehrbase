@@ -35,7 +35,7 @@ Main flow has existing COMPOSITION (JSON)
     get composition by composition_uid    ${version_uid}
     check composition exists
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 
 Main flow has existing COMPOSITION and works without accept header
@@ -46,4 +46,4 @@ Main flow has existing COMPOSITION and works without accept header
     get composition by composition_uid    ${version_uid}
     check composition exists
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

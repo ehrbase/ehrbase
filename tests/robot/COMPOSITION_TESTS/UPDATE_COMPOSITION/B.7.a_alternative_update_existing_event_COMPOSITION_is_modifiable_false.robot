@@ -41,4 +41,4 @@ Alternative flow update existing event COMPOSITION when EHR status is_modifiable
     Status Should Be        409
     ${finalString}       Decode Bytes To String      ${response}     UTF-8
     Should Contain      ${finalString}        does not allow modification
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

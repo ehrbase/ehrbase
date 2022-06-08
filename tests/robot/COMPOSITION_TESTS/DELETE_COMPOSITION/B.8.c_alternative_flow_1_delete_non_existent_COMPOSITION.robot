@@ -38,4 +38,4 @@ Alternative flow 2 delete non existent COMPOSITION
 
     delete non-existent composition
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

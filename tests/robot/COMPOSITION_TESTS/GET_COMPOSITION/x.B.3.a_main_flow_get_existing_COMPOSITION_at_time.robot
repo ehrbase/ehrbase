@@ -39,4 +39,4 @@ Main flow get existing COMPOSITION at time
     get composition - version at time (XML)    ${time_1}
     check content of compositions version at time (XML)    time_1    original value
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
