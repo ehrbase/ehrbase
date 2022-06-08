@@ -4,9 +4,6 @@ import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 import org.ehrbase.webtemplate.parser.AqlPath;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 public class WebTemplateNodeQuery {
     
     private final WebTemplateNode webTemplateNode;

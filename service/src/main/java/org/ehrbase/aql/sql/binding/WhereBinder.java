@@ -188,7 +188,6 @@ public class WhereBinder {
                     inExists = whereVariable.inExists();
 
                     String expanded = expandForLateral(templateId, encodedVar, (I_VariableDefinition)item, multiSelectFieldsMap );
-
                     if (StringUtils.isNotBlank(expanded))
                         taggedStringBuilder.append(expanded);
                     else {
