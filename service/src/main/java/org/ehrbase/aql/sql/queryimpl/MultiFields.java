@@ -19,11 +19,12 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.jooq.Field;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.jooq.Field;
 
 public class MultiFields {
 
@@ -43,16 +44,17 @@ public class MultiFields {
         this(variableDefinition, new QualifiedAqlField(field), templateId);
     }
 
-    public static MultiFields asNull(
-            I_VariableDefinition variableDefinition, String templateId, IQueryImpl.Clause clause) {
+    public static MultiFields asNull(I_VariableDefinition variableDefinition, String templateId, IQueryImpl.Clause clause){
         String alias = variableDefinition.getAlias();
 
-        if (clause.equals(IQueryImpl.Clause.WHERE)) alias = null;
+        if (clause.equals(IQueryImpl.Clause.WHERE))
+            alias = null;
         else {
-            if (alias == null) alias = DefaultColumnId.value(variableDefinition);
+            if (alias == null)
+                alias = DefaultColumnId.value(variableDefinition);
         }
 
-        Field<?> nullField = new NullField(variableDefinition, alias).instance();
+        Field<?> nullField =  new NullField(variableDefinition, alias).instance();
         return new MultiFields(variableDefinition, nullField, templateId);
     }
 
@@ -70,33 +72,37 @@ public class MultiFields {
         return useEntryTable;
     }
 
-    public int fieldsSize() {
+    public int fieldsSize(){
         return fields.size();
     }
 
-    public QualifiedAqlField getQualifiedField(int index) {
+    public QualifiedAqlField getQualifiedField(int index){
         return fields.get(index);
     }
 
-    public Iterator<QualifiedAqlField> iterator() {
+    public Iterator<QualifiedAqlField> iterator(){
         return fields.iterator();
     }
 
     public QualifiedAqlField getLastQualifiedField() throws UnknownVariableException {
-        if (fieldsSize() > 0) return fields.get(fieldsSize() - 1);
-        else throw new UnknownVariableException(variableDefinition.getPath());
+        if (fieldsSize() > 0)
+            return fields.get(fieldsSize() - 1);
+        else
+            throw new UnknownVariableException(variableDefinition.getPath());
     }
 
     public QualifiedAqlField getQualifiedFieldOrLast(int index) throws UnknownVariableException {
-        if (index >= fieldsSize()) return getLastQualifiedField();
-        else return getQualifiedField(index);
+        if (index >= fieldsSize())
+            return getLastQualifiedField();
+        else
+            return getQualifiedField(index);
     }
 
-    public int size() {
+    public int size(){
         return fields.size();
     }
 
-    public boolean isEmpty() {
+    public boolean isEmpty(){
         return fields.isEmpty();
     }
 

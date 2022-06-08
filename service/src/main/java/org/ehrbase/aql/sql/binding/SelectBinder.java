@@ -41,6 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.ehrbase.aql.sql.queryimpl.IQueryImpl.Clause.SELECT;
+import static org.jooq.impl.SQLDataType.INTERVAL;
 
 /**
  * Bind the abstract representation of a SELECT clause into a SQL expression
