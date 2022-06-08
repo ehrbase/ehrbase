@@ -410,7 +410,7 @@ public class QueryProcessor extends TemplateMetaData {
         List<String> details = new ArrayList<>();
         details.add(sql);
         for (Param<?> parameter : select.getParams().values()) {
-            if (parameter.getValue() != null) details.add(parameter.getValue().toString());
+            details.add(parameter.getValue().toString());
         }
         explainList.add(details);
         return explainList;
