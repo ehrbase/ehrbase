@@ -21,7 +21,7 @@
 Documentation   General setting for OpenEHR test suites.
 # Metadata    Version        1.0
 
-Library     REST    ${BASE_URL}    #ssl_verify=false
+Library     REST    ${BASEURL}    #ssl_verify=false
 Library     RequestsLibrary  WITH NAME  R
 Library     String
 Library     Collections
@@ -38,11 +38,12 @@ Library     libraries/dockerlib.py
 Library     libraries/jsonlib.py
 Library     libraries/token_decoder.py
 Library     libraries/composition_validation_lib.py
+#Library     variables/get_global_configs.py
 
 Resource    keywords/generic_keywords.robot
 Variables   variables/sut_config.py
 ...         ${SUT}    ${AUTH_TYPE}    ${NODOCKER}
-Variables   variables/additional_configs.yaml
+Variables   variables/additional_configs.yml
 
 
 
@@ -50,7 +51,9 @@ Variables   variables/additional_configs.yaml
 # ${hip_baseurl_v1}     http://localhost:8080/ehrbase/rest/ecis/v1
 # ${template_id}    IDCR%20-%20Immunisation%20summary.v0        # TODO: @wlad rm if nothing breaks
 # ${invalid_ehr_id}    123
-${BASE_URL}             http://localhost:8080/ehrbase/rest/openehr/v1
+${PORT}                8080
+${BASEURL}             http://localhost:${PORT}/ehrbase/rest/openehr/v1
+#${BASEURL}             http://localhost:${GLOBAL_PORT}/ehrbase/rest/openehr/v1
 # ${ADMIN_BASE_URL}        http://localhost:8080/ehrbase/rest/admin
 ${MOCK_URL}             http://localhost:1080
 ${PROJECT_ROOT}          ${EXECDIR}${/}..

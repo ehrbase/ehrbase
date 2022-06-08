@@ -14,13 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import yaml
+import get_global_configs
 from requests import request
 
-with open('robot/_resources/variables/additional_configs.yaml', 'r') as file:
-    yaml_content = yaml.safe_load(file)
-
-GLOBAL_PORT_FROM_YAML = yaml_content['GLOBAL_PORT']
+GLOBAL_PORT_FROM_YAML = get_global_configs.get_global_variables()
 
 # KEYCLOAK SETTINGS
 HEADER = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -49,10 +46,10 @@ ADMIN-TEST-OAUTH    partly                      manually start keycloak
 # requires manual startup of EHRbase and DB
 DEV_CONFIG = {
     "SUT": "DEV",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
+    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
+    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
+    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -86,10 +83,10 @@ DEV_CONFIG = {
 # requires manual startup of EHRbase and DB
 ADMIN_DEV_CONFIG = {
     "SUT": "ADMIN-DEV",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
+    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
+    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
+    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -119,10 +116,10 @@ ADMIN_DEV_CONFIG = {
 # handles startup/shutdown of EHRbase and DB automatically
 TEST_CONFIG = {
     "SUT": "TEST",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
+    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
+    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
+    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -152,10 +149,10 @@ TEST_CONFIG = {
 # handles startup/shutdown of EHRbase and DB automatically
 ADMIN_TEST_CONFIG = {
     "SUT": "ADMIN-TEST",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
+    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
+    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
+    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -232,10 +229,6 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!", port=GLOBAL_P
         ADMIN_DEV_CONFIG["AUTHORIZATION"] = {
             "Authorization": "Bearer " + ADMIN_DEV_CONFIG["ACCESS_TOKEN"]
         }
-        ADMIN_DEV_CONFIG["BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/openehr/v1"
-        ADMIN_DEV_CONFIG["ECISURL"] = "http://localhost:"+port+"/ehrbase/rest/ecis/v1"
-        ADMIN_DEV_CONFIG["ADMIN_BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/admin"
-        ADMIN_DEV_CONFIG["HEARTBEAT_URL"] = "http://localhost:"+port+"/ehrbase/rest/status"
         return ADMIN_DEV_CONFIG
 
     # TEST CONFIG W/ OAUTH
@@ -250,10 +243,6 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!", port=GLOBAL_P
         TEST_CONFIG["AUTHORIZATION"] = {
             "Authorization": "Bearer " + TEST_CONFIG["ACCESS_TOKEN"]
         }
-        TEST_CONFIG["BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/openehr/v1"
-        TEST_CONFIG["ECISURL"] = "http://localhost:"+port+"/ehrbase/rest/ecis/v1"
-        TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:"+port+"/ehrbase/rest/admin"
-        TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:"+port+"/ehrbase/rest/status"
         return TEST_CONFIG
 
     # ADMIN-TEST CONFIG W/ OAUTH
@@ -268,18 +257,10 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!", port=GLOBAL_P
         ADMIN_TEST_CONFIG["AUTHORIZATION"] = {
             "Authorization": "Bearer " + ADMIN_TEST_CONFIG["ACCESS_TOKEN"]
         }
-        ADMIN_TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
-        ADMIN_TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
-        ADMIN_TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
-        ADMIN_TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
         return ADMIN_TEST_CONFIG
 
     # ADMIN-TEST CONFIG W/ BASIC AUTH
     if sut == "ADMIN-TEST":
-        ADMIN_TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
-        ADMIN_TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
-        ADMIN_TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
-        ADMIN_TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
         return ADMIN_TEST_CONFIG
 
     # DEV CONFIG W/ BASIC AUTH
@@ -301,8 +282,8 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!", port=GLOBAL_P
     #    return TEST_CONFIG
 
     if sut == "TEST" and auth_type == "BASIC":
-        TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
-        TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
-        TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
-        TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
+        #TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
+        #TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
+        #TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
+        #TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
         return TEST_CONFIG
