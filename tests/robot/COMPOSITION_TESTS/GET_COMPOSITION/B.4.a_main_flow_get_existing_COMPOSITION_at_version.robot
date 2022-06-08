@@ -45,4 +45,4 @@ Main flow get existing COMPOSITION at version
     get composition - latest version    JSON
     check content of compositions latest version (JSON)
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

@@ -27,7 +27,7 @@ Resource        ../../_resources/keywords/aql_query_keywords.robot
 Resource        ../../_resources/keywords/directory_keywords.robot
 
 Suite Setup     Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***

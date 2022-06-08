@@ -43,4 +43,4 @@ Alternative flow 1 get existing COMPOSITION at time, without given time
     get composition - latest version    JSON
     check content of compositions latest version (JSON)
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

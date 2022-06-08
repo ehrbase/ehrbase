@@ -84,4 +84,4 @@ Update an existing event COMPOSITION Feeder Audit and Links values
     check content of updated composition generic (JSON)
     ...    ['links'][1]['target']['value']
     ...     ehr:/target2_b
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

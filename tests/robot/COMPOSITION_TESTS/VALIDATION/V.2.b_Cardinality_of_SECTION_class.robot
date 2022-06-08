@@ -83,4 +83,4 @@ Precondition
 
 Postcondition
     Remove File    ${COMPOSITIONS_PATH}/cardinality_of_section__full_temp.json
-    restart SUT
+    #restart SUT

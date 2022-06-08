@@ -43,4 +43,4 @@ Alternative flow 3 update an existing persistent COMPOSITION referencing differe
     update composition - invalid opt reference (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2_2.xml
     Should Be Equal As Strings   ${response.status_code}   400
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

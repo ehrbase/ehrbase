@@ -55,7 +55,7 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<FOLDER> to
     check response: is positive - returns version id
     check content of committed CONTRIBUTION
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 
 Main flow: successfully commit CONTRIBUTION with single valid VERSION<FOLDER> to modify
@@ -68,5 +68,5 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<FOLDER> to
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/folder.contribution.modification.json
     check response: is positive - contribution has new version
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 

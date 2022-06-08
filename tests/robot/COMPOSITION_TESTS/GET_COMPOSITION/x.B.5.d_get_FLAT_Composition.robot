@@ -77,7 +77,7 @@ Data driven tests for Compare content of compositions with the Original (FLAT)
     Create and compare content of flat compositions     ehrn_vital_signs.v2__.json
     Create and compare content of flat compositions     nested.en.v1__full.xml.flat.json
 
-    [Teardown]      TRACE JIRA ISSUE    CDR-415
+    #[Teardown]      TRACE JIRA ISSUE    CDR-415
 
 
 *** Keywords ***

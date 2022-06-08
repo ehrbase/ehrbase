@@ -50,4 +50,4 @@ Alternative flow 4 get existing COMPOSITION at time, cover different times
     get composition - version at time (XML)    ${time_2}
     check content of compositions version at time (XML)    time_2    modified value
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

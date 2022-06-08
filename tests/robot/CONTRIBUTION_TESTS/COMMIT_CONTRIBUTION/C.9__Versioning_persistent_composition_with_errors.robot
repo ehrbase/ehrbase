@@ -68,4 +68,4 @@ Alternative flow 8: commit CONTRIBUTIONS for versioning a persistent COMPOSITION
 
     check response: is negative indicating wrong change_type
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

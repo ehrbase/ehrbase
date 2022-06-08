@@ -58,7 +58,7 @@ Alternative flow 4 get existing COMPOSITION at time, cover different times
     get versioned composition - version at time    ${time_2}
     check content of compositions version at time (JSON)    time_2    modified value
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 
     # TODO: Check with PABLO what to do with this
