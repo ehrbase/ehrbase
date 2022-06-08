@@ -73,4 +73,4 @@ Precondition
 
 Postcondition
     Remove File    ${COMPOSITIONS_PATH}/clinical_content_validation__full_temp.json
-    restart SUT
+    #restart SUT

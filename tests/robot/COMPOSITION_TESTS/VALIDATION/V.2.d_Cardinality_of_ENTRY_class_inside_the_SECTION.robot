@@ -83,4 +83,4 @@ Precondition
 
 Postcondition
     Remove File    ${COMPOSITIONS_PATH}/composition_evaluation_test__full_temp.json
-    restart SUT
+    #restart SUT

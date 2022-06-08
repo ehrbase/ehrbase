@@ -56,7 +56,7 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITIO
     check response: is positive - returns version id
     check content of committed CONTRIBUTION
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 
 Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITION> withtout accept header
@@ -67,4 +67,4 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<COMPOSITIO
     check response: is positive - returns version id
     check content of committed CONTRIBUTION
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
