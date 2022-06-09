@@ -30,33 +30,45 @@ ${COMPOSITIONS_PATH_XML}        ${EXECDIR}/robot/_resources/test_data_sets/compo
 
 
 *** Test Cases ***
-Test Example Generator for Templates (ECIS) - FLAT
+Test Example Generator For Templates (ECIS) - FLAT
     [Setup]    Upload Template Using ECIS Endpoint
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    FLAT
     Validate Response Body Has Format    FLAT
 
-Test Example Generator for Templates (ECIS) - JSON and Save it
+Test Example Generator For Templates (ECIS) - FLAT - Test Category And Coded Text Code And Value
+    [Tags]      cdr-432
+    Upload OPT ECIS    all_types/test_event.opt
+    Extract Template Id From OPT File
+    Get Example Of Web Template By Template Id (ECIS)    ${template_id}    FLAT
+    Log     https://github.com/ehrbase/ehrbase/issues/897   console=yes
+    Should Be Equal As Strings     ${response.json()["test_event/coded_text|code"]}   433
+    Should Be Equal As Strings     ${response.json()["test_event/category|code"]}   433
+    Should Be Equal As Strings     ${response.json()["test_event/coded_text|value"]}   event
+    Should Be Equal As Strings     ${response.json()["test_event/category|value"]}   event
+    [Teardown]      TRACE JIRA ISSUE      CDR-432
+
+Test Example Generator For Templates (ECIS) - JSON And Save It
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
     Save Response (JSON) To File And Compare Template Ids    ${template_id}    composition_ecis_temp.json
 
-Test Example Generator for Templates (ECIS) - XML and Save it
+Test Example Generator For Templates (ECIS) - XML And Save It
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    XML
     Validate Response Body Has Format    XML
     Save Response (XML) To File And Compare Template Ids    ${template_id}    composition_ecis_temp.xml
 
 ###########################################
 
-Test Example Generator for Templates (OPENEHR) - FLAT
+Test Example Generator For Templates (OPENEHR) - FLAT
     [Setup]    Upload Template Using OPENEHR Endpoint
     Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    FLAT
 
-Test Example Generator for Templates (OPENEHR) - JSON and Save it
+Test Example Generator For Templates (OPENEHR) - JSON And Save It
     Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
     Save Response (JSON) To File And Compare Template Ids    ${template_id}
 
-Test Example Generator for Templates (OPENEHR) - XML and Save it
+Test Example Generator For Templates (OPENEHR) - XML And Save It
     Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    XML
     Validate Response Body Has Format    XML
     Save Response (XML) To File And Compare Template Ids    ${template_id}
