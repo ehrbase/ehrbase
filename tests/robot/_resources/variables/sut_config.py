@@ -17,7 +17,13 @@
 import get_global_configs
 from requests import request
 
-GLOBAL_PORT_FROM_YAML = get_global_configs.get_global_variables()
+GLOBAL_VARS_FROM_YAML_FUNC = get_global_configs.get_variables()
+GLOBAL_PORT_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["GLOBAL_PORT"]
+BASEURL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["BASEURL"]
+ECISURL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["ECISURL"]
+ADMIN_BASEURL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["ADMIN_BASEURL"]
+HEARTBEAT_URL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["HEARTBEAT_URL"]
+
 
 # KEYCLOAK SETTINGS
 HEADER = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -46,10 +52,11 @@ ADMIN-TEST-OAUTH    partly                      manually start keycloak
 # requires manual startup of EHRbase and DB
 DEV_CONFIG = {
     "SUT": "DEV",
-    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -83,10 +90,11 @@ DEV_CONFIG = {
 # requires manual startup of EHRbase and DB
 ADMIN_DEV_CONFIG = {
     "SUT": "ADMIN-DEV",
-    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -116,10 +124,11 @@ ADMIN_DEV_CONFIG = {
 # handles startup/shutdown of EHRbase and DB automatically
 TEST_CONFIG = {
     "SUT": "TEST",
-    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -149,10 +158,11 @@ TEST_CONFIG = {
 # handles startup/shutdown of EHRbase and DB automatically
 ADMIN_TEST_CONFIG = {
     "SUT": "ADMIN-TEST",
-    "BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:"+GLOBAL_PORT_FROM_YAML+"/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
