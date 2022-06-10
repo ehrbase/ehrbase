@@ -47,6 +47,32 @@ Test Example Generator For Templates (ECIS) - FLAT - Test Category And Coded Tex
     Should Be Equal As Strings     ${response.json()["test_event/category|value"]}   event
     [Teardown]      TRACE JIRA ISSUE      CDR-432
 
+Test Example Generator For Templates (ECIS) - JSON And Commit Composition
+    [Tags]      cdr-433
+    Upload OPT ECIS    all_types/test_quantity_without_text.opt
+    Extract Template Id From OPT File
+    Get Example Of Web Template By Template Id (ECIS)       ${template_id}      JSON
+    #Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    JSON
+    ${json_str}    Convert JSON To String    ${response.json()}
+    ${tempFilePath}    Set Variable
+    ...     ${EXECDIR}/robot/_resources/test_data_sets/compositions/CANONICAL_JSON/test_quantity_without_text__.json
+    Create File    ${tempFilePath}    ${json_str}
+    create EHR
+    Set Test Variable   ${externalTemplate}     ${template_id}
+    ## Create action with payload from template example, stored in test_quantity_without_text__.json file
+    commit composition  format=CANONICAL_JSON
+    ...    composition=test_quantity_without_text__.json
+    ...    extTemplateId=true
+    ${compositionUid}   Set Variable    ${response.json()}[uid][value]
+    ${template_id}      Set Variable    ${response.json()}[archetype_details][template_id][value]
+    Set Test Variable     ${compositionUid}  ${composition_uid}
+    #Log     ${response.json()}[content][0][data][events][0]
+    Remove File    ${tempFilePath}
+    ${eventsLength}     Get Length      ${response.json()}[content][0][data][events]
+    Should Be True      ${eventsLength}==27     #27=3x9quantities
+    #https://github.com/ehrbase/ehrbase/issues/900
+    [Teardown]      TRACE JIRA ISSUE      CDR-433
+
 Test Example Generator For Templates (ECIS) - JSON And Save It
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
