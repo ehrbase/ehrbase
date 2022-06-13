@@ -12,5 +12,5 @@ deepdiff == 4.3.2
 psycopg2-binary == 2.8.6
 python-benedict == 0.24.2
 
-pyjwt == 1.7.1
+pyjwt == 2.4.0
 # git+https://github.com/adiralashiva8/robotframework-metrics@v3.1.4
