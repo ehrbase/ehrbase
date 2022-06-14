@@ -32,30 +32,34 @@ Force Tags      125    future
 
 *** Test Cases ***
 Alternative flow 2 create persistent COMPOSITION for the same opt twice CANONICAL_JSON
+    [Tags]      599  not-ready  bug
     commit composition   format=CANONICAL_JSON
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition   201
     commit composition   format=CANONICAL_JSON
     ...                  composition=persistent_minimal.en.v1__full.json
     check status_code of commit composition   400
+    [Teardown]      TRACE GITHUB ISSUE      599     bug
 
 Alternative flow 2 create persistent COMPOSITION for the same opt twice CANONICAL_XML
+    [Tags]      599  not-ready  bug
     commit composition   format=CANONICAL_XML
     ...                  composition=persistent_minimal.en.v1__full.xml
     check status_code of commit composition   201
     commit composition   format=CANONICAL_XML
     ...                  composition=persistent_minimal.en.v1__full.xml
     check status_code of commit composition   400
+    [Teardown]      TRACE GITHUB ISSUE      599     bug
 
 Alternative flow 2 create persistent COMPOSITION for the same opt twice FLAT
     [Tags]      599  not-ready  bug
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
-    TRACE GITHUB ISSUE  599  bug
     check status_code of commit composition   201
     commit composition   format=FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
     check status_code of commit composition   400
+    [Teardown]      TRACE GITHUB ISSUE      599     bug
 
 Alternative flow 2 create persistent COMPOSITION for the same opt twice TDD
     [Tags]    future
