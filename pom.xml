@@ -58,17 +58,38 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <license-header.dir>./</license-header.dir>
         <!-- PostgreSQL Database Properties -->
-        <database.host>localhost</database.host>
-        <database.port>5432</database.port>
-        <database.user>ehrbase</database.user>
-        <database.pass>ehrbase</database.pass>
-        <database.name>ehrbase</database.name>
+        <database.host>${jdbc.url}</database.host>
+        <database.port>${jdbc.port}</database.port>
+        <database.user>${jdbc.user}</database.user>
+        <database.pass>${jdbc.pass}</database.pass>
+        <database.name>${jdbc.db}</database.name>
         <test.profile>unit</test.profile>
     </properties>
 
-
     <build>
         <plugins>
+            <!-- Añado el pluging necesario para las variables de propiedades-->
+            <!-- Cada hijo tiene esto con la ruta cogida desde el padre-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <files>
+                        <file>${project.basedir}/abc.properties</file>
+                    </files>
+                    <outputFile/>
+                    <properties/>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
