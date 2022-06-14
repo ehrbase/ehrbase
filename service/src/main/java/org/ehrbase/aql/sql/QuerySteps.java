@@ -19,7 +19,6 @@ package org.ehrbase.aql.sql;
 
 import java.util.List;
 import java.util.stream.IntStream;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.jooq.Condition;
@@ -85,8 +84,12 @@ public class QuerySteps {
         if (!isEquals) return false;
         // check condition
         return StringUtils.equals(
-            querySteps1.getWhereCondition() == null ? null : querySteps1.getWhereCondition().toString(),
-            querySteps2.getWhereCondition() == null ? null : querySteps2.getWhereCondition().toString());
+                querySteps1.getWhereCondition() == null
+                        ? null
+                        : querySteps1.getWhereCondition().toString(),
+                querySteps2.getWhereCondition() == null
+                        ? null
+                        : querySteps2.getWhereCondition().toString());
     }
 
     public static boolean isIncludedInList(QuerySteps querySteps, List<QuerySteps> queryStepsList) {
