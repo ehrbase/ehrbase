@@ -192,7 +192,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                 compare(comparator, DSL.field(variableDefinition.getPredicateDefinition().getOperand2()).cast(String.class))
         );
 
-        new LateralJoins().create(NIL_TEMPLATE, selectQuery, variableDefinition, Clause.SELECT);
+       LateralJoins.create(NIL_TEMPLATE, selectQuery, variableDefinition, Clause.SELECT);
 
     }
 

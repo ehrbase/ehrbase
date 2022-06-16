@@ -21,6 +21,7 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
@@ -29,7 +30,6 @@ import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.value_field.ISODateTime;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -57,8 +57,12 @@ public class WhereBinder {
     public static final String BETWEEN = "BETWEEN";
 
     //from AQL grammar
-    private static final Set<String> sqloperators = new HashSet<>(Arrays.asList(
-            "=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, IS, TRUE, FALSE, NULL, UNKNOWN, DISTINCT, FROM, BETWEEN, "(", ")", "{", "}"));
+    private static final Set<String> SQL_OPERATORS = Set.of(
+            "=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, IS, TRUE, FALSE, NULL, UNKNOWN, DISTINCT, FROM, BETWEEN, "(", ")", "{", "}");
+    /**
+     * list of subquery and operators
+     */
+    private static final Pattern SQL_CONDITIONAL_FUNCTIONAL_OPERATOR_PATTERN = Pattern.compile("(?i)(like|ilike|substr|in|not in)");
 
     public static final String OR = "OR";
     public static final String XOR = "XOR";
@@ -72,7 +76,6 @@ public class WhereBinder {
     enum ExistsMode {NOT_EXISTS, EXISTS, UNSET}
 
     private final List<Object> whereClause;
-    private String compositionName = null;
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
 
@@ -263,9 +266,7 @@ public class WhereBinder {
     private boolean isFollowedBySQLConditionalOperator(int cursor) {
         if (cursor < whereClause.size() - 1) {
             Object nextToken = whereClause.get(cursor + 1);
-            //list of subquery and operators
-            String sqlConditionalFunctionalOperatorRegexp = "(?i)(like|ilike|substr|in|not in)";
-            if (nextToken instanceof String && ((String) nextToken).trim().matches(sqlConditionalFunctionalOperatorRegexp)) {
+            if (nextToken instanceof String && SQL_CONDITIONAL_FUNCTIONAL_OPERATOR_PATTERN.matcher(((String) nextToken).trim()).matches()) {
                 isFollowedBySQLConditionalOperator = true;
                 return true;
             }
@@ -317,7 +318,7 @@ public class WhereBinder {
             return item;
         }
 
-        if (sqloperators.contains(item.toUpperCase()))
+        if (SQL_OPERATORS.contains(item.toUpperCase()))
             return " "+item+" ";
         if (taggedBuffer.toString().contains(JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
             return item.split("::")[0] + "'";
@@ -353,15 +354,15 @@ public class WhereBinder {
 
     private String expandForLateral(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition variableDefinition, MultiFieldsMap multiSelectFieldsMap ){
         String expanded = expandForCondition(encodedVar);
-        boolean isAlreadyCast = true;
+        final boolean isAlreadyCast;
 
-        if (new SetReturningFunction(expanded).isUsed()){
+        if (SetReturningFunction.isUsed(expanded)){
             isAlreadyCast = false;
             //check if this variable is already defined as a lateral join from the projection (SELECT)
             MultiFields selectFields = multiSelectFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath());
 
             if (selectFields != null && selectFields.getVariableDefinition().getLateralJoinDefinitions(templateId) != null) {
-                //TODO: get the matching lateral join... not the LAST!
+                //TODO: get the matching lateral join... not the LAST! XXX??
                 LateralJoinDefinition lateralJoinDefinition = reconciliateWithAliasedTable(expanded, selectFields.getVariableDefinition(), templateId);
                 if (lateralJoinDefinition == null)
                    return null;
@@ -371,22 +372,24 @@ public class WhereBinder {
             }
             else {
                 //check for an existing lateral join for this template
-                LateralJoinDefinition existingLateralJoin = multiSelectFieldsMap.asMultiFieldsList().matchingLateralJoin(templateId, expanded);
-                if (existingLateralJoin != null)
-                    new LateralJoins().reuse(existingLateralJoin, templateId, variableDefinition);
-                else
-                    new LateralJoins().create(templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE);
+                multiSelectFieldsMap.matchingLateralJoin(templateId, expanded)
+                .ifPresentOrElse(
+                        lj -> LateralJoins.reuse(lj, templateId, variableDefinition),
+                        () -> LateralJoins.create(templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE));
             }
 
             expanded = variableDefinition.getAlias();
+        } else {
+            isAlreadyCast = true;
         }
 
         if (whereVariable.hasRightMostJsonbExpression())
             expanded = expanded + whereVariable.getRightMostJsonbExpression();
 
 
-        if (variableDefinition.getSelectType() != null && !isAlreadyCast)
+        if (variableDefinition.getSelectType() != null && !isAlreadyCast) {
             expanded = "(" + expanded + ")::" + variableDefinition.getSelectType().getCastTypeName()+" ";
+        }
 
         return expanded;
     }

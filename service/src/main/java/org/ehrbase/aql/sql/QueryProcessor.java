@@ -22,6 +22,7 @@
 
 package org.ehrbase.aql.sql;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.compiler.TopAttributes;
@@ -40,6 +41,8 @@ import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
@@ -61,6 +64,8 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
 public class QueryProcessor extends TemplateMetaData {
 
     public static final String NIL_TEMPLATE = "*";
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      *
@@ -121,36 +126,34 @@ public class QueryProcessor extends TemplateMetaData {
 
     public AqlSelectQuery buildAqlSelectQuery() {
 
-        Map<String, List<QuerySteps>> cacheQuery = new HashMap<>();
+        Map<String, List<QuerySteps>> cacheQuery = new LinkedHashMap<>();
 
         boolean containsJson = false;
 
         statements = new OrderByField(statements).merge();
 
-        List<QuerySteps> querySteps;
-
         if (contains.getTemplates().isEmpty()) {
             if (contains.hasContains() && contains.requiresTemplateWhereClause()) {
                 try {
-                    querySteps = buildNullSelect();
-                    cacheQuery.put(NIL_TEMPLATE, querySteps);
+                    cacheQuery.put(NIL_TEMPLATE, buildNullSelect());
                 } catch (UnknownVariableException e) {
                     // do nothing
                 }
             } else
                 try {
-                    querySteps = buildQuerySteps(NIL_TEMPLATE);
-                    cacheQuery.put(NIL_TEMPLATE, querySteps);
+                    cacheQuery.put(NIL_TEMPLATE, buildQuerySteps(NIL_TEMPLATE));
                 } catch (UnknownVariableException e) {
                     // do nothing
                 }
         } else {
             for (String templateId : contains.getTemplates()) {
                 try {
-                    querySteps = buildQuerySteps(templateId);
-                    cacheQuery.put(templateId, querySteps);
+                    cacheQuery.put(templateId, buildQuerySteps(templateId));
                 } catch (UnknownVariableException e) {
                     // ignore
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Template {}: {}", templateId, e.getMessage());
+                    }
                 }
             }
         }
@@ -187,9 +190,9 @@ public class QueryProcessor extends TemplateMetaData {
                 if (first) {
                     unionSetQuery = select;
                     first = false;
-                } else
+                } else {
                     unionSetQuery.union(select);
-
+                }
             }
 
         }
@@ -301,24 +304,28 @@ public class QueryProcessor extends TemplateMetaData {
     }
 
     private SelectQuery<?> setLateralJoins(List<LateralJoinDefinition> lateralJoins, SelectQuery<?> selectQuery) {
-        if (lateralJoins == null)
+        if (lateralJoins == null) {
             return selectQuery;
+        }
 
-        HashSet<String> usedLaterals = new HashSet<>();
+        HashSet<Pair<String, String>> usedLaterals = new HashSet<>();
 
         for (LateralJoinDefinition lateralJoinDefinition : lateralJoins) {
+            var key = Pair.of(
+                    lateralJoinDefinition.getTable().getName(),
+                    lateralJoinDefinition.getLateralVariable());
 
-            if (usedLaterals.contains(
-                    lateralJoinDefinition.getTable().getName() + "." + lateralJoinDefinition.getLateralVariable()))
+            if (usedLaterals.contains(key)) {
                 continue;
+            }
 
-            if (lateralJoinDefinition.getCondition() == null)
+            if (lateralJoinDefinition.getCondition() == null) {
                 selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType());
-            else
+            } else {
                 selectQuery.addJoin(lateralJoinDefinition.getTable(), lateralJoinDefinition.getJoinType(), lateralJoinDefinition.getCondition());
+            }
 
-            usedLaterals.add(
-                    lateralJoinDefinition.getTable().getName() + "." + lateralJoinDefinition.getLateralVariable());
+            usedLaterals.add(key);
         }
 
         return selectQuery;
@@ -356,19 +363,20 @@ public class QueryProcessor extends TemplateMetaData {
 
         for (Object item : statements.getWhereClause()) {
             if (item instanceof I_VariableDefinition && ((I_VariableDefinition) item).isLateralJoin(templateId)) {
-                if (((I_VariableDefinition) item).getLateralJoinDefinitions(templateId) == null)
-                    throw new IllegalStateException("unresolved lateral join for template:"+templateId+", path:"+((I_VariableDefinition) item).getPath());
-
-                else if (cursor > ((I_VariableDefinition) item).getLateralJoinDefinitions(templateId).size() - 1)
+                LateralJoinDefinition lateralJoinDefinition = ((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor);
+                if (((I_VariableDefinition) item).getLateralJoinDefinitions(templateId) == null) {
+                    throw new IllegalStateException("unresolved lateral join for template: " + templateId + ", path:"+((I_VariableDefinition) item).getPath());
+                } else if (cursor > ((I_VariableDefinition) item).getLateralJoinDefinitions(templateId).size() - 1) {
                     continue;
+                }
                 //check if lateral join is borrowed from SELECT clause, if so, don't add
-                else if (((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getClause().equals(IQueryImpl.Clause.SELECT))
+                else if (lateralJoinDefinition.getClause().equals(IQueryImpl.Clause.SELECT))
                     continue;
 
                 lateralJoinsList.add(
                         new LateralJoinDefinition(
-                                ((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getSqlExpression(),
-                                DSL.lateral(((I_VariableDefinition) item).getLateralJoinDefinition(templateId, cursor).getTable()),
+                                lateralJoinDefinition.getSqlExpression(),
+                                DSL.lateral(lateralJoinDefinition.getTable()),
                                 ((I_VariableDefinition)item).getSubstituteFieldVariable(),
                                 JoinType.JOIN,
                                 null,

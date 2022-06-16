@@ -22,7 +22,7 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
@@ -104,7 +104,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
     private boolean ignoreUnresolvedIntrospect = false;
 
-    private static String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
+    private static final String ENV_IGNORE_UNRESOLVED_INTROSPECT = "aql.ignoreUnresolvedIntrospect";
 
     private final IntrospectService introspectCache;
 
@@ -132,7 +132,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
         boolean setReturningFunctionInWhere = false; //if true, use a subselect
         boolean isRootContent = false; //that is a query path on a full composition starting from the root content
         DataType castTypeAs = null;
-        boolean isSetReturningFunction = false; // if true, this will be used for lateral joins and mustn't be casted
 
         if (pathResolver.entryRoot(templateId) == null) //case of (invalid) composition with null entry!
             return null;
@@ -159,7 +158,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
         for (String path: pathSet) {
             // check whether the path is valid for this template
-            if (!new WebTemplateAqlPath(webTemplate, path, variableDefinition.getPath()).isValid()) {
+            if (!WebTemplateAqlPath.isValid(webTemplate, path, variableDefinition.getPath())) {
                 if (clause.equals(Clause.WHERE))
                     // f.e. NOT EXISTS path
                 {
@@ -196,9 +195,12 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             List<String> referenceItemPathArray = new ArrayList<>(itemPathArray);
             Collections.replaceAll(referenceItemPathArray, AQL_NODE_ITERATIVE_MARKER, "0");
 
-            if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
+            final boolean isSetReturningFunction; // if true, this will be used for lateral joins and mustn't be cast
+
+            if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
                 itemPathArray = new NodePredicateCall(itemPathArray).resolve();
-            else if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER)) {
+                isSetReturningFunction = false;
+            } else if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER)) {
                 JsonbFunctionCall jsonbFunctionCall = new JsonbFunctionCall(
                         itemPathArray, AQL_NODE_ITERATIVE_MARKER, QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION);
                 itemPathArray = jsonbFunctionCall.resolve();
@@ -207,13 +209,15 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                     rightMostJsonbExpression = jsonbFunctionCall.getRightMostJsonbExpression();
                 }
                 isSetReturningFunction = true;
+            } else {
+                isSetReturningFunction = false;
             }
 
-            String itemPath = StringUtils.join(itemPathArray.toArray(new String[] {}), ",");
+            String itemPath = String.join(",", itemPathArray);
 
-            if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION) && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION))
+            if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION) && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION)) {
                 itemPath = wrapQuery(itemPath);
-
+            }
 
             DataTypeFromTemplate dataTypeFromTemplate = new DataTypeFromTemplate(introspectCache, ignoreUnresolvedIntrospect, clause);
 
@@ -249,7 +253,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                                                 rightMostJsonbExpression);
 
             fieldList.add(aqlField);
-            isSetReturningFunction = false;
         }
 
         return new MultiFields(variableDefinition, fieldList, templateId);
@@ -286,25 +289,25 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             }
 
             itemPathArray.add(pathResolver.entryRoot(templateId));
-            if (path != null && !path.startsWith(TAG_COMPOSITION))
+            if (path != null && !path.startsWith(TAG_COMPOSITION)) {
                 itemPathArray.addAll(new JqueryPath(PATH_PART.IDENTIFIER_PATH_PART, path, "#").evaluate());
+            }
             JqueryPath jqueryPath = new JqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "#");
             itemPathArray.addAll(jqueryPath.evaluate());
 
-            StringBuilder jsqueryPath = new StringBuilder();
+            String jsqueryPath = itemPathArray.stream()
+                    .map(p -> {
+                        switch (p) {
+                            case "0":  //case /name/value -> /name,0,value
+                            case "#":
+                                return "#";
+                            default:
+                                return '"' + p + '"';
+                        }
+                    })
+                    .collect(Collectors.joining("."));
 
-            for (int i = 0; i < itemPathArray.size(); i++) {
-                if (!itemPathArray.get(i).equals("#") && !itemPathArray.get(i).equals("0"))
-                    jsqueryPath.append("\"").append(itemPathArray.get(i)).append("\"");
-                else if (itemPathArray.get(i).equals("0")) { //case /name/value -> /name,0,value
-                    jsqueryPath.append("#");
-                } else
-                    jsqueryPath.append(itemPathArray.get(i));
-                if (i < itemPathArray.size() - 1)
-                    jsqueryPath.append(".");
-            }
-
-            Field<?> fieldPathItem = DSL.field(jsqueryPath.toString(), String.class);
+            Field<?> fieldPathItem = DSL.field(jsqueryPath, String.class);
             QualifiedAqlField qualifiedAqlField = new QualifiedAqlField(fieldPathItem);
             fieldList.add(qualifiedAqlField);
         }
@@ -333,8 +336,8 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             //look ahead for an index expression: ','<nnn>','
             String[] segments = itemPath.split("(?=(,[0-9]*,))");
             //trim the last index expression
-            String pathPart = StringUtils.join(ArrayUtils.subarray(segments, 0, segments.length - 1));
-            return QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION + "(" + CONTENT + " #> '{" + pathPart + "}')";
+            String pathPart = StringUtils.join(segments, null, 0, segments.length - 1);
+            return QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+ "(" + CONTENT + " #> '{" + pathPart + "}')";
         } else
             return JsonbEntryQuery.JSONB_SELECTOR_COMPOSITION_OPEN + itemPath + JsonbEntryQuery.JSONB_SELECTOR_CLOSE;
     }

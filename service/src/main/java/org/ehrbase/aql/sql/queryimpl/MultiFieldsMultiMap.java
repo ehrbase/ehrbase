@@ -19,25 +19,21 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
-import org.ehrbase.aql.sql.binding.MultiFieldsList;
-
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MultiFieldsMultiMap extends MultiFieldsMap{
 
-    public MultiFieldsMultiMap(MultiFieldsList multiFieldsList) {
+    public MultiFieldsMultiMap(List<MultiFields> multiFieldsList) {
         this.multiFieldsListAsMap = toMultiMap(multiFieldsList);
     }
 
-    private Map<String, MultiFields> toMultiMap(MultiFieldsList multiFieldsList){
+    private Map<String, MultiFields> toMultiMap(List<MultiFields> multiFieldsList){
 
         Map<String, MultiFields> multiMap = new LinkedHashMap<>(); //preserve order of insertion
 
-        for (Iterator<MultiFields> it = multiFieldsList.iterator(); it.hasNext(); ) {
-            MultiFields multiFields = it.next();
+        for (MultiFields multiFields: multiFieldsList){
             if (!multiFields.isEmpty())
                 multiMap.put(variableIdentifierPath(multiFields), multiFields);
         }

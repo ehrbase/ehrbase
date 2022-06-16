@@ -21,6 +21,7 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.*;
 import org.ehrbase.aql.definition.I_VariableDefinition;
@@ -42,7 +43,7 @@ import java.util.*;
 public class AqlQueryHandler extends DataAccess {
 
     private I_OpenehrTerminologyServer tsAdapter;
-    private Map<String, Set<Object>> auditResultMap = new HashMap<>(); //we add a map of audit related data (f.e. ehr_id/value)
+    private Map<String, Set<Object>> auditResultMap = new LinkedHashMap<>(); //we add a map of audit related data (f.e. ehr_id/value)
 
     public AqlQueryHandler(I_DomainAccess domainAccess, FhirTerminologyServerR4AdaptorImpl tsAdapter) {
         super(domainAccess);
@@ -86,8 +87,15 @@ public class AqlQueryHandler extends DataAccess {
                 auditVariables.addResults(auditResultMap, variableDefinition.getPath(), resultSetForVariable(variableDefinition, aqlResult.getRecords()));
             }
 
-            if (!variableDefinition.isHidden())
-                variables.put(variableDefinition.getAlias() == null || variableDefinition.isVoidAlias() ? "#" + serial++ : variableDefinition.getAlias(), StringUtils.isNotBlank(variableDefinition.getPath()) ? "/" + variableDefinition.getPath() : variableDefinition.getIdentifier());
+            if (!variableDefinition.isHidden()) {
+                String key = variableDefinition.getAlias() == null || variableDefinition.isVoidAlias()
+                        ? "#" + serial++ :
+                        variableDefinition.getAlias();
+                String value = StringUtils.isNotBlank(variableDefinition.getPath())
+                        ? "/" + variableDefinition.getPath()
+                        : variableDefinition.getIdentifier();
+                variables.put(key, value);
+            }
         }
         aqlResult.setVariables(variables);
         aqlResult.setAuditResultMap(auditResultMap);
@@ -100,16 +108,22 @@ public class AqlQueryHandler extends DataAccess {
     }
 
     public Set<Object> resultSetForVariable(I_VariableDefinition variableDefinition, Result<Record> recordResult){
-        Set<Object> resultSet = new HashSet<>();
+        var alias = Optional.of(variableDefinition)
+                .map(I_VariableDefinition::getAlias);
 
-        String columnIdentifier = variableDefinition.getAlias() != null ? variableDefinition.getAlias() : "/"+variableDefinition.getPath();
-
-        for (Record record: recordResult){
-            if (variableDefinition.getAlias() == null || !variableDefinition.getAlias().startsWith("_FCT")) { //if the variable is a function parameter, ignore it (f.e. count())
-                resultSet.add(record.get(columnIdentifier));
-            }
+        //if the variable is a function parameter, ignore it (f.e. count())
+        boolean fctAlias = alias
+                .filter(a -> a.startsWith("_FCT"))
+                .isPresent();
+        if (fctAlias) {
+            return new LinkedHashSet<>();
         }
-        return resultSet;
+
+        String columnIdentifier = alias.orElseGet(() -> "/" + variableDefinition.getPath());
+
+        return recordResult.stream()
+                .map(r -> r.get(columnIdentifier))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     public Map<String, Set<Object>> getAuditResultMap() {

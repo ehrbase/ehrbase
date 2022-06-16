@@ -35,7 +35,11 @@ public class LateralJoins {
 
     private static int seed = 1;
 
-    public void create(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item, IQueryImpl.Clause clause) {
+    private LateralJoins() {
+        //NOOP
+    }
+
+    public static void create(String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item, IQueryImpl.Clause clause) {
         var originalSqlExpression = encodedVar.toString();
 
         if (originalSqlExpression.isBlank())
@@ -63,17 +67,12 @@ public class LateralJoins {
         //insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(templateId, new LateralJoinDefinition(originalSqlExpression, table, variableAlias, JoinType.JOIN, null, clause));
-        item.setAlias(new LateralVariable(tableAlias, variableAlias).alias());
 
+        LateralJoinDefinition lateralJoinDefinition = new LateralJoinDefinition(originalSqlExpression, table, variableAlias, JoinType.JOIN, null, clause);
+        reuse(lateralJoinDefinition, templateId, item);
     }
 
-    public void reuse(LateralJoinDefinition lateralJoinDefinition, String templateId, I_VariableDefinition item){
-        item.setLateralJoinTable(templateId, lateralJoinDefinition);
-        item.setAlias(new LateralVariable(lateralJoinDefinition.getTable().getName(), lateralJoinDefinition.getLateralVariable()).alias());
-    }
-
-    public void create(String templateId, SelectQuery selectSelectStep, I_VariableDefinition item, IQueryImpl.Clause clause) {
+    public static void create(String templateId, SelectQuery selectSelectStep, I_VariableDefinition item, IQueryImpl.Clause clause) {
         if (selectSelectStep == null)
             return;
         int hashValue = selectSelectStep.hashCode(); //cf. SonarLint
@@ -90,6 +89,11 @@ public class LateralJoins {
         Table<Record> table = DSL.table(wrappedSelectSelectStep).as(tableAlias);
         item.setLateralJoinTable(templateId, new LateralJoinDefinition(selectSelectStep.getSQL(), table, variableAlias, JoinType.LEFT_OUTER_JOIN, DSL.condition(true), clause));
         item.setSubstituteFieldVariable(variableAlias);
+    }
+
+    public static void reuse(LateralJoinDefinition lateralJoinDefinition, String templateId, I_VariableDefinition item){
+        item.setLateralJoinTable(templateId, lateralJoinDefinition);
+        item.setAlias(new LateralVariable(lateralJoinDefinition.getTable().getName(), lateralJoinDefinition.getLateralVariable()).alias());
     }
 
     private static synchronized int inc() {

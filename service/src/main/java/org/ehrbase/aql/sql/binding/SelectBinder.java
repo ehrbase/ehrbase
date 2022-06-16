@@ -25,7 +25,6 @@ import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -41,7 +40,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.ehrbase.aql.sql.queryimpl.IQueryImpl.Clause.SELECT;
-import static org.jooq.impl.SQLDataType.INTERVAL;
 
 /**
  * Bind the abstract representation of a SELECT clause into a SQL expression
@@ -83,10 +81,10 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
      * @param templateId
      * @return
      */
-    public MultiFieldsList bind(String templateId) throws UnknownVariableException {
+    public List<MultiFields> bind(String templateId) throws UnknownVariableException {
         ObjectQuery.reset();
 
-        MultiFieldsList multiFieldsList = new MultiFieldsList();
+        List<MultiFields> multiFieldsList = new ArrayList<>();
 
         while (variableDefinitions.hasNext()) {
             I_VariableDefinition variableDefinition = variableDefinitions.next();
@@ -128,13 +126,13 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
         return compositionAttributeQuery;
     }
 
-   private void encodeForLateral(String className, String templateId, I_VariableDefinition variableDefinition, MultiFields multiFields, MultiFieldsList multiFieldsList) throws UnknownVariableException {
+   private void encodeForLateral(String className, String templateId, I_VariableDefinition variableDefinition, MultiFields multiFields, List<MultiFields> multiFieldsList) throws UnknownVariableException {
         for (Iterator<QualifiedAqlField> it = multiFields.iterator(); it.hasNext(); ) {
             QualifiedAqlField qualifiedAqlField = it.next();
             Field sqlField = qualifiedAqlField.getSQLField();
             SelectQuery selectQuery = domainAccess.getContext().selectQuery();
             selectQuery.addSelect(sqlField);
-            if (new SetReturningFunction(selectQuery.toString()).isUsed()){
+            if (SetReturningFunction.isUsed(selectQuery.toString())) { //what does selectQuery.toString() ?
                 String alias = sqlField.getName();
                 MultiFields unaliasedFields = new ExpressionField(variableDefinition, jsonbEntryQuery, compositionAttributeQuery).toSql(className, templateId, variableDefinition.getIdentifier(), IQueryImpl.Clause.WHERE);
 
@@ -142,12 +140,10 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
                 taggedStringBuilder.append(unaliasedFields.getLastQualifiedField().getSQLField().toString());
 
                 //check if this expression is already used as a lateral join for another variable
-                LateralJoinDefinition existingLateralJoin = multiFieldsList.matchingLateralJoin(templateId, taggedStringBuilder.toString());
-
-                if (existingLateralJoin != null)
-                    new LateralJoins().reuse(existingLateralJoin, templateId, variableDefinition);
-                else
-                    new LateralJoins().create(templateId, taggedStringBuilder, variableDefinition, SELECT);
+                MultiFieldsMap.matchingLateralJoin(multiFieldsList, templateId, taggedStringBuilder.toString())
+                        .ifPresentOrElse(
+                                lj -> LateralJoins.reuse(lj, templateId, variableDefinition),
+                                () -> LateralJoins.create(templateId, taggedStringBuilder, variableDefinition, SELECT));
 
                 //substitute the field to use the lateral join with the same alias!
                 variableDefinition.getLastLateralJoin(templateId).setClause(SELECT);

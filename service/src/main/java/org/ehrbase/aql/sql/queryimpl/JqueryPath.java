@@ -19,6 +19,7 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import java.util.regex.Pattern;
 import org.ehrbase.aql.sql.queryimpl.value_field.NodePredicate;
 import org.ehrbase.ehr.util.LocatableHelper;
 
@@ -29,7 +30,7 @@ import java.util.List;
 import static org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery.*;
 import static org.ehrbase.aql.sql.queryimpl.attribute.eventcontext.EventContextResolver.OTHER_CONTEXT;
 
-public class JqueryPath {
+public final class JqueryPath {
 
     private final JsonbEntryQuery.PATH_PART pathPart;
     private final String path;
@@ -42,14 +43,19 @@ public class JqueryPath {
             TAG_EVENTS
     };
 
+    private static final Pattern INDEX_PATTERN = Pattern.compile("[0-9]*|#");
+
 
     public JqueryPath(JsonbEntryQuery.PATH_PART pathPart, String path, String defaultIndex) {
         this.pathPart = pathPart;
         this.path = path;
         this.defaultIndex = defaultIndex;
     }
-
     public List<String> evaluate() {
+         return evaluate(pathPart, path, defaultIndex);
+    }
+
+    public static List<String> evaluate(JsonbEntryQuery.PATH_PART pathPart, String path, String defaultIndex) {
 
         //CHC 160607: this offset (1 or 0) was required due to a bug in generating the containment table
         //from a PL/pgSQL script. this is no more required
@@ -61,10 +67,11 @@ public class JqueryPath {
         int offset = 0;
         List<String> segments = LocatableHelper.dividePathIntoSegments(path);
         List<String> jqueryPath = new ArrayList<>();
-        String nodeId = null;
         for (int i = offset; i < segments.size(); i++) {
-            nodeId = segments.get(i);
-            nodeId = nodeId.equals(OTHER_CONTEXT.substring(1))  ? nodeId : "/" + nodeId;
+            String nodeId = segments.get(i);
+            if (!nodeId.equals(OTHER_CONTEXT.substring(1))) {
+                nodeId = "/" + nodeId;
+            }
 
             encodeTreeMapNodeId(jqueryPath, nodeId);
 
@@ -86,12 +93,12 @@ public class JqueryPath {
         if (pathPart.equals(JsonbEntryQuery.PATH_PART.VARIABLE_PATH_PART)) {
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = jqueryPath.size() - 1; i >= 0; i--) {
-                if (jqueryPath.get(i).matches("[0-9]*|#") || jqueryPath.get(i).contains("[") || jqueryPath.get(i).startsWith("'"))
+                if (INDEX_PATTERN.matcher(jqueryPath.get(i)).matches() || jqueryPath.get(i).contains("[") || jqueryPath.get(i).startsWith("'"))
                     break;
                 String item = jqueryPath.remove(i);
                 stringBuilder.insert(0, item);
             }
-            nodeId = EntryAttributeMapper.map(stringBuilder.toString());
+            String nodeId = EntryAttributeMapper.map(stringBuilder.toString());
             if (nodeId != null) {
                 if (defaultIndex.equals("#")) { //jsquery
                     if (nodeId.contains(",")) {
