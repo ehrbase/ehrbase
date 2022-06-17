@@ -135,7 +135,7 @@ server:
     iterationScanDepth: 2
 
   # Option to disable strict invariant validation.
-  disable-strict-validation: true
+  # disable-strict-validation: true
 
 
 terminology-server:
