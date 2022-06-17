@@ -19,21 +19,47 @@ package org.ehrbase.aql.sql;
 
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import org.ehrbase.aql.compiler.Contains;
 import org.ehrbase.aql.compiler.Statements;
 import org.ehrbase.aql.compiler.TopAttributes;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.Variables;
-import org.ehrbase.aql.sql.binding.*;
+import org.ehrbase.aql.sql.binding.JoinBinder;
+import org.ehrbase.aql.sql.binding.LimitBinding;
+import org.ehrbase.aql.sql.binding.OrderByField;
+import org.ehrbase.aql.sql.binding.SelectBinder;
+import org.ehrbase.aql.sql.binding.SuperQuery;
+import org.ehrbase.aql.sql.binding.VariableDefinitions;
+import org.ehrbase.aql.sql.binding.WhereMultiFields;
 import org.ehrbase.aql.sql.postprocessing.RawJsonTransform;
-import org.ehrbase.aql.sql.queryimpl.*;
+import org.ehrbase.aql.sql.queryimpl.DurationFormatter;
+import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
+import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.MultiFieldsMap;
+import org.ehrbase.aql.sql.queryimpl.MultiFieldsMultiMap;
+import org.ehrbase.aql.sql.queryimpl.TemplateMetaData;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
-import org.jooq.*;
+import org.jooq.Condition;
+import org.jooq.DSLContext;
+import org.jooq.JoinType;
+import org.jooq.Operator;
+import org.jooq.Param;
 import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.Select;
+import org.jooq.SelectQuery;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 
@@ -380,9 +406,10 @@ public class QueryProcessor extends TemplateMetaData {
         String sql = pretty.render(select);
         List<String> details = new ArrayList<>();
         details.add(sql);
-        for (Param<?> parameter : select.getParams().values()) {
-            details.add(parameter.getValue().toString());
-        }
+        select.getParams().values().stream()
+                .map(Param::getValue)
+                .map(Objects::toString)
+                .forEach(details::add);
         explainList.add(details);
         return explainList;
     }
