@@ -34,12 +34,12 @@ Suite Setup     Precondition
 Check Headers with (JSON)
     create EHR wih x forwarded headers
     check that headers location response has    https   example.com    333
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 Check Headers with (XML)
     create EHR wih x forwarded headers   XML
     check that headers location response has    https   example.com    333
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 Check Headers with Commit Composition
     create EHR wih x forwarded headers
@@ -50,7 +50,7 @@ Check Headers with Commit Composition
     check the successful result of commit composition
     check that composition headers location response has    https   example.com    333
     check that composition body location response has    https   example.com    333
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 *** Keywords ***
 Precondition
