@@ -58,7 +58,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <license-header.dir>./</license-header.dir>
         <!-- PostgreSQL Database Properties -->
-        <database.host>10.216.24.69</database.host>
+        <database.host>localhost</database.host>
         <database.port>5433</database.port>
         <database.user>ehrbase</database.user>
         <database.pass>ehrbase</database.pass>
