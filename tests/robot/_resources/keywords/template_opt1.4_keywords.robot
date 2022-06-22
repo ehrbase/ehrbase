@@ -205,7 +205,7 @@ Clean Up Test Variables
                         Set Test Variable    ${file}           None
                         Set Test Variable    ${expected}       None
                         Set Test Variable    ${template_id}    None
-    &{vars in memory}=  Get Variables
+    &{vars in memory}=  BuiltIn.Get Variables
                         Log Many             &{vars in memory}
 
 
@@ -215,7 +215,7 @@ Clean Up Suite Variables
                         Set Suite Variable    ${file}           None
                         Set Suite Variable    ${expected}       None
                         Set Suite Variable    ${template_id}    None
-    &{vars in memory}=  Get Variables
+    &{vars in memory}=  BuiltIn.Get Variables
                         Log Many             &{vars in memory}
 
 

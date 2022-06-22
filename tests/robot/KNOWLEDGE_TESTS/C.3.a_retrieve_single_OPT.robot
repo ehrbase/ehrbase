@@ -20,7 +20,7 @@
 Documentation   OPT1.4 integration tests
 ...             retrieve single OPTs
 ...
-...             Precondtions for exectuion:
+...             Preconditions for execution:
 ...                 1. operational_templates folder is empty
 ...                 2. DB container started
 ...                 3. openehr-server started

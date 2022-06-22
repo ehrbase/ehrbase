@@ -58,7 +58,7 @@ All Types
 
 Minimal
     [Documentation]    ...
-    [Template]         validate valid OPT
+    [Template]      validate valid OPT
 
     minimal/minimal_action.opt
     minimal/minimal_admin.opt
@@ -69,7 +69,7 @@ Minimal
 
 Minimal Entry Combination
     [Documentation]    ...
-    [Template]         validate valid OPT
+    [Template]      validate valid OPT
 
     minimal_entry_combination/obs_act.opt
     minimal_entry_combination/obs_admin.opt
@@ -125,7 +125,12 @@ validate valid OPT
     ...                            Prefer=return=representation
     get valid OPT file     ${opt file}
     upload OPT file
-    server's response indicates that OPT is valid
+    IF  '${response.status_code}' != '409'
+        server's response indicates that OPT is valid
+    ELSE
+        server rejected OPT with status code 409
+    END
+
 
 
 server's response indicates that OPT is valid
