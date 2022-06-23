@@ -23,9 +23,6 @@ spring:
       maximum-pool-size: 10
 
 
-security:
-  authType: NONE
-
 server:
   port: 8080
   # Optional custom server nodename
@@ -37,6 +34,9 @@ server:
     # if true, WHERE clause is using jsquery, false uses SQL only
     useJsQuery: false
     # ignore unbounded item in path starting with one of
-    ignoreIterativeNodeList: 'events,activities,content'
-    # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 1
-    iterationScanDepth: 1
+    ignoreIterativeNodeList: 'dummy'
+    # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
+    iterationScanDepth: 20
+
+security:
+  authType: NONE
