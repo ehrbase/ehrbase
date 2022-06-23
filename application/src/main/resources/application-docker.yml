@@ -20,9 +20,8 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASS}
     hikari:
-      maximum-pool-size: 50
-      max-lifetime: 1800000
-      minimum-idle: 10
+      maximum-pool-size: 10
+
 
 security:
   authType: NONE

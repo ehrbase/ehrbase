@@ -2,17 +2,21 @@ version: '3'
 
 services:
   ehrbase:
-    image: ehrbase/ehrbase:next
+    image: ehrbase/ehrbase:yugabyte-experimental
+    command: java -Dspring.profiles.active=docker -Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar ehrbase.jar
     ports:
       - 8080:8080
+      - 5005:5005
     networks:
       - ehrbase-net
     env_file:
       - .env.ehrbase
     environment:
-      DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
+      DB_URL: jdbc:yugabytedb://10.216.24.66:5433/ehrbase
       DB_USER: ehrbase
-      DB_PASS: ehrbase
+      DB_PASS: VnZLTu7s92z9bd5
+      SPRING_DATASOURCE_DRIVERCLASSNAME: com.yugabyte.Driver
+      LOGGING_LEVEL_COM_YUGABYTE: TRACE
     restart: on-failure
 
   ehrdb:
