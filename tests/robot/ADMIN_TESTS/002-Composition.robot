@@ -43,7 +43,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 001 ADMIN - Delete Composition
     # pre check
-    Connect With DB
+    #Connect With DB
     #check composition admin delete table counts initially
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt

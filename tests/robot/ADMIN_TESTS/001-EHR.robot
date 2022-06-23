@@ -45,7 +45,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 ADMIN - Delete EHR
     # comment: pre check
-    Connect With DB
+    #Connect With DB
     #check ehr admin delete table counts
 
     # comment: preparing and provisioning
@@ -64,7 +64,7 @@ ADMIN - Delete EHR
 
 ADMIN - Delete EHR with composition
     # pre check
-    Connect With DB
+    #Connect With DB
     #check ehr admin delete table counts
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt
@@ -82,7 +82,7 @@ ADMIN - Delete EHR with composition
 
 ADMIN - Delete EHR with two compositions
     # pre check
-    Connect With DB
+    #Connect With DB
     # check ehr admin delete table counts
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt
@@ -101,7 +101,7 @@ ADMIN - Delete EHR with two compositions
 
 ADMIN - Delete EHR with directory
     # pre check
-    Connect With DB
+    #Connect With DB
     #check ehr admin delete table counts
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt

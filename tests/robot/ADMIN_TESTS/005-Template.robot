@@ -262,7 +262,7 @@ ${CACHE-ENABLED}        ${FALSE}
 
         TRACE GITHUB ISSUE    444
 
-    Connect With DB
+    #Connect With DB
     ${opt_records}=     Count Rows In DB Table    ehr.template_store
                         Should Be Equal As Integers    ${opt_records}       ${1}
 

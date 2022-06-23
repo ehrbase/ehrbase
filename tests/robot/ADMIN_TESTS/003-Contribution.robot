@@ -44,7 +44,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 ADMIN - Delete Contribution
     # pre check
-    Connect With DB
+    #Connect With DB
     # check contribution admin delete table counts initially
     # preparing and provisioning
     Upload OPT    minimal/minimal_evaluation.opt
