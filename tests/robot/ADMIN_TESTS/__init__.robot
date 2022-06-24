@@ -38,3 +38,5 @@ Documentation       Admin API REST tests \n\n
 ...              NOTE: Tests with OAUTH require a running and properly configured Keycloak server.
 
 Force Tags    ADMIN
+Suite Setup     startup SUT
+Suite Teardown  shutdown SUT

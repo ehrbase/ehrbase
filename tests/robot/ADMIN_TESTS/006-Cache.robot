@@ -43,7 +43,7 @@ Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 Resource        ../_resources/keywords/aql_query_keywords.robot
 
-Suite Setup     startup SUT
+#Suite Setup     startup SUT
 #Suite Teardown  shutdown SUT
 
 Force Tags     cache    cache_template_update    TODO
