@@ -232,6 +232,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
+            - QUERYSERVICE-test-1
 
       - ROBOT-TEST-REPORT:
           context: org-global
