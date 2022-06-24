@@ -1229,8 +1229,7 @@ jobs:
 
   ADMIN-test:
     # executor: docker-py3-java11-postgres
-    # executor: machine-ubuntu-2004
-    executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
     environment:
       SUT: TEST
       ADMINAPI_ACTIVE: "TRUE"
