@@ -271,7 +271,6 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!", port=GLOBAL_P
 
     # ADMIN-TEST CONFIG W/ BASIC AUTH
     if sut == "ADMIN-TEST":
-        print(ADMIN_TEST_CONFIG)
         return ADMIN_TEST_CONFIG
 
     # DEV CONFIG W/ BASIC AUTH

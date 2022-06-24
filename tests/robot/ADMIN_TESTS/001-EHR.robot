@@ -31,6 +31,7 @@ Resource        ../_resources/keywords/composition_keywords.robot
 
 #Suite Setup     startup SUT
 #Suite Teardown  shutdown SUT
+Suite Setup     Log all env variables
 
 Force Tags     ADMIN_ehr
 
@@ -118,6 +119,8 @@ ADMIN - Delete EHR with directory
 
 
 *** Keywords ***
+Log all env variables
+    ${allvars}=     Log Variables
 
 startup SUT
     [Documentation]     Overrides `generic_keywords.startup SUT` keyword
