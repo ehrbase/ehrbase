@@ -72,7 +72,7 @@ ${VALID DATA SETS}     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_d
 
 *** Test Cases ***
 Commit Composition After Template Update (Cache Enabled)
-    [Tags]    not-ready
+    #[Tags]    not-ready
     
     01) Run ehrbase with cache enabled true
     02) Upload Template Containing Node With Specific Archetype_ID
