@@ -29,8 +29,8 @@ Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/directory_keywords.robot
 Resource        ../_resources/keywords/composition_keywords.robot
 
-Suite Setup     startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup     startup SUT
+#Suite Teardown  shutdown SUT
 
 Force Tags     ADMIN_ehr
 
