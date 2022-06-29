@@ -108,7 +108,7 @@ system:
 openehr-api:
   context-path: /rest/openehr
 admin-api:
-  active: false
+  active: true
   allowDeleteAll: false
   context-path: /rest/admin
 
