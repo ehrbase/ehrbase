@@ -40,7 +40,7 @@ COMPOSITION JSON with utc time zone using Get
     check content of compositions version at time (JSON)    time_1    original value
 
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 
 COMPOSITION JSON with utc time zone using AQL
@@ -59,4 +59,4 @@ COMPOSITION JSON with utc time zone using AQL
 
 
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

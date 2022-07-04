@@ -26,7 +26,7 @@ Resource        ../../_resources/keywords/composition_keywords.robot
 Resource        ../../_resources/suite_settings.robot
 
 Suite Setup         Precondition
-Suite Teardown      restart SUT
+#Suite Teardown      restart SUT
 
 *** Variables ***
 ${composition_file}      a1__24hour_average_value.json

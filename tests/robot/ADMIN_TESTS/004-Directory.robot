@@ -28,8 +28,8 @@ Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/directory_keywords.robot
 
-Suite Setup     startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup     startup SUT
+#Suite Teardown  shutdown SUT
 
 Force Tags     ADMIN_directory
 
@@ -44,8 +44,8 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 ADMIN - Delete Directory
     # pre check
-    Connect With DB
-    check directory admin delete table counts initially
+    #Connect With DB
+    # check directory admin delete table counts initially
     # preparing and provisioning
     Upload OPT    minimal/minimal_evaluation.opt
     prepare new request session    JSON    Prefer=return=representation
@@ -59,7 +59,7 @@ ADMIN - Delete Directory
     (admin) delete directory
     Log To Console  ${response}
     # Test with count rows again - post check
-    check directory admin delete table counts
+    # check directory admin delete table counts
 
 
 

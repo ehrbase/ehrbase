@@ -60,4 +60,4 @@ Alternative flow 7: commit CONTRIBUTIONS for versioning, but second commit conta
 
     check response: is negative indicating errors in committed data
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

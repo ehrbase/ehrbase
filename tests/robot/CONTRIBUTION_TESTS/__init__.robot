@@ -26,7 +26,7 @@ Documentation    CONTRIBUTION SERVICE TEST SUITE
 
 Resource    ../_resources/suite_settings.robot
 
-Suite Setup  startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup  startup SUT
+#Suite Teardown  shutdown SUT
 
 Force Tags    CONTRIBUTION

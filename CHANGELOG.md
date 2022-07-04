@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
 ### Changed
 ### Fixed
+- Error causing a 500 Response when requesting a deleted composition via ECIS GET Composition Endpoint ([#875](https://github.com/ehrbase/ehrbase/pull/875))
 
 ## [0.21.1]
 

@@ -56,4 +56,4 @@ Main flow: successfully commit CONTRIBUTION with single valid VERSION<EHR_STATUS
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/status.contribution.modification.json
     check response: is positive - contribution has new version
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

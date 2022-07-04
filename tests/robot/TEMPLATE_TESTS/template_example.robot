@@ -30,52 +30,87 @@ ${COMPOSITIONS_PATH_XML}        ${EXECDIR}/robot/_resources/test_data_sets/compo
 
 
 *** Test Cases ***
-Test Example Generator for Templates (ECIS) - FLAT
+Test Example Generator For Templates (ECIS) - FLAT
     [Setup]    Upload Template Using ECIS Endpoint
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    FLAT
     Validate Response Body Has Format    FLAT
 
-Test Example Generator for Templates (ECIS) - JSON and Save it
+Test Example Generator For Templates (ECIS) - FLAT - Test Category And Coded Text Code And Value
+    [Tags]      cdr-432
+    Upload OPT ECIS    all_types/test_event.opt
+    Extract Template Id From OPT File
+    Get Example Of Web Template By Template Id (ECIS)    ${template_id}    FLAT
+    Log     https://github.com/ehrbase/ehrbase/issues/897   console=yes
+    Should Be Equal As Strings     ${response.json()["test_event/coded_text|code"]}   433
+    Should Be Equal As Strings     ${response.json()["test_event/category|code"]}   433
+    Should Be Equal As Strings     ${response.json()["test_event/coded_text|value"]}   event
+    Should Be Equal As Strings     ${response.json()["test_event/category|value"]}   event
+    [Teardown]      TRACE JIRA ISSUE      CDR-432
+
+Test Example Generator For Templates (ECIS) - JSON And Commit Composition
+    [Tags]      cdr-433
+    Upload OPT ECIS    all_types/test_quantity_without_text.opt
+    Extract Template Id From OPT File
+    Get Example Of Web Template By Template Id (ECIS)       ${template_id}      JSON
+    #Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    JSON
+    ${json_str}    Convert JSON To String    ${response.json()}
+    ${tempFilePath}    Set Variable
+    ...     ${EXECDIR}/robot/_resources/test_data_sets/compositions/CANONICAL_JSON/test_quantity_without_text__.json
+    Create File    ${tempFilePath}    ${json_str}
+    create EHR
+    Set Test Variable   ${externalTemplate}     ${template_id}
+    ## Create action with payload from template example, stored in test_quantity_without_text__.json file
+    commit composition  format=CANONICAL_JSON
+    ...    composition=test_quantity_without_text__.json
+    ...    extTemplateId=true
+    ${compositionUid}   Set Variable    ${response.json()}[uid][value]
+    ${template_id}      Set Variable    ${response.json()}[archetype_details][template_id][value]
+    Set Test Variable     ${compositionUid}  ${composition_uid}
+    #Log     ${response.json()}[content][0][data][events][0]
+    Remove File    ${tempFilePath}
+    ${eventsLength}     Get Length      ${response.json()}[content][0][data][events]
+    Should Be True      ${eventsLength}==27     #27=3x9quantities
+    #https://github.com/ehrbase/ehrbase/issues/900
+    [Teardown]      TRACE JIRA ISSUE      CDR-433
+
+Test Example Generator For Templates (ECIS) - JSON And Save It
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
     Save Response (JSON) To File And Compare Template Ids    ${template_id}    composition_ecis_temp.json
 
-Test Example Generator for Templates (ECIS) - XML and Save it
+Test Example Generator For Templates (ECIS) - XML And Save It
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    XML
     Validate Response Body Has Format    XML
     Save Response (XML) To File And Compare Template Ids    ${template_id}    composition_ecis_temp.xml
 
 ###########################################
 
-Test Example Generator for Templates (OPENEHR) - FLAT
+Test Example Generator For Templates (OPENEHR) - FLAT
     [Setup]    Upload Template Using OPENEHR Endpoint
     Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    FLAT
 
-Test Example Generator for Templates (OPENEHR) - JSON and Save it
+Test Example Generator For Templates (OPENEHR) - JSON And Save It
     Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
     Save Response (JSON) To File And Compare Template Ids    ${template_id}
 
-Test Example Generator for Templates (OPENEHR) - XML and Save it
+Test Example Generator For Templates (OPENEHR) - XML And Save It
     Get Example Of Web Template By Template Id (OPENEHR)    ${template_id}    XML
     Validate Response Body Has Format    XML
     Save Response (XML) To File And Compare Template Ids    ${template_id}
 
-Test Example Generator For Templates (ECIS) - Get Annotations from Example
-    [Documentation]     Create template, get example and check if additional annotations are present.
-    [Tags]      not-ready
-    Upload OPT ECIS    all_types/tobacco_smoking_summary.v0.opt
+Test Example Generator For Template (ECIS) - Specific Template
+    [Documentation]     Create template, get example and check if template is returned.
+    Upload OPT ECIS     all_types/tobacco_smoking_summary.v0.opt
     Extract Template Id From OPT File
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
-    PerformChecksOnAnnotation
-    #Should Contain
-    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.comment
-    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.helpText
-    #webTemplate.tree.children[?(@.id='tobacco_smoking_summary')].children[?(@.id='start_date')].annotations.validation
-    #Example: $.['blocks'][?(@.block_id == 'image')]['image_url']
-    #Save Response (JSON) To File And Compare Template Ids    ${template_id}
-    [Teardown]    TRACE JIRA ISSUE    CDR-410
+    #${returnValue0}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[0][*].value
+    #${returnValue1}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[1][*].value
+    #${returnValue2}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[2][*].value
 
 *** Keywords ***
 Upload Template Using ECIS Endpoint

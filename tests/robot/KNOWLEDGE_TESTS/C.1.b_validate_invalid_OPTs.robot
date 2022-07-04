@@ -93,6 +93,13 @@ Removed Mandatory Elements
     # SPECIAL: removing an optional AND a mandatory element
     removed_mandatory_elements/minimal_action_removed_description_and_concept.opt
 
+Removed Language Section
+    [Documentation]
+    ...                Server should reject OPTs with missing Language element.
+    ...                400 error code is expected.
+    [Template]         validate invalid OPT
+    removed_mandatory_elements/minimal_action_removed_language.opt
+    [Teardown]         TRACE JIRA ISSUE     CDR-425     bug
 
 # Test Suite Self Test For Debugging
 #     Log To Console    \n

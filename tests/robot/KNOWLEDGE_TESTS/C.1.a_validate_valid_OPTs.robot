@@ -39,7 +39,7 @@ Metadata        TOP_TEST_SUITE    EHR_STATUS
 Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 
 # Suite Setup  startup OPT SUT
-Suite Teardown  Delete All Templates
+# Suite Teardown  Delete All Templates
 
 Force Tags   OPT14    OPT14_validate    future
 
@@ -58,7 +58,7 @@ All Types
 
 Minimal
     [Documentation]    ...
-    [Template]         validate valid OPT
+    [Template]      validate valid OPT
 
     minimal/minimal_action.opt
     minimal/minimal_admin.opt
@@ -69,7 +69,7 @@ Minimal
 
 Minimal Entry Combination
     [Documentation]    ...
-    [Template]         validate valid OPT
+    [Template]      validate valid OPT
 
     minimal_entry_combination/obs_act.opt
     minimal_entry_combination/obs_admin.opt
@@ -101,14 +101,6 @@ Versioned
     versioned/Test versioned v2.opt
 
 
-Removed Optional Elements
-    [Documentation]    Issues with optional elements.
-    ...                Server should accept OPTs with missing optinal elements as vaild.
-    [Template]         validate valid OPT
-
-    removed_optional_elements/minimal_action_removed_language.opt
-
-
 
 # Test Suite Self Test For Debugging
 #     Log To Console    \n
@@ -133,7 +125,12 @@ validate valid OPT
     ...                            Prefer=return=representation
     get valid OPT file     ${opt file}
     upload OPT file
-    server's response indicates that OPT is valid
+    IF  '${response.status_code}' != '409'
+        server's response indicates that OPT is valid
+    ELSE
+        server rejected OPT with status code 409
+    END
+
 
 
 server's response indicates that OPT is valid

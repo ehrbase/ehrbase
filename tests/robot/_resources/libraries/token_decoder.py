@@ -20,5 +20,5 @@ from robot.api import logger
 
 def decode_token(token):
     logger.debug(f"TOKEN: {token}")
-    decoded_token = jwt.decode(token, verify=False)
+    decoded_token = jwt.decode(token, options={"verify_signature": False})
     return decoded_token

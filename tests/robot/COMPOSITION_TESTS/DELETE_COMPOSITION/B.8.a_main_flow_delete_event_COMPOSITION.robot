@@ -40,4 +40,4 @@ Main flow delete event COMPOSITION
 
     get deleted composition
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

@@ -52,4 +52,4 @@ Alternative flow 1: commit CONTRIBUTION with errors in VERSION<COMPOSITION>
     create EHR
     commit invalid CONTRIBUTION (JSON)    multiple_valid_and_invalid_compos.json
     check response: is negative indicating errors in committed data
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

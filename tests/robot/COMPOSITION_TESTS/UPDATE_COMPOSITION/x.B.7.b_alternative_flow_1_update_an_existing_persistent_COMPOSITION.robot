@@ -39,4 +39,4 @@ Alternative flow 1 update an existing persistent COMPOSITION
     update composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2.xml
     check content of updated composition (XML)
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

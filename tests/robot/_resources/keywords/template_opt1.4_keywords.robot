@@ -205,7 +205,7 @@ Clean Up Test Variables
                         Set Test Variable    ${file}           None
                         Set Test Variable    ${expected}       None
                         Set Test Variable    ${template_id}    None
-    &{vars in memory}=  Get Variables
+    &{vars in memory}=  BuiltIn.Get Variables
                         Log Many             &{vars in memory}
 
 
@@ -215,7 +215,7 @@ Clean Up Suite Variables
                         Set Suite Variable    ${file}           None
                         Set Suite Variable    ${expected}       None
                         Set Suite Variable    ${template_id}    None
-    &{vars in memory}=  Get Variables
+    &{vars in memory}=  BuiltIn.Get Variables
                         Log Many             &{vars in memory}
 
 
@@ -228,13 +228,18 @@ retrieve OPT list
 
     &{resp}=            REST.GET    ${baseurl}/definition/template/adl1.4
     ...                 headers=${headers}
+    Set Test Variable     ${response}     ${resp["body"]}
                         # Output   response body
                         # Log To Console    ${resp}
 
 
 verify OPT list has ${X} items
     Run Keyword And Return If  ${X}==0  OPT list is empty
-    Array    response body    minItems=${X}    maxItems=${X}
+    #Array    response body    minItems=${X}    maxItems=${X}
+    #Array    $    minItems=${X}    maxItems=${X}
+    ${countListItems}   Get length    ${response}
+    Should Be Equal As Strings     '${X}'    '${countListItems}'
+
 
 
 OPT list is empty

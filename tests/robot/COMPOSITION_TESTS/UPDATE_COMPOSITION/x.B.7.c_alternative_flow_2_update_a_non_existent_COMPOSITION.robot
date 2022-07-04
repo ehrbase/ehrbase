@@ -37,4 +37,4 @@ Alternative flow 2 update a non-exitent COMPOSITION
 
     update non-existent composition (XML)    minimal_persistent/persistent_minimal.composition.extdatetime.v2.xml
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

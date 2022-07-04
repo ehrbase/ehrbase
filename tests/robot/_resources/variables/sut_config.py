@@ -14,8 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import get_global_configs
 from requests import request
+
+GLOBAL_VARS_FROM_YAML_FUNC = get_global_configs.get_variables()
+GLOBAL_PORT_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["GLOBAL_PORT"]
+BASEURL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["BASEURL"]
+ECISURL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["ECISURL"]
+ADMIN_BASEURL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["ADMIN_BASEURL"]
+HEARTBEAT_URL_FROM_YAML = GLOBAL_VARS_FROM_YAML_FUNC["HEARTBEAT_URL"]
 
 
 # KEYCLOAK SETTINGS
@@ -45,10 +52,11 @@ ADMIN-TEST-OAUTH    partly                      manually start keycloak
 # requires manual startup of EHRbase and DB
 DEV_CONFIG = {
     "SUT": "DEV",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -82,10 +90,11 @@ DEV_CONFIG = {
 # requires manual startup of EHRbase and DB
 ADMIN_DEV_CONFIG = {
     "SUT": "ADMIN-DEV",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -115,10 +124,11 @@ ADMIN_DEV_CONFIG = {
 # handles startup/shutdown of EHRbase and DB automatically
 TEST_CONFIG = {
     "SUT": "TEST",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-user", "SuperSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -148,10 +158,11 @@ TEST_CONFIG = {
 # handles startup/shutdown of EHRbase and DB automatically
 ADMIN_TEST_CONFIG = {
     "SUT": "ADMIN-TEST",
-    "BASEURL": "http://localhost:8080/ehrbase/rest/openehr/v1",
-    "ECISURL": "http://localhost:8080/ehrbase/rest/ecis/v1",
-    "ADMIN_BASEURL": "http://localhost:8080/ehrbase/rest/admin",
-    "HEARTBEAT_URL": "http://localhost:8080/ehrbase/rest/status",
+    "GLOBAL_PORT": GLOBAL_PORT_FROM_YAML,
+    "BASEURL": BASEURL_FROM_YAML,
+    "ECISURL": ECISURL_FROM_YAML,
+    "ADMIN_BASEURL": ADMIN_BASEURL_FROM_YAML,
+    "HEARTBEAT_URL": HEARTBEAT_URL_FROM_YAML,
     "CREDENTIALS": ["ehrbase-admin", "EvenMoreSecretPassword"],
     "SECURITY_AUTHTYPE": "BASIC",
     "AUTHORIZATION": {
@@ -193,7 +204,7 @@ ADMIN_TEST_CONFIG = {
 # @{scapecreds}           %{EHRSCAPE_USER}    %{EHRSCAPE_PASSWORD}
 
 
-def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
+def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!", port=GLOBAL_PORT_FROM_YAML):
     # DEV CONFIG W/ OAUTH
     if (
         sut == "DEV"
@@ -276,5 +287,13 @@ def get_variables(sut="TEST", auth_type="BASIC", nodocker="NEIN!"):
         return ADMIN_DEV_CONFIG
 
     # TEST CONFIG W/ BASIC AUTH
-    else:
+    #else:
+    #    print(TEST_CONFIG)
+    #    return TEST_CONFIG
+
+    if sut == "TEST" and auth_type == "BASIC":
+        #TEST_CONFIG["BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/openehr/v1"
+        #TEST_CONFIG["ECISURL"] = "http://localhost:" + port + "/ehrbase/rest/ecis/v1"
+        #TEST_CONFIG["ADMIN_BASEURL"] = "http://localhost:" + port + "/ehrbase/rest/admin"
+        #TEST_CONFIG["HEARTBEAT_URL"] = "http://localhost:" + port + "/ehrbase/rest/status"
         return TEST_CONFIG

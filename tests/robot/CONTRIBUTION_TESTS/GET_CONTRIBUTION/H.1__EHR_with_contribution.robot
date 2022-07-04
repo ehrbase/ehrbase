@@ -57,4 +57,4 @@ Main flow: get existing CONTRIBUTION
 
     check content of retrieved CONTRIBUTION (JSON)
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

@@ -28,8 +28,8 @@ Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/contribution_keywords.robot
 
-Suite Setup     startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup     startup SUT
+#Suite Teardown  shutdown SUT
 
 Force Tags     ADMIN_contribution
 
@@ -44,8 +44,8 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 ADMIN - Delete Contribution
     # pre check
-    Connect With DB
-    check contribution admin delete table counts initially
+    #Connect With DB
+    # check contribution admin delete table counts initially
     # preparing and provisioning
     Upload OPT    minimal/minimal_evaluation.opt
     prepare new request session    JSON    Prefer=return=representation
@@ -57,7 +57,7 @@ ADMIN - Delete Contribution
     (admin) delete contribution
     Log To Console  ${response}
     # Test with count rows again - post check
-    check contribution admin delete table counts
+    # check contribution admin delete table counts
 
 
 
