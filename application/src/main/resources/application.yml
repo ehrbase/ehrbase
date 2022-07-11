@@ -210,5 +210,8 @@ javamelody:
 plugin-manager:
   plugin-dir: ./plugin_dir
   plugin-config-dir: ./plugin_config_dir
-  enable: false
+  enable: true
   plugin-context-path: /plugin
+  
+eventtrigger:
+  workers: 1
