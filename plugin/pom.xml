@@ -53,11 +53,15 @@
             <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>response-dto</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <groupId>org.ehrbase.openehr</groupId>
+            <artifactId>jooq-pg</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+        </dependency>
     </dependencies>
-
 </project>
