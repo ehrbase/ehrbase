@@ -18,7 +18,6 @@
 package org.ehrbase.plugin.repository;
 
 import java.util.UUID;
-
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 
 public class KeyValueEntry {

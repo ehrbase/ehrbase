@@ -22,7 +22,6 @@ import static org.ehrbase.jooq.pg.tables.Plugin.PLUGIN;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
@@ -44,7 +43,8 @@ public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
 
     @Override
     public Optional<KeyValueEntry> findByPluginIdAndKey(String id, String key) {
-      return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(id).and(PLUGIN.KEY.eq(key))).map(rec -> KeyValueEntry.of(rec));
+        return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(id).and(PLUGIN.KEY.eq(key)))
+                .map(rec -> KeyValueEntry.of(rec));
     }
 
     @Override
