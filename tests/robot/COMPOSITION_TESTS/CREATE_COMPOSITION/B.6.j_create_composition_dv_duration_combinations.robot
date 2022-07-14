@@ -52,6 +52,7 @@ Create Composition With DV_DURATION Combinations - Positive
     P1Y3M4DT2H14M15.5S
     P3M1W
     -P2M    #fails
+    # Jira bug: https://jira.vitagroup.ag/browse/CDR-466
     [Teardown]      PositiveCompositionTemplate     P1Y3M4D
 
 Create Composition With DV_DURATION Combinations - Negative
