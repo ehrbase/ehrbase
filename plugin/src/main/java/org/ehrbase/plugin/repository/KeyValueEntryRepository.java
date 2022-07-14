@@ -19,11 +19,16 @@ package org.ehrbase.plugin.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface KeyValueEntryRepository {
     public List<KeyValueEntry> findByPluginId(String uid);
 
     public Optional<KeyValueEntry> findByPluginIdAndKey(String id, String key);
 
+    public Optional<KeyValueEntry> findBy(UUID uid);
+    
     public KeyValueEntry save(KeyValueEntry kve);
+    
+    public boolean deleteBy(UUID uid);
 }

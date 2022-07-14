@@ -21,7 +21,9 @@ import static org.ehrbase.jooq.pg.tables.Plugin.PLUGIN;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
@@ -57,5 +59,16 @@ public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
 
         rec.insert();
         return kve;
+    }
+
+    @Override
+    public Optional<KeyValueEntry> findBy(UUID uid) {
+      return ctx.fetchOptional(PLUGIN, PLUGIN.ID.eq(uid)).map(rec -> KeyValueEntry.of(rec));
+    }
+
+    @Override
+    public boolean deleteBy(UUID uid) {
+      int res = ctx.delete(PLUGIN).where(PLUGIN.ID.eq(uid)).execute();
+      return res > 0;
     }
 }
