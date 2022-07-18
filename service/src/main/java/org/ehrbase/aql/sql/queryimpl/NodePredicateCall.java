@@ -106,6 +106,7 @@ public class NodePredicateCall {
                             .indexOf(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER);
             appendRightPathExpression(itemPathArray, expression, markerPos, endPos, false);
             // cast as jsonb for next iteration
+            // redundant cast potentially needed for WhereBinder::hackItem
             resultList.add(DSL.field("(" + expression.toString() + ")::jsonb")
                     .toString()); // insert the result in the path list
             // add the remaining part to the list for the next iteration
@@ -123,8 +124,8 @@ public class NodePredicateCall {
     }
 
     private StringBuilder appendRightPathExpression(
-            List<String> itemPathArray, StringBuilder expression, int from, int to) {
-        expression.append("#>>");
+            List<String> itemPathArray, StringBuilder expression, int from, int to, boolean resolveAsText) {
+        expression.append(resolveAsText ? "#>>" : "#>");
         expression.append("'");
         expression.append("{");
         expression.append(StringUtils.join(

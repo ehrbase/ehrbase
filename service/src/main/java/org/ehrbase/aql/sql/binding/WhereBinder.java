@@ -18,10 +18,9 @@
 package org.ehrbase.aql.sql.binding;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.LateralJoinDefinition;
@@ -62,9 +61,9 @@ public class WhereBinder {
     public static final String BETWEEN = "BETWEEN";
 
     // from AQL grammar
-    private static final Set<String> sqloperators = new HashSet<>(Arrays.asList(
+    private static final Set<String> SQL_OPERATORS = Set.of(
             "=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, IS, TRUE, FALSE, NULL, UNKNOWN, DISTINCT, FROM,
-            BETWEEN, "(", ")", "{", "}"));
+            BETWEEN, "(", ")", "{", "}");
     public static final String COMPOSITION = "COMPOSITION";
     public static final String CONTENT = "content";
     public static final String EHR = "EHR";
@@ -75,6 +74,10 @@ public class WhereBinder {
     public static final String ANY = "ANY";
     public static final String SOME = "SOME";
     public static final String ALL = "ALL";
+
+    public static final String ENTRY_JSONB_SELECTION_OP = "\"ehr\".\"entry\".\"entry\" #>>";
+    public static final String TYPECAST_OP = "::";
+
     private final I_DomainAccess domainAccess;
 
     private CompositionAttributeQuery compositionAttributeQuery;
@@ -82,8 +85,9 @@ public class WhereBinder {
     private PathResolver pathResolver;
     private boolean isWholeComposition = false;
     private String compositionName = null;
-    private String sqlConditionalFunctionalOperatorRegexp =
-            "(?i)(like|ilike|substr|in|not in)"; // list of subquery and operators
+    // list of subquery and operators
+    private static final Pattern SQL_CONDITIONAL_FUNCTIONAL_OPERATOR_PATTERN =
+            Pattern.compile("\\s*(like|ilike|substr|in|not in)\\s*", Pattern.CASE_INSENSITIVE);
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
 
@@ -306,7 +310,9 @@ public class WhereBinder {
         if (cursor < whereClause.size() - 1) {
             Object nextToken = whereClause.get(cursor + 1);
             if (nextToken instanceof String
-                    && ((String) nextToken).trim().matches(sqlConditionalFunctionalOperatorRegexp)) {
+                    && SQL_CONDITIONAL_FUNCTIONAL_OPERATOR_PATTERN
+                            .matcher((String) nextToken)
+                            .matches()) {
                 isFollowedBySQLConditionalOperator = true;
                 return true;
             }
@@ -350,9 +356,9 @@ public class WhereBinder {
             if (isFollowedBySQLConditionalOperator) { // at the moment, only for epoch_offset
                 int variableClosure = taggedBuffer.lastIndexOf("}'");
                 if (variableClosure > 0) {
-                    int variableInitial = taggedBuffer.lastIndexOf("\"ehr\".\"entry\".\"entry\" #>>");
+                    int variableInitial = taggedBuffer.lastIndexOf(ENTRY_JSONB_SELECTION_OP);
                     if (variableInitial >= 0 && variableInitial < variableClosure) {
-                        taggedBuffer.insert(variableClosure + "}'".length(), ")::" + castAs);
+                        taggedBuffer.insert(variableClosure + "}'".length(), ")" + TYPECAST_OP + castAs);
                         taggedBuffer.insert(variableInitial, "(");
                     }
                 }
@@ -360,9 +366,12 @@ public class WhereBinder {
             return item;
         }
 
-        if (sqloperators.contains(item.toUpperCase())) return " " + item + " ";
-        if (taggedBuffer.toString().contains(JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
-            return item.split("::")[0] + "'";
+        if (SQL_OPERATORS.contains(item.toUpperCase())) {
+            return " " + item + " ";
+        }
+        if (item.contains(TYPECAST_OP) && taggedBuffer.indexOf(JoinBinder.COMPOSITION_JOIN) >= 0) {
+            return item.split(TYPECAST_OP)[0] + "'";
+        }
         if (requiresJSQueryClosure
                 && !isFollowedBySQLConditionalOperator
                 && taggedBuffer.indexOf("#") > 0
@@ -432,17 +441,15 @@ public class WhereBinder {
 
         Set<LateralJoinDefinition> definedLateralJoins = variableDefinition.getLateralJoinDefinitions(templateId);
 
-        for (LateralJoinDefinition lateralJoinDefinition : definedLateralJoins) {
-            if (lateralJoinDefinition
-                    .getSqlExpression()
-                    .replace("\n", "")
-                    .replace(" ", "")
-                    .contains(expanded.substring(0, expanded.length() - 1)
-                            .substring(1)
-                            .replace("\n", "")
-                            .replace(" ", ""))) return lateralJoinDefinition;
-        }
+        String expandedCleaned = expanded.substring(0, expanded.length() - 1)
+                .substring(1)
+                .replace("\n", "")
+                .replace(" ", "");
 
-        return null;
+        return definedLateralJoins.stream()
+                .filter(d ->
+                        d.getSqlExpression().replace("\n", "").replace(" ", "").contains(expandedCleaned))
+                .findFirst()
+                .orElse(null);
     }
 }
