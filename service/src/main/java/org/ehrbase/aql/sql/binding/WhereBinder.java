@@ -75,7 +75,8 @@ public class WhereBinder {
     public static final String SOME = "SOME";
     public static final String ALL = "ALL";
 
-    public static final String ENTRY_JSONB_SELECTION_OP = "\"ehr\".\"entry\".\"entry\" #>>";
+    // also finds #>>
+    public static final String ENTRY_JSONB_SELECTION_OP = "\"ehr\".\"entry\".\"entry\" #>";
     public static final String TYPECAST_OP = "::";
 
     private final I_DomainAccess domainAccess;
