@@ -33,7 +33,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQL10Dialect
         default_schema: ehr
         hbm2ddl:
-          auto: " "           
+          auto: " "      
+
 server:
   port: 8080
   # Optional custom server nodename
