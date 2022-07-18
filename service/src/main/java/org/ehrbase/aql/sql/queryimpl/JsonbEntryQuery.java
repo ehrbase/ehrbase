@@ -154,13 +154,13 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             JqueryPath jqueryPath = new JqueryPath(PATH_PART.VARIABLE_PATH_PART, variableDefinition.getPath(), "0");
             itemPathArray.addAll(new NormalizedRmAttributePath(jqueryPath.evaluate()).transformStartingAt(1));
 
-            try {
-                IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
-                Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
-                itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
-                if (clause.equals(Clause.WHERE)) setReturningFunctionInWhere = true;
-            } catch (Exception e) {
-                // do nothing
+            IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
+            var withMarkers = iterativeNode.insertIterativeMarkers(itemPathArray);
+            if (withMarkers != null) {
+                itemPathArray = withMarkers;
+                if (clause.equals(Clause.WHERE)) {
+                    setReturningFunctionInWhere = true;
+                }
             }
 
             resolveArrayIndex(itemPathArray);
