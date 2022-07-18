@@ -38,7 +38,7 @@ ${negativeCode}     400
 Test Allowed Fields Configured In C_DURATION
     [Tags]      not-ready   bug
     [Documentation]     *Documentation to be defined*
-    [Template]      TestDVDurationAllowedFieldConstraints
+    [Template]      Test DV Duration Allowed Field Constraints
     PYMWDTHMS       P1Y                     ${positiveCode}
     PYMWDTHMS       P1Y3M                   ${positiveCode}
     PYMWDTHMS       P1Y3M15D                ${positiveCode}
@@ -64,7 +64,7 @@ Precondition
     Upload OPT    minimal/minimal_instruction.opt
     create EHR
 
-TestDVDurationAllowedFieldConstraints
+Test DV Duration Allowed Field Constraints
     [Arguments]     ${c_duration_opt_value}     ${dv_duration_composition_value}    ${expectedCode}
     [Documentation]     C_DURATION=${c_duration_opt_value}, DV_DURATION=${dv_duration_composition_value}, expectedCode=${expectedCode}
     Load XML File With OPT      ${opt_reference_file}
@@ -120,13 +120,16 @@ Change XML Value And Save Back To New OPT
     ...     value provided as argument.
     ...     ${\n}Takes 3 arguments:
     ...     - XML file content
-    ...     - xPath expression
-    ...     - text to be replaced with.
+    ...     - text to be replaced with
+    ...     - xPath expression.
     [Arguments]     ${xmlContent}   ${valueToUpdate}    ${xPathExpr}
     Set Test Variable   ${newOPTFile}   ${VALID DATA SETS}/minimal/newly_generated_file.opt
-    ${patternElement}   Get Element	    ${xmlContent}	xpath=.//attributes/children/attributes/children/attributes/children/attributes/children/item/pattern
-    Log     C_DURATION pattern value is = ${patternElement.text}       console=yes
+    ${patternElement}   Get Element	    ${xmlContent}	xpath=${xPathExpr}
+    Log     Initial C_DURATION pattern value is = ${patternElement.text}
     Set Element Text   ${xmlContent}   text=${valueToUpdate}     xpath=${xPathExpr}
+    ${patternElementChanged}       Get Element	    ${xmlContent}	xpath=${xPathExpr}
+    Log     Modified C_DURATION pattern value is = ${patternElementChanged.text}
+    Should Be Equal    ${patternElementChanged.text}       ${valueToUpdate}
     Save Xml    ${xmlContent}   ${newOPTFile}
     [return]    minimal/newly_generated_file.opt
 
