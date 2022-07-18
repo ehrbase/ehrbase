@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
@@ -169,9 +170,10 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             referenceItemPathArray.addAll(itemPathArray);
             Collections.replaceAll(referenceItemPathArray, AQL_NODE_ITERATIVE_MARKER, "0");
 
-            if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER))
+            if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
                 itemPathArray = new NodePredicateCall(itemPathArray).resolve();
-            else if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER)) {
+
+            } else if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER)) {
                 itemPathArray = new JsonbFunctionCall(
                                 itemPathArray,
                                 AQL_NODE_ITERATIVE_MARKER,
@@ -179,11 +181,13 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                         .resolve();
             }
 
-            String itemPath = StringUtils.join(itemPathArray.toArray(new String[] {}), ",");
+            String itemPath = itemPathArray.stream().collect(Collectors.joining(","));
 
             if (!itemPath.startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)
-                    && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION))
+                    && !itemPath.contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION)) {
+                // resolve simple json path to text
                 itemPath = wrapQuery(itemPath, JSONB_SELECTOR_COMPOSITION_OPEN, JSONB_SELECTOR_CLOSE);
+            }
 
             DataTypeFromTemplate dataTypeFromTemplate =
                     new DataTypeFromTemplate(introspectCache, ignoreUnresolvedIntrospect, clause);
@@ -197,8 +201,9 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 // set the determined type with the variable
                 variableDefinition.setSelectType(castTypeAs);
 
-                if (StringUtils.isNotEmpty(alias)) fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, alias);
-                else {
+                if (StringUtils.isNotEmpty(alias)) {
+                    fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, alias);
+                } else {
                     String tempAlias = DefaultColumnId.value(variableDefinition);
                     fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, tempAlias);
                 }
@@ -206,10 +211,13 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, null);
                 if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
                     fieldPathItem = DSL.field(DSL.select(fieldPathItem));
-            } else throw new IllegalStateException("Unhandled clause:" + clause);
+            } else {
+                throw new IllegalStateException("Unhandled clause:" + clause);
+            }
 
-            if (setReturningFunctionInWhere)
+            if (setReturningFunctionInWhere) {
                 fieldPathItem = DSL.select(fieldPathItem).asField();
+            }
 
             QualifiedAqlField aqlField = new QualifiedAqlField(
                     fieldPathItem, dataTypeFromTemplate.getItemType(), dataTypeFromTemplate.getItemCategory());
@@ -283,8 +291,6 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
                 if (i - 1 >= 0) {
                     itemPathArray.set(i - 1, Integer.toString(index));
                 }
-
-                itemPathArray.set(i, nodeId);
             }
         }
     }
