@@ -124,7 +124,7 @@ Change XML Value And Save Back To New OPT
     ...     - c_duration range lower value
     ...     - c_duration range lower xPath
     ...     - c_duration range upper value
-    ...     - c_duration range upper xPath
+    ...     - c_duration range upper xPath.
     [Arguments]     ${xmlContent}   ${c_duration_pattern_value}    ${c_duration_pattern_path}
     ...     ${range_lower_value}    ${range_lower_path}
     ...     ${range_upper_value}    ${range_upper_path}
@@ -132,11 +132,20 @@ Change XML Value And Save Back To New OPT
     ${patternElement}       Get Element	    ${xmlContent}	xpath=${c_duration_pattern_path}
     ${rangeLowerElement}    Get Element	    ${xmlContent}	xpath=${range_lower_path}
     ${rangeUpperElement}    Get Element	    ${xmlContent}	xpath=${range_upper_path}
-    Log     C_DURATION pattern value is = ${patternElement.text}    console=yes
-    Log     range lower value is = ${rangeLowerElement.text}        console=yes
-    Log     range upper value is = ${rangeUpperElement.text}        console=yes
+    Log     Initial C_DURATION pattern value is = ${patternElement.text}
+    Log     Initial range lower value is = ${rangeLowerElement.text}
+    Log     Initial range upper value is = ${rangeUpperElement.text}
     Set Element Text   ${xmlContent}   text=${c_duration_pattern_value}     xpath=${c_duration_pattern_path}
     Set Element Text   ${xmlContent}   text=${range_lower_value}            xpath=${range_lower_path}
     Set Element Text   ${xmlContent}   text=${range_upper_value}            xpath=${range_upper_path}
+    ${patternElementChanged}       Get Element	    ${xmlContent}	xpath=${c_duration_pattern_path}
+    ${rangeLowerElementChanged}    Get Element	    ${xmlContent}	xpath=${range_lower_path}
+    ${rangeUpperElementChanged}    Get Element	    ${xmlContent}	xpath=${range_upper_path}
+    Log     Modified C_DURATION pattern value is = ${patternElementChanged.text}
+    Log     Modified range lower value is = ${rangeLowerElementChanged.text}
+    Log     Modified range upper value is = ${rangeUpperElementChanged.text}
+    Should Be Equal    ${patternElementChanged.text}       ${c_duration_pattern_value}
+    Should Be Equal    ${rangeLowerElementChanged.text}       ${range_lower_value}
+    Should Be Equal    ${rangeUpperElementChanged.text}       ${range_upper_value}
     Save Xml    ${xmlContent}   ${newOPTFile}
     [return]    minimal/newly_generated_file_range_combinations.opt

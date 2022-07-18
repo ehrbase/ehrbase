@@ -121,12 +121,15 @@ Change XML Value And Save Back To New OPT
     ...     ${\n}Takes 3 arguments:
     ...     - XML file content
     ...     - text to be replaced with
-    ...     - xPath expression
+    ...     - xPath expression.
     [Arguments]     ${xmlContent}   ${valueToUpdate}    ${xPathExpr}
     Set Test Variable   ${newOPTFile}   ${VALID DATA SETS}/minimal/newly_generated_file.opt
     ${patternElement}   Get Element	    ${xmlContent}	xpath=${xPathExpr}
-    Log     C_DURATION pattern value is = ${patternElement.text}       console=yes
+    Log     Initial C_DURATION pattern value is = ${patternElement.text}
     Set Element Text   ${xmlContent}   text=${valueToUpdate}     xpath=${xPathExpr}
+    ${patternElementChanged}       Get Element	    ${xmlContent}	xpath=${xPathExpr}
+    Log     Modified C_DURATION pattern value is = ${patternElementChanged.text}
+    Should Be Equal    ${patternElementChanged.text}       ${valueToUpdate}
     Save Xml    ${xmlContent}   ${newOPTFile}
     [return]    minimal/newly_generated_file.opt
 
