@@ -18,8 +18,8 @@
 *** Settings ***
 Documentation   Composition Integration Tests
 ...             ${\n}Based on:
-...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#421-test-case-dv_duration-open-constraint
-...             ${\n}*Covers 4.2.1. Test case DV_DURATION open constraint*
+...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#431-test-case-dv_time-open-constraint
+...             ${\n}*4.3.1. Test case DV_TIME open constraint*
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../../_resources/keywords/composition_keywords.robot
@@ -33,41 +33,48 @@ ${composition_file}      Test_all_types_v2__.json
 
 
 *** Test Cases ***
-Create Composition With DV_DURATION Combinations - Positive
+Create Composition With DV_TIME Combinations - Positive
     [Documentation]     *Operations done here (Positive flows):*
     ...     - load json file from CANONICAL_JSON folder
-    ...     - update DV_DURATION using ${dvDurationValue} argument value
+    ...     - update DV_TIME using ${dvTimeValue} argument value
     ...     - commit composition
     ...     - check status code of the commited composition to be 201.
-    ...     *Postcondition:* Add DV_DURATION value P1Y3M4D, to ${composition_file}.
-    [Tags]      not-ready   bug
+    ...     *Postcondition:* Add DV_TIME value 10:30:34, to ${composition_file}.
     [Template]      PositiveCompositionTemplate
-    P1Y
-    P1Y3M
-    P1W
-    P1Y3M4D
-    P1Y3M4DT2H
-    P1Y3M4DT2H14M
-    P1Y3M4DT2H14M5S
-    P1Y3M4DT2H14M15.5S
-    P3M1W
-    -P2M    #fails
-    # Jira bug: https://jira.vitagroup.ag/browse/CDR-466
-    [Teardown]      PositiveCompositionTemplate     P1Y3M4D
+    10
+    10:30
+    10:30:47
+    10:30:47.5
+    10:30:47.333
+    10:30:47.333333
+    10:30:47Z
+    10:30:47.5Z
+    10:30:47.333Z
+    10:30:47.333333Z
+    10:30:47-03:00
+    10:30:47.5-03:00
+    10:30:47.333-03:00
+    10:30:47.333333-03:00
+    [Teardown]      PositiveCompositionTemplate     10:30:34
 
-Create Composition With DV_DURATION Combinations - Negative
+Create Composition With DV_TIME Combinations - Negative
     [Documentation]     *Operations done here (Negative flows):*
     ...     - load json file from CANONICAL_JSON folder
-    ...     - update DV_DURATION using ${dvDurationValue} argument value
+    ...     - update DV_TIME using ${dvTimeValue} argument value
     ...     - commit composition
     ...     - check status code of the commited composition to be 400.
-    ...     *Postcondition:* Add DV_DURATION value P1Y3M4D, to ${composition_file}.
+    ...     *Postcondition:* Add DV_TIME value 10:30:34, to ${composition_file}.
     [Template]      NegativeCompositionTemplate
+    NULL
     ${EMPTY}
-    1Y
-    P1Y3M4DT2H14.5M
-    P1Y3M4DT2.5H
-    [Teardown]      PositiveCompositionTemplate     P1Y3M4D
+    48
+    10:95
+    10:30:78
+    10:30:78Z
+    10:30:78-03:00
+    10.5
+    10:05.5
+    [Teardown]      PositiveCompositionTemplate     10:30:34
 
 
 *** Keywords ***
@@ -76,21 +83,21 @@ Precondition
     create EHR
 
 PositiveCompositionTemplate
-    [Arguments]     ${dvDurationValue}=P1Y3M4D
+    [Arguments]     ${dvTimeValue}=10:30:47
     Load Json File With Composition
     ${initalJson}           Load Json From File     ${compositionFilePath}
-    Change Json KeyValue and Save Back To File
-    ...     ${initalJson}   ${dvDurationValue}
+    ${returnedJsonFile}     Change Json KeyValue and Save Back To File
+    ...     ${initalJson}   ${dvTimeValue}
     commit composition      format=CANONICAL_JSON
     ...                     composition=${composition_file}
     Should Be Equal As Strings      ${response.status_code}     201
 
 NegativeCompositionTemplate
-    [Arguments]     ${dvDurationValue}=1Y
+    [Arguments]     ${dvTimeValue}=48
     Load Json File With Composition
     ${initalJson}           Load Json From File     ${compositionFilePath}
     Change Json KeyValue and Save Back To File
-    ...     ${initalJson}   ${dvDurationValue}
+    ...     ${initalJson}   ${dvTimeValue}
     commit composition      format=CANONICAL_JSON
     ...                     composition=${composition_file}
     Should Be Equal As Strings      ${response.status_code}     400
@@ -110,12 +117,14 @@ Change Json KeyValue and Save Back To File
     ...     value provided as argument.
     ...     Takes 2 arguments:
     ...     1 - jsonContent = Loaded Json content
-    ...     2 - value to be on $.content[0].data.events[0].data.items[11].value.value key
+    ...     2 - value to be on $..data.events..items.[8].value.value key
     [Arguments]     ${jsonContent}      ${valueToUpdate}
-    ${objPath}      Set Variable        $.content[0].data.events[0].data.items[11].value.value
-    ${json_object}          Update Value To Json	${jsonContent}
-    ...             ${objPath}        ${valueToUpdate}
-    ${changedDvDurationValue}   Get Value From Json     ${jsonContent}      ${objPath}
-    Should Be Equal     ${changedDvDurationValue[0]}   ${valueToUpdate}
+    #${objPath}      Set Variable        $..data.events..items.[?(@._type=='DV_TIME')].value
+    ${objPath}      Set Variable        $..data.events..items.[8].value.value
+    ${json_object}          Update Value To Json	json_object=${jsonContent}
+    ...             json_path=${objPath}        new_value=${valueToUpdate}
+    ${changedDvTimeValue}   Get Value From Json     ${jsonContent}      ${objPath}
+    Should Be Equal     ${changedDvTimeValue[0]}   ${valueToUpdate}
     ${json_str}     Convert JSON To String    ${json_object}
     Create File     ${compositionFilePath}    ${json_str}
+    [return]    ${compositionFilePath}
