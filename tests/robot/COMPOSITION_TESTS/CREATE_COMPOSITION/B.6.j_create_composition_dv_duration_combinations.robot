@@ -116,6 +116,6 @@ Change Json KeyValue and Save Back To File
     ${json_object}          Update Value To Json	${jsonContent}
     ...             ${objPath}        ${valueToUpdate}
     ${changedDvDurationValue}   Get Value From Json     ${jsonContent}      ${objPath}
-    Should Be Equal     ${changedDvDurationValue[0]}   ${valueToUpdate}
+    Should Be Equal As Strings     ${changedDvDurationValue[0]}   ${valueToUpdate}
     ${json_str}     Convert JSON To String    ${json_object}
     Create File     ${compositionFilePath}    ${json_str}
