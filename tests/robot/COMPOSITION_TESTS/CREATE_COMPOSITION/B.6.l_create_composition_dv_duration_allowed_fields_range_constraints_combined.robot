@@ -144,8 +144,8 @@ Change XML Value And Save Back To New OPT
     Log     Modified C_DURATION pattern value is = ${patternElementChanged.text}
     Log     Modified range lower value is = ${rangeLowerElementChanged.text}
     Log     Modified range upper value is = ${rangeUpperElementChanged.text}
-    Should Be Equal    ${patternElementChanged.text}       ${c_duration_pattern_value}
-    Should Be Equal    ${rangeLowerElementChanged.text}       ${range_lower_value}
-    Should Be Equal    ${rangeUpperElementChanged.text}       ${range_upper_value}
+    Should Be Equal As Strings    ${patternElementChanged.text}       ${c_duration_pattern_value}
+    Should Be Equal As Strings    ${rangeLowerElementChanged.text}       ${range_lower_value}
+    Should Be Equal As Strings    ${rangeUpperElementChanged.text}       ${range_upper_value}
     Save Xml    ${xmlContent}   ${newOPTFile}
     [return]    minimal/newly_generated_file_range_combinations.opt

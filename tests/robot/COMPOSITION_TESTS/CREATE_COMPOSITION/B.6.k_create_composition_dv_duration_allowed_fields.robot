@@ -39,14 +39,6 @@ Test Allowed Fields Configured In C_DURATION
     [Tags]      not-ready   bug
     [Documentation]     *Documentation to be defined*
     [Template]      Test DV Duration Allowed Field Constraints
-    PYMWDTHMS       P1Y                     ${positiveCode}
-    PYMWDTHMS       P1Y3M                   ${positiveCode}
-    PYMWDTHMS       P1Y3M15D                ${positiveCode}
-    PYMWDTHMS       P1W                     ${positiveCode}
-    PYMWDTHMS       P1Y3M15DT23H            ${positiveCode}
-    PYMWDTHMS       P1Y3M15DT23H35M         ${positiveCode}
-    PYMWDTHMS       P1Y3M15DT23H35M22S      ${positiveCode}
-    PYMWDTHMS       P1W3D                   ${positiveCode}
     ##below are negative flows
     PMWDTHMS        P1Y                     ${negativeCode}
     PYWDTHMS        P1Y3M                   ${negativeCode}
@@ -56,7 +48,16 @@ Test Allowed Fields Configured In C_DURATION
     PYMWDTHS        P1Y3M15DT23H35M         ${negativeCode}
     PYMWDTHM        P1Y3M15DT23H35M22S      ${negativeCode}
     PYMDTHMS        P1W3D                   ${negativeCode}
-    #[Teardown]      PositiveCompositionTemplate     P1Y3M4D
+    ##below are positive flows
+    PYMWDTHMS       P1Y3M                   ${positiveCode}
+    PYMWDTHMS       P1Y3M15D                ${positiveCode}
+    PYMWDTHMS       P1W                     ${positiveCode}
+    PYMWDTHMS       P1Y3M15DT23H            ${positiveCode}
+    PYMWDTHMS       P1Y3M15DT23H35M         ${positiveCode}
+    PYMWDTHMS       P1Y3M15DT23H35M22S      ${positiveCode}
+    PYMWDTHMS       P1W3D                   ${positiveCode}
+    PYMWDTHMS       P1Y                     ${positiveCode}
+    [Teardown]      TRACE JIRA ISSUE    CDR-486
 
 
 *** Keywords ***
@@ -129,7 +130,7 @@ Change XML Value And Save Back To New OPT
     Set Element Text   ${xmlContent}   text=${valueToUpdate}     xpath=${xPathExpr}
     ${patternElementChanged}       Get Element	    ${xmlContent}	xpath=${xPathExpr}
     Log     Modified C_DURATION pattern value is = ${patternElementChanged.text}
-    Should Be Equal    ${patternElementChanged.text}       ${valueToUpdate}
+    Should Be Equal As Strings    ${patternElementChanged.text}       ${valueToUpdate}
     Save Xml    ${xmlContent}   ${newOPTFile}
     [return]    minimal/newly_generated_file.opt
 
