@@ -641,7 +641,7 @@
                                 </occurrences>
                                 <node_id />
                                 <item xsi:type="C_DATE_TIME">
-                                  <pattern>yyyy-mm-ddTHH:MM:SS</pattern>
+                                  <pattern>yyyy-??-??THH:??:??</pattern>
                                 </item>
                               </children>
                             </attributes>
@@ -1957,7 +1957,7 @@
                                         </occurrences>
                                         <node_id />
                                         <item xsi:type="C_DATE">
-                                          <pattern>yyyy-??-XX</pattern>
+                                          <pattern>yyyy-??-??</pattern>
                                         </item>
                                       </children>
                                     </attributes>
@@ -2018,7 +2018,7 @@
                                         </occurrences>
                                         <node_id />
                                         <item xsi:type="C_DATE_TIME">
-                                          <pattern>yyyy-mm-ddTHH:??:??</pattern>
+                                          <pattern>yyyy-??-??THH:??:??</pattern>
                                         </item>
                                       </children>
                                     </attributes>

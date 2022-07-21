@@ -18,8 +18,8 @@
 *** Settings ***
 Documentation   Composition Integration Tests
 ...             ${\n}Based on:
-...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#451-test-case-dv_date_time-open-constraint
-...             ${\n}*4.5.1. Test case DV_DATE_TIME open constraint*
+...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#441-test-case-dv_date-open-constraint
+...             ${\n}*4.4.1. Test case DV_DATE open constraint*
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../../_resources/keywords/composition_keywords.robot
@@ -33,55 +33,36 @@ ${composition_file}      Test_all_types_v2__.json
 
 
 *** Test Cases ***
-Create Composition With DV_DATE_TIME Combinations - Positive
+Create Composition With DV_DATE Combinations - Positive
     [Documentation]     *Operations done here (Positive flows):*
     ...     - load json file from CANONICAL_JSON folder
-    ...     - update DV_DATE_TIME using ${dvDateTimeValue} argument value
+    ...     - update DV_DATE using ${dvDateValue} argument value
     ...     - commit composition
     ...     - check status code of the commited composition to be 201.
-    ...     *Postcondition:* Add DV_DATE_TIME value 2021-10-24T10, to ${composition_file}.
-    [Tags]      not-ready   bug
+    ...     *Postcondition:* Add DV_DATE value 2021-10-24, to ${composition_file}.
     [Template]      PositiveCompositionTemplate
-    2021T00:00:00
-    2021-10T00:00:00
-    2021-10-24T00:00:00
-    2021-10-24T10
-    2021-10-24T10:30
-    2021-10-24T10:30:47
-    2021-10-24T10:30:47.5
-    2021-10-24T10:30:47.333
-    2021-10-24T10:30:47.333333
-    2021-10-24T10:30:47Z
-    2021-10-24T10:30:47.5Z
-    2021-10-24T10:30:47.333Z
-    2021-10-24T10:30:47.333333Z
-    2021-10-24T10:30:47-03:00
-    2021-10-24T10:30:47.5-03:00
-    2021-10-24T10:30:47.333-03:00
-    2021-10-24T10:30:47.333333-03:00
+    2021
+    2021-10
+    [Teardown]      PositiveCompositionTemplate     2021-10-24
 
-    [Teardown]      PositiveCompositionTemplate     2021-10-24T10
-
-Create Composition With DV_DATE_TIME Combinations - Negative
+Create Composition With DV_DATE Combinations - Negative
     [Documentation]     *Operations done here (Negative flows):*
     ...     - load json file from CANONICAL_JSON folder
-    ...     - update DV_DATE_TIME using ${dvDateTimeValue} argument value
+    ...     - update DV_DATE using ${dvDateValue} argument value
     ...     - commit composition
     ...     - check status code of the commited composition to be 400.
-    ...     *Postcondition:* Add DV_DATE_TIME value 2021-10-24T10, to ${composition_file}.
+    ...     *Postcondition:* Add DV_DATE value 2021-10-24, to ${composition_file}.
+    [Tags]      not-ready   bug
     [Template]      NegativeCompositionTemplate
     NULL
     ${EMPTY}
-    2021-00
-    2021-13
+    2021-00     #fails, below bug
+    2021-13     #fails, below bug
     2021-10-00
     2021-10-32
-    2021-10-24T48
-    2021-10-24T10:95
-    2021-10-24T10:30:78
-    2021-10-24T10:30:78Z
-    2021-10-24T10:30:78-03:00
-    [Teardown]      PositiveCompositionTemplate     2021-10-24T10
+    +001985-04
+    [Teardown]      Run Keywords    PositiveCompositionTemplate     2021-10-24      AND
+    ...     TRACE JIRA ISSUE    CDR-487
 
 
 *** Keywords ***
@@ -90,21 +71,21 @@ Precondition
     create EHR
 
 PositiveCompositionTemplate
-    [Arguments]     ${dvDateTimeValue}=2021-10-24
+    [Arguments]     ${dvDateValue}=2021-10-24
     Load Json File With Composition
     ${initalJson}           Load Json From File     ${compositionFilePath}
     ${returnedJsonFile}     Change Json KeyValue and Save Back To File
-    ...     ${initalJson}   ${dvDateTimeValue}
+    ...     ${initalJson}   ${dvDateValue}
     commit composition      format=CANONICAL_JSON
     ...                     composition=${composition_file}
     Should Be Equal As Strings      ${response.status_code}     201
 
 NegativeCompositionTemplate
-    [Arguments]     ${dvDateTimeValue}=2021-13
+    [Arguments]     ${dvDateValue}=2021-00
     Load Json File With Composition
     ${initalJson}           Load Json From File     ${compositionFilePath}
     Change Json KeyValue and Save Back To File
-    ...     ${initalJson}   ${dvDateTimeValue}
+    ...     ${initalJson}   ${dvDateValue}
     commit composition      format=CANONICAL_JSON
     ...                     composition=${composition_file}
     Should Be Equal As Strings      ${response.status_code}     400
@@ -120,14 +101,14 @@ Load Json File With Composition
     Set Test Variable       ${compositionFilePath}
 
 Change Json KeyValue and Save Back To File
-    [Documentation]     Updates $..data.events..items.[7].value.value to
+    [Documentation]     Updates $..description.items[0].value.value to
     ...     value provided as argument.
     ...     Takes 2 arguments:
     ...     1 - jsonContent = Loaded Json content
-    ...     2 - value to be on $..data.events..items.[7].value.value key
+    ...     2 - value to be on $..description.items[0].value.value key
     [Arguments]     ${jsonContent}      ${valueToUpdate}
     #${objPath}      Set Variable        $..data.events..items.[?(@._type=='DV_TIME')].value
-    ${objPath}      Set Variable        $..data.events..items.[7].value.value
+    ${objPath}      Set Variable        $..description.items[0].value.value
     ${json_object}          Update Value To Json	json_object=${jsonContent}
     ...             json_path=${objPath}        new_value=${valueToUpdate}
     ${changedDvDateTimeValue}   Get Value From Json     ${jsonContent}      ${objPath}
