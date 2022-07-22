@@ -29,8 +29,9 @@ Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/directory_keywords.robot
 Resource        ../_resources/keywords/composition_keywords.robot
 
-Suite Setup     startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup     startup SUT
+#Suite Teardown  shutdown SUT
+Suite Setup     Log all env variables
 
 Force Tags     ADMIN_ehr
 
@@ -45,8 +46,8 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 ADMIN - Delete EHR
     # comment: pre check
-    Connect With DB
-    check ehr admin delete table counts
+    #Connect With DB
+    #check ehr admin delete table counts
 
     # comment: preparing and provisioning
     prepare new request session    JSON    Prefer=return=representation
@@ -59,13 +60,13 @@ ADMIN - Delete EHR
     Log To Console  ${response}
 
     # comment: Test with count rows again - post check
-    check ehr admin delete table counts
+    # check ehr admin delete table counts
 
 
 ADMIN - Delete EHR with composition
     # pre check
-    Connect With DB
-    check ehr admin delete table counts
+    #Connect With DB
+    #check ehr admin delete table counts
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
@@ -77,13 +78,13 @@ ADMIN - Delete EHR with composition
     (admin) delete ehr
     Log To Console  ${response}
     # Test with count rows again - post check
-    check ehr admin delete table counts
+    # check ehr admin delete table counts
 
 
 ADMIN - Delete EHR with two compositions
     # pre check
-    Connect With DB
-    check ehr admin delete table counts
+    #Connect With DB
+    # check ehr admin delete table counts
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
@@ -96,13 +97,13 @@ ADMIN - Delete EHR with two compositions
     (admin) delete ehr
     Log To Console  ${response}
     # Test with count rows again - post check
-    check ehr admin delete table counts
+    # check ehr admin delete table counts
 
 
 ADMIN - Delete EHR with directory
     # pre check
-    Connect With DB
-    check ehr admin delete table counts
+    #Connect With DB
+    #check ehr admin delete table counts
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
@@ -114,10 +115,12 @@ ADMIN - Delete EHR with directory
     (admin) delete ehr
     Log To Console  ${response}
     # Test with count rows again - post check
-    check ehr admin delete table counts
+    # check ehr admin delete table counts
 
 
 *** Keywords ***
+Log all env variables
+    ${allvars}=     Log Variables
 
 startup SUT
     [Documentation]     Overrides `generic_keywords.startup SUT` keyword

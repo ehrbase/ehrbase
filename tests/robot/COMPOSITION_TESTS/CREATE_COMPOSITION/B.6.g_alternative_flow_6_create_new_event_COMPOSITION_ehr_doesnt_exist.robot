@@ -44,17 +44,17 @@ Alternative flow 6 create new event COMPOSITION EHR doesnt exist FLAT
     ...                  composition=nested.en.v1__full.xml.flat.json
     check status_code of commit composition    404
 
-Alternative flow 6 create new event COMPOSITION EHR doesnt exist TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=nested.en.v1__full.xml
-    check status_code of commit composition    404
+#Alternative flow 6 create new event COMPOSITION EHR doesnt exist TDD
+#    [Tags]    future
+#    commit composition   format=TDD
+#    ...                  composition=nested.en.v1__full.xml
+#    check status_code of commit composition    404
 
-Alternative flow 6 create new event COMPOSITION EHR doesnt exist STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=nested.en.v1__full.json
-    check status_code of commit composition    404
+#Alternative flow 6 create new event COMPOSITION EHR doesnt exist STRUCTURED
+#    [Tags]    future
+#    commit composition   format=STRUCTURED
+#    ...                  composition=nested.en.v1__full.json
+#    check status_code of commit composition    404
 
 Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist CANONICAL_JSON
     commit composition   format=CANONICAL_JSON
@@ -72,17 +72,17 @@ Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
     check status_code of commit composition    404
 
-Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=persistent_minimal.en.v1__full.xml
-    check status_code of commit composition    404
+#Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist TDD
+#    [Tags]    future
+#    commit composition   format=TDD
+#    ...                  composition=persistent_minimal.en.v1__full.xml
+#    check status_code of commit composition    404
 
-Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=persistent_minimal.en.v1__full.json
-    check status_code of commit composition    404
+#Alternative flow 6 create new persistent COMPOSITION EHR doesnt exist STRUCTURED
+#    [Tags]    future
+#    commit composition   format=STRUCTURED
+#    ...                  composition=persistent_minimal.en.v1__full.json
+#    check status_code of commit composition    404
 
 
 *** Keywords ***

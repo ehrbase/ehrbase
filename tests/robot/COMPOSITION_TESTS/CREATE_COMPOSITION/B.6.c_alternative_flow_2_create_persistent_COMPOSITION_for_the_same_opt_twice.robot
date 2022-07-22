@@ -61,23 +61,23 @@ Alternative flow 2 create persistent COMPOSITION for the same opt twice FLAT
     check status_code of commit composition   400
     [Teardown]      TRACE GITHUB ISSUE      599     bug
 
-Alternative flow 2 create persistent COMPOSITION for the same opt twice TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=persistent_minimal.en.v1__full.xml
-    check status_code of commit composition    201
-    commit composition   format=TDD
-    ...                  composition=persistent_minimal.en.v1__full.xml
-    check status_code of commit composition    400    
+#Alternative flow 2 create persistent COMPOSITION for the same opt twice TDD
+#    [Tags]    future
+#    commit composition   format=TDD
+#    ...                  composition=persistent_minimal.en.v1__full.xml
+#    check status_code of commit composition    201
+#    commit composition   format=TDD
+#    ...                  composition=persistent_minimal.en.v1__full.xml
+#    check status_code of commit composition    400
 
-Alternative flow 2 create persistent COMPOSITION for the same opt twice STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=persistent_minimal.en.v1__full.json
-    check status_code of commit composition    201
-    commit composition   format=STRUCTURED
-    ...                  composition=persistent_minimal.en.v1__full.json
-    check status_code of commit composition    400    
+#Alternative flow 2 create persistent COMPOSITION for the same opt twice STRUCTURED
+#    [Tags]    future
+#    commit composition   format=STRUCTURED
+#    ...                  composition=persistent_minimal.en.v1__full.json
+#    check status_code of commit composition    201
+#    commit composition   format=STRUCTURED
+#    ...                  composition=persistent_minimal.en.v1__full.json
+#    check status_code of commit composition    400
 
 *** Keywords ***
 Precondition
