@@ -21,6 +21,7 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -72,28 +73,28 @@ public class JsonbFunctionCall {
                 expression.append(itemPathArray.get(0));
                 startList = 1;
             }
-            expression.append("#>>");
+            expression.append("#>");
             expression.append("'{");
             expression.append(StringUtils.join(
                     (itemPathArray.subList(startList, markerPos).toArray(new String[] {})), ","));
             expression.append("}'");
             expression.append(")");
+            // redundant cast potentially needed for WhereBinder::hackItem?
             expression.append("::jsonb");
             expression.append(")");
 
             // Locate end tag (end of array or next marker)
-            int endPos;
             if (itemPathArray.subList(markerPos + 1, itemPathArray.size()).contains(marker)) {
                 resultList.add(expression.toString());
-                endPos = markerPos + 1;
+                int endPos = markerPos + 1;
                 resultList.addAll(itemPathArray.subList(endPos, itemPathArray.size()));
             } else {
                 expression.append("#>>");
                 expression.append("'");
                 expression.append("{");
-                endPos = itemPathArray.size();
-                expression.append(StringUtils.join(
-                        (itemPathArray.subList(markerPos + 1, endPos).toArray(new String[] {})), ","));
+                int endPos = itemPathArray.size();
+                expression.append(
+                        itemPathArray.subList(markerPos + 1, endPos).stream().collect(Collectors.joining(",")));
                 expression.append("}");
                 expression.append("'");
                 expression.append(")");

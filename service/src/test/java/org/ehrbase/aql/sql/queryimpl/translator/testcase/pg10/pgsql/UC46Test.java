@@ -28,9 +28,9 @@ public class UC46Test extends UC46 {
         super();
         this.expectedSqlExpression =
                 "select distinct on (\"description\", \"timing\") \"\".\"description\", \"\".\"timing\" from (select ARRAY.COLUMN as \"description\", ARRAY.COLUMN as \"timing\" from \"ehr\".\"entry\" join lateral (\n"
-                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n"
+                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n"
                         + " AS COLUMN) as \"ARRAY\" on true join lateral (\n"
-                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/time,/value}') \n"
+                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/time,/value}') \n"
                         + " AS COLUMN) as \"ARRAY\" on true where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"description\" asc";
     }
 

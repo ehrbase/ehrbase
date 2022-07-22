@@ -21,8 +21,18 @@ import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY
 import static org.ehrbase.aql.sql.queryimpl.IterativeNodeConstants.ENV_AQL_ARRAY_IGNORE_NODE;
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.ehr.util.LocatableHelper;
 import org.ehrbase.service.IntrospectService;
@@ -32,16 +42,22 @@ import org.ehrbase.service.IntrospectService;
  */
 @SuppressWarnings({"java:S3776", "java:S3740", "java:S1452", "java:S1075", "java:S135"})
 public class IterativeNode implements IIterativeNode {
+    public static final String SLASH = "/";
+    public static final String ACTIVITIES = "/activities";
+    public static final String COMPOSITION = "/composition";
+    public static final String EVENTS = "/events";
+    public static final String CONTENT = "/content";
 
-    private List<String> ignoreIterativeNode; // f.e. '/content' '/events' etc.
+    private Optional<Pattern> ignorePattern;
     private final List<String> unbounded;
-    private Integer depth;
+    private final int depth;
     private final I_DomainAccess domainAccess;
 
     public IterativeNode(I_DomainAccess domainAccess, String templateId, IntrospectService introspectCache) {
         this.domainAccess = domainAccess;
         unbounded = introspectCache.multiValued(templateId);
-        initAqlRuntimeParameters();
+        ignorePattern = initIgnorePattern();
+        depth = initAqlDepth();
     }
 
     /**
@@ -50,61 +66,74 @@ public class IterativeNode implements IIterativeNode {
      * @param segmentedPath
      * @return
      */
-    public Integer[] iterativeAt(List<String> segmentedPath) {
+    int[] iterativeAt(List<String> segmentedPath) {
+        if (unbounded.isEmpty()) {
+            return null;
+        }
 
         SortedSet<Integer> retarray = new TreeSet<>();
 
-        if (unbounded.isEmpty()) {
-            retarray.add(-1);
-        } else {
-            String path = "/" + String.join("/", compact(segmentedPath));
+        for (int i = unbounded.size() - 1; i >= 0; i--) {
+            String aqlPath = unbounded.get(i);
 
-            for (int i = unbounded.size() - 1; i >= 0; i--) {
-                String aqlPath = unbounded.get(i);
+            List<String> aqlPathSegments = LocatableHelper.dividePathIntoSegments(aqlPath);
 
-                // check if this path is not excluded
-                List<String> aqlPathSegments = LocatableHelper.dividePathIntoSegments(aqlPath);
+            // check if this path is not excluded
+            boolean ignoreThisAqlPath = ignorePattern
+                    .map(p -> p.matcher(aqlPathSegments.get(aqlPathSegments.size() - 1)))
+                    .map(Matcher::matches)
+                    .orElse(false);
 
-                boolean ignoreThisAqlPath = false;
-                if (ignoreIterativeNode != null && !ignoreIterativeNode.isEmpty()) {
-                    for (String ignoreItemRegex : ignoreIterativeNode) {
-                        if (aqlPathSegments.get(aqlPathSegments.size() - 1).matches("^" + ignoreItemRegex + ".*")) {
-                            ignoreThisAqlPath = true;
-                            break;
-                        }
-                    }
-                }
+            if (ignoreThisAqlPath) {
+                continue;
+            }
 
-                if (ignoreThisAqlPath) continue;
+            String path = compact(segmentedPath).stream().collect(Collectors.joining(SLASH, SLASH, ""));
 
-                if (path.startsWith(aqlPath) && !aqlPath.matches("^.*(value|name)$")) {
-                    int pos = aqlPathInJsonbArray(aqlPathSegments, segmentedPath);
-                    retarray.add(pos);
-                    if (retarray.size() >= depth) break;
-                }
+            if (path.startsWith(aqlPath) && !StringUtils.endsWithAny(aqlPath, "value", "name")) {
+                int pos = aqlPathInJsonbArray(aqlPathSegments, segmentedPath);
+                retarray.add(pos);
+                if (retarray.size() >= depth) break;
             }
         }
 
-        return retarray.toArray(new Integer[0]);
+        return retarray.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    public List<String> clipInIterativeMarker(List<String> segmentedPath, Integer[] clipPos) {
+    List<String> clipInIterativeMarkers(List<String> segmentedPath, int[] clipPos) {
 
         List<String> resultingPath = new ArrayList<>(segmentedPath);
 
-        Arrays.stream(clipPos)
-                .sorted(Comparator.reverseOrder())
-                .collect(Collectors.toList())
-                .forEach(pos -> {
-                    if (pos == resultingPath.size()) resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
-                    else if (!resultingPath.get(pos).equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
-                        if (resultingPath.get(pos).equals("0"))
-                            // substitution
-                            resultingPath.set(pos, AQL_NODE_ITERATIVE_MARKER);
-                        else resultingPath.add(pos, AQL_NODE_ITERATIVE_MARKER);
-                    }
-                });
+        // reverse order so adding entries does not move pending positions
+        ArrayUtils.reverse(clipPos);
+
+        Arrays.stream(clipPos).forEach(pos -> {
+            if (pos == resultingPath.size()) {
+                resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
+            } else {
+                String segment = resultingPath.get(pos);
+                if (segment.equals(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
+                    // skip
+                } else if (segment.equals("0")) {
+                    // substitution
+                    resultingPath.set(pos, AQL_NODE_ITERATIVE_MARKER);
+                } else {
+                    resultingPath.add(pos, AQL_NODE_ITERATIVE_MARKER);
+                }
+            }
+        });
         return resultingPath;
+    }
+
+    public List<String> insertIterativeMarkers(List<String> segmentedPath) {
+        int[] pos = iterativeAt(segmentedPath);
+        if (pos == null) {
+            return null;
+        }
+        if (ArrayUtils.isEmpty(pos)) {
+            return segmentedPath;
+        }
+        return clipInIterativeMarkers(segmentedPath, pos);
     }
 
     /**
@@ -113,100 +142,74 @@ public class IterativeNode implements IIterativeNode {
      * @param segmentedPath
      * @return
      */
-    List<String> compact(List<String> segmentedPath) {
-        List<String> resultPath = new ArrayList<>();
-        for (String item : segmentedPath) {
-            try {
-                Integer.parseInt(item);
-            } catch (Exception e) {
-                // not an index, add into the list
-                if (!item.startsWith("/composition")) {
-                    if (item.startsWith("/")) {
-                        // skip structure containers that are specific to DB encoding (that is:
-                        // /events/events[openEHR...])
-                        // this also applies to /activities
-                        if (!item.equals("/events") && !item.equals("/activities")) {
-                            resultPath.add(item.substring(1));
-                        }
-                    } else resultPath.add(item);
-                }
-            }
-        }
-        return resultPath;
+    static List<String> compact(List<String> segmentedPath) {
+        return segmentedPath.stream()
+                .filter(item -> !StringUtils.isNumeric(item))
+                .filter(item -> !item.startsWith(COMPOSITION))
+                // skip structure containers that are specific to DB encoding (that is:
+                // /events/events[openEHR...])
+                // this also applies to /activities
+                .filter(item -> !Set.of(EVENTS, ACTIVITIES).contains(item))
+                .map(item -> StringUtils.removeStart(item, SLASH))
+                .collect(Collectors.toList());
     }
 
-    int aqlPathInJsonbArray(List<String> aqlSegmented, List<String> jsonbSegmented) {
-        int retval = 0;
+    static int aqlPathInJsonbArray(List<String> aqlSegmented, List<String> jsonbSegmented) {
+        int jsonbIndex = 0;
         int aqlSegIndex = 0;
 
-        for (int i = 0; aqlSegIndex < aqlSegmented.size(); i++) {
-            if (jsonbSegmented.get(i).startsWith("/composition")) {
-                retval++;
+        for (; aqlSegIndex < aqlSegmented.size(); jsonbIndex++) {
+            String segment = jsonbSegmented.get(jsonbIndex);
+            if (segment.startsWith(IterativeNode.COMPOSITION) || StringUtils.isNumeric(segment)) {
                 continue;
             }
+            if (StringUtils.isNumeric(segment)) {
+                continue;
+            }
+            if (Set.of(EVENTS, ACTIVITIES).contains(segment)) {
+                // skip this structural item
+                continue;
+            }
+
             try {
-                Integer.parseInt(jsonbSegmented.get(i));
-                retval++;
-            } catch (Exception e) {
-
-                if (jsonbSegmented.get(retval).equals("/events")
-                        || jsonbSegmented.get(retval).equals("/activities")) {
-                    retval++; // skip this structural item
-                    continue;
+                if (segment.startsWith(SLASH)) {
+                    assert segment.substring(1).equals(aqlSegmented.get(aqlSegIndex));
+                } else {
+                    assert segment.equals(aqlSegmented.get(aqlSegIndex));
                 }
+            } catch (AssertionError e1) {
+                throw new AssertionError("Drift in locating array marker: aql:" + aqlSegmented.get(aqlSegIndex)
+                        + ", jsonb:" + segment + ", @index:" + jsonbIndex);
+            }
+            aqlSegIndex++;
+        }
+        return jsonbIndex;
+    }
 
-                try {
-                    if (jsonbSegmented.get(retval).startsWith("/"))
-                        assert jsonbSegmented.get(retval).substring(1).equals(aqlSegmented.get(aqlSegIndex));
-                    else assert jsonbSegmented.get(retval).equals(aqlSegmented.get(aqlSegIndex));
-                } catch (Exception e1) {
-                    throw new IllegalArgumentException(
-                            "Drift in locating array marker: aql:" + aqlSegmented.get(aqlSegIndex) + ", jsonb:"
-                                    + jsonbSegmented.get(retval) + ", @index:" + retval);
-                }
-
-                retval++;
-                aqlSegIndex++;
+    private Optional<Pattern> initIgnorePattern() {
+        String ignoreIterativeNode = System.getenv(ENV_AQL_ARRAY_IGNORE_NODE);
+        if (ignoreIterativeNode == null) {
+            ignoreIterativeNode = domainAccess.getServerConfig().getAqlIterationSkipList();
+            if (StringUtils.isBlank(ignoreIterativeNode)) {
+                ignoreIterativeNode = CONTENT + "," + EVENTS;
             }
         }
-        return retval;
+
+        return Optional.ofNullable(ignoreIterativeNode)
+                .filter(StringUtils::isNotBlank)
+                .map(String::trim)
+                .map(s -> s.replace(',', '|'))
+                .map(s -> "^(" + s + ").*")
+                .map(Pattern::compile);
     }
 
-    private void initAqlRuntimeParameters() {
-        ignoreIterativeNode = new ArrayList<>();
-        if (System.getenv(ENV_AQL_ARRAY_IGNORE_NODE) != null) {
-            ignoreIterativeNode =
-                    Arrays.asList(System.getenv(ENV_AQL_ARRAY_IGNORE_NODE).split(","));
-        } else if (domainAccess.getServerConfig().getAqlIterationSkipList() != null
-                && !domainAccess.getServerConfig().getAqlIterationSkipList().isBlank()) {
-            ignoreIterativeNode.addAll(Arrays.asList(
-                    domainAccess.getServerConfig().getAqlIterationSkipList().split(",")));
-        } else ignoreIterativeNode = Arrays.asList("^/content.*", "^/events.*");
-
+    private int initAqlDepth() {
         if (System.getenv(ENV_AQL_ARRAY_DEPTH) != null) {
-            depth = Integer.parseInt(System.getenv(ENV_AQL_ARRAY_DEPTH));
-        } else if (domainAccess.getServerConfig().getAqlDepth() != null)
-            depth = domainAccess.getServerConfig().getAqlDepth();
-        else depth = 1;
-    }
-
-    public List<String> iterativeForArrayAttributeValues(List<String> itemPathArray) {
-        List<String> resultingPath = new ArrayList<>();
-
-        for (String node : itemPathArray) {
-            if (node.contains("feeder_system_item_ids")) {
-                List<String> faItems = Arrays.asList(node.split(",").clone());
-                if (faItems.size() > 2) {
-                    // insert a iterative marker for function resolution
-                    for (String faNode : faItems) {
-                        resultingPath.add(faNode);
-                        if (faNode.equals("feeder_system_item_ids")) {
-                            resultingPath.add(AQL_NODE_ITERATIVE_MARKER);
-                        }
-                    }
-                } else resultingPath.add(node);
-            } else resultingPath.add(node);
+            return Integer.parseInt(System.getenv(ENV_AQL_ARRAY_DEPTH));
+        } else if (domainAccess.getServerConfig().getAqlDepth() != null) {
+            return domainAccess.getServerConfig().getAqlDepth();
+        } else {
+            return 1;
         }
-        return resultingPath;
     }
 }

@@ -28,7 +28,7 @@ public class UC40Test extends UC40 {
         super();
         this.expectedSqlExpression =
                 "select  CAST (\"max_magnitude\" AS FLOAT ) as \"max_magnitude\" from (select ARRAY.COLUMN::bigint as \"max_magnitude\" from \"ehr\".\"entry\" join lateral (\n"
-                        + "  select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint) \n"
+                        + "  select cast((ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0004],0,/value,magnitude}') as bigint) \n"
                         + " AS COLUMN) as \"ARRAY\" on true where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
     }
 

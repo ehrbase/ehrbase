@@ -21,7 +21,8 @@ import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.stream.Collectors;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.impl.DSL;
 
@@ -53,75 +54,78 @@ public class NodePredicateCall {
 
     private List<String> resolveNodePredicateCall(List<String> itemPathArray) {
 
-        List<String> resultList = new ArrayList<>();
-        int startList;
-
         // check if the list contains an entry with AQL_NODE_NAME_PREDICATE_MARKER
-        if (itemPathArray.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
-            StringBuilder expression = new StringBuilder();
-            // prepare the function call
-            expression.append(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION);
-            expression.append("(");
-            // check if the table clause is already in the sequence in a nested call to aql_node_name_predicate
-            // initial
-            if (!itemPathArray.get(0).startsWith("(" + QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
-                expression.append(ENTRY.ENTRY_);
-                startList = 0;
-            } else {
-                expression.append(itemPathArray.get(0));
-                startList = 1;
-            }
-            expression.append(",");
+        long namePredicateCount =
+                IterableUtils.countMatches(itemPathArray, QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER::equals);
+        if (namePredicateCount == 0) {
+            return itemPathArray;
+        }
 
-            int markerPos = ArrayUtils.indexOf(
-                    itemPathArray.toArray(new String[] {}),
-                    QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER,
-                    startList);
+        StringBuilder expression = new StringBuilder();
+        // prepare the function call
+        expression.append(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION);
+        expression.append("(");
+        // check if the table clause is already in the sequence in a nested call to aql_node_name_predicate
+        // initial
+        int startList;
+        if (!itemPathArray.get(0).startsWith("(" + QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
+            expression.append(ENTRY.ENTRY_);
+            startList = 0;
+        } else {
+            expression.append(itemPathArray.get(0));
+            startList = 1;
+        }
+        expression.append(",");
 
-            if (markerPos < 0) // not found
+        int markerPos = itemPathArray
+                .subList(startList, itemPathArray.size())
+                .indexOf(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER);
+        if (markerPos < 0) { // not found
             markerPos = itemPathArray.size();
+        } else {
+            markerPos += startList;
+        }
 
-            expression.append(itemPathArray.get(markerPos + 1)); // node name predicate
-            expression.append(",");
-            expression.append("'");
-            expression.append(StringUtils.join(
-                    (itemPathArray.subList(startList, markerPos).toArray(new String[] {})),
-                    ",")); // path of node as a list
-            expression.append("'");
-            expression.append(")");
+        expression.append(itemPathArray.get(markerPos + 1)); // node name predicate
+        expression.append(",");
+        expression.append("'");
+        // path of node as a list
+        expression.append(itemPathArray.subList(startList, markerPos).stream().collect(Collectors.joining(",")));
+        expression.append("'");
+        expression.append(")");
 
-            // Locate end tag (end of array or next marker)
-            int endPos;
-            // check if path segments contains a name node predicate tag for next iteration
-            if (itemPathArray
-                    .subList(markerPos + 1, itemPathArray.size())
-                    .contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
-                // resolve the path selection to the next marker
-                endPos = ArrayUtils.indexOf(
-                        itemPathArray.toArray(new String[] {}),
-                        QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER,
-                        markerPos + 1);
-                appendRightPathExpression(itemPathArray, expression, markerPos, endPos);
-                // cast as jsonb for next iteration
-                resultList.add(DSL.field("(" + expression.toString() + ")::jsonb")
-                        .toString()); // insert the result in the path list
-                // add the remaining part to the list for the next iteration
-                resultList.addAll(itemPathArray.subList(endPos, itemPathArray.size()));
-            } else {
-                endPos = itemPathArray.size();
-                if (markerPos + 2 < endPos) {
-                    appendRightPathExpression(itemPathArray, expression, markerPos, endPos);
-                }
-                resultList.add(expression.toString());
+        // Locate end tag (end of array or next marker)
+        List<String> resultList = new ArrayList<>();
+        // check if path segments contains a name node predicate tag for next iteration
+        if (namePredicateCount > 1) {
+            // resolve the path selection to the next marker
+            int endPos = markerPos
+                    + 1
+                    + itemPathArray
+                            .subList(markerPos + 1, itemPathArray.size())
+                            .indexOf(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER);
+            appendRightPathExpression(itemPathArray, expression, markerPos, endPos, false);
+            // cast as jsonb for next iteration
+            // redundant cast potentially needed for WhereBinder::hackItem
+            resultList.add(DSL.field("(" + expression.toString() + ")::jsonb")
+                    .toString()); // insert the result in the path list
+            // add the remaining part to the list for the next iteration
+            resultList.addAll(itemPathArray.subList(endPos, itemPathArray.size()));
+
+        } else {
+            int endPos = itemPathArray.size();
+            if (markerPos + 2 < endPos) {
+                appendRightPathExpression(itemPathArray, expression, markerPos, endPos, true);
             }
+            resultList.add(expression.toString());
+        }
 
-            return resultList;
-        } else return itemPathArray;
+        return resultList;
     }
 
     private StringBuilder appendRightPathExpression(
-            List<String> itemPathArray, StringBuilder expression, int from, int to) {
-        expression.append("#>>");
+            List<String> itemPathArray, StringBuilder expression, int from, int to, boolean resolveAsText) {
+        expression.append(resolveAsText ? "#>>" : "#>");
         expression.append("'");
         expression.append("{");
         expression.append(StringUtils.join(
@@ -130,7 +134,7 @@ public class NodePredicateCall {
                                 // test if the starting item is an index, then skip it as it is mutually exclusive with
                                 // node name predicate node selection
                                 itemPathArray.get(from + 2).matches("[0-9]*|#") ? from + 3 : from + 2, to)
-                        .toArray(new String[] {})),
+                        .toArray(String[]::new)),
                 ","));
         expression.append("}");
         expression.append("'");
