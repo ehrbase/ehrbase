@@ -212,6 +212,3 @@ plugin-manager:
   plugin-config-dir: ./plugin_config_dir
   enable: true
   plugin-context-path: /plugin
-  
-eventtrigger:
-  workers: 1
