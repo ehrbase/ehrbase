@@ -10,6 +10,7 @@ def get_variables():
                 "BASEURL": "http://localhost:" + port + "/ehrbase/rest/openehr/v1",
                 "ECISURL": "http://localhost:" + port + "/ehrbase/rest/ecis/v1",
                 "ADMIN_BASEURL": "http://localhost:" + port + "/ehrbase/rest/admin",
-                "HEARTBEAT_URL": "http://localhost:" + port + "/ehrbase/rest/status"
+                "HEARTBEAT_URL": "http://localhost:" + port + "/ehrbase/rest/status",
+                "PLUGIN_URL": "http://localhost:" + port + "/ehrbase/plugin"
              }
     return json_obj
