@@ -27,8 +27,8 @@ public interface KeyValueEntryRepository {
     public Optional<KeyValueEntry> findByPluginIdAndKey(String id, String key);
 
     public Optional<KeyValueEntry> findBy(UUID uid);
-    
+
     public KeyValueEntry save(KeyValueEntry kve);
-    
+
     public boolean deleteBy(UUID uid);
 }

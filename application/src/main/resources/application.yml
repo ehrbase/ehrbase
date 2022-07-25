@@ -142,46 +142,46 @@ server:
 management:
   endpoints:
     # Disable all endpoint by default to opt-in enabled endpoints
-    enabled-by-default: true
+    enabled-by-default: false
     web:
       base-path: '/management'
       exposure:
-        include: '*'
+        include: 'env, health, info, metrics, prometheus'
   # Per endpoint settings
-  #endpoint:
+  endpoint:
     # Env endpoint - Shows information on environment of EHRbase
-    #env:
+    env:
       # Enable / disable env endpoint
-      #enabled: false
+      enabled: false
     # Health endpoint - Shows information on system status
-    #health:
+    health:
       # Enable / disable health endpoint
-      #enabled: false
+      enabled: false
       # Show components in health endpoint. Can be "never", "when-authorized" or "always"
-      #show-components: 'when-authorized'
+      show-components: 'when-authorized'
       # Show details in health endpoint. Can be "never", "when-authorized" or "always"
-      #show-details: 'when-authorized'
+      show-details: 'when-authorized'
       # Show additional information on used systems. See https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready-health-indicators for available keys
-      #datasource:
+      datasource:
         # Enable / disable report if datasource connection could be established
-        #enabled: true
+        enabled: true
     # Info endpoint - Shows information on the application as build infor, etc.
-    #info:
+    info:
       # Enable / disable info endpoint
-      #enabled: false
+      enabled: false
     # Metrics endpoint - Shows several metrics on running EHRbase
-    #metrics:
+    metrics:
       # Enable / disable metrics endpoint
-      #enabled: false
+      enabled: false
     # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
-    #prometheus:
+    prometheus:
       # Enable / disable prometheus endpoint
-      #enabled: false
+      enabled: false
   # Metrics settings
-  #metrics:
-    #export:
-      #prometheus:
-        #enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
 # Audit Properties
 ipf:
