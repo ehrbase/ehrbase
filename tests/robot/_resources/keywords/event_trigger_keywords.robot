@@ -64,15 +64,27 @@ Commit Event Trigger
 
 Get Event Trigger By Criteria
     [Documentation]     Get Event Trigger using specific criteria.
-    ...     - Criteria can be: event id or event uuid.
+    ...     - First argument `criteria` can be: event id or event uuid.
+    ...     - Second argument (optional), `expected_code` can be 200 or 404
     ...     - ENDPOINT: GET /plugin/event-trigger/{criteria}
-    [Arguments]     ${criteria}
+    [Arguments]     ${criteria}     ${expected_code}=200
     Check If Session With Plugin Endpoint Exists
-    ${resp}         GET On Session      ${SUT}      /event-trigger/${criteria}
+    ${resp}         GET On Session      ${SUT}      /event-trigger/${criteria}      expected_status=anything
                     #Log To Console      ${resp.content}
+                    Should Be Equal As Strings       ${resp.status_code}     ${expected_code}
+                    Set Test Variable   ${response}     ${resp}
+                    Return From Keyword If      '${resp.status_code}' != '200'
+                    Set Test Variable   ${response_event_trigger}   ${resp.content}
+
+Delete Event Trigger By UUID
+    [Documentation]     - Delete Event Trigger using it's UUID.
+    ...                 - UUID value is provided using `uuid_val` argument
+    [Arguments]     ${uuid_val}
+    Check If Session With Plugin Endpoint Exists
+    ${resp}         DELETE On Session   ${SUT}      /event-trigger/${uuid_val}
                     Should Be Equal As Strings      ${resp.status_code}     200
                     Set Test Variable   ${response}     ${resp}
-                    Set Test Variable   ${response_event_trigger}   ${resp.content}
+
 
 Get All Event Triggers
     [Documentation]     Get all event triggers.
@@ -84,8 +96,9 @@ Get All Event Triggers
                     #Log To Console      ${resp.content}
                     Should Be Equal As Strings      ${resp.status_code}     200
                     Set Test Variable   ${response}             ${resp}
-                    Set Test Variable   ${all_event_triggers}   ${resp.content}
-
+                    Set Test Variable   ${all_event_triggers}   ${resp.json()}
+                    ${event_triggers_len}    Get Length      ${all_event_triggers}
+                    Should Be True      ${event_triggers_len}>3
 
 Check If Session With Plugin Endpoint Exists
     [Documentation]     Checks if SUT session with /plugin endoint exists.

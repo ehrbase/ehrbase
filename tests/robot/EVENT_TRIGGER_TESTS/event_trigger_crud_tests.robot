@@ -31,14 +31,26 @@ Create And Get Event Trigger By Different Criteria
     ...                 ${\n}Event trigger plugin should be available in EHRBase.
     Commit Event Trigger    main_event_trigger.json
     Log     EVENT_UUID: ${event_uuid}, EVENT_ID: ${event_id}
-    Get Event Trigger By Criteria       ${event_uuid}
-    Get Event Trigger By Criteria       ${event_id}
+    Get Event Trigger By Criteria   ${event_uuid}   200
+    Get Event Trigger By Criteria   ${event_id}     200
 
 
 Get All Created Event Triggers
-    [Documentation]     To do
+    [Documentation]     - Get all Event Triggers and check status code to be 200.
+    ...                 - Validate that number of Event Triggers > 3.
     Load Many Event Triggers And Store In Lists
     Get All Event Triggers
+
+Delete Event Trigger
+    [Documentation]     - Create Event Trigger.
+    ...                 - Get Event Trigger using uuid and expect 200.
+    ...                 - Delete Event Trigger using uuid.
+    ...                 - Get Event Trigger using uuid and expect 404.
+    Commit Event Trigger    main_event_trigger.json
+    Log     EVENT_UUID: ${event_uuid}, EVENT_ID: ${event_id}
+    Get Event Trigger By Criteria   ${event_uuid}   200
+    Delete Event Trigger By UUID    ${event_uuid}
+    Get Event Trigger By Criteria   ${event_uuid}   404
 
 
 *** Keywords ***
