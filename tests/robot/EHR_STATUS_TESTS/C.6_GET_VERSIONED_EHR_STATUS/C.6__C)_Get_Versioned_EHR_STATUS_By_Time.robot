@@ -127,9 +127,11 @@ Force Tags
     Should Be Equal As Strings    ${response.status}    201
     
     get versioned ehr_status of EHR by time
+    log     ${response}
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
-    Should Not Contain  ${response.body}  preceding_version_uid
+    Run Keyword And Return Status   Should Not Contain
+    ...     ${response.body}    ${response.body.preceding_version_uid}
 
 
 5b. Get Versioned Status Of Existing EHR by Time Check Preceding Version (JSON)
