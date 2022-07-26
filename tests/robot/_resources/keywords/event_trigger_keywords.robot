@@ -78,11 +78,12 @@ Get Event Trigger By Criteria
 
 Delete Event Trigger By UUID
     [Documentation]     - Delete Event Trigger using it's UUID.
-    ...                 - UUID value is provided using `uuid_val` argument
-    [Arguments]     ${uuid_val}
+    ...                 - UUID value is provided using `uuid_val` argument.
+    ...                 - expected_code value is optional (default is 200).
+    [Arguments]     ${uuid_val}     ${expected_code}=200
     Check If Session With Plugin Endpoint Exists
-    ${resp}         DELETE On Session   ${SUT}      /event-trigger/${uuid_val}
-                    Should Be Equal As Strings      ${resp.status_code}     200
+    ${resp}         DELETE On Session   ${SUT}      /event-trigger/${uuid_val}      expected_status=anything
+                    Should Be Equal As Strings      ${resp.status_code}     ${expected_code}
                     Set Test Variable   ${response}     ${resp}
 
 

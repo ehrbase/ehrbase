@@ -49,8 +49,9 @@ Delete Event Trigger
     Commit Event Trigger    main_event_trigger.json
     Log     EVENT_UUID: ${event_uuid}, EVENT_ID: ${event_id}
     Get Event Trigger By Criteria   ${event_uuid}   200
-    Delete Event Trigger By UUID    ${event_uuid}
+    Delete Event Trigger By UUID    ${event_uuid}   200
     Get Event Trigger By Criteria   ${event_uuid}   404
+    Delete Event Trigger By UUID    ${event_uuid}   404
 
 
 *** Keywords ***
