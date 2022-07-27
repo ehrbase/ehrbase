@@ -98,6 +98,7 @@ upload OPT file
     ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
                         Set Suite Variable    ${response}    ${resp}
+
                         # Log To Console      ${resp.content}
 
 upload OPT file ECIS

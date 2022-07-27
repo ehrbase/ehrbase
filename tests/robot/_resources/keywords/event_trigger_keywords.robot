@@ -21,7 +21,7 @@ Resource   ../suite_settings.robot
 
 
 *** Variables ***
-${VALID DATA SETS}      ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}event_trigger
+${VALID EVENT TRIGGER DATA SETS}      ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}event_trigger
 
 
 *** Keywords ***
@@ -38,7 +38,7 @@ Generate Event Trigger Id And Update File Content
     ...                 json_path=$.id        new_value=${event_trigger_id_new}
     ${json_str}         Convert JSON To String      ${json_object}
             Log     EVENT_ID: ${event_trigger_id_new}       console=yes
-            Set Test Variable   ${event_id}     ${event_trigger_id_new}
+            Set Suite Variable   ${event_id}     ${event_trigger_id_new}
     [return]        ${json_str}
 
 Commit Event Trigger
@@ -49,18 +49,18 @@ Commit Event Trigger
     ...     - DEPENDENCY: `Generate Event Trigger Id And Update File Content`
     ...     - Sets test variables: response, event_uuid
     [Arguments]         ${json_event_trigger}
-    ${file}         Load Json From File     ${VALID DATA SETS}/create/${json_event_trigger}
+    ${file}         Load Json From File     ${VALID EVENT TRIGGER DATA SETS}/create/${json_event_trigger}
     ${json_str}     Generate Event Trigger Id And Update File Content       ${file}
     &{headers}      Create Dictionary   Content-Type=application/json
                     ...             Accept=application/json
     Check If Session With Plugin Endpoint Exists
-    ${resp}         POST On Session     ${SUT}
+    ${resp}         POST On Session     eventtriggersut
     ...             /event-trigger      expected_status=anything
     ...             data=${json_str}    headers=${headers}
                     #Log To Console      ${resp.content}
                     Should Be Equal As Strings          ${resp.status_code}     200
-                    Set Test Variable   ${response}     ${resp}
-                    Set Test Variable   ${event_uuid}   ${resp.content}
+                    Set Suite Variable   ${response}     ${resp}
+                    Set Suite Variable   ${event_uuid}   ${resp.content}
 
 Get Event Trigger By Criteria
     [Documentation]     Get Event Trigger using specific criteria.
@@ -69,12 +69,12 @@ Get Event Trigger By Criteria
     ...     - ENDPOINT: GET /plugin/event-trigger/{criteria}
     [Arguments]     ${criteria}     ${expected_code}=200
     Check If Session With Plugin Endpoint Exists
-    ${resp}         GET On Session      ${SUT}      /event-trigger/${criteria}      expected_status=anything
+    ${resp}         GET On Session      eventtriggersut      /event-trigger/${criteria}      expected_status=anything
                     #Log To Console      ${resp.content}
                     Should Be Equal As Strings       ${resp.status_code}     ${expected_code}
-                    Set Test Variable   ${response}     ${resp}
+                    Set Suite Variable   ${response}     ${resp}
                     Return From Keyword If      '${resp.status_code}' != '200'
-                    Set Test Variable   ${response_event_trigger}   ${resp.content}
+                    Set Suite Variable   ${response_event_trigger}   ${resp.content}
 
 Delete Event Trigger By UUID
     [Documentation]     - Delete Event Trigger using it's UUID.
@@ -82,7 +82,7 @@ Delete Event Trigger By UUID
     ...                 - expected_code value is optional (default is 200).
     [Arguments]     ${uuid_val}     ${expected_code}=200
     Check If Session With Plugin Endpoint Exists
-    ${resp}         DELETE On Session   ${SUT}      /event-trigger/${uuid_val}      expected_status=anything
+    ${resp}         DELETE On Session   eventtriggersut      /event-trigger/${uuid_val}      expected_status=anything
                     Should Be Equal As Strings      ${resp.status_code}     ${expected_code}
                     Set Test Variable   ${response}     ${resp}
 
@@ -93,21 +93,21 @@ Get All Event Triggers
     ...     - Sets 2 test variables: response (code) and all_event_triggers
     ...     - ENDPOINT: GET /plugin/event-trigger
     Check If Session With Plugin Endpoint Exists
-    ${resp}         GET On Session      ${SUT}      /event-trigger
+    ${resp}         GET On Session      eventtriggersut      /event-trigger
                     #Log To Console      ${resp.content}
                     Should Be Equal As Strings      ${resp.status_code}     200
                     Set Test Variable   ${response}             ${resp}
                     Set Test Variable   ${all_event_triggers}   ${resp.json()}
                     ${event_triggers_len}    Get Length      ${all_event_triggers}
-                    Should Be True      ${event_triggers_len}>3
+                    Should Be True      ${event_triggers_len}>2
 
 Check If Session With Plugin Endpoint Exists
     [Documentation]     Checks if SUT session with /plugin endoint exists.
     ...     If it does not exist, it will create the session.
     ...     - Call this keyword before sending POST, GET requests.
-    ${sessionExists}     Session Exists      ${SUT}
+    ${sessionExists}     Session Exists      eventtriggersut
     IF      ${sessionExists} == ${FALSE}
-        Create Session      ${SUT}    ${PLUGINURL}
+        Create Session      eventtriggersut    ${PLUGINURL}
         ...     debug=2     auth=${CREDENTIALS}     verify=True
     END
 
