@@ -22,6 +22,10 @@ Resource        ../_resources/keywords/event_trigger_keywords.robot
 Resource        ../_resources/suite_settings.robot
 
 
+*** Variables ***
+${event_trigger_file}       main_event_trigger.json
+
+
 *** Test Cases ***
 Create And Get Event Trigger By Different Criteria
     [Documentation]     - Creates event trigger.
@@ -29,24 +33,25 @@ Create And Get Event Trigger By Different Criteria
     ...                 - Get event trigger by uuid and expects status code 200.
     ...                 - Get event trigger by id and expects status code 200.
     ...                 ${\n}Event trigger plugin should be available in EHRBase.
-    Commit Event Trigger    main_event_trigger.json
+    Commit Event Trigger    ${event_trigger_file}
     Log     EVENT_UUID: ${event_uuid}, EVENT_ID: ${event_id}
     Get Event Trigger By Criteria   ${event_uuid}   200
     Get Event Trigger By Criteria   ${event_id}     200
-
+    [Teardown]      Delete Event Trigger By UUID    ${event_uuid}   200
 
 Get All Created Event Triggers
     [Documentation]     - Get all Event Triggers and check status code to be 200.
     ...                 - Validate that number of Event Triggers > 3.
     Load Many Event Triggers And Store In Lists
     Get All Event Triggers
+    [Teardown]      Delete All Created Event Triggers   ${uuids_list}
 
 Delete Event Trigger
     [Documentation]     - Create Event Trigger.
     ...                 - Get Event Trigger using uuid and expect 200.
     ...                 - Delete Event Trigger using uuid.
     ...                 - Get Event Trigger using uuid and expect 404.
-    Commit Event Trigger    main_event_trigger.json
+    Commit Event Trigger    ${event_trigger_file}
     Log     EVENT_UUID: ${event_uuid}, EVENT_ID: ${event_id}
     Get Event Trigger By Criteria   ${event_uuid}   200
     Delete Event Trigger By UUID    ${event_uuid}   200
@@ -63,10 +68,16 @@ Load Many Event Triggers And Store In Lists
     ${event_uuids_list}      Create List
     ${event_ids_list}        Create List
     FOR  ${index}   IN RANGE  0   ${nr_of_event_triggers}
-        Commit Event Trigger    main_event_trigger.json
+        Commit Event Trigger    ${event_trigger_file}
         Log     EVENT_UUID: ${event_uuid}, EVENT_ID: ${event_id}    console=yes
         Append To List      ${event_uuids_list}      ${event_uuid}
         Append To List      ${event_ids_list}      ${event_id}
     END
     Set Test Variable     ${uuids_list}     ${event_uuids_list}
     Set Test Variable     ${ids_list}       ${event_ids_list}
+
+Delete All Created Event Triggers
+    [Arguments]     ${uuids_templates_list}
+    FOR     ${el}   IN  @{uuids_templates_list}
+        Delete Event Trigger By UUID    ${el}   200
+    END
