@@ -12,6 +12,6 @@ def get_variables():
                 "ADMIN_BASEURL": "http://localhost:" + port + "/ehrbase/rest/admin",
                 "HEARTBEAT_URL": "http://localhost:" + port + "/ehrbase/rest/status",
                 "PLUGIN_URL": "http://localhost:" + port + "/ehrbase/plugin",
-                "RABBITMQ_URL": "http://127.0.0.1:15672/api"
+                "RABBITMQ_URL": "http://localhost:15672/api"
              }
     return json_obj
