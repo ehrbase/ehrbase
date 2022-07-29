@@ -43,6 +43,14 @@ Test DV_DATE With Constraints On Month And/Or Day Configured In C_DATE
     [Tags]      not-ready   bug
     [Documentation]     *Documentation to be defined*
     [Template]      Test DV_DATE With Constraints On Month And/Or Day
+    yyyy-mm-dd      2022            ${negativeCode}
+    yyyy-mm-??      2022            ${negativeCode}
+    yyyy-mm-XX      2022            ${negativeCode}
+    yyyy-mm-dd      2022-10         ${negativeCode}
+    yyyy-XX-XX      2022-10         ${negativeCode}
+    yyyy-mm-XX      2022-10-24      ${negativeCode}
+    yyyy-XX-XX      2022-10-24      ${negativeCode}
+
     yyyy-??-??      2022            ${positiveCode}
     yyyy-XX-XX      2022            ${positiveCode}
     yyyy-mm-??      2022-10         ${positiveCode}
@@ -51,16 +59,7 @@ Test DV_DATE With Constraints On Month And/Or Day Configured In C_DATE
     yyyy-mm-dd      2022-10-24      ${positiveCode}
     yyyy-mm-??      2022-10-24      ${positiveCode}
     yyyy-??-??      2022-10-24      ${positiveCode}
-
-    yyyy-mm-dd      2022            ${negativeCode}
-    yyyy-mm-??      2022            ${negativeCode}
-    yyyy-mm-XX      2022            ${negativeCode}
-    yyyy-mm-dd      2022-10         ${negativeCode}
-    yyyy-XX-XX      2022-10         ${negativeCode}
-    yyyy-mm-XX      2022-10-24      ${negativeCode}
-    yyyy-XX-XX      2022-10-24      ${negativeCode}
-    [Teardown]    Test DV_DATE With Constraints On Month And/Or Day
-    ...     yyyy-??-??      2022-10-20      ${positiveCode}
+    [Teardown]      TRACE JIRA ISSUE    CDR-498
 
 *** Keywords ***
 Test DV_DATE With Constraints On Month And/Or Day
