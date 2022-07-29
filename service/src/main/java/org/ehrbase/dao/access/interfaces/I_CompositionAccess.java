@@ -135,14 +135,15 @@ public interface I_CompositionAccess extends I_VersionedCRUD {
      * @return {@link I_CompositionAccess} object of the new access instance
      * @throws IllegalArgumentException when retrieval failed because of wrong input
      */
-    static I_CompositionAccess getNewInstance(I_DomainAccess domain, Composition composition, UUID ehrId) {
+    static I_CompositionAccess getNewInstance(I_DomainAccess domain, Composition composition, UUID ehrId, String tenantIdentifier) {
         return new CompositionAccess(
                 domain.getContext(),
                 domain.getKnowledgeManager(),
                 domain.getIntrospectService(),
                 domain.getServerConfig(),
                 composition,
-                ehrId);
+                ehrId,
+                tenantIdentifier);
     }
 
     /**

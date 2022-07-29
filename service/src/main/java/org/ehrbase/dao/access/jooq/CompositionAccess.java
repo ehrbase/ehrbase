@@ -115,7 +115,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             IntrospectService introspectCache,
             ServerConfig serverConfig,
             Composition composition,
-            UUID ehrId) {
+            UUID ehrId,
+            String tenantIdentifier) {
         super(context, knowledgeManager, introspectCache, serverConfig);
 
         this.composition = composition;
@@ -133,6 +134,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         compositionRecord.setEhrId(ehrId);
 
         compositionRecord.setComposer(seekComposerId(composition.getComposer()));
+        compositionRecord.setNamespace(tenantIdentifier);
 
         // new Locatable attributes
         setFeederAudit(composition.getFeederAudit());
@@ -155,7 +157,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * @throws IllegalArgumentException when seeking language code, territory code or composer ID
      *                                  failed
      */
-    public CompositionAccess(I_DomainAccess domainAccess, Composition composition, UUID ehrId) {
+    public CompositionAccess(I_DomainAccess domainAccess, Composition composition, UUID ehrId, String tenantIdentifier) {
         super(domainAccess);
 
         this.composition = composition;
@@ -943,7 +945,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                 historyRecord.getHasAudit(),
                 historyRecord.getAttestationRef(),
                 historyRecord.getFeederAudit(),
-                historyRecord.getLinks());
+                historyRecord.getLinks(),
+                historyRecord.getNamespace());
+                ;
     }
 
     /**

@@ -48,6 +48,7 @@ import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
@@ -89,18 +90,21 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     private final ValidationService validationService;
     private final KnowledgeCacheService knowledgeCacheService;
     private final EhrService ehrService;
+    private final TenantService tenantService;
 
     public CompositionServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             ValidationService validationService,
             EhrService ehrService,
             DSLContext context,
-            ServerConfig serverConfig) {
+            ServerConfig serverConfig,
+            TenantService tenantService) {
 
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.ehrService = ehrService;
         this.knowledgeCacheService = knowledgeCacheService;
+        this.tenantService = tenantService;
     }
 
     @Override
@@ -161,7 +165,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         // actual creation
         final UUID compositionId;
         try {
-            var compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId);
+            var compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId, tenantService.getCurrentTenantIdentifier());
             var entryAccess = I_EntryAccess.getNewInstance(
                     getDataAccess(),
                     Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId())

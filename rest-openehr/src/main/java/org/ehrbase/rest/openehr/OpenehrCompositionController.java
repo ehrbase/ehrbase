@@ -32,6 +32,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
+
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -85,6 +87,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
+    @TenantAware
     @PostMapping(
             value = "/{ehr_id}/composition",
             consumes = {"application/xml", "application/json"})
