@@ -1,0 +1,1 @@
+{"q": "Select c/uid/value as diastolic from EHR e contains COMPOSITION c where (e/ehr_id/value = 'ff92f29f-79b4-4837-840e-3f6cce3ca2da' and c/uid/value = '5e0e066c-b5ea-4de8-8d9c-854d4d25fdbf')"}
