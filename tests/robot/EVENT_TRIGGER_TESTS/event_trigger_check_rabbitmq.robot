@@ -75,8 +75,15 @@ Validate That Message Is Not Registered In RabbitMQ For New Composition - Event 
     ${returnedQuery}    Get Message From Queue RabbitMQ     queue_name=robot_queue
     [Teardown]          Run Keyword And Return Status       Postcondition
 
-Validate That HTTP Trigger Event Is Created - Event Trigger Active
-    [Documentation]   In progress.
+Validate That HTTP Post Trigger Event Is Created - Event Trigger Active
+    [Documentation]   Validate that Event Trigger produce HTTP Post request after commit composition.
+    ...         *Preconditions*
+    ...         1. Event Trigger was created with:
+    ...         - active status
+    ...         - notify command
+    ...         - channel http
+    ...         - url address of mock server with endpoint -> http://localhost:1080/path
+    ...         2. Mock Server is started on http://localhost:1080
     [Tags]      Positive
     Upload OPT    /nested/nested.opt
     create EHR
@@ -99,6 +106,39 @@ Validate That HTTP Trigger Event Is Created - Event Trigger Active
     [Teardown]          Run Keywords
     ...     Delete Event Trigger By UUID    ${event_uuid}    AND
     ...     Reset Mock Server
+
+Validate That HTTP Post Trigger Event Is Not Created - Event Trigger Inactive
+    [Documentation]   Validate that Event Trigger does not produce HTTP Post request after commit composition.
+    ...         *Preconditions*
+    ...         1. Event Trigger was created with:
+    ...         - inactive status
+    ...         - notify command
+    ...         - channel http
+    ...         - url address of mock server with endpoint -> http://localhost:1080/path
+    ...         2. Mock Server is started on http://localhost:1080
+    [Tags]      Negative
+    Upload OPT    /nested/nested.opt
+    create EHR
+    Commit Event Trigger    http_trigger_event_trigger.json     inactive
+    Log     EVENT_UUID: ${event_uuid}, EVENT_ID: ${event_id}
+    Get Event Trigger By Criteria   ${event_uuid}   200
+    Create Sessions
+    commit composition  format=FLAT
+    ...                 composition=nested.en.v1__full.xml.flat.json
+    check the successful result of commit composition   nesting
+    ${short_compositionUid}
+    ...     Remove String    ${compositionUid}      ::${CREATING_SYSTEM_ID}::1
+    ${expectedQuery}   Catenate
+    ...     Select c/uid/value as diastolic
+    ...     from EHR e contains COMPOSITION c
+    ...     where (e/ehr_id/value = '${ehr_id}'
+    ...     and c/uid/value = '${short_compositionUid}')
+    Set Test Variable       ${expectedQuery}
+    Check That Post Request Is Not Present In Mock Server
+    [Teardown]          Run Keywords
+    ...     Delete Event Trigger By UUID    ${event_uuid}    AND
+    ...     Reset Mock Server
+
 
 *** Keywords ***
 Precondition
@@ -149,4 +189,24 @@ Check That Post Request Is Present In Mock Server
         END
     ELSE
         Fail    No requests found in Mock Server.
+    END
+
+Check That Post Request Is Not Present In Mock Server
+    [Documentation]     Verify if Post request is not present in Mock Server, after commit composition.
+    ...         *Precondition* -> Event Trigger was created with:
+    ...         - inactive status
+    ...         - notify command
+    ...         - channel http
+    ...         - url address of mock server with endpoint -> http://localhost:1080/path
+    ${mockResp}         PUT on session      server      /mockserver/retrieve
+    Should Be Equal As Strings      ${mockResp.status_code}     200
+    ${countRequests}    Get Length  ${mockResp.json()}
+    Pass Execution If   ${countRequests} == 0    ${countRequests} requests found in Mock Server.
+    IF  ${countRequests} > 0
+        FOR     ${el}   IN     @{mockResp.json()}
+            ${queryIsFound}     Run Keyword And Return Status
+            ...     Should Contain      ${el["body"]["string"]}     ${expectedQuery}
+            Run Keyword If      ${queryIsFound} == ${TRUE}
+            ...     Fail    HTTP Post request with ${expectedQuery} was found.
+        END
     END
