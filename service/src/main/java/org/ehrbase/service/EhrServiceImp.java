@@ -54,6 +54,7 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
@@ -85,15 +86,18 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private UUID emptyParty;
+    private final TenantService tenantService;
 
     @Autowired
     public EhrServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             ValidationService validationService,
             DSLContext context,
-            ServerConfig serverConfig) {
+            ServerConfig serverConfig,
+            TenantService tenantService) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
+        this.tenantService = tenantService;
     }
 
     @PostConstruct
@@ -134,7 +138,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         UUID committerId = getCurrentUserId();
 
         try { // this try block sums up a bunch of operations that can throw errors in the following
-            I_EhrAccess ehrAccess = I_EhrAccess.getInstance(getDataAccess(), subjectUuid, systemId, null, null, ehrId);
+            I_EhrAccess ehrAccess = I_EhrAccess.getInstance(getDataAccess(), subjectUuid, systemId, null, null, ehrId, tenantService.getCurrentTenantIdentifier());
             ehrAccess.setStatus(status);
             return ehrAccess.commit(committerId, systemId, DESCRIPTION);
         } catch (Exception e) {

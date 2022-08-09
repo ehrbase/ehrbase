@@ -71,14 +71,14 @@ public class PersistenceConfig {
 
     @Bean
     @Primary
-    public DefaultDSLContext dsl() {
-        return new DefaultDSLContext(configuration());
+    public DefaultDSLContext dsl(DefaultConfiguration cfg) {
+        return new DefaultDSLContext(cfg);
     }
 
     @Bean
-    public DefaultConfiguration configuration() {
+    public DefaultConfiguration configuration(DataSourceConnectionProvider provider) {
         DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
-        jooqConfiguration.set(connectionProvider());
+        jooqConfiguration.set(provider);
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
 
         SQLDialect dialect = SQLDialect.POSTGRES;

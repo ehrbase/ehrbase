@@ -21,10 +21,9 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.TenantService;
-import org.ehrbase.tenant.TenantAuthentication;
-import org.ehrbase.tenant.extraction.DefaultExtractionStrategy;
+import org.ehrbase.api.tenant.TenantAuthentication;
+import org.ehrbase.tenant.DefaultTenantAuthentication;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,6 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
 
     public TenantServiceImp(
             KnowledgeCacheService knowledgeCacheService,
-            EhrService ehrService,
             DSLContext context,
             ServerConfig serverConfig) {
 
@@ -55,15 +53,21 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     public String getCurrentTenantIdentifier() {
       return Optional
         .ofNullable(SecurityContextHolder.getContext())
-        .map(ctx -> ctx.getAuthentication())
+        .map(ctx ->
+          ctx.getAuthentication()
+        )
         .filter(auth -> auth != null)
-        .filter(auth -> auth instanceof TenantAuthentication)
-        .map(TenantAuthentication.class::cast)
-        .map(tAuth -> tAuth.getTenantId())
+        .filter(auth ->
+          auth instanceof DefaultTenantAuthentication
+        )
+        .map(DefaultTenantAuthentication.class::cast)
+        .map(tAuth ->
+          tAuth.getTenantId()
+        )
         .filter(StringUtils::isNotEmpty)
         .orElseGet(() -> {
-          LOGGER.warn(WARN_NOT_TENEANT_IDENT, DefaultExtractionStrategy.DEFAULT_TENANT_ID);
-          return DefaultExtractionStrategy.DEFAULT_TENANT_ID;
+          LOGGER.warn(WARN_NOT_TENEANT_IDENT, TenantAuthentication.getDefaultTenantId());
+          return TenantAuthentication.getDefaultTenantId();
         });
     }
 }

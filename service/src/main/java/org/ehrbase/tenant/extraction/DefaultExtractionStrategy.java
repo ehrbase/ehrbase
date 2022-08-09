@@ -3,7 +3,9 @@ package org.ehrbase.tenant.extraction;
 import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64;
-import org.ehrbase.tenant.TenantIdExtractionStrategy;
+import org.ehrbase.api.tenant.TenantAuthentication;
+import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
+import org.ehrbase.tenant.DefaultTenantAuthentication;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -11,8 +13,7 @@ import com.auth0.jwt.exceptions.SignatureGenerationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
-public class DefaultExtractionStrategy implements TenantIdExtractionStrategy {
-  public static final String DEFAULT_TENANT_ID = "1f332a66-0e57-11ed-861d-0242ac120002";
+public class DefaultExtractionStrategy implements TenantIdExtractionStrategy<String> {
 
   @Override
   public boolean accept(Object... args) {
@@ -20,9 +21,9 @@ public class DefaultExtractionStrategy implements TenantIdExtractionStrategy {
   }
 
   @Override
-  public Optional<String> extract(Object... args) {
-    String string = JWT.create().withClaim("tnt", DEFAULT_TENANT_ID).sign(new NoneAlgorithm());
-    return Optional.of(string);
+  public Optional<TenantAuthentication<String>> extract(Object... args) {
+    String token = JWT.create().withClaim("tnt", TenantAuthentication.getDefaultTenantId()).sign(new NoneAlgorithm());
+    return Optional.of(new DefaultTenantAuthentication(token));
   }
 
   @Override

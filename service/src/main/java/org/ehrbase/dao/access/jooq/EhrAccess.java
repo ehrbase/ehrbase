@@ -25,12 +25,6 @@ import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
 import static org.ehrbase.jooq.pg.Tables.STATUS_HISTORY;
 
-import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.HierObjectId;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -41,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.BooleanUtils;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -73,6 +68,13 @@ import org.jooq.Record1;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 
 /**
  * Persistence operations on EHR.
@@ -119,7 +121,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             UUID systemId,
             UUID directoryId,
             UUID accessId,
-            UUID ehrId) {
+            UUID ehrId,
+            String tenantIdentifier) {
         super(context, null, null, serverConfig);
 
         this.ehrRecord = context.newRecord(EHR_);
@@ -137,6 +140,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         ehrRecord.setSystemId(systemId);
         ehrRecord.setDirectory(directoryId);
         ehrRecord.setAccess(accessId);
+        ehrRecord.setNamespace(tenantIdentifier);
 
         if (ehrRecord.getSystemId() == null) { // storeComposition a default entry for the current system
             ehrRecord.setSystemId(I_SystemAccess.createOrRetrieveLocalSystem(this));

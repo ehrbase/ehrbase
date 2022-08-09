@@ -29,6 +29,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
+
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -73,6 +75,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
+    @TenantAware
     @PostMapping // (consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
@@ -96,6 +99,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         return internalPostEhrProcessing(accept, prefer, ehrId, request);
     }
 
+    @TenantAware
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
