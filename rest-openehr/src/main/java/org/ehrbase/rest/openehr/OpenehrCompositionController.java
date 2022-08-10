@@ -155,6 +155,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @TenantAware
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -258,6 +259,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @TenantAware
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -336,6 +338,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         }
     }
 
+    @TenantAware
     /**
      * Acts as overloaded function and calls the overlapping and more specific method
      * getCompositionByTime. Catches both "/{ehr_id}/composition/{version_uid}" and
@@ -356,6 +359,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime, request);
     }
 
+    @TenantAware
     /**
      * This mapping combines both GETs "/{ehr_id}/composition/{version_uid}" (via overlapping path)
      * and "/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}" (here). This is necessary

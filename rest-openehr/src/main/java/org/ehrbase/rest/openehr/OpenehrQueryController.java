@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
+
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -78,6 +80,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @TenantAware
     @Override
     @GetMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
@@ -113,6 +116,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @TenantAware
     @Override
     @PostMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
@@ -143,6 +147,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @TenantAware
     @Override
     @GetMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
@@ -193,6 +198,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @TenantAware
     @Override
     @PostMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")

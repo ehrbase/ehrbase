@@ -24,12 +24,6 @@ import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.max;
 
-import com.nedap.archie.rm.archetyped.FeederAudit;
-import com.nedap.archie.rm.archetyped.Link;
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.composition.EventContext;
-import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -74,6 +69,13 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nedap.archie.rm.archetyped.FeederAudit;
+import com.nedap.archie.rm.archetyped.Link;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.composition.EventContext;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * Operations on the static part of Compositions (eg. non archetyped attributes).
@@ -275,7 +277,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         if (!composition.getCategory().getDefiningCode().getCodeString().equals("431")) {
             EventContext eventContext = composition.getContext();
-            I_ContextAccess contextAccess = I_ContextAccess.getInstance(this, eventContext);
+            I_ContextAccess contextAccess = I_ContextAccess.getInstance(this, eventContext, compositionRecord.getNamespace());
             if (!contextAccess.isVoid()) {
                 contextAccess.setCompositionId(compositionRecord.getId());
                 contextAccess.commit(Timestamp.valueOf(timestamp));
@@ -363,7 +365,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         if (contextId.isEmpty()) {
             EventContext context = new EventContextFactory().makeNull();
-            contextAccess = I_ContextAccess.getInstance(this, context);
+            contextAccess = I_ContextAccess.getInstance(this, context, compositionRecord.getNamespace());
             contextAccess.commit(transactionTime);
         } else {
             contextAccess = I_ContextAccess.retrieveInstance(this, contextId.get());
@@ -372,7 +374,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         var newEventContext = composition.getContext();
 
         if (contextId.isPresent()) {
-            contextAccess.setRecordFields(contextId.get(), newEventContext);
+            contextAccess.setRecordFields(contextId.get(), newEventContext, compositionRecord.getNamespace());
             contextAccess.update(transactionTime, true);
         }
 
@@ -440,7 +442,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
         // just skip the update if it will get deleted anyway.)
         // so copy values, but add deletion meta data
-        var newDeletedVersionAsHistoryAccess = new CompositionHistoryAccess(getDataAccess());
+        var newDeletedVersionAsHistoryAccess = new CompositionHistoryAccess(getDataAccess(), compositionRecord.getNamespace());
         CompositionHistoryRecord newRecord = getDataAccess().getContext().newRecord(COMPOSITION_HISTORY);
         newRecord.setId(compositionRecord.getId());
         newRecord.setEhrId(compositionRecord.getEhrId());
@@ -451,6 +453,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         newRecord.setTerritory(compositionRecord.getTerritory());
         newRecord.setComposer(compositionRecord.getComposer());
         newRecord.setHasAudit(delAuditId);
+        newRecord.setNamespace(compositionRecord.getNamespace());
         newDeletedVersionAsHistoryAccess.setRecord(newRecord);
         if (newDeletedVersionAsHistoryAccess.commit() == null) // commit and throw error if nothing was inserted into DB
         {

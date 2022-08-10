@@ -37,9 +37,10 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
 
     private CompositionHistoryRecord record;
 
-    public CompositionHistoryAccess(I_DomainAccess domainAccess) {
+    public CompositionHistoryAccess(I_DomainAccess domainAccess, String tenantIdentifier) {
         super(domainAccess);
         this.record = domainAccess.getContext().newRecord(COMPOSITION_HISTORY);
+        this.record.setNamespace(tenantIdentifier);
     }
 
     @Override
@@ -112,7 +113,7 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
         if (historyRecordsRes.isEmpty()) return null;
         CompositionHistoryRecord rec = historyRecordsRes.get(0);
 
-        I_CompositionHistoryAccess historyAccess = new CompositionHistoryAccess(domainAccess);
+        I_CompositionHistoryAccess historyAccess = new CompositionHistoryAccess(domainAccess, rec.getNamespace());
         historyAccess.setRecord(rec);
         return historyAccess;
     }

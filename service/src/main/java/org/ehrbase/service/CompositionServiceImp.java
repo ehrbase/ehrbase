@@ -164,15 +164,16 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
         // actual creation
         final UUID compositionId;
+        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
         try {
-            var compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId, tenantService.getCurrentTenantIdentifier());
+            var compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId, tenantIdentifier);
             var entryAccess = I_EntryAccess.getNewInstance(
                     getDataAccess(),
-                    Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId())
-                            .getValue(),
+                    Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId()).getValue(),
                     0,
                     compositionAccess.getId(),
-                    composition);
+                    composition,
+                    tenantIdentifier);
             compositionAccess.setContent(entryAccess);
             if (contributionId != null) { // in case of custom contribution, set it and invoke commit that allows custom
                 // contributions

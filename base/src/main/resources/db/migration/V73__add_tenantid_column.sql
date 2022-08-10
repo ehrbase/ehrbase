@@ -21,15 +21,26 @@
 
 
 ALTER TABLE ehr.ehr ADD namespace TEXT;
+
 ALTER TABLE ehr.entry ADD namespace TEXT;
 ALTER TABLE ehr.entry_history ADD namespace TEXT;
+
 ALTER TABLE ehr.composition ADD namespace TEXT;
 ALTER TABLE ehr.composition_history ADD namespace TEXT;
 
+ALTER TABLE ehr.event_context ADD namespace TEXT;
+ALTER TABLE ehr.event_context_history ADD namespace TEXT;
+
 -- insert dummy tenant
+
 UPDATE ehr.ehr SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
+
 UPDATE ehr.entry SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.entry_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
+
 UPDATE ehr.composition SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.composition_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
+
+UPDATE ehr.event_context SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
+UPDATE ehr.event_context_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 

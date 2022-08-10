@@ -174,6 +174,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by ID
      */
+    @TenantAware
     @GetMapping(path = "/{ehr_id}")
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     @Override
@@ -194,6 +195,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by subject (id and namespace)
      */
+    @TenantAware
     @GetMapping(params = {"subject_id", "subject_namespace"})
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     @Override

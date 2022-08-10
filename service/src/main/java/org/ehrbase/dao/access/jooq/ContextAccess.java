@@ -24,22 +24,11 @@ import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
 import static org.ehrbase.jooq.pg.Tables.PARTICIPATION_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
-import com.nedap.archie.rm.composition.EventContext;
-import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvIdentifier;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.datavalues.quantity.DvInterval;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.generic.Participation;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -68,6 +57,19 @@ import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nedap.archie.rm.composition.EventContext;
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvIdentifier;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.DvInterval;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.generic.Participation;
+import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.PartyRef;
+
 /**
  * @author Christian Chevalley
  * @author Jake Smolka
@@ -75,26 +77,23 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 public class ContextAccess extends DataAccess implements I_ContextAccess {
-
     private static final String DB_INCONSISTENCY = "DB inconsistency";
 
     private final Logger log = LoggerFactory.getLogger(ContextAccess.class);
-
     private final List<ParticipationRecord> participations = new ArrayList<>();
-
     private EventContextRecord eventContextRecord;
 
-    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext) {
+    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext, String tenantIdentifier) {
         super(context, null, null, serverConfig);
         if (eventContext == null) return;
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
-        setRecordFields(UUID.randomUUID(), eventContext);
+        setRecordFields(UUID.randomUUID(), eventContext, tenantIdentifier);
     }
 
     private ContextAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
     }
-
+    
     public static I_ContextAccess retrieveInstance(I_DomainAccess domainAccess, UUID id) {
         ContextAccess contextAccess = new ContextAccess(domainAccess);
         contextAccess.eventContextRecord = domainAccess.getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.ID.eq(id));
@@ -225,9 +224,10 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
      * @param eventContext
      */
     @Override
-    public void setRecordFields(UUID id, EventContext eventContext) {
+    public void setRecordFields(UUID id, EventContext eventContext, String tenantIdentifier) {
         RecordedDvDateTime recordedDvDateTime = new RecordedDvDateTime(eventContext.getStartTime());
         eventContextRecord.setStartTime(recordedDvDateTime.toTimestamp());
+        eventContextRecord.setNamespace(tenantIdentifier);
         recordedDvDateTime.zoneId().ifPresent(eventContextRecord::setStartTimeTzid);
         if (eventContext.getEndTime() != null) {
             recordedDvDateTime = new RecordedDvDateTime(eventContext.getEndTime());
@@ -311,6 +311,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         insertQuery.addValue(EVENT_CONTEXT.END_TIME_TZID, eventContextRecord.getEndTimeTzid());
         insertQuery.addValue(EVENT_CONTEXT.FACILITY, eventContextRecord.getFacility());
         insertQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
+        insertQuery.addValue(EVENT_CONTEXT.NAMESPACE, eventContextRecord.getNamespace());
         if (eventContextRecord.getOtherContext() != null)
             insertQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         insertQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
