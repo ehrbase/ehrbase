@@ -333,9 +333,9 @@ commit composition
         ...     expected_status=anything   data=${file}   headers=${headers}
     END
 
-    Set Test Variable   ${response}     ${resp}
-    Set Test Variable   ${format}       ${format}
-    Set Test Variable   ${template}     ${template}
+    Set Suite Variable   ${response}     ${resp}
+    Set Suite Variable   ${format}       ${format}
+    Set Suite Variable   ${template}     ${template}
 
 
     capture point in time    1
