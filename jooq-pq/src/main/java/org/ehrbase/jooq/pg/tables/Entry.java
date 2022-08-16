@@ -204,12 +204,17 @@ public class Entry extends TableImpl<EntryRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.ENTRY_COMPOSITION_ID_IDX, Indexes.GIN_ENTRY_PATH_IDX, Indexes.TEMPLATE_ENTRY_IDX);
+        return Arrays.asList(Indexes.GIN_ENTRY_PATH_IDX, Indexes.TEMPLATE_ENTRY_IDX);
     }
 
     @Override
     public UniqueKey<EntryRecord> getPrimaryKey() {
         return Keys.ENTRY_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<EntryRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.ENTRY_COMPOSITION_ID_KEY);
     }
 
     @Override

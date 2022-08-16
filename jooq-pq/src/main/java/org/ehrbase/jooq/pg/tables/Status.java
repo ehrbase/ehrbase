@@ -209,12 +209,17 @@ public class Status extends TableImpl<StatusRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.STATUS_EHR_IDX, Indexes.STATUS_PARTY_IDX);
+        return Arrays.asList(Indexes.STATUS_PARTY_IDX);
     }
 
     @Override
     public UniqueKey<StatusRecord> getPrimaryKey() {
         return Keys.STATUS_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<StatusRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.STATUS_EHR_ID_KEY);
     }
 
     @Override

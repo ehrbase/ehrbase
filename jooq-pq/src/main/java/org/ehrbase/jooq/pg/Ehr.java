@@ -70,6 +70,7 @@ import org.ehrbase.jooq.pg.tables.Participation;
 import org.ehrbase.jooq.pg.tables.ParticipationHistory;
 import org.ehrbase.jooq.pg.tables.PartyIdentified;
 import org.ehrbase.jooq.pg.tables.PartyUsageIdentification;
+import org.ehrbase.jooq.pg.tables.Plugin;
 import org.ehrbase.jooq.pg.tables.SessionLog;
 import org.ehrbase.jooq.pg.tables.Status;
 import org.ehrbase.jooq.pg.tables.StatusHistory;
@@ -947,6 +948,11 @@ public class Ehr extends SchemaImpl {
     }
 
     /**
+     * key value store for plugin sub system
+     */
+    public final Plugin PLUGIN = Plugin.PLUGIN;
+
+    /**
      * The table <code>ehr.session_log</code>.
      */
     public final SessionLog SESSION_LOG = SessionLog.SESSION_LOG;
@@ -1081,6 +1087,7 @@ public class Ehr extends SchemaImpl {
                 ParticipationHistory.PARTICIPATION_HISTORY,
                 PartyIdentified.PARTY_IDENTIFIED,
                 PartyUsageIdentification.PARTY_USAGE_IDENTIFICATION,
+                Plugin.PLUGIN,
                 SessionLog.SESSION_LOG,
                 Status.STATUS,
                 StatusHistory.STATUS_HISTORY,

@@ -170,7 +170,10 @@ public class PartyIdentified extends TableImpl<PartyIdentifiedRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.PARTY_IDENTIFIED_PARTY_REF_IDX, Indexes.PARTY_IDENTIFIED_PARTY_TYPE_IDX);
+        return Arrays.asList(
+                Indexes.PARTY_IDENTIFIED_NAMESPACE_VALUE_IDX,
+                Indexes.PARTY_IDENTIFIED_PARTY_REF_IDX,
+                Indexes.PARTY_IDENTIFIED_PARTY_TYPE_IDX);
     }
 
     @Override

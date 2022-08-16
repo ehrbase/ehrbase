@@ -136,7 +136,7 @@ public class Identifier extends TableImpl<IdentifierRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.EHR_IDENTIFIER_PARTY_IDX);
+        return Arrays.asList(Indexes.EHR_IDENTIFIER_PARTY_IDX, Indexes.IDENTIFIER_VALUE_IDX);
     }
 
     @Override

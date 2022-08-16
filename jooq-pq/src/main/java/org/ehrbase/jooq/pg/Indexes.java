@@ -160,8 +160,6 @@ public class Indexes {
             Territory.TERRITORY,
             new OrderField[] {Territory.TERRITORY.TWOLETTER},
             true);
-    public static final Index ENTRY_COMPOSITION_ID_IDX = Internal.createIndex(
-            DSL.name("entry_composition_id_idx"), Entry.ENTRY, new OrderField[] {Entry.ENTRY.COMPOSITION_ID}, true);
     public static final Index ENTRY_HISTORY_COMPOSITION_IDX = Internal.createIndex(
             DSL.name("entry_history_composition_idx"),
             EntryHistory.ENTRY_HISTORY,
@@ -223,6 +221,11 @@ public class Indexes {
             false);
     public static final Index GIN_ENTRY_PATH_IDX = Internal.createIndex(
             DSL.name("gin_entry_path_idx"), Entry.ENTRY, new OrderField[] {Entry.ENTRY.ENTRY_}, false);
+    public static final Index IDENTIFIER_VALUE_IDX = Internal.createIndex(
+            DSL.name("identifier_value_idx"),
+            Identifier.IDENTIFIER,
+            new OrderField[] {Identifier.IDENTIFIER.ID_VALUE},
+            false);
     public static final Index OBJ_REF_IN_CONTRIBUTION_IDX = Internal.createIndex(
             DSL.name("obj_ref_in_contribution_idx"),
             ObjectRef.OBJECT_REF,
@@ -238,6 +241,13 @@ public class Indexes {
             ParticipationHistory.PARTICIPATION_HISTORY,
             new OrderField[] {ParticipationHistory.PARTICIPATION_HISTORY.EVENT_CONTEXT},
             false);
+    public static final Index PARTY_IDENTIFIED_NAMESPACE_VALUE_IDX = Internal.createIndex(
+            DSL.name("party_identified_namespace_value_idx"),
+            PartyIdentified.PARTY_IDENTIFIED,
+            new OrderField[] {
+                PartyIdentified.PARTY_IDENTIFIED.PARTY_REF_NAMESPACE, PartyIdentified.PARTY_IDENTIFIED.PARTY_REF_VALUE
+            },
+            false);
     public static final Index PARTY_IDENTIFIED_PARTY_REF_IDX = Internal.createIndex(
             DSL.name("party_identified_party_ref_idx"),
             PartyIdentified.PARTY_IDENTIFIED,
@@ -252,8 +262,6 @@ public class Indexes {
             PartyIdentified.PARTY_IDENTIFIED,
             new OrderField[] {PartyIdentified.PARTY_IDENTIFIED.PARTY_TYPE, PartyIdentified.PARTY_IDENTIFIED.NAME},
             false);
-    public static final Index STATUS_EHR_IDX = Internal.createIndex(
-            DSL.name("status_ehr_idx"), Status.STATUS, new OrderField[] {Status.STATUS.EHR_ID}, true);
     public static final Index STATUS_HISTORY_EHR_IDX = Internal.createIndex(
             DSL.name("status_history_ehr_idx"),
             StatusHistory.STATUS_HISTORY,

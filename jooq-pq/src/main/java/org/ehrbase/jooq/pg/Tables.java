@@ -69,6 +69,7 @@ import org.ehrbase.jooq.pg.tables.Participation;
 import org.ehrbase.jooq.pg.tables.ParticipationHistory;
 import org.ehrbase.jooq.pg.tables.PartyIdentified;
 import org.ehrbase.jooq.pg.tables.PartyUsageIdentification;
+import org.ehrbase.jooq.pg.tables.Plugin;
 import org.ehrbase.jooq.pg.tables.SessionLog;
 import org.ehrbase.jooq.pg.tables.Status;
 import org.ehrbase.jooq.pg.tables.StatusHistory;
@@ -935,6 +936,11 @@ public class Tables {
     public static PartyUsageIdentification PARTY_USAGE_IDENTIFICATION(Field<UUID> partyUuid) {
         return org.ehrbase.jooq.pg.tables.PartyUsageIdentification.PARTY_USAGE_IDENTIFICATION.call(partyUuid);
     }
+
+    /**
+     * key value store for plugin sub system
+     */
+    public static final Plugin PLUGIN = Plugin.PLUGIN;
 
     /**
      * The table <code>ehr.session_log</code>.

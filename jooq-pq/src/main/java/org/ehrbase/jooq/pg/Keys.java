@@ -43,6 +43,7 @@ import org.ehrbase.jooq.pg.tables.ObjectRef;
 import org.ehrbase.jooq.pg.tables.ObjectRefHistory;
 import org.ehrbase.jooq.pg.tables.Participation;
 import org.ehrbase.jooq.pg.tables.PartyIdentified;
+import org.ehrbase.jooq.pg.tables.Plugin;
 import org.ehrbase.jooq.pg.tables.SessionLog;
 import org.ehrbase.jooq.pg.tables.Status;
 import org.ehrbase.jooq.pg.tables.StoredQuery;
@@ -76,6 +77,7 @@ import org.ehrbase.jooq.pg.tables.records.ObjectRefHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
 import org.ehrbase.jooq.pg.tables.records.ParticipationRecord;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 import org.ehrbase.jooq.pg.tables.records.SessionLogRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.ehrbase.jooq.pg.tables.records.StoredQueryRecord;
@@ -129,6 +131,8 @@ public class Keys {
             true);
     public static final UniqueKey<EhrRecord> EHR_PKEY =
             Internal.createUniqueKey(Ehr.EHR_, DSL.name("ehr_pkey"), new TableField[] {Ehr.EHR_.ID}, true);
+    public static final UniqueKey<EntryRecord> ENTRY_COMPOSITION_ID_KEY = Internal.createUniqueKey(
+            Entry.ENTRY, DSL.name("entry_composition_id_key"), new TableField[] {Entry.ENTRY.COMPOSITION_ID}, true);
     public static final UniqueKey<EntryRecord> ENTRY_PKEY =
             Internal.createUniqueKey(Entry.ENTRY, DSL.name("entry_pkey"), new TableField[] {Entry.ENTRY.ID}, true);
     public static final UniqueKey<EventContextRecord> EVENT_CONTEXT_PKEY = Internal.createUniqueKey(
@@ -216,8 +220,12 @@ public class Keys {
             DSL.name("party_identified_pkey"),
             new TableField[] {PartyIdentified.PARTY_IDENTIFIED.ID},
             true);
+    public static final UniqueKey<PluginRecord> PLUGIN_PKEY =
+            Internal.createUniqueKey(Plugin.PLUGIN, DSL.name("plugin_pkey"), new TableField[] {Plugin.PLUGIN.ID}, true);
     public static final UniqueKey<SessionLogRecord> SESSION_LOG_PKEY = Internal.createUniqueKey(
             SessionLog.SESSION_LOG, DSL.name("session_log_pkey"), new TableField[] {SessionLog.SESSION_LOG.ID}, true);
+    public static final UniqueKey<StatusRecord> STATUS_EHR_ID_KEY = Internal.createUniqueKey(
+            Status.STATUS, DSL.name("status_ehr_id_key"), new TableField[] {Status.STATUS.EHR_ID}, true);
     public static final UniqueKey<StatusRecord> STATUS_PKEY =
             Internal.createUniqueKey(Status.STATUS, DSL.name("status_pkey"), new TableField[] {Status.STATUS.ID}, true);
     public static final UniqueKey<StoredQueryRecord> PK_QUALIFIED_NAME = Internal.createUniqueKey(
