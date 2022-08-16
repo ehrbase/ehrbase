@@ -27,8 +27,8 @@ Resource        ../_resources/keywords/admin_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/composition_keywords.robot
 
-Suite Setup     startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup     startup SUT
+#Suite Teardown  shutdown SUT
 
 Force Tags     ADMIN_composition
 
@@ -43,8 +43,8 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
 
 001 ADMIN - Delete Composition
     # pre check
-    Connect With DB
-    check composition admin delete table counts initially
+    #Connect With DB
+    #check composition admin delete table counts initially
     # preparing and provisioning
     Upload OPT    minimal/minimal_observation.opt
     prepare new request session    JSON    Prefer=return=representation
@@ -56,7 +56,7 @@ ${SUT}          ADMIN-TEST    # overriding defaults in suite_settings.robot
     (admin) delete composition
     Log To Console  ${response}
     # Test with count rows again - post check
-    check composition admin delete table counts
+    #check composition admin delete table counts
 
 
 002 ADMIN - Delete An Already Deleted Composition

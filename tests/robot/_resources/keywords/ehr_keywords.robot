@@ -502,7 +502,7 @@ get versioned ehr_status of EHR by time
     ...                             - `generate random ehr_id`
     ...                 Input: `query` variable containing query parameters as object or directory (e.g. _limit=2 for [$URL]?_limit=2)
 
-    # Trick to see if ${query} was set. (if not, "Get Variale Value" will set the value to None)
+    # Trick to see if ${query} was set. (if not, "Get Variable Value" will set the value to None)
     ${query} = 	Get Variable Value 	${query}
     # Only run the GET with query if $query was set
     Run Keyword Unless 	$query is None 	internal get versioned ehr_status of EHR by time with query

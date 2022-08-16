@@ -114,7 +114,6 @@ verify server response
 
     Integer  response status  200
     Array    response body
-    Array    $                  # same as above
     Array    response body      uniqueItems=true
     Object   $[*]               # each entry in list is a JSON object
 
@@ -122,7 +121,7 @@ verify server response
     Object  response body 0
     ...     required=["concept", "template_id","archetype_id", "created_timestamp"]
     #...     additionalProperties=false	# must not have other properties
-    Object  $[0]               # same as line above
+    #Object  $[0]               # same as line above
 
     # this checks the type of each property's value in the list
     String  response body 0 concept

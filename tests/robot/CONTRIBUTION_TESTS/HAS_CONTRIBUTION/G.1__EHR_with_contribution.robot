@@ -53,4 +53,4 @@ Main flow: check has CONTRIBUTION with existing CONTRIBUTION
     retrieve CONTRIBUTION by contribution_uid (JSON)
     check response: is positive - contribution_uid exists
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

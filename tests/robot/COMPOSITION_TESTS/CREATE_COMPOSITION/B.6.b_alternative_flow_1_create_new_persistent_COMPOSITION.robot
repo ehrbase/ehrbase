@@ -25,7 +25,7 @@ Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup     Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***
@@ -45,17 +45,17 @@ Alternative flow 1 create new persistent COMPOSITION FLAT
     ...                  composition=persistent_minimal.en.v1__full.xml.flat.json
     check the successful result of commit composition   persistent_minimal
 
-Alternative flow 1 create new persistent COMPOSITION TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=persistent_minimal.en.v1__full.xml
-    check the successful result of commit composition
+#Alternative flow 1 create new persistent COMPOSITION TDD
+#    [Tags]    future
+#    commit composition   format=TDD
+#    ...                  composition=persistent_minimal.en.v1__full.xml
+#    check the successful result of commit composition
 
-Alternative flow 1 create new persistent COMPOSITION STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=persistent_minimal.en.v1__full.json
-    check the successful result of commit composition   persistent_minimal
+#Alternative flow 1 create new persistent COMPOSITION STRUCTURED
+#    [Tags]    future
+#    commit composition   format=STRUCTURED
+#    ...                  composition=persistent_minimal.en.v1__full.json
+#    check the successful result of commit composition   persistent_minimal
 
 *** Keywords ***
 Precondition

@@ -25,7 +25,7 @@ Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup     Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***
@@ -45,19 +45,28 @@ Alternative flow 3 create new invalid event COMPOSITION FLAT
     ...                  composition=nested.en.v1__invalid_wrong_structure.json
     check status_code of commit composition    400
 
-Alternative flow 3 create new invalid event COMPOSITION TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=nested.en.v1__invalid_wrong_structure.xml
+Alternative flow 3 create new invalid event COMPOSITION FLAT - DV Duration Near To Max
+    [Tags]      not-ready   bug
+    commit composition   format=FLAT
+    ...                  composition=dv_duration_max__.json
+    #Github issue: https://github.com/ehrbase/ehrbase/issues/926
     check status_code of commit composition    400
+    [Teardown]      TRACE JIRA ISSUE    CDR-447
 
-Alternative flow 3 create new invalid event COMPOSITION STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=nested.en.v1__invalid_wrong_structure.json
-    check status_code of commit composition    400
+#Alternative flow 3 create new invalid event COMPOSITION TDD
+#    [Tags]    future
+#    commit composition   format=TDD
+#    ...                  composition=nested.en.v1__invalid_wrong_structure.xml
+#    check status_code of commit composition    400
+
+#Alternative flow 3 create new invalid event COMPOSITION STRUCTURED
+#    [Tags]    future
+#    commit composition   format=STRUCTURED
+#    ...                  composition=nested.en.v1__invalid_wrong_structure.json
+#    check status_code of commit composition    400
 
 *** Keywords ***
 Precondition
-    Upload OPT    nested/nested.opt
+    Upload OPT      nested/nested.opt
+    Upload OPT      all_types/dv_duration_max.opt
     create EHR

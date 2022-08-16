@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Wladislaw Wagner (Vitasystems GmbH), Pablo Pazos (Hannover Medical School).
+# Copyright (c) 2022 Vladislav Ploaia (Vitagroup - CDR Core Team)
 #
 # This file is part of Project EHRbase
 #
@@ -17,20 +17,15 @@
 
 
 *** Settings ***
-Documentation   OPT integration tests
+Metadata    Version    0.1.0
+Metadata    Author    *Vladislav Ploaia*
+
+Documentation    EVENT TRIGGER SUITE
 ...
-Metadata        TOP_TEST_SUITE    EHR_STATUS
 
-Resource        ../_resources/keywords/template_opt1.4_keywords.robot
+Resource    ${EXECDIR}/robot/_resources/suite_settings.robot
 
-Force Tags      OPT14    OPT14_delete    TODO
+#Suite Setup  startup SUT
+#Suite Teardown  shutdown SUT
 
-
-*** Variables ***
-
-
-
-*** Test Cases ***
-Delete Non Existing OPT
-    Log    NOT IMPLEMENTED   level=WARN
-    THIS IS JUST A PLACEHOLDER!
+Force Tags    EVENT_TRIGGER

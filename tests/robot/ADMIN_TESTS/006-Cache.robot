@@ -43,8 +43,8 @@ Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/template_opt1.4_keywords.robot
 Resource        ../_resources/keywords/aql_query_keywords.robot
 
-Suite Setup     startup SUT
-Suite Teardown  shutdown SUT
+#Suite Setup     startup SUT
+#Suite Teardown  shutdown SUT
 
 Force Tags     cache    cache_template_update    TODO
 
@@ -72,7 +72,7 @@ ${VALID DATA SETS}     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_d
 
 *** Test Cases ***
 Commit Composition After Template Update (Cache Enabled)
-    [Tags]    
+    #[Tags]    not-ready
     
     01) Run ehrbase with cache enabled true
     02) Upload Template Containing Node With Specific Archetype_ID
@@ -104,7 +104,7 @@ startup SUT
 
     Set Environment Variable    ADMINAPI_ACTIVE    true
     Set Environment Variable    ADMINAPI_ALLOWDELETEALL    true
-    generic_keywords.startup SUT
+    #generic_keywords.startup SUT
 
 
 01) Run ehrbase with cache enabled true

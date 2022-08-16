@@ -22,7 +22,18 @@ spring:
       maxIdle: 10
       max-active: 50
       max-wait: 10000
-
+      
+  jpa:
+    open-in-view: false
+    generate-ddl: false
+    properties:
+      hibernate:
+        format_sql: false
+        show_sql: false
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        default_schema: ehr
+        hbm2ddl:
+          auto: " "           
 server:
   port: 8080
   # Optional custom server nodename

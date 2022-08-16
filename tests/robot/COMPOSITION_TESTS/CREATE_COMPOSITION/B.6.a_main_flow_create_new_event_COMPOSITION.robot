@@ -25,7 +25,7 @@ Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup       Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***
@@ -45,17 +45,17 @@ Main flow create new event COMPOSITION FLAT
     ...                  composition=nested.en.v1__full.xml.flat.json
     check the successful result of commit composition   nesting
 
-Main flow create new event COMPOSITION TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=nested.en.v1__full.xml
-    check the successful result of commit composition
+# Main flow create new event COMPOSITION TDD
+#     [Tags]    future
+#     commit composition   format=TDD
+#     ...                  composition=nested.en.v1__full.xml
+#     check the successful result of commit composition
 
-Main flow create new event COMPOSITION STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=nested.en.v1__full.json
-    check the successful result of commit composition   nesting
+# Main flow create new event COMPOSITION STRUCTURED
+#     [Tags]    future
+#     commit composition   format=STRUCTURED
+#     ...                  composition=nested.en.v1__full.json
+#     check the successful result of commit composition   nesting
 
 
 *** Keywords ***

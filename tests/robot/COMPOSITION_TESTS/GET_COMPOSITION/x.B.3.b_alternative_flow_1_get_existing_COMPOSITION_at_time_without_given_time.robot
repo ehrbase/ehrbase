@@ -41,4 +41,4 @@ Alternative flow 1 get existing COMPOSITION at time, without given time
     get composition - latest version    XML
     check content of compositions latest version (XML)
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT

@@ -25,7 +25,7 @@ Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup     Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***
@@ -39,11 +39,11 @@ Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist CANO
     ...                  composition=nested.en.v1__invalid_opt_doesnt_exist.xml
     check status_code of commit composition    422
 
-Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=nested.en.v1__invalid_opt_doesnt_exist.xml
-    check status_code of commit composition    422
+#Alternative flow 5 create new event COMPOSITION referenced opt doesnt exist TDD
+#    [Tags]    future
+#    commit composition   format=TDD
+#    ...                  composition=nested.en.v1__invalid_opt_doesnt_exist.xml
+#    check status_code of commit composition    422
 
 *** Keywords ***
 Precondition

@@ -675,11 +675,26 @@ get composition by composition_uid
 
 
 Get Web Template By Template Id (ECIS)
-    [Arguments]         ${template_id}
+    [Arguments]         ${template_id}      ${responseFormat}=default
 
     Create Session      ${SUT}    ${ECISURL}    debug=2
     ...                 auth=${CREDENTIALS}    verify=True
-    ${resp}=            GET On Session         ${SUT}  template/${template_id}  expected_status=anything   headers=${headers}
+    IF          '${responseFormat}' == 'JSON'
+        &{params}           Create Dictionary       format=JSON
+        &{headers}          Create Dictionary       Content-Type=application/json
+        ...     Prefer=return=representation        Accept=application/json
+        ${resp}             GET On Session         ${SUT}  template/${template_id}
+        ...     expected_status=anything   headers=${headers}   params=${params}
+    ELSE IF     '${responseFormat}' == 'XML'
+        &{params}           Create Dictionary       format=XML
+        &{headers}          Create Dictionary       Content-Type=application/xml
+        ...     Prefer=return=representation        Accept=application/xml
+        ${resp}             GET On Session          ${SUT}  template/${template_id}
+        ...     expected_status=anything   headers=${headers}   params=${params}
+    ELSE
+        ${resp}             GET On Session         ${SUT}  template/${template_id}
+        ...     expected_status=anything   headers=${headers}
+    END
                         log to console      ${resp.content}
                         Set Test Variable   ${response}    ${resp}
                         Should Be Equal As Strings   ${resp.status_code}   200
@@ -746,7 +761,8 @@ Validate Response Body Has Format
                         IF          '${expectedFormat}' == 'JSON'
                             ${templateName}     Get Value From Json     ${response.json()}
                             ...     name.value
-                            log to console     ${templateName}
+                            log to console      ${templateName}
+                            Set Test Variable   ${response}     ${response.json()}
                         ELSE IF     '${expectedFormat}' == 'XML'
                             ${xml}     Parse Xml        ${response.text}
                             Set Test Variable       ${responseXML}      ${xml}
@@ -821,6 +837,7 @@ get revision history of versioned composition of EHR by UID
     &{resp}=            REST.GET    ${baseurl}/ehr/${ehr_id}/versioned_composition/${uid}/revision_history
                         ...         headers={"Accept": "application/json"}
                         Set Test Variable    ${response}    ${resp}
+                        Log     ${response}
 
 
 get version of versioned composition of EHR by UID and time
@@ -1101,12 +1118,12 @@ get deleted composition
 
 get deleted composition (EHRScape)
     [Documentation]     The deleted compo should not exist
-    ...                 204 is the code for deleted - as per openEHR REST spec:
-    #...                 https://www.ehrscape.com/reference.html#_composition
+    ...                 404 is the code for deleted - as per openEHR REST spec:
+    ...                 https://www.ehrscape.com/reference.html#_composition
 
     ${resp}=            GET On Session          ${SUT}   /composition/${composition_uid}   expected_status=anything
                         log to console          ${resp.content}
-                        Status Should Be        204
+                        Status Should Be        404
 
 delete non-existent composition
     [Documentation]     DEPENDENCY `prepare new request session`, `generate random composition_uid`
@@ -1131,7 +1148,11 @@ Upload OPT
 
                         get valid OPT file    ${opt_file}
                         upload OPT file
-                        server accepted OPT
+                        IF  '${response.status_code}' != '409'
+                            server accepted OPT
+                        ELSE
+                            server rejected OPT with status code 409
+                        END
 
 Upload OPT ECIS
     [Arguments]     ${opt_file}
@@ -1147,7 +1168,11 @@ Upload OPT ECIS
 
                         get valid OPT file    ${opt_file}
                         upload OPT file ECIS
-                        server accepted OPT
+                        IF  '${response.status_code}' != '409'
+                            server accepted OPT
+                        ELSE
+                            server rejected OPT with status code 409
+                        END
 
 create EHR
     [Arguments]         ${accept-header}=JSON

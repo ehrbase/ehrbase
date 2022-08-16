@@ -25,7 +25,7 @@ Metadata        TOP_TEST_SUITE    COMPOSITION
 Resource        ../../_resources/keywords/composition_keywords.robot
 
 Suite Setup     Precondition
-Suite Teardown  restart SUT
+#Suite Teardown  restart SUT
 
 
 *** Test Cases ***
@@ -45,17 +45,17 @@ Alternative flow 4 create new invalid persistent COMPOSITION FLAT
     ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.json
     check status_code of commit composition    400
 
-Alternative flow 4 create new invalid persistent COMPOSITION TDD
-    [Tags]    future
-    commit composition   format=TDD
-    ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.xml
-    check status_code of commit composition    400
+#Alternative flow 4 create new invalid persistent COMPOSITION TDD
+#    [Tags]    future
+#    commit composition   format=TDD
+#    ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.xml
+#    check status_code of commit composition    400
 
-Alternative flow 4 create new invalid persistent COMPOSITION STRUCTURED
-    [Tags]    future
-    commit composition   format=STRUCTURED
-    ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.json
-    check status_code of commit composition    400
+#Alternative flow 4 create new invalid persistent COMPOSITION STRUCTURED
+#    [Tags]    future
+#    commit composition   format=STRUCTURED
+#    ...                  composition=persistent_minimal.en.v1__invalid_wrong_structure.json
+#    check status_code of commit composition    400
 
 *** Keywords ***
 Precondition

@@ -101,7 +101,7 @@ Force Tags
     Set Test Variable 	&{query} 	version_at_time=${time_after_ehr_creation}     # set query as dictionary
     get versioned ehr_status of EHR by time
     Should Be Equal As Strings    ${response.status}    200
-    Should Be Equal As Strings    ${original_id}    ${response.body.uid.value}
+    Should Be Equal As Strings    ${ehrstatus_uid[0:-1]}1    ${response.body.uid.value}
 
 
 4. Get Versioned Status Of Existing EHR by Time Check Lifecycle State (JSON)
@@ -127,9 +127,11 @@ Force Tags
     Should Be Equal As Strings    ${response.status}    201
     
     get versioned ehr_status of EHR by time
+    log     ${response}
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${ehrstatus_uid}    ${response.body.uid.value}
-    Should Not Contain  ${response.body}  preceding_version_uid
+    Run Keyword And Return Status   Should Not Contain
+    ...     ${response.body}    ${response.body.preceding_version_uid}
 
 
 5b. Get Versioned Status Of Existing EHR by Time Check Preceding Version (JSON)

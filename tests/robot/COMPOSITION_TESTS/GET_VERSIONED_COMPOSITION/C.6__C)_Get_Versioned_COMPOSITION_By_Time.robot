@@ -112,7 +112,7 @@ Force Tags      COMPOSITION_get_versioned
     get version of versioned composition of EHR by UID and time    ${versioned_object_uid}
     Should Be Equal As Strings    ${response.status}    200
     Should Be Equal As Strings    ${version_uid}    ${response.body.uid.value}
-    Should Not Contain  ${response.body}  preceding_version_uid
+    Should Not Contain  ${response.body}  ${preceding_version_uid}
 
 
 5b. Get Composition via Versioned Composition Of Existing EHR by Time Check Preceding Version (JSON)

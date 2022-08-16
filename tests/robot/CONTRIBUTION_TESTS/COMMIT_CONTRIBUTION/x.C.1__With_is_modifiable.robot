@@ -58,7 +58,7 @@ Main flow: successfully commit CONTRIBUTION with EHR status Modifiable True
     check response: is positive - returns version id
     check content of committed CONTRIBUTION
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
 
 Main flow: does not allow to commit CONTRIBUTION with EHR status Modifiable False
 
@@ -68,4 +68,4 @@ Main flow: does not allow to commit CONTRIBUTION with EHR status Modifiable Fals
     commit CONTRIBUTION (JSON) is modifiable false  minimal/minimal_evaluation.contribution.json
     check response: is negative indicating does not allow modification
 
-    [Teardown]    restart SUT
+    #[Teardown]    restart SUT
