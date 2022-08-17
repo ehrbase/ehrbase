@@ -117,7 +117,8 @@ CommitCompositionTemplate
     ${initalJson}           Load Json From File     ${compositionFilePath}
     Change Json KeyValue and Save Back To File
     ...     ${initalJson}   ${dvDateTimeValue}
-    commit composition      format=CANONICAL_JSON
+    Commit Composition Using Robot Templates
+    ...                     format=CANONICAL_JSON
     ...                     composition=${composition_file}
     ${isStatusCodeEqual}    Run Keyword And Return Status
     ...     Should Be Equal As Strings      ${response.status_code}     ${expectedCode}
@@ -189,3 +190,78 @@ Delete Composition Using API
                         Set Suite Variable    ${deleteCompositionResponse}    ${resp}
                         Output Debug Info To Console
     END
+
+Commit Composition Using Robot Templates
+    [Arguments]         ${format}   ${composition}
+    ...         ${need_template_id}=true   ${prefer}=representation
+    ...         ${lifecycle}=complete    ${extTemplateId}=false
+    [Documentation]     Creates the first version of a new COMPOSITION
+    ...                 DEPENDENCY: `upload OPT`, `create EHR`
+    ...
+    ...                 ENDPOINT: POST /ehr/${ehr_id}/composition
+    ...
+    ...                 FORMAT VARIABLES: FLAT, TDD, STRUCTURED, CANONICAL_JSON, CANONICAL_XML
+
+    @{template}=        Split String    ${composition}   __
+    ${template}=        Get From List   ${template}      0
+
+    Set Suite Variable    ${template_id}    ${template}
+
+    ${file}=           Get File   ${COMPO DATA SETS}/${format}/${composition}
+
+    &{headers}=        Create Dictionary   Prefer=return=${prefer}
+    ...                openEHR-VERSION.lifecycle_state=${lifecycle}
+
+    IF    '${need_template_id}' == 'true'
+        Set To Dictionary   ${headers}   openEHR-TEMPLATE_ID=${template}
+    END
+
+    IF   '${format}'=='CANONICAL_JSON'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+        Set To Dictionary   ${headers}   Content-Type=application/json
+        Set To Dictionary   ${headers}   Accept=application/json
+    ELSE IF   '${format}'=='CANONICAL_XML'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+        Set To Dictionary   ${headers}   Content-Type=application/xml
+        Set To Dictionary   ${headers}   Accept=application/xml
+    ELSE IF   '${format}'=='FLAT'
+        Set To Dictionary   ${headers}   Content-Type=application/json
+        Set To Dictionary   ${headers}   Accept=application/json
+        Set To Dictionary   ${headers}   X-Forwarded-Host=example.com
+        Set To Dictionary   ${headers}   X-Forwarded-Port=333
+        Set To Dictionary   ${headers}   X-Forwarded-Proto=https
+        IF  '${extTemplateId}' == 'true'
+            ${template_id}      Set Variable   ${externalTemplate}
+            ${template}      Set Variable   ${externalTemplate}
+            Set Suite Variable    ${template_id}    ${template}
+        END
+        &{params}       Create Dictionary     format=FLAT   ehrId=${ehr_id}     templateId=${template_id}
+        Create Session      ${SUT}    ${ECISURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+    ELSE IF   '${format}'=='TDD'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+        Set To Dictionary   ${headers}   Content-Type=application/openehr.tds2+xml
+        Set To Dictionary   ${headers}   Accept=application/openehr.tds2+xml
+    ELSE IF   '${format}'=='STRUCTURED'
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 auth=${CREDENTIALS}    verify=True
+        Set To Dictionary   ${headers}   Content-Type=application/openehr.wt.structured+json
+        Set To Dictionary   ${headers}   Accept=application/openehr.wt.structured+json
+    END
+
+    IF          '${format}'=='FLAT'
+        ${resp}     POST On Session     ${SUT}   composition   params=${params}
+        ...     expected_status=anything   data=${file}   headers=${headers}
+    ELSE
+        ${resp}     POST On Session     ${SUT}   /ehr/${ehr_id}/composition
+        ...     expected_status=anything   data=${file}   headers=${headers}
+    END
+
+    Set Suite Variable   ${response}     ${resp}
+    Set Suite Variable   ${format}       ${format}
+    Set Suite Variable   ${template}     ${template}
+
+    capture point in time    1
