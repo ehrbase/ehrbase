@@ -337,7 +337,6 @@ commit composition
     Set Test Variable   ${format}       ${format}
     Set Test Variable   ${template}     ${template}
 
-
     capture point in time    1
 
 
