@@ -44,13 +44,14 @@ Generate Event Trigger Id And Update File Content
 Commit Event Trigger
     [Documentation]     Create Event Trigger using JSON file content.
     ...     - ENDPOINT: POST /plugin/event-trigger
-    ...     - Takes 2 arguments:
+    ...     - Takes 3 arguments:
     ...     - json_event_trigger - to specify the JSON file location;
-    ...     - event_trigger_state - to specify if event trigger is active or inactive.
+    ...     - event_trigger_state - to specify if event trigger is active or inactive;
+    ...     - status_code - optional argument with default value 200.
     ...     - Event trigger `id` is a randomly generated value.
     ...     - DEPENDENCY: `Generate Event Trigger Id And Update File Content`.
     ...     - Sets test variables: response, event_uuid.
-    [Arguments]         ${json_event_trigger}   ${event_trigger_state}=active
+    [Arguments]         ${json_event_trigger}   ${event_trigger_state}=active   ${status_code}=200
     ${file}         Load Json From File     ${VALID EVENT TRIGGER DATA SETS}/create/${json_event_trigger}
     ${json_str}     Generate Event Trigger Id And Update File Content       ${file}
     &{headers}      Create Dictionary   Content-Type=application/json
@@ -64,14 +65,17 @@ Commit Event Trigger
         Should Be Equal As Strings     ${eventTriggerStateValue[0]}   ${event_trigger_state}
         ${json_str}     Convert JSON To String    ${json_object}
     END
+    #$.definition.rules[0].high diastolic.when.aql
     Check If Session With Plugin Endpoint Exists
     ${resp}         POST On Session     eventtriggersut
     ...             /event-trigger      expected_status=anything
     ...             data=${json_str}    headers=${headers}
                     #Log To Console      ${resp.content}
-                    Should Be Equal As Strings          ${resp.status_code}     200
+                    Should Be Equal As Strings          ${resp.status_code}     ${status_code}
                     Set Suite Variable   ${response}     ${resp}
-                    Set Suite Variable   ${event_uuid}   ${resp.content}
+                    IF     '${status_code}' == '200'
+                        Set Suite Variable   ${event_uuid}   ${resp.content}
+                    END
 
 Get Event Trigger By Criteria
     [Documentation]     Get Event Trigger using specific criteria.
