@@ -43,8 +43,7 @@ Test DV Date Time Validity Kind Constraints - C_DATE_TIME With Configured Patter
     [Template]      Configure And Commit DV Date Time Validity Kind Constraints - C_DATE_TIME With Configured Pattern
     #C_DATE_TIME pattern value, DV_DATE_TIME value in COMPOSITION, expected code
     yyyy-mm-ddTHH:MM:SS     2021    ${negativeCode}
-    yyyy-mm-ddTHH:MM:??     2021    ${negativeCode}
-    yyyy-mm-ddT??:??:??     2021    ${negativeCode}
+    yyyy-mm-ddTHH:??:??     2021    ${negativeCode}
     yyyy-mm-ddTHH:MM:XX     2021    ${negativeCode}
     yyyy-mm-XXTXX:XX:XX     2021    ${negativeCode}
     yyyy-??-??T??:??:??     2021    ${positiveCode}
@@ -75,10 +74,49 @@ Test DV Date Time Validity Kind Constraints - C_DATE_TIME With Configured Patter
     yyyy-mm-ddTHH:MM:SS     2021-10-24T10:30        ${negativeCode}
     yyyy-mm-ddTHH:XX:XX     2021-10-24T10:30        ${negativeCode}
     yyyy-mm-XXTXX:XX:XX     2021-10-24T10:30        ${negativeCode}
-    yyyy-mm-ddTHH:MM:??     2021-10-24T10:30        ${positiveCode}
     yyyy-mm-ddT??:??:??     2021-10-24T10:30        ${positiveCode}
     yyyy-??-??T??:??:??     2021-10-24T10:30        ${positiveCode}
     yyyy-mm-ddTHH:MM:XX     2021-10-24T10:30        ${positiveCode}
+
+    yyyy-mm-ddTHH:MM:SS     2021-10-24T10:30:47     ${positiveCode}
+    yyyy-mm-ddTHH:??:??     2021-10-24T10:30:47     ${positiveCode}
+    yyyy-??-??T??:??:??     2021-10-24T10:30:47     ${positiveCode}
+    yyyy-mm-ddTHH:MM:XX     2021-10-24T10:30:47     ${negativeCode}
+    yyyy-mm-ddTXX:XX:XX     2021-10-24T10:30:47     ${negativeCode}
+    yyyy-mm-XXTXX:XX:XX     2021-10-24T10:30:47     ${negativeCode}
+
+    yyyy-mm-ddTHH:MM:SS     2021-10-24T10:30:47.5     ${positiveCode}
+    yyyy-mm-ddT??:??:??     2021-10-24T10:30:47.5     ${positiveCode}
+    yyyy-??-??T??:??:??     2021-10-24T10:30:47.5     ${positiveCode}
+    yyyy-mm-ddTHH:MM:XX     2021-10-24T10:30:47.5     ${negativeCode}
+    yyyy-mm-XXTXX:XX:XX     2021-10-24T10:30:47.5     ${negativeCode}
+    yyyy-XX-XXTXX:XX:XX     2021-10-24T10:30:47.5     ${negativeCode}
+
+    yyyy-mm-ddTHH:MM:??     2021-10-24T10:30:47.5Z      ${positiveCode}
+    yyyy-mm-ddTHH:??:??     2021-10-24T10:30:47.5Z      ${positiveCode}
+    yyyy-mm-??T??:??:??     2021-10-24T10:30:47.5Z      ${positiveCode}
+    yyyy-mm-ddTXX:XX:XX     2021-10-24T10:30:47.5Z      ${negativeCode}
+    yyyy-XX-XXTXX:XX:XX     2021-10-24T10:30:47.5Z      ${negativeCode}
+
+    yyyy-mm-ddTHH:MM:??     2021-10-24T10:30:47Z        ${positiveCode}
+    yyyy-mm-ddT??:??:??     2021-10-24T10:30:47Z        ${positiveCode}
+    yyyy-??-??T??:??:??     2021-10-24T10:30:47Z        ${positiveCode}
+    yyyy-mm-ddTHH:XX:XX     2021-10-24T10:30:47Z        ${negativeCode}
+    yyyy-mm-XXTXX:XX:XX     2021-10-24T10:30:47Z        ${negativeCode}
+    yyyy-XX-XXTXX:XX:XX     2021-10-24T10:30:47Z        ${negativeCode}
+
+    yyyy-mm-ddTHH:??:??     2021-10-24T10:30:47.5-03:00        ${positiveCode}
+    yyyy-mm-??T??:??:??     2021-10-24T10:30:47.5-03:00        ${positiveCode}
+    yyyy-mm-ddTHH:MM:XX     2021-10-24T10:30:47.5-03:00        ${negativeCode}
+    yyyy-mm-ddTXX:XX:XX     2021-10-24T10:30:47.5-03:00        ${negativeCode}
+    yyyy-mm-XXTXX:XX:XX     2021-10-24T10:30:47.5-03:00        ${negativeCode}
+
+    yyyy-mm-ddTHH:MM:SS     2021-10-24T10:30:47-03:00        ${positiveCode}
+    yyyy-mm-ddTHH:MM:??     2021-10-24T10:30:47-03:00        ${positiveCode}
+    yyyy-??-??T??:??:??     2021-10-24T10:30:47-03:00        ${positiveCode}
+    yyyy-mm-ddTHH:XX:XX     2021-10-24T10:30:47-03:00        ${negativeCode}
+    yyyy-XX-XXTXX:XX:XX     2021-10-24T10:30:47-03:00        ${negativeCode}
+
     [Teardown]      TRACE JIRA ISSUE    CDR-513
 
 *** Keywords ***
