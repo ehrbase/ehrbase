@@ -45,7 +45,6 @@ Test DV Date Time Validity Kind Constraints - C_DATE_TIME With Configured Patter
     yyyy-mm-ddTHH:MM:SS     2021    ${negativeCode}
     yyyy-mm-ddTHH:MM:??     2021    ${negativeCode}
     yyyy-mm-ddT??:??:??     2021    ${negativeCode}
-    yyyy-mm-??T??:??:??     2021    ${negativeCode}
     yyyy-mm-ddTHH:MM:XX     2021    ${negativeCode}
     yyyy-mm-XXTXX:XX:XX     2021    ${negativeCode}
     yyyy-??-??T??:??:??     2021    ${positiveCode}
@@ -54,7 +53,6 @@ Test DV Date Time Validity Kind Constraints - C_DATE_TIME With Configured Patter
     yyyy-mm-ddTHH:MM:SS     2021-10     ${negativeCode}
     yyyy-mm-ddTHH:??:??     2021-10     ${negativeCode}
     yyyy-mm-ddTHH:MM:XX     2021-10     ${negativeCode}
-    yyyy-mm-ddTXX:XX:XX     2021-10     ${negativeCode}
     yyyy-XX-XXTXX:XX:XX     2021-10     ${negativeCode}
     yyyy-mm-XXTXX:XX:XX     2021-10     ${positiveCode}
     yyyy-??-??T??:??:??     2021-10     ${positiveCode}
@@ -81,6 +79,7 @@ Test DV Date Time Validity Kind Constraints - C_DATE_TIME With Configured Patter
     yyyy-mm-ddT??:??:??     2021-10-24T10:30        ${positiveCode}
     yyyy-??-??T??:??:??     2021-10-24T10:30        ${positiveCode}
     yyyy-mm-ddTHH:MM:XX     2021-10-24T10:30        ${positiveCode}
+    [Teardown]      TRACE JIRA ISSUE    CDR-513
 
 *** Keywords ***
 Configure And Commit DV Date Time Validity Kind Constraints - C_DATE_TIME With Configured Pattern
@@ -139,8 +138,11 @@ Change Json KeyValue And Save Back To File
     ...     2 - value to be changed JsonPath key
     [Arguments]     ${jsonContent}      ${valueToUpdate}
     ${objPath}      Set Variable        $.content[0].data.events[0].time.value
+    ${objPath2}     Set Variable        $.content[0].data.events[0].data.items[0].value.value
     ${json_object}  Update Value To Json	${jsonContent}
     ...             ${objPath}        ${valueToUpdate}
+    ${json_object}  Update Value To Json	${jsonContent}
+    ...             ${objPath2}       ${valueToUpdate}
     ${json_str}     Convert JSON To String    ${json_object}
     Create File     ${compositionFilePath}    ${json_str}
 
