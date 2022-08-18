@@ -52,6 +52,57 @@ Composition With DV_MULTIMEDIA.code_string NULL, DV_MULTIMEDIA.size NULL
     END
     [Teardown]  Delete Composition Using API
 
+Composition With DV_MULTIMEDIA.code_string application/dicom, DV_MULTIMEDIA.size NULL
+    [Tags]      Negative
+    [Documentation]     *Test case DV_MULTIMEDIA open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_MULTIMEDIA.code_string using ${dvMultimediaCodeString} argument value application/dicom
+    ...     - update DV_MULTIMEDIA.size using ${dvMultimediaSize} argument value NULL
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 422.
+    ${expectedStatusCode}   Set Variable    422
+    ${statusCodeBoolean}    Commit Composition With Modified DV_MULTIMEDIA Code String And Size
+    ...     application/dicom    ${NULL}      ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_MULTIMEDIA.code_string NULL, DV_MULTIMEDIA.size 123
+    [Tags]      Negative
+    [Documentation]     *Test case DV_MULTIMEDIA open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_MULTIMEDIA.code_string using ${dvMultimediaCodeString} argument value NULL
+    ...     - update DV_MULTIMEDIA.size using ${dvMultimediaSize} argument value 123
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 422.
+    ${expectedStatusCode}   Set Variable    422
+    ${statusCodeBoolean}    Commit Composition With Modified DV_MULTIMEDIA Code String And Size
+    ...     ${NULL}    ${123}      ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+
+Composition With DV_MULTIMEDIA.code_string application/dicom, DV_MULTIMEDIA.size 123
+    [Tags]      Positive
+    [Documentation]     *Test case DV_MULTIMEDIA open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_MULTIMEDIA.code_string using ${dvMultimediaCodeString} argument value application/dicom
+    ...     - update DV_MULTIMEDIA.size using ${dvMultimediaSize} argument value 123
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_MULTIMEDIA Code String And Size
+    ...     application/dicom    ${123}      ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
 
 *** Keywords ***
 Precondition
