@@ -127,7 +127,6 @@ Commit Composition With Modified DV_PARSABLE Value And Formalism
     ELSE
         Set Suite Variable   ${versioned_object_uid}    ${None}
     END
-    #Should Be Equal As Strings      ${response.status_code}     ${expectedCode}
     [Return]    ${isStatusCodeEqual}
 
 Change Json KeyValue and Save Back To File
