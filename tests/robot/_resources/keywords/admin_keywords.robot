@@ -95,17 +95,27 @@ Resource        template_opt1.4_keywords.robot
 Delete Composition Using API
     IF      '${versioned_object_uid}' != '${None}'
         &{resp}         REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/composition/${versioned_object_uid}
-                        Run Keyword And Return Status   Integer    response status    204
+                        ${isDeleteCompositionFailed}     Run Keyword And Return Status
+                        ...     Integer    response status    204
                         Set Suite Variable    ${deleteCompositionResponse}    ${resp}
+                        IF      ${isDeleteCompositionFailed} == ${FALSE} and '${deleteCompositionResponse.status}' == '404'
+                            Log     Delete Composition returned ${deleteCompositionResponse.status} code.   console=yes
+                        END
                         Output Debug Info To Console
     END
 
+
 Delete Template Using API
-    &{resp}             REST.DELETE   ${admin_baseurl}/template/${template_id}
+    &{resp}=            REST.DELETE   ${admin_baseurl}/template/${template_id}
                         Set Suite Variable    ${deleteTemplateResponse}    ${resp}
                         Output Debug Info To Console
-                        Should Be Equal As Strings      ${deleteTemplateResponse.status}      200
+                        ${isDeleteTemplateFailed}     Run Keyword And Return Status
+                        ...     Should Be Equal As Strings      ${resp.status}      200
+                        IF      ${isDeleteTemplateFailed} == ${FALSE} and '${resp.status}' == '404'
+                            Log     Delete Template returned ${resp.status} code.   console=yes
+                        END
                         #Delete All Sessions
+
 
 check composition admin delete table counts
     Connect With DB
