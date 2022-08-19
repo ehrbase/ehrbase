@@ -59,8 +59,9 @@ Create Composition With DV_DATE_TIME Combinations - Positive
     2021-10-24T10:30:47.5-03:00
     2021-10-24T10:30:47.333-03:00
     2021-10-24T10:30:47.333333-03:00
-
-    [Teardown]      PositiveCompositionTemplate     2021-10-24T10
+    [Teardown]      Run Keywords
+    ...     PositiveCompositionTemplate     2021-10-24T10       AND
+    ...     TRACE JIRA ISSUE    CDR-513
 
 Create Composition With DV_DATE_TIME Combinations - Negative
     [Documentation]     *Operations done here (Negative flows):*
@@ -108,16 +109,6 @@ NegativeCompositionTemplate
     commit composition      format=CANONICAL_JSON
     ...                     composition=${composition_file}
     Should Be Equal As Strings      ${response.status_code}     400
-
-Load Json File With Composition
-    [Documentation]     Loads Json content from composition file.
-    ...     Stores file content in test variable, as well as full file path.
-    ${COMPO DATA SETS}     Set Variable
-    ...     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}compositions
-    ${file}                 Get File   ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
-    ${compositionFilePath}  Set Variable    ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
-    Set Test Variable       ${file}
-    Set Test Variable       ${compositionFilePath}
 
 Change Json KeyValue and Save Back To File
     [Documentation]     Updates $..data.events..items.[7].value.value to
