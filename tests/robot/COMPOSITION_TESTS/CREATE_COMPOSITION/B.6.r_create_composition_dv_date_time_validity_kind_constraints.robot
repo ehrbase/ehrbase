@@ -23,6 +23,7 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../../_resources/keywords/composition_keywords.robot
+Resource        ../../_resources/keywords/admin_keywords.robot
 Resource        ../../_resources/suite_settings.robot
 
 
@@ -213,21 +214,6 @@ Load Json File With Composition
     ${compositionFilePath}  Set Variable    ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
     Set Suite Variable       ${file}
     Set Suite Variable       ${compositionFilePath}
-
-Delete Template Using API
-    &{resp}=            REST.DELETE   ${admin_baseurl}/template/${template_id}
-                        Set Suite Variable    ${deleteTemplateResponse}    ${resp}
-                        Output Debug Info To Console
-                        Should Be Equal As Strings      ${resp.status}      200
-                        Delete All Sessions
-
-Delete Composition Using API
-    IF      '${versioned_object_uid}' != '${None}'
-        &{resp}         REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/composition/${versioned_object_uid}
-                        Run Keyword And Return Status   Integer    response status    204
-                        Set Suite Variable    ${deleteCompositionResponse}    ${resp}
-                        Output Debug Info To Console
-    END
 
 Commit Composition Using Robot Templates
     [Arguments]         ${format}   ${composition}

@@ -1264,6 +1264,15 @@ update a composition for versioned composition tests
     check composition update succeeded
 
 
+Load Json File With Composition
+    [Documentation]     Loads Json content from composition file.
+    ...     Stores file content in test variable, as well as full file path.
+    ${COMPO DATA SETS}     Set Variable
+    ...     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}compositions
+    ${file}                 Get File   ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
+    ${compositionFilePath}  Set Variable    ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
+    Set Test Variable       ${file}
+    Set Test Variable       ${compositionFilePath}
 
 # oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.
 # `888'   `Y8b      .888.       d8P'  `Y8b  `888   .8P'  `888'     `8' `888   `Y88.

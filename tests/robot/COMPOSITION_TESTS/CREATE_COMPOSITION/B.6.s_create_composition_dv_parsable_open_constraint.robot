@@ -23,6 +23,7 @@ Documentation   Composition Integration Tests
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../../_resources/keywords/composition_keywords.robot
+Resource        ../../_resources/keywords/admin_keywords.robot
 Resource        ../../_resources/suite_settings.robot
 
 Suite Setup         Precondition
@@ -172,36 +173,3 @@ Change Json KeyValue and Save Back To File
     ${json_str}     Convert JSON To String    ${json_object}
     Create File     ${compositionFilePath}    ${json_str}
     [return]    ${compositionFilePath}
-
-Load Json File With Composition
-    [Documentation]     Loads Json content from composition file.
-    ...     Stores file content in test variable, as well as full file path.
-    ${COMPO DATA SETS}     Set Variable
-    ...     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}compositions
-    ${file}                 Get File   ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
-    ${compositionFilePath}  Set Variable    ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
-    Set Test Variable       ${file}
-    Set Test Variable       ${compositionFilePath}
-
-Delete Template Using API
-    &{resp}=            REST.DELETE   ${admin_baseurl}/template/${template_id}
-                        Set Suite Variable    ${deleteTemplateResponse}    ${resp}
-                        Output Debug Info To Console
-                        ${isDeleteTemplateFailed}     Run Keyword And Return Status
-                        ...     Should Be Equal As Strings      ${resp.status}      200
-                        IF      ${isDeleteTemplateFailed} == ${FALSE} and '${resp.status}' == '404'
-                            Log     Delete Template returned ${resp.status} code.   console=yes
-                        END
-                        #Delete All Sessions
-
-Delete Composition Using API
-    IF      '${versioned_object_uid}' != '${None}'
-        &{resp}         REST.DELETE    ${admin_baseurl}/ehr/${ehr_id}/composition/${versioned_object_uid}
-                        ${isDeleteCompositionFailed}     Run Keyword And Return Status
-                        ...     Integer    response status    204
-                        Set Suite Variable    ${deleteCompositionResponse}    ${resp}
-                        IF      ${isDeleteCompositionFailed} == ${FALSE} and '${deleteCompositionResponse.status}' == '404'
-                            Log     Delete Composition returned ${deleteCompositionResponse.status} code.   console=yes
-                        END
-                        Output Debug Info To Console
-    END

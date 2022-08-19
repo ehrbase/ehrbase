@@ -91,16 +91,6 @@ Load XML File With OPT
     ${xmlFileContent}     Parse Xml   ${VALID DATA SETS}/${filePath}
     Set Test Variable   ${xmlFileContent}
 
-Load Json File With Composition
-    [Documentation]     Loads Json content from composition file.
-    ...     Stores file content in test variable, as well as full file path.
-    ${COMPO DATA SETS}     Set Variable
-    ...     ${PROJECT_ROOT}${/}tests${/}robot${/}_resources${/}test_data_sets${/}compositions
-    ${file}                 Get File        ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
-    ${compositionFilePath}  Set Variable    ${COMPO DATA SETS}/CANONICAL_JSON/${composition_file}
-    Set Test Variable       ${file}
-    Set Test Variable       ${compositionFilePath}
-
 Change Json KeyValue And Save Back To File
     [Documentation]     Updates $.content[0].activities[0].description.items[0].value.value to
     ...     value provided as argument.
