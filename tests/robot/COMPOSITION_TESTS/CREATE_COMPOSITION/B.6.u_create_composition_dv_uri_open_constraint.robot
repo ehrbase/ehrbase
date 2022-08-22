@@ -52,6 +52,169 @@ Composition With DV_URI.value NULL
     END
     [Teardown]  Delete Composition Using API
 
+Composition With DV_URI.value xyz
+    [Tags]      Negative    not-ready
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value xyz
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 422.
+    ${expectedStatusCode}   Set Variable    422
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     xyz    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Run Keywords    Delete Composition Using API    AND
+    ...     TRACE JIRA ISSUE    CDR-515
+
+Composition With DV_URI.value ftp://ftp.is.co.za/rfc/rfc1808.txt
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value ftp://ftp.is.co.za/rfc/rfc1808.txt
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     ftp://ftp.is.co.za/rfc/rfc1808.txt    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value http://www.ietf.org/rfc/rfc2396.txt
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value http://www.ietf.org/rfc/rfc2396.txt
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     http://www.ietf.org/rfc/rfc2396.txt    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value ldap://[2001:db8::7]/c=GB?objectClass?one
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value ldap://[2001:db8::7]/c=GB?objectClass?one
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     ldap://[2001:db8::7]/c=GB?objectClass?one    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value mailto:John.Doe@example.com
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value mailto:John.Doe@example.com
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     mailto:John.Doe@example.com    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value news:comp.infosystems.www.servers.unix
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value news:comp.infosystems.www.servers.unix
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     news:comp.infosystems.www.servers.unix    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value tel:+1-816-555-1212
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value tel:+1-816-555-1212
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     tel:+1-816-555-1212    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value telnet://192.0.2.16:80/
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value telnet://192.0.2.16:80/
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     telnet://192.0.2.16:80/    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value urn:oasis:names:specification:docbook:dtd:xml:4.1.2
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value urn:oasis:names:specification:docbook:dtd:xml:4.1.2
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     urn:oasis:names:specification:docbook:dtd:xml:4.1.2    ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_URI.value http://www.carestreamserver/um...
+    [Tags]      Positive
+    [Documentation]     *Test case DV_URI open constraint:*
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_URI.value using ${dvUriValue} argument value http://www.carestreamserver/um...
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_URI Value
+    ...     http://www.carestreamserver/um/webapp_services/wado?requestType=WADO&studyUID=1.2.250.1.59.40211.12345678.678910&seriesUID=1.2.250.1.59.40211.789001276.14556172.67789&objectUID=1.2.250.1.59.40211.2678810.87991027.899772.2&contentType=application%2Fdicom
+    ...     ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+
 *** Keywords ***
 Precondition
     Upload OPT    ${optFile}
