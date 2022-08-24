@@ -17,21 +17,35 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.FOLDER;
+import static org.ehrbase.jooq.pg.Tables.FOLDER_HIERARCHY;
+import static org.ehrbase.jooq.pg.Tables.FOLDER_ITEMS;
+import static org.ehrbase.jooq.pg.Tables.OBJECT_REF;
 
-import com.nedap.archie.rm.datastructures.ItemStructure;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.TimeZone;
+import java.util.UUID;
+
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.Record11;
+import org.jooq.Record12;
+import org.jooq.Record17;
+import org.jooq.Record10;
+import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockDataProvider;
 import org.jooq.tools.jdbc.MockExecuteContext;
 import org.jooq.tools.jdbc.MockResult;
+
+import com.nedap.archie.rm.datastructures.ItemStructure;
 
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
@@ -57,19 +71,20 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
             throw new SQLException("Statement not supported: " + sql2);
         } else if (sql2.toLowerCase()
                 .contains(
-                        "select \"alias_82887042\".\"folder_id\", \"alias_82887042\".\"item_object_ref_id\", \"alias_82887042\".\"item_in_contribution\"")) {
+                        "select \"alias_93908240\".\"folder_id\", \"alias_93908240\".\"item_object_ref_id\", \"alias_93908240\".\"item_in_contribution\"")) {
 
             if (ctx.bindings()[1].equals(UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"))) {
 
                 if (ctx.bindings()[0].equals(UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"))) {
                     MockResult[] mock2 = new MockResult[1];
                     Result<
-                                    Record11<
+                                    Record12<
                                             UUID,
                                             UUID,
                                             UUID,
                                             Timestamp,
                                             AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                            String,
                                             String,
                                             String,
                                             UUID,
@@ -82,6 +97,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"),
                                     FOLDER_ITEMS.SYS_TRANSACTION,
                                     FOLDER_ITEMS.SYS_PERIOD,
+                                    FOLDER_ITEMS.NAMESPACE,
                                     OBJECT_REF.ID_NAMESPACE,
                                     OBJECT_REF.TYPE,
                                     OBJECT_REF.ID.as("obj_ref_id"),
@@ -94,12 +110,13 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                 } else if (ctx.bindings()[0].equals(UUID.fromString("eda6951b-5506-4726-89dc-7032872997ce"))) {
                     MockResult[] mock2 = new MockResult[1];
                     Result<
-                                    Record11<
+                                    Record12<
                                             UUID,
                                             UUID,
                                             UUID,
                                             Timestamp,
                                             AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                            String,
                                             String,
                                             String,
                                             UUID,
@@ -112,6 +129,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"),
                                     FOLDER_ITEMS.SYS_TRANSACTION,
                                     FOLDER_ITEMS.SYS_PERIOD,
+                                    FOLDER_ITEMS.NAMESPACE,
                                     OBJECT_REF.ID_NAMESPACE,
                                     OBJECT_REF.TYPE,
                                     OBJECT_REF.ID.as("obj_ref_id"),
@@ -125,6 +143,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"),
                                     FOLDER_ITEMS.SYS_TRANSACTION,
                                     FOLDER_ITEMS.SYS_PERIOD,
+                                    FOLDER_ITEMS.NAMESPACE,
                                     OBJECT_REF.ID_NAMESPACE,
                                     OBJECT_REF.TYPE,
                                     OBJECT_REF.ID.as("obj_ref_id"),
@@ -139,6 +158,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     new AbstractMap.SimpleEntry<>(
                                             OffsetDateTime.parse("2020-01-09T11:32:47.013378+00"),
                                             OffsetDateTime.parse("2020-01-09T11:39:00.898947+00")),
+                                    TenantAuthentication.DEFAULT_TENANT_ID,
                                     "namespace leave",
                                     "COMPOSITION",
                                     UUID.fromString("88282ddd-4c7d-444a-8159-458a03c9827f"),
@@ -153,12 +173,13 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                 } else {
                     MockResult[] mock2 = new MockResult[1];
                     Result<
-                                    Record11<
+                                    Record12<
                                             UUID,
                                             UUID,
                                             UUID,
                                             Timestamp,
                                             AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                            String,
                                             String,
                                             String,
                                             UUID,
@@ -171,6 +192,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"),
                                     FOLDER_ITEMS.SYS_TRANSACTION,
                                     FOLDER_ITEMS.SYS_PERIOD,
+                                    FOLDER_ITEMS.NAMESPACE,
                                     OBJECT_REF.ID_NAMESPACE,
                                     OBJECT_REF.TYPE,
                                     OBJECT_REF.ID.as("obj_ref_id"),
@@ -184,12 +206,13 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
 
                 MockResult[] mock2 = new MockResult[1];
                 Result<
-                                Record11<
+                                Record12<
                                         UUID,
                                         UUID,
                                         UUID,
                                         Timestamp,
                                         AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                        String,
                                         String,
                                         String,
                                         UUID,
@@ -202,6 +225,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"),
                                 FOLDER_ITEMS.SYS_TRANSACTION,
                                 FOLDER_ITEMS.SYS_PERIOD,
+                                FOLDER_ITEMS.NAMESPACE,
                                 OBJECT_REF.ID_NAMESPACE,
                                 OBJECT_REF.TYPE,
                                 OBJECT_REF.ID.as("obj_ref_id"),
@@ -215,6 +239,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"),
                                 FOLDER_ITEMS.SYS_TRANSACTION,
                                 FOLDER_ITEMS.SYS_PERIOD,
+                                FOLDER_ITEMS.NAMESPACE,
                                 OBJECT_REF.ID_NAMESPACE,
                                 OBJECT_REF.TYPE,
                                 OBJECT_REF.ID.as("obj_ref_id"),
@@ -228,6 +253,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 Timestamp.valueOf("2020-01-15 22:22:22.688"),
                                 new AbstractMap.SimpleEntry<>(
                                         OffsetDateTime.parse("2020-01-09T15:43:18.213207+00"), null),
+                                TenantAuthentication.DEFAULT_TENANT_ID,
                                 "middle leave UPDATED",
                                 "COMPOSITION",
                                 UUID.fromString("44282ddd-4c7d-444a-8159-458a03c9827f"),
@@ -246,7 +272,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
 
                 MockResult[] mock2 = new MockResult[1];
                 Result<
-                                Record9<
+                                Record10<
                                         UUID,
                                         UUID,
                                         String,
@@ -255,7 +281,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                         ItemStructure,
                                         Timestamp,
                                         AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
-                                        UUID>>
+                                        UUID,
+                                        String>>
                         result2 = create.newResult(
                                 FOLDER.ID,
                                 FOLDER.IN_CONTRIBUTION,
@@ -265,7 +292,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 FOLDER.DETAILS,
                                 FOLDER.SYS_TRANSACTION,
                                 FOLDER.SYS_PERIOD,
-                                FOLDER.HAS_AUDIT);
+                                FOLDER.HAS_AUDIT,
+                                FOLDER.NAMESPACE);
 
                 result2.add(create.newRecord(
                                 FOLDER.ID,
@@ -276,7 +304,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 FOLDER.DETAILS,
                                 FOLDER.SYS_TRANSACTION,
                                 FOLDER.SYS_PERIOD,
-                                FOLDER.HAS_AUDIT)
+                                FOLDER.HAS_AUDIT,
+                                FOLDER.NAMESPACE)
                         .values(
                                 UUID.fromString("eda6951b-5506-4726-89dc-7032872997ce"),
                                 UUID.fromString("00550555-ec91-4025-838d-09ddb4e473cb"),
@@ -287,14 +316,15 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                 new AbstractMap.SimpleEntry<>(
                                         OffsetDateTime.parse("2020-01-09T15:43:11.287968+00"), null),
-                                UUID.fromString("52318267-b056-47d1-af18-6cd42ca028b6")));
+                                UUID.fromString("52318267-b056-47d1-af18-6cd42ca028b6"),
+                                TenantAuthentication.DEFAULT_TENANT_ID));
                 mock2[0] = new MockResult(1, result2);
                 return mock2;
             } else {
 
                 MockResult[] mock2 = new MockResult[1];
                 Result<
-                                Record9<
+                                Record10<
                                         UUID,
                                         UUID,
                                         String,
@@ -303,7 +333,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                         ItemStructure,
                                         Timestamp,
                                         AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
-                                        UUID>>
+                                        UUID,
+                                        String>>
                         result2 = create.newResult(
                                 FOLDER.ID,
                                 FOLDER.IN_CONTRIBUTION,
@@ -313,7 +344,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 FOLDER.DETAILS,
                                 FOLDER.SYS_TRANSACTION,
                                 FOLDER.SYS_PERIOD,
-                                FOLDER.HAS_AUDIT);
+                                FOLDER.HAS_AUDIT,
+                                FOLDER.NAMESPACE);
 
                 result2.add(create.newRecord(
                                 FOLDER.ID,
@@ -324,7 +356,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 FOLDER.DETAILS,
                                 FOLDER.SYS_TRANSACTION,
                                 FOLDER.SYS_PERIOD,
-                                FOLDER.HAS_AUDIT)
+                                FOLDER.HAS_AUDIT,
+                                FOLDER.NAMESPACE)
                         .values(
                                 UUID.fromString("eda6951b-5506-4726-89dc-7032872997ce"),
                                 UUID.fromString("af550555-ec91-4025-838d-09ddb4e473cb"),
@@ -336,7 +369,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                 new AbstractMap.SimpleEntry<>(
                                         OffsetDateTime.parse("2020-01-09T11:28:06.7612+00"),
                                         OffsetDateTime.parse("2020-01-09T11:39:00.898947+00")),
-                                UUID.fromString("52318267-b056-47d1-af18-6cd42ca028b6")));
+                                UUID.fromString("52318267-b056-47d1-af18-6cd42ca028b6"),
+                                TenantAuthentication.DEFAULT_TENANT_ID));
                 mock2[0] = new MockResult(1, result2);
                 return mock2;
             }
@@ -347,7 +381,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                 // TABLE RETURNED FOR DELETE FOLDER TEST
                 if (sql2.toLowerCase()
                         .contains(
-                                "with recursive \"subfolders\" as (select \"alias_50362573\".\"parent_folder\", \"alias_50362573\".\"child_folder\"")) {
+                                "with recursive \"subfolders\" as (select \"alias_57547587\".\"parent_folder\", \"alias_57547587\".\"child_folder\"")) {
                     //
                     // if(((UUID)ctx.bindings()[0]).compareTo(UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"))==0) {
 
@@ -355,39 +389,43 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                     DateTime expected = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                     TimeZone.getTimeZone("UTC");
                     MockResult[] mock2 = new MockResult[1];
-                    Result<
-                                    Record15<
-                                            UUID,
-                                            UUID,
-                                            UUID,
-                                            Timestamp,
-                                            AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
-                                            UUID,
-                                            Timestamp,
-                                            UUID,
-                                            UUID,
-                                            String,
-                                            String,
-                                            Boolean,
-                                            ItemStructure,
-                                            Timestamp,
-                                            AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>>
-                            result2 = create.newResult(
-                                    FOLDER_HIERARCHY.PARENT_FOLDER,
-                                    FOLDER_HIERARCHY.CHILD_FOLDER,
-                                    FOLDER_HIERARCHY.IN_CONTRIBUTION,
-                                    FOLDER_HIERARCHY.SYS_TRANSACTION,
-                                    FOLDER_HIERARCHY.SYS_PERIOD,
-                                    FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
-                                    FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
-                                    FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
-                                    FOLDER_HIERARCHY.IN_CONTRIBUTION.as("in_contribution_folder_info"),
-                                    FOLDER.NAME,
-                                    FOLDER.ARCHETYPE_NODE_ID,
-                                    FOLDER.ACTIVE,
-                                    FOLDER.DETAILS.as("details"),
-                                    FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
-                                    FOLDER.SYS_PERIOD.as("sys_period_folder"));
+                    Result<Record17<
+                                    UUID,
+                                    UUID,
+                                    UUID,
+                                    Timestamp,
+                                    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                    String,
+                                    UUID,
+                                    Timestamp,
+                                    UUID,
+                                    UUID,
+                                    String,
+                                    String,
+                                    Boolean,
+                                    ItemStructure,
+                                    Timestamp,
+                                    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                    String>>
+                      result2 = create.newResult(
+                              FOLDER_HIERARCHY.PARENT_FOLDER,
+                              FOLDER_HIERARCHY.CHILD_FOLDER,
+                              FOLDER_HIERARCHY.IN_CONTRIBUTION,
+                              FOLDER_HIERARCHY.SYS_TRANSACTION,
+                              FOLDER_HIERARCHY.SYS_PERIOD,
+                              FOLDER_HIERARCHY.NAMESPACE,
+                              FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
+                              FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
+                              FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
+                              FOLDER_HIERARCHY.IN_CONTRIBUTION.as("in_contribution_folder_info"),
+                              FOLDER.NAME,
+                              FOLDER.ARCHETYPE_NODE_ID,
+                              FOLDER.ACTIVE,
+                              FOLDER.DETAILS.as("details"),
+                              FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
+                              FOLDER.SYS_PERIOD.as("sys_period_folder"),
+                              FOLDER.NAMESPACE
+                          );
 
                     result2.add(create.newRecord(
                                     FOLDER_HIERARCHY.PARENT_FOLDER,
@@ -395,6 +433,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER_HIERARCHY.IN_CONTRIBUTION,
                                     FOLDER_HIERARCHY.SYS_TRANSACTION,
                                     FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER_HIERARCHY.NAMESPACE,
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
                                     FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
@@ -404,7 +443,10 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER.ACTIVE,
                                     FOLDER.DETAILS.as("details"),
                                     FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
-                                    FOLDER.SYS_PERIOD.as("sys_period_folder"))
+                                    FOLDER.SYS_PERIOD.as("sys_period_folder"),
+                                    FOLDER.NAMESPACE
+                        )
+                        
                             .values(
                                     UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"),
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
@@ -412,6 +454,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     new AbstractMap.SimpleEntry<>(
                                             OffsetDateTime.parse("2020-01-09T11:28:32.089794+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID,
                                     UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"),
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"),
@@ -422,13 +465,15 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     null,
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     new AbstractMap.SimpleEntry<>(
-                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null)));
+                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID));
                     result2.add(create.newRecord(
                                     FOLDER_HIERARCHY.PARENT_FOLDER,
                                     FOLDER_HIERARCHY.CHILD_FOLDER,
                                     FOLDER_HIERARCHY.IN_CONTRIBUTION,
                                     FOLDER_HIERARCHY.SYS_TRANSACTION,
                                     FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER_HIERARCHY.NAMESPACE,
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
                                     FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
@@ -438,7 +483,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER.ACTIVE,
                                     FOLDER.DETAILS.as("details"),
                                     FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
-                                    FOLDER.SYS_PERIOD.as("sys_period_folder"))
+                                    FOLDER.SYS_PERIOD.as("sys_period_folder"),
+                                    FOLDER.NAMESPACE)
                             .values(
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
                                     UUID.fromString("eda6951b-5506-4726-89dc-7032872997ce"),
@@ -446,6 +492,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     new AbstractMap.SimpleEntry<>(
                                             OffsetDateTime.parse("2020-01-09T11:44:43.712587+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID,
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
@@ -456,7 +503,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     null,
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     new AbstractMap.SimpleEntry<>(
-                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null)));
+                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID));
 
                     mock2[0] = new MockResult(5, result2);
                     return mock2;
@@ -473,18 +521,19 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                 // TABLE RETURNED FOR DELETE FOLDER TEST
                 if (sql2.toLowerCase()
                         .contains(
-                                "with recursive \"subfolders\" as (select \"alias_50362573\".\"parent_folder\", \"alias_50362573\".\"child_folder\"")) {
+                                "with recursive \"subfolders\" as (select \"alias_57547587\".\"parent_folder\", \"alias_57547587\".\"child_folder\"")) {
                     DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS");
                     DateTime expected = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                     TimeZone.getTimeZone("UTC");
                     MockResult[] mock2 = new MockResult[1];
                     Result<
-                                    Record15<
+                                    Record17<
                                             UUID,
                                             UUID,
                                             UUID,
                                             Timestamp,
                                             AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                            String,
                                             UUID,
                                             Timestamp,
                                             UUID,
@@ -494,13 +543,15 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                             Boolean,
                                             ItemStructure,
                                             Timestamp,
-                                            AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>>>
+                                            AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                            String>>
                             result2 = create.newResult(
                                     FOLDER_HIERARCHY.PARENT_FOLDER,
                                     FOLDER_HIERARCHY.CHILD_FOLDER,
                                     FOLDER_HIERARCHY.IN_CONTRIBUTION,
                                     FOLDER_HIERARCHY.SYS_TRANSACTION,
                                     FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER_HIERARCHY.NAMESPACE,
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
                                     FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
@@ -510,7 +561,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER.ACTIVE,
                                     FOLDER.DETAILS.as("details"),
                                     FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
-                                    FOLDER.SYS_PERIOD.as("sys_period_folder"));
+                                    FOLDER.SYS_PERIOD.as("sys_period_folder"),
+                                    FOLDER.NAMESPACE);
 
                     result2.add(create.newRecord(
                                     FOLDER_HIERARCHY.PARENT_FOLDER,
@@ -518,6 +570,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER_HIERARCHY.IN_CONTRIBUTION,
                                     FOLDER_HIERARCHY.SYS_TRANSACTION,
                                     FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER_HIERARCHY.NAMESPACE,
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
                                     FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
@@ -527,7 +580,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER.ACTIVE,
                                     FOLDER.DETAILS.as("details"),
                                     FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
-                                    FOLDER.SYS_PERIOD.as("sys_period_folder"))
+                                    FOLDER.SYS_PERIOD.as("sys_period_folder"),
+                                    FOLDER.NAMESPACE)
                             .values(
                                     UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"),
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
@@ -535,6 +589,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     new AbstractMap.SimpleEntry<>(
                                             OffsetDateTime.parse("2020-01-09T11:28:32.089794+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID,
                                     UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"),
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"),
@@ -545,13 +600,15 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     null,
                                     Timestamp.valueOf("2019-12-05 19:00:00.688"),
                                     new AbstractMap.SimpleEntry<>(
-                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null)));
+                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID));
                     result2.add(create.newRecord(
                                     FOLDER_HIERARCHY.PARENT_FOLDER,
                                     FOLDER_HIERARCHY.CHILD_FOLDER,
                                     FOLDER_HIERARCHY.IN_CONTRIBUTION,
                                     FOLDER_HIERARCHY.SYS_TRANSACTION,
                                     FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER_HIERARCHY.NAMESPACE,
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
                                     FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
                                     FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
@@ -561,7 +618,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER.ACTIVE,
                                     FOLDER.DETAILS.as("details"),
                                     FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
-                                    FOLDER.SYS_PERIOD.as("sys_period_folder"))
+                                    FOLDER.SYS_PERIOD.as("sys_period_folder"),
+                                    FOLDER.NAMESPACE)
                             .values(
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
                                     UUID.fromString("eda6951b-5506-4726-89dc-7032872997ce"),
@@ -569,6 +627,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     Timestamp.valueOf("2020-01-15 22:22:22.688"),
                                     new AbstractMap.SimpleEntry<>(
                                             OffsetDateTime.parse("2020-01-09T11:44:43.712587+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID,
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
                                     Timestamp.valueOf("2020-01-15 22:22:22.688"),
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),
@@ -579,7 +638,8 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     null,
                                     Timestamp.valueOf("2020-01-15 22:22:22.688"),
                                     new AbstractMap.SimpleEntry<>(
-                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null)));
+                                            OffsetDateTime.parse("2020-01-09T11:27:53.370395+00"), null),
+                                    TenantAuthentication.DEFAULT_TENANT_ID));
 
                     mock2[0] = new MockResult(5, result2);
                     return mock2;

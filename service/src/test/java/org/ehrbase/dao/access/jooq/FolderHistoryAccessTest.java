@@ -40,11 +40,13 @@ public class FolderHistoryAccessTest {
     protected I_DomainAccess testDomainAccess;
     protected DSLContext context;
     protected I_KnowledgeCache knowledge;
+    private String tenantId;
 
     @Before
     public void beforeClass() {
         /*DSLContext*/
         context = getMockingContext();
+        tenantId = UUID.randomUUID().toString();
 
         try {
             testDomainAccess = new DummyDataAccess(context, null, null, KnowledgeCacheHelper.buildServerConfig());
@@ -66,7 +68,7 @@ public class FolderHistoryAccessTest {
         /**
          * This test assumes status  in the file testFolderVersionsDB.sql
          */
-        FolderHistoryAccess fa1 = new FolderHistoryAccess(testDomainAccess);
+        FolderHistoryAccess fa1 = new FolderHistoryAccess(testDomainAccess, tenantId);
         fa1.setFolderId(UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"));
 
         // GET MOST RECENT VERSION IN TIME
@@ -103,7 +105,7 @@ public class FolderHistoryAccessTest {
         /**
          * This test assumes status  in the file testFolderVersionsDB.sql
          */
-        FolderHistoryAccess fa1 = new FolderHistoryAccess(testDomainAccess);
+        FolderHistoryAccess fa1 = new FolderHistoryAccess(testDomainAccess, tenantId);
         // GET VERSION THAT CORRESPONDS TO A TIMESTAMP BETWEEN THE FIRST SUBMISSION AMD THE SECOND UPDATE SO HISTORY
         // VERSIONS ARE RETRIEVED
         I_FolderAccess returnedHistoricalVersion = fa1.retrieveInstanceForExistingFolder(

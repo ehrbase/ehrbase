@@ -73,11 +73,11 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         statusRecord = getContext().newRecord(STATUS);
 
         // associate a contribution with this composition
-        contributionAccess = I_ContributionAccess.getInstance(this, ehrId);
+        contributionAccess = I_ContributionAccess.getInstance(this, ehrId, null);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
 
         // associate status' own audit with this status access instance
-        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess(), null);
     }
 
     @Override
@@ -185,7 +185,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // create new deletion audit
         var delAudit = I_AuditDetailsAccess.getInstance(
-                this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+                this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description, null);
         UUID delAuditId = delAudit.commit();
 
         // create new, BUT already moved to _history, version documenting the deletion
@@ -412,7 +412,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         }
 
         // retrieve corresponding audit
-        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess())
+        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess(), null)
                 .retrieveInstance(domainAccess.getDataAccess(), statusAccess.getAuditDetailsId());
         statusAccess.setAuditDetailsAccess(auditAccess);
 
@@ -454,7 +454,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                 input.getAttestationRef(),
                 input.getInContribution(),
                 input.getArchetypeNodeId(),
-                input.getName());
+                input.getName(),
+                null);
     }
 
     @Override
@@ -529,7 +530,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                 statusHistoryRecord.getAttestationRef(),
                 statusHistoryRecord.getInContribution(),
                 statusHistoryRecord.getArchetypeNodeId(),
-                statusHistoryRecord.getName());
+                statusHistoryRecord.getName(),
+                null);
     }
 
     public static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {

@@ -17,17 +17,10 @@
  */
 package org.ehrbase.service;
 
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
-import org.ehrbase.api.tenant.TenantAuthentication;
-import org.ehrbase.tenant.DefaultTenantAuthentication;
+import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.jooq.DSLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,37 +30,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TenantServiceImp extends BaseServiceImp implements TenantService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TenantServiceImp.class);
 
-    public TenantServiceImp(
-            KnowledgeCacheService knowledgeCacheService,
-            DSLContext context,
-            ServerConfig serverConfig) {
+  public TenantServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
-        super(knowledgeCacheService, context, serverConfig);
-    }
-    
-    private static final String WARN_NOT_TENEANT_IDENT = "No tenent identifier provided, falling back to default tenant identifier {}";
+    super(knowledgeCacheService, context, serverConfig);
+  }
 
-    @Override
-    public String getCurrentTenantIdentifier() {
-      return Optional
-        .ofNullable(SecurityContextHolder.getContext())
-        .map(ctx ->
-          ctx.getAuthentication()
-        )
-        .filter(auth -> auth != null)
-        .filter(auth ->
-          auth instanceof DefaultTenantAuthentication
-        )
-        .map(DefaultTenantAuthentication.class::cast)
-        .map(tAuth ->
-          tAuth.getTenantId()
-        )
-        .filter(StringUtils::isNotEmpty)
-        .orElseGet(() -> {
-          LOGGER.warn(WARN_NOT_TENEANT_IDENT, TenantAuthentication.getDefaultTenantId());
-          return TenantAuthentication.getDefaultTenantId();
-        });
-    }
+  @Override
+  public String getCurrentTenantIdentifier() {
+    return I_TenantAccess.currentTenantIdentifier();
+  }
 }

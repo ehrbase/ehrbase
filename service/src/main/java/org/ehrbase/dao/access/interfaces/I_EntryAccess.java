@@ -19,13 +19,15 @@ package org.ehrbase.dao.access.interfaces;
 
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
-import com.nedap.archie.rm.composition.Composition;
 import java.util.Map;
 import java.util.UUID;
+
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EntryAccess;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.jooq.JSONB;
+
+import com.nedap.archie.rm.composition.Composition;
 
 /**
  * Entry (Composition Content) access layer Created by Christian Chevalley on 4/21/2015.

@@ -39,6 +39,7 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
@@ -62,15 +63,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
     private final EhrService ehrService;
+    private final TenantService tenantService;
 
     @Autowired
     FolderServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             DSLContext context,
             ServerConfig serverConfig,
-            EhrService ehrService) {
+            EhrService ehrService,
+            TenantService tenantService) {
         super(knowledgeCacheService, context, serverConfig);
         this.ehrService = ehrService;
+        this.tenantService = tenantService;
     }
 
     /**
@@ -78,7 +82,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description) {
-        return internalCreate(ehrId, objData, systemId, committerId, description, null);
+        return internalCreate(ehrId, objData, systemId, committerId, description, null, tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -86,7 +90,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID contribution) {
-        return internalCreate(ehrId, objData, null, null, null, contribution);
+        return internalCreate(ehrId, objData, null, null, null, contribution, tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -98,7 +102,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
     }
 
     private Optional<FolderDto> internalCreate(
-            UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description, UUID contribution) {
+            UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description, UUID contribution, String tenantIdentifier) {
         /*Note:
         The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
         in every necessary case */
@@ -121,7 +125,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
         // Contribution handling - create new one or retrieve existing, if ID is given
         I_ContributionAccess contributionAccess;
         if (contribution == null) {
-            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), ehrId);
+            contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), ehrId, tenantIdentifier);
         } else {
             contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contribution);
             // Copy values from contribution to folder's audit
@@ -135,8 +139,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
         }
 
         // Get first FolderAccess instance
-        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
-                getDataAccess(), objData, currentTimeStamp, ehrId, contributionAccess);
+        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(getDataAccess(), objData, currentTimeStamp, ehrId, contributionAccess, tenantIdentifier);
         ObjectVersionId folderId;
         if (contribution == null) {
             folderId = new ObjectVersionId(
@@ -175,7 +178,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
             UUID systemId,
             UUID committerId,
             String description) {
-        return internalUpdate(ehrId, targetObjId, objData, systemId, committerId, description, null);
+        return internalUpdate(ehrId, targetObjId, objData, systemId, committerId, description, null, tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -183,7 +186,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID contribution) {
-        return internalUpdate(ehrId, targetObjId, objData, null, null, null, contribution);
+        return internalUpdate(ehrId, targetObjId, objData, null, null, null, contribution, tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -201,7 +204,8 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
             UUID systemId,
             UUID committerId,
             String description,
-            UUID contribution) {
+            UUID contribution,
+            String tenantIdentifier) {
         var timestamp = LocalDateTime.now();
 
         /*Note:
@@ -255,7 +259,8 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
                                     childFolder,
                                     Timestamp.from(Instant.now()),
                                     ehrId,
-                                    ((FolderAccess) folderAccess).getContributionAccess())));
+                                    ((FolderAccess) folderAccess).getContributionAccess(),
+                                    tenantIdentifier)));
         }
 
         // Send update to access layer which updates the hierarchy recursive

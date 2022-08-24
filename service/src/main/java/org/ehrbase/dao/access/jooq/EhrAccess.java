@@ -48,6 +48,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
+import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -149,7 +150,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         this.isNew = true;
 
         // associate a contribution with this EHR
-        contributionAccess = I_ContributionAccess.getInstance(this, ehrRecord.getId());
+        contributionAccess = I_ContributionAccess.getInstance(this, ehrRecord.getId(), tenantIdentifier);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
     }
 
@@ -163,7 +164,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         super(domainAccess);
         statusAccess = new StatusAccess(this, ehrId); // minimal association with STATUS
         // associate a contribution with this EHR
-        contributionAccess = I_ContributionAccess.getInstance(this, ehrId);
+        contributionAccess = I_ContributionAccess.getInstance(this, ehrId, I_TenantAccess.currentTenantIdentifier());
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
     }
 
@@ -612,7 +613,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                     this.contributionAccess.getAuditsSystemId(),
                     this.contributionAccess.getAuditsCommitter(),
                     ContributionChangeType.MODIFICATION,
-                    this.contributionAccess.getAuditsDescription()));
+                    this.contributionAccess.getAuditsDescription(),
+                    ehrRecord.getNamespace()));
 
             statusAccess.setOtherDetails(otherDetails);
             result = statusAccess.update(
@@ -677,7 +679,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // contribution.
         } else if (hasStatusChanged) {
             this.contributionAccess =
-                    new ContributionAccess(this, getEhrRecord().getId());
+                    new ContributionAccess(this, getEhrRecord().getId(), getEhrRecord().getNamespace());
             provisionContributionAccess(
                     contributionAccess, committerId, systemId, description, state, contributionChangeType);
             this.contributionAccess.commit();
