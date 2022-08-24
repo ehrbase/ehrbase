@@ -19,10 +19,11 @@
 Documentation   Composition Integration Tests
 ...             ${\n}Based on:
 ...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#221-test-case-dv_text-with-open-constraint
+...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#222-test-case-dv_text-with-pattern-constraint
 ...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#223-test-case-dv_text-with-list-constraint
 ...             ${\n}*2.2.1. Test case DV_TEXT with open constraint*
+...             ${\n}*2.2.2. Test case DV_TEXT with pattern constraint*
 ...             ${\n}*2.2.3. Test case DV_TEXT with list constraint*
-...             ${\n}*Without _2.2.2. Test case DV_TEXT with pattern constraint_ as C_STRING.pattern cannot be configured*
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../../_resources/keywords/composition_keywords.robot
@@ -63,6 +64,60 @@ Composition With DV_TEXT.value ABC And DV_TEXT List Constraint NULL
     ${expectedStatusCode}   Set Variable    201
     ${statusCodeBoolean}    Commit Composition With Modified DV_TEXT Value
     ...     ABC     ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Run Keywords    Delete Composition Using API    AND     Delete Template Using API
+
+Composition With DV_TEXT.value NULL And DV_TEXT Pattern Constraint XYZ
+    [Tags]      Negative
+    [Documentation]     *Test case DV_TEXT.value NULL And DV_TEXT Pattern Constraint XYZ:*
+    ...     - DV_TEXT.value NULL And DV_TEXT Pattern Constraint XYZ
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_TEXT.value using ${dvTextValue} argument value NULL
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 422.
+    Set Suite Variable      ${composition_file}    Test_dv_text_pattern_constraint.v0__.json
+    Set Suite Variable      ${optFile}             all_types/Test_dv_text_pattern_constraint.v0.opt
+    Precondition
+    ${expectedStatusCode}   Set Variable    422
+    ${statusCodeBoolean}    Commit Composition With Modified DV_TEXT Value
+    ...     ${NULL}     ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_TEXT.value ABC And DV_TEXT Pattern Constraint XYZ
+    [Tags]      Negative
+    [Documentation]     *Test case DV_TEXT.value ABC And DV_TEXT Pattern Constraint XYZ:*
+    ...     - DV_TEXT.value ABC And DV_TEXT Pattern Constraint XYZ
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_TEXT.value using ${dvTextValue} argument value ABC
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 422.
+    ${expectedStatusCode}   Set Variable    422
+    ${statusCodeBoolean}    Commit Composition With Modified DV_TEXT Value
+    ...     ABC     ${expectedStatusCode}
+    IF      ${statusCodeBoolean} == ${FALSE}
+        Fail    Commit composition expected status code ${expectedStatusCode} is different.
+    END
+    [Teardown]  Delete Composition Using API
+
+Composition With DV_TEXT.value XYZ And DV_TEXT Pattern Constraint XYZ
+    [Tags]      Positive
+    [Documentation]     *Test case DV_TEXT.value XYZ And DV_TEXT Pattern Constraint XYZ:*
+    ...     - DV_TEXT.value XYZ And DV_TEXT Pattern Constraint XYZ
+    ...     - load json file from CANONICAL_JSON folder
+    ...     - update DV_TEXT.value using ${dvTextValue} argument value XYZ
+    ...     - commit composition
+    ...     - check status code of the commited composition.
+    ...     - Expected status code on commit composition = 201.
+    ${expectedStatusCode}   Set Variable    201
+    ${statusCodeBoolean}    Commit Composition With Modified DV_TEXT Value
+    ...     XYZ     ${expectedStatusCode}
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
