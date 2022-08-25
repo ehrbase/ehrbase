@@ -26,6 +26,7 @@ import org.ehrbase.jooq.pg.tables.Concept;
 import org.ehrbase.jooq.pg.tables.Contribution;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.tables.Entry;
+import org.ehrbase.jooq.pg.tables.Entry2;
 import org.ehrbase.jooq.pg.tables.EntryHistory;
 import org.ehrbase.jooq.pg.tables.EventContext;
 import org.ehrbase.jooq.pg.tables.EventContextHistory;
@@ -61,15 +62,21 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
+    public static final Index ARCHETYPE_IDX = Internal.createIndex(
+        DSL.name("archetype_idx"),
+        Entry2.ENTRY2,
+        new OrderField[] {Entry2.ENTRY2.ENTITY_CONCEPT, Entry2.ENTRY2.FIELD_IDX_LEN, Entry2.ENTRY2.EHR_ID},
+        false);
+
     public static final Index ATTESTATION_REFERENCE_IDX = Internal.createIndex(
-            DSL.name("attestation_reference_idx"),
-            Attestation.ATTESTATION,
-            new OrderField[] {Attestation.ATTESTATION.REFERENCE},
-            false);
+        DSL.name("attestation_reference_idx"),
+        Attestation.ATTESTATION,
+        new OrderField[] {Attestation.ATTESTATION.REFERENCE},
+        false);
     public static final Index ATTESTED_VIEW_ATTESTATION_IDX = Internal.createIndex(
-            DSL.name("attested_view_attestation_idx"),
-            AttestedView.ATTESTED_VIEW,
-            new OrderField[] {AttestedView.ATTESTED_VIEW.ATTESTATION_ID},
+        DSL.name("attested_view_attestation_idx"),
+        AttestedView.ATTESTED_VIEW,
+        new OrderField[] {AttestedView.ATTESTED_VIEW.ATTESTATION_ID},
             false);
     public static final Index COMPO_XREF_CHILD_IDX = Internal.createIndex(
             DSL.name("compo_xref_child_idx"),
@@ -263,14 +270,19 @@ public class Indexes {
             new OrderField[] {PartyIdentified.PARTY_IDENTIFIED.PARTY_TYPE, PartyIdentified.PARTY_IDENTIFIED.NAME},
             false);
     public static final Index STATUS_HISTORY_EHR_IDX = Internal.createIndex(
-            DSL.name("status_history_ehr_idx"),
-            StatusHistory.STATUS_HISTORY,
-            new OrderField[] {StatusHistory.STATUS_HISTORY.EHR_ID},
-            false);
+        DSL.name("status_history_ehr_idx"),
+        StatusHistory.STATUS_HISTORY,
+        new OrderField[] {StatusHistory.STATUS_HISTORY.EHR_ID},
+        false);
     public static final Index STATUS_PARTY_IDX = Internal.createIndex(
-            DSL.name("status_party_idx"), Status.STATUS, new OrderField[] {Status.STATUS.PARTY}, false);
+        DSL.name("status_party_idx"), Status.STATUS, new OrderField[] {Status.STATUS.PARTY}, false);
     public static final Index TEMPLATE_ENTRY_IDX = Internal.createIndex(
-            DSL.name("template_entry_idx"), Entry.ENTRY, new OrderField[] {Entry.ENTRY.TEMPLATE_ID}, false);
+        DSL.name("template_entry_idx"), Entry.ENTRY, new OrderField[] {Entry.ENTRY.TEMPLATE_ID}, false);
     public static final Index TERRITORY_CODE_INDEX = Internal.createIndex(
-            DSL.name("territory_code_index"), Territory.TERRITORY, new OrderField[] {Territory.TERRITORY.CODE}, true);
+        DSL.name("territory_code_index"), Territory.TERRITORY, new OrderField[] {Territory.TERRITORY.CODE}, true);
+    public static final Index TYPE_IDX = Internal.createIndex(
+        DSL.name("type_idx"),
+        Entry2.ENTRY2,
+        new OrderField[] {Entry2.ENTRY2.RM_ENTITY, Entry2.ENTRY2.FIELD_IDX_LEN, Entry2.ENTRY2.EHR_ID},
+        false);
 }

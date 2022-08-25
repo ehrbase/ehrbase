@@ -28,6 +28,7 @@ import org.ehrbase.jooq.pg.tables.Concept;
 import org.ehrbase.jooq.pg.tables.Contribution;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.tables.Entry;
+import org.ehrbase.jooq.pg.tables.Entry2;
 import org.ehrbase.jooq.pg.tables.EventContext;
 import org.ehrbase.jooq.pg.tables.FlywaySchemaHistory;
 import org.ehrbase.jooq.pg.tables.Folder;
@@ -61,6 +62,7 @@ import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
+import org.ehrbase.jooq.pg.tables.records.Entry2Record;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
 import org.ehrbase.jooq.pg.tables.records.FlywaySchemaHistoryRecord;
@@ -125,25 +127,28 @@ public class Keys {
     public static final UniqueKey<ConceptRecord> CONCEPT_PKEY = Internal.createUniqueKey(
             Concept.CONCEPT, DSL.name("concept_pkey"), new TableField[] {Concept.CONCEPT.ID}, true);
     public static final UniqueKey<ContributionRecord> CONTRIBUTION_PKEY = Internal.createUniqueKey(
-            Contribution.CONTRIBUTION,
-            DSL.name("contribution_pkey"),
-            new TableField[] {Contribution.CONTRIBUTION.ID},
-            true);
+        Contribution.CONTRIBUTION,
+        DSL.name("contribution_pkey"),
+        new TableField[] {Contribution.CONTRIBUTION.ID},
+        true);
     public static final UniqueKey<EhrRecord> EHR_PKEY =
-            Internal.createUniqueKey(Ehr.EHR_, DSL.name("ehr_pkey"), new TableField[] {Ehr.EHR_.ID}, true);
+        Internal.createUniqueKey(Ehr.EHR_, DSL.name("ehr_pkey"), new TableField[] {Ehr.EHR_.ID}, true);
     public static final UniqueKey<EntryRecord> ENTRY_COMPOSITION_ID_KEY = Internal.createUniqueKey(
-            Entry.ENTRY, DSL.name("entry_composition_id_key"), new TableField[] {Entry.ENTRY.COMPOSITION_ID}, true);
+        Entry.ENTRY, DSL.name("entry_composition_id_key"), new TableField[] {Entry.ENTRY.COMPOSITION_ID}, true);
     public static final UniqueKey<EntryRecord> ENTRY_PKEY =
-            Internal.createUniqueKey(Entry.ENTRY, DSL.name("entry_pkey"), new TableField[] {Entry.ENTRY.ID}, true);
+        Internal.createUniqueKey(Entry.ENTRY, DSL.name("entry_pkey"), new TableField[] {Entry.ENTRY.ID}, true);
+    public static final UniqueKey<Entry2Record> ENTRY2_PKEY = Internal.createUniqueKey(
+        Entry2.ENTRY2, DSL.name("entry2_pkey"), new TableField[] {Entry2.ENTRY2.COMP_ID, Entry2.ENTRY2.NUM}, true);
+
     public static final UniqueKey<EventContextRecord> EVENT_CONTEXT_PKEY = Internal.createUniqueKey(
-            EventContext.EVENT_CONTEXT,
-            DSL.name("event_context_pkey"),
-            new TableField[] {EventContext.EVENT_CONTEXT.ID},
-            true);
+        EventContext.EVENT_CONTEXT,
+        DSL.name("event_context_pkey"),
+        new TableField[] {EventContext.EVENT_CONTEXT.ID},
+        true);
     public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(
-            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
-            DSL.name("flyway_schema_history_pk"),
-            new TableField[] {FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK},
+        FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
+        DSL.name("flyway_schema_history_pk"),
+        new TableField[] {FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK},
             true);
     public static final UniqueKey<FolderRecord> FOLDER_PKEY =
             Internal.createUniqueKey(Folder.FOLDER, DSL.name("folder_pkey"), new TableField[] {Folder.FOLDER.ID}, true);
@@ -411,24 +416,32 @@ public class Keys {
             DSL.name("ehr_system_id_fkey"),
             new TableField[] {Ehr.EHR_.SYSTEM_ID},
             Keys.SYSTEM_PKEY,
-            new TableField[] {System.SYSTEM.ID},
-            true);
+        new TableField[] {System.SYSTEM.ID},
+        true);
     public static final ForeignKey<EntryRecord, CompositionRecord> ENTRY__ENTRY_COMPOSITION_ID_FKEY =
-            Internal.createForeignKey(
-                    Entry.ENTRY,
-                    DSL.name("entry_composition_id_fkey"),
-                    new TableField[] {Entry.ENTRY.COMPOSITION_ID},
-                    Keys.COMPOSITION_PKEY,
-                    new TableField[] {Composition.COMPOSITION.ID},
-                    true);
+        Internal.createForeignKey(
+            Entry.ENTRY,
+            DSL.name("entry_composition_id_fkey"),
+            new TableField[] {Entry.ENTRY.COMPOSITION_ID},
+            Keys.COMPOSITION_PKEY,
+            new TableField[] {Composition.COMPOSITION.ID},
+            true);
+    public static final ForeignKey<Entry2Record, EhrRecord> ENTRY2__ENTRY2_EHR_ID_FKEY = Internal.createForeignKey(
+        Entry2.ENTRY2,
+        DSL.name("entry2_ehr_id_fkey"),
+        new TableField[] {Entry2.ENTRY2.EHR_ID},
+        Keys.EHR_PKEY,
+        new TableField[] {Ehr.EHR_.ID},
+        true);
+
     public static final ForeignKey<EventContextRecord, CompositionRecord>
-            EVENT_CONTEXT__EVENT_CONTEXT_COMPOSITION_ID_FKEY = Internal.createForeignKey(
-                    EventContext.EVENT_CONTEXT,
-                    DSL.name("event_context_composition_id_fkey"),
-                    new TableField[] {EventContext.EVENT_CONTEXT.COMPOSITION_ID},
-                    Keys.COMPOSITION_PKEY,
-                    new TableField[] {Composition.COMPOSITION.ID},
-                    true);
+        EVENT_CONTEXT__EVENT_CONTEXT_COMPOSITION_ID_FKEY = Internal.createForeignKey(
+        EventContext.EVENT_CONTEXT,
+        DSL.name("event_context_composition_id_fkey"),
+        new TableField[] {EventContext.EVENT_CONTEXT.COMPOSITION_ID},
+        Keys.COMPOSITION_PKEY,
+        new TableField[] {Composition.COMPOSITION.ID},
+        true);
     public static final ForeignKey<EventContextRecord, PartyIdentifiedRecord>
             EVENT_CONTEXT__EVENT_CONTEXT_FACILITY_FKEY = Internal.createForeignKey(
                     EventContext.EVENT_CONTEXT,
