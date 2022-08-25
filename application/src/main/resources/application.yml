@@ -34,8 +34,13 @@ spring:
     name: ehrbase
 
   cache:
+    type: jcache # change to type redis if usage of redis distributed cache is intended
     jcache:
       config: classpath:ehcache.xml
+
+  redis:
+    host: localhost
+    port: 6379
 
   security:
     oauth2:
