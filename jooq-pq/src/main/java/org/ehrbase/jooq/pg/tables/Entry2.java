@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.jooq.pg.tables;
 
 import java.util.Arrays;
@@ -71,49 +70,49 @@ public class Entry2 extends TableImpl<Entry2Record> {
      * The column <code>ehr.entry2.comp_id</code>.
      */
     public final TableField<Entry2Record, UUID> COMP_ID =
-        createField(DSL.name("comp_id"), SQLDataType.UUID.nullable(false), this, "");
+            createField(DSL.name("comp_id"), SQLDataType.UUID.nullable(false), this, "");
 
     /**
      * The column <code>ehr.entry2.num</code>.
      */
     public final TableField<Entry2Record, Integer> NUM =
-        createField(DSL.name("num"), SQLDataType.INTEGER.nullable(false), this, "");
+            createField(DSL.name("num"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
      * The column <code>ehr.entry2.entity_concept</code>.
      */
     public final TableField<Entry2Record, String> ENTITY_CONCEPT =
-        createField(DSL.name("entity_concept"), SQLDataType.CLOB, this, "");
+            createField(DSL.name("entity_concept"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>ehr.entry2.rm_entity</code>.
      */
     public final TableField<Entry2Record, String> RM_ENTITY =
-        createField(DSL.name("rm_entity"), SQLDataType.CLOB, this, "");
+            createField(DSL.name("rm_entity"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>ehr.entry2.entity_path</code>.
      */
     public final TableField<Entry2Record, String> ENTITY_PATH =
-        createField(DSL.name("entity_path"), SQLDataType.CLOB, this, "");
+            createField(DSL.name("entity_path"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>ehr.entry2.entity_idx</code>.
      */
     public final TableField<Entry2Record, Integer[]> ENTITY_IDX =
-        createField(DSL.name("entity_idx"), SQLDataType.INTEGER.getArrayDataType(), this, "");
+            createField(DSL.name("entity_idx"), SQLDataType.INTEGER.getArrayDataType(), this, "");
 
     /**
      * The column <code>ehr.entry2.field_idx</code>.
      */
     public final TableField<Entry2Record, Integer[]> FIELD_IDX =
-        createField(DSL.name("field_idx"), SQLDataType.INTEGER.getArrayDataType(), this, "");
+            createField(DSL.name("field_idx"), SQLDataType.INTEGER.getArrayDataType(), this, "");
 
     /**
      * The column <code>ehr.entry2.field_idx_len</code>.
      */
     public final TableField<Entry2Record, Integer> FIELD_IDX_LEN =
-        createField(DSL.name("field_idx_len"), SQLDataType.INTEGER, this, "");
+            createField(DSL.name("field_idx_len"), SQLDataType.INTEGER, this, "");
 
     /**
      * The column <code>ehr.entry2.fields</code>.

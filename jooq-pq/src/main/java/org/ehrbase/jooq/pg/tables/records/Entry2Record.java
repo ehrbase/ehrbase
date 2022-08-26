@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.jooq.pg.tables.records;
 
 import java.util.UUID;
@@ -32,7 +31,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  */
 @SuppressWarnings({"all", "unchecked", "rawtypes"})
 public class Entry2Record extends UpdatableRecordImpl<Entry2Record>
-    implements Record10<UUID, UUID, Integer, String, String, String, Integer[], Integer[], Integer, JSONB> {
+        implements Record10<UUID, UUID, Integer, String, String, String, Integer[], Integer[], Integer, JSONB> {
 
     private static final long serialVersionUID = 1L;
 
@@ -411,16 +410,16 @@ public class Entry2Record extends UpdatableRecordImpl<Entry2Record>
 
     @Override
     public Entry2Record values(
-        UUID value1,
-        UUID value2,
-        Integer value3,
-        String value4,
-        String value5,
-        String value6,
-        Integer[] value7,
-        Integer[] value8,
-        Integer value9,
-        JSONB value10) {
+            UUID value1,
+            UUID value2,
+            Integer value3,
+            String value4,
+            String value5,
+            String value6,
+            Integer[] value7,
+            Integer[] value8,
+            Integer value9,
+            JSONB value10) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -449,16 +448,16 @@ public class Entry2Record extends UpdatableRecordImpl<Entry2Record>
      * Create a detached, initialised Entry2Record
      */
     public Entry2Record(
-        UUID ehrId,
-        UUID compId,
-        Integer num,
-        String entityConcept,
-        String rmEntity,
-        String entityPath,
-        Integer[] entityIdx,
-        Integer[] fieldIdx,
-        Integer fieldIdxLen,
-        JSONB fields) {
+            UUID ehrId,
+            UUID compId,
+            Integer num,
+            String entityConcept,
+            String rmEntity,
+            String entityPath,
+            Integer[] entityIdx,
+            Integer[] fieldIdx,
+            Integer fieldIdxLen,
+            JSONB fields) {
         super(Entry2.ENTRY2);
 
         setEhrId(ehrId);

@@ -17,7 +17,6 @@
  */
 package org.ehrbase.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -40,8 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -52,13 +49,12 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
-import org.ehrbase.aql.dto.path.AqlPath;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
-import org.ehrbase.jooq.pg.tables.records.Entry2Record;
+import org.ehrbase.dao.access.jooq.Entry2Access;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -66,13 +62,10 @@ import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.flatencoding.FlatFormat;
 import org.ehrbase.serialisation.flatencoding.FlatJasonProvider;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
-import org.ehrbase.serialisation.matrixencoding.MatrixFormat;
-import org.ehrbase.serialisation.matrixencoding.Row;
 import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.templateprovider.TemplateProvider;
 import org.jooq.DSLContext;
-import org.jooq.JSONB;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,7 +178,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             } else { // else, invoke commit that ad hoc creates a new contribution for the composition
                 if (committerId == null || systemId == null) { // mandatory fields
                     throw new InternalServerException(
-                        "Error on internal contribution handling for composition creation.");
+                            "Error on internal contribution handling for composition creation.");
                 }
                 compositionId = compositionAccess.commit(LocalDateTime.now(), committerId, systemId, description);
             }
@@ -195,65 +188,31 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             throw new InternalServerException(e);
         }
 
-        String id = compositionId.toString() + "::"
-            + getServerConfig().getNodename() + "::"
-            + getLastVersionNumber(compositionId);
-
-        composition.setUid(new ObjectVersionId(id));
-
-        List<Row> rows = new MatrixFormat(new KnowledgeCacheServiceTemplateProvider()).toTable(composition);
-
-        List<Entry2Record> collect = rows.stream()
-            .map(r -> {
-                Entry2Record entry2Record = new Entry2Record();
-                entry2Record.setEhrId(ehrId);
-                entry2Record.setCompId(compositionId);
-                entry2Record.setEntityConcept(r.getArchetypeId());
-                entry2Record.setRmEntity(findTypeName(r.getArchetypeId()));
-                entry2Record.setEntityPath(r.getEntityPath().format(AqlPath.OtherPredicatesFormat.SHORTED, true));
-                entry2Record.setNum(r.getNum());
-                entry2Record.setFieldIdx(r.getFieldIdx());
-                entry2Record.setEntityIdx(r.getEntityIdx());
-                try {
-                    entry2Record.setFields(
-                        JSONB.jsonbOrNull(MatrixFormat.MAPPER.writeValueAsString(r.getFields())));
-                } catch (JsonProcessingException e) {
-                    throw new InternalServerException(e);
-                }
-
-                return entry2Record;
-            })
-            .collect(Collectors.toList());
-
-        getDataAccess().getContext().batchInsert(collect).execute();
+        composition.setUid(toObjectVersionId(compositionId));
+        Entry2Access.getNewInstance(getDataAccess(), composition, ehrId).commit();
 
         logger.debug("Composition created: id={}", compositionId);
 
         return compositionId;
     }
 
-    static String findTypeName(String atCode) {
-        String typeName = null;
+    private ObjectVersionId toObjectVersionId(UUID compositionId) {
+        String fullId = compositionId.toString() + "::"
+                + getServerConfig().getNodename() + "::"
+                + getLastVersionNumber(compositionId);
 
-        if (atCode.contains("openEHR-EHR-")) {
-
-            typeName = StringUtils.substringBetween(atCode, "openEHR-EHR-", ".");
-        } else if (atCode.startsWith("at")) {
-            typeName = null;
-        } else {
-            typeName = atCode;
-        }
-        return typeName;
+        ObjectVersionId uid = new ObjectVersionId(fullId);
+        return uid;
     }
 
     @Override
     public Optional<UUID> update(
-        UUID ehrId,
-        ObjectVersionId targetObjId,
-        Composition objData,
-        UUID systemId,
-        UUID committerId,
-        String description) {
+            UUID ehrId,
+            ObjectVersionId targetObjId,
+            Composition objData,
+            UUID systemId,
+            UUID committerId,
+            String description) {
 
         var compoId = internalUpdate(
                 ehrId,
@@ -353,6 +312,9 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
                 }
                 result = compositionAccess.update(
                         LocalDateTime.now(), committerId, systemId, description, ContributionChangeType.MODIFICATION);
+
+                composition.setUid(toObjectVersionId(compositionId));
+                Entry2Access.getNewInstance(getDataAccess(), composition, ehrId).update();
             }
 
         } catch (ObjectNotFoundException
@@ -429,7 +391,12 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         if (contributionId != null) { // if custom contribution should be set
             compositionAccess.setContributionId(contributionId);
             try {
+                Composition composition = compositionAccess.getContent().getComposition();
+                composition.setUid(toObjectVersionId(compositionId));
                 result = compositionAccess.delete(LocalDateTime.now(), contributionId);
+
+                Entry2Access.getNewInstance(getDataAccess(), composition, ehrId).delete();
+
             } catch (Exception e) {
                 throw new InternalServerException(e);
             }
@@ -439,7 +406,11 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
                     throw new InternalServerException(
                             "Failed to update composition, missing mandatory audit meta data.");
                 }
+                Composition composition = compositionAccess.getContent().getComposition();
+                composition.setUid(toObjectVersionId(compositionId));
+
                 result = compositionAccess.delete(LocalDateTime.now(), committerId, systemId, description);
+                Entry2Access.getNewInstance(getDataAccess(), composition, ehrId).delete();
             } catch (Exception e) {
                 throw new InternalServerException(e);
             }
@@ -555,14 +526,16 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
                 composition = new CanonicalJson().unmarshal(content, Composition.class);
                 break;
             case FLAT:
-                composition = new FlatJasonProvider(new KnowledgeCacheServiceTemplateProvider())
-                    .buildFlatJson(FlatFormat.SIM_SDT, templateId)
-                    .unmarshal(content);
+                composition = new FlatJasonProvider(new KnowledgeCacheServiceTemplateProvider(
+                                this.knowledgeCacheService, this.knowledgeCacheService))
+                        .buildFlatJson(FlatFormat.SIM_SDT, templateId)
+                        .unmarshal(content);
                 break;
             case STRUCTURED:
-                composition = new FlatJasonProvider(new KnowledgeCacheServiceTemplateProvider())
-                    .buildFlatJson(FlatFormat.STRUCTURED, templateId)
-                    .unmarshal(content);
+                composition = new FlatJasonProvider(new KnowledgeCacheServiceTemplateProvider(
+                                this.knowledgeCacheService, this.knowledgeCacheService))
+                        .buildFlatJson(FlatFormat.STRUCTURED, templateId)
+                        .unmarshal(content);
                 break;
             default:
                 throw new UnexpectedSwitchCaseException(format);
@@ -743,26 +716,14 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         OriginalVersion<Composition> versionComposition = new OriginalVersion<>(
                 versionId,
                 precedingVersionId,
-            composition,
-            lifecycleState,
-            commitAudit,
-            contribution,
-            null,
-            null,
-            attestations);
+                composition,
+                lifecycleState,
+                commitAudit,
+                contribution,
+                null,
+                null,
+                attestations);
 
         return Optional.of(versionComposition);
-    }
-
-    private class KnowledgeCacheServiceTemplateProvider implements TemplateProvider {
-        @Override
-        public Optional<OPERATIONALTEMPLATE> find(String s) {
-            return knowledgeCacheService.retrieveOperationalTemplate(s);
-        }
-
-        @Override
-        public Optional<WebTemplate> buildIntrospect(String templateId) {
-            return Optional.ofNullable(knowledgeCacheService.getQueryOptMetaData(templateId));
-        }
     }
 }
