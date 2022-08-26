@@ -131,7 +131,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UUID::randomUUID));
 
         // init a new EHR_STATUS with default values to associate with this EHR
-        this.statusAccess = new StatusAccess(this, ehrRecord.getId());
+        this.statusAccess = new StatusAccess(this, ehrRecord.getId(), tenantIdentifier);
         this.statusAccess.getStatusRecord().setId(UUID.randomUUID());
         this.statusAccess.getStatusRecord().setIsModifiable(true);
         this.statusAccess.getStatusRecord().setIsQueryable(true);
@@ -160,9 +160,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      * @param domainAccess DB domain access object
      * @param ehrId        EHR ID, necessary to create an EHR status and contributions
      */
-    private EhrAccess(I_DomainAccess domainAccess, UUID ehrId) {
+    private EhrAccess(I_DomainAccess domainAccess, UUID ehrId, String tenantIdentifier) {
         super(domainAccess);
-        statusAccess = new StatusAccess(this, ehrId); // minimal association with STATUS
+        statusAccess = new StatusAccess(this, ehrId, tenantIdentifier); // minimal association with STATUS
         // associate a contribution with this EHR
         contributionAccess = I_ContributionAccess.getInstance(this, ehrId, I_TenantAccess.currentTenantIdentifier());
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
@@ -269,7 +269,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         }
 
         EhrAccess ehrAccess =
-                new EhrAccess(domainAccess, ehrId); // minimal access, needs attributes to be set before returning
+                new EhrAccess(domainAccess, ehrId, I_TenantAccess.currentTenantIdentifier()); // minimal access, needs attributes to be set before returning
         EhrRecord record;
 
         // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten
@@ -355,7 +355,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     public static I_EhrAccess retrieveInstance(I_DomainAccess domainAccess, UUID ehrId) {
         DSLContext context = domainAccess.getContext();
-        EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId);
+        EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId, I_TenantAccess.currentTenantIdentifier());
 
         EhrRecord record;
 
@@ -849,7 +849,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             setName(status.getName());
         }
 
-        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
+        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject(), getStatusAccess().getStatusRecord().getNamespace());
         setParty(subjectUuid);
 
         hasStatusChanged = true;

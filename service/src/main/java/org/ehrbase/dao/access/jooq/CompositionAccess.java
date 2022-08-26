@@ -117,7 +117,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
       ServerConfig serverConfig, Composition composition, UUID ehrId, String tenantIdentifier) {
     super(context, knowledgeManager, introspectCache, serverConfig);
 
-    initRecord(this.composition, context.newRecord(COMPOSITION),
+    initRecord(composition, context.newRecord(COMPOSITION),
         composition.getTerritory().getCodeString(), composition.getLanguage().getCodeString(), ehrId, tenantIdentifier);
   }
 
@@ -134,18 +134,21 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
   public CompositionAccess(I_DomainAccess domainAccess, Composition composition, UUID ehrId, String tenantIdentifier) {
     super(domainAccess);
 
-    initRecord(this.composition, domainAccess.getContext().newRecord(COMPOSITION),
+    initRecord(composition, domainAccess.getContext().newRecord(COMPOSITION),
         composition.getTerritory().getCodeString(), composition.getLanguage().getCodeString(), ehrId, tenantIdentifier);
   }
 
   private void initRecord(Composition composition, CompositionRecord compositionRecord,
       String territoryCode, String languageCode, UUID ehrId, String tenantIdentifier) {
+    this.compositionRecord = compositionRecord;
+    this.composition = composition;
+    
     compositionRecord.setId(UUID.randomUUID());
     compositionRecord.setTerritory(seekTerritoryCode(territoryCode));
     compositionRecord.setLanguage(seekLanguageCode(languageCode));
     compositionRecord.setActive(true);
     compositionRecord.setEhrId(ehrId);
-    compositionRecord.setComposer(seekComposerId(composition.getComposer()));
+    compositionRecord.setComposer(seekComposerId(composition.getComposer(), tenantIdentifier));
     compositionRecord.setNamespace(tenantIdentifier);
 
     setFeederAudit(composition.getFeederAudit());
@@ -158,8 +161,6 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     // associate composition's own audit with this composition access instance
     auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess(), tenantIdentifier);
 
-    this.composition = composition;
-    this.compositionRecord = compositionRecord;
   }
 
   /**
@@ -689,15 +690,16 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
    * Decode composer ID
    *
    * @param composer given {@link PartyProxy}
+   * @param tenantIdentifier
    * @return ID of composer as {@link UUID}
    * @throws IllegalArgumentException when composer in composition is not
    *                                  supported
    */
-  private UUID seekComposerId(PartyProxy composer) {
+  private UUID seekComposerId(PartyProxy composer, String tenantIdentifier) {
     if (PartyUtils.isEmpty(composer)) {
-      return new PersistedPartyProxy(this).create(composer);
+      return new PersistedPartyProxy(this).create(composer, tenantIdentifier);
     } else {
-      return new PersistedPartyProxy(this).getOrCreate(composer);
+      return new PersistedPartyProxy(this).getOrCreate(composer, tenantIdentifier);
     }
   }
 
@@ -931,7 +933,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     // update the mutable attributes
     setLanguageCode(seekLanguageCode(newComposition.getLanguage().getCodeString()));
     setTerritoryCode(seekTerritoryCode(newComposition.getTerritory().getCodeString()));
-    setComposerId(seekComposerId(newComposition.getComposer()));
+    setComposerId(seekComposerId(newComposition.getComposer(), compositionRecord.getNamespace()));
 
     setFeederAudit(newComposition.getFeederAudit());
     setLinks(newComposition.getLinks());

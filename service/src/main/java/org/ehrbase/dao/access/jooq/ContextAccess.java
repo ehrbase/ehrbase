@@ -238,7 +238,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         // Health care facility
         if (eventContext.getHealthCareFacility() != null) {
-            UUID healthcareFacilityId = new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility());
+            UUID healthcareFacilityId = new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility(), tenantIdentifier);
 
             eventContextRecord.setFacility(healthcareFacilityId);
         }
@@ -280,7 +280,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 }
 
                 performer = (PartyIdentified) setPerformer;
-                UUID performerUuid = new PersistedPartyProxy(this).getOrCreate(performer);
+                UUID performerUuid = new PersistedPartyProxy(this).getOrCreate(performer, tenantIdentifier);
                 // set the performer
                 participationRecord.setPerformer(performerUuid);
                 participations.add(participationRecord);

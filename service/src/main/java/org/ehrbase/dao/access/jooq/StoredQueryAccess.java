@@ -39,20 +39,21 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
     static final Logger log = LoggerFactory.getLogger(StoredQueryAccess.class);
     private StoredQueryRecord storedQueryRecord;
 
-    public StoredQueryAccess(I_DomainAccess domainAccess) {
+    public StoredQueryAccess(I_DomainAccess domainAccess, String tenantIdentifier) {
         super(domainAccess);
     }
 
-    public StoredQueryAccess(I_DomainAccess domainAccess, StoredQueryRecord queryRecord) {
+    public StoredQueryAccess(I_DomainAccess domainAccess, StoredQueryRecord queryRecord, String tenantIdentifier) {
         super(domainAccess);
-
         this.storedQueryRecord = queryRecord;
+        this.storedQueryRecord.setNamespace(tenantIdentifier);
     }
 
-    public StoredQueryAccess(I_DomainAccess domainAccess, String qualifiedQueryName, String sourceAqlText) {
+    public StoredQueryAccess(I_DomainAccess domainAccess, String qualifiedQueryName, String sourceAqlText, String tenantIdentifier) {
         super(domainAccess);
 
         storedQueryRecord = domainAccess.getContext().newRecord(STORED_QUERY);
+        storedQueryRecord.setNamespace(tenantIdentifier);
 
         StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(qualifiedQueryName);
 
@@ -108,7 +109,7 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
         if (queryRecord == null) {
             log.warn("Could not retrieve stored query for qualified name:" + qualifiedName);
             throw new IllegalArgumentException("Could not retrieve stored query for qualified name:" + qualifiedName);
-        } else return new StoredQueryAccess(domainAccess, queryRecord);
+        } else return new StoredQueryAccess(domainAccess, queryRecord, queryRecord.getNamespace());
     }
 
     /**
@@ -142,7 +143,7 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             log.warn("Could not retrieve Aql Text for qualified name:" + qualifiedName);
         } else {
             for (StoredQueryRecord storedQueryRecord : queryRecords) {
-                storedQueryAccesses.add(new StoredQueryAccess(domainAccess, storedQueryRecord));
+                storedQueryAccesses.add(new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
             }
         }
 
@@ -169,7 +170,7 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             log.warn("Empty stored query set");
         } else {
             for (StoredQueryRecord storedQueryRecord : queryRecords) {
-                storedQueryAccesses.add(new StoredQueryAccess(domainAccess, storedQueryRecord));
+                storedQueryAccesses.add(new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
             }
         }
 

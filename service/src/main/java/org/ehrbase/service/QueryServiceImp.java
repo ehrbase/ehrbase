@@ -19,7 +19,6 @@ package org.ehrbase.service;
 
 import static java.lang.String.format;
 
-import com.google.gson.JsonElement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -29,12 +28,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.QueryService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
@@ -57,22 +58,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import com.google.gson.JsonElement;
+
 @Service
 @SuppressWarnings("unchecked")
 public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ExternalTerminologyValidation tsAdapter;
+    private final TenantService tenantService;
 
     @Autowired
     public QueryServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             DSLContext context,
             ServerConfig serverConfig,
-            ExternalTerminologyValidation tsAdapter) {
+            ExternalTerminologyValidation tsAdapter,
+            TenantService tenantService) {
 
         super(knowledgeCacheService, context, serverConfig);
         this.tsAdapter = tsAdapter;
+        this.tenantService = tenantService;
     }
 
     private static BiConsumer<Map<?, ?>, String> checkNonNull = (map, errMsg) -> {
@@ -232,10 +238,11 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
             throw new IllegalArgumentException("Invalid query, reason:" + e);
         }
 
+        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+        
         try {
             String queryQualifiedName = qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : "");
-            I_StoredQueryAccess storedQueryAccess =
-                    new StoredQueryAccess(getDataAccess(), queryQualifiedName, queryString);
+            I_StoredQueryAccess storedQueryAccess = new StoredQueryAccess(getDataAccess(), queryQualifiedName, queryString, tenantIdentifier);
             storedQueryAccess.commit();
             return mapToQueryDefinitionDto(storedQueryAccess);
         } catch (DataAccessException dae) {

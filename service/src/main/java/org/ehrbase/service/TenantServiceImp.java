@@ -21,6 +21,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.jooq.DSLContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TenantServiceImp extends BaseServiceImp implements TenantService {
 
-  public TenantServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+  public TenantServiceImp(@Lazy KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
 
     super(knowledgeCacheService, context, serverConfig);
   }

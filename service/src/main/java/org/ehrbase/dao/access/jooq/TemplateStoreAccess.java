@@ -31,7 +31,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.xml.namespace.QName;
+
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
@@ -53,9 +55,10 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     private TemplateStoreRecord templateStoreRecord;
 
-    public TemplateStoreAccess(I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate) {
+    public TemplateStoreAccess(I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate, String tenantIdentifier) {
         super(domainAccess);
         templateStoreRecord = domainAccess.getContext().newRecord(TEMPLATE_STORE);
+        templateStoreRecord.setNamespace(tenantIdentifier);
         setTemplate(operationaltemplate);
     }
 
@@ -200,13 +203,8 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
                     "Cannot delete template %s since the following compositions are still using it %s",
                     template.getTemplateId().getValue(), usingCompositions.toString()));
         } else {
-
             XmlOptions opts = new XmlOptions();
             opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
-
-            TemplateStoreRecord tsr = new TemplateStoreRecord();
-            tsr.setContent(template.xmlText(opts));
-
             // Replace template with db function
             return Routines.adminUpdateTemplate(
                     domainAccess.getContext().configuration(),

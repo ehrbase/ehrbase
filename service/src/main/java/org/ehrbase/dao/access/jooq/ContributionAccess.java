@@ -399,7 +399,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public void setAuditDetailsValues(AuditDetails auditObject) {
         // parse
-        UUID committer = new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter());
+        UUID committer = new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter(), auditDetails.getNamespace());
         UUID system = I_SystemAccess.createOrRetrieveInstanceId(this, null, auditObject.getSystemId());
         UUID changeType = I_ConceptAccess.fetchContributionChangeType(
                 this, auditObject.getChangeType().getValue());

@@ -120,4 +120,6 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
     void setRecord(AuditDetailsRecord record);
 
     AuditDetails getAsAuditDetails();
+    
+    String getNamespace();
 }

@@ -74,11 +74,11 @@ public class BaseServiceImp implements BaseService {
      *
      * @return UUID of default user, derived from authenticated user.
      */
-    protected UUID getCurrentUserId() {
+    protected UUID getCurrentUserId(String tenantIdentifier) {
         var username = authenticationFacade.getAuthentication().getName();
         var existingUser = new PersistedPartyIdentified(getDataAccess()).findInternalUserId(username);
         if (existingUser.isEmpty()) {
-            return createInternalUser(username);
+            return createInternalUser(username, tenantIdentifier);
         }
         return existingUser.get();
     }
@@ -89,7 +89,7 @@ public class BaseServiceImp implements BaseService {
      * @param username username of the user
      * @return the id of the newly created user
      */
-    protected UUID createInternalUser(String username) {
+    protected UUID createInternalUser(String username, String tenantIdentifier) {
         var identifier = new DvIdentifier();
         identifier.setId(username);
         identifier.setIssuer(PersistedPartyIdentified.EHRBASE);
@@ -99,7 +99,7 @@ public class BaseServiceImp implements BaseService {
         PartyRef externalRef = new PartyRef(new GenericId(UUID.randomUUID().toString(), DEMOGRAPHIC), "User", PARTY);
         PartyIdentified user = new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
 
-        return new PersistedPartyIdentified(getDataAccess()).store(user);
+        return new PersistedPartyIdentified(getDataAccess()).store(user, tenantIdentifier);
     }
 
     public ServerConfig getServerConfig() {

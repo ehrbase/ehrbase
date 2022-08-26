@@ -259,4 +259,9 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     DvText description = new DvText(getDescription());
     return new AuditDetails(systemId, party, time, changeType, description);
   }
+
+  @Override
+  public String getNamespace() {
+    return auditDetailsRecord.getNamespace();
+  }
 }

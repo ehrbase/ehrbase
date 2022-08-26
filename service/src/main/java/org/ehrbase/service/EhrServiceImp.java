@@ -20,20 +20,6 @@ package org.ehrbase.service;
 import static org.ehrbase.jooq.pg.Routines.partyUsage;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -45,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -79,13 +65,27 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.Attestation;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
 @Service(value = "ehrService")
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
-    private UUID emptyParty;
     private final TenantService tenantService;
 
     @Autowired
@@ -100,12 +100,9 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         this.tenantService = tenantService;
     }
 
-    @PostConstruct
-    public void init() {
-        // Create local system UUID
-        getSystemUuid();
-
-        emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
+    private UUID getEmptyPartyByTenant() {
+      String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+      return new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf(), tenantIdentifier);
     }
 
     @Override
@@ -124,18 +121,17 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
         UUID subjectUuid;
         if (PartyUtils.isEmpty(status.getSubject())) {
-            subjectUuid = emptyParty;
+            subjectUuid = getEmptyPartyByTenant();
         } else {
-            subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
+            subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject(), tenantService.getCurrentTenantIdentifier());
 
             if (I_EhrAccess.checkExist(getDataAccess(), subjectUuid)) {
-                throw new StateConflictException(
-                        "Specified party has already an EHR set (partyId=" + subjectUuid + ")");
+                throw new StateConflictException("Specified party has already an EHR set (partyId=" + subjectUuid + ")");
             }
         }
 
         UUID systemId = getSystemUuid();
-        UUID committerId = getCurrentUserId();
+        UUID committerId = getCurrentUserId(tenantService.getCurrentTenantIdentifier());
 
         try { // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(getDataAccess(), subjectUuid, systemId, null, null, ehrId, tenantService.getCurrentTenantIdentifier());
@@ -277,7 +273,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         // execute actual update and check for success
         if (ehrAccess
                 .update(
-                        getCurrentUserId(),
+                        getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
                         getSystemUuid(),
                         contributionId,
                         null,
@@ -518,7 +514,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                     return Pair.of(
                             p.getLeft(),
                             new PersistedPartyProxy(getDataAccess())
-                                    .getOrCreate(p.getRight().getSubject()));
+                                    .getOrCreate(p.getRight().getSubject(), tenantService.getCurrentTenantIdentifier()));
                 })
                 .collect(Collectors.toList());
     }
