@@ -26,6 +26,16 @@ CREATE TABLE tenant (
     tenant_name TEXT
 );
 
+INSERT INTO ehr.tenant (
+    tenant_id,
+    tenant_name
+) VALUES (
+    '1f332a66-0e57-11ed-861d-0242ac120002',
+    'default_tenant'
+);
+
+-- disable all trigger
+
 -- add namespace column to all non system tables
 
 ALTER TABLE ehr.access ADD namespace TEXT;
@@ -102,3 +112,4 @@ UPDATE ehr.composition_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac12
 UPDATE ehr.event_context SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.event_context_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 
+-- enable all trigger
