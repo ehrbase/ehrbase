@@ -19,7 +19,9 @@
 Documentation   Composition Integration Tests
 ...             ${\n}Based on:
 ...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#341-test-case-dv_count-open-constraint
+...             https://github.com/ehrbase/ehrbase/blob/develop/doc/conformance_testing/COMPOSITION_VALIDATION_DATATYPES.md#342-test-case-dv_count-range-constraint
 ...             ${\n}*3.4.1. Test case DV_COUNT open constraint*
+...             ${\n}*3.4.2. Test case DV_COUNT range constraint*
 Metadata        TOP_TEST_SUITE    COMPOSITION
 
 Resource        ../../_resources/keywords/composition_keywords.robot
