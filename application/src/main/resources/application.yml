@@ -35,9 +35,10 @@ spring:
 
   cache:
     type: jcache # change to type redis if usage of redis distributed cache is intended
-    jcache:
+    jcache: # jcache parameters are only used if cache.type=jcache
       config: classpath:ehcache.xml
 
+  # the following redis properties are only used if the cache.type=redis
   redis:
     host: localhost
     port: 6379
