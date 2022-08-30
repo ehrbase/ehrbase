@@ -22,6 +22,7 @@
 -- create tenant table
 
 CREATE TABLE tenant (
+    id UUID primary key DEFAULT ext.uuid_generate_v4(),
     tenant_id TEXT,
     tenant_name TEXT
 );
