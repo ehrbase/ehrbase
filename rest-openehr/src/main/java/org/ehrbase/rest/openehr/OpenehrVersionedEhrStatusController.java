@@ -17,15 +17,13 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.RevisionHistory;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -49,9 +47,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.RevisionHistory;
+
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_ehr_status",

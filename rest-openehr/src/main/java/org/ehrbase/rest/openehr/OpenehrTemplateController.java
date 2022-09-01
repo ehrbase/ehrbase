@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -28,7 +27,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+
 import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -60,9 +61,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.composition.Composition;
+
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/definition/template",

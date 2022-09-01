@@ -17,8 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -31,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.ehrbase.api.annotations.TenantAware;
@@ -67,6 +66,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
  *
@@ -74,6 +76,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jake Smolka
  * @since 1.0.0
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
@@ -87,7 +90,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @TenantAware
     @PostMapping(
             value = "/{ehr_id}/composition",
             consumes = {"application/xml", "application/json"})
@@ -155,7 +157,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @TenantAware
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -259,7 +260,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @TenantAware
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -338,7 +338,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
         }
     }
 
-    @TenantAware
     /**
      * Acts as overloaded function and calls the overlapping and more specific method
      * getCompositionByTime. Catches both "/{ehr_id}/composition/{version_uid}" and
@@ -359,7 +358,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
         return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime, request);
     }
 
-    @TenantAware
     /**
      * This mapping combines both GETs "/{ehr_id}/composition/{version_uid}" (via overlapping path)
      * and "/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}" (here). This is necessary

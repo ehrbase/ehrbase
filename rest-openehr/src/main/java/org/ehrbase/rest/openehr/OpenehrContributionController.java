@@ -17,9 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -28,6 +25,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -51,6 +50,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",

@@ -17,8 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
@@ -26,6 +24,8 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -53,6 +53,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
 /**
  * Controller for openEHR /directory endpoints
  *
@@ -61,6 +64,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@TenantAware
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr")
 public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {

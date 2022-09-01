@@ -17,8 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.ehr.EhrStatus;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
@@ -27,6 +25,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -50,6 +50,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.ehr.EhrStatus;
+
 /**
  * Controller for /ehr/{ehrId}/ehr_status resource of openEHR REST API
  *
@@ -57,6 +60,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@TenantAware
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/ehr_status")
 public class OpenehrEhrStatusController extends BaseController implements EhrStatusApiSpecification {

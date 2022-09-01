@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,16 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.annotations;
+package org.ehrbase.api.tenant;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-@Retention(RUNTIME)
-@Target(ElementType.TYPE)
-public @interface TenantAware {
-  String[] exclude() default {};
+public interface ExtractionStrategyAware {
+  public <T> void addExtractionStrategy(TenantIdExtractionStrategy<T> strategy);
 }

@@ -45,7 +45,7 @@ ALTER TABLE ehr.attestation_ref ADD namespace TEXT;
 ALTER TABLE ehr.attested_view ADD namespace TEXT;
 ALTER TABLE ehr.audit_details ADD namespace TEXT;
 ALTER TABLE ehr.compo_xref ADD namespace TEXT;
-ALTER TABLE ehr.concept ADD namespace TEXT;
+-- ALTER TABLE ehr.concept ADD namespace TEXT;
 ALTER TABLE ehr.contribution ADD namespace TEXT;
 ALTER TABLE ehr.folder ADD namespace TEXT;
 ALTER TABLE ehr.folder_hierarchy ADD namespace TEXT;
@@ -83,7 +83,7 @@ UPDATE ehr.attestation_ref SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002
 UPDATE ehr.attested_view SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.audit_details SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.compo_xref SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
-UPDATE ehr.concept SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
+-- UPDATE ehr.concept SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.contribution SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.folder SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.folder_hierarchy SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
@@ -114,3 +114,9 @@ UPDATE ehr.event_context SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' 
 UPDATE ehr.event_context_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 
 -- enable all trigger
+
+-- change unique constraint on template_store
+
+ALTER TABLE ehr.template_store DROP CONSTRAINT template_store_template_id_key;
+
+ALTER TABLE ehr.template_store ADD UNIQUE (template_id, namespace);

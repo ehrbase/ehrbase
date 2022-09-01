@@ -17,9 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.support.identification.HierObjectId;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.ehrbase.api.annotations.TenantAware;
@@ -58,9 +56,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+
 /**
  * Controller for /ehr resource of openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
@@ -75,7 +78,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @TenantAware
     @PostMapping // (consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
@@ -99,7 +101,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         return internalPostEhrProcessing(accept, prefer, ehrId, request);
     }
 
-    @TenantAware
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
@@ -174,7 +175,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by ID
      */
-    @TenantAware
     @GetMapping(path = "/{ehr_id}")
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     @Override
@@ -195,7 +195,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by subject (id and namespace)
      */
-    @TenantAware
     @GetMapping(params = {"subject_id", "subject_namespace"})
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     @Override
