@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,8 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TenantServiceImp extends BaseServiceImp implements TenantService {
-
-  public TenantServiceImp(@Lazy KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+  
+  public TenantServiceImp(@Lazy KnowledgeCacheService knowledgeCacheService,DSLContext context, ServerConfig serverConfig) {
     super(knowledgeCacheService, context, serverConfig);
   }
 
@@ -55,5 +56,11 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
   @Override
   public List<Tenant> getAll() {
     return I_TenantAccess.getAll(getDataAccess().getContext()).stream().map(ta -> ta.convert()).collect(Collectors.toList());
+  }
+
+  @Override
+  public Optional<Tenant> findBy(String tenantId) {
+    return Optional.ofNullable(I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenantId))
+        .map(acc -> acc.convert());
   }
 }

@@ -1,6 +1,7 @@
 package org.ehrbase.dao.access.jooq;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -41,6 +42,12 @@ public class TenantAccess implements I_TenantAccess {
     return StreamSupport.stream(allRecs.spliterator(), false)
       .map(rec -> new TenantAccess(ctx, rec))
       .collect(Collectors.toList());
+  }
+  
+  public static I_TenantAccess retrieveInstanceBy(DSLContext ctx, String tenantId) {
+    return Optional.ofNullable(ctx.fetchOne(Tables.TENANT, Tables.TENANT.TENANT_ID.eq(tenantId)))
+      .map(rec -> new TenantAccess(ctx, rec))
+      .orElse(null);
   }
 
   @Override

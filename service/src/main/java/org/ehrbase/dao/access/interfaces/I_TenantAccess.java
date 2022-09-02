@@ -35,11 +35,15 @@ public interface I_TenantAccess {
     return new TenantAccess(ctx, tenant);
   }
   
-  public UUID commit();
-  
   static List<I_TenantAccess> getAll(DSLContext ctx) {
     return TenantAccess.getAll(ctx);
   }
+  
+  static I_TenantAccess retrieveInstanceBy(DSLContext ctx, String tenantId) {
+    return TenantAccess.retrieveInstanceBy(ctx, tenantId);
+  }
+
+  public UUID commit();
   
   public Tenant convert();
 }
