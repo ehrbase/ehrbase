@@ -283,6 +283,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 UUID performerUuid = new PersistedPartyProxy(this).getOrCreate(performer, tenantIdentifier);
                 // set the performer
                 participationRecord.setPerformer(performerUuid);
+                participationRecord.setNamespace(tenantIdentifier);
                 participations.add(participationRecord);
             }
         }
