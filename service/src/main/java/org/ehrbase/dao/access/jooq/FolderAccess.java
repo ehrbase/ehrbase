@@ -194,6 +194,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
       ContributionChangeType contributionChangeType) {
 
     boolean result;
+    
+    UUID oldFolderId = getFolderId();
 
     // Set new Contribution for MODIFY
     this.setInContribution(newContribution);
@@ -251,6 +253,13 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
     // Get new folder id for folder items and hierarchy
     UUID updatedFolderId = this.folderRecord.getId();
+    
+    // delete old
+    getDataAccess()
+            .getContext()
+            .delete(FolderItems.FOLDER_ITEMS)
+            .where(FolderItems.FOLDER_ITEMS.FOLDER_ID.eq(oldFolderId))
+            .execute();    
 
     // Update items -> Save new list of all items in this folder
     this.saveFolderItems(updatedFolderId, oldContribution, newContribution, transactionTime, getContext(), getFolderRecord().getNamespace());
