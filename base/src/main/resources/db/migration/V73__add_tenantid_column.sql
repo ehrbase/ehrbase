@@ -27,6 +27,8 @@ CREATE TABLE tenant (
     tenant_name TEXT
 );
 
+ALTER TABLE ehr.tenant ADD UNIQUE (tenant_id);
+
 INSERT INTO ehr.tenant (
     tenant_id,
     tenant_name
@@ -55,7 +57,7 @@ ALTER TABLE ehr.folder_items ADD namespace TEXT;
 ALTER TABLE ehr.folder_items_history ADD namespace TEXT;
 ALTER TABLE ehr.heading ADD namespace TEXT;
 ALTER TABLE ehr.identifier ADD namespace TEXT;
-ALTER TABLE ehr.language ADD namespace TEXT;
+-- ALTER TABLE ehr.language ADD namespace TEXT;
 ALTER TABLE ehr.object_ref ADD namespace TEXT;
 ALTER TABLE ehr.object_ref_history ADD namespace TEXT;
 ALTER TABLE ehr.participation ADD namespace TEXT;
@@ -93,7 +95,7 @@ UPDATE ehr.folder_items SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' W
 UPDATE ehr.folder_items_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.heading SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.identifier SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
-UPDATE ehr.language SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
+-- UPDATE ehr.language SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.object_ref SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.object_ref_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
 UPDATE ehr.participation SET namespace = '1f332a66-0e57-11ed-861d-0242ac120002' WHERE true;
