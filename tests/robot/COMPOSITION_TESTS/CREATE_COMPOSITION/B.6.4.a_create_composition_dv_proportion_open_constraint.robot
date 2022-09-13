@@ -315,7 +315,7 @@ Composition With DV_PROPORTION Precision 1 Type Integer Fraction - Numerator 10 
     ${statusCodeBoolean}    Commit Composition With Modified DV_PROPORTION Values Open Constraint
     ...     dvPropType=4     dvPropNumerator=10
     ...     dvPropDenominator=500     expectedCode=${expectedStatusCode}
-    #Should Contain      ${response.json()["message"]}   ntegral_validity failed on type DV_PROPORTION
+    #Should Contain       ${response.json()["message"]}   ntegral_validity failed on type DV_PROPORTION
     #Should Not Contain  ${response.json()["message"]}   Invariant Fraction_validity failed on type DV_PROPORTION
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
