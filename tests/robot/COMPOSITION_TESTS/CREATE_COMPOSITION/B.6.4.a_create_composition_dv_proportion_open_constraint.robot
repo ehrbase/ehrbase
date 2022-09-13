@@ -259,12 +259,12 @@ Composition With DV_PROPORTION Precision 1 Type Fraction - Numerator 10 - Denomi
     ${statusCodeBoolean}    Commit Composition With Modified DV_PROPORTION Values Open Constraint
     ...     dvPropType=3     dvPropNumerator=10
     ...     dvPropDenominator=500     expectedCode=${expectedStatusCode}
-    #Log     ${response.json()["message"]}
+    Log     ${response.json()["message"]}
     #Should Contain      ${response.json()["message"]}   Invariant Valid_denominator failed on type DV_PROPORTION
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]  Delete Composition Using API
+    [Teardown]  Run Keywords    Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-536
 
 Composition With DV_PROPORTION Precision 1 Type Fraction - Numerator 10.5 - Denominator 500
     [Tags]      Negative    not-ready   bug
@@ -283,7 +283,7 @@ Composition With DV_PROPORTION Precision 1 Type Fraction - Numerator 10.5 - Deno
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]  Delete Composition Using API
+    [Teardown]  Run Keywords    Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-537
 
 Composition With DV_PROPORTION Precision 1 Type Fraction - Numerator 10 - Denominator 500.5
     [Tags]      Negative    not-ready   bug
@@ -302,7 +302,7 @@ Composition With DV_PROPORTION Precision 1 Type Fraction - Numerator 10 - Denomi
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]  Delete Composition Using API
+    [Teardown]  Run Keywords    Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-537
 
 Composition With DV_PROPORTION Precision 1 Type Integer Fraction - Numerator 10 - Denominator 500
     [Tags]      Negative    not-ready   bug
@@ -320,7 +320,7 @@ Composition With DV_PROPORTION Precision 1 Type Integer Fraction - Numerator 10 
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]  Delete Composition Using API
+    [Teardown]  Run Keywords    Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-536
 
 Composition With DV_PROPORTION Precision 1 Type Integer Fraction - Numerator 10.5 - Denominator 500
     [Tags]      Negative    not-ready   bug
@@ -338,7 +338,7 @@ Composition With DV_PROPORTION Precision 1 Type Integer Fraction - Numerator 10.
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]  Delete Composition Using API
+    [Teardown]  Run Keywords    Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-537
 
 Composition With DV_PROPORTION Precision 1 Type Integer Fraction - Numerator 10 - Denominator 500.5
     [Tags]      Negative    not-ready   bug
@@ -356,10 +356,11 @@ Composition With DV_PROPORTION Precision 1 Type Integer Fraction - Numerator 10 
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    #[Teardown]  Delete Composition Using API
-    [Teardown]  Run Keywords    Delete Composition Using API    AND     Delete Template Using API
+    [Teardown]  Run Keywords
+    ...     Delete Composition Using API    AND
+    ...     Delete Template Using API       AND
+    ...     TRACE JIRA ISSUE    CDR-537
 
-#uncomment line 196
 
 *** Keywords ***
 Precondition
