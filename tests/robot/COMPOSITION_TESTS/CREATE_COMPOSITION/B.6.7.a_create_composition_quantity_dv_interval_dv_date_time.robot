@@ -531,7 +531,7 @@ Change Json KeyValue and Save Back To File
     ...     7 - value to be on dv_interval.upper_included
     [Arguments]     ${jsonContent}      ${dvLowerToUpdate}      ${dvUpperToUpdate}
     ...     ${dvLowerUnbToUpdate}    ${dvUpperUnbToUpdate}      ${dvLowerInclToUpdate}
-    ...     ${dvUpperInclToUpdate}   ${dvIntervalQuantityUnitsToUpdate}=mm
+    ...     ${dvUpperInclToUpdate}
     ${dvLowerJsonPath}     Set Variable
     ...     content[0].data.events[0].data.items[0].value.lower.value
     ${dvUpperJsonPath}     Set Variable
