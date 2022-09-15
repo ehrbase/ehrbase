@@ -31,12 +31,11 @@ Resource        ../../_resources/suite_settings.robot
 
 
 *** Test Cases ***
-#Report bug on first case. Print response.json to see the full text!!! Null pointer exception
-BUG 3.9.1. Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Null - Upper Null - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
+3.9.1. Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Null - Upper Null - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Negative    not-ready   bug
     [Documentation]     Negative case for QUANTITY DV_INTERVAL<DV_DATE_TIME>
     ...     Lower Null, Upper Null, Lower Unb 0, Upper Unb 0, Lower Incl 1, Upper Incl 1
-    ...     \n*See suite documentation to understand what are 1 and 0 values!*
+    ...     \n*See suite documentation to understand what are 1 and 0 values!*T
     ...     - load json file from CANONICAL_JSON folder
     ...     - set ${dvLower}, ${dvUpper}, ${dvLowerUnb}, ${dvUpperUnb}, ${dvLowerIncl}, ${dvUpperIncl}
     ...     - commit composition\n- check status code of the commited composition.
@@ -53,10 +52,11 @@ BUG 3.9.1. Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Null - Upper Null - Low
     ...     /value/interval/lower/value: Attribute value of class DV_DATE_TIME does not match existence 1..1
     Should Contain      ${response.json()["message"]}
     ...     /value/interval/upper/value: Attribute value of class DV_DATE_TIME does not match existence 1..1
+    Should Not Contain      ${response.json()["message"]}   NullPointerException
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]     Delete Composition Using API
+    [Teardown]     Run Keywords     Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-540
 
 Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Null - Upper Empty - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Negative
@@ -100,7 +100,7 @@ Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Empty - Upper Null - Lower Unb 0 -
     END
     [Teardown]     Delete Composition Using API
 
-BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021 - Upper Null - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
+Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021 - Upper Null - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Negative    not-ready   bug
     [Documentation]     Negative case for QUANTITY DV_INTERVAL<DV_DATE_TIME>
     ...     Lower 2021, Upper Null, Lower Unb 0, Upper Unb 0, Lower Incl 1, Upper Incl 1
@@ -114,15 +114,14 @@ BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021 - Upper Null - Lower Unb 
     ...     2021     ${NULL}
     ...     ${FALSE}     ${FALSE}     ${TRUE}    ${TRUE}
     ...     ${expectedStatusCode}
-    Log     ${response.json()["message"]}
-    #Should Contain      ${response.json()["message"]}
-    #...     com.nedap.archie.rm.datavalues.quantity.DvInterval["lower"]->com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime["value"]
+    Should Contain      ${response.json()["message"]}
+    ...     /value/interval/upper/value: Attribute value of class DV_DATE_TIME does not match existence 1..1
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
     [Teardown]     Delete Composition Using API
 
-BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Null - Upper 2022 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
+Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Null - Upper 2022 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Negative    not-ready   bug
     [Documentation]     Negative case for QUANTITY DV_INTERVAL<DV_DATE_TIME>
     ...     Lower Null, Upper 2022, Lower Unb 0, Upper Unb 0, Lower Incl 1, Upper Incl 1
@@ -136,15 +135,14 @@ BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower Null - Upper 2022 - Lower Unb 
     ...     ${NULL}     2022
     ...     ${FALSE}     ${FALSE}     ${TRUE}    ${TRUE}
     ...     ${expectedStatusCode}
-    Log     ${response.json()["message"]}
-    #Should Contain      ${response.json()["message"]}
-    #...
+    Should Contain      ${response.json()["message"]}
+    ...     /value/interval/lower/value: Attribute value of class DV_DATE_TIME does not match existence 1..1
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
     [Teardown]     Delete Composition Using API
 
-BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021 - Upper 2022 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
+Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021 - Upper 2022 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Positive    not-ready   bug
     [Documentation]     Positive case for QUANTITY DV_INTERVAL<DV_DATE_TIME>
     ...     Lower 2021, Upper 2022, Lower Unb 0, Upper Unb 0, Lower Incl 1, Upper Incl 1
@@ -161,9 +159,9 @@ BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021 - Upper 2022 - Lower Unb 
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]     Delete Composition Using API
+    [Teardown]     Run Keywords     Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-541
 
-BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-00 - Upper 2022-01 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
+Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-00 - Upper 2022-01 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Negative    not-ready   bug
     [Documentation]     Negative case for QUANTITY DV_INTERVAL<DV_DATE_TIME>
     ...     Lower 2021-00, Upper 2022-01, Lower Unb 0, Upper Unb 0, Lower Incl 1, Upper Incl 1
@@ -181,9 +179,9 @@ BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-00 - Upper 2022-01 - Lowe
     IF      ${statusCodeBoolean} == ${FALSE}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]     Delete Composition Using API
+    [Teardown]     Run Keywords     Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-542
 
-BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01 - Upper 2022-01 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
+Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01 - Upper 2022-01 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Positive    not-ready   bug
     [Documentation]     Positive case for QUANTITY DV_INTERVAL<DV_DATE_TIME>
     ...     Lower 2021-01, Upper 2022-01, Lower Unb 0, Upper Unb 0, Lower Incl 1, Upper Incl 1
@@ -201,7 +199,7 @@ BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01 - Upper 2022-01 - Lowe
         Log     ${response.json()["message"]}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]     Delete Composition Using API
+    [Teardown]     Run Keywords     Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-543
 
 Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01-00 - Upper 2022-01-01 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Negative
@@ -287,7 +285,7 @@ Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01-30 - Upper 2022-01-00 - Lo
     END
     [Teardown]     Delete Composition Using API
 
-BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01-28 - Upper 2022-01-15 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
+Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01-28 - Upper 2022-01-15 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Positive    not-ready   bug
     [Documentation]     Positive case for QUANTITY DV_INTERVAL<DV_DATE_TIME>
     ...     Lower 2021-01-28, Upper 2022-01-15, Lower Unb 0, Upper Unb 0, Lower Incl 1, Upper Incl 1
@@ -305,7 +303,7 @@ BUG Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-01-28 - Upper 2022-01-15 
         Log     ${response.json()["message"]}
         Fail    Commit composition expected status code ${expectedStatusCode} is different.
     END
-    [Teardown]     Delete Composition Using API
+    [Teardown]     Run Keywords     Delete Composition Using API    AND     TRACE JIRA ISSUE    CDR-544
 
 Test QUANTITY DV_INTERVAL<DV_DATE_TIME> Lower 2021-10-24T48 - Upper 2022-01-15T10 - Lower Unb 0 - Upper Unb 0 - Lower Incl 1 - Upper Incl 1
     [Tags]      Negative
