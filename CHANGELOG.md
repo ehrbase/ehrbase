@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - Error causing a 500 Response when requesting a deleted composition via ECIS GET Composition Endpoint ([#875](https://github.com/ehrbase/ehrbase/pull/875))
 - Update folder was not always corectly updating it items ([#974](https://github.com/ehrbase/ehrbase/pull/974))
+- fix rache condition in user creation  ([#984](https://github.com/ehrbase/ehrbase/pull/984))
 
 ## [0.21.1]
 
