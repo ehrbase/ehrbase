@@ -1,6 +1,7 @@
 package org.ehrbase.dao.access.support;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
@@ -39,8 +40,8 @@ public final class TenantSupport {
   
   private static final String ERR_TENANT_ID_MISSMATCH = "Provided tenant id[%s] does not match session tenant id[%s]";
   
-  public static Try<String, InternalServerException> isValidTenantId(String tenantId) {
-    String currentTenantIdentifier = TenantSupport.currentTenantIdentifier();
+  public static Try<String, InternalServerException> isValidTenantId(String tenantId, Supplier<String> currentTenant) {
+    String currentTenantIdentifier = currentTenant.get();
     
     return currentTenantIdentifier.equals(tenantId)
         ? Try.success(tenantId)

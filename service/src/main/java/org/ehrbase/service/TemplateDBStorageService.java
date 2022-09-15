@@ -20,8 +20,8 @@ package org.ehrbase.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.service.TenantService;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
@@ -34,15 +34,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TemplateDBStorageService implements TemplateStorage {
-
     private final DSLContext context;
     private final ServerConfig serverConfig;
-    private final TenantService tenantService;
 
-    public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig, TenantService tenantService) {
+    public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig) {
         this.context = context;
         this.serverConfig = serverConfig;
-        this.tenantService = tenantService;
     }
 
     @Override
@@ -56,11 +53,11 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     @Override
-    public void storeTemplate(OPERATIONALTEMPLATE template) {
+    public void storeTemplate(OPERATIONALTEMPLATE template, String tenantIdentifier) {
         if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantService.getCurrentTenantIdentifier()).update();
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier).update();
         } else {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantService.getCurrentTenantIdentifier()).commit();
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier).commit();
         }
     }
 
