@@ -95,9 +95,10 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             ValidationService validationService,
             EhrService ehrService,
             DSLContext context,
-            ServerConfig serverConfig) {
+            ServerConfig serverConfig,
+            SystemService systemService) {
 
-        super(knowledgeCacheService, context, serverConfig);
+        super(knowledgeCacheService, context, serverConfig, systemService);
         this.validationService = validationService;
         this.ehrService = ehrService;
         this.knowledgeCacheService = knowledgeCacheService;

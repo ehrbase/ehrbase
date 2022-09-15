@@ -36,8 +36,11 @@ public class StatusServiceImp extends BaseServiceImp implements StatusService {
 
     @Autowired
     public StatusServiceImp(
-            KnowledgeCacheService knowledgeCacheService, DSLContext dslContext, ServerConfig serverConfig) {
-        super(knowledgeCacheService, dslContext, serverConfig);
+            KnowledgeCacheService knowledgeCacheService,
+            DSLContext dslContext,
+            ServerConfig serverConfig,
+            SystemService systemService) {
+        super(knowledgeCacheService, dslContext, serverConfig, systemService);
     }
 
     /**

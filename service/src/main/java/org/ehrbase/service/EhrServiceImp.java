@@ -91,8 +91,9 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             KnowledgeCacheService knowledgeCacheService,
             ValidationService validationService,
             DSLContext context,
-            ServerConfig serverConfig) {
-        super(knowledgeCacheService, context, serverConfig);
+            ServerConfig serverConfig,
+            SystemService systemService) {
+        super(knowledgeCacheService, context, serverConfig, systemService);
         this.validationService = validationService;
     }
 

@@ -71,8 +71,9 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
             KnowledgeCacheService knowledgeCacheService,
             DSLContext context,
             ServerConfig serverConfig,
-            CompositionService compositionService) {
-        super(knowledgeCacheService, context, serverConfig);
+            CompositionService compositionService,
+            SystemService systemService) {
+        super(knowledgeCacheService, context, serverConfig, systemService);
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
         this.compositionService = compositionService;
     }

@@ -68,8 +68,9 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
             KnowledgeCacheService knowledgeCacheService,
             DSLContext context,
             ServerConfig serverConfig,
-            EhrService ehrService) {
-        super(knowledgeCacheService, context, serverConfig);
+            EhrService ehrService,
+            SystemService systemService) {
+        super(knowledgeCacheService, context, serverConfig, systemService);
         this.ehrService = ehrService;
     }
 

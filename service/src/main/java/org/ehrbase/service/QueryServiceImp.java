@@ -69,9 +69,10 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
             KnowledgeCacheService knowledgeCacheService,
             DSLContext context,
             ServerConfig serverConfig,
-            ExternalTerminologyValidation tsAdapter) {
+            ExternalTerminologyValidation tsAdapter,
+            SystemService systemService) {
 
-        super(knowledgeCacheService, context, serverConfig);
+        super(knowledgeCacheService, context, serverConfig, systemService);
         this.tsAdapter = tsAdapter;
     }
 

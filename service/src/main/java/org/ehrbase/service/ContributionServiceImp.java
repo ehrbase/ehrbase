@@ -98,8 +98,9 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             EhrService ehrService,
             FolderService folderService,
             DSLContext context,
-            ServerConfig serverConfig) {
-        super(knowledgeCacheService, context, serverConfig);
+            ServerConfig serverConfig,
+            SystemService systemService) {
+        super(knowledgeCacheService, context, serverConfig, systemService);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
         this.folderService = folderService;
