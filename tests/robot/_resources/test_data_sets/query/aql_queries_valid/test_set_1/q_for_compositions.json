@@ -1,0 +1,3 @@
+{
+  "q": "SELECT e/ehr_status/subject/external_ref/id/value as value, e/ehr_status/subject/external_ref/namespace as namespace, c/name/value as composition FROM EHR e Contains composition c"
+}

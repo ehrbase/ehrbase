@@ -1,0 +1,3 @@
+{
+    "q":"SELECT c/name/value as composition, i/activities[at0001]/description[at0009]/items[at0121]/value/value as instruction from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS INSTRUCTION i"
+}

@@ -1,0 +1,54 @@
+{
+    "q": "SELECT e/ehr_status/subject/external_ref/id/value as value, e/ehr_status/subject/external_ref/namespace as namespace, c/name/value as composition FROM EHR e Contains composition c",
+    "columns": [
+        {
+            "path": "/ehr_status/subject/external_ref/id/value",
+            "name": "value"
+        },
+        {
+            "path": "/ehr_status/subject/external_ref/namespace",
+            "name": "namespace"
+        },
+        {
+            "path": "/name/value",
+            "name": "composition"
+        }
+    ],
+    "rows": [
+        [
+            "12345",
+            "EHR",
+            "ehrbase.testcase.v0"
+        ],
+        [
+            "12345",
+            "EHR",
+            "ehrbase.testcase.v0"
+        ],
+        [
+            "12345",
+            "EHR",
+            "ehrbase.testcase.v0"
+        ],
+        [
+            "12345",
+            "EHR",
+            "ehrbase.testcase.v0"
+        ],
+        [
+            "12345",
+            "EHR",
+            "ehrbase.testcase.v0"
+        ],
+        [
+            "12345",
+            "EHR",
+            "ehrbase.testcase.v0"
+        ],
+        [
+            "12345",
+            "EHR",
+            "ehrbase.testcase.v0"
+        ]
+    ]
+}

@@ -1,0 +1,29 @@
+{
+    "q": "SELECT a_a/description[at0017]/items[at0020]/value/value as medication from EHR e CONTAINS ACTION a_a[openEHR-EHR-ACTION.medication.v1]",
+    "columns": [
+        {
+            "path": "/description[at0017]/items[at0020]/value/value",
+            "name": "medication"
+        }
+    ],
+    "rows": [
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Paracetamol"
+        ],
+        [
+            "Paracetamol"
+        ],
+        [
+            "Paracetamol"
+        ],
+        [
+            "Paracetamol"
+        ],
+        [
+            "Paracetamol"
+        ]
+    ]
+}

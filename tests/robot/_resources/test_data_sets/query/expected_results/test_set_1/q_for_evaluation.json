@@ -1,0 +1,29 @@
+{
+    "q": "SELECT ev/data[at0001]/items[at0002]/value/value as evaluation from EHR e CONTAINS EVALUATION ev",
+    "columns": [
+        {
+            "path": "/data[at0001]/items[at0002]/value/value",
+            "name": "evaluation"
+        }
+    ],
+    "rows": [
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Fever"
+        ],
+        [
+            "Fever"
+        ],
+        [
+            "Fever"
+        ],
+        [
+            "Fever"
+        ],
+        [
+            "Fever"
+        ]
+    ]
+}

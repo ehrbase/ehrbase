@@ -1,0 +1,26 @@
+{
+    "q": "SELECT device/items[at0001]/value/value as device from EHR e CONTAINS CLUSTER device[openEHR-EHR-CLUSTER.device.v1]",
+    "columns": [
+        {
+            "path": "/items[at0001]/value/value",
+            "name": "device"
+        }
+    ],
+    "rows": [
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "sphygmometer"
+        ],
+        [
+            "sphygmometer"
+        ],
+        [
+            "sphygmometer"
+        ],
+        [
+            "sphygmometer"
+        ]
+    ]
+}
