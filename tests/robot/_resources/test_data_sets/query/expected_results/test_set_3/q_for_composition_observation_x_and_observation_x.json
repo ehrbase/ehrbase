@@ -1,0 +1,91 @@
+{
+    "q": "select  o1/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude,o2/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude  from EHR e contains COMPOSITION c contains ( OBSERVATION o1[openEHR-EHR-OBSERVATION.blood_pressure.v2] AND OBSERVATION o2[openEHR-EHR-OBSERVATION.body_temperature.v2])",
+    "columns": [
+        {
+            "path": "/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude",
+            "name": "#0"
+        },
+        {
+            "path": "/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude",
+            "name": "#1"
+        }
+    ],
+    "rows": [
+        [
+            60.0,
+            60.0
+        ],
+        [
+            60.0,
+            50.0
+        ],
+        [
+            70.0,
+            60.0
+        ],
+        [
+            70.0,
+            50.0
+        ],
+        [
+            90.0,
+            60.0
+        ],
+        [
+            90.0,
+            50.0
+        ],
+        [
+            60.0,
+            60.0
+        ],
+        [
+            60.0,
+            50.0
+        ],
+        [
+            70.0,
+            60.0
+        ],
+        [
+            70.0,
+            50.0
+        ],
+        [
+            90.0,
+            60.0
+        ],
+        [
+            90.0,
+            50.0
+        ],
+        [
+            60.0,
+            60.0
+        ],
+        [
+            60.0,
+            50.0
+        ],
+        [
+            70.0,
+            60.0
+        ],
+        [
+            70.0,
+            50.0
+        ],
+        [
+            90.0,
+            60.0
+        ],
+        [
+            90.0,
+            50.0
+        ],
+        [
+            500.0,
+            50.0
+        ]
+    ]
+}

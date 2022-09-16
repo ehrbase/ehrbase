@@ -213,19 +213,20 @@ Get Composition X Admin X
 
 *** Keywords ***
 Prepare Test Set 1 From Query Execution
+    ${opt_file_name}    Set Variable    ehrbase.testcase05.v0
     Upload OPT    query_test_sets/${optFile}
     create EHR
     Commit Composition FLAT And Check Response Status To Be 201
-    ...     ehrbase.testcase05.v0__compo1_test_set_1.json
+    ...     ${opt_file_name}__compo1_test_set_1.json
     Commit Composition FLAT And Check Response Status To Be 201
-    ...     ehrbase.testcase05.v0__compo2_test_set_1.json
+    ...     ${opt_file_name}__compo2_test_set_1.json
     Commit Composition FLAT And Check Response Status To Be 201
-    ...     ehrbase.testcase05.v0__compo3_no_obs_test_set_1.json
+    ...     ${opt_file_name}__compo3_no_obs_test_set_1.json
     Commit Composition FLAT And Check Response Status To Be 201
-    ...     ehrbase.testcase05.v0__compo4_no_action_test_set_1.json
+    ...     ${opt_file_name}__compo4_no_action_test_set_1.json
     Commit Composition FLAT And Check Response Status To Be 201
-    ...     ehrbase.testcase05.v0__compo5_no_evaluation_test_set_1.json
+    ...     ${opt_file_name}__compo5_no_evaluation_test_set_1.json
     Commit Composition FLAT And Check Response Status To Be 201
-    ...     ehrbase.testcase05.v0__compo6_no_instruction_test_set_1.json
+    ...     ${opt_file_name}__compo6_no_instruction_test_set_1.json
     Commit Composition FLAT And Check Response Status To Be 201
-    ...     ehrbase.testcase05.v0__compo8_no_cluster_test_set_1.json
+    ...     ${opt_file_name}__compo8_no_cluster_test_set_1.json

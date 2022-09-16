@@ -1,0 +1,3 @@
+{
+    "q":"select  v/data[at0001]/items[at0002]/value/value,C/items[at0001]/value/value   from EHR e  contains EVALUATION v[openEHR-EHR-EVALUATION.problem_diagnosis.v1] contains CLUSTER C[openEHR-EHR-CLUSTER.anatomical_location.v1]"
+}
