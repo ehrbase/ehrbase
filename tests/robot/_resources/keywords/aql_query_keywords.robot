@@ -35,6 +35,9 @@ ${INVALID QUERY DATA SETS}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_se
 ${QUERY RESULTS LOADED DB}   ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results/loaded_db
 ${QUERY RESULTS EMPTY DB}    ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results/empty_db
 
+${ACTUAL JSON TO SEND PAYLOAD}          ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/aql_queries_valid
+${EXPECTED JSON TO RECEIVE PAYLOAD}     ${PROJECT_ROOT}/tests/robot/_resources/test_data_sets/query/expected_results
+
 ${aql_queries}    ${VALID QUERY DATA SETS}
 ${TIME QUERY DATA SET}     get_time_from_ehr.json
 ${Berlin Time Zone Expected DATA SET}     get_time_from_ehr_Berlin_time_zone.json
@@ -1772,7 +1775,26 @@ D/504
 
                         Update 'rows', 'q' and 'meta' in Temp Result-Data-Set    D/504
 
+Commit Composition FLAT And Check Response Status To Be 201
+    [Arguments]     ${compositionFile}
+    commit composition   format=FLAT
+    ...                  composition=${compositionFile}
+    Should Be Equal As Strings      ${response.status_code}     201
 
+Execute Query And Compare Actual Result With Expected
+    [Arguments]     ${query_to_post_file}    ${expected_result_file}    ${test_set}=test_set_1
+    ${json_to_send}         Get File
+    ...     ${ACTUAL JSON TO SEND PAYLOAD}/${test_set}/${query_to_post_file}
+    ${json_to_receive}      Get File
+    ...     ${EXPECTED JSON TO RECEIVE PAYLOAD}/${test_set}/${expected_result_file}
+    ${json_to_receive_dict}     evaluate    json.loads('''${json_to_receive}''')   json
+    Set Test Variable           ${payload}      ${json_to_send}
+    POST /query/aql (REST)      JSON
+    Set Test Variable           ${actual_query_result}    ${response body}
+    &{diff}     compare jsons   ${actual_query_result}    ${json_to_receive_dict}
+    ...     ignore_order=${TRUE}
+    Should Be Empty     ${diff}
+    ...     msg=DIFF DETECTED!!! \nExpected != Actual on file ${expected_result_file}
 
 
 # oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.

@@ -1,0 +1,132 @@
+{
+    "q": "SELECT c/name/value as composition, i/activities[at0001]/description[at0002]/items[at0070]/name/value as name, i/activities[at0001]/description[at0002]/items[at0070]/value/value as medication_item, i/activities[at0001]/description[at0009]/items[at0121]/name/value as instruction_name, i/activities[at0001]/description[at0009]/items[at0121]/value/value as service_request from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS INSTRUCTION i",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "composition"
+        },
+        {
+            "path": "/activities[at0001]/description[at0002]/items[at0070]/name/value",
+            "name": "name"
+        },
+        {
+            "path": "/activities[at0001]/description[at0002]/items[at0070]/value/value",
+            "name": "medication_item"
+        },
+        {
+            "path": "/activities[at0001]/description[at0009]/items[at0121]/name/value",
+            "name": "instruction_name"
+        },
+        {
+            "path": "/activities[at0001]/description[at0009]/items[at0121]/value/value",
+            "name": "service_request"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "Lorem ipsum"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "CBC"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            null,
+            null,
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            "Lorem ipsum",
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Erythromycin",
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus",
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus",
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus",
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus",
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus",
+            null,
+            null
+        ]
+    ]
+}

@@ -1,0 +1,3 @@
+{
+    "q":"SELECT c/name/value as composition, ev/data[at0001]/items[at0004]/value/value as reason_for_encounter from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS EVALUATION ev"
+}

@@ -1,0 +1,264 @@
+{
+    "q": "SELECT c/archetype_details/template_id/value as composition, obs/data[at0001]/events[at0006]/data[at0003]/name/value as blood_pressure, obs/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude as systolic, obs/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude as diastolic, obs/data[at0002]/events[at0003]/data[at0001]/items[at0004]/name/value as temperature, obs/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude as magnitude FROM EHR e Contains composition c CONTAINS OBSERVATION obs",
+    "columns": [
+        {
+            "path": "/archetype_details/template_id/value",
+            "name": "composition"
+        },
+        {
+            "path": "/data[at0001]/events[at0006]/data[at0003]/name/value",
+            "name": "blood_pressure"
+        },
+        {
+            "path": "/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude",
+            "name": "systolic"
+        },
+        {
+            "path": "/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude",
+            "name": "diastolic"
+        },
+        {
+            "path": "/data[at0002]/events[at0003]/data[at0001]/items[at0004]/name/value",
+            "name": "temperature"
+        },
+        {
+            "path": "/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude",
+            "name": "magnitude"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            500.0,
+            500.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            500.0,
+            500.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            500.0,
+            500.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            180.0,
+            120.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            134.0,
+            110.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            130.0,
+            80.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            135.0,
+            80.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            134.0,
+            90.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            120.0,
+            76.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            135.0,
+            80.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            134.0,
+            90.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            120.0,
+            76.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            135.0,
+            80.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            134.0,
+            90.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            120.0,
+            76.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            135.0,
+            80.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            134.0,
+            90.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            120.0,
+            76.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            135.0,
+            80.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            134.0,
+            90.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            "blood pressure",
+            120.0,
+            76.0,
+            null,
+            null
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            50.0
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            60.0
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            70.0
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            90.0
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            90.0
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            90.0
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            90.0
+        ],
+        [
+            "ehrbase.testcase0005.v1",
+            null,
+            null,
+            null,
+            "Temperature",
+            90.0
+        ]
+
+    ]
+}

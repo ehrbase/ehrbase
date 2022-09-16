@@ -1,0 +1,43 @@
+{
+    "q": "SELECT c/name/value as composition, ev/data[at0001]/items[at0004]/value/value as evaluation from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS EVALUATION ev [openEHR-EHR-EVALUATION.reason_for_encounter.v1]",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "composition"
+        },
+        {
+            "path": "/data[at0001]/items[at0004]/value/value",
+            "name": "evaluation"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase.v0",
+            "Lorem ipsum"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Stomach Ache"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Body Ache"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Infection"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Infection"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Infection"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Infection"
+        ]
+    ]
+}

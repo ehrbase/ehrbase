@@ -1,0 +1,39 @@
+{
+    "q": "SELECT c/name/value as composition, a_a/description[at0017]/items[at0020]/value/value as medication from EHR e CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS ACTION a_a",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "composition"
+        },
+        {
+            "path": "/description[at0017]/items[at0020]/value/value",
+            "name": "medication"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase.v0",
+            "Lorem ipsum"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Paracetamol"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Paracetamol"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Paracetamol"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Paracetamol"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Paracetamol"
+        ]
+    ]
+}

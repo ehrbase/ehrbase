@@ -1,0 +1,54 @@
+{
+    "q": "SELECT c/name/value as composition, i/activities[at0001]/description[at0002]/items[at0070]/name/value as name, i/activities[at0001]/description[at0002]/items[at0070]/value/value as medication_item from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1]  CONTAINS INSTRUCTION i",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "composition"
+        },
+        {
+            "path": "/activities[at0001]/description[at0002]/items[at0070]/name/value",
+            "name": "name"
+        },
+        {
+            "path": "/activities[at0001]/description[at0002]/items[at0070]/value/value",
+            "name": "medication_item"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            "Lorem ipsum"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Erythromycin"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Medication item",
+            " Fenak Plus"
+        ]
+    ]
+}

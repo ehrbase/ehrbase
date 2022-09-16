@@ -1,0 +1,3 @@
+{
+    "q": "SELECT c/archetype_details/template_id/value as composition, obs/data[at0001]/events[at0006]/data[at0003]/name/value as blood_pressure, obs/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude as systolic, obs/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude as diastolic, obs/data[at0002]/events[at0003]/data[at0001]/items[at0004]/name/value as temperature, obs/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude as magnitude FROM EHR e Contains composition c CONTAINS OBSERVATION obs"
+}
