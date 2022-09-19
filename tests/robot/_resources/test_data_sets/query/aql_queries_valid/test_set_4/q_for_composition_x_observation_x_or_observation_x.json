@@ -1,0 +1,3 @@
+{
+    "q":"select  o1/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude, o2/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude from EHR e contains ((COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1] contains OBSERVATION o1[openEHR-EHR-OBSERVATION.blood_pressure.v2]) OR OBSERVATION o2[openEHR-EHR-OBSERVATION.body_temperature.v2])"
+}

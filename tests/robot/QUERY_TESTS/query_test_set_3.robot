@@ -25,6 +25,7 @@ Resource        ../_resources/keywords/admin_keywords.robot
 Resource        ../_resources/suite_settings.robot
 Resource        ../_resources/keywords/aql_query_keywords.robot
 
+Suite Setup         Clean DB
 Suite Teardown      Clean DB
 
 
@@ -36,11 +37,10 @@ ${testSet}      test_set_3
 *** Test Cases ***
 Query for COMPOSITION[x] > OBSERVATION[x] > CLUSTER[x]
     [Setup]     Prepare Test Set 3 From Query Execution
-    Fail    Not yet implemented as query and expected is empty.
-#    Execute Query And Compare Actual Result With Expected
-#    ...     q_for_composition_x_observation_x_cluster_x.json
-#    ...     q_for_composition_x_observation_x_cluster_x.json
-#    ...     test_set=${testSet}
+    Execute Query And Compare Actual Result With Expected
+    ...     q_for_composition_x_observation_x_cluster_x.json
+    ...     q_for_composition_x_observation_x_cluster_x.json
+    ...     test_set=${testSet}
 
 Query for OBSERVATION > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected

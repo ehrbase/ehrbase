@@ -25,6 +25,7 @@ Resource        ../_resources/keywords/admin_keywords.robot
 Resource        ../_resources/suite_settings.robot
 Resource        ../_resources/keywords/aql_query_keywords.robot
 
+Suite Setup         Clean DB
 Suite Teardown      Clean DB
 
 

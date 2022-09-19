@@ -1,0 +1,23 @@
+{
+    "q": "select c/name/value from EHR e NOT CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1]",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "#0"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase008.v0"
+        ],
+        [
+            "ehrbase.testcase008.v0"
+        ],
+        [
+            "ehrbase.testcase008.v0"
+        ],
+        [
+            "ehrbase.testcase008.v0"
+        ]
+    ]
+}

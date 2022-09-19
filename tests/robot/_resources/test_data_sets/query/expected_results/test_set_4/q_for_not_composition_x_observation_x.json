@@ -1,0 +1,31 @@
+{
+    "q": "select c/name/value,o/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude from EHR e NOT CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.body_temperature.v2]",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "#0"
+        },
+        {
+            "path": "/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude",
+            "name": "#1"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase008.v0",
+            50.0
+        ],
+        [
+            "ehrbase.testcase008.v0",
+            88.0
+        ],
+        [
+            "ehrbase.testcase008.v0",
+            40.0
+        ],
+        [
+            "ehrbase.testcase008.v0",
+            60.0
+        ]
+    ]
+}
