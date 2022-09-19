@@ -9,6 +9,7 @@ import org.ehrbase.api.tenant.Tenant;
 public interface TenantService extends BaseService {
   public String getCurrentTenantIdentifier();
   UUID create(Tenant tenant);
+  Tenant update(Tenant tenant);
   Optional<Tenant> findBy(String tenantId);
   List<Tenant> getAll();
 }

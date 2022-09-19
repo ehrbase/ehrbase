@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.ehrbase.jooq.pg.Tables;
@@ -57,4 +58,25 @@ public class TenantAccess implements I_TenantAccess {
       public String getTenantName() { return record.getTenantName(); }
     };
   }
+  
+  private static final String ERR_TENANT_ID = "Updateing tenant id[%s] is not allowed";
+  
+  public Tenant update(Tenant tenant) {
+    if(!record.getTenantId().equals(tenant.getTenantId()))
+      new InternalServerException(String.format(ERR_TENANT_ID, tenant.getTenantId()));
+
+    record.setTenantName(tenant.getTenantName());
+    record.update();
+    return convert();
+  }
 }
+
+
+
+
+
+
+
+
+
+

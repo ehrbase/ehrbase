@@ -63,4 +63,11 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     return Optional.ofNullable(I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenantId))
         .map(acc -> acc.convert());
   }
+
+  @Override
+  public Tenant update(Tenant tenant) {
+    return I_TenantAccess
+        .retrieveInstanceBy(getDataAccess().getContext(), tenant.getTenantId())
+        .update(tenant);
+  }
 }

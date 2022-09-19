@@ -42,6 +42,8 @@ public interface I_TenantAccess {
   static I_TenantAccess retrieveInstanceBy(DSLContext ctx, String tenantId) {
     return TenantAccess.retrieveInstanceBy(ctx, tenantId);
   }
+  
+  public Tenant update(Tenant tenant);
 
   public UUID commit();
   

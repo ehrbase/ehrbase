@@ -28,6 +28,7 @@ CREATE TABLE tenant (
 );
 
 ALTER TABLE ehr.tenant ADD UNIQUE (tenant_id);
+ALTER TABLE ehr.tenant ADD UNIQUE (tenant_name);
 
 INSERT INTO ehr.tenant (
     tenant_id,
