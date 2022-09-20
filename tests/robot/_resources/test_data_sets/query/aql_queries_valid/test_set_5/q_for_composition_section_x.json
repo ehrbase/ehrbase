@@ -1,0 +1,3 @@
+{
+    "q":"SELECT s/name/value FROM EHR e CONTAINS COMPOSITION CONTAINS SECTION s[openEHR-EHR-SECTION.adhoc.v1]"
+}

@@ -1,0 +1,74 @@
+{
+    "q": "SELECT obs/name/value FROM EHR e CONTAINS SECTION s CONTAINS OBSERVATION obs",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "#0"
+        }
+    ],
+    "rows": [
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Blood pressure"
+        ],
+        [
+            "Body temperature"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Blood pressure"
+        ],
+        [
+            "Body temperature"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Blood pressure"
+        ],
+        [
+            "Body temperature"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Blood pressure"
+        ],
+        [
+            "Body temperature"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Blood pressure"
+        ],
+        [
+            "Body temperature"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Blood pressure"
+        ],
+        [
+            "Body temperature"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Blood pressure"
+        ],
+        [
+            "Body temperature"
+        ]
+    ]
+}

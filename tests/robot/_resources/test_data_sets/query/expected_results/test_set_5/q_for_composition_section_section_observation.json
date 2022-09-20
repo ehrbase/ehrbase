@@ -1,0 +1,32 @@
+{
+    "q": "SELECT obs/name/value from EHR e CONTAINS COMPOSITION c CONTAINS SECTION s1 CONTAINS SECTION s2 CONTAINS OBSERVATION obs",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "#0"
+        }
+    ],
+    "rows": [
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Laboratory test result"
+        ],
+        [
+            "Laboratory test result"
+        ]
+    ]
+}

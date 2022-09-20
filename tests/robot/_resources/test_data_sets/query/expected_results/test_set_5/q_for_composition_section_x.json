@@ -1,0 +1,137 @@
+{
+    "q": "SELECT s/name/value FROM EHR e CONTAINS SECTION s",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "name"
+        }
+    ],
+    "rows": [
+        [
+            "Lab Tests"
+        ],
+        [
+            "Pathology Test"
+        ],
+        [
+            "Vitals"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Service Request"
+        ],
+        [
+            "Medication Order"
+        ],
+        [
+            "Lab Tests"
+        ],
+        [
+            "Pathology Test"
+        ],
+        [
+            "Vitals"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Service Request"
+        ],
+        [
+            "Medication Order"
+        ],
+        [
+            "Lab Tests"
+        ],
+        [
+            "Pathology Test"
+        ],
+        [
+            "Vitals"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Service Request"
+        ],
+        [
+            "Medication Order"
+        ],
+        [
+            "Lab Tests"
+        ],
+        [
+            "Pathology Test"
+        ],
+        [
+            "Vitals"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Service Request"
+        ],
+        [
+            "Medication Order"
+        ],
+        [
+            "Lab Tests"
+        ],
+        [
+            "Pathology Test"
+        ],
+        [
+            "Vitals"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Service Request"
+        ],
+        [
+            "Medication Order"
+        ],
+        [
+            "Lab Tests"
+        ],
+        [
+            "Pathology Test"
+        ],
+        [
+            "Vitals"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Service Request"
+        ],
+        [
+            "Medication Order"
+        ],
+        [
+            "Lab Tests"
+        ],
+        [
+            "Pathology Test"
+        ],
+        [
+            "Vitals"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Service Request"
+        ],
+        [
+            "Medication Order"
+        ]
+    ]
+}
