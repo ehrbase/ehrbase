@@ -34,176 +34,176 @@ ${optFile}      ehrbase.testcase05.v0.opt
 ${testSet}      test_set_1
 
 *** Test Cases ***
-Get EHRs Using Query
+Qeery For EHRs
     [Setup]     Prepare Test Set 1 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_ehrs.json
     ...     q_ehrs.json
     ...     test_set=${testSet}
 
-Get Compositions
+Query For Compositions
     Execute Query And Compare Actual Result With Expected
     ...     q_for_compositions.json
     ...     q_for_compositions.json
     ...     test_set=${testSet}
 
-Get Observation
+Query For Observation
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation.json
     ...     q_for_observation.json
     ...     test_set=${testSet}
 
-Get Observation X
+Query For Observation[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x.json
     ...     q_for_observation_x.json
     ...     test_set=${testSet}
 
-Get Action
+Query For Action
     Execute Query And Compare Actual Result With Expected
     ...     q_for_action.json
     ...     q_for_action.json
     ...     test_set=${testSet}
 
-Get Action X
+Query For Action[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_action_x.json
     ...     q_for_action_x.json
     ...     test_set=${testSet}
 
-Get Evaluation
+Query For Evaluation
     Execute Query And Compare Actual Result With Expected
     ...     q_for_evaluation.json
     ...     q_for_evaluation.json
     ...     test_set=${testSet}
 
-Get Evaluation X
+Query For Evaluation[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_evaluation_x.json
     ...     q_for_evaluation_x.json
     ...     test_set=${testSet}
 
-Get Instruction
+Query For Instruction
     Execute Query And Compare Actual Result With Expected
     ...     q_for_instruction.json
     ...     q_for_instruction.json
     ...     test_set=${testSet}
 
-Get Instruction X
+Query For Instruction[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_instruction_x.json
     ...     q_for_instruction_x.json
     ...     test_set=${testSet}
 
-Get Admin
+Query For Admin
     Execute Query And Compare Actual Result With Expected
     ...     q_for_admin.json
     ...     q_for_admin.json
     ...     test_set=${testSet}
 
-Get Admin X
+Query For Admin[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_admin_x.json
     ...     q_for_admin_x.json
     ...     test_set=${testSet}
 
-Get Cluster
+Query For Cluster
     Execute Query And Compare Actual Result With Expected
     ...     q_for_cluster.json
     ...     q_for_cluster.json
     ...     test_set=${testSet}
 
-Get Cluster X
+Query For Cluster[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_cluster_x.json
     ...     q_for_cluster_x.json
     ...     test_set=${testSet}
 
-Get Composition Observation
+Query For Composition > Observation
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_observation.json
     ...     q_for_composition_observation.json
     ...     test_set=${testSet}
 
-Get Composition X Observation
+Query For Composition[x] > Observation
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation.json
     ...     q_for_composition_x_observation.json
     ...     test_set=${testSet}
 
-Get Composition X Observation X
+Query For Composition[x] > Observation[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation_x.json
     ...     q_for_composition_x_observation_x.json
     ...     test_set=${testSet}
 
-Get Composition Action
+Query For Composition > Action
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_action.json
     ...     q_for_composition_action.json
     ...     test_set=${testSet}
 
-Get Composition X Action
+Query For Composition[x] > Action
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_action.json
     ...     q_for_composition_x_action.json
     ...     test_set=${testSet}
 
-Get Composition X Action X
+Query For Composition[x] > Action[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_action_x.json
     ...     q_for_composition_x_action_x.json
     ...     test_set=${testSet}
 
-Get Composition Evaluation
+Query For Composition > Evaluation
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_evaluation.json
     ...     q_for_composition_evaluation.json
     ...     test_set=${testSet}
 
-Get Composition X Evaluation
+Query For Composition[x] > Evaluation
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_evaluation.json
     ...     q_for_composition_x_evaluation.json
     ...     test_set=${testSet}
 
-Get Composition X Evaluation X
+Query For Composition[x] > Evaluation[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_evaluation_x.json
     ...     q_for_composition_x_evaluation_x.json
     ...     test_set=${testSet}
 
-Get Composition Instruction
+Query For Composition > Instruction
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_instruction.json
     ...     q_for_composition_instruction.json
     ...     test_set=${testSet}
 
-Get Composition X Instruction
+Query For Composition[x] > Instruction
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_instruction.json
     ...     q_for_composition_x_instruction.json
     ...     test_set=${testSet}
 
-Get Composition X Instruction X
+Query For Composition[x] > Instruction [x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_instruction_x.json
     ...     q_for_composition_x_instruction_x.json
     ...     test_set=${testSet}
 
-Get Composition Admin
+Query For Composition > Admin
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_admin.json
     ...     q_for_composition_admin.json
     ...     test_set=${testSet}
 
-Get Composition X Admin
+Query For Composition [x] > Admin
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_admin.json
     ...     q_for_composition_x_admin.json
     ...     test_set=${testSet}
 
-Get Composition X Admin X
+Query For Composition [x] > Admin [x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_admin_x.json
     ...     q_for_composition_x_admin_x.json

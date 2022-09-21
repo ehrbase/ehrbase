@@ -36,38 +36,38 @@ ${testSet}      test_set_4
 
 
 *** Test Cases ***
-Query for ( COMP[x] > OBS[x] ) or OBS[x]
+Query For ( COMP[x] > OBS[x] ) Or OBS[x]
     [Setup]     Prepare Test Set 4 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation_x_or_observation_x.json
     ...     q_for_composition_x_observation_x_or_observation_x.json
     ...     test_set=${testSet}
 
-Query for ( COMP[x] > OBS[x] ) and OBS[x]
+Query For ( COMP[x] > OBS[x] ) And OBS[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation_x_and_observation_x.json
     ...     q_for_composition_x_observation_x_and_observation_x.json
     ...     test_set=${testSet}
 
-Query for ( COMP[x] > ACTION ) or ( COMP[x] > OBS )
+Query For ( COMP[x] > ACTION ) Or ( COMP[x] > OBS )
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_action_or_composition_x_observation.json
     ...     q_for_composition_x_action_or_composition_x_observation.json
     ...     test_set=${testSet}
 
-Query for NOT COMP[x]
+Query For NOT COMP[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_not_composition_x.json
     ...     q_for_not_composition_x.json
     ...     test_set=${testSet}
 
-Query for ( NOT COMP[x] ) > OBS[x]
+Query For ( NOT COMP[x] ) > OBS[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_not_composition_x_observation_x.json
     ...     q_for_not_composition_x_observation_x.json
     ...     test_set=${testSet}
 
-Query for ( COMP > OBS[x] ) AND ( NOT COMP[x] )
+Query For ( COMP > OBS[x] ) And ( NOT COMP[x] )
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_observation_x_and_not_composition_x.json
     ...     q_for_composition_observation_x_and_not_composition_x.json

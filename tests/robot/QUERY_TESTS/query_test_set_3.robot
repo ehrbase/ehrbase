@@ -35,110 +35,110 @@ ${testSet}      test_set_3
 
 
 *** Test Cases ***
-Query for COMPOSITION[x] > OBSERVATION[x] > CLUSTER[x]
+Query For COMPOSITION[x] > OBSERVATION[x] > CLUSTER[x]
     [Setup]     Prepare Test Set 3 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation_x_cluster_x.json
     ...     q_for_composition_x_observation_x_cluster_x.json
     ...     test_set=${testSet}
 
-Query for OBSERVATION > CLUSTER[x]
+Query For OBSERVATION > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_cluster_x.json
     ...     q_for_observation_cluster_x.json
     ...     test_set=${testSet}
 
-Query for OBSERVATION[x] > CLUSTER
+Query For OBSERVATION[x] > CLUSTER
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_cluster.json
     ...     q_for_observation_x_cluster.json
     ...     test_set=${testSet}
 
-Query for OBSERVATION[x] > CLUSTER[x] BP Device
+Query For OBSERVATION[x] > CLUSTER[x] BP Device
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_cluster_x_bp_device.json
     ...     q_for_observation_x_cluster_x_bp_device.json
     ...     test_set=${testSet}
 
-Query for ACTION[x] > CLUSTER[x]
+Query For ACTION[x] > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_action_x_cluster_x.json
     ...     q_for_action_x_cluster_x.json
     ...     test_set=${testSet}
 
-Query for EVALUATION[x] > CLUSTER[x]
+Query For EVALUATION[x] > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_evaluation_x_cluster_x.json
     ...     q_for_evaluation_x_cluster_x.json
     ...     test_set=${testSet}
 
-Query for OBSERVATION[x] > CLUSTER[x]
+Query For OBSERVATION[x] > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_cluster_x.json
     ...     q_for_observation_x_cluster_x.json
     ...     test_set=${testSet}
 
-Query for INSTRUCTION[x] > CLUSTER[x]
+Query For INSTRUCTION[x] > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_instruction_x_cluster_x.json
     ...     q_for_instruction_x_cluster_x.json
     ...     test_set=${testSet}
 
-Query for ADMIN[x] > CLUSTER[x]
+Query For ADMIN[x] > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_admin_x_cluster_x.json
     ...     q_for_admin_x_cluster_x.json
     ...     test_set=${testSet}
 
-Query for COMPOSITION > OBSERVATION[x] >CLUSTER[x] >CLUSTER[x]
+Query For COMPOSITION > OBSERVATION[x] > CLUSTER[x] > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_observation_x_cluster_x_cluster_x.json
     ...     q_for_composition_observation_x_cluster_x_cluster_x.json
     ...     test_set=${testSet}
 
-Query for ( COMP > EVAL[x] ) and ( COMP > INST[x] )
+Query For ( COMP > EVAL[x] ) And ( COMP > INST[x] )
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_evaluation_x_and_composition_instruction_x.json
     ...     q_for_composition_evaluation_x_and_composition_instruction_x.json
     ...     test_set=${testSet}
 
-Query for COMP > ( OBS[x] and OBS[x] )
+Query For COMP > ( OBS[x] And OBS[x] )
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_observation_x_and_observation_x.json
     ...     q_for_composition_observation_x_and_observation_x.json
     ...     test_set=${testSet}
 
-Query for OBS[x] or OBS[x]
+Query For OBS[x] Or OBS[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_or_observation_x.json
     ...     q_for_observation_x_or_observation_x.json
     ...     test_set=${testSet}
 
-Query for COMP[x] or OBS[x]
+Query For COMP[x] Or OBS[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_or_observation_x.json
     ...     q_for_composition_x_or_observation_x.json
     ...     test_set=${testSet}
 
-Query for OBS[x] or ACTION[x]
+Query For OBS[x] Or ACTION[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_or_action_x.json
     ...     q_for_observation_x_or_action_x.json
     ...     test_set=${testSet}
 
-Query for ACTION[x] or INST[x]
+Query For ACTION[x] Or INST[x]
     Execute Query And Compare Actual Result With Expected
     ...     q_for_action_x_or_instruction_x.json
     ...     q_for_action_x_or_instruction_x.json
     ...     test_set=${testSet}
 
-Query for ( COMP[x] > ACTION ) or ( COMP[x] > OBS )
+Query For ( COMP[x] > ACTION ) Or ( COMP[x] > OBS )
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_action_or_composition_x_observation.json
     ...     q_for_composition_x_action_or_composition_x_observation.json
     ...     test_set=${testSet}
 
-Query for OBS > ( CLUSTER[x] and CLUSTER[x] )
+Query For OBS > ( CLUSTER[x] And CLUSTER[x] )
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_cluster_x_and_cluster_x.json
     ...     q_for_observation_cluster_x_and_cluster_x.json
