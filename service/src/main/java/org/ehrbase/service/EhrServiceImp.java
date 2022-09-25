@@ -74,6 +74,7 @@ import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +83,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
+    private final EhrServiceImp self;
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private UUID emptyParty;
@@ -91,16 +93,22 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             KnowledgeCacheService knowledgeCacheService,
             ValidationService validationService,
             DSLContext context,
-            ServerConfig serverConfig) {
+            ServerConfig serverConfig,
+            @Lazy EhrServiceImp self) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
+        this.self = self;
     }
 
     @PostConstruct
     public void init() {
+        // run initialization in transaction
+        self.doInit();
+    }
+
+    public void doInit() {
         // Create local system UUID
         getSystemUuid();
-
         emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
     }
 
