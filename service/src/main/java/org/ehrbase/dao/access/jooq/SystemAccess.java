@@ -22,12 +22,15 @@ import static org.ehrbase.jooq.pg.Tables.SYSTEM;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.ObjectUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.util.JooqUtil;
 import org.ehrbase.jooq.pg.tables.records.SystemRecord;
 import org.joda.time.DateTime;
+import org.jooq.DSLContext;
 
 /**
  * Created by Christian Chevalley on 4/20/2015.
@@ -48,45 +51,41 @@ public class SystemAccess extends DataAccess implements I_SystemAccess {
         systemRecord.setSettings(settings);
     }
 
-    public static UUID createOrRetrieveLocalSystem(I_DomainAccess domainAccess) {
-        String settings = domainAccess.getServerConfig().getNodename();
-
-        // try to retrieve and return if successful, otherwise create
-        UUID res = retrieveInstanceId(domainAccess, settings);
-        if (res == null) {
-            return new SystemAccess(domainAccess, "DEFAULT RUNNING SYSTEM", settings).commit();
-        } else return res;
+    public static UUID retrieveOrCreateLocalSystem(I_DomainAccess domainAccess) {
+        return JooqUtil.retrieveOrCreate(
+                domainAccess,
+                da -> retrieveInstanceId(da, da.getServerConfig().getNodename()),
+                SYSTEM,
+                da -> new SystemAccess(
+                                da,
+                                "DEFAULT RUNNING SYSTEM",
+                                da.getServerConfig().getNodename())
+                        .commit());
     }
 
-    public static UUID createOrRetrieveInstanceId(I_DomainAccess domainAccess, String description, String settings) {
-        // try to retrieve and return if successful, otherwise create
-        UUID res = retrieveInstanceId(domainAccess, settings);
-        if (res == null) {
-            if (description == null) description = "default";
-            return new SystemAccess(domainAccess, description, settings).commit();
-        } else return res;
+    public static UUID retrieveOrCreateInstanceId(I_DomainAccess domainAccess, String description, String settings) {
+        return JooqUtil.retrieveOrCreate(
+                domainAccess, da -> retrieveInstanceId(da, settings), SYSTEM, da -> new SystemAccess(
+                                domainAccess, ObjectUtils.firstNonNull(description, "default"), settings)
+                        .commit());
     }
 
     /**
      * @throws IllegalArgumentException if couldn't retrieve instance with given settings
      */
     public static UUID retrieveInstanceId(I_DomainAccess domainAccess, String settings) {
-        UUID uuid;
+        return retrieveInstanceId(domainAccess.getContext(), settings);
+    }
 
+    private static UUID retrieveInstanceId(DSLContext context, String settings) {
         try {
-            uuid = Optional.ofNullable(domainAccess.getContext().fetchAny(SYSTEM, SYSTEM.SETTINGS.eq(settings)))
+            return Optional.ofNullable(context.fetchAny(SYSTEM, SYSTEM.SETTINGS.eq(settings)))
                     .map(SystemRecord::getId)
                     .orElse(null);
-
-            if (uuid == null) {
-                return null;
-            }
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not getNewFolderAccessInstance settings:" + settings + " Exception:" + e);
         }
-
-        return uuid;
     }
 
     @Override

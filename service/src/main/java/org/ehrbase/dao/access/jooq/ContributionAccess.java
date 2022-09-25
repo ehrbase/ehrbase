@@ -25,8 +25,12 @@ import java.util.Objects;
 import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
+import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -401,7 +405,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     public void setAuditDetailsValues(AuditDetails auditObject) {
         // parse
         UUID committer = new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter());
-        UUID system = I_SystemAccess.createOrRetrieveInstanceId(this, null, auditObject.getSystemId());
+        UUID system = I_SystemAccess.retrieveOrCreateInstanceId(this, null, auditObject.getSystemId());
         UUID changeType = I_ConceptAccess.fetchContributionChangeType(
                 this, auditObject.getChangeType().getValue());
 

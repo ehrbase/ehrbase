@@ -17,6 +17,8 @@
  */
 package org.ehrbase.service;
 
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 import com.nedap.archie.rm.datavalues.DvIdentifier;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.support.identification.GenericId;
@@ -29,6 +31,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
+import org.ehrbase.dao.access.util.JooqUtil;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,7 +66,7 @@ public class BaseServiceImp implements BaseService {
      */
     public UUID getSystemUuid() {
         if (systemId == null) {
-            systemId = I_SystemAccess.createOrRetrieveLocalSystem(getDataAccess());
+            systemId = I_SystemAccess.retrieveOrCreateLocalSystem(getDataAccess());
         }
         return systemId;
     }
@@ -76,11 +79,14 @@ public class BaseServiceImp implements BaseService {
      */
     protected UUID getCurrentUserId() {
         var username = authenticationFacade.getAuthentication().getName();
-        var existingUser = new PersistedPartyIdentified(getDataAccess()).findInternalUserId(username);
-        if (existingUser.isEmpty()) {
-            return createInternalUser(username);
-        }
-        return existingUser.get();
+
+        return JooqUtil.retrieveOrCreate(
+                getDataAccess(),
+                da -> new PersistedPartyIdentified(da)
+                        .findInternalUserId(username)
+                        .orElse(null),
+                PARTY_IDENTIFIED,
+                da -> createInternalUser(da, username));
     }
 
     /**
@@ -89,7 +95,7 @@ public class BaseServiceImp implements BaseService {
      * @param username username of the user
      * @return the id of the newly created user
      */
-    protected UUID createInternalUser(String username) {
+    static UUID createInternalUser(I_DomainAccess dataAccess, String username) {
         var identifier = new DvIdentifier();
         identifier.setId(username);
         identifier.setIssuer(PersistedPartyIdentified.EHRBASE);
@@ -99,7 +105,7 @@ public class BaseServiceImp implements BaseService {
         PartyRef externalRef = new PartyRef(new GenericId(UUID.randomUUID().toString(), DEMOGRAPHIC), "User", PARTY);
         PartyIdentified user = new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
 
-        return new PersistedPartyIdentified(getDataAccess()).store(user);
+        return new PersistedPartyIdentified(dataAccess).store(user);
     }
 
     public ServerConfig getServerConfig() {

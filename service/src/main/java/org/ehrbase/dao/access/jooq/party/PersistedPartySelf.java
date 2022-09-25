@@ -52,7 +52,7 @@ class PersistedPartySelf extends PersistedParty {
     }
 
     @Override
-    public UUID store(PartyProxy partyProxy) {
+    public UUID store(I_DomainAccess domainAccess, PartyProxy partyProxy) {
 
         PartyRefValue partyRefValue = new PartyRefValue(partyProxy).attributes();
 
@@ -81,7 +81,7 @@ class PersistedPartySelf extends PersistedParty {
     }
 
     @Override
-    public UUID findInDB(PartyProxy partyProxy) {
+    public UUID findInDB(I_DomainAccess domainAccess, PartyProxy partyProxy) {
         UUID partySelfUUID = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
 
         if (partySelfUUID == null) {

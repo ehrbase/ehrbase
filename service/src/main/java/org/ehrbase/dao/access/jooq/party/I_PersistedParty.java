@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 
 public interface I_PersistedParty {
@@ -35,7 +36,7 @@ public interface I_PersistedParty {
 
     /**
      * Render all PartyProxy from a retrieved collection of DB record (from PartyIdentified table)
-     * @param partyIdentifiedRecord
+     * @param partyIdentifiedRecords
      * @return
      */
     default List<PartyProxy> renderMultiple(Collection<PartyIdentifiedRecord> partyIdentifiedRecords) {
@@ -47,14 +48,21 @@ public interface I_PersistedParty {
      * @param partyProxy
      * @return
      */
+    UUID store(I_DomainAccess domainAccess, PartyProxy partyProxy);
+    /**
+     * store a party proxy relatively to its actual type
+     * @param partyProxy
+     * @return
+     */
     UUID store(PartyProxy partyProxy);
 
     /**
      * find an existing party proxy or null if none
+     * @param domainAccess
      * @param partyProxy
      * @return
      */
-    UUID findInDB(PartyProxy partyProxy);
+    UUID findInDB(I_DomainAccess domainAccess, PartyProxy partyProxy);
 
     /**
      * retrieve a party proxy from the DB or create a new one if not yet stored

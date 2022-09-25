@@ -139,7 +139,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         ehrRecord.setAccess(accessId);
 
         if (ehrRecord.getSystemId() == null) { // storeComposition a default entry for the current system
-            ehrRecord.setSystemId(I_SystemAccess.createOrRetrieveLocalSystem(this));
+            ehrRecord.setSystemId(I_SystemAccess.retrieveOrCreateLocalSystem(this));
         }
 
         this.isNew = true;

@@ -69,8 +69,8 @@ public interface I_SystemAccess extends I_SimpleCRUD {
      * @return UUID of local system from DB
      * @throws InternalServerException when accessing network interface failed
      */
-    static UUID createOrRetrieveLocalSystem(I_DomainAccess domainAccess) {
-        return SystemAccess.createOrRetrieveLocalSystem(domainAccess);
+    static UUID retrieveOrCreateLocalSystem(I_DomainAccess domainAccess) {
+        return SystemAccess.retrieveOrCreateLocalSystem(domainAccess);
     }
 
     /**
@@ -81,8 +81,8 @@ public interface I_SystemAccess extends I_SimpleCRUD {
      * @param settings     a string describing the system (arbitrary convention)
      * @return UUID of system entry
      */
-    static UUID createOrRetrieveInstanceId(I_DomainAccess domainAccess, String description, String settings) {
-        return SystemAccess.createOrRetrieveInstanceId(domainAccess, description, settings);
+    static UUID retrieveOrCreateInstanceId(I_DomainAccess domainAccess, String description, String settings) {
+        return SystemAccess.retrieveOrCreateInstanceId(domainAccess, description, settings);
     }
 
     static Integer delete(I_DomainAccess domainAccess, UUID id) {

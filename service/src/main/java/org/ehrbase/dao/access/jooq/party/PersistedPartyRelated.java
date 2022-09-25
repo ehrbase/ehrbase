@@ -92,7 +92,7 @@ class PersistedPartyRelated extends PersistedParty {
     }
 
     @Override
-    public UUID store(PartyProxy partyProxy) {
+    public UUID store(I_DomainAccess domainAccess, PartyProxy partyProxy) {
         PartyRefValue partyRefValue = new PartyRefValue(partyProxy).attributes();
 
         // store a new party identified
@@ -127,7 +127,7 @@ class PersistedPartyRelated extends PersistedParty {
     }
 
     @Override
-    public UUID findInDB(PartyProxy partyProxy) {
+    public UUID findInDB(I_DomainAccess domainAccess, PartyProxy partyProxy) {
         UUID uuid = new PersistedPartyRef(domainAccess).findInDB(partyProxy.getExternalRef());
 
         // see https://www.postgresql.org/docs/11/rowtypes.html for syntax on accessing specific attributes in UDT
