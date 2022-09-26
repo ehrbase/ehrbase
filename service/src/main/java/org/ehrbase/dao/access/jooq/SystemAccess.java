@@ -66,7 +66,7 @@ public class SystemAccess extends DataAccess implements I_SystemAccess {
     public static UUID retrieveOrCreateInstanceId(I_DomainAccess domainAccess, String description, String settings) {
         return JooqUtil.retrieveOrCreate(
                 domainAccess, da -> retrieveInstanceId(da, settings), SYSTEM, da -> new SystemAccess(
-                                domainAccess, ObjectUtils.firstNonNull(description, "default"), settings)
+                                da, ObjectUtils.firstNonNull(description, "default"), settings)
                         .commit());
     }
 
