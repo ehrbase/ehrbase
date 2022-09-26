@@ -17,8 +17,10 @@
  */
 package org.ehrbase.service;
 
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Triple;
@@ -48,6 +50,7 @@ import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
+import org.ehrbase.tenant.DefaultTenantAuthentication;
 import org.ehrbase.util.TemplateUtils;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
@@ -60,6 +63,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,7 +92,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
-    static class CacheKey<T> {
+    static class CacheKey<T> implements Serializable {
+      private static final long serialVersionUID = -5926035933645900703L;
+
         static <T0> CacheKey<T0> of(T0 val, String tenantId) {
             return new CacheKey<>(val, tenantId);
         }
@@ -120,10 +127,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             return val.equals(ck.val) && tenantId.equals(ck.tenantId);
         }
     }
-  
+    
     public static final String ELEMENT = "ELEMENT";
-    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final TemplateStorage templateStorage;
@@ -133,6 +138,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache webTemplateCache;
     private final Cache fieldCache;
     private final Cache multivaluedCache;
+    
     private final TenantService tenantService;
 
     // index val to val
@@ -143,7 +149,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private boolean allowTemplateOverwrite;
 
     public KnowledgeCacheService(
-            TemplateStorage templateStorage, CacheManager cacheManager, CacheOptions cacheOptions, TenantService tenantService) {
+            TemplateStorage templateStorage, CacheManager cacheManager, CacheOptions cacheOptions, TenantService tenantService) throws InterruptedException {
 
         this.templateStorage = templateStorage;
         this.cacheOptions = cacheOptions;
@@ -153,35 +159,84 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         jsonPathQueryResultCache = cacheManager.getCache(CacheOptions.QUERY_CACHE);
         fieldCache = cacheManager.getCache(CacheOptions.FIELDS_CACHE);
         multivaluedCache = cacheManager.getCache(CacheOptions.MULTI_VALUE_CACHE);
-    }
-
-    public void initializeCaches() {
-        Set<String> templateIds = new HashSet<>();
-
-        listAllOperationalTemplates().forEach(metadata -> {
-            var template = metadata.getOperationaltemplate();
-            var templateId = TemplateUtils.getTemplateId(template);
-            templateIds.add(templateId);
-            try {
-                putIntoCache(template, tenantService.getCurrentTenantIdentifier());
-            } catch (RuntimeException e) {
-                log.error("An error occurred while caching template: {}", templateId, e);
-            }
-        });
         
-        if (cacheOptions.isPreBuildQueries()) {
-            templateIds.forEach(templateId -> {
-                EXECUTOR.execute(() -> {
-                    try {
-                        precalculateQueries(templateId);
-                    } catch (RuntimeException e) {
-                        log.error("An error occurred while calculating queries for template: {}", templateId, e);
-                    }
-                });
-            });
-        }
+        initializeCaches(cacheOptions.isPreInitialize());
     }
 
+    //fetch all tenants and initialize the caches for each tenant seperatly
+    private static final int NUM_OF_PROC = Runtime.getRuntime().availableProcessors();
+    private static final ExecutorService execService = Executors.newFixedThreadPool(NUM_OF_PROC);
+    
+    private static abstract class SecCtxAwareRunnable implements Runnable {
+      private Authentication auth;
+      
+      private SecCtxAwareRunnable(Authentication auth) {
+        this.auth = auth;
+      }
+      
+      public void run() {
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        doRun();
+      }
+      
+      abstract void doRun();
+    }
+
+    private static final String ERR_CACHE_ERROR = "An error occurred while caching template: {}";
+    private static final String ERR_GEN_ERROR = "An error occurred while calculating queries for template: {}";
+    
+    private Future<?> initCachePerTenant(String tenantId) {
+      SecCtxAwareRunnable runMe = new SecCtxAwareRunnable(DefaultTenantAuthentication.of(tenantId)) {
+        void doRun() {
+          Set<String> templateIds = new HashSet<>();
+          
+          listAllOperationalTemplates().forEach(metadata -> {
+              var template = metadata.getOperationaltemplate();
+              var templateId = TemplateUtils.getTemplateId(template);
+              templateIds.add(templateId);
+              try {
+                  putIntoCache(template, tenantService.getCurrentTenantIdentifier());
+              } catch (RuntimeException e) {
+                  log.error(ERR_CACHE_ERROR, templateId, e);
+              }
+          });
+          
+          templateIds.forEach(templateId -> {
+            try {
+              preBuildQueries(templateId, cacheOptions.isPreBuildQueries());
+            } catch (RuntimeException e) {
+                log.error(ERR_GEN_ERROR, templateId, e);
+            }
+          });
+        }
+      };
+      
+      return execService.submit(runMe);
+    }
+    
+    private void initializeCaches(boolean init) throws InterruptedException {
+      if(!init)
+        return;
+      
+      List<Future<?>> collect = tenantService.getAll().stream()
+        .map(t -> t.getTenantId())
+        .map(id -> initCachePerTenant(id))
+        .collect(Collectors.toList());
+    
+      for(int i = 0; i < 16;) {
+        boolean res = collect.stream().map(f -> f.isDone()).reduce(true, (a, b) -> a && b);
+        if(res)
+          return;
+        i = Math.max(1, 2 * i);
+        Thread.sleep(i * 1000);
+      }
+      
+      collect.forEach(f -> {
+        if(!f.isDone())
+          f.cancel(false);
+      });
+    }
+    
     @Override
     public Set<String> getAllTemplateIds() {
         return templateStorage.findAllTemplateIds();
@@ -228,20 +283,26 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         templateStorage.storeTemplate(template, tenantIdentifier);
         putIntoCache(template, tenantIdentifier);
 
-        if (cacheOptions.isPreBuildQueries()) {
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-            executor.submit(() -> {
-                try {
-                    precalculateQueries(templateId);
-                } catch (RuntimeException e) {
-                    log.error("An error occurred while processing template: {}", templateId);
-                }
-            });
-        }
-
+        preBuildQueries(templateId, cacheOptions.isPreBuildQueries());
+        
         return templateId;
     }
+    
+    private void preBuildQueries(String templateId, boolean preBuild) {
+      if(!preBuild)
+        return;
 
+      getQueryOptMetaData(templateId).findAllContainmentCombinations().stream()
+        .filter(nodeIds -> !nodeIds.isEmpty() && nodeIds.size() <= cacheOptions.getPreBuildQueriesDepth())
+        .forEach(nodeIds -> {
+          execService.submit(new SecCtxAwareRunnable(SecurityContextHolder.getContext().getAuthentication()) {
+            void doRun() {
+              resolveForTemplate(templateId, nodeIds);
+            }
+          });
+        });
+    }
+    
     private void putIntoCache(OPERATIONALTEMPLATE template, String tenantIdentifier) {
         var templateId = TemplateUtils.getTemplateId(template);
         var uid = TemplateUtils.getUid(template);
@@ -256,12 +317,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             invalidateCache(template);
             throw e;
         }
-    }
-
-    private void precalculateQueries(String templateId) {
-        getQueryOptMetaData(templateId).findAllContainmentCombinations().stream()
-                .filter(nodeIds -> !nodeIds.isEmpty() && nodeIds.size() <= cacheOptions.getPreBuildQueriesDepth())
-                .forEach(nodeIds -> resolveForTemplate(templateId, nodeIds));
     }
 
     public String adminUpdateOperationalTemplate(InputStream content) {
@@ -327,7 +382,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private UUID findUuidByTemplateId(String templateId) {
         return idxCacheTemplateIdToUuid.computeIfAbsent(templateId, id -> {
           OPERATIONALTEMPLATE templ = retrieveOperationalTemplate(id)
-              .orElseThrow(() -> new IllegalArgumentException(String.format("Unknown template %s", templateId)));
+              .orElseThrow(() ->
+                new IllegalArgumentException(String.format("Unknown template %s", templateId))
+              );
           return CacheKey.of(
               UUID.fromString(templ.getUid().getValue()),
               tenantService.getCurrentTenantIdentifier());

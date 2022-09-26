@@ -40,7 +40,7 @@ public class DefaultExtractionStrategy implements TenantIdExtractionStrategy<Str
   @Override
   public Optional<TenantAuthentication<String>> extract(Object... args) {
     String token = JWT.create().withClaim("tnt", TenantAuthentication.getDefaultTenantId()).sign(new NoneAlgorithm());
-    return Optional.of(new DefaultTenantAuthentication(token));
+    return Optional.of(DefaultTenantAuthentication.ofToken(token));
   }
 
   @Override

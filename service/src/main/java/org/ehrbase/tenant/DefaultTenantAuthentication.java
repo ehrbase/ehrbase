@@ -34,19 +34,33 @@ public class DefaultTenantAuthentication extends AbstractAuthenticationToken imp
     return new DefaultTenantAuthentication(auth.getAuthentication().toString());
   }
   
-  private final String tenantId;
-  private final DecodedJWT token;
-  private final String raw;
-  private final Payload payload;
+  public static <T> DefaultTenantAuthentication of(String tenantId) {
+    DefaultTenantAuthentication auth = new DefaultTenantAuthentication();
+      auth.tenantId = tenantId;
+    return auth;
+  }
   
-  public DefaultTenantAuthentication(String token) {
+  public static <T> DefaultTenantAuthentication ofToken(String token) {
+    return new DefaultTenantAuthentication(token);
+  }
+  
+  private String tenantId;
+  private DecodedJWT token;
+  private String raw;
+  private Payload payload;
+  
+  private DefaultTenantAuthentication() {
+    super(null);
+  }
+  
+  private DefaultTenantAuthentication(String token) {
     super(null);
     this.raw = token;
     this.token = JWT.decode(token);
     this.payload = new JWTParser().parsePayload(new String(Base64.decodeBase64(this.token.getPayload())));
     this.tenantId = payload.getClaim(TENANT_CLAIM).asString();
   }
-  
+
   public String getTenantId() {
     return tenantId;
   }

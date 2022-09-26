@@ -36,6 +36,16 @@ public class CacheOptions {
     private boolean preBuildQueries;
 
     private int preBuildQueriesDepth;
+    
+    private boolean preInitialize = false;
+
+    public boolean isPreInitialize() {
+      return preInitialize;
+    }
+
+    public void setPreInitialize(boolean preInitialize) {
+      this.preInitialize = preInitialize;
+    }
 
     public boolean isPreBuildQueries() {
         return preBuildQueries;
