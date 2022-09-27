@@ -1,5 +1,5 @@
 {
-    "q": "SELECT s/name/value FROM EHR e CONTAINS SECTION s",
+    "q": "SELECT s/name/value as name FROM EHR e CONTAINS SECTION s",
     "columns": [
         {
             "path": "/name/value",
