@@ -149,7 +149,9 @@ Query For OBS > ( CLUSTER[x] And CLUSTER[x] )
 Prepare Test Set 3 From Query Execution
     ${opt_file_name}    Set Variable    ehrbase.testcase06.v0
     Upload OPT    query_test_sets/${optFile}
-    create EHR
+    prepare new request session    JSON    Prefer=return=representation
+    create new EHR with subject_id and default subject id value (JSON)
+    check content of created EHR (JSON)
     Commit Composition FLAT And Check Response Status To Be 201
     ...     ${opt_file_name}__compo1_test_set_3.json
     Commit Composition FLAT And Check Response Status To Be 201

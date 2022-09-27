@@ -34,7 +34,7 @@ ${optFile}      ehrbase.testcase05.v0.opt
 ${testSet}      test_set_1
 
 *** Test Cases ***
-Qeery For EHRs
+Query For EHRs
     [Setup]     Prepare Test Set 1 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_ehrs.json
@@ -216,7 +216,9 @@ Query For Composition [x] > Admin [x]
 Prepare Test Set 1 From Query Execution
     ${opt_file_name}    Set Variable    ehrbase.testcase05.v0
     Upload OPT    query_test_sets/${optFile}
-    create EHR
+    prepare new request session    JSON    Prefer=return=representation
+    create new EHR with subject_id and default subject id value (JSON)
+    check content of created EHR (JSON)
     Commit Composition FLAT And Check Response Status To Be 201
     ...     ${opt_file_name}__compo1_test_set_1.json
     Commit Composition FLAT And Check Response Status To Be 201

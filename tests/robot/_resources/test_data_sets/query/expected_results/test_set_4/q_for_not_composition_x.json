@@ -1,5 +1,5 @@
 {
-    "q": "select c/name/value from EHR e NOT CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1]",
+    "q": "SELECT c/name/value from EHR e CONTAINS COMPOSITION c where c/archetype_node_id != 'openEHR-EHR-COMPOSITION.encounter.v1'",
     "columns": [
         {
             "path": "/name/value",

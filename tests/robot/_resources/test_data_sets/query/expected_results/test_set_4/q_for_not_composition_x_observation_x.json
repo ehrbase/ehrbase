@@ -1,5 +1,5 @@
 {
-    "q": "select c/name/value,o/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude from EHR e NOT CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.body_temperature.v2]",
+    "q": "select c/name/value,o/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude from EHR e CONTAINS COMPOSITION c CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.body_temperature.v2] where c/archetype_node_id != 'openEHR-EHR-COMPOSITION.encounter.v1'",
     "columns": [
         {
             "path": "/name/value",

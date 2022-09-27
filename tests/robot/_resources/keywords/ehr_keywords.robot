@@ -277,7 +277,7 @@ create new EHR with subject_id (JSON)
                         Update Value To Json  ${ehr_status_json}   $.subject.external_ref.id.value
                         ...                   ${subject_id}
 
-    &{resp}=            REST.POST    ${baseurl}/ehr    ${ehr_status_json}
+    &{resp}             REST.POST    ${baseurl}/ehr    ${ehr_status_json}
                         Set Suite Variable    ${response}    ${resp}
                         Output Debug Info To Console
 
@@ -285,6 +285,17 @@ create new EHR with subject_id (JSON)
                         extract system_id from response (JSON)
                         extract ehr_status from response (JSON)
 
+create new EHR with subject_id and default subject id value (JSON)
+
+    ${ehr_status_json}  Load JSON From File   ${VALID EHR DATA SETS}/0000_ehr_status_hardcoded_subject_id_value.json
+
+    &{resp}             REST.POST    ${baseurl}/ehr    ${ehr_status_json}
+                        Set Suite Variable    ${response}    ${resp}
+                        Output Debug Info To Console
+
+                        extract ehr_id from response (JSON)
+                        extract system_id from response (JSON)
+                        extract ehr_status from response (JSON)
 
 create new EHR can't be modified 
 

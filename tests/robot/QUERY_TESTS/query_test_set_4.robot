@@ -80,7 +80,9 @@ Prepare Test Set 4 From Query Execution
     ${opt_file_name_1}      Set Variable    ehrbase.testcase06.v0
     Upload OPT    query_test_sets/${optFile}
     Upload OPT    query_test_sets/${optFile_1}
-    create EHR
+    prepare new request session    JSON    Prefer=return=representation
+    create new EHR with subject_id and default subject id value (JSON)
+    check content of created EHR (JSON)
     Commit Composition FLAT And Check Response Status To Be 201
     ...     ${opt_file_name}__compo_1_1_test_set_4.json
     Commit Composition FLAT And Check Response Status To Be 201
