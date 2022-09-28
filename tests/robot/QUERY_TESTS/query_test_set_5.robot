@@ -33,55 +33,72 @@ Suite Teardown      Clean DB
 ${optFile}      ehrbase.testcase09.v0.opt
 ${testSet}      test_set_5
 
+
 *** Test Cases ***
 Query for SECTION
+    [Tags]      not-ready   bug
     [Setup]     Prepare Test Set 5 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_for_section.json
     ...     q_for_section.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query for SECTION > CLUSTER
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_section_cluster.json
     ...     q_for_section_cluster.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query for SECTION > ACTION
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_section_action.json
     ...     q_for_section_action.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query for SECTION > INSTRUCTION
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_section_instruction.json
     ...     q_for_section_instruction.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query for SECTION [x] > CLUSTER [x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_section_x_cluster_x.json
     ...     q_for_section_x_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query for SECTION > OBSERVATION
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_section_observation.json
     ...     q_for_section_observation.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query for COMPOSITION > SECTION [x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_section_x.json
     ...     q_for_composition_section_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query for COMPOSITION > SECTION > SECTION > OBSERVATION
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_section_section_observation.json
     ...     q_for_composition_section_section_observation.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 
 *** Keywords ***

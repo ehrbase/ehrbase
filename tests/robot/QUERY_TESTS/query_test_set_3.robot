@@ -36,53 +36,69 @@ ${testSet}      test_set_3
 
 *** Test Cases ***
 Query For COMPOSITION[x] > OBSERVATION[x] > CLUSTER[x]
+    [Tags]      not-ready   bug
     [Setup]     Prepare Test Set 3 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation_x_cluster_x.json
     ...     q_for_composition_x_observation_x_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For OBSERVATION > CLUSTER[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_cluster_x.json
     ...     q_for_observation_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For OBSERVATION[x] > CLUSTER
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_cluster.json
     ...     q_for_observation_x_cluster.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For OBSERVATION[x] > CLUSTER[x] BP Device
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_cluster_x_bp_device.json
     ...     q_for_observation_x_cluster_x_bp_device.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For ACTION[x] > CLUSTER[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_action_x_cluster_x.json
     ...     q_for_action_x_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For EVALUATION[x] > CLUSTER[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_evaluation_x_cluster_x.json
     ...     q_for_evaluation_x_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For OBSERVATION[x] > CLUSTER[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_x_cluster_x.json
     ...     q_for_observation_x_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For INSTRUCTION[x] > CLUSTER[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_instruction_x_cluster_x.json
     ...     q_for_instruction_x_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For ADMIN[x] > CLUSTER[x]
     Execute Query And Compare Actual Result With Expected
@@ -91,22 +107,28 @@ Query For ADMIN[x] > CLUSTER[x]
     ...     test_set=${testSet}
 
 Query For COMPOSITION > OBSERVATION[x] > CLUSTER[x] > CLUSTER[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_observation_x_cluster_x_cluster_x.json
     ...     q_for_composition_observation_x_cluster_x_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For ( COMP > EVAL[x] ) And ( COMP > INST[x] )
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_evaluation_x_and_composition_instruction_x.json
     ...     q_for_composition_evaluation_x_and_composition_instruction_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For COMP > ( OBS[x] And OBS[x] )
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_observation_x_and_observation_x.json
     ...     q_for_composition_observation_x_and_observation_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For OBS[x] Or OBS[x]
     Execute Query And Compare Actual Result With Expected
@@ -139,10 +161,12 @@ Query For ( COMP[x] > ACTION ) Or ( COMP[x] > OBS )
     ...     test_set=${testSet}
 
 Query For OBS > ( CLUSTER[x] And CLUSTER[x] )
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_observation_cluster_x_and_cluster_x.json
     ...     q_for_observation_cluster_x_and_cluster_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 
 *** Keywords ***

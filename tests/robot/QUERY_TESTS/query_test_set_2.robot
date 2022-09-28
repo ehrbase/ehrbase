@@ -36,71 +36,93 @@ ${testSet}      test_set_2
 
 *** Test Cases ***
 Query For Composition > Observation
+    [Tags]      not-ready   bug
     [Setup]     Prepare Test Set 2 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_observation.json
     ...     q_composition_observation.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Observation
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_x_observation.json
     ...     q_composition_x_observation.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Observation[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_x_observation_x.json
     ...     q_composition_x_observation_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition > Action
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_action.json
     ...     q_composition_action.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Action
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_x_action.json
     ...     q_composition_x_action.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Action[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_x_action_x.json
     ...     q_composition_x_action_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition > Evaluation
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_evaluation.json
     ...     q_composition_evaluation.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Evaluation
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_x_evaluation.json
     ...     q_composition_x_evaluation.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Evaluation[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_x_evaluation_x.json
     ...     q_composition_x_evaluation_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition > Instruction
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_instruction.json
     ...     q_composition_instruction.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Instruction
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_composition_x_instruction.json
     ...     q_composition_x_instruction.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For Composition[x] > Instruction [x]
     Execute Query And Compare Actual Result With Expected

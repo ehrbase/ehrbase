@@ -37,23 +37,29 @@ ${testSet}      test_set_4
 
 *** Test Cases ***
 Query For ( COMP[x] > OBS[x] ) Or OBS[x]
+    [Tags]      not-ready   bug
     [Setup]     Prepare Test Set 4 From Query Execution
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation_x_or_observation_x.json
     ...     q_for_composition_x_observation_x_or_observation_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For ( COMP[x] > OBS[x] ) And OBS[x]
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_observation_x_and_observation_x.json
     ...     q_for_composition_x_observation_x_and_observation_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For ( COMP[x] > ACTION ) Or ( COMP[x] > OBS )
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_x_action_or_composition_x_observation.json
     ...     q_for_composition_x_action_or_composition_x_observation.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 Query For NOT COMP[x]
     Execute Query And Compare Actual Result With Expected
@@ -68,10 +74,12 @@ Query For ( NOT COMP[x] ) > OBS[x]
     ...     test_set=${testSet}
 
 Query For ( COMP > OBS[x] ) And ( NOT COMP[x] )
+    [Tags]      not-ready   bug
     Execute Query And Compare Actual Result With Expected
     ...     q_for_composition_observation_x_and_not_composition_x.json
     ...     q_for_composition_observation_x_and_not_composition_x.json
     ...     test_set=${testSet}
+    [Teardown]      TRACE JIRA ISSUE    CDR-556
 
 
 *** Keywords ***
