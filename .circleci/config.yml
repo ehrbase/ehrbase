@@ -222,6 +222,11 @@ workflows:
           requires:
             - build-ehrbase
 
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - SECURITY-test:
           context: org-global
           requires:
@@ -263,6 +268,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
             - ADMIN-test
 
@@ -465,6 +471,11 @@ workflows:
           requires:
             - build-ehrbase
 
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - SECURITY-test:
           context: org-global
           requires:
@@ -505,6 +516,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
             - ADMIN-test
 
@@ -729,6 +741,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - SECURITY-test:
           context: org-global
           requires:
@@ -767,6 +783,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
             - ADMIN-test
 
@@ -1147,6 +1164,15 @@ jobs:
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
 
+  NEWQUERY-test-set:
+    executor: docker-py3-java11-postgres
+    steps:
+      - checkout
+      - restore-workspace
+      - run-robot-tests:
+          include-tags: "NEW_query_test_set"
+          test-suite-path: "QUERY_TESTS"
+          test-suite-name: "NEW_QUERY_TESTS"
 
   QUERYSERVICE-test-2:
     # executor: docker-py3-java11-postgres
