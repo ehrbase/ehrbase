@@ -1,0 +1,3 @@
+{
+    "q":"SELECT cluster/items[at0001]/value/value as device from EHR e CONTAINS CLUSTER cluster"
+}

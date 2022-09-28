@@ -1,0 +1,131 @@
+{
+    "q": "SELECT e/ehr_status/subject/external_ref/id/value as value, e/ehr_status/subject/external_ref/namespace as namespace, obs/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude as systolic, obs/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude as diastolic FROM EHR e CONTAINS OBSERVATION obs",
+    "columns": [
+        {
+            "path": "/ehr_status/subject/external_ref/id/value",
+            "name": "value"
+        },
+        {
+            "path": "/ehr_status/subject/external_ref/namespace",
+            "name": "namespace"
+        },
+        {
+            "path": "/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude",
+            "name": "systolic"
+        },
+        {
+            "path": "/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude",
+            "name": "diastolic"
+        }
+    ],
+    "rows": [
+        [
+            "12345",
+            "EHR",
+            500.0,
+            500.0
+        ],
+        [
+            "12345",
+            "EHR",
+            500.0,
+            500.0
+        ],
+        [
+            "12345",
+            "EHR",
+            500.0,
+            500.0
+        ],
+        [
+            "12345",
+            "EHR",
+            120.0,
+            80.0
+        ],
+        [
+            "12345",
+            "EHR",
+            130.0,
+            90.0
+        ],
+        [
+            "12345",
+            "EHR",
+            125.0,
+            85.0
+        ],
+        [
+            "12345",
+            "EHR",
+            120.0,
+            80.0
+        ],
+        [
+            "12345",
+            "EHR",
+            130.0,
+            90.0
+        ],
+        [
+            "12345",
+            "EHR",
+            125.0,
+            85.0
+        ],
+        [
+            "12345",
+            "EHR",
+            120.0,
+            80.0
+        ],
+        [
+            "12345",
+            "EHR",
+            130.0,
+            90.0
+        ],
+        [
+            "12345",
+            "EHR",
+            125.0,
+            85.0
+        ],
+        [
+            "12345",
+            "EHR",
+            120.0,
+            80.0
+        ],
+        [
+            "12345",
+            "EHR",
+            130.0,
+            90.0
+        ],
+        [
+            "12345",
+            "EHR",
+            125.0,
+            85.0
+        ],
+        [
+            "12345",
+            "EHR",
+            120.0,
+            80.0
+        ],
+        [
+            "12345",
+            "EHR",
+            130.0,
+            90.0
+        ],
+        [
+            "12345",
+            "EHR",
+            125.0,
+            85.0
+        ]
+    ]
+}

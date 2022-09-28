@@ -1,0 +1,48 @@
+{
+    "q": "select  c/items[at0001]/value/value from EHR e contains OBSERVATION o[openEHR-EHR-OBSERVATION.blood_pressure.v2] contains CLUSTER c",
+    "columns": [
+        {
+            "path": "/items[at0001]/value/value",
+            "name": "#0"
+        }
+    ],
+    "rows": [
+        [
+            "Omron"
+        ],
+        [
+            "Omron"
+        ],
+        [
+            "Omron"
+        ],
+        [
+            "Omron"
+        ],
+        [
+            "Omron"
+        ],
+        [
+            "Omron"
+        ],
+        [
+            " Right Arm"
+        ],
+        [
+            " Left Arm"
+        ],
+        [
+            " Right Arm"
+        ],
+        [
+            " Right Arm"
+        ],
+        [
+            " Left Arm"
+        ],
+        [
+            "Left Arm"
+        ]
+
+    ]
+}

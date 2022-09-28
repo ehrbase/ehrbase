@@ -1,0 +1,29 @@
+{
+    "q": "SELECT i/activities[at0001]/description[at0009]/items[at0121]/value/value as instruction from EHR e CONTAINS INSTRUCTION i[openEHR-EHR-INSTRUCTION.service_request.v1]",
+    "columns": [
+        {
+            "path": "/activities[at0001]/description[at0009]/items[at0121]/value/value",
+            "name": "instruction"
+        }
+    ],
+    "rows": [
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Lab test"
+        ],
+        [
+            "Lab test"
+        ],
+        [
+            "Lab test"
+        ],
+        [
+            "Lab test"
+        ],
+        [
+            "Lab test"
+        ]
+    ]
+}

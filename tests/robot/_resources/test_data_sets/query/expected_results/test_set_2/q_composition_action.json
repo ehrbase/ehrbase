@@ -1,0 +1,113 @@
+{
+   "q":"SELECT c/name/value as composition, a_a/name/value as name, a_a/description[at0017]/items[at0020]/value/value as medication, a_a/description[at0001]/items[at0002]/value/value as procedure from EHR e CONTAINS COMPOSITION c CONTAINS ACTION a_a",
+   "columns":[
+      {
+         "path":"/name/value",
+         "name":"composition"
+      },
+      {
+         "path":"/name/value",
+         "name":"name"
+      },
+      {
+         "path":"/description[at0017]/items[at0020]/value/value",
+         "name":"medication"
+      },
+      {
+         "path":"/description[at0001]/items[at0002]/value/value",
+         "name":"procedure"
+      }
+   ],
+   "rows":[
+      [
+         "ehrbase.testcase.v0",
+         "Medication management",
+         "Lorem ipsum",
+         null
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "No example for termínology null available"
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Medication management",
+         "ibuprofen",
+         null
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "Surgery of Nose"
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Medication management",
+         "Dolo",
+         null
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "X-ray of Arm"
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Medication management",
+         "Glycomet",
+         null
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "X-ray of Leg"
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "X-ray of Leg"
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Medication management",
+         "Glycomet",
+         null
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "X-ray of Leg"
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Medication management",
+         "Glycomet",
+         null
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "X-ray of Leg"
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Medication management",
+         "Glycomet",
+         null
+      ],
+      [
+         "ehrbase.testcase.v0",
+         "Procedure",
+         null,
+         "X-ray of Leg"
+      ]
+   ]
+}

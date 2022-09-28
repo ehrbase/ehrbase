@@ -1,0 +1,3 @@
+{
+    "q": "SELECT a_e/data[at0001]/items[at0004]/value/value as comment from EHR e CONTAINS ADMIN_ENTRY a_e"
+}

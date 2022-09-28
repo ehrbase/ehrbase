@@ -1,0 +1,32 @@
+{
+    "q": "SELECT translation/data[at0001]/items[at0004]/value/value as comment from EHR e CONTAINS ADMIN_ENTRY translation[openEHR-EHR-ADMIN_ENTRY.translation_requirements.v1]",
+    "columns": [
+        {
+            "path": "/data[at0001]/items[at0004]/value/value",
+            "name": "comment"
+        }
+    ],
+    "rows": [
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Lorem ipsum"
+        ],
+        [
+            "Lorem ipsum"
+        ]
+    ]
+}

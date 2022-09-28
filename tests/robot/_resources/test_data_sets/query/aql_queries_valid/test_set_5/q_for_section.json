@@ -1,0 +1,3 @@
+{
+    "q":"SELECT s/name/value as name FROM EHR e CONTAINS SECTION s"
+}

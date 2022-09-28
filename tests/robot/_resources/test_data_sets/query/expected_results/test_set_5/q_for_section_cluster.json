@@ -1,0 +1,74 @@
+{
+    "q": "SELECT c/name/value FROM EHR e CONTAINS SECTION CONTAINS CLUSTER c",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "#0"
+        }
+    ],
+    "rows": [
+        [
+            "Laboratory analyte result"
+        ],
+        [
+            "Medical device"
+        ],
+        [
+            "Medication"
+        ],
+        [
+            "Laboratory analyte result"
+        ],
+        [
+            "Medical device"
+        ],
+        [
+            "Medication"
+        ],
+        [
+            "Laboratory analyte result"
+        ],
+        [
+            "Medical device"
+        ],
+        [
+            "Medication"
+        ],
+        [
+            "Laboratory analyte result"
+        ],
+        [
+            "Medical device"
+        ],
+        [
+            "Medication"
+        ],
+        [
+            "Laboratory analyte result"
+        ],
+        [
+            "Medical device"
+        ],
+        [
+            "Medication"
+        ],
+        [
+            "Laboratory analyte result"
+        ],
+        [
+            "Medical device"
+        ],
+        [
+            "Medication"
+        ],
+        [
+            "Laboratory analyte result"
+        ],
+        [
+            "Medical device"
+        ],
+        [
+            "Medication"
+        ]
+    ]
+}

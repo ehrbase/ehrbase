@@ -1,0 +1,59 @@
+{
+    "q": "SELECT c/name/value as composition, i/activities[at0001]/description[at0009]/items[at0121]/name/value as name, i/activities[at0001]/description[at0009]/items[at0121]/value/value as service_request from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1]  CONTAINS INSTRUCTION i [openEHR-EHR-INSTRUCTION.service_request.v1]",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "composition"
+        },
+        {
+            "path": "/activities[at0001]/description[at0009]/items[at0121]/name/value",
+            "name": "name"
+        },
+        {
+            "path": "/activities[at0001]/description[at0009]/items[at0121]/value/value",
+            "name": "service_request"
+        }
+    ],
+    "rows": [
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "Lorem ipsum"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "CBC"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "Lipid Profile"
+        ],
+        [
+            "ehrbase.testcase.v0",
+            "Lab test",
+            "Lipid Profile"
+        ]
+    ]
+}

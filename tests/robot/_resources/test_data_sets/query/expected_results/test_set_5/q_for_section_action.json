@@ -1,0 +1,32 @@
+{
+    "q": "SELECT a/name/value FROM EHR e CONTAINS SECTION CONTAINS ACTION a",
+    "columns": [
+        {
+            "path": "/name/value",
+            "name": "#0"
+        }
+    ],
+    "rows": [
+        [
+            "Procedure"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Procedure"
+        ],
+        [
+            "Procedure"
+        ]
+    ]
+}
