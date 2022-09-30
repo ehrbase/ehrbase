@@ -1134,20 +1134,33 @@ delete non-existent composition
 
 
 Upload OPT
-    [Arguments]     ${opt_file}
+    [Arguments]     ${opt_file}     ${multitenancy_token}=${None}
 
     # TODO: rm comments
     # setting proper Accept=application/xxx header
     # Run Keyword If    '${accept-header}'=='JSON'   template_opt1.4_keywords.start request session
-    
+
                         prepare new request session    XML
                         ...                          Prefer=return=representation
-    
+
+                        IF  '${multitenancy_token}' != '${None}'
+                            &{headers}      Create Dictionary
+                            ...     content=application/xml
+                            ...     Content-Type=application/xml
+                            ...     accept=application/xml
+                            ...     Prefer=return=representation
+                            ...     Authorization=Bearer ${multitenancy_token}
+                            Set Test Variable      &{headers}  &{headers}
+                            Delete All Sessions
+                        END
+
+                        Create Session      ${SUT}    ${BASEURL}    debug=2   headers=${headers}
+
     # Run Keyword If    '${accept-header}'=='XML'    start request session (XML)
 
                         get valid OPT file    ${opt_file}
                         upload OPT file
-                        IF  '${response.status_code}' != '409'
+                        IF  '${response_code}' != '409'
                             server accepted OPT
                         ELSE
                             server rejected OPT with status code 409
