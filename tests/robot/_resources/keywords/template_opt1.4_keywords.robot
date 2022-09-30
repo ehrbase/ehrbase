@@ -99,6 +99,7 @@ upload OPT file
     ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
                         Set Suite Variable    ${response}    ${resp}
+                        Set Suite Variable    ${response_code}  ${response.status_code}
 
                         # Log To Console      ${resp.content}
 
@@ -152,7 +153,7 @@ server rejected OPT with status code ${status code}
     ...                 409: Conflict - is returned when a template with given id
     ...                      already exists. This response is optional.
 
-                        Should Be Equal As Strings    ${response.status_code}
+                        Should Be Equal As Strings    ${response_code}
                         ...                           ${status code}
 
 
