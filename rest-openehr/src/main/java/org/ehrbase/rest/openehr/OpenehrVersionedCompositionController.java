@@ -17,11 +17,15 @@
  */
 package org.ehrbase.rest.openehr;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -47,12 +51,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.ehr.VersionedComposition;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API

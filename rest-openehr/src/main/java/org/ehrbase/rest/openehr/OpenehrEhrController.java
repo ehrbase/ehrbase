@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.openehr;
 
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,9 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -55,10 +56,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.support.identification.HierObjectId;
 
 /**
  * Controller for /ehr resource of openEHR REST API
