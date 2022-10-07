@@ -18,10 +18,8 @@
 package org.ehrbase.rest;
 
 import java.util.Optional;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.ThreadLocalSupplier;
 import org.springframework.context.annotation.ComponentScan;
@@ -34,35 +32,39 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@ComponentScan(basePackages = { "org.ehrbase.rest", "org.ehrbase.rest.admin", "org.ehrbase.rest.openehr" })
+@ComponentScan(basePackages = {"org.ehrbase.rest", "org.ehrbase.rest.admin", "org.ehrbase.rest.openehr"})
 @EnableAspectJAutoProxy
 public class RestModuleConfiguration implements WebMvcConfigurer {
-  public static final String HTTP_HEADER_TENANT_ID = "Tenant-Id";
+    public static final String HTTP_HEADER_TENANT_ID = "Tenant-Id";
 
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(new HttpRequestSupplierInterceptor());
-  }
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new HttpRequestSupplierInterceptor());
+    }
 
-  public static class HttpRequestSupplierInterceptor implements HandlerInterceptor {
-    
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-      ThreadLocalSupplier<HttpServletRequest> threadLocalSupplier = ThreadLocalSupplier.supplyFor(HttpServletRequest.class);
-      threadLocalSupplier.accept(request);
-      return true;
+    public static class HttpRequestSupplierInterceptor implements HandlerInterceptor {
+
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+                throws Exception {
+            ThreadLocalSupplier<HttpServletRequest> threadLocalSupplier =
+                    ThreadLocalSupplier.supplyFor(HttpServletRequest.class);
+            threadLocalSupplier.accept(request);
+            return true;
+        }
+
+        public void afterCompletion(
+                HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
+                throws Exception {
+            extractTenantId().ifPresent(id -> {
+                response.setHeader(HTTP_HEADER_TENANT_ID, id);
+            });
+        }
+
+        private Optional<String> extractTenantId() {
+            SecurityContext secCtx = SecurityContextHolder.getContext();
+            return Optional.ofNullable(secCtx.getAuthentication())
+                    .filter(auth -> auth instanceof TenantAuthentication)
+                    .map(auth -> (TenantAuthentication<?>) auth)
+                    .map(auth -> auth.getTenantId());
+        }
     }
-    
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-      extractTenantId().ifPresent(id -> {
-        response.setHeader(HTTP_HEADER_TENANT_ID, id);
-      });
-    }
-    
-    private Optional<String> extractTenantId() {
-      SecurityContext secCtx = SecurityContextHolder.getContext();
-      return Optional.ofNullable(secCtx.getAuthentication())
-          .filter(auth -> auth instanceof TenantAuthentication)
-          .map(auth -> (TenantAuthentication<?>) auth)
-          .map(auth -> auth.getTenantId());
-    }
-  }
 }
