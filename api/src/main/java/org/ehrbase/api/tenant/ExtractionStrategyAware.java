@@ -18,5 +18,5 @@
 package org.ehrbase.api.tenant;
 
 public interface ExtractionStrategyAware {
-  public <T> void addExtractionStrategy(TenantIdExtractionStrategy<T> strategy);
+    public <T> void addExtractionStrategy(TenantIdExtractionStrategy<T> strategy);
 }

@@ -23,22 +23,23 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class ThreadLocalSupplier<V> implements Supplier<V>, Consumer<V> {
-  private static Map<Class<?>, ThreadLocalSupplier<?>> supplier = new ConcurrentHashMap<>();
-  
-  @SuppressWarnings("unchecked")
-  public static <V0> ThreadLocalSupplier<V0> supplyFor(Class<V0> clazz) {
-    return (ThreadLocalSupplier<V0>) supplier.computeIfAbsent(clazz, c -> new ThreadLocalSupplier<V0>((Class<V0>) c));
-  } 
-  
-  private final ThreadLocal<V> tl = new ThreadLocal<>();
-  
-  private ThreadLocalSupplier(Class<V> clazz) { }
+    private static Map<Class<?>, ThreadLocalSupplier<?>> supplier = new ConcurrentHashMap<>();
 
-  public V get() {
-    return tl.get();
-  }
+    @SuppressWarnings("unchecked")
+    public static <V0> ThreadLocalSupplier<V0> supplyFor(Class<V0> clazz) {
+        return (ThreadLocalSupplier<V0>)
+                supplier.computeIfAbsent(clazz, c -> new ThreadLocalSupplier<V0>((Class<V0>) c));
+    }
 
-  public void accept(V val) {
-    tl.set(val);
-  }
+    private final ThreadLocal<V> tl = new ThreadLocal<>();
+
+    private ThreadLocalSupplier(Class<V> clazz) {}
+
+    public V get() {
+        return tl.get();
+    }
+
+    public void accept(V val) {
+        tl.set(val);
+    }
 }

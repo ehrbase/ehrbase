@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.api.tenant;
 
 public interface Tenant {
-  public String getTenantId();
-  public String getTenantName();
+    public String getTenantId();
+
+    public String getTenantName();
 }

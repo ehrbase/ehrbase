@@ -26,5 +26,5 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(ElementType.TYPE)
 public @interface TenantAware {
-  String[] exclude() default {};
+    String[] exclude() default {};
 }
