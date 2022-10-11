@@ -32,6 +32,9 @@ public class CacheOptions {
     public static final String FIELDS_CACHE = "fieldsCache";
 
     public static final String MULTI_VALUE_CACHE = "multivaluedCache";
+    public static final String CONCEPT_CACHE_ID = "conceptCacheId";
+    public static final String CONCEPT_CACHE_CONCEPT_ID = "conceptCacheConceptId";
+    public static final String CONCEPT_CACHE_DESCRIPTION = "conceptCacheDescription";
 
     private boolean preBuildQueries;
 

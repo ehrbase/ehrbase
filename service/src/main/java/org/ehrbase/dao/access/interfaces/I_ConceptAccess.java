@@ -23,7 +23,10 @@ import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.util.UUID;
+import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
+import org.jooq.Condition;
+import org.jooq.Field;
 
 /**
  * access layer to Concepts
@@ -59,28 +62,23 @@ public interface I_ConceptAccess {
      * @return the record {@link UUID} or null if not found
      */
     static UUID fetchConcept(I_DomainAccess domainAccess, Integer conceptId, String language) {
-        return domainAccess
-                .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(conceptId).and(CONCEPT.LANGUAGE.equal(language)))
-                .getId();
+        return getConceptByConceptId(domainAccess, conceptId, language).getId();
     }
 
     static DvCodedText fetchConceptText(I_DomainAccess domainAccess, UUID uuid) {
         ConceptRecord conceptRecord = domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.ID.eq(uuid));
+        I_KnowledgeCache.ConceptValue concept = getConceptByUuid(domainAccess, uuid);
         return new DvCodedText(
-                conceptRecord.getDescription(),
-                new CodePhrase(new TerminologyId("openehr"), "" + conceptRecord.getConceptid()));
+                concept.getDescription(),
+                new CodePhrase(new TerminologyId("openehr"), Integer.toString(concept.getConceptId())));
     }
 
     static String fetchConceptLiteral(I_DomainAccess domainAccess, Integer conceptId, String language) {
-        return domainAccess
-                .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(conceptId).and(CONCEPT.LANGUAGE.equal(language)))
-                .getDescription();
+        return getConceptByConceptId(domainAccess, conceptId, language).getDescription();
     }
 
     static String fetchConceptLiteral(I_DomainAccess domainAccess, UUID uuid) {
-        return domainAccess.getContext().fetchAny(CONCEPT, CONCEPT.ID.eq(uuid)).getDescription();
+        return getConceptByUuid(domainAccess, uuid).getDescription();
     }
 
     /**
@@ -93,76 +91,51 @@ public interface I_ConceptAccess {
      */
     static UUID fetchContributionChangeType(I_DomainAccess domainAccess, String changeTypeStr) {
         ContributionChangeType contributionChangeType = ContributionChangeType.valueOf(changeTypeStr.toUpperCase());
-        int code = contributionChangeType.getCode();
-        return domainAccess
-                .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(code).and(CONCEPT.LANGUAGE.equal("en")))
-                .getId();
+        return fetchContributionChangeType(domainAccess, contributionChangeType);
     }
 
     static UUID fetchContributionChangeType(
             I_DomainAccess domainAccess, ContributionChangeType contributionChangeType) {
         if (contributionChangeType == null) return null;
         int code = contributionChangeType.getCode();
-        return domainAccess
-                .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(code).and(CONCEPT.LANGUAGE.equal("en")))
-                .getId();
+
+        return getConceptByConceptId(domainAccess, code, "en").getId();
     }
 
-    /**
-     * convenience statics to get VERSION.lifecycle_state
-     * DRAFT (code: 244)
-     *
-     * @param domainAccess SQL context
-     * @return the record {@link UUID}
-     */
-    static UUID getVlcsDraft(I_DomainAccess domainAccess) {
+    private static I_KnowledgeCache.ConceptValue getConceptByConceptId(
+            I_DomainAccess domainAccess, int code, String language) {
         return domainAccess
-                .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(244).and(CONCEPT.LANGUAGE.equal("en")))
-                .getId();
+                .getKnowledgeManager()
+                .getConceptByConceptId(
+                        code, language, (c, l) -> loadConcept(domainAccess, CONCEPT.CONCEPTID, c, language));
     }
 
-    /**
-     * convenience statics to get VERSION.lifecycle_state
-     * ACTIVE (code: 245)
-     *
-     * @param domainAccess SQL context
-     * @return the record {@link UUID}
-     */
-    static UUID getVlcsActive(I_DomainAccess domainAccess) {
+    private static I_KnowledgeCache.ConceptValue getConceptByUuid(I_DomainAccess domainAccess, UUID uuid) {
         return domainAccess
-                .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(245).and(CONCEPT.LANGUAGE.equal("en")))
-                .getId();
+                .getKnowledgeManager()
+                .getConceptById(uuid, u -> loadConcept(domainAccess, CONCEPT.ID, u, null));
     }
 
-    /**
-     * convenience statics to get VERSION.lifecycle_state
-     * INACTIVE (code: 246)
-     *
-     * @param domainAccess SQL context
-     * @return the record {@link UUID}
-     */
-    static UUID getVlcsInactive(I_DomainAccess domainAccess) {
+    private static I_KnowledgeCache.ConceptValue getConceptByDescription(
+            I_DomainAccess domainAccess, String description, String language) {
         return domainAccess
-                .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(246).and(CONCEPT.LANGUAGE.equal("en")))
-                .getId();
+                .getKnowledgeManager()
+                .getConceptByDescription(
+                        description, language, (d, l) -> loadConcept(domainAccess, CONCEPT.DESCRIPTION, d, language));
     }
 
-    /**
-     * convenience statics to get VERSION.lifecycle_state
-     * AWAITING APPROVAL (code: 247)
-     *
-     * @param domainAccess SQL context
-     * @return the record {@link UUID}
-     */
-    static UUID getVlcsAwaitingApproval(I_DomainAccess domainAccess) {
+    private static <T> I_KnowledgeCache.ConceptValue loadConcept(
+            I_DomainAccess domainAccess, Field<T> field, T value, String language) {
+
+        Condition condition = field.eq(value);
+        if (language != null) {
+            condition = condition.and(CONCEPT.LANGUAGE.equal(language));
+        }
         return domainAccess
                 .getContext()
-                .fetchAny(CONCEPT, CONCEPT.CONCEPTID.eq(247).and(CONCEPT.LANGUAGE.equal("en")))
-                .getId();
+                .fetchOptional(CONCEPT, condition)
+                .map(r -> new I_KnowledgeCache.ConceptValue(
+                        r.getId(), r.getConceptid(), r.getDescription(), r.getLanguage()))
+                .orElseThrow();
     }
 }

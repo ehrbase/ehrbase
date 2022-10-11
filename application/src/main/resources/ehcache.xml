@@ -62,6 +62,21 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     <value-type>java.util.List</value-type>
   </cache>
 
+  <cache alias="conceptCacheId" uses-template="concept-cache">
+    <key-type>java.util.UUID</key-type>
+    <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.ConceptValue</value-type>
+  </cache>
+
+  <cache alias="conceptCacheConceptId" uses-template="concept-cache">
+    <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
+    <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.ConceptValue</value-type>
+  </cache>
+
+  <cache alias="conceptCacheDescription" uses-template="concept-cache">
+    <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
+    <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.ConceptValue</value-type>
+  </cache>
+
   <cache-template name="introspect-cache">
     <expiry>
       <none/>
@@ -79,6 +94,16 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     <resources>
       <heap unit="MB">200</heap>
       <disk unit="MB">400</disk>
+      <heap unit="MB">20</heap>
+    </resources>
+  </cache-template>
+
+  <cache-template name="concept-cache">
+    <expiry>
+      <none/>
+    </expiry>
+    <resources>
+      <heap>10000</heap>
     </resources>
   </cache-template>
 </config>

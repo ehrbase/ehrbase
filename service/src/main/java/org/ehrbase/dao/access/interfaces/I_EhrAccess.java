@@ -61,15 +61,7 @@ public interface I_EhrAccess extends I_SimpleCRUD {
             UUID accessId,
             UUID ehrId,
             String tenantIdentifier) {
-        return new EhrAccess(
-                domain.getContext(),
-                domain.getServerConfig(),
-                partyId,
-                systemId,
-                directoryId,
-                accessId,
-                ehrId,
-                tenantIdentifier);
+        return new EhrAccess(domain, partyId, systemId, directoryId, accessId, ehrId, tenantIdentifier);
     }
 
     /**

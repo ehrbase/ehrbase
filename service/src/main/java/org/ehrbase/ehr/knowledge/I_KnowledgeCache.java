@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -82,4 +84,42 @@ public interface I_KnowledgeCache {
     boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template);
 
     JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> jsonQueryExpression);
+
+    ConceptValue getConceptByConceptId(int code, String language, BiFunction<Integer, String, ConceptValue> provider);
+
+    ConceptValue getConceptById(UUID uuid, Function<UUID, ConceptValue> provider);
+
+    ConceptValue getConceptByDescription(
+            String description, String language, BiFunction<String, String, ConceptValue> provider);
+
+    class ConceptValue {
+
+        private final UUID id;
+        private final int conceptId;
+        private final String description;
+        private final String language;
+
+        public ConceptValue(UUID id, int conceptId, String description, String language) {
+            this.id = id;
+            this.conceptId = conceptId;
+            this.description = description;
+            this.language = language;
+        }
+
+        public UUID getId() {
+            return id;
+        }
+
+        public int getConceptId() {
+            return conceptId;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+    }
 }

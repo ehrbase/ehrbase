@@ -36,7 +36,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -46,6 +49,9 @@ import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.cache.CacheOptions;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -145,8 +151,19 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     // index val to val
     private final Map<String, CacheKey<UUID>> idxCacheTemplateIdToUuid = new ConcurrentHashMap<>();
 
+    //    private final Map<UUID, ConceptValue> conceptById = new HashMap<>();
+    //    private final Map<Pair<Integer, String>, ConceptValue> conceptByConceptId = new HashMap<>();
+    //    private final Map<Pair<String, String>, ConceptValue> conceptByDescription = new HashMap<>();
+
+    private final Cache /*<UUID, ConceptValue>*/ conceptById;
+    private final Cache /*<Pair<Integer, String>, ConceptValue>*/ conceptByConceptId;
+    private final Cache /*<Pair<String, String>, ConceptValue>*/ conceptByDescription;
+
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
+
+    @Autowired
+    private DSLContext dslContext;
 
     public KnowledgeCacheService(
             TemplateStorage templateStorage,
@@ -163,6 +180,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         jsonPathQueryResultCache = cacheManager.getCache(CacheOptions.QUERY_CACHE);
         fieldCache = cacheManager.getCache(CacheOptions.FIELDS_CACHE);
         multivaluedCache = cacheManager.getCache(CacheOptions.MULTI_VALUE_CACHE);
+        conceptById = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_ID);
+        conceptByConceptId = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_CONCEPT_ID);
+        conceptByDescription = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_DESCRIPTION);
 
         initializeCaches(cacheOptions.isPreInitialize());
     }
@@ -236,6 +256,14 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         collect.forEach(f -> {
             if (!f.isDone()) f.cancel(false);
         });
+        I_DomainAccess domainAccess = new DataAccess(dslContext, this, null, null) {
+            @Override
+            public DataAccess getDataAccess() {
+                return this;
+            }
+        };
+        List.of(I_ConceptAccess.ContributionChangeType.values())
+                .forEach(c -> I_ConceptAccess.fetchContributionChangeType(domainAccess, c));
     }
 
     @Override
@@ -601,5 +629,43 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                     "The supplied template is not supported (unsupported types: {0})",
                     String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
         }
+    }
+
+    @Override
+    public ConceptValue getConceptByConceptId(
+            int conceptId, String language, BiFunction<Integer, String, ConceptValue> provider) {
+        ConceptValue concept = conceptByConceptId.get(Pair.of(conceptId, language), ConceptValue.class);
+        if (concept == null) {
+            concept = provider.apply(conceptId, language);
+            addConceptToCaches(concept);
+        }
+        return concept;
+    }
+
+    @Override
+    public ConceptValue getConceptById(UUID id, Function<UUID, ConceptValue> provider) {
+        ConceptValue concept = conceptById.get(id, ConceptValue.class);
+        if (concept == null) {
+            concept = provider.apply(id);
+            addConceptToCaches(concept);
+        }
+        return concept;
+    }
+
+    @Override
+    public ConceptValue getConceptByDescription(
+            String description, String language, BiFunction<String, String, ConceptValue> provider) {
+        ConceptValue concept = conceptByDescription.get(Pair.of(description, language), ConceptValue.class);
+        if (concept == null) {
+            concept = provider.apply(description, language);
+            addConceptToCaches(concept);
+        }
+        return concept;
+    }
+
+    private void addConceptToCaches(ConceptValue concept) {
+        conceptById.put(concept.getId(), concept);
+        conceptByConceptId.put(Pair.of(concept.getConceptId(), concept.getLanguage()), concept);
+        conceptByDescription.put(Pair.of(concept.getDescription(), concept.getLanguage()), concept);
     }
 }

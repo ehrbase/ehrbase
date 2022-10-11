@@ -137,14 +137,7 @@ public interface I_CompositionAccess extends I_VersionedCRUD, I_Compensatable {
      */
     static I_CompositionAccess getNewInstance(
             I_DomainAccess domain, Composition composition, UUID ehrId, String tenantIdentifier) {
-        return new CompositionAccess(
-                domain.getContext(),
-                domain.getKnowledgeManager(),
-                domain.getIntrospectService(),
-                domain.getServerConfig(),
-                composition,
-                ehrId,
-                tenantIdentifier);
+        return new CompositionAccess(domain, composition, ehrId, tenantIdentifier);
     }
 
     /**
@@ -250,7 +243,7 @@ public interface I_CompositionAccess extends I_VersionedCRUD, I_Compensatable {
         return CompositionAccess.getLastVersionNumber(domainAccess, compositionId);
     }
 
-    // TODO: doc! what's the logic behind the returned int code?
+    // TODO: doc! what's the logic behind the returned int code? TODO cache
     static Integer fetchTerritoryCode(I_DomainAccess domainAccess, String territoryAsString) {
         Result<TerritoryRecord> result = domainAccess
                 .getContext()
@@ -260,7 +253,7 @@ public interface I_CompositionAccess extends I_VersionedCRUD, I_Compensatable {
         if (result.isEmpty()) return -1;
         return result.get(0).getCode();
     }
-
+    // TODO cache
     static boolean isValidLanguageCode(I_DomainAccess domainAccess, String languageCode) {
         return !domainAccess
                 .getContext()
