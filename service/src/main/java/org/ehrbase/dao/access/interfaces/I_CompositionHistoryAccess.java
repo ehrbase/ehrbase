@@ -37,6 +37,11 @@ public interface I_CompositionHistoryAccess extends I_SimpleCRUD {
     static I_CompositionHistoryAccess retrieveLatest(I_DomainAccess domainAccess, UUID compositionId) {
         return CompositionHistoryAccess.retrieveLatest(domainAccess, compositionId);
     }
+    
+    static I_CompositionHistoryAccess retrieveByVersion(I_DomainAccess domainAccess, UUID compositionId, int version) {
+      return CompositionHistoryAccess.retrieveByVersion(domainAccess, compositionId, version);
+    }
+    
 
     void setRecord(CompositionHistoryRecord record);
 

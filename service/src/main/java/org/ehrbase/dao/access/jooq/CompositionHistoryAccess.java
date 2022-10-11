@@ -23,10 +23,13 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.UUID;
-import org.ehrbase.dao.access.interfaces.*;
+
+import org.ehrbase.dao.access.interfaces.I_CompositionHistoryAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
+import org.jooq.Condition;
 import org.jooq.Result;
 
 /**
@@ -97,27 +100,50 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
         return null; // TODO
     }
 
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////    
+    
     @Override
     public Integer delete() {
-        return null; // TODO
+      Condition condition = COMPOSITION_HISTORY
+        .ID
+        .eq(record.getId())
+        .and(COMPOSITION_HISTORY.SYS_TRANSACTION.eq(record.getSysTransaction()));
+        
+        return getContext().delete(COMPOSITION_HISTORY).where(condition).execute();
     }
 
+    public static I_CompositionHistoryAccess retrieveByVersion(I_DomainAccess domainAccess, UUID compositionId, int version) {
+      return retrieveByIdx(domainAccess, compositionId, version);
+    }
+    
     public static I_CompositionHistoryAccess retrieveLatest(I_DomainAccess domainAccess, UUID compositionId) {
-        // retrieve all history records for given ID, ordered by time with latest at top
-        Result<CompositionHistoryRecord> historyRecordsRes = domainAccess
-                .getContext()
-                .selectFrom(COMPOSITION_HISTORY)
-                .where(COMPOSITION_HISTORY.ID.eq(compositionId))
-                .orderBy(COMPOSITION_HISTORY.SYS_TRANSACTION.desc()) // latest at top, i.e. [0]
-                .fetch();
-        if (historyRecordsRes.isEmpty()) return null;
-        CompositionHistoryRecord rec = historyRecordsRes.get(0);
-
-        I_CompositionHistoryAccess historyAccess = new CompositionHistoryAccess(domainAccess, rec.getNamespace());
-        historyAccess.setRecord(rec);
-        return historyAccess;
+      return retrieveByIdx(domainAccess, compositionId, 0);
     }
+    
+    private static I_CompositionHistoryAccess retrieveByIdx(I_DomainAccess domainAccess, UUID compositionId, int idx) {
+      Result<CompositionHistoryRecord> historyRecordsRes = domainAccess
+        .getContext()
+        .selectFrom(COMPOSITION_HISTORY)
+        .where(COMPOSITION_HISTORY.ID.eq(compositionId))
+        .orderBy(idx == 0 ? COMPOSITION_HISTORY.SYS_TRANSACTION.desc() : COMPOSITION_HISTORY.SYS_TRANSACTION.asc())
+        .fetch();
+      
+      if (historyRecordsRes.isEmpty()) return null;
+      
+      CompositionHistoryRecord rec = historyRecordsRes.get(idx == 0 ? idx : idx - 1);
 
+      I_CompositionHistoryAccess historyAccess = new CompositionHistoryAccess(domainAccess, rec.getNamespace());
+      historyAccess.setRecord(rec);
+      return historyAccess;
+  }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////        
+    
     @Override
     public void setRecord(CompositionHistoryRecord record) {
         this.record = record;
