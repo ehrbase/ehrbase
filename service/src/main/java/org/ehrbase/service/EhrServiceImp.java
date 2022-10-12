@@ -313,15 +313,6 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean doesEhrExist(UUID ehrId) {
-        Optional<I_EhrAccess> ehrAccess = Optional.ofNullable(I_EhrAccess.retrieveInstance(getDataAccess(), ehrId));
-        return ehrAccess.isPresent();
-    }
-
-    /**
      * Fetches time of creation of specific EHR record
      *
      * @param ehrId
@@ -382,13 +373,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     /*TODO This method should be cached...
     For contributions it may be called n times where n is the number of versions in the contribution which will in turn mean
     n SQL queries are performed*/
-    public boolean isModifiable(UUID ehrId) {
+    public Boolean isModifiable(UUID ehrId) {
         return I_EhrAccess.isModifiable(getDataAccess(), ehrId);
-    }
-
-    @Override
-    public boolean hasStatus(UUID statusId) {
-        return I_StatusAccess.exists(getDataAccess(), statusId);
     }
 
     @Override

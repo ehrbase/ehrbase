@@ -84,14 +84,6 @@ public interface EhrService extends BaseService {
     Optional<UUID> findBySubject(String subjectId, String nameSpace);
 
     /**
-     * Checks if there is an ehr entry existing for specified ehrId.
-     *
-     * @param ehrId - Target EHR identified
-     * @return EHR with id exists
-     */
-    boolean doesEhrExist(UUID ehrId);
-
-    /**
      * Get latest version UID of an EHR_STATUS by given associated EHR UID.
      *
      * @param ehrId EHR ID
@@ -120,20 +112,12 @@ public interface EhrService extends BaseService {
     boolean hasEhr(UUID ehrId);
 
     /**
-     * Return True if a EHR_STATUS with identifier statusId exists.
-     *
-     * @param statusId identifier to test
-     * @return True when existing, false if not
-     */
-    boolean hasStatus(UUID statusId);
-
-    /**
      * Returns true if an EHR_STATUS for the given EHR ID exists and has the is_modifiable flag set to true.
      *
      * @param ehrId EHR ID to check
-     * @return true if flag is true, false otherwise
+     * @return flag value (true/false) if EHR exists, null otherwise
      */
-    boolean isModifiable(UUID ehrId);
+    Boolean isModifiable(UUID ehrId);
 
     /**
      * Helper to get (Versioned Object) Uid of EHR_STATUS of given EHR.
@@ -212,7 +196,7 @@ public interface EhrService extends BaseService {
      * @param ehrId EHR ID to check
      */
     default void checkEhrExists(UUID ehrId) {
-        if (ehrId == null || !doesEhrExist(ehrId)) {
+        if (ehrId == null || !hasEhr(ehrId)) {
             throw new ObjectNotFoundException("EHR", String.format("EHR with id %s not found", ehrId));
         }
     }
@@ -225,8 +209,11 @@ public interface EhrService extends BaseService {
      * @param ehrId EHR ID to check
      */
     default void checkEhrExistsAndIsModifiable(UUID ehrId) {
-        checkEhrExists(ehrId);
-        if (!isModifiable(ehrId)) {
+        Boolean modifiable = isModifiable(ehrId);
+        if (modifiable == null) {
+            throw new ObjectNotFoundException("EHR", String.format("EHR with id %s not found", ehrId));
+        }
+        if (!modifiable) {
             throw new StateConflictException(
                     String.format("EHR with id %s does not allow modification", ehrId.toString()));
         }

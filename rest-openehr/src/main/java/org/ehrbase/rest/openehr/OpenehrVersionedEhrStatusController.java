@@ -192,10 +192,6 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
         if (version < 1) throw new InvalidApiParameterException("Version can't be negative.");
 
-        if (!ehrService.hasStatus(versionedObjectId)) {
-            throw new ObjectNotFoundException("ehr_status", "No EHR_STATUS with given ID can be found.");
-        }
-
         Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion =
                 ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);
         UUID contributionId = ehrStatusOriginalVersion
