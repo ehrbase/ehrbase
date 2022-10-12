@@ -239,21 +239,16 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         // check for valid format header to produce content accordingly
         MediaType contentType = resolveContentType(accept);
 
-        // Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatusEhrScape(ehrId,
-        // CompositionFormat.FLAT);    // older, keep until rework of formatting
-        Optional<EhrStatus> ehrStatus = Optional.of(ehrService.getEhrStatus(ehrId));
-        if (ehrStatus.isEmpty()) {
-            return Optional.empty();
-        }
-
         // create either null or maximum response data class
         T minimalOrRepresentation = factory.get();
 
         if (minimalOrRepresentation != null) {
+
+            EhrStatus ehrStatus = ehrService.getEhrStatus(ehrId);
             // populate maximum response data
             EhrResponseData objByReference = minimalOrRepresentation;
             objByReference.setEhrId(new HierObjectId(ehrId.toString()));
-            objByReference.setEhrStatus(ehrStatus.get());
+            objByReference.setEhrStatus(ehrStatus);
             objByReference.setSystemId(
                     new HierObjectId(ehrService.getSystemUuid().toString()));
             DvDateTime timeCreated = ehrService.getCreationTime(ehrId);
