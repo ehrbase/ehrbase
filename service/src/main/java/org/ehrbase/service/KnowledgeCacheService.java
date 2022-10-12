@@ -47,6 +47,7 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
@@ -61,10 +62,12 @@ import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 import org.ehrbase.webtemplate.parser.NodeId;
 import org.ehrbase.webtemplate.parser.OPTParser;
+import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -158,6 +161,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache /*<UUID, ConceptValue>*/ conceptById;
     private final Cache /*<Pair<Integer, String>, ConceptValue>*/ conceptByConceptId;
     private final Cache /*<Pair<String, String>, ConceptValue>*/ conceptByDescription;
+    private final Cache /*<String, TerritoryValue>*/ territoryCache;
+    private final Cache /*<String, LanguageValue>*/ languageCache;
 
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
@@ -184,6 +189,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         conceptByConceptId = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_CONCEPT_ID);
         conceptByDescription = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_DESCRIPTION);
 
+        territoryCache = cacheManager.getCache(CacheOptions.TERRITORY_CACHE);
+        languageCache = cacheManager.getCache(CacheOptions.LANGUAGE_CACHE);
         initializeCaches(cacheOptions.isPreInitialize());
     }
 
@@ -546,13 +553,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public ItemInfo getInfo(String templateId, String aql) {
-        Triple<String, String, String> key = Triple.of(templateId, tenantService.getCurrentTenantIdentifier(), aql);
-        ItemInfo itemInfo = fieldCache.get(key, ItemInfo.class);
-
-        if (itemInfo == null) {
-            WebTemplate webTemplate = getQueryOptMetaData(templateId);
-            String type;
-            Optional<WebTemplateNode> node = webTemplate.findByAqlPath(aql);
+        TemplateIdAqlTuple key = new TemplateIdAqlTuple(templateId, aql, tenantService.getCurrentTenantIdentifier());
+        return getCached(key, ItemInfo.class, fieldCache, k -> {
+            WebTemplate webTemplate = getQueryOptMetaData(key.getTemplateId());
+            String keyAql = key.getAql();
+            Optional<WebTemplateNode> node = webTemplate.findByAqlPath(keyAql);
+            final String type;
             if (node.isEmpty()) {
                 type = null;
             } else if (node.get().getRmType().equals(ELEMENT)) {
@@ -565,10 +571,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
             if (node.isEmpty()) {
                 category = null;
-            } else if (aql.endsWith("/value")) {
+            } else if (keyAql.endsWith("/value")) {
                 // for element unwrap
                 category = webTemplate
-                        .findByAqlPath(aql.replace("/value", ""))
+                        .findByAqlPath(keyAql.replace("/value", ""))
                         .filter(n -> n.getRmType().equals(ELEMENT))
                         .map(n -> ELEMENT)
                         .orElse("DATA_STRUCTURE");
@@ -576,25 +582,20 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                 category = "DATA_STRUCTURE";
             }
 
-            itemInfo = new ItemInfo(type, category);
-            fieldCache.put(key, itemInfo);
-        }
-        return itemInfo;
+            return new ItemInfo(type, category);
+        });
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<String> multiValued(String templateId) {
-        CacheKey<String> key = CacheKey.of(templateId, tenantService.getCurrentTenantIdentifier());
-        List<String> list = multivaluedCache.get(key, List.class);
-
-        if (list == null) {
-            list = getQueryOptMetaData(templateId).multiValued().stream()
-                    .map(webTemplateNode -> webTemplateNode.getAqlPath(false))
-                    .collect(Collectors.toList());
-            multivaluedCache.put(key, list);
-        }
-        return list;
+        return getCached(
+                CacheKey.of(templateId, tenantService.getCurrentTenantIdentifier()),
+                List.class,
+                multivaluedCache,
+                tid -> getQueryOptMetaData(tid.getVal()).multiValued().stream()
+                        .map(webTemplateNode -> webTemplateNode.getAqlPath(false))
+                        .collect(Collectors.toList()));
     }
 
     @Override
@@ -667,5 +668,25 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         conceptById.put(concept.getId(), concept);
         conceptByConceptId.put(Pair.of(concept.getConceptId(), concept.getLanguage()), concept);
         conceptByDescription.put(Pair.of(concept.getDescription(), concept.getLanguage()), concept);
+    }
+
+    private static <K, V> V getCached(K key, Class<V> valueType, Cache cache, Function<K, V> provider) {
+        V value = cache.get(key, valueType);
+        if (value == null) {
+            value = provider.apply(key);
+            cache.put(key, value);
+        }
+        return value;
+    }
+
+    @Override
+    public TerritoryValue getTerritoryCodeByTwoLetterCode(
+            String territoryAsString, Function<String, TerritoryValue> provider) {
+        return getCached(territoryAsString, TerritoryValue.class, territoryCache, provider);
+    }
+
+    @Override
+    public LanguageValue getLanguageByCode(String languageCode, Function<String, LanguageValue> provider) {
+        return getCached(languageCode, LanguageValue.class, languageCache, provider);
     }
 }

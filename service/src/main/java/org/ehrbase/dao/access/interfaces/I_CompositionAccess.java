@@ -39,6 +39,7 @@ import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.jooq.CompositionAccess;
+import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
@@ -243,24 +244,30 @@ public interface I_CompositionAccess extends I_VersionedCRUD, I_Compensatable {
         return CompositionAccess.getLastVersionNumber(domainAccess, compositionId);
     }
 
-    // TODO: doc! what's the logic behind the returned int code? TODO cache
-    static Integer fetchTerritoryCode(I_DomainAccess domainAccess, String territoryAsString) {
-        Result<TerritoryRecord> result = domainAccess
-                .getContext()
-                .selectFrom(TERRITORY)
-                .where(TERRITORY.TWOLETTER.equal(territoryAsString))
-                .fetch();
-        if (result.isEmpty()) return -1;
-        return result.get(0).getCode();
+    // TODO: doc! what's the logic behind the returned int code?
+    static int fetchTerritoryCode(I_DomainAccess domainAccess, String territoryAsString) {
+        I_KnowledgeCache.TerritoryValue territory = domainAccess
+                .getKnowledgeManager()
+                .getTerritoryCodeByTwoLetterCode(territoryAsString, tlc -> domainAccess
+                        .getContext()
+                        .fetchOptional(TERRITORY, TERRITORY.TWOLETTER.equal(territoryAsString))
+                        .map(r -> new I_KnowledgeCache.TerritoryValue(
+                                r.getCode(), r.getTwoletter(), r.getThreeletter(), r.getText()))
+                        .orElse(null));
+        if (territory == null) return -1;
+        return territory.getCode();
     }
-    // TODO cache
+
     static boolean isValidLanguageCode(I_DomainAccess domainAccess, String languageCode) {
-        return !domainAccess
-                .getContext()
-                .selectFrom(LANGUAGE)
-                .where(LANGUAGE.CODE.equal(languageCode))
-                .fetch()
-                .isEmpty();
+
+        I_KnowledgeCache.LanguageValue language = domainAccess
+                .getKnowledgeManager()
+                .getLanguageByCode(languageCode, lc -> domainAccess
+                        .getContext()
+                        .fetchOptional(LANGUAGE, LANGUAGE.CODE.equal(lc))
+                        .map(r -> new I_KnowledgeCache.LanguageValue(r.getCode(), r.getDescription()))
+                        .orElse(null));
+        return language != null;
     }
 
     static UUID getEhrId(I_DomainAccess domainAccess, UUID compositionId) {

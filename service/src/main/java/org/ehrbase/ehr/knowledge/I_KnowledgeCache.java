@@ -19,6 +19,7 @@ package org.ehrbase.ehr.knowledge;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +93,11 @@ public interface I_KnowledgeCache {
     ConceptValue getConceptByDescription(
             String description, String language, BiFunction<String, String, ConceptValue> provider);
 
-    class ConceptValue {
+    TerritoryValue getTerritoryCodeByTwoLetterCode(String territoryAsString, Function<String, TerritoryValue> provider);
+
+    LanguageValue getLanguageByCode(String languageCode, Function<String, LanguageValue> provider);
+
+    class ConceptValue implements Serializable {
 
         private final UUID id;
         private final int conceptId;
@@ -120,6 +125,56 @@ public interface I_KnowledgeCache {
 
         public String getLanguage() {
             return language;
+        }
+    }
+
+    class LanguageValue implements Serializable {
+
+        private final String code;
+        private final String description;
+
+        public LanguageValue(String code, String description) {
+            this.code = code;
+            this.description = description;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
+
+    class TerritoryValue implements Serializable {
+
+        private final int code;
+        private final String twoletter;
+        private final String threeletter;
+        private final String text;
+
+        public TerritoryValue(int code, String twoletter, String threeletter, String text) {
+            this.code = code;
+            this.twoletter = twoletter;
+            this.threeletter = threeletter;
+            this.text = text;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getTwoletter() {
+            return twoletter;
+        }
+
+        public String getThreeletter() {
+            return threeletter;
+        }
+
+        public String getText() {
+            return text;
         }
     }
 }

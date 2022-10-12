@@ -35,6 +35,8 @@ public class CacheOptions {
     public static final String CONCEPT_CACHE_ID = "conceptCacheId";
     public static final String CONCEPT_CACHE_CONCEPT_ID = "conceptCacheConceptId";
     public static final String CONCEPT_CACHE_DESCRIPTION = "conceptCacheDescription";
+    public static final String TERRITORY_CACHE = "territoryCache";
+    public static final String LANGUAGE_CACHE = "languageCache";
 
     private boolean preBuildQueries;
 

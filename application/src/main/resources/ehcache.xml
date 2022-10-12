@@ -53,7 +53,7 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
   </cache>
 
   <cache alias="fieldsCache" uses-template="query-cache">
-    <key-type>org.apache.commons.lang3.tuple.Triple</key-type>
+    <key-type>org.ehrbase.aql.containment.TemplateIdAqlTuple</key-type>
     <value-type>org.ehrbase.aql.sql.queryimpl.ItemInfo</value-type>
   </cache>
 
@@ -62,19 +62,29 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     <value-type>java.util.List</value-type>
   </cache>
 
-  <cache alias="conceptCacheId" uses-template="concept-cache">
+  <cache alias="conceptCacheId" uses-template="enums-cache">
     <key-type>java.util.UUID</key-type>
     <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.ConceptValue</value-type>
   </cache>
 
-  <cache alias="conceptCacheConceptId" uses-template="concept-cache">
+  <cache alias="conceptCacheConceptId" uses-template="enums-cache">
     <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
     <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.ConceptValue</value-type>
   </cache>
 
-  <cache alias="conceptCacheDescription" uses-template="concept-cache">
+  <cache alias="conceptCacheDescription" uses-template="enums-cache">
     <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
     <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.ConceptValue</value-type>
+  </cache>
+
+  <cache alias="territoryCache" uses-template="enums-cache">
+    <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
+    <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.TerritoryValue</value-type>
+  </cache>
+
+  <cache alias="languageCache" uses-template="enums-cache">
+    <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
+    <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.LanguageValue</value-type>
   </cache>
 
   <cache-template name="introspect-cache">
@@ -98,7 +108,7 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     </resources>
   </cache-template>
 
-  <cache-template name="concept-cache">
+  <cache-template name="enums-cache">
     <expiry>
       <none/>
     </expiry>
