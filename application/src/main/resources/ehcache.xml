@@ -78,12 +78,12 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
   </cache>
 
   <cache alias="territoryCache" uses-template="enums-cache">
-    <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
+    <key-type>java.lang.String</key-type>
     <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.TerritoryValue</value-type>
   </cache>
 
   <cache alias="languageCache" uses-template="enums-cache">
-    <key-type>org.apache.commons.lang3.tuple.Pair</key-type>
+    <key-type>java.lang.String</key-type>
     <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.LanguageValue</value-type>
   </cache>
 
