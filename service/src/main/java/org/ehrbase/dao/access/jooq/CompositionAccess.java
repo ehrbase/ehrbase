@@ -75,7 +75,7 @@ import org.jooq.Param;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Result;
-import org.jooq.SelectOrderByStep;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -564,14 +564,15 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
 
         DSLContext ctx = domainAccess.getContext();
         Param<UUID> uuidParam = DSL.param("id", compositionId);
-        SelectOrderByStep<Record1<Integer>> unionAll = ctx.select(count(COMPOSITION.ID))
+        Table<Record1<Integer>> unionAll = ctx.select(count(COMPOSITION.ID))
                 .from(COMPOSITION)
                 .where(COMPOSITION.ID.eq(uuidParam))
                 .unionAll(ctx.select(count(COMPOSITION_HISTORY.ID))
                         .from(COMPOSITION_HISTORY)
-                        .where(COMPOSITION_HISTORY.ID.eq(uuidParam)));
+                        .where(COMPOSITION_HISTORY.ID.eq(uuidParam)))
+                .asTable("version_counts");
 
-        AggregateFunction<BigDecimal> sum = DSL.sum(unionAll.field(1, Integer.class));
+        AggregateFunction<BigDecimal> sum = DSL.sum(unionAll.field(0, Integer.class));
 
         int version = ctx.select(sum).from(unionAll).fetchOne(sum).intValue();
 
