@@ -154,4 +154,19 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
     public void setHasAudit(UUID audit) {
         this.record.setHasAudit(audit);
     }
+
+    @Override
+    public Timestamp getSysTransaction() {
+      return record == null ? null : record.getSysTransaction();
+    }
+
+    @Override
+    public UUID getContributionId() {
+      return record == null ? null : record.getInContribution();
+    }
+
+    @Override
+    public UUID getId() {
+      return record == null ? null : record.getId();
+    }
 }

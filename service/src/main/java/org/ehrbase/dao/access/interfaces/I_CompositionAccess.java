@@ -56,7 +56,7 @@ import org.jooq.exception.DataAccessException;
  * Composition Access Layer Interface<br>
  * Interface CRUD and specific methods
  */
-public interface I_CompositionAccess extends I_VersionedCRUD {
+public interface I_CompositionAccess extends I_VersionedCRUD, I_Compensatable {
 
     // definitions of aliases used in joins
     String COMPOSITION_JOIN = "composition_join";

@@ -263,13 +263,17 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             
             DvCodedTextRecord category = entryHistoryRecord.getCategory();
             
+//            SafeNav<DvCodedText> safeDvCodedText = SafeNav
+//                .of(category)
+//                .get(c -> c.getValue())
+//                .get(s -> new DvCodedText(s, (CodePhrase) null))
+//                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
+//                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
+//            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
             SafeNav<DvCodedText> safeDvCodedText = SafeNav
                 .of(category)
-                .get(c -> c.getValue())
-                .get(s -> new DvCodedText(s, (CodePhrase) null))
-                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
-                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
-            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
+                .get(c -> new DvCodedText(c.getValue(), c.getDefiningCode().getCodeString()));
+            values.put(SystemValue.CATEGORY, safeDvCodedText.get());            
 
             setCompositionAttributes(entryAccess.composition, values);
             buildArchetypeDetails(entryAccess);
