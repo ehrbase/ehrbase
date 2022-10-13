@@ -30,6 +30,7 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.EventContext;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -67,10 +68,15 @@ import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.util.PartyUtils;
 import org.ehrbase.util.UuidGenerator;
+import org.jooq.AggregateFunction;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Param;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Result;
+import org.jooq.SelectOrderByStep;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -554,16 +560,22 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     public static Integer getLastVersionNumber(I_DomainAccess domainAccess, UUID compositionId) {
-        // check if compositionId is valid (version count = 1) and add number of
-        // existing older versions
-        if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(compositionId))) {
-            return 1
-                    + domainAccess
-                            .getContext()
-                            .fetchCount(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(compositionId));
-        } else {
-            return domainAccess.getContext().fetchCount(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(compositionId));
-        }
+        // check if compositionId is valid (version count = 1) and add number of existing older versions
+
+        DSLContext ctx = domainAccess.getContext();
+        Param<UUID> uuidParam = DSL.param("id", compositionId);
+        SelectOrderByStep<Record1<Integer>> unionAll = ctx.select(count(COMPOSITION.ID))
+                .from(COMPOSITION)
+                .where(COMPOSITION.ID.eq(uuidParam))
+                .unionAll(ctx.select(count(COMPOSITION_HISTORY.ID))
+                        .from(COMPOSITION_HISTORY)
+                        .where(COMPOSITION_HISTORY.ID.eq(uuidParam)));
+
+        AggregateFunction<BigDecimal> sum = DSL.sum(unionAll.field(1, Integer.class));
+
+        int version = ctx.select(sum).from(unionAll).fetchOne(sum).intValue();
+
+        return version;
     }
 
     public static boolean hasPreviousVersion(I_DomainAccess domainAccess, UUID compositionId) {
@@ -1066,9 +1078,8 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     public static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
-        // meta: logically deleted means that of this ID only entries in the history
-        // table are available
-
+        // meta: logically deleted means that of this ID only entries in the history table are available
+        // XXX performance...
         // if available in normal table -> not deleted
         if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(versionedObjectId))) {
             return false;
