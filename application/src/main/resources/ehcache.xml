@@ -87,6 +87,17 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     <value-type>org.ehrbase.ehr.knowledge.I_KnowledgeCache.LanguageValue</value-type>
   </cache>
 
+  <cache alias="userIdCache">
+    <key-type>java.lang.String</key-type>
+    <value-type>java.util.UUID</value-type>
+    <expiry>
+      <tti unit="minutes">5</tti>
+    </expiry>
+    <resources>
+      <heap>20000</heap>
+    </resources>
+  </cache>
+
   <cache-template name="introspect-cache">
     <expiry>
       <none/>
@@ -104,7 +115,6 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
     <resources>
       <heap unit="MB">200</heap>
       <disk unit="MB">400</disk>
-      <heap unit="MB">20</heap>
     </resources>
   </cache-template>
 

@@ -17,19 +17,12 @@
  */
 package org.ehrbase.service;
 
-import com.nedap.archie.rm.datavalues.DvIdentifier;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.support.identification.GenericId;
-import com.nedap.archie.rm.support.identification.PartyRef;
-import java.util.List;
 import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.BaseService;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
-import org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
-import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,6 +39,9 @@ public class BaseServiceImp implements BaseService {
 
     @Autowired
     private IAuthenticationFacade authenticationFacade;
+
+    @Autowired
+    private UserService userService;
 
     public BaseServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
         this.knowledgeCacheService = knowledgeCacheService;
@@ -75,31 +71,8 @@ public class BaseServiceImp implements BaseService {
      *
      * @return UUID of default user, derived from authenticated user.
      */
-    protected UUID getCurrentUserId(String tenantIdentifier) {
-        var username = authenticationFacade.getAuthentication().getName();
-        return new PersistedPartyIdentified(getDataAccess())
-                .findInternalUserId(username)
-                .orElseGet(() -> createInternalUser(username, tenantIdentifier));
-    }
-
-    /**
-     * Creates a new PARTY_IDENTIFIED corresponding to an authenticated user.
-     *
-     * @param username username of the user
-     * @return the id of the newly created user
-     */
-    protected UUID createInternalUser(String username, String tenantIdentifier) {
-        var identifier = new DvIdentifier();
-        identifier.setId(username);
-        identifier.setIssuer(PersistedPartyIdentified.EHRBASE);
-        identifier.setAssigner(PersistedPartyIdentified.EHRBASE);
-        identifier.setType(PersistedPartyIdentified.SECURITY_USER_TYPE);
-
-        PartyRef externalRef =
-                new PartyRef(new GenericId(UuidGenerator.randomUUID().toString(), DEMOGRAPHIC), "User", PARTY);
-        PartyIdentified user = new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
-
-        return new PersistedPartyIdentified(getDataAccess()).store(user, tenantIdentifier);
+    protected UUID getCurrentUserId() {
+        return userService.getCurrentUserId();
     }
 
     public ServerConfig getServerConfig() {

@@ -38,6 +38,8 @@ public class CacheOptions {
     public static final String TERRITORY_CACHE = "territoryCache";
     public static final String LANGUAGE_CACHE = "languageCache";
 
+    public static final String USER_ID_CACHE = "userIdCache";
+
     private boolean preBuildQueries;
 
     private int preBuildQueriesDepth;
