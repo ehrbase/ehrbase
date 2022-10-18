@@ -1497,7 +1497,7 @@ commands:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
           command: |
-            cd tests
+            cd integration-tests/tests
 
             # Create Log/Report with ALL DETAILS
             rebot --outputdir results/0 \
@@ -1514,7 +1514,7 @@ commands:
           name: GENERATE TEST SUMMARY
           when: always
           command: |
-            cd tests
+            cd integration-tests/tests
 
             # Create JUNIT report from merged results
             rebot --outputdir results/robot-tests \
@@ -1553,6 +1553,7 @@ commands:
           command: |
             git clone git@github.com:ehrbase/integration-tests.git
             ls -la
+            ls -la ~/projects/integration-tests/
 
   git-checkout-sdk-sync-branch:
     steps:
@@ -1937,7 +1938,7 @@ commands:
       - run:
           name: Start Keycloak in a Docker container
           command: |
-            cd tests/robot/SECURITY_TESTS/I_OAuth2_Keycloak
+            cd integration-tests/tests/robot/SECURITY_TESTS/I_OAuth2_Keycloak
             docker run -d --name keycloak \
               -p 8081:8080 \
               -v $(pwd)/exported-keycloak-config:/restore-keycloak-config \
