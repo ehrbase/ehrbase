@@ -898,6 +898,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_create"
           test-suite-path: "COMPOSITION_TESTS"
@@ -910,6 +911,7 @@ jobs:
       - run: echo MOCKED JOB 3
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get"
           test-suite-path: "COMPOSITION_TESTS"
@@ -921,6 +923,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get_versioned"
           test-suite-path: "COMPOSITION_TESTS"
@@ -932,6 +935,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
@@ -943,6 +947,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
@@ -954,6 +959,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -965,6 +971,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -976,6 +983,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -987,6 +995,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -998,6 +1007,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1009,6 +1019,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1020,6 +1031,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1031,6 +1043,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1042,6 +1055,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1053,6 +1067,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "compositionANDcomposition_ism_transitions"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1064,6 +1079,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "Template"
           test-suite-path: "TEMPLATE_TESTS"
@@ -1075,6 +1091,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "HeadersChecks"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1086,6 +1103,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
@@ -1096,6 +1114,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "MOCKSUITE"
           test-suite-path: "MOCK_FHIR_TESTS"
@@ -1107,6 +1126,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "CONTRIBUTION"
           test-suite-path: "CONTRIBUTION_TESTS"
@@ -1118,6 +1138,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "directory"
           test-suite-path: "DIRECTORY_TESTS"
@@ -1129,6 +1150,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "EHR_SERVICE"
           test-suite-path: "EHR_SERVICE_TESTS"
@@ -1139,6 +1161,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "EHR_STATUS"
           test-suite-path: "EHR_STATUS_TESTS"
@@ -1149,6 +1172,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "OPT"
           test-suite-path: "KNOWLEDGE_TESTS"
@@ -1161,6 +1185,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
@@ -1171,6 +1196,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "NEW_query_test_set"
           test-suite-path: "QUERY_TESTS"
@@ -1184,6 +1210,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
@@ -1247,8 +1274,9 @@ jobs:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: "http://localhost:8081/auth/realms/ehrbase"
     steps:
       - checkout
-      - install-and-configure-keycloak
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - install-and-configure-keycloak
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "SECURITY_oauth"
@@ -1265,6 +1293,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           sut: "ADMIN-TEST"
           include-tags: "ADMIN"
