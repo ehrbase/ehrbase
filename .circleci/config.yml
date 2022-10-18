@@ -1438,7 +1438,7 @@ commands:
                 echo "REMAINING TIMEOUT: $timeout"              
             fi
             jps
-            cd ~/projects/tests
+            cd ~/projects/integration-tests/tests
             robot --include << parameters.include-tags >> \
                   --skip TODO --skip future -e obsolete -e libtest \
                   --console dotted \
@@ -1458,9 +1458,9 @@ commands:
       - save-test-results-folder:
           suite-results-folder-name: << parameters.test-suite-name >>
       - store_test_results:
-          path: ~/projects/tests/results/
+          path: ~/projects/integration-tests/tests/results/
       - store_artifacts:
-          path: ~/projects/tests/results/
+          path: ~/projects/integration-tests/tests/results/
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
@@ -1476,7 +1476,7 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/tests/results/<< parameters.suite-results-folder-name >>
+            - projects/integration-tests/tests/results/<< parameters.suite-results-folder-name >>
 
 
   restore-test-results-folder:
@@ -1526,9 +1526,9 @@ commands:
       - save-test-results-folder:
           suite-results-folder-name: "0"
       - store_test_results:
-          path: ~/projects/tests/results/
+          path: ~/projects/integration-tests/tests/results/
       - store_artifacts:
-          path: ~/projects/tests/results/
+          path: ~/projects/integration-tests/tests/results/
 
 
 
@@ -1545,7 +1545,7 @@ commands:
           command: |
             git clone git@github.com:ehrbase/openEHR_SDK.git
             ls -la
-  
+
   git-clone-robot-integration-tests-repo:
     steps:
       - run:
@@ -1833,7 +1833,7 @@ commands:
             - projects/rest-openehr/target
             - projects/service/target
             - projects/test-coverage/target
-            - projects/tests/requirements.txt
+            - projects/integration-tests/tests/requirements.txt
 
 
   restore-workspace:
@@ -1995,7 +1995,7 @@ commands:
           name: Install Python requirements
           command: |
             python -c "import site; print(site.getsitepackages())"
-            pip install -r ~/projects/tests/requirements.txt
+            pip install -r ~/projects/integration-tests/tests/requirements.txt
 
   install-python3-requirements:
     description: Install Python requirements
@@ -2004,7 +2004,7 @@ commands:
           name: Install Python requirements
           command: |
             python3 -c "import site; print(site.getsitepackages())"
-            pip3 install -r ~/projects/tests/requirements.txt
+            pip3 install -r ~/projects/integration-tests/tests/requirements.txt
 
   setup-database:
     description: Setup ehrbase database
@@ -2155,7 +2155,7 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/tests/results
+            - projects/integration-tests/tests/results
 
   attach-tests-folder:
     description: Attach Robot tests folder back to workspace
@@ -2223,7 +2223,7 @@ commands:
           paths:
             - ~/jacoco-0.8.2
       - save_cache:
-          key: job-integration-tests-v2-pip-{{ checksum "~/projects/tests/requirements.txt" }}
+          key: job-integration-tests-v2-pip-{{ checksum "~/projects/integration-tests/tests/requirements.txt" }}
           paths:
             - ~/.cache/pip
             # - /opt/circleci/.pyenv/versions/3.7.0/lib/python3.7/site-packages
@@ -2243,7 +2243,7 @@ commands:
             - job-integration-tests-v1-installation-0.8.2
       - restore_cache:
           keys:
-            - job-integration-tests-v2-pip-{{ checksum "~/projects/tests/requirements.txt" }}
+            - job-integration-tests-v2-pip-{{ checksum "~/projects/integration-tests/tests/requirements.txt" }}
       - restore_cache:
           keys:
             - google-chrome-incl-webdriver-
