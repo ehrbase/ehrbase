@@ -1488,9 +1488,9 @@ commands:
       - save-test-results-folder:
           suite-results-folder-name: << parameters.test-suite-name >>
       - store_test_results:
-          path: ~/projects/integration-tests/tests/results/
+          path: ~/projects/tests/results/
       - store_artifacts:
-          path: ~/projects/integration-tests/tests/results/
+          path: ~/projects/tests/results/
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
@@ -1506,7 +1506,7 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/integration-tests/tests/results/<< parameters.suite-results-folder-name >>
+            - projects/tests/results/<< parameters.suite-results-folder-name >>
 
 
   restore-test-results-folder:
@@ -1583,8 +1583,6 @@ commands:
           command: |
             git clone git@github.com:ehrbase/integration-tests.git
             ls -la
-            ls -la ~/projects/integration-tests/tests
-            pwd
 
   git-checkout-sdk-sync-branch:
     steps:
