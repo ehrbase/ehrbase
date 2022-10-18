@@ -1999,7 +1999,7 @@ commands:
             pwd
             ls -la
             python -c "import site; print(site.getsitepackages())"
-            pip install -r ~/projects/integration-tests/tests/requirements.txt
+            pip install -r ~/projects/tests/requirements.txt
 
   install-python3-requirements:
     description: Install Python requirements
@@ -2008,7 +2008,7 @@ commands:
           name: Install Python requirements
           command: |
             python3 -c "import site; print(site.getsitepackages())"
-            pip3 install -r ~/projects/integration-tests/tests/requirements.txt
+            pip3 install -r ~/projects/tests/requirements.txt
 
   setup-database:
     description: Setup ehrbase database
