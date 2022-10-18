@@ -886,6 +886,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
       - run-robot-tests:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
