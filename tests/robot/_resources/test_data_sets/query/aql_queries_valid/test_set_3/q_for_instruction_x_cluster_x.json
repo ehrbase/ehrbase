@@ -1,3 +1,0 @@
-{
-    "q":"select  i/activities[at0001]/description[at0002]/items[at0070]/value/value, C/items[at0057]/value/magnitude   from EHR e contains INSTRUCTION i[openEHR-EHR-INSTRUCTION.medication_order.v3] contains CLUSTER C[openEHR-EHR-CLUSTER.therapeutic_direction.v1]"
-}

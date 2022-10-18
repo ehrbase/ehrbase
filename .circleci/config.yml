@@ -1545,6 +1545,13 @@ commands:
             git clone git@github.com:ehrbase/openEHR_SDK.git
             ls -la
   
+  git-clone-robot-integration-tests-repo:
+    steps:
+      - run:
+          name: CLONE ROBOT INTEGRATION TESTS REPO
+          command: |
+            git clone git@github.com:ehrbase/integration-tests.git
+            ls -la
 
   git-checkout-sdk-sync-branch:
     steps:

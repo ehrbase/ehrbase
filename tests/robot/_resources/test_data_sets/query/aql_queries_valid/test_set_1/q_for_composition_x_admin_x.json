@@ -1,3 +1,0 @@
-{
-    "q":"SELECT c/name/value as composition, a_e/data[at0001]/items[at0004]/value/value as comment from EHR e CONTAINS COMPOSITION c [openEHR-EHR-COMPOSITION.encounter.v1] CONTAINS ADMIN_ENTRY a_e [openEHR-EHR-ADMIN_ENTRY.translation_requirements.v1]"
-}

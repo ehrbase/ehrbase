@@ -1,3 +1,0 @@
-{
-  "q": "SELECT c FROM COMPOSITION c LIMIT 5 ORDER BY c/context/start_time/value ASC"
-}

@@ -1,3 +1,0 @@
-{
-    "q": "select c from EHR e contains COMPOSITION c"
-}

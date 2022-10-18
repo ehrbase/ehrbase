@@ -1,3 +1,0 @@
-{
-    "q":"SELECT c/name/value as composition, a_a/name/value as name, a_a/description[at0017]/items[at0020]/value/value as medication, a_a/description[at0001]/items[at0002]/value/value as procedure from EHR e CONTAINS COMPOSITION c CONTAINS ACTION a_a"
-}

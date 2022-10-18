@@ -1,3 +1,0 @@
-{
-    "q": "select a/archetype_details from EHR e contains COMPOSITION a where a/uid/value = '__MODIFY_COMPO_UID_1__'"
-}

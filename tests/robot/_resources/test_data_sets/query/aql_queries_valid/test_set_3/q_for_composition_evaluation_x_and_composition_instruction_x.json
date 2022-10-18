@@ -1,3 +1,0 @@
-{
-    "q":"select alg/data[at0001]/items[at0002]/value/value, med/activities[at0001]/description[at0002]/items[at0070]/value/value from EHR e contains (COMPOSITION c1 contains EVALUATION alg[openEHR-EHR-EVALUATION.problem_diagnosis.v1] AND COMPOSITION c2 contains INSTRUCTION med[openEHR-EHR-INSTRUCTION.medication_order.v3])"
-}

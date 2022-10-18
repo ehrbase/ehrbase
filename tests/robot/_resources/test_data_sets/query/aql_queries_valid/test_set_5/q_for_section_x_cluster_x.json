@@ -1,3 +1,0 @@
-{
-    "q":"SELECT c/name/value FROM EHR e CONTAINS SECTION s[openEHR-EHR-SECTION.adhoc.v1] CONTAINS CLUSTER c[openEHR-EHR-CLUSTER.medication.v1]"
-}
