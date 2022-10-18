@@ -1553,8 +1553,8 @@ commands:
           command: |
             git clone git@github.com:ehrbase/integration-tests.git
             ls -la
+            ls -la ~/projects/integration-tests/tests
             pwd
-            ls -la ~/projects/integration-tests/
 
   git-checkout-sdk-sync-branch:
     steps:
@@ -1997,7 +1997,7 @@ commands:
           name: Install Python requirements
           command: |
             pwd
-            ls -an
+            ls -la
             python -c "import site; print(site.getsitepackages())"
             pip install -r ~/projects/integration-tests/tests/requirements.txt
 
