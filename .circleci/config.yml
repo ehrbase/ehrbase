@@ -1551,7 +1551,7 @@ commands:
     steps:
       - run:
           command: |
-            cd tests
+            cd integration-tests/tests
             pip install -r requirements.txt
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
