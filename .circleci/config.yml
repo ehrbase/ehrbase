@@ -887,6 +887,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
@@ -899,6 +900,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_create"
           test-suite-path: "COMPOSITION_TESTS"
@@ -912,6 +914,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get"
           test-suite-path: "COMPOSITION_TESTS"
@@ -924,6 +927,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get_versioned"
           test-suite-path: "COMPOSITION_TESTS"
@@ -936,6 +940,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
@@ -948,6 +953,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
@@ -960,6 +966,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -972,6 +979,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -984,6 +992,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -996,6 +1005,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1008,6 +1018,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1020,6 +1031,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1032,6 +1044,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1044,6 +1057,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1056,6 +1070,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1068,6 +1083,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_ism_transitions"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1080,6 +1096,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "Template"
           test-suite-path: "TEMPLATE_TESTS"
@@ -1092,6 +1109,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "HeadersChecks"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1104,6 +1122,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
@@ -1115,6 +1134,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "MOCKSUITE"
           test-suite-path: "MOCK_FHIR_TESTS"
@@ -1127,6 +1147,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "CONTRIBUTION"
           test-suite-path: "CONTRIBUTION_TESTS"
@@ -1139,6 +1160,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "directory"
           test-suite-path: "DIRECTORY_TESTS"
@@ -1151,6 +1173,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EHR_SERVICE"
           test-suite-path: "EHR_SERVICE_TESTS"
@@ -1162,6 +1185,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EHR_STATUS"
           test-suite-path: "EHR_STATUS_TESTS"
@@ -1173,6 +1197,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "OPT"
           test-suite-path: "KNOWLEDGE_TESTS"
@@ -1186,6 +1211,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
@@ -1197,6 +1223,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "NEW_query_test_set"
           test-suite-path: "QUERY_TESTS"
@@ -1211,6 +1238,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
@@ -1218,10 +1246,10 @@ jobs:
       - run:
           name: list files after restore of cache
           command: |
-            ls -la integration-tests/tests/robot/_resources/test_data_sets/query/aql_queries_valid/A/
-            ls -la integration-tests/tests/robot/_resources/test_data_sets/query/aql_queries_valid/B/
-            ls -la integration-tests/tests/robot/_resources/test_data_sets/query/aql_queries_valid/C/
-            ls -la integration-tests/tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/A/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/B/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/C/
+            ls -la tests/robot/_resources/test_data_sets/query/aql_queries_valid/D/
       - restore_cache:
           keys:
             - ehrbasedb-dump-v8
@@ -1234,7 +1262,7 @@ jobs:
             if [ -f "$FILE" ]; then
                 echo "REGENERATION OF TEST-DATA AND EXPECTED RESULT SETS IS EITHER REQUIRED OR WAS FORCED."
             else 
-                find integration-tests/tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f ! -name *.tmp.json | sort | xargs cat > /tmp/expected-results-loaded_db-seed
+                find tests/robot/_resources/test_data_sets/query/expected_results/loaded_db/ -type f ! -name *.tmp.json | sort | xargs cat > /tmp/expected-results-loaded_db-seed
                 sha256sum /tmp/expected-results-loaded_db-seed
                 ACTUAL_HASH="$(sha256sum /tmp/expected-results-loaded_db-seed | cat)"
                 EXPECTED_HASH="f5ee5a9a55c50687dafc3c3acff66089759f1577d7a5dd71aff6e60793ce91c2  /tmp/expected-results-loaded_db-seed"
@@ -1276,6 +1304,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - install-and-configure-keycloak
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
@@ -1294,6 +1323,7 @@ jobs:
       - checkout
       - restore-workspace
       - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           sut: "ADMIN-TEST"
           include-tags: "ADMIN"
@@ -1468,7 +1498,7 @@ commands:
                 echo "REMAINING TIMEOUT: $timeout"              
             fi
             jps
-            cd ~/projects/integration-tests/tests
+            cd ~/projects/tests
             robot --include << parameters.include-tags >> \
                   --skip TODO --skip future -e obsolete -e libtest \
                   --console dotted \
@@ -1488,9 +1518,9 @@ commands:
       - save-test-results-folder:
           suite-results-folder-name: << parameters.test-suite-name >>
       - store_test_results:
-          path: ~/projects/integration-tests/tests/results/
+          path: ~/projects/tests/results/
       - store_artifacts:
-          path: ~/projects/integration-tests/tests/results/
+          path: ~/projects/tests/results/
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
@@ -1506,7 +1536,7 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/integration-tests/tests/results/<< parameters.suite-results-folder-name >>
+            - projects/tests/results/<< parameters.suite-results-folder-name >>
 
 
   restore-test-results-folder:
@@ -1527,7 +1557,7 @@ commands:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
           command: |
-            cd integration-tests/tests
+            cd tests
 
             # Create Log/Report with ALL DETAILS
             rebot --outputdir results/0 \
@@ -1544,7 +1574,7 @@ commands:
           name: GENERATE TEST SUMMARY
           when: always
           command: |
-            cd integration-tests/tests
+            cd tests
 
             # Create JUNIT report from merged results
             rebot --outputdir results/robot-tests \
@@ -1556,9 +1586,9 @@ commands:
       - save-test-results-folder:
           suite-results-folder-name: "0"
       - store_test_results:
-          path: ~/projects/integration-tests/tests/results/
+          path: ~/projects/tests/results/
       - store_artifacts:
-          path: ~/projects/integration-tests/tests/results/
+          path: ~/projects/tests/results/
 
 
 
@@ -1585,11 +1615,25 @@ commands:
             ls -la
             integration_folder=/home/circleci/projects/integration-tests
             if [ -d "$integration_folder" ]; then
-              echo "'$integration_folder' found! Skipping clone '$integration_folder' repository"
+              echo "'$integration_folder' found! Skipping clone repo to path '$integration_folder'"
             else
               echo "'$integration_folder' not found! Cloning external repo in progress ..."
               git clone git@github.com:ehrbase/integration-tests.git
               ls -la
+            fi
+
+  move-integration-tests-content-to-local-tests-folder:
+    steps:
+      - run:
+          name: MOVE INTEGRATION TESTS CONTENT TO LOCAL PROJECT TESTS FOLDER
+          command: |
+            pwd
+            robot_folder_path=/home/circleci/projects/integration-tests/tests/robot
+            if [ -d "robot_folder_path" ]; then
+              echo "Moving files and folders to root project, tests folder ..."
+              mw -v /home/circleci/projects/integration-tests/tests/* /home/circleci/projects/tests/
+            else
+              echo "Tests folder from root project contains robot folder"
             fi
 
   git-checkout-sdk-sync-branch:
@@ -1871,7 +1915,7 @@ commands:
             - projects/rest-openehr/target
             - projects/service/target
             - projects/test-coverage/target
-            - projects/integration-tests/tests/requirements.txt
+            - projects/tests/requirements.txt
 
 
   restore-workspace:
@@ -1975,7 +2019,7 @@ commands:
       - run:
           name: Start Keycloak in a Docker container
           command: |
-            cd integration-tests/tests/robot/SECURITY_TESTS/I_OAuth2_Keycloak
+            cd tests/robot/SECURITY_TESTS/I_OAuth2_Keycloak
             docker run -d --name keycloak \
               -p 8081:8080 \
               -v $(pwd)/exported-keycloak-config:/restore-keycloak-config \
@@ -2195,7 +2239,7 @@ commands:
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - projects/integration-tests/tests/results
+            - projects/tests/results
 
   attach-tests-folder:
     description: Attach Robot tests folder back to workspace
@@ -2263,7 +2307,7 @@ commands:
           paths:
             - ~/jacoco-0.8.2
       - save_cache:
-          key: job-integration-tests-v2-pip-{{ checksum "~/projects/integration-tests/tests/requirements.txt" }}
+          key: job-integration-tests-v2-pip-{{ checksum "~/projects/tests/requirements.txt" }}
           paths:
             - ~/.cache/pip
             # - /opt/circleci/.pyenv/versions/3.7.0/lib/python3.7/site-packages
@@ -2283,7 +2327,7 @@ commands:
             - job-integration-tests-v1-installation-0.8.2
       - restore_cache:
           keys:
-            - job-integration-tests-v2-pip-{{ checksum "~/projects/integration-tests/tests/requirements.txt" }}
+            - job-integration-tests-v2-pip-{{ checksum "~/projects/tests/requirements.txt" }}
       - restore_cache:
           keys:
             - google-chrome-incl-webdriver-
