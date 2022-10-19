@@ -1632,8 +1632,12 @@ commands:
             if [ -d "robot_folder_path" ]; then
               echo "Moving files and folders to root project, tests folder ..."
               mw -v /home/circleci/projects/integration-tests/tests/* /home/circleci/projects/tests/
+              ls -la /home/circleci/projects/tests/
+              echo "-------------------"
+              ls -la /home/circleci/projects/tests/robot/
             else
               echo "Tests folder from root project contains robot folder"
+              ls -la /home/circleci/projects/tests/robot/
             fi
 
   git-checkout-sdk-sync-branch:
