@@ -1583,7 +1583,7 @@ commands:
           command: |
             pwd
             ls -la
-            integration_folder=/integration-tests/
+            integration_folder=/home/circleci/projects/integration-tests
             if [ -d "$integration_folder" ]; then
               echo "'$DIR' found! Skipping clone '$DIR' repository"
             else
@@ -1591,6 +1591,7 @@ commands:
               git clone git@github.com:ehrbase/integration-tests.git
               ls -la
             fi
+
   git-checkout-sdk-sync-branch:
     steps:
       - run:
