@@ -1335,6 +1335,8 @@ jobs:
     executor: docker-python3-java11
     steps:
       - restore-test-results-folder
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - merge-robot-outputs
 
   sonar-analysis:
@@ -1551,7 +1553,7 @@ commands:
     steps:
       - run:
           command: |
-            cd integration-tests/tests
+            cd tests
             pip install -r requirements.txt
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
