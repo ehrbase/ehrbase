@@ -1335,8 +1335,6 @@ jobs:
     executor: docker-python3-java11
     steps:
       - restore-test-results-folder
-      - git-clone-robot-integration-tests-repo
-      - move-integration-tests-content-to-local-tests-folder
       - merge-robot-outputs
 
   sonar-analysis:
