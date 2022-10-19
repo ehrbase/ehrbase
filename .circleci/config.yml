@@ -1585,7 +1585,7 @@ commands:
             ls -la
             integration_folder=/home/circleci/projects/integration-tests
             if [ -d "$integration_folder" ]; then
-              echo "'$integration_folder' found! Skipping clone '$DIR' repository"
+              echo "'$integration_folder' found! Skipping clone '$integration_folder' repository"
             else
               echo "'$integration_folder' not found! Cloning external repo in progress ..."
               git clone git@github.com:ehrbase/integration-tests.git
