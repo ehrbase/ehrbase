@@ -1613,7 +1613,6 @@ commands:
           command: |
             pwd
             ls -la
-            mkdir tests
             integration_folder=/home/circleci/projects/integration-tests
             if [ -d "$integration_folder" ]; then
               echo "'$integration_folder' found! Skipping clone repo to path '$integration_folder'"
