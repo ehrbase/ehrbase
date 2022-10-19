@@ -1581,8 +1581,10 @@ commands:
       - run:
           name: CLONE ROBOT INTEGRATION TESTS REPO
           command: |
-            FILE=/integration-tests
-            if ! [ -f "$FILE" ]; then
+            pwd
+            ls -la
+            integration_folder=/integration-tests/
+            if ! [ -d "$integration_folder" ]; then
               git clone git@github.com:ehrbase/integration-tests.git
               ls -la
             fi
