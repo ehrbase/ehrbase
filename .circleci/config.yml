@@ -1584,11 +1584,13 @@ commands:
             pwd
             ls -la
             integration_folder=/integration-tests/
-            if ! [ -d "$integration_folder" ]; then
+            if [ -d "$integration_folder" ]; then
+              echo "'$DIR' found! Skipping clone '$DIR' repository"
+            else
+              echo "'$DIR' not found! Cloning external repo in progress ..."
               git clone git@github.com:ehrbase/integration-tests.git
               ls -la
             fi
-            
   git-checkout-sdk-sync-branch:
     steps:
       - run:
