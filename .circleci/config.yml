@@ -1581,8 +1581,11 @@ commands:
       - run:
           name: CLONE ROBOT INTEGRATION TESTS REPO
           command: |
-            git clone git@github.com:ehrbase/integration-tests.git
-            ls -la
+            FILE=/integration-tests
+            if ! [ -f "$FILE" ]; then
+              git clone git@github.com:ehrbase/integration-tests.git
+              ls -la
+            fi
             
   git-checkout-sdk-sync-branch:
     steps:
