@@ -1539,6 +1539,7 @@ commands:
           root: /home/circleci
           paths:
             - projects/tests/results/<< parameters.suite-results-folder-name >>
+            - projects/tests/requirements.txt
 
 
   restore-test-results-folder:
