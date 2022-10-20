@@ -1521,6 +1521,8 @@ commands:
           path: ~/projects/tests/results/
       - store_artifacts:
           path: ~/projects/tests/results/
+      - store_artifacts:
+          path: ~/projects/tests/requirements.txt
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
