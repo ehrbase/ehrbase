@@ -1551,8 +1551,7 @@ commands:
     steps:
       - run:
           command: |
-            cd tests
-            pip install -r requirements.txt
+            pip install -r ~/projects/tests/requirements.txt
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
