@@ -892,6 +892,7 @@ jobs:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
           test-suite-name: "SANITY"
+      - persist-robot-requirements-file
 
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
@@ -1521,25 +1522,22 @@ commands:
           path: ~/projects/tests/results/
       - store_artifacts:
           path: ~/projects/tests/results/
-      - store_artifacts:
-          path: ~/projects/tests/requirements.txt
 
   save-test-results-folder:
     description: Persist Robot tests folder to workspace
     parameters:
       suite-results-folder-name:
-        description: Titel of generated Robot Outputs
+        description: Title of generated Robot Outputs
         type: string
     steps:
       - run:
           name: PERSIST ROBOT TEST RESULTS
           when: always
-          command: echo "persist test results"
+          command: echo "persist test results & requirements.txt file"
       - persist_to_workspace:
           root: /home/circleci
           paths:
             - projects/tests/results/<< parameters.suite-results-folder-name >>
-            - projects/tests/requirements.txt
 
 
   restore-test-results-folder:
@@ -1593,7 +1591,11 @@ commands:
           path: ~/projects/tests/results/
 
 
-
+  persist-robot-requirements-file:
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths: projects/tests/requirements.txt
 
 
   # ///////////////////////////////////////////////////////////////////////////
