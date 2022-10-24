@@ -964,4 +964,19 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     public void adminDeleteFolder() {
         // needed because the interface declares it, but the ACTUAL admin delete handling is done at non-history level
     }
+
+    @Override
+    public Timestamp getSysTransaction() {
+      return this.getFolderSysTransaction();
+    }
+
+    @Override
+    public UUID getContributionId() {
+      return this.getInContribution();
+    }
+
+    @Override
+    public UUID getId() {
+      return this.getFolderId();
+    }
 }

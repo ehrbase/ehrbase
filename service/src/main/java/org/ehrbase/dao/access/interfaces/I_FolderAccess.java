@@ -17,18 +17,24 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import org.ehrbase.dao.access.jooq.FolderAccess;
+import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
+import org.ehrbase.dao.access.util.FolderUtils;
+import org.joda.time.DateTime;
+
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.sql.Timestamp;
-import java.time.OffsetDateTime;
-import java.util.*;
-import org.ehrbase.dao.access.jooq.FolderAccess;
-import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
-import org.ehrbase.dao.access.util.FolderUtils;
-import org.joda.time.DateTime;
 
 /**
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
@@ -37,8 +43,18 @@ import org.joda.time.DateTime;
 /**
  * Data Access Object for CRUD operations on instances of {@link  com.nedap.archie.rm.directory.Folder}.
  */
-public interface I_FolderAccess extends I_VersionedCRUD {
+public interface I_FolderAccess extends I_VersionedCRUD, I_Compensatable {
 
+    public static I_FolderAccess retrieveByVersion(I_DomainAccess domainAccess, UUID folderId, int version) {
+      return FolderAccess.retrieveByVersion(domainAccess, folderId, version);
+    }
+  
+    static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return FolderAccess.isDeleted(domainAccess, versionedObjectId);
+    }
+  
+    UUID getEhrId();
+    
     /**
      * Get the list of subfolders for the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
      * @return Map<UUID, I_FolderAccess> whose key is the UUID of the child {@link  com.nedap.archie.rm.directory.Folder}, and whose value is the I_FolderAccess for the child {@link  com.nedap.archie.rm.directory.Folder}.
