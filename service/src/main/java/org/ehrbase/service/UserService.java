@@ -32,10 +32,10 @@ import org.jooq.DSLContext;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
+// This service is not @Transactional since we only want to get DB connections when we really need to and an already
+// running transaction is propagated anyway
 public class UserService {
     private final IAuthenticationFacade authenticationFacade;
     private final I_DomainAccess dataAccess;

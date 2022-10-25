@@ -74,7 +74,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Look up and caching for archetypes, openEHR showTemplates and Operational Templates. Search in
@@ -98,7 +97,8 @@ import org.springframework.transaction.annotation.Transactional;
  * @author C. Chevalley
  */
 @Service
-@Transactional
+// This service is not @Transactional since we only want to get DB connections when we really need to and an already
+// running transaction is propagated anyway
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
     static class CacheKey<T extends Serializable> implements Serializable {
         private static final long serialVersionUID = -5926035933645900703L;
