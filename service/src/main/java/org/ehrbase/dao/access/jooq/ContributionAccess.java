@@ -46,6 +46,7 @@ import org.ehrbase.jooq.pg.tables.records.AdminGetLinkedCompositionsForContribRe
 import org.ehrbase.jooq.pg.tables.records.AdminGetLinkedStatusForContribRecord;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.service.IntrospectService;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.Result;
 import org.slf4j.Logger;
@@ -311,7 +312,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             contributionRecord.setHasAudit(this.auditDetails.getId()); // new audit ID
 
             // execute update of contribution itself
-            contributionRecord.setId(UUID.randomUUID()); // force to create new entry from old values
+            contributionRecord.setId(UuidGenerator.randomUUID()); // force to create new entry from old values
             updated = contributionRecord.insert() == 1;
         }
 

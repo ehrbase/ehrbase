@@ -76,6 +76,7 @@ import org.ehrbase.jooq.pg.tables.records.FolderHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
+import org.ehrbase.util.UuidGenerator;
 import org.joda.time.DateTime;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -1210,7 +1211,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
                 // Call recursive creation of folderAccess for children without uid
                 I_FolderAccess childFolderAccess = buildNewFolderAccessHierarchy(
                         domainAccess, child, timeStamp, ehrId, contributionAccess, tenantIdentifier);
-                folderAccess.getSubfoldersList().put(UUID.randomUUID(), childFolderAccess);
+                folderAccess.getSubfoldersList().put(UuidGenerator.randomUUID(), childFolderAccess);
             });
         }
         return folderAccess;

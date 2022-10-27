@@ -52,6 +52,7 @@ import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -285,7 +286,7 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
             objData.getFolders().forEach(childFolder -> folderAccess
                     .getSubfoldersList()
                     .put(
-                            UUID.randomUUID(),
+                            UuidGenerator.randomUUID(),
                             FolderAccess.buildNewFolderAccessHierarchy(
                                     getDataAccess(),
                                     childFolder,

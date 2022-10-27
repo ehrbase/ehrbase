@@ -29,6 +29,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,11 +77,9 @@ public class BaseServiceImp implements BaseService {
      */
     protected UUID getCurrentUserId(String tenantIdentifier) {
         var username = authenticationFacade.getAuthentication().getName();
-        var existingUser = new PersistedPartyIdentified(getDataAccess()).findInternalUserId(username);
-        if (existingUser.isEmpty()) {
-            return createInternalUser(username, tenantIdentifier);
-        }
-        return existingUser.get();
+        return new PersistedPartyIdentified(getDataAccess())
+                .findInternalUserId(username)
+                .orElseGet(() -> createInternalUser(username, tenantIdentifier));
     }
 
     /**
@@ -96,7 +95,8 @@ public class BaseServiceImp implements BaseService {
         identifier.setAssigner(PersistedPartyIdentified.EHRBASE);
         identifier.setType(PersistedPartyIdentified.SECURITY_USER_TYPE);
 
-        PartyRef externalRef = new PartyRef(new GenericId(UUID.randomUUID().toString(), DEMOGRAPHIC), "User", PARTY);
+        PartyRef externalRef =
+                new PartyRef(new GenericId(UuidGenerator.randomUUID().toString(), DEMOGRAPHIC), "User", PARTY);
         PartyIdentified user = new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
 
         return new PersistedPartyIdentified(getDataAccess()).store(user, tenantIdentifier);

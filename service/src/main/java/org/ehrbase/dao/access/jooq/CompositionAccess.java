@@ -69,6 +69,7 @@ import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.IntrospectService;
 import org.ehrbase.util.PartyUtils;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -163,7 +164,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         this.compositionRecord = compositionRecord;
         this.composition = composition;
 
-        compositionRecord.setId(UUID.randomUUID());
+        compositionRecord.setId(UuidGenerator.randomUUID());
         compositionRecord.setTerritory(seekTerritoryCode(territoryCode));
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
