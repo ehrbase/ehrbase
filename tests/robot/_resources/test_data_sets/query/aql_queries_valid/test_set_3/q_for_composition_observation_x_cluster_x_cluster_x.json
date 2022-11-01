@@ -1,3 +1,0 @@
-{
-    "q":"select  C/items[at0001]/value/value, C2/items[at0001]/value/size,  o/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude  from EHR e contains COMPOSITION c[openEHR-EHR-COMPOSITION.encounter.v1] contains OBSERVATION o[openEHR-EHR-OBSERVATION.blood_pressure.v2] contains CLUSTER C[openEHR-EHR-CLUSTER.anatomical_location.v1] contains CLUSTER C2[openEHR-EHR-CLUSTER.media_file.v1]"
-}

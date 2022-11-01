@@ -1,3 +1,0 @@
-{
-    "q":"select  C1/items[at0001]/value/value,C2/items[at0001]/value/value  from EHR e contains OBSERVATION o CONTAINS ( CLUSTER C1[openEHR-EHR-CLUSTER.device.v1] AND CLUSTER C2[openEHR-EHR-CLUSTER.anatomical_location.v1])"
-}

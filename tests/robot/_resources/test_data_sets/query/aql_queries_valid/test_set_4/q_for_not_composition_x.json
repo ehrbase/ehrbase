@@ -1,3 +1,0 @@
-{
-    "q": "SELECT c/name/value from EHR e CONTAINS COMPOSITION c where c/archetype_node_id != 'openEHR-EHR-COMPOSITION.encounter.v1'"
-}

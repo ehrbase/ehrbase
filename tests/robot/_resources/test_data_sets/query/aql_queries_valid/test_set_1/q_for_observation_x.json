@@ -1,3 +1,0 @@
-{
-    "q":"SELECT obs/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude as systolic, obs/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude as diastolic from EHR e CONTAINS OBSERVATION obs[openEHR-EHR-OBSERVATION.blood_pressure.v2]"
-}

@@ -1,3 +1,0 @@
-{
-  "q": "SELECT ev/data[at0001]/items[at0002]/value/value as evaluation from EHR e CONTAINS EVALUATION ev"
-}

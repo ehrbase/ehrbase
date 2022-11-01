@@ -1,3 +1,0 @@
-{
-    "q":"SELECT c/name/value FROM EHR e CONTAINS SECTION CONTAINS CLUSTER c"
-}
