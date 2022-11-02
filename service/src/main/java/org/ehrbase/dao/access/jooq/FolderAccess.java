@@ -30,9 +30,6 @@ import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.select;
 import static org.jooq.impl.DSL.table;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -500,34 +497,23 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     return result;
   }
   
-  private static class LazyFolderAccess implements InvocationHandler {
-    private static final String UNINIT_METHOD_NAME = "getSubfoldersList";
-    private FolderAccess access;
-
-    private LazyFolderAccess(FolderAccess access) {
-      this.access = access;
-    }
-    
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      if(UNINIT_METHOD_NAME.equals(method.getName()))
-        throw new RuntimeException("Method not initialized");
-      return method.invoke(access, args);
-    }
-  }
-  
   public static I_FolderAccess retrieveByVersion(I_DomainAccess domainAccess, UUID folderId, int version) {
+    Integer lastestVersion = getLastVersionNumber(domainAccess, folderId);
+    if(lastestVersion == version)
+      return retrieveInstanceForExistingFolder(domainAccess, folderId);
+
     Map<Integer,Record> allVersions = getVersionMapOfFolder(domainAccess, folderId)
       .entrySet().stream()
       .collect(Collectors.toMap(e -> e.getValue(), e -> e.getKey()));
     
     if(!allVersions.containsKey(Integer.valueOf(version)))
       return null;
+
+    Record record = allVersions.get(Integer.valueOf(version));
+    Timestamp timestamp = record.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.SYS_TRANSACTION);
     
-    FolderAccess folderAccess = FolderAccess.buildFolderAccessFromGenericRecord(allVersions.get(Integer.valueOf(version)), domainAccess);
-    return (I_FolderAccess) Proxy.newProxyInstance(
-        I_FolderAccess.class.getClassLoader(),
-        new Class<?>[] {I_FolderAccess.class},
-        new LazyFolderAccess(folderAccess));
+    I_FolderAccess retrieveInstanceForExistingFolder = FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
+    return retrieveInstanceForExistingFolder;
   }
   
   /**
@@ -1315,7 +1301,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
   }
 
   public static class ObjectRefId extends ObjectId {
-
     public ObjectRefId(final String value) {
       super(value);
     }

@@ -58,7 +58,11 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
+import org.ehrbase.jooq.pg.tables.records.FolderHierarchyHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.FolderHistoryRecord;
+import org.ehrbase.jooq.pg.tables.records.FolderItemsHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
+import org.ehrbase.jooq.pg.tables.records.ObjectRefHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -107,6 +111,58 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         this.contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
     }
 
+    public static boolean deleteFlatBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
+      FolderHistoryRecord folder = deleteFolderBy(domainAccess, folderId, contributionId);
+      deleteFolderHierarchyBy(domainAccess, folderId, contributionId);
+      Result<FolderItemsHistoryRecord> fih = deleteFolderItemBy(domainAccess, folder);
+      fih.forEach(e -> deleteObjectRefBy(domainAccess, e));
+      return true;
+    }
+    
+    private static FolderHistoryRecord deleteFolderBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
+      FolderHistoryRecord folder = domainAccess.getContext().
+          select().from(FOLDER_HISTORY)
+            .where(FOLDER_HISTORY.ID.eq(folderId).and(FOLDER_HISTORY.IN_CONTRIBUTION.eq(contributionId))).fetchOneInto(FOLDER_HISTORY);
+      if(folder != null)
+        folder.delete();
+      return folder;
+    }
+    
+    private static Result<FolderItemsHistoryRecord> deleteFolderItemBy(I_DomainAccess domainAccess, FolderHistoryRecord folder) {
+      Result<FolderItemsHistoryRecord> folderItems = domainAccess.getContext().
+          select().from(FOLDER_ITEMS_HISTORY)
+            .where(FOLDER_ITEMS_HISTORY.FOLDER_ID.eq(folder.getId())
+            .and(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.eq(folder.getInContribution())))
+            .fetchInto(FOLDER_ITEMS_HISTORY);
+      folderItems.forEach(fi -> {
+        fi.delete();
+      });
+      return folderItems;
+    }
+    
+    private static Result<FolderHierarchyHistoryRecord> deleteFolderHierarchyBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
+      Result<FolderHierarchyHistoryRecord> folderHierarchy = domainAccess.getContext().
+          select().from(FOLDER_HIERARCHY_HISTORY)
+            .where(FOLDER_HIERARCHY_HISTORY.PARENT_FOLDER.eq(folderId)
+            .and(FOLDER_HIERARCHY_HISTORY.IN_CONTRIBUTION.eq(contributionId)))
+            .fetchInto(FOLDER_HIERARCHY_HISTORY);
+      folderHierarchy.forEach(fh -> {
+        fh.delete();
+      });
+      return folderHierarchy;
+    }
+    
+    private static ObjectRefHistoryRecord deleteObjectRefBy(I_DomainAccess domainAccess, FolderItemsHistoryRecord fhh) {
+      ObjectRefHistoryRecord objectRef = domainAccess.getContext().
+          select().from(OBJECT_REF_HISTORY)
+            .where(OBJECT_REF_HISTORY.ID.eq(fhh.getObjectRefId())
+            .and(OBJECT_REF_HISTORY.IN_CONTRIBUTION.eq(fhh.getInContribution())))
+            .fetchOneInto(OBJECT_REF_HISTORY);
+      objectRef.delete();
+      return objectRef;
+    }
+    
+    
     /*************Data Access and modification methods*****************/
     @Override
     public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
