@@ -38,6 +38,8 @@
 
     <properties>
         <license-header.dir>../</license-header.dir>
+        <docker-maven-plugin.version>0.40.2</docker-maven-plugin.version>
+        <database.host>localhost</database.host>
     </properties>
 
     <dependencies>
@@ -63,21 +65,79 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>${docker-maven-plugin.version}</version>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>ehrbase/ehrbase-postgres:latest</name>
+                            <alias>postgres</alias>
+                            <run>
+                                <env>
+                                    <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
+                                    <POSTGRES_USER>postgres</POSTGRES_USER>
+                                    <EHRBASE_USER>ehrbase</EHRBASE_USER>
+                                    <EHRBASE_PASSWORD>ehrbase</EHRBASE_PASSWORD>
+                                </env>
+                                <ports>
+                                    <port>${database.port}:${database.port}</port>
+                                </ports>
+                                <wait>
+                                    <!--<log>database system is ready to accept connections</log>-->
+                                    <time>20000</time>
+                                </wait>
+                                <log>
+                                    <enabled>true</enabled>
+                                    <prefix>DB__</prefix>
+                                    <color>red</color>
+                                </log>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-generate-environment</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>remove-generate-environment</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <configuration>
-                    <locations>
-                        <location>classpath:db/migration</location>
-                    </locations>
-                    <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-                    <driver>org.postgresql.Driver</driver>
-                    <user>${database.user}</user>
-                    <password>${database.pass}</password>
-                    <defaultSchema>ehr</defaultSchema>
-                    <schemas>
-                        <schema>ehr</schema>
-                    </schemas>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <locations>
+                                <location>classpath:db/migration</location>
+                            </locations>
+                            <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+                            <driver>org.postgresql.Driver</driver>
+                            <user>${database.user}</user>
+                            <password>${database.pass}</password>
+                            <defaultSchema>ehr</defaultSchema>
+                            <schemas>
+                                <schema>ehr</schema>
+                            </schemas>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jooq</groupId>
@@ -203,6 +263,25 @@
                         </target>
                     </generator>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

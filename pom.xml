@@ -66,7 +66,6 @@
         <test.profile>unit</test.profile>
     </properties>
 
-
     <build>
         <plugins>
             <plugin>
@@ -118,62 +117,25 @@
                 </executions>
             </plugin>
             <plugin>
-                <!-- HANDLES JUNIT UNIT TESTS -->
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
-                <configuration>
-                    <skipTests>true</skipTests>
-                    <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
-                    <argLine>${surefireArgLine}</argLine>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>${test.profile} tests</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <skipTests>false</skipTests>
-                            <includes>
-                                <include>${include.tests}</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
-
             <plugin>
-                <!-- HANDLES JUNIT INTEGRATION TESTS -->
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven-failsafe-plugin.version}</version>
-                <configuration>
-                    <skipITs>${skipIntegrationTests}</skipITs>
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
-                    </additionalClasspathElements>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>integration-test</id>
-                        <phase>verify</phase>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
-                        <configuration>
-                            <!-- SETS THE VM ARGUMENT LINE USED WHEN INTEGRATION TESTS ARE RUN. -->
-                            <argLine>${failsafeArgLine}</argLine>
-                            <includes>
-                                <include>**/*IT.java</include>
-                            </includes>
-                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -223,8 +185,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
-
     </build>
 
     <profiles>
