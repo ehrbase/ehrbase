@@ -17,9 +17,14 @@
  */
 package org.ehrbase.application.config.cache;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.concurrent.TimeUnit;
 import org.ehrbase.cache.CacheOptions;
+import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -41,5 +46,34 @@ public class CacheConfiguration {
         options.setPreBuildQueriesDepth(properties.getPreBuildQueriesDepth());
         options.setPreInitialize(properties.isInitOnStartup());
         return options;
+    }
+
+    @Bean
+    @ConditionalOnBean(CaffeineCacheManager.class)
+    public CacheManagerCustomizer<CaffeineCacheManager> cacheManagerCustomizer() {
+        return cm -> {
+            cm.registerCustomCache(
+                    CacheOptions.INTROSPECT_CACHE, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.QUERY_CACHE, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.FIELDS_CACHE, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.MULTI_VALUE_CACHE, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.CONCEPT_CACHE_ID, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.CONCEPT_CACHE_CONCEPT_ID, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.CONCEPT_CACHE_DESCRIPTION,
+                    Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.TERRITORY_CACHE, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.LANGUAGE_CACHE, Caffeine.newBuilder().build());
+            cm.registerCustomCache(
+                    CacheOptions.USER_ID_CACHE,
+                    Caffeine.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build());
+        };
     }
 }

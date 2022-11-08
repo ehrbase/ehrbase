@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -138,7 +139,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
 
         UUID systemId = getSystemUuid();
-        UUID committerId = getCurrentUserId(tenantService.getCurrentTenantIdentifier());
+        UUID committerId = getCurrentUserId();
 
         try { // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(
@@ -287,7 +288,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         // execute actual update and check for success
         if (ehrAccess
                 .update(
-                        getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
+                        getCurrentUserId(),
                         getSystemUuid(),
                         contributionId,
                         null,

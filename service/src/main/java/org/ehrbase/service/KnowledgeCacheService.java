@@ -19,7 +19,6 @@ package org.ehrbase.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -100,41 +98,6 @@ import org.springframework.stereotype.Service;
 // This service is not @Transactional since we only want to get DB connections when we really need to and an already
 // running transaction is propagated anyway
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
-    static class CacheKey<T extends Serializable> implements Serializable {
-        private static final long serialVersionUID = -5926035933645900703L;
-
-        static <T0 extends Serializable> CacheKey<T0> of(T0 val, String tenantId) {
-            return new CacheKey<>(val, tenantId);
-        }
-
-        private final T val;
-        private final String tenantId;
-
-        public T getVal() {
-            return val;
-        }
-
-        public String getTenantId() {
-            return tenantId;
-        }
-
-        private CacheKey(T val, String tenantId) {
-            this.val = val;
-            this.tenantId = tenantId;
-        }
-
-        public int hashCode() {
-            return Objects.hash(val, tenantId);
-        }
-
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof CacheKey) || ((CacheKey) obj).val.getClass() != val.getClass())
-                return false;
-            CacheKey<T> ck = (CacheKey<T>) obj;
-            return val.equals(ck.val) && tenantId.equals(ck.tenantId);
-        }
-    }
 
     public static final String ELEMENT = "ELEMENT";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -408,22 +371,25 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                 CacheKey.of(uuid, tenantService.getCurrentTenantIdentifier()),
                 ck -> listAllOperationalTemplates().stream()
                         .filter(t -> t.getErrorList().isEmpty())
-                        .filter(t ->
-                                t.getOperationaltemplate().getUid().getValue().equals(ck.val.toString()))
+                        .filter(t -> t.getOperationaltemplate()
+                                .getUid()
+                                .getValue()
+                                .equals(ck.getVal().toString()))
                         .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
                         .findFirst()
                         .orElse(null));
     }
 
     private UUID findUuidByTemplateId(String templateId) {
-        return idxCacheTemplateIdToUuid.computeIfAbsent(templateId, id -> {
+        return idxCacheTemplateIdToUuid
+                .computeIfAbsent(templateId, id -> {
                     OPERATIONALTEMPLATE templ = retrieveOperationalTemplate(id)
                             .orElseThrow(() ->
                                     new IllegalArgumentException(String.format("Unknown template %s", templateId)));
                     return CacheKey.of(
                             UUID.fromString(templ.getUid().getValue()), tenantService.getCurrentTenantIdentifier());
                 })
-                .val;
+                .getVal();
     }
 
     @Override

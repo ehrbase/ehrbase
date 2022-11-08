@@ -34,9 +34,7 @@ spring:
     name: ehrbase
 
   cache:
-    type: jcache # change to type redis if usage of redis distributed cache is intended
-    jcache: # jcache parameters are only used if cache.type=jcache
-      config: classpath:ehcache.xml
+    type: CAFFEINE # change to type redis if usage of redis distributed cache is intended
 
   # the following redis properties are only used if the cache.type=redis
   redis:
@@ -207,7 +205,7 @@ validation:
       fhir:
         type: FHIR
         url: https://r4.ontoserver.csiro.au/fhir/
-    
+
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
   ssl:
