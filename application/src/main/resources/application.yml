@@ -140,6 +140,11 @@ server:
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
     iterationScanDepth: 2
 
+  tomcat:
+    threads:
+      min-spare: 200
+      max: 200
+
   # Option to disable strict invariant validation.
   # disable-strict-validation: true
 
