@@ -99,6 +99,12 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         this.tenantService = tenantService;
     }
 
+    @PostConstruct
+    public void init() {
+        // Create local system UUID
+        getSystemUuid();
+    }
+
     private UUID getEmptyPartyByTenant() {
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
         return new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf(), tenantIdentifier);
