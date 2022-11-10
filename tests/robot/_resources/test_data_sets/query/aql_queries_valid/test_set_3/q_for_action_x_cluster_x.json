@@ -1,3 +1,0 @@
-{
-    "q":"select  a/description[at0001]/items[at0002]/value/value, C/items[at0001]/value/value   from EHR e  contains ACTION a[openEHR-EHR-ACTION.procedure.v1] contains CLUSTER C[openEHR-EHR-CLUSTER.device.v1]"
-}

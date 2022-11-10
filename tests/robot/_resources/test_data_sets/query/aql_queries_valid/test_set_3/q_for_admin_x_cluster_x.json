@@ -1,3 +1,0 @@
-{
-    "q":"select  C/items[at0001]/value/value,  a/data[at0001]/items[at0004]/value/value  from EHR e  contains ADMIN_ENTRY a[openEHR-EHR-ADMIN_ENTRY.translation_requirements.v1] contains CLUSTER C[openEHR-EHR-CLUSTER.language.v1]"
-}

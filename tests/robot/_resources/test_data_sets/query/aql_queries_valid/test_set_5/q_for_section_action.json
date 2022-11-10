@@ -1,3 +1,0 @@
-{
-    "q":"SELECT a/name/value FROM EHR e CONTAINS SECTION CONTAINS ACTION a"
-}
