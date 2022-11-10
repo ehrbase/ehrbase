@@ -42,6 +42,7 @@ import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.TenantService;
+import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.cache.CacheOptions;
@@ -221,15 +222,15 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         if (!init) return;
 
         List<Future<?>> collect = tenantService.getAll().stream()
-                .map(t -> t.getTenantId())
-                .map(id -> initCachePerTenant(id))
+                .map(Tenant::getTenantId)
+                .map(this::initCachePerTenant)
                 .collect(Collectors.toList());
 
         for (int i = 0; i < 16; ) {
-            boolean res = collect.stream().map(f -> f.isDone()).reduce(true, (a, b) -> a && b);
+            boolean res = collect.stream().map(Future::isDone).reduce(true, (a, b) -> a && b);
             if (res) return;
             i = Math.max(1, 2 * i);
-            Thread.sleep(i * 1000);
+            Thread.sleep(i * 1000L);
         }
 
         collect.forEach(f -> {
