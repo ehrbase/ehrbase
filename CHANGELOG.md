@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
 ### Changed
+- Change DB-model to save Data in a namespace ([#994](https://github.com/ehrbase/ehrbase/pull/994))
 ### Fixed
 - Error causing a 500 Response when requesting a deleted composition via ECIS GET Composition Endpoint ([#875](https://github.com/ehrbase/ehrbase/pull/875))
 - Update folder was not always corectly updating it items ([#974](https://github.com/ehrbase/ehrbase/pull/974))
