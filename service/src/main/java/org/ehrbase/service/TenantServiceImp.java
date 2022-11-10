@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.Tenant;
@@ -37,37 +36,41 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TenantServiceImp extends BaseServiceImp implements TenantService {
-  
-  public TenantServiceImp(@Lazy KnowledgeCacheService knowledgeCacheService,DSLContext context, ServerConfig serverConfig) {
-    super(knowledgeCacheService, context, serverConfig);
-  }
 
-  @Override
-  public String getCurrentTenantIdentifier() {
-    return I_TenantAccess.currentTenantIdentifier();
-  }
+    public TenantServiceImp(
+            @Lazy KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+        super(knowledgeCacheService, context, serverConfig);
+    }
 
-  @Override
-  public UUID create(Tenant tenant) {
-    I_TenantAccess tenantAccess = I_TenantAccess.getNewInstance(getDataAccess().getContext(), tenant);
-    return tenantAccess.commit();
-  }
+    @Override
+    public String getCurrentTenantIdentifier() {
+        return I_TenantAccess.currentTenantIdentifier();
+    }
 
-  @Override
-  public List<Tenant> getAll() {
-    return I_TenantAccess.getAll(getDataAccess().getContext()).stream().map(ta -> ta.convert()).collect(Collectors.toList());
-  }
+    @Override
+    public UUID create(Tenant tenant) {
+        I_TenantAccess tenantAccess =
+                I_TenantAccess.getNewInstance(getDataAccess().getContext(), tenant);
+        return tenantAccess.commit();
+    }
 
-  @Override
-  public Optional<Tenant> findBy(String tenantId) {
-    return Optional.ofNullable(I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenantId))
-        .map(acc -> acc.convert());
-  }
+    @Override
+    public List<Tenant> getAll() {
+        return I_TenantAccess.getAll(getDataAccess().getContext()).stream()
+                .map(ta -> ta.convert())
+                .collect(Collectors.toList());
+    }
 
-  @Override
-  public Tenant update(Tenant tenant) {
-    return I_TenantAccess
-        .retrieveInstanceBy(getDataAccess().getContext(), tenant.getTenantId())
-        .update(tenant);
-  }
+    @Override
+    public Optional<Tenant> findBy(String tenantId) {
+        return Optional.ofNullable(
+                        I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenantId))
+                .map(acc -> acc.convert());
+    }
+
+    @Override
+    public Tenant update(Tenant tenant) {
+        return I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenant.getTenantId())
+                .update(tenant);
+    }
 }

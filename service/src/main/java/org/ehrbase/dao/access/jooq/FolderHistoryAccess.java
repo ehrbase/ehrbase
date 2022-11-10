@@ -32,6 +32,11 @@ import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.select;
 import static org.jooq.impl.DSL.table;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -41,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -63,12 +67,6 @@ import org.jooq.Record12;
 import org.jooq.Record17;
 import org.jooq.Result;
 import org.jooq.Table;
-
-import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * Persistence operations on Folder history.
@@ -94,7 +92,8 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
         this.contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
     }
 
-    public FolderHistoryAccess(I_DomainAccess domainAccess, UUID ehrId, I_ContributionAccess contributionAccess, String tenantIdentifier) {
+    public FolderHistoryAccess(
+            I_DomainAccess domainAccess, UUID ehrId, I_ContributionAccess contributionAccess, String tenantIdentifier) {
         super(domainAccess);
         this.ehrId = ehrId;
         this.folderRecord = getContext().newRecord(org.ehrbase.jooq.pg.tables.Folder.FOLDER);
@@ -186,21 +185,23 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                         record_;
 
         FolderHistoryAccess folderAccess = new FolderHistoryAccess(domainAccess, record.value6());
-          folderAccess.folderRecord = new FolderRecord();
-          folderAccess.folderRecord.setNamespace(record.value6());
-          
-          folderAccess.setFolderId(record.value1());
-          folderAccess.setInContribution(record.value3());
-          folderAccess.setFolderName(record.value11());
-          folderAccess.setFolderNArchetypeNodeId(record.value12());
-          folderAccess.setIsFolderActive(record.value13());
-          // Due to generic type from JOIN The ItemStructure binding does not cover the details
-          // and we have to parse it manually
-          folderAccess.setFolderDetails(new OtherDetailsJsonbBinder().converter().from(record.value14()));
-          folderAccess.setFolderSysTransaction(record.value15());
-          folderAccess.setFolderSysPeriod(new SysPeriodBinder().converter().from(record.value16()));
-          folderAccess.getItems().addAll(
-              FolderHistoryAccess.retrieveItemsByFolderAndContributionId(record.value1(), record.value3(), domainAccess));
+        folderAccess.folderRecord = new FolderRecord();
+        folderAccess.folderRecord.setNamespace(record.value6());
+
+        folderAccess.setFolderId(record.value1());
+        folderAccess.setInContribution(record.value3());
+        folderAccess.setFolderName(record.value11());
+        folderAccess.setFolderNArchetypeNodeId(record.value12());
+        folderAccess.setIsFolderActive(record.value13());
+        // Due to generic type from JOIN The ItemStructure binding does not cover the details
+        // and we have to parse it manually
+        folderAccess.setFolderDetails(new OtherDetailsJsonbBinder().converter().from(record.value14()));
+        folderAccess.setFolderSysTransaction(record.value15());
+        folderAccess.setFolderSysPeriod(new SysPeriodBinder().converter().from(record.value16()));
+        folderAccess
+                .getItems()
+                .addAll(FolderHistoryAccess.retrieveItemsByFolderAndContributionId(
+                        record.value1(), record.value3(), domainAccess));
         return folderAccess;
     }
 
@@ -214,24 +215,25 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
      */
     private static FolderHistoryAccess buildFolderAccessFromFolderRecord(
             final FolderRecord record, final I_DomainAccess domainAccess) {
-        
+
         String tenantId = record.getNamespace();
 
         FolderHistoryAccess folderAccess = new FolderHistoryAccess(domainAccess, tenantId);
-          folderAccess.folderRecord = new FolderRecord();
-          folderAccess.folderRecord.setNamespace(tenantId);
-          
-          folderAccess.setFolderId(record.getId());
-          folderAccess.setInContribution(record.getInContribution());
-          folderAccess.setFolderName(record.getName());
-          folderAccess.setFolderNArchetypeNodeId(record.getArchetypeNodeId());
-          folderAccess.setIsFolderActive(record.getActive());
-          folderAccess.setFolderDetails(record.getDetails());
-          folderAccess.setFolderSysTransaction(record.getSysTransaction());
-          folderAccess.setFolderSysPeriod(record.getSysPeriod());
-          folderAccess.getItems().addAll(
-              FolderHistoryAccess.retrieveItemsByFolderAndContributionId(
-                  record.getId(), record.getInContribution(), domainAccess));
+        folderAccess.folderRecord = new FolderRecord();
+        folderAccess.folderRecord.setNamespace(tenantId);
+
+        folderAccess.setFolderId(record.getId());
+        folderAccess.setInContribution(record.getInContribution());
+        folderAccess.setFolderName(record.getName());
+        folderAccess.setFolderNArchetypeNodeId(record.getArchetypeNodeId());
+        folderAccess.setIsFolderActive(record.getActive());
+        folderAccess.setFolderDetails(record.getDetails());
+        folderAccess.setFolderSysTransaction(record.getSysTransaction());
+        folderAccess.setFolderSysPeriod(record.getSysPeriod());
+        folderAccess
+                .getItems()
+                .addAll(FolderHistoryAccess.retrieveItemsByFolderAndContributionId(
+                        record.getId(), record.getInContribution(), domainAccess));
         return folderAccess;
     }
 
@@ -310,7 +312,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                         FOLDER_ITEMS.IN_CONTRIBUTION.as("item_in_contribution"),
                         FOLDER_ITEMS.SYS_TRANSACTION,
                         FOLDER_ITEMS.SYS_PERIOD,
-                   FOLDER_ITEMS.NAMESPACE,
+                        FOLDER_ITEMS.NAMESPACE,
                         OBJECT_REF.ID_NAMESPACE,
                         OBJECT_REF.TYPE,
                         OBJECT_REF.ID.as("obj_ref_id"),
@@ -337,7 +339,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                         FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.as("item_in_contribution"),
                         FOLDER_ITEMS_HISTORY.SYS_TRANSACTION,
                         FOLDER_ITEMS_HISTORY.SYS_PERIOD,
-                   FOLDER_ITEMS_HISTORY.NAMESPACE,                      
+                        FOLDER_ITEMS_HISTORY.NAMESPACE,
                         OBJECT_REF_HISTORY.ID_NAMESPACE,
                         OBJECT_REF_HISTORY.TYPE,
                         OBJECT_REF_HISTORY.ID.as("obj_ref_id"),
@@ -422,12 +424,13 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
      * @return the reference model object.
      */
     @SuppressWarnings("rawtypes")
-    private static ObjectRef parseObjectRefRecordIntoObjectRef(ObjectRefRecord objectRefRecord, I_DomainAccess domainAccess) {
+    private static ObjectRef parseObjectRefRecordIntoObjectRef(
+            ObjectRefRecord objectRefRecord, I_DomainAccess domainAccess) {
         ObjectRef result = new ObjectRef();
-        
+
         ObjectRefId oref = new FolderHistoryAccess(domainAccess, objectRefRecord.getNamespace())
-            .new ObjectRefId(objectRefRecord.getId().toString());
-        
+        .new ObjectRefId(objectRefRecord.getId().toString());
+
         result.setId(oref);
         result.setType(objectRefRecord.getType());
         result.setNamespace(objectRefRecord.getIdNamespace());
@@ -809,8 +812,7 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
                                 allFolderRowsFolderHistoryTable
                                         .field("sys_period", FOLDER.SYS_PERIOD.getType())
                                         .as("sys_period_folder"),
-                                allFolderRowsFolderHistoryTable
-                                        .field("namespace", FOLDER.NAMESPACE.getType()))
+                                allFolderRowsFolderHistoryTable.field("namespace", FOLDER.NAMESPACE.getType()))
                         .from(allFolderRowsFolderHistoryTable))
                 .asTable();
 

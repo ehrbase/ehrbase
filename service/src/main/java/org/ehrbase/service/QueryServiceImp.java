@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import static java.lang.String.format;
 
+import com.google.gson.JsonElement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -28,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.BadGatewayException;
@@ -57,8 +57,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
-
-import com.google.gson.JsonElement;
 
 @Service
 @SuppressWarnings("unchecked")
@@ -239,10 +237,11 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         }
 
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
-        
+
         try {
             String queryQualifiedName = qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : "");
-            I_StoredQueryAccess storedQueryAccess = new StoredQueryAccess(getDataAccess(), queryQualifiedName, queryString, tenantIdentifier);
+            I_StoredQueryAccess storedQueryAccess =
+                    new StoredQueryAccess(getDataAccess(), queryQualifiedName, queryString, tenantIdentifier);
             storedQueryAccess.commit();
             return mapToQueryDefinitionDto(storedQueryAccess);
         } catch (DataAccessException dae) {

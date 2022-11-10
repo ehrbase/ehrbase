@@ -24,11 +24,22 @@ import static org.ehrbase.jooq.pg.Tables.PARTICIPATION;
 import static org.ehrbase.jooq.pg.Tables.PARTICIPATION_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
+import com.nedap.archie.rm.composition.EventContext;
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvIdentifier;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.DvInterval;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.generic.Participation;
+import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -57,19 +68,6 @@ import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nedap.archie.rm.composition.EventContext;
-import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvIdentifier;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.datavalues.quantity.DvInterval;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.generic.Participation;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
-
 /**
  * @author Christian Chevalley
  * @author Jake Smolka
@@ -83,7 +81,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private final List<ParticipationRecord> participations = new ArrayList<>();
     private EventContextRecord eventContextRecord;
 
-    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext, String tenantIdentifier) {
+    public ContextAccess(
+            DSLContext context, ServerConfig serverConfig, EventContext eventContext, String tenantIdentifier) {
         super(context, null, null, serverConfig);
         if (eventContext == null) return;
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
@@ -93,7 +92,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private ContextAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
     }
-    
+
     public static I_ContextAccess retrieveInstance(I_DomainAccess domainAccess, UUID id) {
         ContextAccess contextAccess = new ContextAccess(domainAccess);
         contextAccess.eventContextRecord = domainAccess.getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.ID.eq(id));
@@ -238,7 +237,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         // Health care facility
         if (eventContext.getHealthCareFacility() != null) {
-            UUID healthcareFacilityId = new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility(), tenantIdentifier);
+            UUID healthcareFacilityId =
+                    new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility(), tenantIdentifier);
 
             eventContextRecord.setFacility(healthcareFacilityId);
         }

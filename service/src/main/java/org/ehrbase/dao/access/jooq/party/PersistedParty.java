@@ -17,12 +17,10 @@
  */
 package org.ehrbase.dao.access.jooq.party;
 
+import com.nedap.archie.rm.generic.PartyProxy;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-
-import com.nedap.archie.rm.generic.PartyProxy;
 
 /**
  * Abstract class for PartyProxy DB operations
@@ -47,15 +45,13 @@ public abstract class PersistedParty implements I_PersistedParty {
 
     @Override
     public UUID getOrCreate(PartyProxy partyProxy, String tenantIdentifier) {
-      return Optional
-        .ofNullable(findInDB(partyProxy))
-        .orElseGet(() -> store(partyProxy, tenantIdentifier));
-//      
-//      
-//        UUID uuid = findInDB(partyProxy);
-//
-//        if (uuid == null) uuid = store(partyProxy, tenantIdentifier);
-//
-//        return uuid;
+        return Optional.ofNullable(findInDB(partyProxy)).orElseGet(() -> store(partyProxy, tenantIdentifier));
+        //
+        //
+        //        UUID uuid = findInDB(partyProxy);
+        //
+        //        if (uuid == null) uuid = store(partyProxy, tenantIdentifier);
+        //
+        //        return uuid;
     }
 }

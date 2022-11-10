@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.sql.Timestamp;
-
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
@@ -94,7 +93,8 @@ public class StoredQueryAccessTest {
         String queryText = "a_query";
 
         I_StoredQueryAccess storedQueryAccess = new StoredQueryAccess(
-            testDomainAccess, qualifiedName, queryText, TenantAuthentication.DEFAULT_TENANT_ID).commit();
+                        testDomainAccess, qualifiedName, queryText, TenantAuthentication.DEFAULT_TENANT_ID)
+                .commit();
 
         assertNotNull(storedQueryAccess);
 

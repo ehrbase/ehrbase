@@ -18,7 +18,6 @@
 package org.ehrbase;
 
 import java.util.List;
-
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
 import org.ehrbase.tenant.TenantAspect;
 import org.ehrbase.tenant.extraction.DefaultExtractionStrategy;
@@ -32,23 +31,23 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableAspectJAutoProxy
 public class ServiceModuleConfiguration {
 
-//  @Bean
-//  public TenantAspect2 tenantAspect() {
-//    return new TenantAspect2();
-//  }
-  
-  @Bean
-  public TenantAspect tenantAspect(List<TenantIdExtractionStrategy<?>> strategies) {
-    return new TenantAspect(strategies);
-  }
-  
-  @Bean
-  public TenantIdExtractionStrategy<String> defaultStrategy() {
-    return new DefaultExtractionStrategy();
-  }
-//  
-//  @Bean
-//  public TenantIdExtractionStrategy<?> httprequestStrategy() {
-//    return new HttpServletRequestExtractionStrategy();
-//  }
+    //  @Bean
+    //  public TenantAspect2 tenantAspect() {
+    //    return new TenantAspect2();
+    //  }
+
+    @Bean
+    public TenantAspect tenantAspect(List<TenantIdExtractionStrategy<?>> strategies) {
+        return new TenantAspect(strategies);
+    }
+
+    @Bean
+    public TenantIdExtractionStrategy<String> defaultStrategy() {
+        return new DefaultExtractionStrategy();
+    }
+    //
+    //  @Bean
+    //  public TenantIdExtractionStrategy<?> httprequestStrategy() {
+    //    return new HttpServletRequestExtractionStrategy();
+    //  }
 }

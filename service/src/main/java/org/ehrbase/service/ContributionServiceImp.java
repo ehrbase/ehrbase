@@ -160,9 +160,10 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         }
 
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
-        
+
         // create new empty/standard-value contribution - will be updated later with full details
-        I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(this.getDataAccess(), ehrId, tenantIdentifier);
+        I_ContributionAccess contributionAccess =
+                I_ContributionAccess.getInstance(this.getDataAccess(), ehrId, tenantIdentifier);
         // parse and set audit information from input
         AuditDetails audit = ContributionServiceHelper.parseAuditDetails(content, format);
         contributionAccess.setAuditDetailsValues(audit);
@@ -540,11 +541,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     private AuditDetails retrieveAuditDetails(UUID contributionId) {
         UUID auditId = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId)
                 .getHasAuditDetails();
-        
+
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
 
-        I_AuditDetailsAccess auditDetailsAccess =
-                new AuditDetailsAccess(this.getDataAccess(), tenantIdentifier).retrieveInstance(this.getDataAccess(), auditId);
+        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess(), tenantIdentifier)
+                .retrieveInstance(this.getDataAccess(), auditId);
 
         String systemId = auditDetailsAccess.getSystemId().toString();
         PartyProxy committer =

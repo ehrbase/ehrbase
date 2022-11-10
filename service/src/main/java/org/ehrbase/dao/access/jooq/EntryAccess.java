@@ -371,7 +371,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      * @param compositionId ID of composition
      * @param composition   {@link Composition} object with more information for the entry
      */
-    private void setFields(String templateId, Integer sequence, UUID compositionId, Composition composition, String tenantIdentifier) {
+    private void setFields(
+            String templateId, Integer sequence, UUID compositionId, Composition composition, String tenantIdentifier) {
 
         entryRecord = getContext().newRecord(ENTRY);
 
@@ -422,7 +423,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         DSL.val(transactionTime),
                         DSL.val(getCompositionName()),
                         DSL.val(getRmVersion()),
-                        //we do not expose the namespace
+                        // we do not expose the namespace
                         DSL.val(entryRecord.getNamespace()))
                 .returning(ENTRY.ID)
                 .fetchOne();

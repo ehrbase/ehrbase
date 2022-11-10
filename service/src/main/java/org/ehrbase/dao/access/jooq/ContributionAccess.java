@@ -19,11 +19,11 @@ package org.ehrbase.dao.access.jooq;
 
 import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
 
+import com.nedap.archie.rm.generic.AuditDetails;
 import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
@@ -50,8 +50,6 @@ import org.jooq.DSLContext;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.nedap.archie.rm.generic.AuditDetails;
 
 /**
  * Created by Christian Chevalley on 4/17/2015.
@@ -96,12 +94,12 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
      */
     public ContributionAccess(I_DomainAccess domainAccess, UUID ehrId, String tenantIdentifier) {
         this(
-          domainAccess.getContext(),
-          domainAccess.getKnowledgeManager(),
-          domainAccess.getIntrospectService(),
-          domainAccess.getServerConfig(),
-          ehrId,
-          tenantIdentifier);
+                domainAccess.getContext(),
+                domainAccess.getKnowledgeManager(),
+                domainAccess.getIntrospectService(),
+                domainAccess.getServerConfig(),
+                ehrId,
+                tenantIdentifier);
     }
 
     // internal minimal constructor - needs proper initialization before following usage
@@ -115,17 +113,18 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
      * @throws InternalServerException on failed fetching of contribution
      */
     public static I_ContributionAccess retrieveInstance(I_DomainAccess domainAccess, UUID contributionId) {
-      try {
-        return Optional.ofNullable(domainAccess.getContext().fetchOne(CONTRIBUTION, CONTRIBUTION.ID.eq(contributionId)))
-          .map(rec -> 
-            new ContributionAccess(
-              domainAccess,
-              rec,
-              new AuditDetailsAccess(domainAccess.getDataAccess(), rec.getNamespace()).retrieveInstance(domainAccess.getDataAccess(), rec.getHasAudit())))
-          .orElse(null);
-      } catch (Exception e) {
-        throw new InternalServerException("fetching contribution failed", e);
-      }
+        try {
+            return Optional.ofNullable(
+                            domainAccess.getContext().fetchOne(CONTRIBUTION, CONTRIBUTION.ID.eq(contributionId)))
+                    .map(rec -> new ContributionAccess(
+                            domainAccess,
+                            rec,
+                            new AuditDetailsAccess(domainAccess.getDataAccess(), rec.getNamespace())
+                                    .retrieveInstance(domainAccess.getDataAccess(), rec.getHasAudit())))
+                    .orElse(null);
+        } catch (Exception e) {
+            throw new InternalServerException("fetching contribution failed", e);
+        }
     }
 
     @Override
@@ -259,7 +258,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
         if (state != null) setState(state);
 
         // embedded audit handling
-        this.auditDetails = I_AuditDetailsAccess.getInstance(getDataAccess(), contributionRecord.getNamespace()); // new audit for new action
+        this.auditDetails = I_AuditDetailsAccess.getInstance(
+                getDataAccess(), contributionRecord.getNamespace()); // new audit for new action
         if (committerId != null) this.auditDetails.setCommitter(committerId);
         if (systemId != null) this.auditDetails.setSystemId(systemId);
         if (description != null) this.auditDetails.setDescription(description);
@@ -399,7 +399,8 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     @Override
     public void setAuditDetailsValues(AuditDetails auditObject) {
         // parse
-        UUID committer = new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter(), auditDetails.getNamespace());
+        UUID committer =
+                new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter(), auditDetails.getNamespace());
         UUID system = I_SystemAccess.createOrRetrieveInstanceId(this, null, auditObject.getSystemId());
         UUID changeType = I_ConceptAccess.fetchContributionChangeType(
                 this, auditObject.getChangeType().getValue());
@@ -542,6 +543,6 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public String getNamespace() {
-      return contributionRecord.getNamespace();
+        return contributionRecord.getNamespace();
     }
 }

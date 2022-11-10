@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
@@ -52,7 +51,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testListAllOperationalTemplates() throws Exception {
         KnowledgeCacheService cut = buildKnowledgeCache(testFolder, cacheRule);
-        cut.addOperationalTemplate(TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+        cut.addOperationalTemplate(
+                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
         List<TemplateMetaData> templateMetaData = cut.listAllOperationalTemplates();
         assertThat(templateMetaData).size().isEqualTo(1);
     }
@@ -60,7 +60,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testRetrieveVisitorByTemplateId() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+        knowledge.addOperationalTemplate(
+                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
 
         assertThat(knowledge.getQueryOptMetaData("IDCR - Immunisation summary.v0"))
                 .isNotNull();
@@ -69,7 +70,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testNonUniqueAqlPathsTemplateId() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(TemplateTestData.NON_UNIQUE_AQL_PATH.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+        knowledge.addOperationalTemplate(
+                TemplateTestData.NON_UNIQUE_AQL_PATH.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
         // a node with two paths
         NodeId nodeId = new NodeId("ACTION", "openEHR-EHR-ACTION.procedure.v1");
         List<NodeId> nodeIds = new ArrayList<>();
@@ -83,7 +85,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testQueryType() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(OperationalTemplateTestData.IDCR_PROBLEM_LIST.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+        knowledge.addOperationalTemplate(
+                OperationalTemplateTestData.IDCR_PROBLEM_LIST.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
 
         assertThat(knowledge
                         .getInfo(
@@ -96,7 +99,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testQueryType2() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+        knowledge.addOperationalTemplate(
+                OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
 
         assertThat(knowledge
                         .getInfo(
@@ -112,7 +116,8 @@ public class KnowledgeCacheServiceTest {
         var content = TemplateTestData.CLINICAL_CONTENT_VALIDATION.getStream();
 
         Assertions.assertThrows(
-                IllegalArgumentException.class, () -> knowledgeCacheService.addOperationalTemplate(content, TenantAuthentication.DEFAULT_TENANT_ID));
+                IllegalArgumentException.class,
+                () -> knowledgeCacheService.addOperationalTemplate(content, TenantAuthentication.DEFAULT_TENANT_ID));
     }
 
     public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule)
@@ -122,12 +127,11 @@ public class KnowledgeCacheServiceTest {
 
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
-        
-        TenantService tenantService = Mockito.mock(TenantService.class);
-        Mockito
-          .when(tenantService.getCurrentTenantIdentifier())
-          .thenReturn(TenantAuthentication.DEFAULT_TENANT_ID);
 
-        return new KnowledgeCacheService(templateFileStorageService, new ConcurrentMapCacheManager(), new CacheOptions(), tenantService);
+        TenantService tenantService = Mockito.mock(TenantService.class);
+        Mockito.when(tenantService.getCurrentTenantIdentifier()).thenReturn(TenantAuthentication.DEFAULT_TENANT_ID);
+
+        return new KnowledgeCacheService(
+                templateFileStorageService, new ConcurrentMapCacheManager(), new CacheOptions(), tenantService);
     }
 }

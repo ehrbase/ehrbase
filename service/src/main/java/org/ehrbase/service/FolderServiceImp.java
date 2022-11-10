@@ -82,7 +82,8 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description) {
-        return internalCreate(ehrId, objData, systemId, committerId, description, null, tenantService.getCurrentTenantIdentifier());
+        return internalCreate(
+                ehrId, objData, systemId, committerId, description, null, tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -90,7 +91,8 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> create(UUID ehrId, Folder objData, UUID contribution) {
-        return internalCreate(ehrId, objData, null, null, null, contribution, tenantService.getCurrentTenantIdentifier());
+        return internalCreate(
+                ehrId, objData, null, null, null, contribution, tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -98,11 +100,18 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> create(UUID ehrId, Folder objData) {
-        return create(ehrId, objData, getSystemUuid(), getCurrentUserId(tenantService.getCurrentTenantIdentifier()), null);
+        return create(
+                ehrId, objData, getSystemUuid(), getCurrentUserId(tenantService.getCurrentTenantIdentifier()), null);
     }
 
     private Optional<FolderDto> internalCreate(
-            UUID ehrId, Folder objData, UUID systemId, UUID committerId, String description, UUID contribution, String tenantIdentifier) {
+            UUID ehrId,
+            Folder objData,
+            UUID systemId,
+            UUID committerId,
+            String description,
+            UUID contribution,
+            String tenantIdentifier) {
         /*Note:
         The checks should be performed here, even if parts are checked in some controllers as well, to make sure they are run
         in every necessary case */
@@ -139,7 +148,8 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
         }
 
         // Get first FolderAccess instance
-        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(getDataAccess(), objData, currentTimeStamp, ehrId, contributionAccess, tenantIdentifier);
+        I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
+                getDataAccess(), objData, currentTimeStamp, ehrId, contributionAccess, tenantIdentifier);
         ObjectVersionId folderId;
         if (contribution == null) {
             folderId = new ObjectVersionId(
@@ -178,7 +188,15 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
             UUID systemId,
             UUID committerId,
             String description) {
-        return internalUpdate(ehrId, targetObjId, objData, systemId, committerId, description, null, tenantService.getCurrentTenantIdentifier());
+        return internalUpdate(
+                ehrId,
+                targetObjId,
+                objData,
+                systemId,
+                committerId,
+                description,
+                null,
+                tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -186,7 +204,15 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData, UUID contribution) {
-        return internalUpdate(ehrId, targetObjId, objData, null, null, null, contribution, tenantService.getCurrentTenantIdentifier());
+        return internalUpdate(
+                ehrId,
+                targetObjId,
+                objData,
+                null,
+                null,
+                null,
+                contribution,
+                tenantService.getCurrentTenantIdentifier());
     }
 
     /**
@@ -194,7 +220,13 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
      */
     @Override
     public Optional<FolderDto> update(UUID ehrId, ObjectVersionId targetObjId, Folder objData) {
-        return update(ehrId, targetObjId, objData, getSystemUuid(), getCurrentUserId(tenantService.getCurrentTenantIdentifier()), null);
+        return update(
+                ehrId,
+                targetObjId,
+                objData,
+                getSystemUuid(),
+                getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
+                null);
     }
 
     private Optional<FolderDto> internalUpdate(

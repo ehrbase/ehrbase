@@ -21,6 +21,13 @@ import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
 import static org.ehrbase.jooq.pg.Tables.STATUS_HISTORY;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -28,7 +35,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -46,14 +52,6 @@ import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.jooq.DSLContext;
 import org.jooq.Result;
-
-import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * Persistence operations on EHR status.
@@ -189,11 +187,17 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // create new deletion audit
         var delAudit = I_AuditDetailsAccess.getInstance(
-                this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description, tenantIdentifier);
+                this,
+                systemId,
+                committerId,
+                I_ConceptAccess.ContributionChangeType.DELETED,
+                description,
+                tenantIdentifier);
         UUID delAuditId = delAudit.commit();
 
         // create new, BUT already moved to _history, version documenting the deletion
-        return createAndCommitNewDeletedVersionAsHistory(delAuditId, statusRecord.getInContribution(), tenantIdentifier);
+        return createAndCommitNewDeletedVersionAsHistory(
+                delAuditId, statusRecord.getInContribution(), tenantIdentifier);
     }
 
     private int createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib, String tenantIdentifier) {
@@ -202,18 +206,18 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         // just skip the update if it will get deleted anyway.)
         // so copy values, but add deletion meta data
         StatusHistoryRecord newRecord = getDataAccess().getContext().newRecord(STATUS_HISTORY);
-          newRecord.setId(statusRecord.getId());
-          newRecord.setEhrId(statusRecord.getEhrId());
-          newRecord.setInContribution(contrib);
-          newRecord.setArchetypeNodeId(statusRecord.getArchetypeNodeId());
-          newRecord.setAttestationRef(statusRecord.getAttestationRef());
-          newRecord.setName(statusRecord.getName());
-          newRecord.setNamespace(tenantIdentifier);
-          newRecord.setIsModifiable(statusRecord.getIsModifiable());
-          newRecord.setIsQueryable(statusRecord.getIsQueryable());
-          newRecord.setOtherDetails(statusRecord.getOtherDetails());
-          newRecord.setParty(statusRecord.getParty());
-          newRecord.setHasAudit(delAuditId);
+        newRecord.setId(statusRecord.getId());
+        newRecord.setEhrId(statusRecord.getEhrId());
+        newRecord.setInContribution(contrib);
+        newRecord.setArchetypeNodeId(statusRecord.getArchetypeNodeId());
+        newRecord.setAttestationRef(statusRecord.getAttestationRef());
+        newRecord.setName(statusRecord.getName());
+        newRecord.setNamespace(tenantIdentifier);
+        newRecord.setIsModifiable(statusRecord.getIsModifiable());
+        newRecord.setIsQueryable(statusRecord.getIsQueryable());
+        newRecord.setOtherDetails(statusRecord.getOtherDetails());
+        newRecord.setParty(statusRecord.getParty());
+        newRecord.setHasAudit(delAuditId);
 
         getDataAccess().getContext().attach(newRecord);
         if (newRecord.insert() != 1) {
@@ -366,7 +370,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         // fetch matching entry
         StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(statusId));
         if (record != null) {
-            I_StatusAccess statusAccess = createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
+            I_StatusAccess statusAccess =
+                    createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
             versionMap.put(versionCounter, statusAccess);
 
             versionCounter--;
@@ -381,7 +386,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                 .fetch();
 
         for (StatusHistoryRecord historyRecord : historyRecords) {
-            I_StatusAccess historyAccess = createStatusAccessForRetrieval(domainAccess, null, historyRecord, historyRecord.getNamespace());
+            I_StatusAccess historyAccess =
+                    createStatusAccessForRetrieval(domainAccess, null, historyRecord, historyRecord.getNamespace());
             versionMap.put(versionCounter, historyAccess);
             versionCounter--;
         }
@@ -404,7 +410,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
      * @return Resulting access object
      */
     private static I_StatusAccess createStatusAccessForRetrieval(
-            I_DomainAccess domainAccess, StatusRecord record, StatusHistoryRecord historyRecord, String tenantIdentifier) {
+            I_DomainAccess domainAccess,
+            StatusRecord record,
+            StatusHistoryRecord historyRecord,
+            String tenantIdentifier) {
         StatusAccess statusAccess;
         if (record != null) {
             statusAccess = new StatusAccess(domainAccess, record.getEhrId(), tenantIdentifier);

@@ -19,15 +19,13 @@ package org.ehrbase.dao.access.interfaces;
 
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
+import com.nedap.archie.rm.composition.Composition;
 import java.util.Map;
 import java.util.UUID;
-
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EntryAccess;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.jooq.JSONB;
-
-import com.nedap.archie.rm.composition.Composition;
 
 /**
  * Entry (Composition Content) access layer Created by Christian Chevalley on 4/21/2015.
@@ -46,7 +44,12 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      * @see Composition
      */
     static I_EntryAccess getNewInstance(
-            I_DomainAccess domain, String templateId, Integer sequence, UUID compositionId, Composition composition, String tenantIdentifier) {
+            I_DomainAccess domain,
+            String templateId,
+            Integer sequence,
+            UUID compositionId,
+            Composition composition,
+            String tenantIdentifier) {
         return new EntryAccess(domain, templateId, sequence, compositionId, composition, tenantIdentifier);
     }
 

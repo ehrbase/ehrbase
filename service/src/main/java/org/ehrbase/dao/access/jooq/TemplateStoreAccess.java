@@ -31,9 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.xml.namespace.QName;
-
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
@@ -55,7 +53,8 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     private TemplateStoreRecord templateStoreRecord;
 
-    public TemplateStoreAccess(I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate, String tenantIdentifier) {
+    public TemplateStoreAccess(
+            I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate, String tenantIdentifier) {
         super(domainAccess);
         templateStoreRecord = domainAccess.getContext().newRecord(TEMPLATE_STORE);
         templateStoreRecord.setNamespace(tenantIdentifier);

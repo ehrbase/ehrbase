@@ -18,7 +18,6 @@
 package org.ehrbase.dao.access.interfaces;
 
 import java.util.UUID;
-
 import org.ehrbase.dao.access.jooq.CompositionAccess;
 import org.ehrbase.dao.access.jooq.CompositionHistoryAccess;
 import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;

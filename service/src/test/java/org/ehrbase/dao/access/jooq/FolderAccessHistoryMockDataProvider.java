@@ -22,30 +22,27 @@ import static org.ehrbase.jooq.pg.Tables.FOLDER_HIERARCHY;
 import static org.ehrbase.jooq.pg.Tables.FOLDER_ITEMS;
 import static org.ehrbase.jooq.pg.Tables.OBJECT_REF;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.TimeZone;
 import java.util.UUID;
-
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.jooq.DSLContext;
-import org.jooq.Record11;
+import org.jooq.Record10;
 import org.jooq.Record12;
 import org.jooq.Record17;
-import org.jooq.Record10;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockDataProvider;
 import org.jooq.tools.jdbc.MockExecuteContext;
 import org.jooq.tools.jdbc.MockResult;
-
-import com.nedap.archie.rm.datastructures.ItemStructure;
 
 /***
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
@@ -389,43 +386,43 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                     DateTime expected = DateTime.parse("2019-06-13 18:10:33.76", dateTimeFormatter);
                     TimeZone.getTimeZone("UTC");
                     MockResult[] mock2 = new MockResult[1];
-                    Result<Record17<
-                                    UUID,
-                                    UUID,
-                                    UUID,
-                                    Timestamp,
-                                    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
-                                    String,
-                                    UUID,
-                                    Timestamp,
-                                    UUID,
-                                    UUID,
-                                    String,
-                                    String,
-                                    Boolean,
-                                    ItemStructure,
-                                    Timestamp,
-                                    AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
-                                    String>>
-                      result2 = create.newResult(
-                              FOLDER_HIERARCHY.PARENT_FOLDER,
-                              FOLDER_HIERARCHY.CHILD_FOLDER,
-                              FOLDER_HIERARCHY.IN_CONTRIBUTION,
-                              FOLDER_HIERARCHY.SYS_TRANSACTION,
-                              FOLDER_HIERARCHY.SYS_PERIOD,
-                              FOLDER_HIERARCHY.NAMESPACE,
-                              FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
-                              FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
-                              FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
-                              FOLDER_HIERARCHY.IN_CONTRIBUTION.as("in_contribution_folder_info"),
-                              FOLDER.NAME,
-                              FOLDER.ARCHETYPE_NODE_ID,
-                              FOLDER.ACTIVE,
-                              FOLDER.DETAILS.as("details"),
-                              FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
-                              FOLDER.SYS_PERIOD.as("sys_period_folder"),
-                              FOLDER.NAMESPACE
-                          );
+                    Result<
+                                    Record17<
+                                            UUID,
+                                            UUID,
+                                            UUID,
+                                            Timestamp,
+                                            AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                            String,
+                                            UUID,
+                                            Timestamp,
+                                            UUID,
+                                            UUID,
+                                            String,
+                                            String,
+                                            Boolean,
+                                            ItemStructure,
+                                            Timestamp,
+                                            AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>,
+                                            String>>
+                            result2 = create.newResult(
+                                    FOLDER_HIERARCHY.PARENT_FOLDER,
+                                    FOLDER_HIERARCHY.CHILD_FOLDER,
+                                    FOLDER_HIERARCHY.IN_CONTRIBUTION,
+                                    FOLDER_HIERARCHY.SYS_TRANSACTION,
+                                    FOLDER_HIERARCHY.SYS_PERIOD,
+                                    FOLDER_HIERARCHY.NAMESPACE,
+                                    FOLDER_HIERARCHY.PARENT_FOLDER.as("parent_folder_id"),
+                                    FOLDER_HIERARCHY.SYS_TRANSACTION.as("latest_sys_transaction"),
+                                    FOLDER_HIERARCHY.PARENT_FOLDER.as("id"),
+                                    FOLDER_HIERARCHY.IN_CONTRIBUTION.as("in_contribution_folder_info"),
+                                    FOLDER.NAME,
+                                    FOLDER.ARCHETYPE_NODE_ID,
+                                    FOLDER.ACTIVE,
+                                    FOLDER.DETAILS.as("details"),
+                                    FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
+                                    FOLDER.SYS_PERIOD.as("sys_period_folder"),
+                                    FOLDER.NAMESPACE);
 
                     result2.add(create.newRecord(
                                     FOLDER_HIERARCHY.PARENT_FOLDER,
@@ -444,9 +441,7 @@ public class FolderAccessHistoryMockDataProvider implements MockDataProvider {
                                     FOLDER.DETAILS.as("details"),
                                     FOLDER.SYS_TRANSACTION.as("sys_transaction_folder"),
                                     FOLDER.SYS_PERIOD.as("sys_period_folder"),
-                                    FOLDER.NAMESPACE
-                        )
-                        
+                                    FOLDER.NAMESPACE)
                             .values(
                                     UUID.fromString("7f069129-7312-447b-bd71-567305a9a871"),
                                     UUID.fromString("129dc79c-e0bc-4946-bfa6-28ce609bbd2c"),

@@ -122,7 +122,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
     @Override
     public Optional<UUID> create(UUID ehrId, Composition objData) {
-        return create(ehrId, objData, getSystemUuid(), getCurrentUserId(tenantService.getCurrentTenantIdentifier()), null);
+        return create(
+                ehrId, objData, getSystemUuid(), getCurrentUserId(tenantService.getCurrentTenantIdentifier()), null);
     }
 
     /**
@@ -166,10 +167,12 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         final UUID compositionId;
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
         try {
-            var compositionAccess = I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId, tenantIdentifier);
+            var compositionAccess =
+                    I_CompositionAccess.getNewInstance(getDataAccess(), composition, ehrId, tenantIdentifier);
             var entryAccess = I_EntryAccess.getNewInstance(
                     getDataAccess(),
-                    Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId()).getValue(),
+                    Objects.requireNonNull(composition.getArchetypeDetails().getTemplateId())
+                            .getValue(),
                     0,
                     compositionAccess.getId(),
                     composition,
@@ -228,7 +231,13 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
     @Override
     public Optional<UUID> update(UUID ehrId, ObjectVersionId targetObjId, Composition objData) {
-        return update(ehrId, targetObjId, objData, getSystemUuid(), getCurrentUserId(tenantService.getCurrentTenantIdentifier()), null);
+        return update(
+                ehrId,
+                targetObjId,
+                objData,
+                getSystemUuid(),
+                getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
+                null);
     }
 
     /**

@@ -21,7 +21,6 @@ import static org.ehrbase.jooq.pg.Tables.STORED_QUERY;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.joda.time.format.DateTimeFormat;
 import org.jooq.DSLContext;

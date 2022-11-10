@@ -127,7 +127,13 @@ public class PersistedPartyProxy {
      * Get or create a PartyIdentified instance with the given parameters.
      */
     public UUID getOrCreate(
-            String name, String code, String scheme, String namespace, String type, List<DvIdentifier> identifiers, String tenantIdentifier) {
+            String name,
+            String code,
+            String scheme,
+            String namespace,
+            String type,
+            List<DvIdentifier> identifiers,
+            String tenantIdentifier) {
         // Check conformance to openEHR spec
         if (identifiers == null || identifiers.isEmpty()) {
             throw new IllegalArgumentException("Can't create PartyIdentified with invalid list of identifiers.");

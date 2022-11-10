@@ -20,7 +20,6 @@ package org.ehrbase.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
@@ -55,9 +54,11 @@ public class TemplateDBStorageService implements TemplateStorage {
     @Override
     public void storeTemplate(OPERATIONALTEMPLATE template, String tenantIdentifier) {
         if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier).update();
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier)
+                    .update();
         } else {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier).commit();
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier)
+                    .commit();
         }
     }
 

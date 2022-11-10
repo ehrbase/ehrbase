@@ -18,7 +18,6 @@
 package org.ehrbase.aql;
 
 import java.io.FileInputStream;
-
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;

@@ -49,7 +49,8 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
         this.storedQueryRecord.setNamespace(tenantIdentifier);
     }
 
-    public StoredQueryAccess(I_DomainAccess domainAccess, String qualifiedQueryName, String sourceAqlText, String tenantIdentifier) {
+    public StoredQueryAccess(
+            I_DomainAccess domainAccess, String qualifiedQueryName, String sourceAqlText, String tenantIdentifier) {
         super(domainAccess);
 
         storedQueryRecord = domainAccess.getContext().newRecord(STORED_QUERY);
@@ -143,7 +144,8 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             log.warn("Could not retrieve Aql Text for qualified name:" + qualifiedName);
         } else {
             for (StoredQueryRecord storedQueryRecord : queryRecords) {
-                storedQueryAccesses.add(new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
+                storedQueryAccesses.add(
+                        new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
             }
         }
 
@@ -170,7 +172,8 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             log.warn("Empty stored query set");
         } else {
             for (StoredQueryRecord storedQueryRecord : queryRecords) {
-                storedQueryAccesses.add(new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
+                storedQueryAccesses.add(
+                        new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
             }
         }
 

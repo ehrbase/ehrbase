@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import java.io.File;
-
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.TenantAuthentication;
@@ -41,13 +40,12 @@ public class KnowledgeCacheHelper {
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
         TenantService tenantService = Mockito.mock(TenantService.class);
-        Mockito
-          .when(tenantService.getCurrentTenantIdentifier())
-          .thenReturn(TenantAuthentication.DEFAULT_TENANT_ID);
-        
-        KnowledgeCacheService knowledgeCacheService =
-                new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions(), tenantService);
-        knowledgeCacheService.addOperationalTemplate(TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+        Mockito.when(tenantService.getCurrentTenantIdentifier()).thenReturn(TenantAuthentication.DEFAULT_TENANT_ID);
+
+        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(
+                templateFileStorageService, cacheRule.cacheManager, new CacheOptions(), tenantService);
+        knowledgeCacheService.addOperationalTemplate(
+                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
         return knowledgeCacheService;
     }
 

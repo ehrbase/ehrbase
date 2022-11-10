@@ -74,8 +74,7 @@ class PersistedPartySelf extends PersistedParty {
                         partyRefValue.getType(),
                         PartyType.party_self,
                         partyRefValue.getObjectIdType(),
-                        tenantIdentifier
-                        )
+                        tenantIdentifier)
                 .returning(PARTY_IDENTIFIED.ID)
                 .fetchOne()
                 .getId();

@@ -37,10 +37,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
-
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
@@ -57,7 +55,6 @@ public class TemplateFileStorageService implements TemplateStorage {
     private Map<String, String> errorMap = new ConcurrentHashMap<>();
     private String optPath;
 
-    
     public TemplateFileStorageService() {}
 
     public TemplateFileStorageService(String optPath) {
@@ -82,36 +79,39 @@ public class TemplateFileStorageService implements TemplateStorage {
         ZoneId zoneId = ZoneId.systemDefault();
 
         String currentTenantIdentifier = ct.get();
-        
-        return optFileMap.keySet().stream()
-          .filter(e -> e.getTenantId().equals(currentTenantIdentifier))
-          .map(e -> e.getVal())
-          .map(filename -> {
-            TemplateMetaData template = new TemplateMetaData();
-            OPERATIONALTEMPLATE operationaltemplate = readOperationaltemplate(filename).orElse(null);
-            
-            // null if the file couldn't be fetched from cache or read from file storage
-            if (operationaltemplate == null) { 
-                template.addError("Reported error for file:" + filename + ", error:" + errorMap.get(filename));
-            } else {
-                template.setOperationaltemplate(operationaltemplate);
-                if (operationaltemplate.getTemplateId() == null)
-                    template.addError("Could not get template id for template in file:" + filename);
-            }
-            
-            Path path = convertToTenantPath(filename, currentTenantIdentifier);
 
-            try {
-                BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-                ZonedDateTime creationTime = ZonedDateTime.parse(attributes.creationTime().toString()).withZoneSameInstant(zoneId);
-                template.setCreatedOn(creationTime.toOffsetDateTime());
-            } catch (Exception e) {
-                template.addError("disconnected file? tried:" + getOptPath() + "/" + filename + ".opt");
-            }
-            
-            return template;
-          })
-          .collect(Collectors.toList());
+        return optFileMap.keySet().stream()
+                .filter(e -> e.getTenantId().equals(currentTenantIdentifier))
+                .map(e -> e.getVal())
+                .map(filename -> {
+                    TemplateMetaData template = new TemplateMetaData();
+                    OPERATIONALTEMPLATE operationaltemplate =
+                            readOperationaltemplate(filename).orElse(null);
+
+                    // null if the file couldn't be fetched from cache or read from file storage
+                    if (operationaltemplate == null) {
+                        template.addError("Reported error for file:" + filename + ", error:" + errorMap.get(filename));
+                    } else {
+                        template.setOperationaltemplate(operationaltemplate);
+                        if (operationaltemplate.getTemplateId() == null)
+                            template.addError("Could not get template id for template in file:" + filename);
+                    }
+
+                    Path path = convertToTenantPath(filename, currentTenantIdentifier);
+
+                    try {
+                        BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+                        ZonedDateTime creationTime = ZonedDateTime.parse(
+                                        attributes.creationTime().toString())
+                                .withZoneSameInstant(zoneId);
+                        template.setCreatedOn(creationTime.toOffsetDateTime());
+                    } catch (Exception e) {
+                        template.addError("disconnected file? tried:" + getOptPath() + "/" + filename + ".opt");
+                    }
+
+                    return template;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -126,9 +126,9 @@ public class TemplateFileStorageService implements TemplateStorage {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
         saveTemplateFile(
-            template.getTemplateId().getValue(),
-            template.xmlText(opts).getBytes(StandardCharsets.UTF_8),
-            tenantIdentifier);
+                template.getTemplateId().getValue(),
+                template.xmlText(opts).getBytes(StandardCharsets.UTF_8),
+                tenantIdentifier);
     }
 
     @Override
@@ -138,7 +138,8 @@ public class TemplateFileStorageService implements TemplateStorage {
         File file = optFileMap.get(CacheKey.of(templateId, ct.get()));
 
         try (InputStream in = (file != null ? new BOMInputStream(new FileInputStream(file), true) : null)) {
-            org.openehr.schemas.v1.TemplateDocument document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
+            org.openehr.schemas.v1.TemplateDocument document =
+                    org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
             operationaltemplate = document.getTemplate();
         } catch (Exception e) {
             errorMap.put(templateId, e.getMessage());
@@ -156,22 +157,21 @@ public class TemplateFileStorageService implements TemplateStorage {
             File file = optFileMap.get(CacheKey.of(template.getTemplateId().getValue(), ct.get()));
             if (!file.exists()) {
                 throw new ObjectNotFoundException(
-                  "ADMIN TEMPLATE STORE FILESYSTEM",
-                  String.format("File with name %s does not exist", template.getTemplateId()));
+                        "ADMIN TEMPLATE STORE FILESYSTEM",
+                        String.format("File with name %s does not exist", template.getTemplateId()));
             }
 
             // Remove old content
             Files.delete(file.toPath());
-            optFileMap.remove(
-                CacheKey.of(template.getTemplateId().getValue(), ct.get()));
+            optFileMap.remove(CacheKey.of(template.getTemplateId().getValue(), ct.get()));
 
             // Save new content
             XmlOptions opts = new XmlOptions();
             opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
             saveTemplateFile(
-                template.getTemplateId().getValue(),
-                template.xmlText(opts).getBytes(StandardCharsets.UTF_8),
-                ct.get());
+                    template.getTemplateId().getValue(),
+                    template.xmlText(opts).getBytes(StandardCharsets.UTF_8),
+                    ct.get());
 
             return template.xmlText(opts);
         } catch (IOException e) {
@@ -188,10 +188,10 @@ public class TemplateFileStorageService implements TemplateStorage {
         try {
             File file = optFileMap.get(CacheKey.of(templateId, ct.get()));
             if (!file.exists())
-                throw new ObjectNotFoundException("ADMIN TEMPLATE", String.format("File with name %s does not exist.", templateId));
+                throw new ObjectNotFoundException(
+                        "ADMIN TEMPLATE", String.format("File with name %s does not exist.", templateId));
             deleted = Files.deleteIfExists(file.toPath());
-            if (deleted)
-                optFileMap.remove(CacheKey.of(templateId, ct.get()));
+            if (deleted) optFileMap.remove(CacheKey.of(templateId, ct.get()));
             return deleted;
         } catch (IOException e) {
             throw new InternalServerException(e.getMessage());
@@ -212,24 +212,22 @@ public class TemplateFileStorageService implements TemplateStorage {
     }
 
     boolean addKnowledgeSourcePath(String path) {
-        if (path != null)
-            path = path.trim();
-        if (path.isEmpty())
-            throw new IllegalArgumentException("Source path is empty!");
+        if (path != null) path = path.trim();
+        if (path.isEmpty()) throw new IllegalArgumentException("Source path is empty!");
 
         File root = new File(new File(path).getAbsolutePath());
 
         if (!root.isDirectory())
-            throw new IllegalArgumentException("Supplied source path:" + path + "(" + root.getAbsolutePath() + ") is not a directory!");
+            throw new IllegalArgumentException(
+                    "Supplied source path:" + path + "(" + root.getAbsolutePath() + ") is not a directory!");
 
         List<File> tr = new ArrayList<>();
         tr.add(root);
-        
+
         while (!tr.isEmpty()) {
             File r = tr.remove(tr.size() - 1);
             for (File f : r.listFiles()) {
-                if (f.isHidden())
-                    continue;
+                if (f.isHidden()) continue;
                 if (f.isFile()) {
                     String key = f.getName().replaceAll("([^\\\\\\/]+)\\." + "opt", "$1");
                     optFileMap.put(CacheKey.of(key, ct.get()), f);
@@ -242,26 +240,24 @@ public class TemplateFileStorageService implements TemplateStorage {
     }
 
     private static final String TEMPL_TENANT_PATH = "%s/%s";
-    
+
     private Path convertToTenantPath(String fileName, String tenantIdentifier) {
-      return Paths.get(String.format(TEMPL_TENANT_PATH, getOptPath(), tenantIdentifier), fileName + ".opt");
+        return Paths.get(String.format(TEMPL_TENANT_PATH, getOptPath(), tenantIdentifier), fileName + ".opt");
     }
-    
+
     private synchronized void saveTemplateFile(String filename, byte[] content, String tenantIdentifier) {
         Path dirPath = Paths.get(String.format(TEMPL_TENANT_PATH, getOptPath(), tenantIdentifier));
-        Path filePath = convertToTenantPath(filename, tenantIdentifier); 
-        
+        Path filePath = convertToTenantPath(filename, tenantIdentifier);
+
         try {
-          if(!Files.exists(dirPath))
-            Files.createDirectory(dirPath);
-          Files.write(filePath, content, StandardOpenOption.CREATE);
+            if (!Files.exists(dirPath)) Files.createDirectory(dirPath);
+            Files.write(filePath, content, StandardOpenOption.CREATE);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Could not write file:" + filename + " in directory:" + dirPath + ", reason:" + e);
+            throw new IllegalArgumentException(
+                    "Could not write file:" + filename + " in directory:" + dirPath + ", reason:" + e);
         }
 
         // load it in the cache
-        optFileMap.put(
-            CacheKey.of(filename, tenantIdentifier),
-            filePath.toFile());
+        optFileMap.put(CacheKey.of(filename, tenantIdentifier), filePath.toFile());
     }
 }

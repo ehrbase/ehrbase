@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -37,63 +36,65 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @Aspect
 public class TenantAspect implements ExtractionStrategyAware {
-  private List<TenantIdExtractionStrategy<?>> extractionStrategies;
+    private List<TenantIdExtractionStrategy<?>> extractionStrategies;
 
-  public TenantAspect() {
-    this(new ArrayList<>());
-  }
-  
-  private static final Comparator<TenantIdExtractionStrategy<?>> PRIORITY_SORT = (s1, s2) -> s1.priority() - s2.priority(); 
-  
-  public TenantAspect(List<TenantIdExtractionStrategy<?>> extractionStrategies) {
-    extractionStrategies.sort(PRIORITY_SORT);
-    this.extractionStrategies = extractionStrategies;
-  }
-  
-  public <T> void addExtractionStrategy(TenantIdExtractionStrategy<T> strategy) {
-    extractionStrategies.add(strategy);
-    extractionStrategies.sort(PRIORITY_SORT);
-  }
-
-  @Pointcut(value = "@within(tenantAnnotation)")
-  public void matchTenantAnnotation(org.ehrbase.api.annotations.TenantAware tenantAnnotation) { }
-
-  private static final String ERR_NON_TENANT_ID = "Fatal error, no tenant id avaliable";
-
-  @Around("matchTenantAnnotation(tenantAnnotation)")
-  public Object securedCall(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable {
-    if(isMethodTenantAware(pjp, tenantAnnotation)) {
-      Object[] args = pjp.getArgs();
-      TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
-      SecurityContext ctx = SecurityContextHolder.getContext();
-      ctx.setAuthentication(DefaultTenantAuthentication.of(tenant));
-    }
-    return pjp.proceed();
-  }
-
-  private boolean isMethodTenantAware(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) {
-    if(pjp instanceof MethodInvocationProceedingJoinPoint
-        && ((MethodInvocationProceedingJoinPoint) pjp).getSignature() instanceof MethodSignature) {
-      MethodInvocationProceedingJoinPoint mijp = (MethodInvocationProceedingJoinPoint) pjp;
-      MethodSignature signature = (MethodSignature) mijp.getSignature();
-
-      List<String> allVariants = List.of(
-          signature.getMethod().getName(),
-          signature.toShortString(),
-          signature.toLongString(),
-          signature.toString()
-      );
-
-      for (String exclude : tenantAnnotation.exclude())
-        if (allVariants.contains(exclude))
-          return false;
+    public TenantAspect() {
+        this(new ArrayList<>());
     }
 
-    return true;
-  }
+    private static final Comparator<TenantIdExtractionStrategy<?>> PRIORITY_SORT =
+            (s1, s2) -> s1.priority() - s2.priority();
 
-  private TenantAuthentication<?> extract(Object... args) {
-    return extractionStrategies.stream().filter(s -> s.accept(args)).map(s -> s.extract(args))
-        .filter(opt -> opt.isPresent()).map(opt -> opt.get()).reduce(null, (str1, str2) -> str2);
-  }
+    public TenantAspect(List<TenantIdExtractionStrategy<?>> extractionStrategies) {
+        extractionStrategies.sort(PRIORITY_SORT);
+        this.extractionStrategies = extractionStrategies;
+    }
+
+    public <T> void addExtractionStrategy(TenantIdExtractionStrategy<T> strategy) {
+        extractionStrategies.add(strategy);
+        extractionStrategies.sort(PRIORITY_SORT);
+    }
+
+    @Pointcut(value = "@within(tenantAnnotation)")
+    public void matchTenantAnnotation(org.ehrbase.api.annotations.TenantAware tenantAnnotation) {}
+
+    private static final String ERR_NON_TENANT_ID = "Fatal error, no tenant id avaliable";
+
+    @Around("matchTenantAnnotation(tenantAnnotation)")
+    public Object securedCall(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable {
+        if (isMethodTenantAware(pjp, tenantAnnotation)) {
+            Object[] args = pjp.getArgs();
+            TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
+            SecurityContext ctx = SecurityContextHolder.getContext();
+            ctx.setAuthentication(DefaultTenantAuthentication.of(tenant));
+        }
+        return pjp.proceed();
+    }
+
+    private boolean isMethodTenantAware(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) {
+        if (pjp instanceof MethodInvocationProceedingJoinPoint
+                && ((MethodInvocationProceedingJoinPoint) pjp).getSignature() instanceof MethodSignature) {
+            MethodInvocationProceedingJoinPoint mijp = (MethodInvocationProceedingJoinPoint) pjp;
+            MethodSignature signature = (MethodSignature) mijp.getSignature();
+
+            List<String> allVariants = List.of(
+                    signature.getMethod().getName(),
+                    signature.toShortString(),
+                    signature.toLongString(),
+                    signature.toString());
+
+            for (String exclude : tenantAnnotation.exclude()) if (allVariants.contains(exclude)) return false;
+        }
+
+        return true;
+    }
+
+    private TenantAuthentication<?> extract(Object... args) {
+        return extractionStrategies.stream()
+                .filter(s -> s.accept(args))
+                .map(s -> s.extract(args))
+                .filter(opt -> opt.isPresent())
+                .map(opt -> opt.get())
+                .reduce(null, (str1, str2) -> str2);
+    }
 }

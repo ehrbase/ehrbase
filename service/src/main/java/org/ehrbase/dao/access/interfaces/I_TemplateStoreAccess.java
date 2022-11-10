@@ -29,7 +29,8 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD {
 
     void setTemplate(OPERATIONALTEMPLATE template);
 
-    static I_TemplateStoreAccess getInstance(I_DomainAccess access, OPERATIONALTEMPLATE operationaltemplate, String tenantIdentifier) {
+    static I_TemplateStoreAccess getInstance(
+            I_DomainAccess access, OPERATIONALTEMPLATE operationaltemplate, String tenantIdentifier) {
         return new TemplateStoreAccess(access, operationaltemplate, tenantIdentifier);
     }
 

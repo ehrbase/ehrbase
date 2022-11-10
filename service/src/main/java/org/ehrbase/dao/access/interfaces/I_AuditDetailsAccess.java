@@ -17,15 +17,13 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import com.nedap.archie.rm.generic.AuditDetails;
 import java.sql.Timestamp;
 import java.util.UUID;
-
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-
-import com.nedap.archie.rm.generic.AuditDetails;
 
 public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
@@ -120,6 +118,6 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
     void setRecord(AuditDetailsRecord record);
 
     AuditDetails getAsAuditDetails();
-    
+
     String getNamespace();
 }

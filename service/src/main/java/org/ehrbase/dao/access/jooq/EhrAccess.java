@@ -25,6 +25,12 @@ import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
 import static org.ehrbase.jooq.pg.Tables.STATUS_HISTORY;
 
+import com.nedap.archie.rm.datastructures.ItemStructure;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -35,7 +41,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.BooleanUtils;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -69,13 +74,6 @@ import org.jooq.Record1;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.nedap.archie.rm.datastructures.ItemStructure;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.HierObjectId;
 
 /**
  * Persistence operations on EHR.
@@ -268,8 +266,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             throw new IllegalArgumentException("Version number must be > 0");
         }
 
-        EhrAccess ehrAccess =
-                new EhrAccess(domainAccess, ehrId, I_TenantAccess.currentTenantIdentifier()); // minimal access, needs attributes to be set before returning
+        EhrAccess ehrAccess = new EhrAccess(
+                domainAccess,
+                ehrId,
+                I_TenantAccess
+                        .currentTenantIdentifier()); // minimal access, needs attributes to be set before returning
         EhrRecord record;
 
         // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten
@@ -678,8 +679,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // So the plain EHR object change, e.g. only with new directory reference, shall not have a separate
             // contribution.
         } else if (hasStatusChanged) {
-            this.contributionAccess =
-                    new ContributionAccess(this, getEhrRecord().getId(), getEhrRecord().getNamespace());
+            this.contributionAccess = new ContributionAccess(
+                    this, getEhrRecord().getId(), getEhrRecord().getNamespace());
             provisionContributionAccess(
                     contributionAccess, committerId, systemId, description, state, contributionChangeType);
             this.contributionAccess.commit();
@@ -849,7 +850,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             setName(status.getName());
         }
 
-        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject(), getStatusAccess().getStatusRecord().getNamespace());
+        UUID subjectUuid = new PersistedPartyProxy(getDataAccess())
+                .getOrCreate(
+                        status.getSubject(), getStatusAccess().getStatusRecord().getNamespace());
         setParty(subjectUuid);
 
         hasStatusChanged = true;
