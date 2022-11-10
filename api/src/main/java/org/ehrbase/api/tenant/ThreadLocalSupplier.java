@@ -42,4 +42,8 @@ public final class ThreadLocalSupplier<V> implements Supplier<V>, Consumer<V> {
     public void accept(V val) {
         tl.set(val);
     }
+
+    public void reset() {
+        tl.remove();
+    }
 }

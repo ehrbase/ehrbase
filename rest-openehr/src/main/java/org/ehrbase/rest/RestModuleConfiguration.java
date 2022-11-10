@@ -54,17 +54,20 @@ public class RestModuleConfiguration implements WebMvcConfigurer {
         public void afterCompletion(
                 HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
                 throws Exception {
-            extractTenantId().ifPresent(id -> {
-                response.setHeader(HTTP_HEADER_TENANT_ID, id);
-            });
+
+            ThreadLocalSupplier<HttpServletRequest> threadLocalSupplier =
+                    ThreadLocalSupplier.supplyFor(HttpServletRequest.class);
+            threadLocalSupplier.reset();
+
+            extractTenantId().ifPresent(id -> response.setHeader(HTTP_HEADER_TENANT_ID, id));
         }
 
         private Optional<String> extractTenantId() {
             SecurityContext secCtx = SecurityContextHolder.getContext();
             return Optional.ofNullable(secCtx.getAuthentication())
-                    .filter(auth -> auth instanceof TenantAuthentication)
+                    .filter(TenantAuthentication.class::isInstance)
                     .map(auth -> (TenantAuthentication<?>) auth)
-                    .map(auth -> auth.getTenantId());
+                    .map(TenantAuthentication::getTenantId);
         }
     }
 }
