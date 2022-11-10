@@ -19,9 +19,7 @@ package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
-import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.ehrbase.api.definitions.ServerConfig;
@@ -52,14 +50,11 @@ public class ValidationServiceImp implements ValidationService {
 
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
-    private static final RMObjectValidator RM_OBJECT_VALIDATOR =
-            new RMObjectValidator(ArchieRMInfoLookup.getInstance(), s -> null);
-
     private final KnowledgeCacheService knowledgeCacheService;
 
     private final TerminologyService terminologyService;
 
-    private final CompositionValidator compositionValidator = new CompositionValidator();
+    private final ThreadLocal<CompositionValidator> compositionValidator;
 
     public ValidationServiceImp(
             KnowledgeCacheService knowledgeCacheService,
@@ -69,12 +64,17 @@ public class ValidationServiceImp implements ValidationService {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
 
-        objectProvider.ifAvailable(compositionValidator::setExternalTerminologyValidation);
-
-        if (serverConfig.isDisableStrictValidation()) {
+        boolean disableStrictValidation = serverConfig.isDisableStrictValidation();
+        if (disableStrictValidation) {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
-            compositionValidator.setRunInvariantChecks(false);
         }
+
+        compositionValidator = ThreadLocal.withInitial(() -> {
+            CompositionValidator validator = new CompositionValidator();
+            objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
+            validator.setRunInvariantChecks(!disableStrictValidation);
+            return validator;
+        });
     }
 
     @Override
@@ -87,7 +87,7 @@ public class ValidationServiceImp implements ValidationService {
         }
 
         // Validate the composition based on WebTemplate
-        var constraintViolations = compositionValidator.validate(composition, webTemplate);
+        var constraintViolations = compositionValidator.get().validate(composition, webTemplate);
         if (!constraintViolations.isEmpty()) {
             throw new ConstraintViolationException(constraintViolations);
         }
@@ -136,7 +136,8 @@ public class ValidationServiceImp implements ValidationService {
         }
 
         // first, check the built EhrStatus using the general Archie RM-Validator
-        List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(ehrStatus);
+        List<RMObjectValidationMessage> rmObjectValidationMessages =
+                compositionValidator.get().getRmObjectValidator().validate(ehrStatus);
 
         if (!rmObjectValidationMessages.isEmpty()) {
             StringBuilder stringBuilder = new StringBuilder();
