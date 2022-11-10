@@ -219,6 +219,7 @@ vulnerability_analysis.json
 application/.pgdata
 /plugin_dir/
 /plugin_config_dir/
-application/plugin_dir/event-trigger-plugin-1.0.0-SNAPSHOT.jar
-application/plugin_dir/multi-tenant-1.0-plugin.jar
-application/plugin_dir/transaction-management-plugin-1.0.0-SNAPSHOT.jar
+
+# Robot tests, as they are stored in external repository
+tests/
+*.robot
