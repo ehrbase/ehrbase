@@ -219,3 +219,7 @@ vulnerability_analysis.json
 application/.pgdata
 /plugin_dir/
 /plugin_config_dir/
+
+# Robot tests, as they are stored in external repository
+tests/
+*.robot
