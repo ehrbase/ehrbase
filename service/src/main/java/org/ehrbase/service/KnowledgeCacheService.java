@@ -91,10 +91,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
-    static class CacheKey<T> implements Serializable {
+    static class CacheKey<T extends Serializable> implements Serializable {
         private static final long serialVersionUID = -5926035933645900703L;
 
-        static <T0> CacheKey<T0> of(T0 val, String tenantId) {
+        static <T0 extends Serializable> CacheKey<T0> of(T0 val, String tenantId) {
             return new CacheKey<>(val, tenantId);
         }
 

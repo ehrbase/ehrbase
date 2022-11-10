@@ -17,6 +17,7 @@
  */
 package org.ehrbase.dao.access.support;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
@@ -26,9 +27,15 @@ import org.ehrbase.functional.Try;
 import org.ehrbase.tenant.DefaultTenantAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public final class TenantSupport {
+
+    private TenantSupport() {
+        // NOP
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TenantSupport.class);
 
     private static final String WARN_NOT_TENEANT_IDENT =
@@ -36,11 +43,11 @@ public final class TenantSupport {
 
     public static String currentTenantIdentifier() {
         return Optional.ofNullable(SecurityContextHolder.getContext())
-                .map(ctx -> ctx.getAuthentication())
-                .filter(auth -> auth != null)
-                .filter(auth -> auth instanceof DefaultTenantAuthentication)
+                .map(SecurityContext::getAuthentication)
+                .filter(Objects::nonNull)
+                .filter(DefaultTenantAuthentication.class::isInstance)
                 .map(DefaultTenantAuthentication.class::cast)
-                .map(tAuth -> tAuth.getTenantId())
+                .map(DefaultTenantAuthentication::getTenantId)
                 .filter(StringUtils::isNotEmpty)
                 .orElseGet(() -> {
                     LOGGER.warn(WARN_NOT_TENEANT_IDENT, TenantAuthentication.getDefaultTenantId());

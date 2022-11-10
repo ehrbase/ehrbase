@@ -27,13 +27,12 @@ public final class ThreadLocalSupplier<V> implements Supplier<V>, Consumer<V> {
 
     @SuppressWarnings("unchecked")
     public static <V0> ThreadLocalSupplier<V0> supplyFor(Class<V0> clazz) {
-        return (ThreadLocalSupplier<V0>)
-                supplier.computeIfAbsent(clazz, c -> new ThreadLocalSupplier<V0>((Class<V0>) c));
+        return (ThreadLocalSupplier<V0>) supplier.computeIfAbsent(clazz, c -> new ThreadLocalSupplier<V0>());
     }
 
     private final ThreadLocal<V> tl = new ThreadLocal<>();
 
-    private ThreadLocalSupplier(Class<V> clazz) {}
+    private ThreadLocalSupplier() {}
 
     public V get() {
         return tl.get();

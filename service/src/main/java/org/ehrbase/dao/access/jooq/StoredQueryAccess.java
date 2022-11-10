@@ -39,10 +39,6 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
     static final Logger log = LoggerFactory.getLogger(StoredQueryAccess.class);
     private StoredQueryRecord storedQueryRecord;
 
-    public StoredQueryAccess(I_DomainAccess domainAccess, String tenantIdentifier) {
-        super(domainAccess);
-    }
-
     public StoredQueryAccess(I_DomainAccess domainAccess, StoredQueryRecord queryRecord, String tenantIdentifier) {
         super(domainAccess);
         this.storedQueryRecord = queryRecord;
