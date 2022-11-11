@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -54,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_composition",

@@ -54,9 +54,22 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      * @throws InternalServerException if creating or retrieving system failed
      */
     static I_EhrAccess getInstance(
-            I_DomainAccess domain, UUID partyId, UUID systemId, UUID directoryId, UUID accessId, UUID ehrId) {
+            I_DomainAccess domain,
+            UUID partyId,
+            UUID systemId,
+            UUID directoryId,
+            UUID accessId,
+            UUID ehrId,
+            String tenantIdentifier) {
         return new EhrAccess(
-                domain.getContext(), domain.getServerConfig(), partyId, systemId, directoryId, accessId, ehrId);
+                domain.getContext(),
+                domain.getServerConfig(),
+                partyId,
+                systemId,
+                directoryId,
+                accessId,
+                ehrId,
+                tenantIdentifier);
     }
 
     /**

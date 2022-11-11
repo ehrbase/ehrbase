@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -72,6 +73,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jake Smolka
  * @since 1.0.0
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",

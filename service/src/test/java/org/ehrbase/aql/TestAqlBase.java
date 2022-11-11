@@ -18,6 +18,7 @@
 package org.ehrbase.aql;
 
 import java.io.FileInputStream;
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
@@ -54,20 +55,20 @@ public class TestAqlBase {
 
         // add template to knowledgeCache
         var opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/Patientenaufenthalt.opt");
-        knowledge.addOperationalTemplate(opt);
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/LabResults1.opt");
-        knowledge.addOperationalTemplate(opt);
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         opt = new FileInputStream(
                 "./src/test/resources/knowledge/operational_templates/Stationärer Versorgungsfall.opt");
-        knowledge.addOperationalTemplate(opt);
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/nested.en.v1.opt");
-        knowledge.addOperationalTemplate(opt);
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         opt = new FileInputStream("./src/test/resources/knowledge/operational_templates/Virologischer_Befund.opt");
-        knowledge.addOperationalTemplate(opt);
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         opt = new FileInputStream("./src/test/resources/knowledge/opt/Vital Signs Encounter (Composition).opt");
-        knowledge.addOperationalTemplate(opt);
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         opt = new FileInputStream("./src/test/resources/knowledge/opt/minimal_instruction.opt");
-        knowledge.addOperationalTemplate(opt);
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
 
         // tests require a terminology service
         new TerminologyServiceImp().init(); // this sets the instance variable

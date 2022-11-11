@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -54,6 +53,7 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
@@ -84,24 +84,23 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
-    private UUID emptyParty;
+    private final TenantService tenantService;
 
     @Autowired
     public EhrServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             ValidationService validationService,
             DSLContext context,
-            ServerConfig serverConfig) {
+            ServerConfig serverConfig,
+            TenantService tenantService) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
+        this.tenantService = tenantService;
     }
 
-    @PostConstruct
-    public void init() {
-        // Create local system UUID
-        getSystemUuid();
-
-        emptyParty = new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf());
+    private UUID getEmptyPartyByTenant() {
+        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+        return new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf(), tenantIdentifier);
     }
 
     @Override
@@ -120,9 +119,10 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
         UUID subjectUuid;
         if (PartyUtils.isEmpty(status.getSubject())) {
-            subjectUuid = emptyParty;
+            subjectUuid = getEmptyPartyByTenant();
         } else {
-            subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
+            subjectUuid = new PersistedPartyProxy(getDataAccess())
+                    .getOrCreate(status.getSubject(), tenantService.getCurrentTenantIdentifier());
 
             if (I_EhrAccess.checkExist(getDataAccess(), subjectUuid)) {
                 throw new StateConflictException(
@@ -131,10 +131,17 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
 
         UUID systemId = getSystemUuid();
-        UUID committerId = getCurrentUserId();
+        UUID committerId = getCurrentUserId(tenantService.getCurrentTenantIdentifier());
 
         try { // this try block sums up a bunch of operations that can throw errors in the following
-            I_EhrAccess ehrAccess = I_EhrAccess.getInstance(getDataAccess(), subjectUuid, systemId, null, null, ehrId);
+            I_EhrAccess ehrAccess = I_EhrAccess.getInstance(
+                    getDataAccess(),
+                    subjectUuid,
+                    systemId,
+                    null,
+                    null,
+                    ehrId,
+                    tenantService.getCurrentTenantIdentifier());
             ehrAccess.setStatus(status);
             return ehrAccess.commit(committerId, systemId, DESCRIPTION);
         } catch (Exception e) {
@@ -273,7 +280,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         // execute actual update and check for success
         if (ehrAccess
                 .update(
-                        getCurrentUserId(),
+                        getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
                         getSystemUuid(),
                         contributionId,
                         null,
@@ -514,7 +521,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                     return Pair.of(
                             p.getLeft(),
                             new PersistedPartyProxy(getDataAccess())
-                                    .getOrCreate(p.getRight().getSubject()));
+                                    .getOrCreate(
+                                            p.getRight().getSubject(), tenantService.getCurrentTenantIdentifier()));
                 })
                 .collect(Collectors.toList());
     }

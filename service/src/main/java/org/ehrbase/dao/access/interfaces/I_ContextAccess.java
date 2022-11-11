@@ -41,8 +41,8 @@ public interface I_ContextAccess extends I_SimpleCRUD {
      * @return an <b>uncommitted</b> interface to the access layer
      * @see EventContext
      */
-    static I_ContextAccess getInstance(I_DomainAccess domain, EventContext eventContext) {
-        return new ContextAccess(domain.getContext(), domain.getServerConfig(), eventContext);
+    static I_ContextAccess getInstance(I_DomainAccess domain, EventContext eventContext, String tenantIdentifier) {
+        return new ContextAccess(domain.getContext(), domain.getServerConfig(), eventContext, tenantIdentifier);
     }
 
     /**
@@ -93,7 +93,7 @@ public interface I_ContextAccess extends I_SimpleCRUD {
      * @param id
      * @param eventContext
      */
-    void setRecordFields(UUID id, EventContext eventContext);
+    void setRecordFields(UUID id, EventContext eventContext, String tenantIdentifier);
 
     /**
      * Creates an EventContext object from already set record data of an already existing ContextAccess instance.

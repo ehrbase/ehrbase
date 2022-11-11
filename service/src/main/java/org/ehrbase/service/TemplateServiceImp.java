@@ -36,6 +36,7 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.building.webtemplateskeletnbuilder.WebTemplateSkeletonBuilder;
 import org.ehrbase.client.classgenerator.shareddefinition.Language;
 import org.ehrbase.client.classgenerator.shareddefinition.Setting;
@@ -66,15 +67,18 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
 
     private final KnowledgeCacheService knowledgeCacheService;
     private final CompositionService compositionService;
+    private final TenantService tenantService;
 
     public TemplateServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             DSLContext context,
             ServerConfig serverConfig,
-            CompositionService compositionService) {
+            CompositionService compositionService,
+            TenantService tenantService) {
         super(knowledgeCacheService, context, serverConfig);
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
         this.compositionService = compositionService;
+        this.tenantService = tenantService;
     }
 
     @Override
@@ -159,7 +163,7 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
 
     @Override
     public String create(OPERATIONALTEMPLATE content) {
-        return this.knowledgeCacheService.addOperationalTemplate(content);
+        return this.knowledgeCacheService.addOperationalTemplate(content, tenantService.getCurrentTenantIdentifier());
     }
 
     /**

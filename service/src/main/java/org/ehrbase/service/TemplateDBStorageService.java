@@ -33,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TemplateDBStorageService implements TemplateStorage {
-
     private final DSLContext context;
     private final ServerConfig serverConfig;
 
@@ -53,11 +52,13 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     @Override
-    public void storeTemplate(OPERATIONALTEMPLATE template) {
+    public void storeTemplate(OPERATIONALTEMPLATE template, String tenantIdentifier) {
         if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template).update();
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier)
+                    .update();
         } else {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template).commit();
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template, tenantIdentifier)
+                    .commit();
         }
     }
 

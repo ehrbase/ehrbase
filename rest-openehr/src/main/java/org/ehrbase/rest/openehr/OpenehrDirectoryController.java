@@ -26,6 +26,7 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -61,6 +62,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@TenantAware
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr")
 public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {

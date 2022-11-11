@@ -61,8 +61,8 @@ public interface I_FolderAccess extends I_VersionedCRUD {
      * @return {@link I_FolderAccess} with the information to persist the provided {@link  com.nedap.archie.rm.directory.Folder}
      */
     static I_FolderAccess getNewFolderAccessInstance(
-            I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId) {
-        return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId);
+            I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId, String tenantIdentifier) {
+        return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId, tenantIdentifier);
     }
 
     /**

@@ -47,7 +47,7 @@ public interface I_PersistedParty {
      * @param partyProxy
      * @return
      */
-    UUID store(PartyProxy partyProxy);
+    UUID store(PartyProxy partyProxy, String tenantIdentifier);
 
     /**
      * find an existing party proxy or null if none
@@ -61,5 +61,5 @@ public interface I_PersistedParty {
      * @param partyProxy
      * @return
      */
-    UUID getOrCreate(PartyProxy partyProxy);
+    UUID getOrCreate(PartyProxy partyProxy, String tenantIdentifier);
 }

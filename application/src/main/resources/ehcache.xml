@@ -43,22 +43,22 @@ More on XML configuration can be found at: https://www.ehcache.org/documentation
   <persistence directory="${java.io.tmpdir}/ehcache"/>
 
   <cache alias="introspectCache" uses-template="introspect-cache">
-    <key-type>java.util.UUID</key-type>
+    <key-type>org.ehrbase.service.KnowledgeCacheService.CacheKey</key-type>
     <value-type>org.ehrbase.webtemplate.model.WebTemplate</value-type>
   </cache>
 
   <cache alias="queryCache" uses-template="query-cache">
-    <key-type>org.ehrbase.aql.containment.TemplateIdQueryTuple</key-type>
+    <key-type>org.apache.commons.lang3.tuple.Triple</key-type>
     <value-type>org.ehrbase.aql.containment.JsonPathQueryResult</value-type>
   </cache>
 
   <cache alias="fieldsCache" uses-template="query-cache">
-    <key-type>org.ehrbase.aql.containment.TemplateIdAqlTuple</key-type>
+    <key-type>org.apache.commons.lang3.tuple.Triple</key-type>
     <value-type>org.ehrbase.aql.sql.queryimpl.ItemInfo</value-type>
   </cache>
 
   <cache alias="multivaluedCache" uses-template="query-cache">
-    <key-type>java.lang.String</key-type>
+    <key-type>org.ehrbase.service.KnowledgeCacheService.CacheKey</key-type>
     <value-type>java.util.List</value-type>
   </cache>
 
