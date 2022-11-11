@@ -21,7 +21,6 @@ import static org.ehrbase.jooq.pg.Tables.STATUS_HISTORY;
 
 import java.sql.Timestamp;
 import java.util.UUID;
-
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusHistoryAccess;
 import org.ehrbase.dao.access.support.DataAccess;
@@ -36,18 +35,17 @@ public class StatusHistoryAccess extends DataAccess implements I_StatusHistoryAc
         super(domainAccess);
         this.statusHistoryRecord = statusHistoryRecord;
     }
-    
+
     public static StatusHistoryAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
-        Result<StatusHistoryRecord> historyRec= domainAccess
-            .getContext()
-            .selectFrom(STATUS_HISTORY)
-            .where(STATUS_HISTORY.ID.eq(statusId))
-            .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())
-            .fetch();
-        
-        if(historyRec.isEmpty())
-          return null;
-        
+        Result<StatusHistoryRecord> historyRec = domainAccess
+                .getContext()
+                .selectFrom(STATUS_HISTORY)
+                .where(STATUS_HISTORY.ID.eq(statusId))
+                .orderBy(STATUS_HISTORY.SYS_TRANSACTION.asc())
+                .fetch();
+
+        if (historyRec.isEmpty()) return null;
+
         StatusHistoryRecord rec = historyRec.get(version - 1);
         return new StatusHistoryAccess(domainAccess, rec);
     }
@@ -69,43 +67,45 @@ public class StatusHistoryAccess extends DataAccess implements I_StatusHistoryAc
 
     @Override
     public Timestamp getSysTransaction() {
-      return statusHistoryRecord.getSysTransaction();
+        return statusHistoryRecord.getSysTransaction();
     }
 
     @Override
     public UUID commit(Timestamp transactionTime) {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public UUID commit() {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Boolean update(Timestamp transactionTime) {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Boolean update(Timestamp transactionTime, boolean force) {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Boolean update() {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Boolean update(Boolean force) {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Integer delete() {
-      Condition condition =
-          STATUS_HISTORY.ID.eq(statusHistoryRecord.getId()).and(STATUS_HISTORY.SYS_TRANSACTION.eq(statusHistoryRecord.getSysTransaction()));
-      return getContext().delete(STATUS_HISTORY).where(condition).execute();
+        Condition condition = STATUS_HISTORY
+                .ID
+                .eq(statusHistoryRecord.getId())
+                .and(STATUS_HISTORY.SYS_TRANSACTION.eq(statusHistoryRecord.getSysTransaction()));
+        return getContext().delete(STATUS_HISTORY).where(condition).execute();
     }
 }

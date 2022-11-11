@@ -17,25 +17,23 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
-import java.sql.Timestamp;
 import java.util.UUID;
-
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 
 public interface I_FolderHistoryAccess extends I_Compensatable {
-  /**
-   * Deletes a folder history entry and it's directly associated entries in:
-   * <ul>
-   * <li>folder items history</li>
-   * <li>folder hierarchy</li>
-   * <li>object reference</li> </ul No sub-folder deletion is done.
-   * 
-   * @param domainAccess
-   * @param folderId
-   * @param timestamp
-   * @return indicates if the deletion was successful
-   */
-  static boolean deleteFlatBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
-    return FolderHistoryAccess.deleteFlatBy(domainAccess, folderId, contributionId);
-  }
+    /**
+     * Deletes a folder history entry and it's directly associated entries in:
+     * <ul>
+     * <li>folder items history</li>
+     * <li>folder hierarchy</li>
+     * <li>object reference</li> </ul No sub-folder deletion is done.
+     *
+     * @param domainAccess
+     * @param folderId
+     * @param timestamp
+     * @return indicates if the deletion was successful
+     */
+    static boolean deleteFlatBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
+        return FolderHistoryAccess.deleteFlatBy(domainAccess, folderId, contributionId);
+    }
 }

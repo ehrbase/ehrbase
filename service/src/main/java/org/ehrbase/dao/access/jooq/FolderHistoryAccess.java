@@ -112,57 +112,72 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
     }
 
     public static boolean deleteFlatBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
-      FolderHistoryRecord folder = deleteFolderBy(domainAccess, folderId, contributionId);
-      deleteFolderHierarchyBy(domainAccess, folderId, contributionId);
-      Result<FolderItemsHistoryRecord> fih = deleteFolderItemBy(domainAccess, folder);
-      fih.forEach(e -> deleteObjectRefBy(domainAccess, e));
-      return true;
+        FolderHistoryRecord folder = deleteFolderBy(domainAccess, folderId, contributionId);
+        deleteFolderHierarchyBy(domainAccess, folderId, contributionId);
+        Result<FolderItemsHistoryRecord> fih = deleteFolderItemBy(domainAccess, folder);
+        fih.forEach(e -> deleteObjectRefBy(domainAccess, e));
+        return true;
     }
-    
+
     private static FolderHistoryRecord deleteFolderBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
-      FolderHistoryRecord folder = domainAccess.getContext().
-          select().from(FOLDER_HISTORY)
-            .where(FOLDER_HISTORY.ID.eq(folderId).and(FOLDER_HISTORY.IN_CONTRIBUTION.eq(contributionId))).fetchOneInto(FOLDER_HISTORY);
-      if(folder != null)
-        folder.delete();
-      return folder;
+        FolderHistoryRecord folder = domainAccess
+                .getContext()
+                .select()
+                .from(FOLDER_HISTORY)
+                .where(FOLDER_HISTORY.ID.eq(folderId).and(FOLDER_HISTORY.IN_CONTRIBUTION.eq(contributionId)))
+                .fetchOneInto(FOLDER_HISTORY);
+        if (folder != null) folder.delete();
+        return folder;
     }
-    
-    private static Result<FolderItemsHistoryRecord> deleteFolderItemBy(I_DomainAccess domainAccess, FolderHistoryRecord folder) {
-      Result<FolderItemsHistoryRecord> folderItems = domainAccess.getContext().
-          select().from(FOLDER_ITEMS_HISTORY)
-            .where(FOLDER_ITEMS_HISTORY.FOLDER_ID.eq(folder.getId())
-            .and(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.eq(folder.getInContribution())))
-            .fetchInto(FOLDER_ITEMS_HISTORY);
-      folderItems.forEach(fi -> {
-        fi.delete();
-      });
-      return folderItems;
+
+    private static Result<FolderItemsHistoryRecord> deleteFolderItemBy(
+            I_DomainAccess domainAccess, FolderHistoryRecord folder) {
+        Result<FolderItemsHistoryRecord> folderItems = domainAccess
+                .getContext()
+                .select()
+                .from(FOLDER_ITEMS_HISTORY)
+                .where(FOLDER_ITEMS_HISTORY
+                        .FOLDER_ID
+                        .eq(folder.getId())
+                        .and(FOLDER_ITEMS_HISTORY.IN_CONTRIBUTION.eq(folder.getInContribution())))
+                .fetchInto(FOLDER_ITEMS_HISTORY);
+        folderItems.forEach(fi -> {
+            fi.delete();
+        });
+        return folderItems;
     }
-    
-    private static Result<FolderHierarchyHistoryRecord> deleteFolderHierarchyBy(I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
-      Result<FolderHierarchyHistoryRecord> folderHierarchy = domainAccess.getContext().
-          select().from(FOLDER_HIERARCHY_HISTORY)
-            .where(FOLDER_HIERARCHY_HISTORY.PARENT_FOLDER.eq(folderId)
-            .and(FOLDER_HIERARCHY_HISTORY.IN_CONTRIBUTION.eq(contributionId)))
-            .fetchInto(FOLDER_HIERARCHY_HISTORY);
-      folderHierarchy.forEach(fh -> {
-        fh.delete();
-      });
-      return folderHierarchy;
+
+    private static Result<FolderHierarchyHistoryRecord> deleteFolderHierarchyBy(
+            I_DomainAccess domainAccess, UUID folderId, UUID contributionId) {
+        Result<FolderHierarchyHistoryRecord> folderHierarchy = domainAccess
+                .getContext()
+                .select()
+                .from(FOLDER_HIERARCHY_HISTORY)
+                .where(FOLDER_HIERARCHY_HISTORY
+                        .PARENT_FOLDER
+                        .eq(folderId)
+                        .and(FOLDER_HIERARCHY_HISTORY.IN_CONTRIBUTION.eq(contributionId)))
+                .fetchInto(FOLDER_HIERARCHY_HISTORY);
+        folderHierarchy.forEach(fh -> {
+            fh.delete();
+        });
+        return folderHierarchy;
     }
-    
+
     private static ObjectRefHistoryRecord deleteObjectRefBy(I_DomainAccess domainAccess, FolderItemsHistoryRecord fhh) {
-      ObjectRefHistoryRecord objectRef = domainAccess.getContext().
-          select().from(OBJECT_REF_HISTORY)
-            .where(OBJECT_REF_HISTORY.ID.eq(fhh.getObjectRefId())
-            .and(OBJECT_REF_HISTORY.IN_CONTRIBUTION.eq(fhh.getInContribution())))
-            .fetchOneInto(OBJECT_REF_HISTORY);
-      objectRef.delete();
-      return objectRef;
+        ObjectRefHistoryRecord objectRef = domainAccess
+                .getContext()
+                .select()
+                .from(OBJECT_REF_HISTORY)
+                .where(OBJECT_REF_HISTORY
+                        .ID
+                        .eq(fhh.getObjectRefId())
+                        .and(OBJECT_REF_HISTORY.IN_CONTRIBUTION.eq(fhh.getInContribution())))
+                .fetchOneInto(OBJECT_REF_HISTORY);
+        objectRef.delete();
+        return objectRef;
     }
-    
-    
+
     /*************Data Access and modification methods*****************/
     @Override
     public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
@@ -1023,16 +1038,16 @@ public class FolderHistoryAccess extends DataAccess implements I_FolderAccess, C
 
     @Override
     public Timestamp getSysTransaction() {
-      return this.getFolderSysTransaction();
+        return this.getFolderSysTransaction();
     }
 
     @Override
     public UUID getContributionId() {
-      return this.getInContribution();
+        return this.getInContribution();
     }
 
     @Override
     public UUID getId() {
-      return this.getFolderId();
+        return this.getFolderId();
     }
 }

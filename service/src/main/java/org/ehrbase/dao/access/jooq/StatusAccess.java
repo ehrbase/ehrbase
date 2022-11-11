@@ -291,16 +291,15 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         return createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
     }
-    
-    public static I_StatusAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
-      if(version == getLatestVersionNumber(domainAccess, statusId))
-        return retrieveInstance(domainAccess, statusId);
 
-      Map<Integer,I_StatusAccess> allVersions = getVersionMapOfStatus(domainAccess, statusId);
-      
-      return allVersions.get(Integer.valueOf(version));
+    public static I_StatusAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
+        if (version == getLatestVersionNumber(domainAccess, statusId)) return retrieveInstance(domainAccess, statusId);
+
+        Map<Integer, I_StatusAccess> allVersions = getVersionMapOfStatus(domainAccess, statusId);
+
+        return allVersions.get(Integer.valueOf(version));
     }
-    
+
     // fetch latest status
     public static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
         StatusRecord record = null;
@@ -464,8 +463,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     @Override
     public void setStatusRecord(StatusHistoryRecord input) {
-      statusRecord = StatusAccess.historyRecToNormalRec(getDataAccess(), input);
-      statusRecord.setSysPeriod(null);
+        statusRecord = StatusAccess.historyRecToNormalRec(getDataAccess(), input);
+        statusRecord.setSysPeriod(null);
     }
 
     @Override
@@ -526,8 +525,9 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
      * @param statusHistoryRecord Given history record
      * @return Converted normal record
      */
-    protected static StatusRecord historyRecToNormalRec(I_DomainAccess domainAccess, StatusHistoryRecord statusHistoryRecord) {
-      StatusRecord statusRecord = domainAccess.getContext().newRecord(STATUS);
+    protected static StatusRecord historyRecToNormalRec(
+            I_DomainAccess domainAccess, StatusHistoryRecord statusHistoryRecord) {
+        StatusRecord statusRecord = domainAccess.getContext().newRecord(STATUS);
         statusRecord.setId(statusHistoryRecord.getId());
         statusRecord.setEhrId(statusHistoryRecord.getEhrId());
         statusRecord.setIsQueryable(statusHistoryRecord.getIsQueryable());
@@ -542,7 +542,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         statusRecord.setArchetypeNodeId(statusHistoryRecord.getArchetypeNodeId());
         statusRecord.setName(statusHistoryRecord.getName());
         statusRecord.setNamespace(statusHistoryRecord.getNamespace());
-      return statusRecord;
+        return statusRecord;
     }
 
     public static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {
@@ -669,6 +669,6 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     @Override
     public Timestamp getSysTransaction() {
-      return this.statusRecord.getSysTransaction();
+        return this.statusRecord.getSysTransaction();
     }
 }

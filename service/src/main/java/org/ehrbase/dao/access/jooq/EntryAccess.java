@@ -47,8 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ContextAccess;
@@ -58,7 +56,6 @@ import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.SafeNav;
-import org.ehrbase.dao.access.support.SafeNav.CombineSafeNav;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
@@ -258,22 +255,21 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
             entryAccess.entryRecord.setNamespace(entryHistoryRecord.getNamespace());
             entryAccess.entryRecord.from(entryHistoryRecord);
-            entryAccess.composition = new RawJson().unmarshal(entryHistoryRecord.getEntry().data(), Composition.class);
-            
-            
+            entryAccess.composition =
+                    new RawJson().unmarshal(entryHistoryRecord.getEntry().data(), Composition.class);
+
             DvCodedTextRecord category = entryHistoryRecord.getCategory();
-            
-//            SafeNav<DvCodedText> safeDvCodedText = SafeNav
-//                .of(category)
-//                .get(c -> c.getValue())
-//                .get(s -> new DvCodedText(s, (CodePhrase) null))
-//                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
-//                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
-//            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
-            SafeNav<DvCodedText> safeDvCodedText = SafeNav
-                .of(category)
-                .get(c -> new DvCodedText(c.getValue(), c.getDefiningCode().getCodeString()));
-            values.put(SystemValue.CATEGORY, safeDvCodedText.get());            
+
+            //            SafeNav<DvCodedText> safeDvCodedText = SafeNav
+            //                .of(category)
+            //                .get(c -> c.getValue())
+            //                .get(s -> new DvCodedText(s, (CodePhrase) null))
+            //                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
+            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
+            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
+            SafeNav<DvCodedText> safeDvCodedText = SafeNav.of(category)
+                    .get(c -> new DvCodedText(c.getValue(), c.getDefiningCode().getCodeString()));
+            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
 
             setCompositionAttributes(entryAccess.composition, values);
             buildArchetypeDetails(entryAccess);

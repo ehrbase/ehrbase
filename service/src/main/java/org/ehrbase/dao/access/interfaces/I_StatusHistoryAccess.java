@@ -18,11 +18,10 @@
 package org.ehrbase.dao.access.interfaces;
 
 import java.util.UUID;
-
 import org.ehrbase.dao.access.jooq.StatusHistoryAccess;
 
 public interface I_StatusHistoryAccess extends I_SimpleCRUD, I_Compensatable {
-  public static I_StatusHistoryAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
-    return StatusHistoryAccess.retrieveByVersion(domainAccess, statusId, version);
-  }
+    public static I_StatusHistoryAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
+        return StatusHistoryAccess.retrieveByVersion(domainAccess, statusId, version);
+    }
 }

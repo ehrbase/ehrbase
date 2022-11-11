@@ -36,9 +36,9 @@ import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 public interface I_StatusAccess extends I_VersionedCRUD, I_Compensatable {
 
     public static I_StatusAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
-      return StatusAccess.retrieveByVersion(domainAccess, statusId, version);
-    }  
-  
+        return StatusAccess.retrieveByVersion(domainAccess, statusId, version);
+    }
+
     /**
      * retrieve a status by given status ID
      *
@@ -84,7 +84,7 @@ public interface I_StatusAccess extends I_VersionedCRUD, I_Compensatable {
     static I_StatusAccess retrieveInstanceByNamedSubject(I_DomainAccess domainAccess, String partyName) {
         return StatusAccess.retrieveInstanceByNamedSubject(domainAccess, partyName);
     }
-    
+
     /**
      * Retrieve a map of status accesses for all statuses referencing a contribution
      *

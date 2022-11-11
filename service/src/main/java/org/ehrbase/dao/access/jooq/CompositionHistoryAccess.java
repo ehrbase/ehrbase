@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.UUID;
-
 import org.ehrbase.dao.access.interfaces.I_CompositionHistoryAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
@@ -99,42 +98,46 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
     public Boolean update(Boolean force) {
         return null; // TODO
     }
-    
+
     @Override
     public Integer delete() {
-      Condition condition = COMPOSITION_HISTORY
-        .ID
-        .eq(record.getId())
-        .and(COMPOSITION_HISTORY.SYS_TRANSACTION.eq(record.getSysTransaction()));
-        
+        Condition condition = COMPOSITION_HISTORY
+                .ID
+                .eq(record.getId())
+                .and(COMPOSITION_HISTORY.SYS_TRANSACTION.eq(record.getSysTransaction()));
+
         return getContext().delete(COMPOSITION_HISTORY).where(condition).execute();
     }
 
-    public static I_CompositionHistoryAccess retrieveByVersion(I_DomainAccess domainAccess, UUID compositionId, int version) {
-      return retrieveByIdx(domainAccess, compositionId, version);
+    public static I_CompositionHistoryAccess retrieveByVersion(
+            I_DomainAccess domainAccess, UUID compositionId, int version) {
+        return retrieveByIdx(domainAccess, compositionId, version);
     }
-    
-    public static I_CompositionHistoryAccess retrieveLatest(I_DomainAccess domainAccess, UUID compositionId) {
-      return retrieveByIdx(domainAccess, compositionId, 0);
-    }
-    
-    private static I_CompositionHistoryAccess retrieveByIdx(I_DomainAccess domainAccess, UUID compositionId, int idx) {
-      Result<CompositionHistoryRecord> historyRecordsRes = domainAccess
-        .getContext()
-        .selectFrom(COMPOSITION_HISTORY)
-        .where(COMPOSITION_HISTORY.ID.eq(compositionId))
-        .orderBy(idx == 0 ? COMPOSITION_HISTORY.SYS_TRANSACTION.desc() : COMPOSITION_HISTORY.SYS_TRANSACTION.asc())
-        .fetch();
-      
-      if (historyRecordsRes.isEmpty()) return null;
-      
-      CompositionHistoryRecord rec = historyRecordsRes.get(idx == 0 ? idx : idx - 1);
 
-      I_CompositionHistoryAccess historyAccess = new CompositionHistoryAccess(domainAccess, rec.getNamespace());
-      historyAccess.setRecord(rec);
-      return historyAccess;
-  }
-    
+    public static I_CompositionHistoryAccess retrieveLatest(I_DomainAccess domainAccess, UUID compositionId) {
+        return retrieveByIdx(domainAccess, compositionId, 0);
+    }
+
+    private static I_CompositionHistoryAccess retrieveByIdx(I_DomainAccess domainAccess, UUID compositionId, int idx) {
+        Result<CompositionHistoryRecord> historyRecordsRes = domainAccess
+                .getContext()
+                .selectFrom(COMPOSITION_HISTORY)
+                .where(COMPOSITION_HISTORY.ID.eq(compositionId))
+                .orderBy(
+                        idx == 0
+                                ? COMPOSITION_HISTORY.SYS_TRANSACTION.desc()
+                                : COMPOSITION_HISTORY.SYS_TRANSACTION.asc())
+                .fetch();
+
+        if (historyRecordsRes.isEmpty()) return null;
+
+        CompositionHistoryRecord rec = historyRecordsRes.get(idx == 0 ? idx : idx - 1);
+
+        I_CompositionHistoryAccess historyAccess = new CompositionHistoryAccess(domainAccess, rec.getNamespace());
+        historyAccess.setRecord(rec);
+        return historyAccess;
+    }
+
     @Override
     public void setRecord(CompositionHistoryRecord record) {
         this.record = record;
@@ -157,16 +160,16 @@ public class CompositionHistoryAccess extends DataAccess implements I_Compositio
 
     @Override
     public Timestamp getSysTransaction() {
-      return record == null ? null : record.getSysTransaction();
+        return record == null ? null : record.getSysTransaction();
     }
 
     @Override
     public UUID getContributionId() {
-      return record == null ? null : record.getInContribution();
+        return record == null ? null : record.getInContribution();
     }
 
     @Override
     public UUID getId() {
-      return record == null ? null : record.getId();
+        return record == null ? null : record.getId();
     }
 }
