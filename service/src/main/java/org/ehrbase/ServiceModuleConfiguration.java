@@ -31,11 +31,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableAspectJAutoProxy
 public class ServiceModuleConfiguration {
 
-    //  @Bean
-    //  public TenantAspect2 tenantAspect() {
-    //    return new TenantAspect2();
-    //  }
-
     @Bean
     public TenantAspect tenantAspect(List<TenantIdExtractionStrategy<?>> strategies) {
         return new TenantAspect(strategies);
@@ -45,9 +40,4 @@ public class ServiceModuleConfiguration {
     public TenantIdExtractionStrategy<String> defaultStrategy() {
         return new DefaultExtractionStrategy();
     }
-    //
-    //  @Bean
-    //  public TenantIdExtractionStrategy<?> httprequestStrategy() {
-    //    return new HttpServletRequestExtractionStrategy();
-    //  }
 }
