@@ -17,10 +17,16 @@
  */
 package org.ehrbase.service;
 
+import com.nedap.archie.query.RMPathQuery;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rmobjectvalidator.APathQueryCache;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
+import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.UnprocessableEntityException;
@@ -35,6 +41,7 @@ import org.ehrbase.webtemplate.model.WebTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,11 +63,14 @@ public class ValidationServiceImp implements ValidationService {
 
     private final ThreadLocal<CompositionValidator> compositionValidator;
 
+    private final Map<String, RMPathQuery> rmPathQueryCache = new ConcurrentHashMap<>();
+
     public ValidationServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             TerminologyService terminologyService,
             ServerConfig serverConfig,
-            ObjectProvider<ExternalTerminologyValidation> objectProvider) {
+            ObjectProvider<ExternalTerminologyValidation> objectProvider,
+            @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
 
@@ -69,12 +79,48 @@ public class ValidationServiceImp implements ValidationService {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
         }
 
+        APathQueryCache delegator;
+        if (sharedAqlQueryCache) {
+            delegator = new APathQueryCache() {
+                @Override
+                public RMPathQuery getApathQuery(String query) {
+                    return rmPathQueryCache.computeIfAbsent(query, RMPathQuery::new);
+                }
+            };
+        } else {
+            logger.warn("shared RMPathQueryCache is disabled");
+            delegator = null;
+        }
         compositionValidator = ThreadLocal.withInitial(() -> {
-            CompositionValidator validator = new CompositionValidator();
-            objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
-            validator.setRunInvariantChecks(!disableStrictValidation);
+            CompositionValidator validator =
+                    createCompositionValidator(objectProvider, disableStrictValidation, delegator);
             return validator;
         });
+    }
+
+    private static CompositionValidator createCompositionValidator(
+            ObjectProvider<ExternalTerminologyValidation> objectProvider,
+            boolean disableStrictValidation,
+            APathQueryCache delegator) {
+        CompositionValidator validator = new CompositionValidator();
+        objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
+        validator.setRunInvariantChecks(!disableStrictValidation);
+        setSharedAqlQueryCache(validator, delegator);
+        return validator;
+    }
+
+    private static void setSharedAqlQueryCache(CompositionValidator validator, APathQueryCache delegator) {
+        if (delegator == null) {
+            return;
+        }
+        try {
+            // as RMObjectValidator.queryCache is hard-coded, it is replaced via reflection
+            Field queryCacheField = RMObjectValidator.class.getDeclaredField("queryCache");
+            queryCacheField.setAccessible(true);
+            queryCacheField.set(validator.getRmObjectValidator(), delegator);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException("Failed to inject shared RMPathQuery cache", e);
+        }
     }
 
     @Override
