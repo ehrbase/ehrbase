@@ -17,6 +17,8 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import static java.lang.String.format;
+import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
 import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
 import static org.ehrbase.jooq.pg.Tables.FOLDER;
 import static org.ehrbase.jooq.pg.Tables.FOLDER_HIERARCHY;
@@ -48,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -66,6 +69,7 @@ import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
 import org.ehrbase.jooq.pg.tables.FolderItems;
+import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderHistoryRecord;
@@ -73,12 +77,14 @@ import org.ehrbase.jooq.pg.tables.records.FolderItemsRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderRecord;
 import org.ehrbase.jooq.pg.tables.records.ObjectRefRecord;
 import org.joda.time.DateTime;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Record9;
 import org.jooq.Result;
 import org.jooq.Table;
+import org.jooq.impl.IdentityConverter;
 
 /**
  * Persistence operations on Folder.
@@ -99,6 +105,34 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     private I_AuditDetailsAccess auditDetailsAccess; // audit associated with this folder version
     private UUID ehrId;
     private FolderRecord folderRecord;
+
+    private static final String ERR_NO_FOLDER = "No folder[%s] found";
+
+    public static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        if (domainAccess.getContext().fetchExists(FOLDER, FOLDER.ID.eq(versionedObjectId))) return false;
+
+        if (!domainAccess.getContext().fetchExists(FOLDER_HISTORY, FOLDER_HISTORY.ID.eq(versionedObjectId)))
+            throw new ObjectNotFoundException("folder", format(ERR_NO_FOLDER, versionedObjectId));
+
+        Result<FolderHistoryRecord> historyRecordsRes = domainAccess
+                .getContext()
+                .selectFrom(FOLDER_HISTORY)
+                .where(FOLDER_HISTORY.ID.eq(versionedObjectId))
+                .orderBy(FOLDER_HISTORY.SYS_TRANSACTION.desc())
+                .fetch();
+
+        AuditDetailsRecord audit = domainAccess
+                .getContext()
+                .fetchOne(
+                        AUDIT_DETAILS,
+                        AUDIT_DETAILS.ID.eq(historyRecordsRes.get(0).getHasAudit()));
+
+        if (audit == null) throw new InternalServerException("DB inconsistency: couldn't retrieve referenced audit");
+
+        if (audit.getChangeType().equals(org.ehrbase.jooq.pg.enums.ContributionChangeType.deleted)) return true;
+
+        throw new InternalServerException("Problem processing FolderAccess.isDeleted(..)");
+    }
 
     /******** Constructors *******/
     FolderAccess(I_DomainAccess domainAccess, String tenantIdentifier) {
@@ -572,6 +606,23 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         return result;
     }
 
+    public static I_FolderAccess retrieveByVersion(I_DomainAccess domainAccess, UUID folderId, int version) {
+        Integer lastestVersion = getLastVersionNumber(domainAccess, folderId);
+        if (lastestVersion == version) return retrieveInstanceForExistingFolder(domainAccess, folderId);
+
+        Map<Integer, Record> allVersions = getVersionMapOfFolder(domainAccess, folderId).entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getValue(), e -> e.getKey()));
+
+        if (!allVersions.containsKey(Integer.valueOf(version))) return null;
+
+        Record record = allVersions.get(Integer.valueOf(version));
+        Timestamp timestamp = record.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.SYS_TRANSACTION);
+
+        I_FolderAccess retrieveInstanceForExistingFolder =
+                FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
+        return retrieveInstanceForExistingFolder;
+    }
+
     /**
      * Helper to create a Map, which contains a record and the version number, for
      * each version of a versioned object.
@@ -741,31 +792,41 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         result += folderRec.delete();
 
         // create new, BUT already moved to _history, version documenting the deletion
-        createAndCommitNewDeletedVersionAsHistory(folderRec, delAuditId, contribution);
+        newOrUpdate(folderRec, delAuditId, contribution);
 
         return result;
     }
 
-    private void createAndCommitNewDeletedVersionAsHistory(FolderRecord folderRecord, UUID delAuditId, UUID contrib) {
+    private void newOrUpdate(FolderRecord folderRecord, UUID delAuditId, UUID contrib) {
+        Condition condition =
+                FOLDER_HISTORY.ID.eq(folderRecord.getId()).and(FOLDER_HISTORY.IN_CONTRIBUTION.eq(contrib));
+        FolderHistoryRecord record = getDataAccess().getContext().fetchOne(FOLDER_HISTORY, condition);
+        if (record == null)
+            populateChangesAndPersist(
+                    getDataAccess().getContext().newRecord(FOLDER_HISTORY), folderRecord, delAuditId, contrib);
+        else populateChangesAndPersist(record, folderRecord, delAuditId, contrib);
+    }
+
+    private void populateChangesAndPersist(FolderHistoryRecord trgt, FolderRecord src, UUID delAuditId, UUID contrib) {
         // a bit hacky: create new, BUT already moved to _history, version documenting
         // the deletion
         // (Normal approach of first .update() then .delete() won't work, because
         // postgres' transaction optimizer will
         // just skip the update if it will get deleted anyway.)
         // so copy values, but add deletion meta data
-        FolderHistoryRecord newRecord = getDataAccess().getContext().newRecord(FOLDER_HISTORY);
-        newRecord.setId(folderRecord.getId());
-        newRecord.setInContribution(contrib);
-        newRecord.setName(folderRecord.getName());
-        newRecord.setArchetypeNodeId(folderRecord.getArchetypeNodeId());
-        newRecord.setNamespace(folderRecord.getNamespace());
-        newRecord.setActive(folderRecord.getActive());
-        newRecord.setDetails(folderRecord.getDetails());
-        newRecord.setHasAudit(delAuditId);
-        newRecord.setSysTransaction(TransactionTime.millis());
-        newRecord.setSysPeriod(new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null));
-        if (newRecord.insert() != 1) // commit and throw error if nothing was inserted into DB
-        {
+        trgt.setId(src.getId());
+        trgt.setInContribution(contrib);
+        trgt.setName(src.getName());
+        trgt.setArchetypeNodeId(src.getArchetypeNodeId());
+        trgt.setNamespace(src.getNamespace());
+        trgt.setActive(src.getActive());
+        trgt.setDetails(src.getDetails());
+        trgt.setHasAudit(delAuditId);
+        trgt.setSysTransaction(TransactionTime.millis());
+        trgt.setSysPeriod(new AbstractMap.SimpleEntry<>(OffsetDateTime.now(), null));
+
+        if (trgt.store() != 1) {
+            // commit and throw error if nothing was inserted into DB
             throw new InternalServerException("DB inconsistency");
         }
     }
@@ -848,8 +909,18 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
         folderAccess.setFolderNArchetypeNodeId(
                 folderRecord.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.ARCHETYPE_NODE_ID));
         folderAccess.setIsFolderActive(folderRecord.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.ACTIVE));
-        folderAccess.setFolderDetails(folderRecord.get(
-                org.ehrbase.jooq.pg.tables.Folder.FOLDER.DETAILS.getName(), new OtherDetailsJsonbBinder().converter()));
+
+        // This must be done due to the fact that ....History details are JSONB objects
+        Object object = folderRecord.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.DETAILS.getName());
+        if (object instanceof ItemStructure)
+            folderAccess.setFolderDetails(folderRecord.get(
+                    org.ehrbase.jooq.pg.tables.Folder.FOLDER.DETAILS.getName(),
+                    new IdentityConverter<ItemStructure>(ItemStructure.class)));
+        else
+            folderAccess.setFolderDetails(folderRecord.get(
+                    org.ehrbase.jooq.pg.tables.Folder.FOLDER.DETAILS.getName(),
+                    new OtherDetailsJsonbBinder().converter()));
+
         folderAccess.setFolderSysTransaction(
                 folderRecord.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.SYS_TRANSACTION));
         folderAccess.setFolderSysPeriod(folderRecord.get(
@@ -1407,7 +1478,6 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     @Override
     public Timestamp getFolderSysTransaction() {
-
         return this.folderRecord.getSysTransaction();
     }
 
@@ -1450,9 +1520,23 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
 
     public static class ObjectRefId extends ObjectId {
-
         public ObjectRefId(final String value) {
             super(value);
         }
+    }
+
+    @Override
+    public Timestamp getSysTransaction() {
+        return this.getFolderSysTransaction();
+    }
+
+    @Override
+    public UUID getContributionId() {
+        return this.getInContribution();
+    }
+
+    @Override
+    public UUID getId() {
+        return this.getFolderId();
     }
 }

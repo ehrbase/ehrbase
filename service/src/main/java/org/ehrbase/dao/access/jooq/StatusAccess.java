@@ -292,6 +292,14 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         return createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
     }
 
+    public static I_StatusAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
+        if (version == getLatestVersionNumber(domainAccess, statusId)) return retrieveInstance(domainAccess, statusId);
+
+        Map<Integer, I_StatusAccess> allVersions = getVersionMapOfStatus(domainAccess, statusId);
+
+        return allVersions.get(Integer.valueOf(version));
+    }
+
     // fetch latest status
     public static I_StatusAccess retrieveInstanceByEhrId(I_DomainAccess domainAccess, UUID ehrId) {
         StatusRecord record = null;
@@ -312,7 +320,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                         .fetch();
                 // get latest
                 if (recordsRes.get(0) != null) {
-                    record = historyRecToNormalRec(recordsRes.get(0));
+                    record = historyRecToNormalRec(domainAccess, recordsRes.get(0));
                 }
             }
         }
@@ -455,21 +463,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     @Override
     public void setStatusRecord(StatusHistoryRecord input) {
-        this.statusRecord = new StatusRecord(
-                input.getId(),
-                input.getEhrId(),
-                input.getIsQueryable(),
-                input.getIsModifiable(),
-                input.getParty(),
-                input.getOtherDetails(),
-                null,
-                null,
-                input.getHasAudit(),
-                input.getAttestationRef(),
-                input.getInContribution(),
-                input.getArchetypeNodeId(),
-                input.getName(),
-                input.getNamespace());
+        statusRecord = StatusAccess.historyRecToNormalRec(getDataAccess(), input);
+        statusRecord.setSysPeriod(null);
     }
 
     @Override
@@ -530,22 +525,24 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
      * @param statusHistoryRecord Given history record
      * @return Converted normal record
      */
-    protected static StatusRecord historyRecToNormalRec(StatusHistoryRecord statusHistoryRecord) {
-        return new StatusRecord(
-                statusHistoryRecord.getId(),
-                statusHistoryRecord.getEhrId(),
-                statusHistoryRecord.getIsQueryable(),
-                statusHistoryRecord.getIsModifiable(),
-                statusHistoryRecord.getParty(),
-                statusHistoryRecord.getOtherDetails(),
-                statusHistoryRecord.getSysTransaction(),
-                statusHistoryRecord.getSysPeriod(),
-                statusHistoryRecord.getHasAudit(),
-                statusHistoryRecord.getAttestationRef(),
-                statusHistoryRecord.getInContribution(),
-                statusHistoryRecord.getArchetypeNodeId(),
-                statusHistoryRecord.getName(),
-                statusHistoryRecord.getNamespace());
+    protected static StatusRecord historyRecToNormalRec(
+            I_DomainAccess domainAccess, StatusHistoryRecord statusHistoryRecord) {
+        StatusRecord statusRecord = domainAccess.getContext().newRecord(STATUS);
+        statusRecord.setId(statusHistoryRecord.getId());
+        statusRecord.setEhrId(statusHistoryRecord.getEhrId());
+        statusRecord.setIsQueryable(statusHistoryRecord.getIsQueryable());
+        statusRecord.setIsModifiable(statusHistoryRecord.getIsModifiable());
+        statusRecord.setParty(statusHistoryRecord.getParty());
+        statusRecord.setOtherDetails(statusHistoryRecord.getOtherDetails());
+        statusRecord.setSysTransaction(statusHistoryRecord.getSysTransaction());
+        statusRecord.setSysPeriod(statusHistoryRecord.getSysPeriod());
+        statusRecord.setHasAudit(statusHistoryRecord.getHasAudit());
+        statusRecord.setAttestationRef(statusHistoryRecord.getAttestationRef());
+        statusRecord.setInContribution(statusHistoryRecord.getInContribution());
+        statusRecord.setArchetypeNodeId(statusHistoryRecord.getArchetypeNodeId());
+        statusRecord.setName(statusHistoryRecord.getName());
+        statusRecord.setNamespace(statusHistoryRecord.getNamespace());
+        return statusRecord;
     }
 
     public static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {
@@ -668,5 +665,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     @Override
     public UUID getEhrId() {
         return this.statusRecord.getEhrId();
+    }
+
+    @Override
+    public Timestamp getSysTransaction() {
+        return this.statusRecord.getSysTransaction();
     }
 }
