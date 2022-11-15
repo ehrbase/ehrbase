@@ -226,7 +226,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
        ADL 2
        TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
     */
-    @PostMapping("/adl2/{?version}")
+    @PostMapping("/adl2")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
     public ResponseEntity<TemplateResponseData> createTemplateNew(

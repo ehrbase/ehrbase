@@ -17,8 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -31,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
@@ -65,6 +64,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
@@ -336,37 +338,17 @@ public class OpenehrCompositionController extends BaseController implements Comp
     }
 
     /**
-     * Acts as overloaded function and calls the overlapping and more specific method
-     * getCompositionByTime. Catches both "/{ehr_id}/composition/{version_uid}" and
-     * "/{ehr_id}/composition/{versioned_object_uid}" which works because their processing is the
-     * same. "{?version_at_time}" is hidden in swagger-ui, it only is here to be piped through.
-     */
-    @GetMapping("/{ehr_id}/composition/{version_uid}")
-    // checkAbacPre /-Post attributes (type, subject, payload, content type)
-    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
-            + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
-    @Override
-    public ResponseEntity<CompositionResponseData> getCompositionByVersionId(
-            @RequestHeader(value = ACCEPT, required = false) String accept,
-            @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "version_uid") String versionUid,
-            @RequestParam(value = "version_at_time", required = false) String versionAtTime,
-            HttpServletRequest request) {
-        return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime, request);
-    }
-
-    /**
      * This mapping combines both GETs "/{ehr_id}/composition/{version_uid}" (via overlapping path)
      * and "/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}" (here). This is necessary
      * because of the overlapping paths. Both mappings are specified to behave almost the same, so
      * this solution works in this case.
      */
-    @GetMapping("/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}")
+    @GetMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @Override
-    public ResponseEntity getCompositionByTime(
+    public ResponseEntity getComposition(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,

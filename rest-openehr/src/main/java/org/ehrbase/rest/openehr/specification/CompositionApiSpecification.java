@@ -75,14 +75,14 @@ public interface CompositionApiSpecification {
             String precedingVersionUid,
             HttpServletRequest request);
 
-    @Operation(
-            summary = "Get composition by version id",
-            externalDocs =
-                    @ExternalDocumentation(
-                            url =
-                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get"))
-    ResponseEntity<CompositionResponseData> getCompositionByVersionId(
-            String accept, String ehrIdString, String versionUid, String versionAtTime, HttpServletRequest request);
+//    @Operation(
+//            summary = "Get composition by version id",
+//            externalDocs =
+//                    @ExternalDocumentation(
+//                            url =
+//                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get"))
+//    ResponseEntity<CompositionResponseData> getCompositionByVersionId(
+//            String accept, String ehrIdString, String versionUid, String versionAtTime, HttpServletRequest request);
 
     @Operation(
             summary = "Get composition at time",
@@ -90,7 +90,7 @@ public interface CompositionApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get-1"))
-    ResponseEntity getCompositionByTime(
+    ResponseEntity getComposition(
             String accept,
             String ehrIdString,
             String versionedObjectUid,
