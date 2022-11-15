@@ -103,7 +103,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     }
 
     @RequestMapping(
-            value = {"/{qualified_query_name}/{version}{?type}", "/{qualified_query_name}{?type}"},
+            value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
             method = RequestMethod.PUT)
     @Override
     public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
