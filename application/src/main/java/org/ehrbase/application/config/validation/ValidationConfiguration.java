@@ -46,7 +46,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(ValidationProperties.class)
 @SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
-
+    private static final String ERR_MSG = "External terminology validation is disabled, consider to enable it";
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationProperties properties;
     private final HttpClient httpClient;
@@ -63,8 +63,8 @@ public class ValidationConfiguration {
     @Bean
     public ExternalTerminologyValidation externalTerminologyValidator() {
         if (!enableExternalValidation) {
+            logger.warn(ERR_MSG);
             return new ExternalTerminologyValidation() {
-                private final String ERR_MSG = "External terminology validation is disabled, consider to enable it";
                 private final ConstraintViolation err = new ConstraintViolation(ERR_MSG);
 
                 public Try<Boolean, ConstraintViolationException> validate(TerminologyParam param) {
@@ -72,12 +72,10 @@ public class ValidationConfiguration {
                 }
 
                 public boolean supports(TerminologyParam param) {
-                    logger.warn(ERR_MSG);
                     return false;
                 }
 
                 public List<DvCodedText> expand(TerminologyParam param) {
-                    logger.warn(ERR_MSG);
                     return Collections.emptyList();
                 }
             };
