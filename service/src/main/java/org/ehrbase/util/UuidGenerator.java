@@ -32,7 +32,7 @@ import java.util.UUID;
 public class UuidGenerator {
 
     private static final int UUID_BYTECOUNT = 16;
-    private static ThreadLocal<UuidGenerator> GENERATORS = ThreadLocal.withInitial(UuidGenerator::new);
+    private static final ThreadLocal<UuidGenerator> GENERATORS = ThreadLocal.withInitial(UuidGenerator::new);
 
     private final SecureRandom numberGenerator = new SecureRandom();
 
