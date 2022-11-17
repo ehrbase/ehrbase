@@ -23,9 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;
@@ -45,9 +48,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
  * @author Jake Smolka
  * @since 1.0.0
  */
+@Deprecated
 @Configuration
-@ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 @EnableWebSecurity
+@ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
+//@ConditionalOnMissingClass("org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter")
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     public static final String PROFILE_SCOPE = "PROFILE";
