@@ -68,6 +68,7 @@ import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Record1;
@@ -126,11 +127,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
 
         this.ehrRecord = context.newRecord(EHR_);
         // checking for and executing case of custom ehr ID
-        ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UUID::randomUUID));
+        ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UuidGenerator::randomUUID));
 
         // init a new EHR_STATUS with default values to associate with this EHR
         this.statusAccess = new StatusAccess(this, ehrRecord.getId(), tenantIdentifier);
-        this.statusAccess.getStatusRecord().setId(UUID.randomUUID());
+        this.statusAccess.getStatusRecord().setId(UuidGenerator.randomUUID());
         this.statusAccess.getStatusRecord().setIsModifiable(true);
         this.statusAccess.getStatusRecord().setIsQueryable(true);
         this.statusAccess.getStatusRecord().setParty(partyId);

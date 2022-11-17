@@ -70,6 +70,7 @@ import org.ehrbase.response.ehrscape.StructuredStringFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
 import org.ehrbase.util.PartyUtils;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +116,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             status.setQueryable(true);
         }
         status.setUid(new HierObjectId(
-                UUID.randomUUID().toString())); // server sets own new UUID in both cases (new or given status)
+                UuidGenerator.randomUUID().toString())); // server sets own new UUID in both cases (new or given status)
 
         UUID subjectUuid;
         if (PartyUtils.isEmpty(status.getSubject())) {

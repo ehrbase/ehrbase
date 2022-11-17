@@ -58,6 +58,7 @@ import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
 import org.ehrbase.service.RecordedDvText;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.InsertQuery;
 import org.jooq.JSONB;
@@ -86,7 +87,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         super(context, null, null, serverConfig);
         if (eventContext == null) return;
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
-        setRecordFields(UUID.randomUUID(), eventContext, tenantIdentifier);
+        setRecordFields(UuidGenerator.randomUUID(), eventContext, tenantIdentifier);
     }
 
     private ContextAccess(I_DomainAccess domainAccess) {
@@ -233,7 +234,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
             eventContextRecord.setEndTime(recordedDvDateTime.toTimestamp());
             recordedDvDateTime.zoneId().ifPresent(eventContextRecord::setEndTimeTzid);
         }
-        eventContextRecord.setId(id != null ? id : UUID.randomUUID());
+        eventContextRecord.setId(id != null ? id : UuidGenerator.randomUUID());
 
         // Health care facility
         if (eventContext.getHealthCareFacility() != null) {
@@ -361,7 +362,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
                         participationRecord.update();
                     } else {
-                        participationRecord.setId(UUID.randomUUID());
+                        participationRecord.setId(UuidGenerator.randomUUID());
                         participationRecord.store();
                     }
                 } catch (DataAccessException e) { // generalize DB exceptions

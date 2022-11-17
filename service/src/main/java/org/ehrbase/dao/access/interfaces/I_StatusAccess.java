@@ -33,7 +33,11 @@ import org.ehrbase.jooq.pg.tables.records.StatusRecord;
  * the status entry holds data pertaining to an Ehr owner, generally a patient
  * Created by Christian Chevalley on 4/21/2015.
  */
-public interface I_StatusAccess extends I_VersionedCRUD {
+public interface I_StatusAccess extends I_VersionedCRUD, I_Compensatable {
+
+    public static I_StatusAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
+        return StatusAccess.retrieveByVersion(domainAccess, statusId, version);
+    }
 
     /**
      * retrieve a status by given status ID
