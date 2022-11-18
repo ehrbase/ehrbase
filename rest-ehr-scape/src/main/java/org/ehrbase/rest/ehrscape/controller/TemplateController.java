@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
@@ -62,6 +64,7 @@ public class TemplateController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping()
     public ResponseEntity<TemplatesResponseData> getTemplate() {
         TemplatesResponseData responseData = new TemplatesResponseData();
@@ -70,6 +73,7 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     @PostMapping()
     public ResponseEntity<TemplatesResponseData> createTemplate(@RequestBody() String content) {
 
@@ -88,6 +92,7 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_EXAMPLE)
     @GetMapping(path = "/{templateId}/example")
     public ResponseEntity<String> getTemplateExample(
             @PathVariable(value = "templateId") String templateId,
@@ -108,6 +113,7 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping(path = "/{templateId}")
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();

@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -72,6 +74,7 @@ public class EhrController extends BaseController {
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
@@ -107,6 +110,7 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping
     public ResponseEntity<EhrResponseData> getEhr(
             @RequestParam(value = "subjectId") String subjectId,
@@ -119,6 +123,7 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(path = "/{uuid}")
     public ResponseEntity<EhrResponseData> getEhr(
             @PathVariable("uuid") UUID ehrId,
@@ -130,6 +135,7 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
     @PutMapping(path = "/{uuid}/status")
     public ResponseEntity<EhrResponseData> updateStatus(
             @PathVariable("uuid") UUID ehrId,
