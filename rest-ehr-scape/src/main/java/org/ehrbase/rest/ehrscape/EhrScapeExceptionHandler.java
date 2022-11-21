@@ -18,8 +18,10 @@
 package org.ehrbase.rest.ehrscape;
 
 import java.net.URI;
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
@@ -76,6 +78,11 @@ public class EhrScapeExceptionHandler {
     })
     public ResponseEntity<Object> handleBadRequestExceptions(Exception ex) {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleObjectNotFoundException(AccessDeniedException ex) {
+        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 
     // 404
