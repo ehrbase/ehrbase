@@ -40,7 +40,8 @@ public class LocatableItem {
         this.clause = clause;
     }
 
-    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition) throws UnknownVariableException {
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition)
+            throws UnknownVariableException {
         MultiFields multiFields;
 
         multiFields =

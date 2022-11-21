@@ -23,7 +23,7 @@ public enum TemplateTestData {
     CLINICAL_CONTENT_VALIDATION("clinical_content_validation.opt"),
     IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt"),
     NON_UNIQUE_AQL_PATH("non_unique_aql_paths.opt"),
-  ANAMNESE("Anamnese.opt");
+    ANAMNESE("Anamnese.opt");
 
     private final String filename;
 

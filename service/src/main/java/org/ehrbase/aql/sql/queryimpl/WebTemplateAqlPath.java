@@ -1,6 +1,29 @@
+/*
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ehrbase.aql.sql.queryimpl;
 
+import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
+import static org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath.OTHER_CONTEXT;
+import static org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath.OTHER_DETAILS;
+import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.CONTENT;
+
 import java.util.Collection;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.util.rmconstants.RmConstants;
@@ -8,24 +31,17 @@ import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateInput;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 
-import java.util.Optional;
-
-import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
-import static org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath.OTHER_CONTEXT;
-import static org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath.OTHER_DETAILS;
-import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.CONTENT;
-
 public final class WebTemplateAqlPath {
 
     private static final String TERMINAL_NODE_PATH_PART = "]/";
 
     private WebTemplateAqlPath() {
-        //NOOP
+        // NOOP
     }
 
     public static boolean isValid(WebTemplate webTemplate, String containerPart, String variablePart) {
 
-        //TODO: WebTemplate doesn't provide details when this ITEM_STRUCTURE is passed in /participations
+        // TODO: WebTemplate doesn't provide details when this ITEM_STRUCTURE is passed in /participations
         if (containerPart.contains(OTHER_PARTICIPATIONS)) {
             return true;
         }
@@ -35,15 +51,16 @@ public final class WebTemplateAqlPath {
         String attributePart = nodeAttributrePair.getRight();
 
         String pathToCheck = containerPart + nodePart;
-        //TODO: Simple contains check?
+        // TODO: Simple contains check?
         if (pathToCheck.contains(OTHER_CONTEXT) || pathToCheck.contains(OTHER_DETAILS)) {
-            return true; //TODO: ignore basically since the ITEM_STRUCTURE is part of an attribute not reflected in WebTemplate
+            return true; // TODO: ignore basically since the ITEM_STRUCTURE is part of an attribute not reflected in
+            // WebTemplate
         }
 
         Optional<WebTemplateNode> webTemplateNode = webTemplate.findByAqlPath(pathToCheck);
 
         if (webTemplateNode.isEmpty() && !isMissingAttributeFromWebTemplate(webTemplate, pathToCheck)) {
-            //TODO: check if this is an attribute for an ELEMENT see CR #...
+            // TODO: check if this is an attribute for an ELEMENT see CR #...
             return false;
         }
 
@@ -53,16 +70,16 @@ public final class WebTemplateAqlPath {
 
         String[] attributePartBits = attributePart.split("value/");
         if (attributePartBits.length == 1) {
-            //value not followed by an attribute
+            // value not followed by an attribute
             return true;
         }
 
         // check if the remainder is an input
         return webTemplateNode.stream()
-            .map(WebTemplateNode::getInputs)
-            .flatMap(Collection::stream)
-            .map(WebTemplateInput::getSuffix)
-            .anyMatch(attributePartBits[1]::equals);
+                .map(WebTemplateNode::getInputs)
+                .flatMap(Collection::stream)
+                .map(WebTemplateInput::getSuffix)
+                .anyMatch(attributePartBits[1]::equals);
     }
 
     /**
@@ -103,15 +120,16 @@ public final class WebTemplateAqlPath {
      * @param pathToCheck
      * @return
      */
-    private static boolean isMissingAttributeFromWebTemplate(WebTemplate webTemplate, String pathToCheck){
+    private static boolean isMissingAttributeFromWebTemplate(WebTemplate webTemplate, String pathToCheck) {
         if (pathToCheck.lastIndexOf(TERMINAL_NODE_PATH_PART) <= 0) {
             return false;
         }
         int lastNodeSegmentIndex = pathToCheck.lastIndexOf(TERMINAL_NODE_PATH_PART);
 
-        //check if we have an ELEMENT
-        return webTemplate.findByAqlPath(pathToCheck.substring(0, lastNodeSegmentIndex + 1))
-        .filter(n -> n.getRmType().equals(RmConstants.ELEMENT))
-        .isPresent();
+        // check if we have an ELEMENT
+        return webTemplate
+                .findByAqlPath(pathToCheck.substring(0, lastNodeSegmentIndex + 1))
+                .filter(n -> n.getRmType().equals(RmConstants.ELEMENT))
+                .isPresent();
     }
 }
