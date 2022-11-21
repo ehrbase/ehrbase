@@ -17,6 +17,8 @@
  */
 package org.ehrbase.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.UUID;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Assertions;
@@ -45,5 +47,23 @@ class UuidGeneratorTest {
             Assertions.assertEquals(4, uuid.version());
             Assertions.assertEquals(2, uuid.variant());
         });
+    }
+
+    @Test
+    void allCharsVariable() {
+        var firstUuid = UuidGenerator.randomUUID().toString();
+
+        boolean[] charVariables = new boolean[firstUuid.length()];
+
+        for (int i = 0; i < 1_000; i++) {
+            var uuid = UuidGenerator.randomUUID().toString();
+            for (int j = 0; j < charVariables.length; j++) {
+                // We ignore the 15th character as the represented 4 bits of the uuid are used for the version number
+                if (!charVariables[j]
+                        && (firstUuid.charAt(j) != uuid.charAt(j) || firstUuid.charAt(j) == '-' || j == 14))
+                    charVariables[j] = true;
+            }
+        }
+        assertThat(charVariables).doesNotContain(false);
     }
 }
