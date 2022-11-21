@@ -17,6 +17,7 @@
  */
 package org.ehrbase.util;
 
+import java.util.UUID;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,5 +36,14 @@ class UuidGeneratorTest {
                         .mapToObj(i -> UuidGenerator.randomUUID())
                         .distinct()
                         .count());
+    }
+
+    @Test
+    void testUuidVersionAndVariant() {
+        IntStream.range(0, 1_000).forEach(i -> {
+            UUID uuid = UuidGenerator.randomUUID();
+            Assertions.assertEquals(4, uuid.version());
+            Assertions.assertEquals(2, uuid.variant());
+        });
     }
 }

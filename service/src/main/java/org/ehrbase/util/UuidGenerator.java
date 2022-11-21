@@ -71,7 +71,7 @@ public class UuidGenerator {
     }
 
     private static UUID createUuid(byte[] data, int pos) {
-        engraveV4Bytes(data, 0);
+        engraveV4Bytes(data, pos);
         long msb = 0;
         long lsb = 0;
         int i = pos;
