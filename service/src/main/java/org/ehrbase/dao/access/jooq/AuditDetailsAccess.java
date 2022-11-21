@@ -27,6 +27,7 @@ import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -249,7 +250,10 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     public AuditDetails getAsAuditDetails() {
         String systemId = getSystemId().toString();
         PartyProxy party = new PersistedPartyProxy(this).retrieve(getCommitter());
-        DvDateTime time = new DvDateTime(getTimeCommitted().toLocalDateTime());
+        DvDateTime time = new DvDateTime(getTimeCommitted()
+                .toInstant()
+                .atZone(ZoneId.of(auditDetailsRecord.getTimeCommittedTzid()))
+                .toOffsetDateTime());
         DvCodedText changeType = new DvCodedText(
                 getChangeType().getLiteral(),
                 new CodePhrase(
