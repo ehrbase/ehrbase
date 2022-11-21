@@ -1,5 +1,7 @@
 /*
- * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2021-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.config.security;
 
 import static org.ehrbase.application.config.security.SecurityProperties.ADMIN;
@@ -42,51 +43,51 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableWebSecurity
 public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private final SecurityProperties properties;
+    private final SecurityProperties properties;
 
-  public BasicAuthSecurityConfiguration(SecurityProperties securityProperties) {
-    this.properties = securityProperties;
-  }
+    public BasicAuthSecurityConfiguration(SecurityProperties securityProperties) {
+        this.properties = securityProperties;
+    }
 
-  @PostConstruct
-  public void initialize() {
-    logger.info("Using basic authentication");
-  }
+    @PostConstruct
+    public void initialize() {
+        logger.info("Using basic authentication");
+    }
 
-  @Override
-  public void configure(AuthenticationManagerBuilder auth) throws Exception {
-    // @formatter:off
-    auth
-        .inMemoryAuthentication()
-          .withUser(properties.getAuthUser())
-            .password("{noop}" + properties.getAuthPassword())
-            .roles(USER)
-            .and()
-          .withUser(properties.getAuthAdminUser())
-            .password("{noop}" + properties.getAuthAdminPassword())
-            .roles(ADMIN);
-    // @formatter:on
-  }
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // @formatter:off
+        auth.inMemoryAuthentication()
+                .withUser(properties.getAuthUser())
+                .password("{noop}" + properties.getAuthPassword())
+                .roles(USER)
+                .and()
+                .withUser(properties.getAuthAdminUser())
+                .password("{noop}" + properties.getAuthAdminPassword())
+                .roles(ADMIN);
+        // @formatter:on
+    }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    // @formatter:off
-    http
-        .cors()
-          .and()
-        .csrf()
-        .ignoringAntMatchers("/rest/**")
-          .and()
-        .authorizeRequests()
-          .antMatchers("/rest/admin/**", "/management/**").hasRole(ADMIN)
-          .anyRequest().hasAnyRole(ADMIN, USER)
-          .and()
-        .sessionManagement()
-          .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-          .and()
-        .httpBasic();
-    // @formatter:on
-  }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
+        http.cors()
+                .and()
+                .csrf()
+                .ignoringAntMatchers("/rest/**")
+                .and()
+                .authorizeRequests()
+                .antMatchers("/rest/admin/**", "/management/**")
+                .hasRole(ADMIN)
+                .anyRequest()
+                .hasAnyRole(ADMIN, USER)
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .httpBasic();
+        // @formatter:on
+    }
 }

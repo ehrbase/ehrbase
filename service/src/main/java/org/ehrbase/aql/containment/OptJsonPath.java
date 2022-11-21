@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2020 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,10 +21,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.ehrbase.service.KnowledgeCacheService;
-
 import java.util.List;
 import java.util.Map;
+import org.ehrbase.service.KnowledgeCacheService;
 
 /**
  * prepare and perform jsonpath queries on WebTemplates
@@ -36,9 +35,6 @@ public class OptJsonPath {
     public OptJsonPath(KnowledgeCacheService knowledgeCache) {
         this.knowledgeCache = knowledgeCache;
     }
-
-
-
 
     private String toJson(Map<String, Object> map) {
         GsonBuilder builder = new GsonBuilder();
@@ -52,13 +48,7 @@ public class OptJsonPath {
 
         if (pathResult instanceof List && !((List) pathResult).isEmpty())
             return (Map<String, Object>) ((List) pathResult).get(0);
-        else if (pathResult instanceof Map && !((Map) pathResult).isEmpty())
-            return (Map<String, Object>) pathResult;
-        else
-            return null;
+        else if (pathResult instanceof Map && !((Map) pathResult).isEmpty()) return (Map<String, Object>) pathResult;
+        else return null;
     }
-
-
-
-
 }

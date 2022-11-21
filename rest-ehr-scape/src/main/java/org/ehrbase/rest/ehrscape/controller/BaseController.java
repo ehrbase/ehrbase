@@ -1,5 +1,7 @@
 /*
- * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.ehrscape.controller;
-
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * This base controller implements the basic functionality for all specific controllers. This
@@ -30,24 +30,24 @@ import java.util.Map;
  */
 public abstract class BaseController {
 
-  public Map<String, Map<String, String>> add2MetaMap(
-      Map<String, Map<String, String>> metaMap, String key, String value) {
-    Map<String, String> contentMap;
+    public Map<String, Map<String, String>> add2MetaMap(
+            Map<String, Map<String, String>> metaMap, String key, String value) {
+        Map<String, String> contentMap;
 
-    if (metaMap == null) {
-      metaMap = new HashMap<>();
-      contentMap = new HashMap<>();
-      metaMap.put("meta", contentMap);
-    } else {
-      contentMap = metaMap.get("meta");
+        if (metaMap == null) {
+            metaMap = new HashMap<>();
+            contentMap = new HashMap<>();
+            metaMap.put("meta", contentMap);
+        } else {
+            contentMap = metaMap.get("meta");
+        }
+
+        contentMap.put(key, value);
+        return metaMap;
     }
 
-    contentMap.put(key, value);
-    return metaMap;
-  }
+    protected String getBaseEnvLinkURL() {
 
-  protected String getBaseEnvLinkURL() {
-
-    return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
-  }
+        return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
+    }
 }

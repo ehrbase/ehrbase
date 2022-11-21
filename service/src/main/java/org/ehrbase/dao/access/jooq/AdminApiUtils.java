@@ -1,5 +1,25 @@
+/*
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ehrbase.dao.access.jooq;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.AdminDeleteCompositionHistory;
@@ -8,10 +28,6 @@ import org.ehrbase.jooq.pg.tables.AdminDeleteFolderObjRefHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.DSLContext;
 import org.jooq.Result;
-
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Util class to offer reusable methods in the scope of the Admin API.
@@ -40,7 +56,8 @@ public class AdminApiUtils {
             deleteAudit(del.getAudit(), "Composition", false);
             // invoke deletion of attestation, if available
             if (del.getAttestation() != null) {
-                Result<AdminDeleteAttestationRecord> delAttest = Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
+                Result<AdminDeleteAttestationRecord> delAttest =
+                        Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
                 delAttest.forEach(attest -> deleteAudit(attest.getAudit(), "Attestation", false));
             }
 
@@ -59,8 +76,7 @@ public class AdminApiUtils {
 
         // cleanup of composition auxiliary objects
         int res = ctx.selectQuery(new AdminDeleteCompositionHistory().call(id)).execute();
-        if (res != 1)
-            throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
+        if (res != 1) throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
     }
 
     /**
@@ -73,7 +89,6 @@ public class AdminApiUtils {
         Result<AdminDeleteAuditRecord> delAudit = Routines.adminDeleteAudit(ctx.configuration(), id);
         if (resultCanBeEmpty.equals(false) && delAudit.size() != 1)
             throw new InternalServerException("Admin deletion of " + context + " Audit failed!");
-
     }
 
     /**
@@ -119,12 +134,13 @@ public class AdminApiUtils {
         });
 
         // invoke both *_HISTORY cleaning functions
-        folders.forEach(folder -> ctx.selectQuery(new AdminDeleteFolderHistory().call(folder)).execute());
-        contribs.forEach(contrib -> ctx.selectQuery(new AdminDeleteFolderObjRefHistory().call(contrib)).execute());
+        folders.forEach(folder ->
+                ctx.selectQuery(new AdminDeleteFolderHistory().call(folder)).execute());
+        contribs.forEach(contrib -> ctx.selectQuery(new AdminDeleteFolderObjRefHistory().call(contrib))
+                .execute());
 
         // invoke contribution deletion - if set to true
-        if (deleteContributions.equals(true))
-            contribs.forEach(contrib -> deleteContribution(contrib, null, false));
+        if (deleteContributions.equals(true)) contribs.forEach(contrib -> deleteContribution(contrib, null, false));
 
         // invoke audit deletion
         audits.forEach(audit -> deleteAudit(audit, "Folder", false));

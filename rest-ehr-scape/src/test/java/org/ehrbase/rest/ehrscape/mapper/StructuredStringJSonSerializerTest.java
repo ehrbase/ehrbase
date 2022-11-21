@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.ehrscape.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,7 +44,8 @@ public class StructuredStringJSonSerializerTest {
             responseData.setComposition(structuredString);
 
             String actual = objectMapper.writer().writeValueAsString(responseData);
-            String expected = "{\"meta\":null,\"action\":null,\"composition\":{\"test\":false},\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
+            String expected =
+                    "{\"meta\":null,\"action\":null,\"composition\":{\"test\":false},\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
             Assert.assertEquals(expected, actual);
         }
 
@@ -56,7 +56,8 @@ public class StructuredStringJSonSerializerTest {
             responseData.setComposition(structuredString);
 
             String actual = objectMapper.writer().writeValueAsString(responseData);
-            String expected = "{\"meta\":null,\"action\":null,\"composition\":\"<test>Test<test>\",\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
+            String expected =
+                    "{\"meta\":null,\"action\":null,\"composition\":\"<test>Test<test>\",\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
             Assert.assertEquals(expected, actual);
         }
 
@@ -69,7 +70,8 @@ public class StructuredStringJSonSerializerTest {
             responseData.setComposition(structuredString);
 
             String actual = xmlMapper.writer().writeValueAsString(responseData);
-            String expected = "<CompositionResponseData><meta/><action/><composition>{\"test\":false}</composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
+            String expected =
+                    "<CompositionResponseData><meta/><action/><composition>{\"test\":false}</composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
             Assert.assertEquals(expected, actual);
         }
 
@@ -80,7 +82,8 @@ public class StructuredStringJSonSerializerTest {
             responseData.setComposition(structuredString);
 
             String actual = xmlMapper.writer().writeValueAsString(responseData);
-            String expected = "<CompositionResponseData><meta/><action/><composition><test>Test<test></composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
+            String expected =
+                    "<CompositionResponseData><meta/><action/><composition><test>Test<test></composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
             Assert.assertEquals(expected, actual);
         }
     }

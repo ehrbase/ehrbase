@@ -34,8 +34,14 @@ spring:
     name: ehrbase
 
   cache:
-    jcache:
+    type: jcache # change to type redis if usage of redis distributed cache is intended
+    jcache: # jcache parameters are only used if cache.type=jcache
       config: classpath:ehcache.xml
+
+  # the following redis properties are only used if the cache.type=redis
+  redis:
+    host: localhost
+    port: 6379
 
   security:
     oauth2:
@@ -138,12 +144,6 @@ server:
   # disable-strict-validation: true
 
 
-terminology-server:
-  tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
-  codePath: '$["expansion"]["contains"][*]["code"]'
-  systemPath: '$["expansion"]["contains"][*]["system"]'
-  displayPath: '$["expansion"]["contains"][*]["display"]'
-
 # Configuration of actuator for reporting and health endpoints
 management:
   endpoints:
@@ -198,7 +198,11 @@ ipf:
 validation:
   external-terminology:
     enabled: false
-
+    provider:
+      fhir:
+        type: FHIR
+        url: https://r4.ontoserver.csiro.au/fhir/
+    
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
   ssl:
@@ -212,5 +216,5 @@ javamelody:
 plugin-manager:
   plugin-dir: ./plugin_dir
   plugin-config-dir: ./plugin_config_dir
-  enable: false
+  enable: true
   plugin-context-path: /plugin

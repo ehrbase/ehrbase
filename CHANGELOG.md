@@ -6,21 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+### Added
+- Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
+### Changed
+- Change DB-model to save Data in a namespace ([#994](https://github.com/ehrbase/ehrbase/pull/994))
+### Fixed
+- Error causing a 500 Response when requesting a deleted composition via ECIS GET Composition Endpoint ([#875](https://github.com/ehrbase/ehrbase/pull/875))
+- Update folder was not always corectly updating it items ([#974](https://github.com/ehrbase/ehrbase/pull/974))
+- AuditDetails had timezone missing ([#998](https://github.com/ehrbase/ehrbase/pull/998))
+
+## [0.21.1]
+
+### Fixed
+
+- Fixed update script for user consolidation ([#865](https://github.com/ehrbase/ehrbase/pull/865))  
+
+## [0.21.0]
 
 ### Added
 
 - Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
 - Implement EHR_STATUS.is_modifiable semantics on service level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
+- use bom for dependence management  ([#820](https://github.com/ehrbase/ehrbase/pull/820))
+- add  Release action  ([#831](https://github.com/ehrbase/ehrbase/pull/831)
+- Added hooks for the plugin system ([#816](https://github.com/ehrbase/ehrbase/pull/816))
+- Added index to `party_identified` to improve performance of find EHR by subject-id ([857](https://github.com/ehrbase/ehrbase/pull/857)))
 
 ### Changed
 - Upgrade to Spring boot 2.5.12
   see [spring-framework-rce](https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement) ([#800](https://github.com/ehrbase/ehrbase/pull/800))
   .
+- Add unique constraints on `status` and `entry` ([#821](https://github.com/ehrbase/ehrbase/pull/821)).
+- Removed Postgres with extensions setup ([#840](https://github.com/ehrbase/ehrbase/pull/840))
+- Upgrade openEHR_SDK to version 1.19.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 
 ### Fixed
 
 - Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
-- Fixes issues related to AQL path identification and optimization of SQL construct (see PR for details)
+- Fix duplicate users issue ([#826](https://github.com/ehrbase/ehrbase/pull/826)).
+- Fix validation errors in ECIS EHR endpoint ([#828](https://github.com/ehrbase/ehrbase/pull/828)) 
+- Fix 400 error in ECIS EHR update ([#834](https://github.com/ehrbase/ehrbase/pull/834))
 
 ## [0.20.0] (beta)
 
@@ -456,7 +481,9 @@ the next release this file will provide a proper overview.
 - Fixed error regarding DISTINCT operator in AQL (https://github.com/ehrbase/ehrbase/issues/50)
 - Fixed null pointer exceptions that could occur in persistent compositions
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.20.0...HEAD
+[0.21.1]: https://github.com/ehrbase/ehrbase/compare/v0.21.0...v0.21.1
+
+[0.21.0]: https://github.com/ehrbase/ehrbase/compare/v0.20.0...v0.21.0
 
 [0.20.0]: https://github.com/ehrbase/ehrbase/compare/v0.19.0...v0.20.0
 
@@ -491,3 +518,5 @@ the next release this file will provide a proper overview.
 [0.10.0]: https://github.com/ehrbase/ehrbase/compare/v0.9.0...v0.10.0
 
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
+
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.21.1...HEAD

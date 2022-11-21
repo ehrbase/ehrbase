@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.UUID;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
@@ -35,15 +36,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 /**
  * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
  */
 @Tag(name = "Admin - EHR")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
-@RequestMapping(path = "${admin-api.context-path:/rest/admin}/ehr", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(
+        path = "${admin-api.context-path:/rest/admin}/ehr",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminEhrController extends BaseController {
 
     private final EhrService ehrService;
@@ -53,40 +54,35 @@ public class AdminEhrController extends BaseController {
         this.ehrService = ehrService;
     }
 
-    @PutMapping(path = "/{ehr_id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "EHR has been updated and number of updated items will be returned in the body.",
-                    headers = {
+    @PutMapping(
+            path = "/{ehr_id}",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "EHR has been updated and number of updated items will be returned in the body.",
+                        headers = {
                             @Header(
                                     name = CONTENT_TYPE,
                                     description = RESP_CONTENT_TYPE_DESC,
-                                    schema = @Schema(implementation = MediaType.class)
-                            )
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Client credentials are invalid or have been expired."
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Client is not permitted to access this resource since the admin role is missing."
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "EHR with id could not be found."
-            )
-    })
+                                    schema = @Schema(implementation = MediaType.class))
+                        }),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Client credentials are invalid or have been expired."),
+                @ApiResponse(
+                        responseCode = "403",
+                        description =
+                                "Client is not permitted to access this resource since the admin role is missing."),
+                @ApiResponse(responseCode = "404", description = "EHR with id could not be found.")
+            })
     public ResponseEntity<AdminUpdateResponseData> updateEhr(
             @Parameter(description = "Client requested response content type")
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false)
+                    @RequestHeader(value = HttpHeaders.ACCEPT, required = false)
                     String accept,
-            @Parameter(description = "Target EHR id to update", required = true)
-            @PathVariable(value = "ehr_id")
-                    String ehrId
-    ) {
+            @Parameter(description = "Target EHR id to update", required = true) @PathVariable(value = "ehr_id")
+                    String ehrId) {
 
         // Check if EHR with id exists
         UUID ehrUuid = UUID.fromString(ehrId);
@@ -100,29 +96,21 @@ public class AdminEhrController extends BaseController {
     }
 
     @DeleteMapping(path = "/{ehr_id}")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "EHR has been deleted successfully"
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Client credentials are invalid or have been expired."
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Client is not permitted to access this resource since the admin role is missing."
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "EHR with id could not be found."
-            )
-    })
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "EHR has been deleted successfully"),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Client credentials are invalid or have been expired."),
+                @ApiResponse(
+                        responseCode = "403",
+                        description =
+                                "Client is not permitted to access this resource since the admin role is missing."),
+                @ApiResponse(responseCode = "404", description = "EHR with id could not be found.")
+            })
     public ResponseEntity<AdminDeleteResponseData> deleteEhr(
-            @Parameter(description = "Target EHR id to delete", required = true)
-            @PathVariable(value = "ehr_id")
-                    String ehrId
-    ) {
+            @Parameter(description = "Target EHR id to delete", required = true) @PathVariable(value = "ehr_id")
+                    String ehrId) {
 
         UUID ehrUuid = UUID.fromString(ehrId);
         // Check if EHR with id exists

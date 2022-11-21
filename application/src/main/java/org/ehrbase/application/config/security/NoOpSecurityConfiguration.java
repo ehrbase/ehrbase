@@ -1,5 +1,7 @@
 /*
- * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2021-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.config.security;
 
 import javax.annotation.PostConstruct;
@@ -37,18 +38,17 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "none")
 public class NoOpSecurityConfiguration {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @PostConstruct
-  public void initialize() {
-    logger.warn("Security is disabled. Configure 'security.auth-type' to disable this warning.");
-  }
+    @PostConstruct
+    public void initialize() {
+        logger.warn("Security is disabled. Configure 'security.auth-type' to disable this warning.");
+    }
 
-  @Bean
-  @Primary
-  public IAuthenticationFacade anonymousAuthentication() {
-    var filter = new AnonymousAuthenticationFilter("key");
-    return () -> new AnonymousAuthenticationToken("key", filter.getPrincipal(),
-        filter.getAuthorities());
-  }
+    @Bean
+    @Primary
+    public IAuthenticationFacade anonymousAuthentication() {
+        var filter = new AnonymousAuthenticationFilter("key");
+        return () -> new AnonymousAuthenticationToken("key", filter.getPrincipal(), filter.getAuthorities());
+    }
 }

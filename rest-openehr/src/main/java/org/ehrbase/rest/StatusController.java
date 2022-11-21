@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Axel Siebert (Vitasystems GmbH) and Hannover Medical School.
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Objects;
 import org.ehrbase.api.service.StatusService;
+import org.ehrbase.response.openehr.StatusResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,17 +35,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import org.ehrbase.response.openehr.StatusResponseData;
-
-import java.util.Objects;
-
 /**
  * API endpoint to get status of EHRbase and version information on used dependencies as archie or openEHR_sdk as well
  * as the current used JVM version or target PostgreSQL server version.
  */
 @Tag(name = "Status", description = "Heartbeat, Version info, Status")
 @RestController
-@RequestMapping(path = "/rest", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(
+        path = "/rest",
+        produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
 public class StatusController extends BaseController {
 
     private final StatusService statusService;
@@ -54,25 +54,29 @@ public class StatusController extends BaseController {
     }
 
     @GetMapping(path = "/status")
-    @Operation(
-            summary = "Get status information on running EHRbase server instance"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "EHRbase is available. Basic information on runtime and build is returned in body.",
-                    headers = {
-                            @Header(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC, schema = @Schema(implementation = MediaType.class))
-                    },
-                    content = @Content(schema = @Schema(implementation = StatusResponseData.class))
-            )
-    })
+    @Operation(summary = "Get status information on running EHRbase server instance")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description =
+                                "EHRbase is available. Basic information on runtime and build is returned in body.",
+                        headers = {
+                            @Header(
+                                    name = CONTENT_TYPE,
+                                    description = RESP_CONTENT_TYPE_DESC,
+                                    schema = @Schema(implementation = MediaType.class))
+                        },
+                        content = @Content(schema = @Schema(implementation = StatusResponseData.class)))
+            })
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<StatusResponseData> getEhrbaseStatus(
             @Parameter(description = "Client desired response data format")
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE)
-            String accept
-    ) {
+                    @RequestHeader(
+                            value = HttpHeaders.ACCEPT,
+                            required = false,
+                            defaultValue = MediaType.APPLICATION_JSON_VALUE)
+                    String accept) {
         StatusResponseData responseData = new StatusResponseData();
         // Java VM version
         responseData.setJvmVersion(this.statusService.getJavaVMInformation());

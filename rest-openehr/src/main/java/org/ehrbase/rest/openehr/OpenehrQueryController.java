@@ -1,5 +1,7 @@
 /*
- * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletRequest;
-
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -56,287 +56,280 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@TenantAware
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/query")
-public class OpenehrQueryController extends BaseController
-    implements QueryApiSpecification {
+public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
 
-  private static final String EHR_ID_VALUE = "ehr_id/value";
-  private static final String LATEST = "LATEST";
-  private static final String QUERY_PARAMETERS = "query_parameters";
+    private static final String EHR_ID_VALUE = "ehr_id/value";
+    private static final String LATEST = "LATEST";
+    private static final String QUERY_PARAMETERS = "query_parameters";
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private final QueryService queryService;
-  
-  @Autowired(required = true)
-  @Qualifier("requestAwareAuditResultMapHolder")
-  private RequestAwareAuditResultMapHolder auditResultMapHolder;
+    private final QueryService queryService;
 
-  public OpenehrQueryController(QueryService queryService) {
-    this.queryService = queryService;
-  }
+    @Autowired(required = true)
+    @Qualifier("requestAwareAuditResultMapHolder")
+    private RequestAwareAuditResultMapHolder auditResultMapHolder;
 
-  
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @GetMapping(path = "/aql")
-  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
-  public ResponseEntity<QueryResponseData> executeAdHocQuery(
-      @RequestParam(name = "q") String query,
-      @RequestParam(name = "offset", required = false) Integer offset,
-      @RequestParam(name = "fetch", required = false) Integer fetch,
-      @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameters,
-      @RequestHeader(name = ACCEPT, required = false) String accept,
-      HttpServletRequest request) {
-
-    //deal with offset and fetch
-    if (fetch != null) {
-      query = withFetch(query, fetch);
+    public OpenehrQueryController(QueryService queryService) {
+        this.queryService = queryService;
     }
 
-    if (offset != null) {
-      query = withOffset(query, offset);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @GetMapping(path = "/aql")
+    @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
+    public ResponseEntity<QueryResponseData> executeAdHocQuery(
+            @RequestParam(name = "q") String query,
+            @RequestParam(name = "offset", required = false) Integer offset,
+            @RequestParam(name = "fetch", required = false) Integer fetch,
+            @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameters,
+            @RequestHeader(name = ACCEPT, required = false) String accept,
+            HttpServletRequest request) {
+
+        // deal with offset and fetch
+        if (fetch != null) {
+            query = withFetch(query, fetch);
+        }
+
+        if (offset != null) {
+            query = withOffset(query, offset);
+        }
+
+        // Enriches request attributes with aql for later audit processing
+        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
+
+        var body = executeQuery(query, queryParameters, request);
+
+        if (!CollectionUtils.isEmpty(body.getRows())) {
+            return ResponseEntity.ok(body);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
     }
 
-    // Enriches request attributes with aql for later audit processing
-    request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @PostMapping(path = "/aql")
+    @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<QueryResponseData> executeAdHocQuery(
+            @RequestBody Map<String, Object> queryRequest,
+            @RequestHeader(name = ACCEPT, required = false) String accept,
+            @RequestHeader(name = CONTENT_TYPE) String contentType,
+            HttpServletRequest request) {
 
-    var body = executeQuery(query, queryParameters, request);
+        logger.debug("Got following input: {}", queryRequest);
 
-    if (!CollectionUtils.isEmpty(body.getRows())) {
-      return ResponseEntity.ok(body);
-    } else {
-      return ResponseEntity.noContent().build();
-    }
-  }
+        String aql = (String) queryRequest.get("q");
+        if (aql == null) {
+            throw new InvalidApiParameterException("No aql query provided");
+        }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @PostMapping(path = "/aql")
-  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
-  @SuppressWarnings("unchecked")
-  public ResponseEntity<QueryResponseData> executeAdHocQuery(
-      @RequestBody Map<String, Object> queryRequest,
-      @RequestHeader(name = ACCEPT, required = false) String accept,
-      @RequestHeader(name = CONTENT_TYPE) String contentType,
-      HttpServletRequest request) {
+        aql = withOffsetLimit(aql, queryRequest);
+        // Enriches request attributes with aql for later audit processing
+        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, aql);
 
-    logger.debug("Got following input: {}", queryRequest);
+        Map<String, Object> parameters = (Map<String, Object>) queryRequest.get(QUERY_PARAMETERS);
 
-    String aql = (String) queryRequest.get("q");
-    if (aql == null) {
-      throw new InvalidApiParameterException("No aql query provided");
+        var body = executeQuery(aql, parameters, request);
+        return ResponseEntity.ok(body);
     }
 
-    aql = withOffsetLimit(aql, queryRequest);
-    // Enriches request attributes with aql for later audit processing
-    request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, aql);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @GetMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
+    @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
+    public ResponseEntity<QueryResponseData> executeStoredQuery(
+            @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
+            @PathVariable(name = "version", required = false) String version,
+            @RequestParam(name = "offset", required = false) Integer offset,
+            @RequestParam(name = "fetch", required = false) Integer fetch,
+            @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameter,
+            @RequestHeader(name = ACCEPT, required = false) String accept,
+            HttpServletRequest request) {
 
-    Map<String, Object> parameters = (Map<String, Object>) queryRequest.get(QUERY_PARAMETERS);
+        logger.trace(
+                "getStoredQuery not implemented but got following input: {} - {} - {} - {} - {}",
+                qualifiedQueryName,
+                version,
+                offset,
+                fetch,
+                queryParameter);
+        // Enriches request attributes with query name for later audit processing
+        request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
-    var body = executeQuery(aql, parameters, request);
-    return ResponseEntity.ok(body);
-  }
+        // retrieve the stored query for execution
+        QueryDefinitionResultDto queryDefinitionResultDto =
+                queryService.retrieveStoredQuery(qualifiedQueryName, version != null ? version : LATEST);
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @GetMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
-  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
-  public ResponseEntity<QueryResponseData> executeStoredQuery(
-      @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
-      @PathVariable(name = "version", required = false) String version,
-      @RequestParam(name = "offset", required = false) Integer offset,
-      @RequestParam(name = "fetch", required = false) Integer fetch,
-      @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameter,
-      @RequestHeader(name = ACCEPT, required = false) String accept,
-      HttpServletRequest request) {
+        String query = queryDefinitionResultDto.getQueryText();
 
-    logger.trace("getStoredQuery not implemented but got following input: {} - {} - {} - {} - {}",
-        qualifiedQueryName, version, offset, fetch, queryParameter);
-    // Enriches request attributes with query name for later audit processing
-    request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
+        // Enriches request attributes with aql for later audit processing
+        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
 
-    //retrieve the stored query for execution
-    QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(
-        qualifiedQueryName, version != null ? version : LATEST);
+        if (fetch != null) {
+            // append LIMIT clause to aql
+            query = withFetch(query, fetch);
+        }
 
-    String query = queryDefinitionResultDto.getQueryText();
+        if (offset != null) {
+            // append OFFSET clause to aql
+            query = withOffset(query, offset);
+        }
 
-    // Enriches request attributes with aql for later audit processing
-    request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
-
-    if (fetch != null) {
-      //append LIMIT clause to aql
-      query = withFetch(query, fetch);
+        QueryResponseData queryResponseData = invoke(query, queryParameter, request);
+        queryResponseData.setName(
+                queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
+        return ResponseEntity.ok(queryResponseData);
     }
 
-    if (offset != null) {
-      //append OFFSET clause to aql
-      query = withOffset(query, offset);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @PostMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
+    @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<QueryResponseData> executeStoredQuery(
+            @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
+            @PathVariable(name = "version", required = false) String version,
+            @RequestHeader(name = ACCEPT, required = false) String accept,
+            @RequestHeader(name = CONTENT_TYPE) String contentType,
+            @RequestBody(required = false) Map<String, Object> queryRequest,
+            HttpServletRequest request) {
+
+        logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
+
+        // retrieve the stored query for execution
+        request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
+
+        QueryDefinitionResultDto queryDefinitionResultDto =
+                queryService.retrieveStoredQuery(qualifiedQueryName, version != null ? version : LATEST);
+
+        String query = queryDefinitionResultDto.getQueryText();
+
+        if (query == null) {
+            var message = MessageFormat.format(
+                    "Could not retrieve AQL {0}/{1}", qualifiedQueryName, version != null ? version : LATEST);
+            throw new ObjectNotFoundException("AQL", message);
+        }
+
+        // Enriches request attributes with aql for later audit processing
+        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
+
+        // retrieve the parameter from body
+        // get the query and parameters if any
+        Map<String, Object> queryParameter = null;
+
+        if (queryRequest != null && !queryRequest.isEmpty()) {
+            queryParameter = (Map<String, Object>) queryRequest.get(QUERY_PARAMETERS);
+
+            query = withOffsetLimit(query, queryRequest);
+        }
+        QueryResponseData queryResponseData = invoke(query, queryParameter, request);
+
+        queryResponseData.setName(
+                queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
+        return ResponseEntity.ok(queryResponseData);
     }
 
-    QueryResponseData queryResponseData = invoke(query, queryParameter, request);
-    queryResponseData.setName(queryDefinitionResultDto.getQualifiedName() + "/"
-        + queryDefinitionResultDto.getVersion());
-    return ResponseEntity.ok(queryResponseData);
-  }
+    private QueryResponseData executeQuery(String aql, Map<String, Object> parameters, HttpServletRequest request) {
+        QueryResponseData queryResponseData;
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @PostMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
-  @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
-  @SuppressWarnings("unchecked")
-  public ResponseEntity<QueryResponseData> executeStoredQuery(
-      @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
-      @PathVariable(name = "version", required = false) String version,
-      @RequestHeader(name = ACCEPT, required = false) String accept,
-      @RequestHeader(name = CONTENT_TYPE) String contentType,
-      @RequestBody(required = false) Map<String, Object> queryRequest,
-      HttpServletRequest request) {
+        Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
 
-    logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName,
-        version, queryRequest);
+        // get the query and pass it to the service
+        queryResponseData =
+                new QueryResponseData(queryService.query(aql, parameters, QueryMode.AQL, false, auditResultMap));
 
-    //retrieve the stored query for execution
-    request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
+        // Enriches request attributes with EhrId(s) for later audit processing
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
 
-    QueryDefinitionResultDto queryDefinitionResultDto = queryService.retrieveStoredQuery(
-        qualifiedQueryName, version != null ? version : LATEST);
-
-    String query = queryDefinitionResultDto.getQueryText();
-
-    if (query == null) {
-      var message = MessageFormat.format("Could not retrieve AQL {0}/{1}", qualifiedQueryName,
-          version != null ? version : LATEST);
-      throw new ObjectNotFoundException("AQL", message);
+        return queryResponseData;
     }
 
-    // Enriches request attributes with aql for later audit processing
-    request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
-
-    //retrieve the parameter from body
-    //get the query and parameters if any
-    Map<String, Object> queryParameter = null;
-
-    if (queryRequest != null && !queryRequest.isEmpty()) {
-      queryParameter = (Map<String, Object>) queryRequest.get(QUERY_PARAMETERS);
-
-      query = withOffsetLimit(query, queryRequest);
-
-    }
-    QueryResponseData queryResponseData = invoke(query, queryParameter, request);
-
-    queryResponseData.setName(queryDefinitionResultDto.getQualifiedName() + "/"
-        + queryDefinitionResultDto.getVersion());
-    return ResponseEntity.ok(queryResponseData);
-  }
-
-  private QueryResponseData executeQuery(String aql, Map<String, Object> parameters,
-      HttpServletRequest request) {
-    QueryResponseData queryResponseData;
-
-    Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
-    
-    //get the query and pass it to the service
-    if (parameters != null && !parameters.isEmpty()) {
-      queryResponseData = new QueryResponseData(
-          queryService.query(aql, parameters, QueryMode.AQL, false, auditResultMap));
-    } else {
-      queryResponseData = new QueryResponseData(
-          queryService.query(aql, QueryMode.AQL, false, auditResultMap));
+    private String withFetch(String query, String value) {
+        return withFetch(query, double2int(value));
     }
 
-    // Enriches request attributes with EhrId(s) for later audit processing
-    request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE,
-        auditResultMap.get(EHR_ID_VALUE));
-
-    return queryResponseData;
-  }
-
-  private String withFetch(String query, String value) {
-    return withFetch(query, double2int(value));
-  }
-
-  private String withFetch(String query, Integer value) {
-    return orderedLimitOffset(query, "LIMIT", value);
-  }
-
-  private String orderedLimitOffset(String query, String keyword, Integer value) {
-    String queryFormatted;
-
-    if (query.replace(" ", "").toUpperCase().contains("ORDERBY")) {
-      //insert LIMIT before ORDER BY clause!
-      String[] strings = query.split("(?i)ORDER");
-      //assemble
-      StringBuilder queryBuilder = new StringBuilder();
-      queryBuilder.append(strings[0]);
-      queryBuilder.append(keyword.toUpperCase());
-      queryBuilder.append(" ");
-      queryBuilder.append(value);
-      queryBuilder.append(" ORDER");
-      queryBuilder.append(strings[1]);
-      queryFormatted = queryBuilder.toString();
-    } else {
-      queryFormatted = query + " " + keyword + " " + value;
+    private String withFetch(String query, Integer value) {
+        return orderedLimitOffset(query, "LIMIT", value);
     }
 
-    return queryFormatted;
-  }
+    private String orderedLimitOffset(String query, String keyword, Integer value) {
+        String queryFormatted;
 
-  private String withOffset(String query, String value) {
-    return withOffset(query, double2int(value));
-  }
+        if (query.replace(" ", "").toUpperCase().contains("ORDERBY")) {
+            // insert LIMIT before ORDER BY clause!
+            String[] strings = query.split("(?i)ORDER");
+            // assemble
+            StringBuilder queryBuilder = new StringBuilder();
+            queryBuilder.append(strings[0]);
+            queryBuilder.append(keyword.toUpperCase());
+            queryBuilder.append(" ");
+            queryBuilder.append(value);
+            queryBuilder.append(" ORDER");
+            queryBuilder.append(strings[1]);
+            queryFormatted = queryBuilder.toString();
+        } else {
+            queryFormatted = query + " " + keyword + " " + value;
+        }
 
-  private String withOffset(String query, Integer value) {
-    return orderedLimitOffset(query, "OFFSET", value);
-  }
-
-  private Integer double2int(String value) {
-    return (Double.valueOf(value)).intValue();
-  }
-
-  private QueryResponseData invoke(String query, Map<String, Object> queryParameter,
-      HttpServletRequest request) {
-    QueryResponseData queryResponseData;
-
-    Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
-    
-    if (queryParameter != null && !queryParameter.isEmpty()) {
-      Map<String, Object> parameters = new HashMap<>(queryParameter);
-      queryResponseData = new QueryResponseData(
-          queryService.query(query, parameters, QueryMode.AQL, false, auditResultMap));
-    } else {
-      queryResponseData = new QueryResponseData(
-          queryService.query(query, QueryMode.AQL, false, auditResultMap));
+        return queryFormatted;
     }
 
-    // Enriches request attributes with EhrId(s) for later audit processing
-    request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE,
-        auditResultMap.get(EHR_ID_VALUE));
-
-    return queryResponseData;
-  }
-
-  String withOffsetLimit(String query, Map<String, Object> mapped) {
-    if (mapped.containsKey("fetch")) {
-      //append LIMIT clause to aql
-      query = withFetch(query, mapped.get("fetch").toString());
+    private String withOffset(String query, String value) {
+        return withOffset(query, double2int(value));
     }
 
-    if (mapped.containsKey("offset")) {
-      //append OFFSET clause to aql
-      query = withOffset(query, mapped.get("offset").toString());
+    private String withOffset(String query, Integer value) {
+        return orderedLimitOffset(query, "OFFSET", value);
     }
 
-    return query;
-  }
+    private Integer double2int(String value) {
+        return (Double.valueOf(value)).intValue();
+    }
+
+    private QueryResponseData invoke(String query, Map<String, Object> queryParameter, HttpServletRequest request) {
+        QueryResponseData queryResponseData;
+
+        Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
+
+        if (queryParameter != null && !queryParameter.isEmpty()) {
+            Map<String, Object> parameters = new HashMap<>(queryParameter);
+            queryResponseData =
+                    new QueryResponseData(queryService.query(query, parameters, QueryMode.AQL, false, auditResultMap));
+        } else {
+            queryResponseData =
+                    new QueryResponseData(queryService.query(query, null, QueryMode.AQL, false, auditResultMap));
+        }
+
+        // Enriches request attributes with EhrId(s) for later audit processing
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
+
+        return queryResponseData;
+    }
+
+    String withOffsetLimit(String query, Map<String, Object> mapped) {
+        if (mapped.containsKey("fetch")) {
+            // append LIMIT clause to aql
+            query = withFetch(query, mapped.get("fetch").toString());
+        }
+
+        if (mapped.containsKey("offset")) {
+            // append OFFSET clause to aql
+            query = withOffset(query, mapped.get("offset").toString());
+        }
+
+        return query;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,7 +24,7 @@ import org.ehrbase.aql.sql.queryimpl.attribute.composition.CompositionIdFieldSet
 import org.ehrbase.aql.sql.queryimpl.attribute.ehr.EhrSetup;
 import org.jooq.Field;
 
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public abstract class RMObjectAttribute implements IRMObjectAttribute, IJoinBinder {
 
     protected FilterSetup filterSetup = new FilterSetup();
@@ -34,38 +34,31 @@ public abstract class RMObjectAttribute implements IRMObjectAttribute, IJoinBind
     protected final JoinSetup joinSetup;
     protected final FieldResolutionContext fieldContext;
 
-
     protected RMObjectAttribute(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         this.fieldContext = fieldContext;
         this.joinSetup = joinSetup;
     }
 
-    protected Field<?> as(Field field){
-        if (fieldContext.isWithAlias())
-            return aliased(field);
+    protected Field<?> as(Field field) {
+        if (fieldContext.isWithAlias()) return aliased(field);
         else {
-            if (!fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
-                return defaultAliased(field);
-            else
-                return field;
+            if (!fieldContext.getClause().equals(IQueryImpl.Clause.WHERE)) return defaultAliased(field);
+            else return field;
         }
     }
 
-    protected Field<?> aliased(Field field){
+    protected Field<?> aliased(Field field) {
         return field.as(effectiveAlias());
     }
 
-    protected String effectiveAlias(){
+    protected String effectiveAlias() {
         return (fieldContext.getVariableDefinition().getAlias() == null)
-                ? "/"+fieldContext.getColumnAlias()
+                ? "/" + fieldContext.getColumnAlias()
                 : fieldContext.getVariableDefinition().getAlias();
     }
 
-    protected Field<?> defaultAliased(Field field){
-        if (fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
-            return field;
-        else
-            return field.as(DefaultColumnId.value(fieldContext.getVariableDefinition()));
+    protected Field<?> defaultAliased(Field field) {
+        if (fieldContext.getClause().equals(IQueryImpl.Clause.WHERE)) return field;
+        else return field.as(DefaultColumnId.value(fieldContext.getVariableDefinition()));
     }
-
 }

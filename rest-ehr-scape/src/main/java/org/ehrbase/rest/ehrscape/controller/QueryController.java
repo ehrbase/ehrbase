@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.ehrscape.controller;
 
 import java.util.HashMap;
@@ -23,7 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
@@ -39,7 +37,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/rest/ecis/v1/query", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(
+        path = "/rest/ecis/v1/query",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class QueryController extends BaseController {
 
     private final QueryService queryService;
@@ -50,8 +50,8 @@ public class QueryController extends BaseController {
     }
 
     @PostMapping
-    public ResponseEntity<QueryResponseData> query(@RequestParam(value = "explain", defaultValue = "false") Boolean explain,
-                                                   @RequestBody() String content) {
+    public ResponseEntity<QueryResponseData> query(
+            @RequestParam(value = "explain", defaultValue = "false") Boolean explain, @RequestBody() String content) {
 
         Map<String, String> kvPairs = extractQuery(new String(content.getBytes()));
 
@@ -66,11 +66,11 @@ public class QueryController extends BaseController {
         } else {
             throw new InvalidApiParameterException("No query parameter supplied");
         }
-        QueryResponseData responseData = new QueryResponseData(queryService.query(queryString, queryMode, explain, new HashMap<>()));
+        QueryResponseData responseData =
+                new QueryResponseData(queryService.query(queryString, null, queryMode, explain, new HashMap<>()));
         responseData.setAction(Action.EXECUTE);
         return ResponseEntity.ok(responseData);
     }
-
 
     private static Map<String, String> extractQuery(String content) {
         Pattern patternKey = Pattern.compile("(?<=\\\")(.*?)(?=\")");
@@ -83,8 +83,6 @@ public class QueryController extends BaseController {
             Map<String, String> queryMap = new HashMap<>();
             queryMap.put(type.toLowerCase(), query);
             return queryMap;
-        } else
-            throw new IllegalArgumentException("Could not identified query type (sql or aql) in content:" + content);
-
+        } else throw new IllegalArgumentException("Could not identified query type (sql or aql) in content:" + content);
     }
 }

@@ -32,6 +32,15 @@ workflows:
   # WORKFLOW 1/3
   build-and-test:
     jobs:
+      - check-codestyle:
+          context: org-global
+          filters:
+            branches:
+              ignore:
+                - /release\/.*/
+                - master
+                - /sync\/.*/
+                - /feature/sync\/.*/
       - build-ehrbase:
           context: org-global
           filters:
@@ -41,7 +50,7 @@ workflows:
                 - master
                 - /sync\/.*/
                 - /feature/sync\/.*/
-      
+
       - run-SDK-integration-tests:
           context: org-global
           requires:
@@ -77,7 +86,7 @@ workflows:
           requires:
             - build-ehrbase
             - QUERYSERVICE-test-1
-      
+
       - COMPOSITION-tests-5:
           context: org-global
           requires:
@@ -138,6 +147,18 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - TEMPLATE-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - HEADER-tests:
           context: org-global
           requires:
@@ -145,6 +166,12 @@ workflows:
             - QUERYSERVICE-test-1
 
       - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
+      - TERMINOLOGY-MOCK-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -184,7 +211,7 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-      
+
       # - QUERYSERVICE-smoke:
       #     context: org-global
       #     # requires:
@@ -194,7 +221,12 @@ workflows:
           context: org-global
           requires:
             - build-ehrbase
-      
+
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - SECURITY-test:
           context: org-global
           requires:
@@ -224,8 +256,11 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
+            - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -233,6 +268,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
             - ADMIN-test
 
@@ -304,7 +340,7 @@ workflows:
           requires:
             - build-ehrbase
             - QUERYSERVICE-test-2
-      
+
       - COMPOSITION-tests-5:
           context: org-global
           requires:
@@ -365,6 +401,18 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - TEMPLATE-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - HEADER-tests:
           context: org-global
           requires:
@@ -372,6 +420,12 @@ workflows:
             - QUERYSERVICE-test-2
 
       - EHRScape-tests:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
+      - TERMINOLOGY-MOCK-tests:
           context: org-global
           requires:
             - build-ehrbase
@@ -417,6 +471,11 @@ workflows:
           requires:
             - build-ehrbase
 
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - SECURITY-test:
           context: org-global
           requires:
@@ -445,8 +504,11 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
+            - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -454,6 +516,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
             - ADMIN-test
 
@@ -548,13 +611,19 @@ workflows:
       ///  - MERGE BOTH PRs AT THE SAME TIME!                             ///
       ///                                                                 ///
       //////////////////////////////////////////////////////////////////////
-    
+
     # when:
     #   or:
     #     - equal: [ sync/*, << pipeline.git.branch >> ]
     #     - equal: [ feature/sync/*, << pipeline.git.branch >> ]
 
     jobs:
+      - check-codestyle:
+          filters:
+            branches:
+              only:
+                - /^sync\/.*/
+                - /^feature\/sync\/.*/
       - build package ehrbase with locally built sdk from sync-branch:
           filters:
             branches:
@@ -624,11 +693,23 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - COMPOSITION-tests-15:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
+      - TEMPLATE-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - HEADER-tests:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
       - EHRScape-tests:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
+      - TERMINOLOGY-MOCK-tests:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
@@ -660,6 +741,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - SECURITY-test:
           context: org-global
           requires:
@@ -686,8 +771,11 @@ workflows:
             - COMPOSITION-tests-12
             - COMPOSITION-tests-13
             - COMPOSITION-tests-14
+            - COMPOSITION-tests-15
+            - TEMPLATE-tests
             - HEADER-tests
             - EHRScape-tests
+            - TERMINOLOGY-MOCK-tests
             - CONTRIBUTION-test
             - DIRECTORY-test
             - EHRSERVICE-test
@@ -695,6 +783,7 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
             - ADMIN-test
 
@@ -747,6 +836,15 @@ jobs:
       - save-sdk-test-results
 
 
+  check-codestyle:
+    executor: docker-python3-java11
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - install-maven
+      - maven-check-codestyle
+
+
   build-ehrbase:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
@@ -759,6 +857,7 @@ jobs:
       - save-build-ehrbase-job-caches
       - collect-ehrbase-unittest-results
       - save-ehrbase-test-results
+      #- git-clone-robot-integration-tests-repo
       # - run: echo MOCKED JOB 1          # USE FOR PIPELINE DEBUGGING ONLY
       # - cache-out-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
       # - cache-in-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
@@ -787,10 +886,13 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
           test-suite-name: "SANITY"
+      - persist-robot-requirements-file
 
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
@@ -798,6 +900,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_create"
           test-suite-path: "COMPOSITION_TESTS"
@@ -810,6 +914,8 @@ jobs:
       - run: echo MOCKED JOB 3
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get"
           test-suite-path: "COMPOSITION_TESTS"
@@ -818,9 +924,11 @@ jobs:
   COMPOSITION-tests-3:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
-    steps:      
+    steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get_versioned"
           test-suite-path: "COMPOSITION_TESTS"
@@ -832,17 +940,21 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_4"
-    
+
   COMPOSITION-tests-5:
     executor: docker-py3-java11-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
@@ -854,6 +966,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -865,6 +979,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -876,6 +992,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -887,6 +1005,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -898,6 +1018,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -909,6 +1031,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -920,6 +1044,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -931,6 +1057,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -942,10 +1070,38 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_SHANGHAI"
+
+  COMPOSITION-tests-15:
+    executor: docker-py3-java11-postgres
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          include-tags: "compositionANDcomposition_ism_transitions"
+          test-suite-path: "COMPOSITION_TESTS"
+          test-suite-name: "COMPOSITION_15"
+
+  TEMPLATE-tests:
+    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
+    # executor: machine-ubuntu-2004
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          include-tags: "Template"
+          test-suite-path: "TEMPLATE_TESTS"
+          test-suite-name: "TEMPLATE_TESTS"
 
   HEADER-tests:
     executor: docker-py3-java11-postgres
@@ -953,6 +1109,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "HeadersChecks"
           test-suite-path: "COMPOSITION_TESTS"
@@ -964,10 +1122,24 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
           test-suite-name: "EHRSCAPE"
+
+  TERMINOLOGY-MOCK-tests:
+    executor: docker-mock-server
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          include-tags: "MOCKSUITE"
+          test-suite-path: "MOCK_FHIR_TESTS"
+          test-suite-name: "TERMINOLOGY_MOCK"
 
   CONTRIBUTION-test:
     executor: docker-py3-java11-postgres
@@ -975,6 +1147,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "CONTRIBUTION"
           test-suite-path: "CONTRIBUTION_TESTS"
@@ -986,6 +1160,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "directory"
           test-suite-path: "DIRECTORY_TESTS"
@@ -997,6 +1173,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EHR_SERVICE"
           test-suite-path: "EHR_SERVICE_TESTS"
@@ -1007,6 +1185,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EHR_STATUS"
           test-suite-path: "EHR_STATUS_TESTS"
@@ -1017,6 +1197,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "OPT"
           test-suite-path: "KNOWLEDGE_TESTS"
@@ -1029,11 +1211,24 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
-  
+
+  NEWQUERY-test-set:
+    executor: docker-py3-java11-postgres
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          include-tags: "NEW_query_test_set"
+          test-suite-path: "QUERY_TESTS"
+          test-suite-name: "NEW_QUERY_TESTS"
 
   QUERYSERVICE-test-2:
     # executor: docker-py3-java11-postgres
@@ -1043,6 +1238,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
@@ -1059,7 +1256,7 @@ jobs:
             - ehrbasedb-dump-v8
       # COMMENT: USE THE NEXT LINE ONLY TO FORCE TEST-DATA REGENERATION! Otherwise comment it out!
       - run: echo "FORCE GENERATION OF TEST-DATA AND EXPECTED RESULTS!" > /tmp/DATA_CHANGED_NOTICE
-      - run: 
+      - run:
           name: CHECK IF EXPECTED-RESULT TEMPLATES HAVE CHANGED AND REGENERATE TEST-DATA IF NEEDED
           command: |
             FILE=/tmp/DATA_CHANGED_NOTICE
@@ -1096,8 +1293,8 @@ jobs:
           key: ehrbasedb-dump-v8-{{ checksum "/tmp/ehrbasedb_dump.sql" }}
           paths:
             - /tmp/ehrbasedb_dump.sql
-  
-  
+
+
   SECURITY-test:
     executor: machine-ubuntu-2004
     environment:
@@ -1106,14 +1303,16 @@ jobs:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: "http://localhost:8081/auth/realms/ehrbase"
     steps:
       - checkout
-      - install-and-configure-keycloak
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - install-and-configure-keycloak
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "SECURITY_oauth"
           # test-suite-path: ""
           test-suite-name: "SECURITY"
-        
+
   ADMIN-test:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
@@ -1124,6 +1323,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           sut: "ADMIN-TEST"
           include-tags: "ADMIN"
@@ -1172,7 +1373,7 @@ jobs:
               --name "EHRbase Code Coverage w/ All Tests (Unit, SDK, Robot)"
       - store_artifacts:
           path:  ~/projects/test-coverage/overall-coverage-report
-            
+
       - sonarcloud/scan:
           cache_version: 1       # NOTE: increment this value to force cache rebuild
 
@@ -1213,14 +1414,14 @@ commands:
         enum: ["DEV", "DEV -v AUTH_TYPE:OAUTH", "ADMIN-DEV", "TEST", "TEST -v AUTH_TYPE:OAUTH", "ADMIN-TEST"]
         default: "DEV"
         type: enum
-      
+
       nodename:
         description: | 
           EHRbase's "CREATING_SYSTEM_ID". It can be set from cli when starting server .jar, i.e.:
           `java -jar application.jar --server.nodename=local.ehrbase.org`
         default: "circleci.ehrbase.org"
         type: string
-      
+
       allow-template-overwrite:
         description:  Sets EHRbase's cli option `--system.allow-template-overwrite=true`
         default: true
@@ -1248,6 +1449,7 @@ commands:
       # - cache-out-python-requirements
       - install-maven
       - install-python3-requirements
+      - install-xml-cli-tool
       # - run: jps
       # - run:
       #     name: Wait until EHRbase server is ready
@@ -1263,7 +1465,8 @@ commands:
             echo "OAUTH_RESRCSERVER_URL: $SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI"
             ls -la
             if [ "${SUT}" != "TEST" ]; then
-              EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            
+              EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
               echo ${EHRbase_VERSION}
               java -jar "application/target/application-${EHRbase_VERSION}.jar" \
                    --system.allow-template-overwrite=<< parameters.allow-template-overwrite >> \
@@ -1324,13 +1527,13 @@ commands:
     description: Persist Robot tests folder to workspace
     parameters:
       suite-results-folder-name:
-        description: Titel of generated Robot Outputs
+        description: Title of generated Robot Outputs
         type: string
     steps:
       - run:
           name: PERSIST ROBOT TEST RESULTS
           when: always
-          command: echo "persist test results"
+          command: echo "persist test results & requirements.txt file"
       - persist_to_workspace:
           root: /home/circleci
           paths:
@@ -1343,14 +1546,13 @@ commands:
       - attach_workspace:
           at: /home/circleci/
 
-          
+
   merge-robot-outputs:
     description: Merge Robot Results from Parallel Tests
     steps:
       - run:
           command: |
-            cd tests
-            pip install -r requirements.txt
+            pip install -r ~/projects/tests/requirements.txt
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
@@ -1389,7 +1591,11 @@ commands:
           path: ~/projects/tests/results/
 
 
-
+  persist-robot-requirements-file:
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths: projects/tests/requirements.txt
 
 
   # ///////////////////////////////////////////////////////////////////////////
@@ -1404,6 +1610,39 @@ commands:
             git clone git@github.com:ehrbase/openEHR_SDK.git
             ls -la
   
+  git-clone-robot-integration-tests-repo:
+    steps:
+      - run:
+          name: CLONE ROBOT INTEGRATION TESTS REPO
+          command: |
+            pwd
+            ls -la
+            integration_folder=/home/circleci/projects/integration-tests
+            if [ -d "$integration_folder" ]; then
+              echo "'$integration_folder' found! Skipping clone repo to path '$integration_folder'"
+            else
+              echo "'$integration_folder' not found! Cloning external repo in progress ..."
+              git clone git@github.com:ehrbase/integration-tests.git
+              ls -la
+            fi
+
+  move-integration-tests-content-to-local-tests-folder:
+    steps:
+      - run:
+          name: MOVE INTEGRATION TESTS CONTENT TO LOCAL PROJECT TESTS FOLDER
+          command: |
+            pwd
+            robot_folder_path=/home/circleci/projects/tests/robot/
+            if [ -d "robot_folder_path" ]; then
+              echo "Tests folder from root project contains robot folder"
+              ls -la /home/circleci/projects/tests/robot/
+            else
+              echo "Moving files and folders to root project, tests folder ..."
+              mv -v /home/circleci/projects/integration-tests/tests/* /home/circleci/projects/tests/
+              ls -la /home/circleci/projects/tests/
+              echo "-------------------"
+              ls -la /home/circleci/projects/tests/robot/
+            fi
 
   git-checkout-sdk-sync-branch:
     steps:
@@ -1417,32 +1656,35 @@ commands:
 
   maven-install-sdk:
     steps:
+      - install-xml-cli-tool
       - run:
           name: Save the version number of locally installed SDK into a file
           command: |
             cd ~/projects/openEHR_SDK
-            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL$(cat /proc/sys/kernel/random/uuid) versions:commit
-            SDK_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            mvn build-helper:parse-version versions:set -DnewVersion=\${project.version}-LOCAL$(cat /proc/sys/kernel/random/uuid) -DprocessAllModules=true versions:commit
+                      
+            SDK_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo $SDK_VERSION > SDK_VERSION
             cat SDK_VERSION
       - run:
           name: INSTALL SDK
           command: |
             cd ~/projects/openEHR_SDK
-            mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
-
+              mvn install -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dmaven.test.skip
+  
 
   start-ehrbase-and-run-java-integration-sdk-tests:
     description: |
       Starts ehrbase server and runs maven test phase using 'slow' profile defined in parent pom.xml
       This way only the Java integration tests are executed.
     steps:
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and run SDK's java integration tests
           command: |
             ls -la
             cd ~/projects
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo ${EHRbase_VERSION}
             java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir'> log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
@@ -1458,11 +1700,13 @@ commands:
       This requires EHRbase + DB to be running during test execution.
     steps:
       - install-maven
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and run all test of SDK
           command: |
             ls -la
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+            
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
             java -javaagent:/home/circleci/jacoco/lib/jacocoagent.jar=output=tcpserver,address=127.0.0.1 \
@@ -1490,7 +1734,7 @@ commands:
           paths:
             - projects/test-coverage/target/jacoco-sdk-it-coverage.exec
 
-  
+
   generate-sdk-it-coverage-report:
     description: Generates human readable reports from jacoco-sdk-it-coverage.exec
     steps:
@@ -1579,7 +1823,7 @@ commands:
             find ~/projects/openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/sdk-test-results/unit-tests/ \;
             find ~/projects/openEHR_SDK/ -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/sdk-test-results/unit-tests/ \;
           when: always
-  
+
 
   collect-sdk-integrationtest-results:
     steps:
@@ -1591,7 +1835,7 @@ commands:
             find ~/projects/openEHR_SDK/ -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/sdk-test-results/integration-tests/ \;
           when: always
 
-    
+
   save-sdk-test-results:
     steps:
       - store_test_results:
@@ -1616,12 +1860,12 @@ commands:
             SDK_VERSION=$(cat ~/projects/openEHR_SDK/SDK_VERSION)
             echo $SDK_VERSION
             # cd ~/projects
-            xmlstarlet edit --inplace -u /_:project/_:properties/_:ehrbase.sdk.version -v $SDK_VERSION pom.xml
+            xmlstarlet edit --inplace -u /_:project/_:properties/_:ehrbase.sdk.version -v $SDK_VERSION bom/pom.xml
       - run:
           name: Show EHRbase's pom
-          command: cat pom.xml
+          command: cat bom/pom.xml
 
-            
+
   build-and-test-ehrbase:
     steps:
       # - install-maven
@@ -1635,12 +1879,14 @@ commands:
   start-ehrbase-server:
     steps:
       - install-maven
+      - install-xml-cli-tool
       - run:
           name: Start EHRbase server and wait for it to be ready
           background: true
           command: |
             ls -la
-            EHRbase_VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+                
+            EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml  )
             echo ${EHRbase_VERSION}
             java -jar application/target/application-${EHRbase_VERSION}.jar --cache.enabled=true --plugin-manager.enable=true --plugin-manager.plugin-dir='tests/test_plugin' --plugin-manager.plugin-config-dir='tests/test_plugin_config_dir' > log &
             grep -m 1 "Started EhrBase in" <(tail -f log)
@@ -1679,12 +1925,11 @@ commands:
             - projects/test-coverage/target
             - projects/tests/requirements.txt
 
- 
+
   restore-workspace:
     steps:
       - attach_workspace:
           at: /home/circleci/
-
 
   save-openehr-sdk-repo:
     steps:
@@ -1692,7 +1937,7 @@ commands:
           root: /home/circleci
           paths:
             - projects/openEHR_SDK
-            
+
 
   collect-ehrbase-unittest-results:
     steps:
@@ -1712,7 +1957,7 @@ commands:
       - store_artifacts:
           path: ~/ehrbase-test-results
 
-  
+
   # WARNING: don't use these two steps in production
   #          use them for pipeline debugging only!
   cache-in-ehrbase-workspace:
@@ -1765,17 +2010,17 @@ commands:
             rm -f /tmp/openjdk-11.tar.gz
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
             sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
-  
+
   install-maven:
     description: Install Maven tool only if it's not already installed
     steps:
-      - run: 
+      - run:
           name: Install Maven tool
           command: |
             sudo killall -9 apt-get || true
             sudo apt -y update
             [ -f /usr/bin/mvn ] && echo "Maven is already installed." || sudo apt install maven -y
-  
+
   install-and-configure-keycloak:
     description: Setups a Keycloak Docker instance and restores a previously exportd configuration.
     steps:
@@ -1839,6 +2084,8 @@ commands:
       - run:
           name: Install Python requirements
           command: |
+            pwd
+            ls -la
             python -c "import site; print(site.getsitepackages())"
             pip install -r ~/projects/tests/requirements.txt
 
@@ -1964,6 +2211,14 @@ commands:
           command: |
             cd ~/projects
             mvn package -U    # -DskipTests
+  maven-check-codestyle:
+    description: Run spotless plugin check goal
+    steps:
+      - run:
+          name: Run spotless plugin check goal
+          command: |
+            cd ~/projects
+            mvn com.diffplug.spotless:spotless-maven-plugin:check
 
 
 
@@ -2206,6 +2461,29 @@ executors:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           PGDATA: /tmp
+
+  docker-mock-server:
+    working_directory: ~/projects
+    docker:
+      - image: circleci/python:3.8.5-node-browsers
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+      - image: ehrbase/ehrbase-postgres:13.4
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          PGDATA: /tmp
+      - image: mockserver/mockserver:5.13.2
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_HUB_PASSWORD
+        environment:
+          MOCKSERVER_SERVER_PORT: 1080
+          MOCKSERVER_LOG_LEVEL: DEBUG
 
   docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin:
     working_directory: ~/projects
@@ -2595,7 +2873,7 @@ executors:
 #       - store_artifacts:
 #           path: ~/projects/tests/results/
 
-# ## Nightly builds example 
+# ## Nightly builds example
 # workflows:
 #   version: 2
 #   nightly:

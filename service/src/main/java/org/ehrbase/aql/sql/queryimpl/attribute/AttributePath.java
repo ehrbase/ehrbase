@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,10 +29,10 @@ public class AttributePath {
      * return the path without the root part
      * @return
      */
-    public String redux(String path){
+    public String redux(String path) {
 
-        if (path.equals(rootPath)) return ""; //empty non null path to resolve (partial path for canonical result)
+        if (path.equals(rootPath)) return ""; // empty non null path to resolve (partial path for canonical result)
 
-        return path.substring(rootPath.length()+1); //skip trailing '/'
+        return path.substring(rootPath.length() + 1); // skip trailing '/'
     }
 }

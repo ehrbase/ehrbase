@@ -28,12 +28,17 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.21.0-SNAPSHOT</version>
+        <version>0.22.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jooq-pg</artifactId>
 
     <name>jooq-pq</name>
+
+
+    <properties>
+        <license-header.dir>../</license-header.dir>
+    </properties>
 
     <dependencies>
         <!-- Generation of the DB  -->
