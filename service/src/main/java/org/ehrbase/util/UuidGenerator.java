@@ -76,7 +76,7 @@ public class UuidGenerator {
         long lsb = 0;
         int i = pos;
         for (int m = i + 8; i < m; i++) msb = (msb << 8) | (data[i] & 0xff);
-        for (int m = i + 8; i < 8; i++) lsb = (lsb << 8) | (data[i] & 0xff);
+        for (int m = i + 8; i < m; i++) lsb = (lsb << 8) | (data[i] & 0xff);
 
         return new UUID(msb, lsb);
     }
