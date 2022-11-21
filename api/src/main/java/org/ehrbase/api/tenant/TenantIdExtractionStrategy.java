@@ -25,4 +25,8 @@ public interface TenantIdExtractionStrategy<T> {
     public boolean accept(Object... args);
 
     public Optional<TenantAuthentication<T>> extract(Object... args);
+    
+    public default Optional<TenantAuthentication<T>> extractWithPrior(Optional<TenantAuthentication<?>>priorAuthentication, Object... args) {
+      return extract(args);
+    }
 }
