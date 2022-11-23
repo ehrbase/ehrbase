@@ -175,8 +175,8 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
 
             try {
                 IterativeNode iterativeNode = new IterativeNode(domainAccess, templateId, introspectCache);
-                Integer[] pos = iterativeNode.iterativeAt(itemPathArray);
-                itemPathArray = iterativeNode.clipInIterativeMarker(itemPathArray, pos);
+
+                itemPathArray = iterativeNode.insertIterativeMarkers(itemPathArray);
                 if (clause.equals(Clause.WHERE)) setReturningFunctionInWhere = true;
             } catch (Exception e) {
                 // do nothing
