@@ -25,6 +25,7 @@ import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 public class BaseServiceImp implements BaseService {
 
@@ -40,6 +41,7 @@ public class BaseServiceImp implements BaseService {
     @Autowired
     private IAuthenticationFacade authenticationFacade;
 
+    @Lazy
     @Autowired
     private UserService userService;
 

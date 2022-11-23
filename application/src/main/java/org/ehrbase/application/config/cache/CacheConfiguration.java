@@ -21,7 +21,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 import org.ehrbase.cache.CacheOptions;
 import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -49,7 +49,8 @@ public class CacheConfiguration {
     }
 
     @Bean
-    @ConditionalOnBean(CaffeineCacheManager.class)
+    @ConditionalOnExpression(
+            "T(org.springframework.boot.autoconfigure.cache.CacheType).CAFFEINE.name().equalsIgnoreCase(\"${spring.cache.type}\")")
     public CacheManagerCustomizer<CaffeineCacheManager> cacheManagerCustomizer() {
         return cm -> {
             cm.registerCustomCache(
