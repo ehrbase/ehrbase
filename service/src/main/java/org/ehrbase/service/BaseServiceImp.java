@@ -38,12 +38,9 @@ public class BaseServiceImp implements BaseService {
 
     private UUID systemId;
 
-    @Autowired
-    private IAuthenticationFacade authenticationFacade;
-
     @Lazy
     @Autowired
-    private UserService userService;
+    private IUserService userService;
 
     public BaseServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
         this.knowledgeCacheService = knowledgeCacheService;

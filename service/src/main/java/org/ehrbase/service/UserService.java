@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
 @Service
 // This service is not @Transactional since we only want to get DB connections when we really need to and an already
 // running transaction is propagated anyway
-public class UserService {
+public class UserService implements IUserService {
     private final IAuthenticationFacade authenticationFacade;
     private final TenantService tenantService;
     private final I_DomainAccess dataAccess;
@@ -60,9 +60,11 @@ public class UserService {
     /**
      * Get default user UUID, derived from authenticated user via Spring Security.<br> Internally
      * checks and retrieves the matching user UUID, if it already exists with given info.
+     * This operation is tenant aware.
      *
      * @return UUID of default user, derived from authenticated user.
      */
+    @Override
     public UUID getCurrentUserId() {
         CacheKey<String> key = CacheKey.of(
                 authenticationFacade.getAuthentication().getName(), tenantService.getCurrentTenantIdentifier());
