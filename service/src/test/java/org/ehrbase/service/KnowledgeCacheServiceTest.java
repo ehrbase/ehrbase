@@ -22,7 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.io.IOUtils;
+import org.ehrbase.api.service.TenantService;
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -33,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 
 /**
@@ -49,7 +51,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testListAllOperationalTemplates() throws Exception {
         KnowledgeCacheService cut = buildKnowledgeCache(testFolder, cacheRule);
-        cut.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+        cut.addOperationalTemplate(
+                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
         List<TemplateMetaData> templateMetaData = cut.listAllOperationalTemplates();
         assertThat(templateMetaData).size().isEqualTo(1);
     }
@@ -57,7 +60,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testRetrieveVisitorByTemplateId() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+        knowledge.addOperationalTemplate(
+                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
 
         assertThat(knowledge.getQueryOptMetaData("IDCR - Immunisation summary.v0"))
                 .isNotNull();
@@ -66,7 +70,8 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void testNonUniqueAqlPathsTemplateId() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.NON_UNIQUE_AQL_PATH.getStream()));
+        knowledge.addOperationalTemplate(
+                TemplateTestData.NON_UNIQUE_AQL_PATH.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
         // a node with two paths
         NodeId nodeId = new NodeId("ACTION", "openEHR-EHR-ACTION.procedure.v1");
         List<NodeId> nodeIds = new ArrayList<>();
@@ -81,7 +86,7 @@ public class KnowledgeCacheServiceTest {
     public void testQueryType() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
         knowledge.addOperationalTemplate(
-                IOUtils.toByteArray(OperationalTemplateTestData.IDCR_PROBLEM_LIST.getStream()));
+                OperationalTemplateTestData.IDCR_PROBLEM_LIST.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
 
         assertThat(knowledge
                         .getInfo(
@@ -95,7 +100,7 @@ public class KnowledgeCacheServiceTest {
     public void testQueryType2() throws Exception {
         KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
         knowledge.addOperationalTemplate(
-                IOUtils.toByteArray(OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getStream()));
+                OperationalTemplateTestData.BLOOD_PRESSURE_SIMPLE.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
 
         assertThat(knowledge
                         .getInfo(
@@ -108,56 +113,11 @@ public class KnowledgeCacheServiceTest {
     @Test
     public void unsupportedTemplate() throws Exception {
         var knowledgeCacheService = buildKnowledgeCache(testFolder, cacheRule);
-        var content = IOUtils.toByteArray(TemplateTestData.CLINICAL_CONTENT_VALIDATION.getStream());
+        var content = TemplateTestData.CLINICAL_CONTENT_VALIDATION.getStream();
 
         Assertions.assertThrows(
-                IllegalArgumentException.class, () -> knowledgeCacheService.addOperationalTemplate(content));
-    }
-
-    @Test
-    public void testListAllOperationalTemplates2() throws Exception {
-        KnowledgeCacheService knowledge = buildKnowledgeCache(testFolder, cacheRule);
-        knowledge.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.ANAMNESE.getStream()));
-
-        // a node requiring full node/name qualification
-        NodeId nodeId = new NodeId("OBSERVATION", "openEHR-EHR-OBSERVATION.blood_pressure.v2");
-        List<NodeId> nodeIds = new ArrayList<>();
-        nodeIds.add(nodeId);
-
-        // resolve
-        JsonPathQueryResult jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
-        assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString())
-                .contains("and name/value='Blutdruck nach 5 Minuten Ruhe'");
-
-        nodeId = new NodeId("OBSERVATION", "openEHR-EHR-OBSERVATION.height.v2");
-        nodeIds = new ArrayList<>();
-        nodeIds.add(nodeId);
-
-        jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
-        assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString()).doesNotContain("and name/value=");
-
-        nodeId = new NodeId("SECTION", "openEHR-EHR-SECTION.adhoc.v1");
-        nodeIds = new ArrayList<>();
-        nodeIds.add(nodeId);
-
-        jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
-        assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString()).contains("and name/value=");
-
-        nodeIds = new ArrayList<>();
-        nodeId = new NodeId("SECTION", "openEHR-EHR-SECTION.adhoc.v1");
-        nodeIds.add(nodeId);
-        nodeIds.add(nodeId); // sections in section!
-
-        jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
-        assertThat(jsonPathQueryResult.getAqlPath().toArray()[0].toString()).contains("and name/value=");
-
-        NodeId evalNode = new NodeId("EVALUATION", "openEHR-EHR-EVALUATION.problem_diagnosis.v1");
-        nodeIds.add(nodeId);
-        nodeIds.add(nodeId);
-        nodeIds.add(evalNode);
-
-        jsonPathQueryResult = knowledge.resolveForTemplate("Anamnese", nodeIds);
-        assertThat(jsonPathQueryResult.getAqlPath().toArray().length).isEqualTo(25);
+                IllegalArgumentException.class,
+                () -> knowledgeCacheService.addOperationalTemplate(content, TenantAuthentication.DEFAULT_TENANT_ID));
     }
 
     public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule)
@@ -168,7 +128,10 @@ public class KnowledgeCacheServiceTest {
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
+        TenantService tenantService = Mockito.mock(TenantService.class);
+        Mockito.when(tenantService.getCurrentTenantIdentifier()).thenReturn(TenantAuthentication.DEFAULT_TENANT_ID);
+
         return new KnowledgeCacheService(
-                templateFileStorageService, new ConcurrentMapCacheManager(), new CacheOptions());
+                templateFileStorageService, new ConcurrentMapCacheManager(), new CacheOptions(), tenantService);
     }
 }
