@@ -146,18 +146,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache webTemplateCache;
     private final Cache fieldCache;
     private final Cache multivaluedCache;
-
     private final TenantService tenantService;
 
     // index val to val
     private final Map<CacheKey<UUID>, String> idxCacheUuidToTemplateId = new ConcurrentHashMap<>();
     // index val to val
     private final Map<String, CacheKey<UUID>> idxCacheTemplateIdToUuid = new ConcurrentHashMap<>();
-
-    //    private final Map<UUID, ConceptValue> conceptById = new HashMap<>();
-    //    private final Map<Pair<Integer, String>, ConceptValue> conceptByConceptId = new HashMap<>();
-    //    private final Map<Pair<String, String>, ConceptValue> conceptByDescription = new HashMap<>();
-
     private final Cache /*<UUID, ConceptValue>*/ conceptById;
     private final Cache /*<Pair<Integer, String>, ConceptValue>*/ conceptByConceptId;
     private final Cache /*<Pair<String, String>, ConceptValue>*/ conceptByDescription;
@@ -435,9 +429,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public WebTemplate getQueryOptMetaData(UUID uuid) {
         CacheKey<UUID> ck = CacheKey.of(uuid, tenantService.getCurrentTenantIdentifier());
-        WebTemplate retval = webTemplateCache.get(ck, WebTemplate.class);
-        if (retval == null) return buildAndCacheQueryOptMetaData(uuid);
-        return retval;
+        return webTemplateCache.get(ck, () -> buildQueryOptMetaData(uuid));
     }
 
     @Override
@@ -445,36 +437,30 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return getQueryOptMetaData(findUuidByTemplateId(templateId));
     }
 
-    private WebTemplate buildAndCacheQueryOptMetaData(UUID uuid) {
-        WebTemplate retval;
-        Optional<OPERATIONALTEMPLATE> operationaltemplate = Optional.empty();
+    private WebTemplate buildQueryOptMetaData(UUID uuid) {
+        Optional<OPERATIONALTEMPLATE> operationaltemplate;
 
         try {
             operationaltemplate = retrieveOperationalTemplate(uuid);
         } catch (Exception e) {
             log.warn(e.getMessage(), e);
+            operationaltemplate = Optional.empty();
         }
 
-        if (operationaltemplate.isPresent()) return buildAndCacheQueryOptMetaData(operationaltemplate.get());
-        else
-            throw new IllegalArgumentException(
-                    "Could not retrieve  knowledgeCacheService.getKnowledgeCache() cache for template Uid:" + uuid);
+        return operationaltemplate
+                .map(this::buildQueryOptMetaData)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Could not retrieve  knowledgeCacheService.getKnowledgeCache() cache for template Uid:"
+                                + uuid));
     }
 
-    private WebTemplate buildAndCacheQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
+    private WebTemplate buildQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
         log.info("Updating WebTemplate cache for template: {}", TemplateUtils.getTemplateId(operationaltemplate));
-
-        final WebTemplate visitor;
         try {
-            visitor = new OPTParser(operationaltemplate).parse();
+            return new OPTParser(operationaltemplate).parse();
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
-
-        webTemplateCache.put(
-                CacheKey.of(TemplateUtils.getUid(operationaltemplate), tenantService.getCurrentTenantIdentifier()),
-                visitor);
-        return visitor;
     }
 
     /**
@@ -512,88 +498,88 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> nodeIds) {
-        String tenantId = tenantService.getCurrentTenantIdentifier();
-        Triple<String, String, Collection<NodeId>> key = Triple.of(templateId, tenantId, nodeIds);
+        Triple<String, String, Collection<NodeId>> key =
+                Triple.of(templateId, tenantService.getCurrentTenantIdentifier(), nodeIds);
+        JsonPathQueryResult jsonPathQueryResult =
+                jsonPathQueryResultCache.get(key, () -> createJsonPathQueryResult(key));
 
-        JsonPathQueryResult jsonPathQueryResult = jsonPathQueryResultCache.get(key, JsonPathQueryResult.class);
+        return jsonPathQueryResult.getTemplateId() != null ? jsonPathQueryResult : null;
+    }
 
-        if (jsonPathQueryResult == null) {
-            WebTemplate webTemplate = getQueryOptMetaData(templateId);
-            List<WebTemplateNode> webTemplateNodeList = new ArrayList<>();
-            webTemplateNodeList.add(webTemplate.getTree());
+    private JsonPathQueryResult createJsonPathQueryResult(Triple<String, String, Collection<NodeId>> key) {
+        JsonPathQueryResult jsonPathQueryResult;
+        WebTemplate webTemplate = getQueryOptMetaData(key.getLeft());
+        List<WebTemplateNode> webTemplateNodeList = new ArrayList<>();
+        webTemplateNodeList.add(webTemplate.getTree());
 
-            for (NodeId nodeId : nodeIds) {
-                webTemplateNodeList = webTemplateNodeList.stream()
-                        .map(n -> n.findMatching(f -> {
-                            if (f.getNodeId() == null) return false;
-                            // compere only classname
-                            else if (nodeId.getNodeId() == null)
-                                return nodeId.getClassName().equals(new NodeId(f.getNodeId()).getClassName());
-                            else return nodeId.equals(new NodeId(f.getNodeId()));
-                        }))
-                        .flatMap(List::stream)
-                        .collect(Collectors.toList());
-            }
-
-            Set<String> uniquePaths = new TreeSet<>();
-            webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
-
-            if (!uniquePaths.isEmpty()) jsonPathQueryResult = new JsonPathQueryResult(templateId, uniquePaths);
-            else {
-                // dummy result since null can not be path of a cache
-                jsonPathQueryResult = new JsonPathQueryResult(null, Collections.emptyMap());
-            }
-
-            jsonPathQueryResultCache.put(key, jsonPathQueryResult);
+        for (NodeId nodeId : key.getRight()) {
+            webTemplateNodeList = webTemplateNodeList.stream()
+                    .map(n -> n.findMatching(f -> {
+                        if (f.getNodeId() == null) return false;
+                        // compere only classname
+                        else if (nodeId.getNodeId() == null)
+                            return nodeId.getClassName().equals(new NodeId(f.getNodeId()).getClassName());
+                        else return nodeId.equals(new NodeId(f.getNodeId()));
+                    }))
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
         }
 
-        if (jsonPathQueryResult.getTemplateId() != null) return jsonPathQueryResult;
-        else /*Is dummy result*/ return null;
+        Set<String> uniquePaths = new TreeSet<>();
+        webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
+
+        if (!uniquePaths.isEmpty()) {
+            jsonPathQueryResult = new JsonPathQueryResult(key.getLeft(), uniquePaths);
+        } else {
+            // dummy result since null can not be path of a cache
+            jsonPathQueryResult = new JsonPathQueryResult(null, Collections.emptyMap());
+        }
+        return jsonPathQueryResult;
     }
 
     @Override
     public ItemInfo getInfo(String templateId, String aql) {
         TemplateIdAqlTuple key = new TemplateIdAqlTuple(templateId, aql, tenantService.getCurrentTenantIdentifier());
-        return getCached(key, ItemInfo.class, fieldCache, k -> {
-            WebTemplate webTemplate = getQueryOptMetaData(key.getTemplateId());
-            String keyAql = key.getAql();
-            Optional<WebTemplateNode> node = webTemplate.findByAqlPath(keyAql);
-            final String type;
-            if (node.isEmpty()) {
-                type = null;
-            } else if (node.get().getRmType().equals(ELEMENT)) {
-                // for element unwrap
-                type = node.get().getChildren().get(0).getRmType();
-            } else {
-                type = node.get().getRmType();
-            }
-            String category;
+        return fieldCache.get(key, () -> createItemInfo(key));
+    }
 
-            if (node.isEmpty()) {
-                category = null;
-            } else if (keyAql.endsWith("/value")) {
-                // for element unwrap
-                category = webTemplate
-                        .findByAqlPath(keyAql.replace("/value", ""))
-                        .filter(n -> n.getRmType().equals(ELEMENT))
-                        .map(n -> ELEMENT)
-                        .orElse("DATA_STRUCTURE");
-            } else {
-                category = "DATA_STRUCTURE";
-            }
+    private ItemInfo createItemInfo(TemplateIdAqlTuple key) {
+        WebTemplate webTemplate = getQueryOptMetaData(key.getTemplateId());
+        String keyAql = key.getAql();
+        Optional<WebTemplateNode> node = webTemplate.findByAqlPath(keyAql);
+        final String type;
+        if (node.isEmpty()) {
+            type = null;
+        } else if (node.get().getRmType().equals(ELEMENT)) {
+            // for element unwrap
+            type = node.get().getChildren().get(0).getRmType();
+        } else {
+            type = node.get().getRmType();
+        }
+        String category;
 
-            return new ItemInfo(type, category);
-        });
+        if (node.isEmpty()) {
+            category = null;
+        } else if (keyAql.endsWith("/value")) {
+            // for element unwrap
+            category = webTemplate
+                    .findByAqlPath(keyAql.replace("/value", ""))
+                    .filter(n -> n.getRmType().equals(ELEMENT))
+                    .map(n -> ELEMENT)
+                    .orElse("DATA_STRUCTURE");
+        } else {
+            category = "DATA_STRUCTURE";
+        }
+
+        return new ItemInfo(type, category);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<String> multiValued(String templateId) {
-        return getCached(
+        return multivaluedCache.get(
                 CacheKey.of(templateId, tenantService.getCurrentTenantIdentifier()),
-                List.class,
-                multivaluedCache,
-                tid -> getQueryOptMetaData(tid.getVal()).multiValued().stream()
+                () -> getQueryOptMetaData(templateId).multiValued().stream()
                         .map(webTemplateNode -> webTemplateNode.getAqlPath(false))
                         .collect(Collectors.toList()));
     }
@@ -670,23 +656,14 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         conceptByDescription.put(Pair.of(concept.getDescription(), concept.getLanguage()), concept);
     }
 
-    private static <K, V> V getCached(K key, Class<V> valueType, Cache cache, Function<K, V> provider) {
-        V value = cache.get(key, valueType);
-        if (value == null) {
-            value = provider.apply(key);
-            cache.put(key, value);
-        }
-        return value;
-    }
-
     @Override
     public TerritoryValue getTerritoryCodeByTwoLetterCode(
             String territoryAsString, Function<String, TerritoryValue> provider) {
-        return getCached(territoryAsString, TerritoryValue.class, territoryCache, provider);
+        return territoryCache.get(territoryAsString, () -> provider.apply(territoryAsString));
     }
 
     @Override
     public LanguageValue getLanguageByCode(String languageCode, Function<String, LanguageValue> provider) {
-        return getCached(languageCode, LanguageValue.class, languageCache, provider);
+        return languageCache.get(languageCode, () -> provider.apply(languageCode));
     }
 }

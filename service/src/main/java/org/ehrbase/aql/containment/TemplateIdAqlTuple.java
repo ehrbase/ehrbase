@@ -50,11 +50,13 @@ public class TemplateIdAqlTuple implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TemplateIdAqlTuple that = (TemplateIdAqlTuple) o;
-        return templateId.equals(that.templateId) && aql.equals(that.aql);
+        return templateId.equals(that.templateId)
+                && tenantIdentifier.equals(that.tenantIdentifier)
+                && aql.equals(that.aql);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(templateId, aql);
+        return Objects.hash(templateId, aql, tenantIdentifier);
     }
 }
