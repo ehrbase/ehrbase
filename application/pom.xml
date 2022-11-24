@@ -115,13 +115,13 @@
             <artifactId>springdoc-openapi-ui</artifactId>
         </dependency>
 
-        <!-- ################################################################# -->
+        <!-- 
         <dependency>
             <groupId>org.ehrbase</groupId>
             <artifactId>authorization</artifactId>
             <version>1.0</version>
         </dependency>
-        <!-- ################################################################# -->
+        -->
 
         <dependency>
             <groupId>net.bull.javamelody</groupId>
@@ -137,13 +137,7 @@
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-client</artifactId>
-            <scope>test</scope>
-        </dependency>
--->
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
