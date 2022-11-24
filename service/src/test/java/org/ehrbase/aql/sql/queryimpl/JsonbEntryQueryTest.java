@@ -46,7 +46,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
 
         PathResolver pathResolver = new PathResolver(knowledge, contains.getIdentifierMapper());
-        cut = new JsonbEntryQuery(this.testDomainAccess, knowledge, pathResolver);
+        cut = new JsonbEntryQuery(testDomainAccess, knowledge, pathResolver);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
 
         PathResolver pathResolver = new PathResolver(knowledge, contains.getIdentifierMapper());
 
-        JsonbEntryQuery cut = new JsonbEntryQuery(this.testDomainAccess, knowledge, pathResolver);
+        JsonbEntryQuery cut = new JsonbEntryQuery(testDomainAccess, knowledge, pathResolver);
 
         // CCH 191016: EHR-163 required trailing '/value' as now the query allows canonical json return
         Field<?> actual = cut.makeField(
@@ -77,14 +77,18 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         assertThat(selectQuery.getQuery().toString())
                 .isEqualToIgnoringWhitespace(
                         "select (" + QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION
-                                + "((\"ehr\".\"entry\".\"entry\"#>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \"test\"");
+                                + "((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \"test\"");
+
+        // NB. the remaining part (#>>'{/description[at0001],/items[at0002],0,/value,value}') is not in the query since
+        // this used as a lateral join
+
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 
     @Test
     public void testMakeFieldWithNodeNamePredicate1() throws Exception {
         Field<?> actual = cut.makeField(
-                        "minimal_instruction.en.v1",
+                        "ehrbase_blood_pressure_simple.de.v0",
                         "c",
                         I_VariableDefinitionHelper.build(
                                 "content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
@@ -100,14 +104,14 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString())
                 .isEqualToIgnoringWhitespace(
-                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'Blood pressure (Training sample)','/composition[openEHR-EHR-COMPOSITION.minimal.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]')#>>'{/data[at0001],/events,/events[at0002],0,/data[at0003],/items[at0004],0,/value,magnitude}' as numeric) \"test\"");
+                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'Blood pressure (Training sample)','/composition[openEHR-EHR-COMPOSITION.sample_encounter.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]')#>>'{/data[at0001],/events,/events[at0002],0,/data[at0003],/items[at0004],0,/value,magnitude}' as numeric) \"test\"");
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 
     @Test
     public void testMakeFieldWithNodeNamePredicate2() throws Exception {
         Field<?> actual = cut.makeField(
-                        "minimal_instruction.en.v1",
+                        "ehrbase_blood_pressure_simple.de.v0",
                         "c",
                         I_VariableDefinitionHelper.build(
                                 "content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
@@ -123,14 +127,14 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString())
                 .isEqualToIgnoringWhitespace(
-                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\", 'Systolic','/composition[openEHR-EHR-COMPOSITION.minimal.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1],0,/data[at0001],/events,/events[at0002],0,/data[at0003],/items[at0004]')#>>'{/value,magnitude}' as numeric) \"test\"");
+                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\", 'Systolic','/composition[openEHR-EHR-COMPOSITION.sample_encounter.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1],0,/data[at0001],/events,/events[at0002],0,/data[at0003],/items[at0004]')#>>'{/value,magnitude}' as numeric) \"test\"");
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 
     @Test
     public void testMakeFieldWithNodeNamePredicate3() throws Exception {
         Field<?> actual = cut.makeField(
-                        "minimal_instruction.en.v1",
+                        "ehrbase_blood_pressure_simple.de.v0",
                         "c",
                         I_VariableDefinitionHelper.build(
                                 "content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001]/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
@@ -146,14 +150,14 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString())
                 .isEqualToIgnoringWhitespace(
-                        "select cast(ehr.aql_node_name_predicate((ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'Blood pressure (Training sample)','/composition[openEHR-EHR-COMPOSITION.minimal.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]')#>'{/data[at0001],/events,/events[at0002],0,/data[at0003],/items[at0004]}')::jsonb, 'Systolic','')#>>'{/value,magnitude}' as numeric) \"test\"");
+                        "select cast(ehr.aql_node_name_predicate((ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'Blood pressure (Training sample)','/composition[openEHR-EHR-COMPOSITION.sample_encounter.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]')#>'{/data[at0001],/events,/events[at0002],0,/data[at0003],/items[at0004]}')::jsonb,'Systolic','')#>>'{/value,magnitude}' as numeric) \"test\"");
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 
     @Test
     public void testMakeFieldWithNodeNamePredicate4() throws Exception {
         Field<?> actual = cut.makeField(
-                        "minimal_instruction.en.v1",
+                        "ehrbase_blood_pressure_simple.de.v0",
                         "c",
                         I_VariableDefinitionHelper.build(
                                 "content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1,'Blood pressure (Training sample)']/data[at0001, 'history']/events[at0002]/data[at0003]/items[at0004, 'Systolic']/value/magnitude",
@@ -169,14 +173,14 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString())
                 .isEqualToIgnoringWhitespace(
-                        "select cast(ehr.aql_node_name_predicate((ehr.aql_node_name_predicate((ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'Blood pressure (Training sample)','/composition[openEHR-EHR-COMPOSITION.minimal.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]')#>'{/data[at0001]}')::jsonb, 'history','')#>'{/events,/events[at0002],0,/data[at0003],/items[at0004]}')::jsonb, 'Systolic','')#>>'{/value,magnitude}' as numeric) \"test\"");
+                        "select cast(ehr.aql_node_name_predicate((ehr.aql_node_name_predicate((ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'Blood pressure (Training sample)','/composition[openEHR-EHR-COMPOSITION.sample_encounter.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]')#>'{/data[at0001]}')::jsonb,'history','')#>'{/events,/events[at0002],0,/data[at0003],/items[at0004]}')::jsonb,'Systolic','')#>>'{/value,magnitude}' as numeric) \"test\"");
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 
     @Test
     public void testMakeFieldWithNodeNamePredicate5() throws Exception {
         Field<?> actual = cut.makeField(
-                        "minimal_instruction.en.v1",
+                        "ehrbase_blood_pressure_simple.de.v0",
                         "c",
                         I_VariableDefinitionHelper.build(
                                 "content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001, 'history']/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
@@ -192,7 +196,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString())
                 .isEqualToIgnoringWhitespace(
-                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\", 'history','/composition[openEHR-EHR-COMPOSITION.minimal.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1],0,/data[at0001]')#>>'{/events,/events[at0002],0,/data[at0003],/items[at0004],0,/value,magnitude}' as numeric) \"test\"");
+                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\", 'history','/composition[openEHR-EHR-COMPOSITION.sample_encounter.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1],0,/data[at0001]')#>>'{/events,/events[at0002],0,/data[at0003],/items[at0004],0,/value,magnitude}' as numeric) \"test\"");
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 
@@ -200,7 +204,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
     public void testMakeFieldWithNodeNamePredicate6() throws Exception {
 
         Field<?> actual = cut.makeField(
-                        "minimal_instruction.en.v1",
+                        "ehrbase_blood_pressure_simple.de.v0",
                         "c",
                         I_VariableDefinitionHelper.build(
                                 "content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001 and name/value='history']/events[at0002]/data[at0003]/items[at0004]/value/magnitude",
@@ -216,7 +220,7 @@ public class JsonbEntryQueryTest extends TestAqlBase {
         SelectSelectStep<? extends Record1<?>> selectQuery = DSL.select(actual);
         assertThat(selectQuery.getQuery().toString())
                 .isEqualToIgnoringWhitespace(
-                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'history','/composition[openEHR-EHR-COMPOSITION.minimal.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1],0,/data[at0001]')#>>'{/events,/events[at0002],0,/data[at0003],/items[at0004],0,/value,magnitude}' as numeric) \"test\"");
+                        "select cast(ehr.aql_node_name_predicate(\"ehr\".\"entry\".\"entry\",'history','/composition[openEHR-EHR-COMPOSITION.sample_encounter.v1],/content[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1],0,/data[at0001]')#>>'{/events,/events[at0002],0,/data[at0003],/items[at0004],0,/value,magnitude}' as numeric) \"test\"");
         assertThat(actual.toString()).hasToString("\"test\"");
     }
 }

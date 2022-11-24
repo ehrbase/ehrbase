@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -17,24 +17,9 @@
  */
 package org.ehrbase.aql.sql.queryimpl;
 
-import org.ehrbase.aql.definition.I_VariableDefinition;
+public class UnknownVariableException extends Exception {
 
-/**
- * Created by christian on 5/6/2016.
- */
-@SuppressWarnings("java:S1452")
-public interface IQueryImpl {
-
-    enum Clause {
-        SELECT,
-        WHERE,
-        ORDERBY,
-        FROM
+    public UnknownVariableException(String variable) {
+        super("Unknown variable:" + variable);
     }
-
-    MultiFields makeField(String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause)
-            throws UnknownVariableException;
-
-    MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition)
-            throws UnknownVariableException;
 }

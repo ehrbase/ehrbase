@@ -69,7 +69,8 @@ public class TestAqlBase {
         knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         opt = new FileInputStream("./src/test/resources/knowledge/opt/minimal_instruction.opt");
         knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
-
+        opt = new FileInputStream("./src/test/resources/knowledge/opt/ehrbase_blood_pressure_simple.de.v0.opt");
+        knowledge.addOperationalTemplate(opt, TenantAuthentication.DEFAULT_TENANT_ID);
         // tests require a terminology service
         new TerminologyServiceImp().init(); // this sets the instance variable
     }

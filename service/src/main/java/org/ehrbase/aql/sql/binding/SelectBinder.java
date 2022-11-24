@@ -65,7 +65,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
         this.jsonbEntryQuery = new JsonbEntryQuery(domainAccess, introspectCache, pathResolver);
         this.compositionAttributeQuery =
                 new CompositionAttributeQuery(domainAccess, pathResolver, serverNodeId, introspectCache);
-        this.whereBinder = new WhereBinder(domainAccess, compositionAttributeQuery, whereClause, pathResolver);
+        this.whereBinder = new WhereBinder(whereClause, pathResolver);
     }
 
     private SelectBinder(
@@ -105,7 +105,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
      * @param templateId
      * @return
      */
-    public List<MultiFields> bind(String templateId) {
+    public List<MultiFields> bind(String templateId) throws UnknownVariableException {
         ObjectQuery.reset();
 
         List<MultiFields> multiFieldsList = new ArrayList<>();
@@ -133,7 +133,7 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
                     continue;
                 }
 
-                encodeForLateral(className, templateId, variableDefinition, multiFields);
+                encodeForLateral(className, templateId, variableDefinition, multiFields, multiFieldsList);
             }
             multiFieldsList.add(multiFields);
             ObjectQuery.inc();
@@ -146,8 +146,10 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
             String templateId,
             int whereCursor,
             MultiFieldsMap multiWhereFieldsMap,
-            MultiFieldsMap multiSelectFieldsMap) {
-        return whereBinder.bind(templateId, whereCursor, multiWhereFieldsMap, multiSelectFieldsMap);
+            int selectCursor,
+            MultiFieldsMap multiSelectFieldsMap)
+            throws UnknownVariableException {
+        return whereBinder.bind(templateId, whereCursor, multiWhereFieldsMap, selectCursor, multiSelectFieldsMap);
     }
 
     public CompositionAttributeQuery getCompositionAttributeQuery() {
@@ -155,13 +157,18 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
     }
 
     private void encodeForLateral(
-            String className, String templateId, I_VariableDefinition variableDefinition, MultiFields multiFields) {
+            String className,
+            String templateId,
+            I_VariableDefinition variableDefinition,
+            MultiFields multiFields,
+            List<MultiFields> multiFieldsList)
+            throws UnknownVariableException {
         for (Iterator<QualifiedAqlField> it = multiFields.iterator(); it.hasNext(); ) {
             QualifiedAqlField qualifiedAqlField = it.next();
             Field sqlField = qualifiedAqlField.getSQLField();
             SelectQuery selectQuery = domainAccess.getContext().selectQuery();
             selectQuery.addSelect(sqlField);
-            if (new SetReturningFunction(selectQuery.toString()).isUsed()) {
+            if (SetReturningFunction.isUsed(selectQuery.toString())) { // what does selectQuery.toString() ?
                 String alias = sqlField.getName();
                 MultiFields unaliasedFields = new ExpressionField(
                                 variableDefinition, jsonbEntryQuery, compositionAttributeQuery)
@@ -170,7 +177,12 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 taggedStringBuilder.append(
                         unaliasedFields.getLastQualifiedField().getSQLField().toString());
-                new LateralJoins().create(templateId, taggedStringBuilder, variableDefinition, SELECT);
+
+                // check if this expression is already used as a lateral join for another variable
+                MultiFieldsMap.matchingLateralJoin(multiFieldsList, templateId, taggedStringBuilder.toString())
+                        .ifPresentOrElse(
+                                lj -> LateralJoins.reuse(lj, templateId, variableDefinition),
+                                () -> LateralJoins.create(templateId, taggedStringBuilder, variableDefinition, SELECT));
 
                 // substitute the field to use the lateral join with the same alias!
                 variableDefinition.getLastLateralJoin(templateId).setClause(SELECT);
@@ -179,14 +191,20 @@ public class SelectBinder extends TemplateMetaData implements ISelectBinder {
                                 .getTable()
                                 .getName() + "."
                         + variableDefinition.getLastLateralJoin(templateId).getLateralVariable();
+
+                if (qualifiedAqlField.hasRightMostJsonbExpression())
+                    sqlToLateralJoin = sqlToLateralJoin + qualifiedAqlField.getRightMostJsonbExpression();
+
                 variableDefinition.setAlias(alias);
                 Field substituteField = DSL.field(sqlToLateralJoin).as(alias);
 
-                if (variableDefinition.getSelectType() != null)
-                    substituteField = DSL.field(sqlToLateralJoin + "::"
+                if (variableDefinition.getSelectType() != null
+                        && !variableDefinition.getSelectType().getCastTypeName().equals("interval"))
+                    substituteField = DSL.field("(" + sqlToLateralJoin + ")::"
                                     + variableDefinition.getSelectType().getCastTypeName())
                             .as(alias);
-
+                else // default it to text so it can be interpreted
+                substituteField = DSL.field("(" + sqlToLateralJoin + ")::TEXT").as(alias);
                 multiFields.replaceField(qualifiedAqlField, substituteField);
             }
         }

@@ -51,6 +51,7 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.tenant.DefaultTenantAuthentication;
 import org.ehrbase.util.TemplateUtils;
+import org.ehrbase.util.WebTemplateNodeQuery;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 import org.ehrbase.webtemplate.parser.NodeId;
@@ -501,7 +502,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             }
 
             Set<String> uniquePaths = new TreeSet<>();
-            webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
+            webTemplateNodeList.stream()
+                    .map(n -> n.getAqlPath(new WebTemplateNodeQuery(webTemplate, n).requiresNamePredicate()))
+                    .forEach(uniquePaths::add);
 
             if (!uniquePaths.isEmpty()) jsonPathQueryResult = new JsonPathQueryResult(templateId, uniquePaths);
             else {
