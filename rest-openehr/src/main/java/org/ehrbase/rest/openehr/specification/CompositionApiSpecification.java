@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.servlet.http.HttpServletRequest;
-import org.ehrbase.response.openehr.CompositionResponseData;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "COMPOSITION")

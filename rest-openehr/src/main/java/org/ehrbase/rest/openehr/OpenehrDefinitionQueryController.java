@@ -17,10 +17,11 @@
  */
 package org.ehrbase.rest.openehr;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
@@ -43,9 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 @TenantAware
 @RestController

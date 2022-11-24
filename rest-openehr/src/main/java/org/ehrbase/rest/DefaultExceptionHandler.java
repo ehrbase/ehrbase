@@ -83,7 +83,7 @@ public class DefaultExceptionHandler {
     public ResponseEntity<Object> handleObjectNotFoundException(AccessDeniedException ex) {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
-    
+
     // 404
     @ExceptionHandler(ObjectNotFoundException.class)
     public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {
