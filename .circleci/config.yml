@@ -233,6 +233,11 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - CORS-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - ADMIN-test:
           context: org-global
           requires:
@@ -270,6 +275,7 @@ workflows:
             - QUERYSERVICE-test-2
             - NEWQUERY-test-set
             - SECURITY-test
+            - CORS-test
             - ADMIN-test
 
       - sonar-analysis:
@@ -481,6 +487,11 @@ workflows:
           requires:
             - build-ehrbase
 
+      - CORS-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - ADMIN-test:
           context: org-global
           requires:
@@ -518,6 +529,7 @@ workflows:
             - QUERYSERVICE-test-2
             - NEWQUERY-test-set
             - SECURITY-test
+            - CORS-test
             - ADMIN-test
 
       - sonar-analysis:
@@ -749,6 +761,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - CORS-test:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - ADMIN-test:
           context: org-global
           requires:
@@ -785,6 +801,7 @@ workflows:
             - QUERYSERVICE-test-2
             - NEWQUERY-test-set
             - SECURITY-test
+            - CORS-test
             - ADMIN-test
 
 
@@ -1313,6 +1330,24 @@ jobs:
           # test-suite-path: ""
           test-suite-name: "SECURITY"
 
+  CORS-test:
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
+      ADMINAPI_ACTIVE: "TRUE"
+      SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          sut: "TEST"
+          include-tags: "HTTPACCESSCONTROL"
+          test-suite-path: "CORS_TESTS"
+          test-suite-name: "CORS"
+
   ADMIN-test:
     # executor: docker-py3-java11-postgres
     executor: machine-ubuntu-2004
@@ -1500,7 +1535,7 @@ commands:
             fi
             jps
             cd ~/projects/tests
-            robot --include << parameters.include-tags >> \
+            robot --include "<< parameters.include-tags >>" \
                   --skip TODO --skip future -e obsolete -e libtest \
                   --console dotted \
                   --loglevel TRACE \
@@ -1510,7 +1545,7 @@ commands:
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
                   --timestampoutputs \
-                  --name << parameters.test-suite-name >> \
+                  --name "<< parameters.test-suite-name >>" \
                   -v SUT:<< parameters.sut >> \
                   -v NODENAME:<< parameters.nodename >> \
                   -v ALLOW-TEMPLATE-OVERWRITE:<< parameters.allow-template-overwrite >> \
