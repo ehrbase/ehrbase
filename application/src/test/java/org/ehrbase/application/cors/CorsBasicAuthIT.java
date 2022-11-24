@@ -28,7 +28,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-@Disabled
 @SpringBootTest(properties = {"security.authType=basic", "spring.cache.type=simple"})
 @AutoConfigureMockMvc
 @Disabled
