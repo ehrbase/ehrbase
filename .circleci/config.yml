@@ -1535,7 +1535,7 @@ commands:
             fi
             jps
             cd ~/projects/tests
-            robot --include << parameters.include-tags >> \
+            robot --include "<< parameters.include-tags >>" \
                   --skip TODO --skip future -e obsolete -e libtest \
                   --console dotted \
                   --loglevel TRACE \
@@ -1545,7 +1545,7 @@ commands:
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
                   --timestampoutputs \
-                  --name << parameters.test-suite-name >> \
+                  --name "<< parameters.test-suite-name >>" \
                   -v SUT:<< parameters.sut >> \
                   -v NODENAME:<< parameters.nodename >> \
                   -v ALLOW-TEMPLATE-OVERWRITE:<< parameters.allow-template-overwrite >> \
