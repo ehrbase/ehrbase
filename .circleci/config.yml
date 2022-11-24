@@ -1344,7 +1344,7 @@ jobs:
       - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           sut: "TEST"
-          include-tags: "CORS"
+          include-tags: "CORS_TESTS"
           test-suite-path: "CORS_TESTS"
           test-suite-name: "CORS"
 
