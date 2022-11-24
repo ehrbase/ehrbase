@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-
 import org.apache.commons.lang3.function.TriFunction;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
@@ -37,116 +36,126 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 
-public abstract class AuthenticatedExtractionStrategy<A extends Authentication> implements TenantIdExtractionStrategy<String> {
-  
+public abstract class AuthenticatedExtractionStrategy<A extends Authentication>
+        implements TenantIdExtractionStrategy<String> {
+
     static class TenantAuthenticationAdapter implements MethodInterceptor {
-      private static Method tenantIdCall;
-      private static Method defTenantIdCall;
-      private static Method authenticationCall;
-      
-      static {
-        try {
-          defTenantIdCall = TenantAuthentication.class.getDeclaredMethod("getDefaultTenantId");
-          tenantIdCall = TenantAuthentication.class.getDeclaredMethod("getTenantId");
-          authenticationCall = TenantAuthentication.class.getDeclaredMethod("getAuthentication");
-        } catch (NoSuchMethodException | SecurityException e) {
-          throw new IllegalStateException(e);
+        private static Method tenantIdCall;
+        private static Method defTenantIdCall;
+        private static Method authenticationCall;
+
+        static {
+            try {
+                defTenantIdCall = TenantAuthentication.class.getDeclaredMethod("getDefaultTenantId");
+                tenantIdCall = TenantAuthentication.class.getDeclaredMethod("getTenantId");
+                authenticationCall = TenantAuthentication.class.getDeclaredMethod("getAuthentication");
+            } catch (NoSuchMethodException | SecurityException e) {
+                throw new IllegalStateException(e);
+            }
         }
-      }
-      
-      private final Authentication authentication;
-      private final String rawToken;
-      private final String tenantId;
-      
-      TenantAuthenticationAdapter(Authentication authentication, String rawToken, String tenantId) {
-        this.authentication = authentication;
-        this.rawToken = rawToken;
-        this.tenantId = tenantId;
-      }
-      
-      public Object intercept(Object me, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        if(TenantAuthenticationAdapter.defTenantIdCall.equals(method))
-          return TenantAuthentication.getDefaultTenantId();
-        else if(TenantAuthenticationAdapter.tenantIdCall.equals(method))
-          return tenantId;
-        else if(TenantAuthenticationAdapter.authenticationCall.equals(method))
-          return rawToken;
-        else
-          return method.invoke(authentication, args);
-      }
+
+        private final Authentication authentication;
+        private final String rawToken;
+        private final String tenantId;
+
+        TenantAuthenticationAdapter(Authentication authentication, String rawToken, String tenantId) {
+            this.authentication = authentication;
+            this.rawToken = rawToken;
+            this.tenantId = tenantId;
+        }
+
+        public Object intercept(Object me, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+            if (TenantAuthenticationAdapter.defTenantIdCall.equals(method))
+                return TenantAuthentication.getDefaultTenantId();
+            else if (TenantAuthenticationAdapter.tenantIdCall.equals(method)) return tenantId;
+            else if (TenantAuthenticationAdapter.authenticationCall.equals(method)) return rawToken;
+            else return method.invoke(authentication, args);
+        }
     }
-    
+
     @SuppressWarnings("unchecked")
-    private static final TriFunction<Authentication, String, String, TenantAuthentication<String>> TO_AUTH = (Authentication auth, String rawToken, String tenantId) -> {
-          Enhancer enhancer = new Enhancer();
-            enhancer.setSuperclass(AbstractAuthenticationToken.class);
-            enhancer.setInterfaces(new Class[] { TenantAuthentication.class });
-            enhancer.setCallback(new TenantAuthenticationAdapter(auth, rawToken, tenantId));
-          Object created = enhancer.create(new Class[] {Collection.class}, new Object[] {Collections.emptyList()});
-          return (TenantAuthentication<String>)  created; 
-    };    
-    
-    public static class TokenAuthenticatedExtractionStrategy extends AuthenticatedExtractionStrategy<AbstractAuthenticationToken> {
-      public TokenAuthenticatedExtractionStrategy() {
-        super(AbstractAuthenticationToken.class);
-      }
-      
-      public Optional<TenantAuthentication<String>> extractWithPrior(Optional<TenantAuthentication<?>>priorAuthentication, Object... args) {
-        SecurityContext ctx = SecurityContextHolder.getContext();
-        
-        if(ctx.getAuthentication() instanceof AbstractAuthenticationToken auth) {
-          if(auth.getCredentials() instanceof AbstractOAuth2Token token) {
-            Optional<String> optTenantId = TokenSupport.extractClaim(token.getTokenValue(), DefaultTenantAuthentication.TENANT_CLAIM);
-            
-            if(optTenantId.isPresent())
-              return Optional.of(TO_AUTH.apply(auth, token.getTokenValue(), optTenantId.get()));
-            else if(priorAuthentication.isPresent()) {
-              //try to resolve tenantId from prior authentication
-              return Optional.of(TO_AUTH.apply(auth, token.getTokenValue(), priorAuthentication.get().getTenantId()));
-            } else
-              throw new IllegalStateException();
-          } else {
-            throw new AccessDeniedException("Unsupported Token");
-          }
-        } else
-          throw new IllegalStateException();
-      }
-      
-      public int priority() { return 1000; }
+    private static final TriFunction<Authentication, String, String, TenantAuthentication<String>> TO_AUTH =
+            (Authentication auth, String rawToken, String tenantId) -> {
+                Enhancer enhancer = new Enhancer();
+                enhancer.setSuperclass(AbstractAuthenticationToken.class);
+                enhancer.setInterfaces(new Class[] {TenantAuthentication.class});
+                enhancer.setCallback(new TenantAuthenticationAdapter(auth, rawToken, tenantId));
+                Object created =
+                        enhancer.create(new Class[] {Collection.class}, new Object[] {Collections.emptyList()});
+                return (TenantAuthentication<String>) created;
+            };
+
+    public static class TokenAuthenticatedExtractionStrategy
+            extends AuthenticatedExtractionStrategy<AbstractAuthenticationToken> {
+        public TokenAuthenticatedExtractionStrategy() {
+            super(AbstractAuthenticationToken.class);
+        }
+
+        public Optional<TenantAuthentication<String>> extractWithPrior(
+                Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
+            SecurityContext ctx = SecurityContextHolder.getContext();
+
+            if (ctx.getAuthentication() instanceof AbstractAuthenticationToken auth) {
+                if (auth.getCredentials() instanceof AbstractOAuth2Token token) {
+                    Optional<String> optTenantId =
+                            TokenSupport.extractClaim(token.getTokenValue(), DefaultTenantAuthentication.TENANT_CLAIM);
+
+                    if (optTenantId.isPresent())
+                        return Optional.of(TO_AUTH.apply(auth, token.getTokenValue(), optTenantId.get()));
+                    else if (priorAuthentication.isPresent()) {
+                        // try to resolve tenantId from prior authentication
+                        return Optional.of(TO_AUTH.apply(
+                                auth,
+                                token.getTokenValue(),
+                                priorAuthentication.get().getTenantId()));
+                    } else throw new IllegalStateException();
+                } else {
+                    throw new AccessDeniedException("Unsupported Token");
+                }
+            } else throw new IllegalStateException();
+        }
+
+        public int priority() {
+            return 1000;
+        }
     }
-    
+
     public static class AuthenticationExtractionStrategy extends AuthenticatedExtractionStrategy<Authentication> {
-      public AuthenticationExtractionStrategy() {
-        super(Authentication.class);
-      }
-      
-      public Optional<TenantAuthentication<String>> extractWithPrior(Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
-        SecurityContext ctx = SecurityContextHolder.getContext();
-        
-        if(priorAuthentication.isPresent())
-          return Optional.of(TO_AUTH.apply(ctx.getAuthentication(), priorAuthentication.get().getAuthentication().toString(), priorAuthentication.get().getTenantId()));
-        else
-          throw new IllegalStateException();
-      }
-      
-      public int priority() { return 900; }
-    }    
-    
-    
+        public AuthenticationExtractionStrategy() {
+            super(Authentication.class);
+        }
+
+        public Optional<TenantAuthentication<String>> extractWithPrior(
+                Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
+            SecurityContext ctx = SecurityContextHolder.getContext();
+
+            if (priorAuthentication.isPresent())
+                return Optional.of(TO_AUTH.apply(
+                        ctx.getAuthentication(),
+                        priorAuthentication.get().getAuthentication().toString(),
+                        priorAuthentication.get().getTenantId()));
+            else throw new IllegalStateException();
+        }
+
+        public int priority() {
+            return 900;
+        }
+    }
+
     private final Class<A> authenticationClass;
-    
+
     protected AuthenticatedExtractionStrategy(Class<A> clazz) {
-      this.authenticationClass = clazz;
+        this.authenticationClass = clazz;
     }
-    
+
     public boolean accept(Object... args) {
-      SecurityContext ctx = SecurityContextHolder.getContext();
-      Authentication theAuthentication = ctx.getAuthentication();
-      
-      return null != theAuthentication && authenticationClass.isAssignableFrom(theAuthentication.getClass());
+        SecurityContext ctx = SecurityContextHolder.getContext();
+        Authentication theAuthentication = ctx.getAuthentication();
+
+        return null != theAuthentication && authenticationClass.isAssignableFrom(theAuthentication.getClass());
     }
-    
+
     public Optional<TenantAuthentication<String>> extract(Object... args) {
-      return extract(null, args);
+        return extract(null, args);
     }
 }

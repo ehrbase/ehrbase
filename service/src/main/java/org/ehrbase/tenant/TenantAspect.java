@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -64,7 +63,7 @@ public class TenantAspect implements ExtractionStrategyAware {
 
     /*
      * currently we support only TenantAuthentication<String>. when more
-     * is needed we must implement a more sophisticated conversion. 
+     * is needed we must implement a more sophisticated conversion.
      */
     @Around("matchTenantAnnotation(tenantAnnotation)")
     public Object securedCall(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable {
@@ -97,18 +96,16 @@ public class TenantAspect implements ExtractionStrategyAware {
 
     private TenantAuthentication<?> extract(Object... args) {
         Optional<TenantAuthentication<?>> priorAuth = Optional.empty();
-      
-        for(TenantIdExtractionStrategy<?> strg : extractionStrategies) {
-          if(!strg.accept(args))
-            continue;
-          
-          Optional<? extends TenantAuthentication<?>> extract = strg.extractWithPrior(priorAuth, args);
-          if(!extract.isPresent())
-            continue;
-          
-          priorAuth = (Optional<TenantAuthentication<?>>) extract;
+
+        for (TenantIdExtractionStrategy<?> strg : extractionStrategies) {
+            if (!strg.accept(args)) continue;
+
+            Optional<? extends TenantAuthentication<?>> extract = strg.extractWithPrior(priorAuth, args);
+            if (!extract.isPresent()) continue;
+
+            priorAuth = (Optional<TenantAuthentication<?>>) extract;
         }
-      
+
         return priorAuth.get();
     }
 }

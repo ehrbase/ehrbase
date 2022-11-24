@@ -18,7 +18,6 @@
 package org.ehrbase;
 
 import java.util.List;
-
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
 import org.ehrbase.tenant.TenantAspect;
 import org.ehrbase.tenant.extraction.AuthenticatedExtractionStrategy.AuthenticationExtractionStrategy;
@@ -43,12 +42,12 @@ public class ServiceModuleConfiguration {
     public TenantIdExtractionStrategy<String> defaultStrategy() {
         return new DefaultExtractionStrategy();
     }
-    
+
     @Bean
     public TenantIdExtractionStrategy<String> tokenAuthenticatedExtractionStrategy() {
         return new TokenAuthenticatedExtractionStrategy();
     }
-    
+
     @Bean
     public TenantIdExtractionStrategy<String> authenticationExtractionStrategy() {
         return new AuthenticationExtractionStrategy();

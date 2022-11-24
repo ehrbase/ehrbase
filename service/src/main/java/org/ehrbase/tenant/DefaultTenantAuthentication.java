@@ -30,12 +30,12 @@ public class DefaultTenantAuthentication extends AbstractAuthenticationToken imp
     private static final long serialVersionUID = -187707458684929521L;
     public static final String TENANT_CLAIM = "tnt";
 
-    public static <T> DefaultTenantAuthentication of(TenantAuthentication<T> auth, Converter<T,String> converter) {
-      DefaultTenantAuthentication defAuth = new DefaultTenantAuthentication();
+    public static <T> DefaultTenantAuthentication of(TenantAuthentication<T> auth, Converter<T, String> converter) {
+        DefaultTenantAuthentication defAuth = new DefaultTenantAuthentication();
         defAuth.tenantId = auth.getTenantId();
         defAuth.raw = converter.convert(auth.getAuthentication());
-        defAuth.token = JWT.decode(defAuth.raw); 
-      return defAuth;
+        defAuth.token = JWT.decode(defAuth.raw);
+        return defAuth;
     }
 
     public static <T> DefaultTenantAuthentication of(String tenantId) {
