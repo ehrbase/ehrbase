@@ -110,10 +110,6 @@
             <groupId>org.ehrbase.openehr</groupId>
             <artifactId>base</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-        </dependency>
 
         <!-- 
         <dependency>

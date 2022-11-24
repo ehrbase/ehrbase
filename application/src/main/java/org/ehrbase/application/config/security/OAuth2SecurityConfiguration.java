@@ -52,7 +52,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @Configuration
 @EnableWebSecurity
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
-//@ConditionalOnMissingClass("org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter")
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     public static final String PROFILE_SCOPE = "PROFILE";
