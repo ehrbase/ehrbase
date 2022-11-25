@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,10 +18,7 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.*;
 
 /**
  * evaluate the SQL expression for locatables in the ITEM_STRUCTURE: OBSERVATION, INSTRUCTION, CLUSTER etc.
@@ -34,16 +31,21 @@ public class LocatableItem {
     private final JsonbEntryQuery jsonbEntryQuery;
     private final IQueryImpl.Clause clause;
 
-    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
+    public LocatableItem(
+            CompositionAttributeQuery compositionAttributeQuery,
+            JsonbEntryQuery jsonbEntryQuery,
+            IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.clause = clause;
     }
 
-    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition) {
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition)
+            throws UnknownVariableException {
         MultiFields multiFields;
 
-        multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
+        multiFields =
+                jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
 
         if (multiFields == null) {
             compositionAttributeQuery.setUseEntry(true);

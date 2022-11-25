@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,94 +15,102 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.aql.sql.queryimpl;
 
-import org.apache.commons.lang3.StringUtils;
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 /**
  * Created by christian on 5/9/2018.
  */
 public class JsonbFunctionCall {
 
-    private final List<String> itemPathArray;
+    private final List<String> resolvedPath;
     private final String marker;
     private final String function;
+    private String rightJsonbExpressionPart;
 
     public JsonbFunctionCall(List<String> itemPathArray, String marker, String function) {
-        this.itemPathArray = itemPathArray;
         this.function = function;
         this.marker = marker;
+
+        var p = itemPathArray;
+        // check if the list contains an entry with AQL_NODE_NAME_PREDICATE_MARKER
+        while (p.contains(marker)) {
+            p = resolveIterativeCall(p);
+        }
+        this.resolvedPath = p;
     }
 
     public List<String> resolve() {
+        return resolvedPath;
+    }
+
+    private List<String> resolveIterativeCall(List<String> itemPathArray) {
+
+        StringBuilder expression = new StringBuilder();
+        int markerPos = itemPathArray.indexOf(marker);
+        // prepare the function call
+        expression.append("(");
+        expression.append(function);
+        expression.append("(");
+        int startPos;
+        // check if the table clause is already in the sequence in a nested call to aql_node_name_predicate
+        if (!itemPathArray.get(0).contains(function)) {
+            expression.append("(");
+            expression.append(ENTRY.ENTRY_);
+            startPos = 0;
+        } else {
+            expression.append(itemPathArray.get(0));
+            startPos = 1;
+        }
+        expression.append("#>>");
+        expression.append("'{");
+        expression.append(String.join(",", itemPathArray.subList(startPos, markerPos)));
+        expression.append("}'");
+        expression.append(")");
+        expression.append("::jsonb");
+        expression.append(")");
+
+        // Locate end tag (end of array or next marker)
 
         List<String> resultList = new ArrayList<>();
-        resultList.addAll(itemPathArray);
-
-        while (resultList.contains(marker)) {
-            resultList = resolveIterativeCall(resultList);
+        List<String> rightList = itemPathArray.subList(markerPos + 1, itemPathArray.size());
+        if (rightList.contains(marker)) {
+            resultList.add(expression.toString());
+            resultList.addAll(rightList);
+        } else {
+            rightJsonbExpressionPart = rightJsonExpression(rightList);
+            expression.append(")");
+            resultList.add(expression.toString());
         }
 
         return resultList;
     }
 
+    private String rightJsonExpression(List<String> pathItems) {
+        if (pathItems.isEmpty()) {
+            return "";
+        }
 
-    private List<String> resolveIterativeCall(List<String> itemPathArray) {
+        StringBuilder expression = new StringBuilder();
+        expression.append("#>>");
+        expression.append("'");
+        expression.append("{");
+        expression.append(String.join(",", pathItems));
+        expression.append("}");
+        expression.append("'");
 
-        List<String> resultList = new ArrayList<>();
-        int startList = 0;
+        return expression.toString();
+    }
 
-        //check if the list contains an entry with AQL_NODE_NAME_PREDICATE_MARKER
-        if (itemPathArray.contains(marker)) {
-            StringBuilder expression = new StringBuilder();
-            int markerPos = itemPathArray.indexOf(marker);
-            //prepare the function call
-            expression.append("(");
-            expression.append(function);
-            expression.append("(");
-            //check if the table clause is already in the sequence in a nested call to aql_node_name_predicate
-            if (!itemPathArray.get(0).contains(function)) {
-                expression.append("(");
-                expression.append(ENTRY.ENTRY_);
-                startList = 0;
-            } else {
-                expression.append(itemPathArray.get(0));
-                startList = 1;
-            }
-            expression.append("#>>");
-            expression.append("'{");
-            expression.append(StringUtils.join((itemPathArray.subList(startList, markerPos).toArray(new String[]{})), ","));
-            expression.append("}'");
-            expression.append(")");
-            expression.append("::jsonb");
-            expression.append(")");
+    public boolean hasRightMostJsonbExpression() {
+        return rightJsonbExpressionPart != null;
+    }
 
-            //Locate end tag (end of array or next marker)
-            int endPos;
-            if (itemPathArray.subList(markerPos + 1, itemPathArray.size()).contains(marker)) {
-                resultList.add(expression.toString());
-                endPos = markerPos + 1;
-                resultList.addAll(itemPathArray.subList(endPos, itemPathArray.size()));
-            } else {
-                expression.append("#>>");
-                expression.append("'");
-                expression.append("{");
-                endPos = itemPathArray.size();
-                expression.append(StringUtils.join((itemPathArray.subList(markerPos + 1, endPos).toArray(new String[]{})), ","));
-                expression.append("}");
-                expression.append("'");
-                expression.append(")");
-                resultList.add(expression.toString());
-            }
-
-            return resultList;
-        } else
-            return itemPathArray;
+    public String getRightMostJsonbExpression() {
+        return rightJsonbExpressionPart;
     }
 }

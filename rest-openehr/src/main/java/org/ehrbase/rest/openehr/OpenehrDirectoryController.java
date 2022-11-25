@@ -1,5 +1,7 @@
 /*
- * Copyright 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.directory.Folder;
@@ -25,6 +26,7 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -60,279 +62,247 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@TenantAware
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr")
-public class OpenehrDirectoryController extends BaseController
-    implements DirectoryApiSpecification {
+public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {
 
-  private final FolderService folderService;
+    private final FolderService folderService;
 
-  private final EhrService ehrService;
+    private final EhrService ehrService;
 
-  public OpenehrDirectoryController(FolderService folderService, EhrService ehrService) {
-    this.folderService = folderService;
-    this.ehrService = ehrService;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @PostMapping(path = "/{ehr_id}/directory")
-  public ResponseEntity<DirectoryResponseData> createDirectory(
-      @PathVariable(name = "ehr_id") UUID ehrId,
-      @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-      @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
-      @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
-      @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-      @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
-      @RequestBody Folder folder) {
-
-    var createdFolder = folderService.create(ehrId, folder)
-        .orElseThrow(() -> new InternalServerException("An error occurred while creating folder"));
-
-    return createDirectoryResponse(HttpMethod.POST, prefer, accept, createdFolder, ehrId);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @PutMapping(path = "/{ehr_id}/directory")
-  public ResponseEntity<DirectoryResponseData> updateDirectory(
-      @PathVariable(name = "ehr_id") UUID ehrId,
-      @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId,
-      @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
-      @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-      @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
-      @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-      @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
-      @RequestBody Folder folder) {
-
-    // Check version conflicts if EHR and directory exist
-    checkDirectoryVersionConflicts(folderId, ehrId);
-
-    // Update folder and get new version
-    Optional<FolderDto> updatedFolder = folderService.update(
-        ehrId,
-        folderId,
-        folder
-    );
-
-    if (updatedFolder.isEmpty()) {
-      throw new InternalServerException(
-          "Something went wrong. Folder could be persisted but not fetched again."
-      );
+    public OpenehrDirectoryController(FolderService folderService, EhrService ehrService) {
+        this.folderService = folderService;
+        this.ehrService = ehrService;
     }
 
-    return createDirectoryResponse(HttpMethod.PUT, prefer, accept, updatedFolder.get(), ehrId);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @PostMapping(path = "/{ehr_id}/directory")
+    public ResponseEntity<DirectoryResponseData> createDirectory(
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
+            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
+            @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
+            @RequestBody Folder folder) {
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @DeleteMapping(path = "/{ehr_id}/directory")
-  public ResponseEntity<DirectoryResponseData> deleteDirectory(
-      @PathVariable(name = "ehr_id") UUID ehrId,
-      @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-      @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
-      @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-      @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
+        var createdFolder = folderService
+                .create(ehrId, folder)
+                .orElseThrow(() -> new InternalServerException("An error occurred while creating folder"));
 
-    // Check version conflicts if EHR and directory exist
-    checkDirectoryVersionConflicts(folderId, ehrId);
-
-    //actually delete the EHR root folder
-    folderService.delete(ehrId, folderId);
-
-    return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
-  public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
-      @PathVariable(name = "ehr_id") UUID ehrId,
-      @PathVariable(name = "version_uid") ObjectVersionId versionUid,
-      @RequestParam(name = "path", required = false) String path,
-      @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
-
-    // Check if EHR for the folder exists
-    ehrService.checkEhrExists(ehrId);
-
-    assertValidPath(path);
-
-    // Get the folder entry from database
-    Optional<FolderDto> foundFolder = folderService.get(
-        versionUid,
-        path
-    );
-    if (foundFolder.isEmpty()) {
-      throw new ObjectNotFoundException(
-          "DIRECTORY",
-          String.format(
-              "Folder with id %s does not exist.",
-              versionUid.toString()
-          )
-      );
+        return createDirectoryResponse(HttpMethod.POST, prefer, accept, createdFolder, ehrId);
     }
 
-    return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(),
-        ehrId);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @PutMapping(path = "/{ehr_id}/directory")
+    public ResponseEntity<DirectoryResponseData> updateDirectory(
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId,
+            @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
+            @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
+            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
+            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestBody Folder folder) {
 
-  @Override
-  @GetMapping(path = "/{ehr_id}/directory")
-  public ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(
-      @PathVariable(name = "ehr_id") UUID ehrId,
-      @RequestParam(name = "version_at_time", required = false) String versionAtTime,
-      @RequestParam(name = "path", required = false) String path,
-      @RequestHeader(name = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
+        // Check version conflicts if EHR and directory exist
+        checkDirectoryVersionConflicts(folderId, ehrId);
 
-    // Check ehr exists
-    ehrService.checkEhrExists(ehrId);
+        // Update folder and get new version
+        Optional<FolderDto> updatedFolder = folderService.update(ehrId, folderId, folder);
 
-    assertValidPath(path);
+        if (updatedFolder.isEmpty()) {
+            throw new InternalServerException("Something went wrong. Folder could be persisted but not fetched again.");
+        }
 
-    // Get directory root entry for ehr
-    UUID directoryUuid = ehrService.getDirectoryId(ehrId);
-    if (directoryUuid == null) {
-      throw new ObjectNotFoundException(
-          "DIRECTORY",
-          String.format(
-              "There is no directory stored for EHR with id %s. Maybe it has been deleted?",
-              ehrId.toString()
-          )
-      );
-    }
-    ObjectVersionId directoryId = new ObjectVersionId(directoryUuid.toString());
-
-    final Optional<FolderDto> foundFolder;
-    // Get the folder entry from database
-    Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
-    if (versionAtTime != null && temporal.isPresent()) {
-      foundFolder = folderService.getByTimeStamp(
-          directoryId,
-          Timestamp.from(temporal.get().toInstant()),
-          path
-      );
-    } else {
-      foundFolder = folderService.getLatest(directoryId, path);
-    }
-    if (foundFolder.isEmpty()) {
-      throw new ObjectNotFoundException("folder",
-          "The FOLDER for ehrId " +
-              ehrId.toString() +
-              " does not exist.");
+        return createDirectoryResponse(HttpMethod.PUT, prefer, accept, updatedFolder.get(), ehrId);
     }
 
-    return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(),
-        ehrId);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @DeleteMapping(path = "/{ehr_id}/directory")
+    public ResponseEntity<DirectoryResponseData> deleteDirectory(
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
+            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
+            @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
 
-  private DirectoryResponseData buildResponse(FolderDto folderDto) {
-    DirectoryResponseData resBody = new DirectoryResponseData();
-    resBody.setDetails(folderDto.getDetails());
-    resBody.setFolders(folderDto.getFolders());
-    resBody.setItems(folderDto.getItems());
-    resBody.setName(folderDto.getName());
-    resBody.setUid(folderDto.getUid());
-    return resBody;
-  }
+        // Check version conflicts if EHR and directory exist
+        checkDirectoryVersionConflicts(folderId, ehrId);
 
-  private ResponseEntity<DirectoryResponseData> createDirectoryResponse(HttpMethod method,
-      String prefer, String accept, FolderDto folderDto, UUID ehrId) {
-    HttpHeaders headers = new HttpHeaders();
-    HttpStatus successStatus;
-    DirectoryResponseData body;
+        // actually delete the EHR root folder
+        folderService.delete(ehrId, folderId);
 
-    if (prefer != null && prefer.equals(RETURN_REPRESENTATION)) {
-      headers.setContentType(resolveContentType(accept, MediaType.APPLICATION_XML));
-      body = buildResponse(folderDto);
-      successStatus = getSuccessStatus(method);
-    } else {
-      body = null;
-      successStatus = HttpStatus.NO_CONTENT;
+        return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
 
-    if (folderDto != null) {
-      String versionUid = folderDto.getUid().toString();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
+    public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @PathVariable(name = "version_uid") ObjectVersionId versionUid,
+            @RequestParam(name = "path", required = false) String path,
+            @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
 
-      headers.setETag("\"" + versionUid + "\"");
-      headers.setLocation(
-          URI.create(encodePath(getBaseEnvLinkURL() +
-              "/rest/openehr/v1/ehr/" + ehrId.toString() +
-              "/directory/" + versionUid))
-      );
-      // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
-      headers.setLastModified(DateTime.now().getMillis());
+        // Check if EHR for the folder exists
+        ehrService.checkEhrExists(ehrId);
+
+        assertValidPath(path);
+
+        // Get the folder entry from database
+        Optional<FolderDto> foundFolder = folderService.get(versionUid, path);
+        if (foundFolder.isEmpty()) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY", String.format("Folder with id %s does not exist.", versionUid.toString()));
+        }
+
+        return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
 
-    return new ResponseEntity<>(body, headers, successStatus);
-  }
+    @Override
+    @GetMapping(path = "/{ehr_id}/directory")
+    public ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestParam(name = "version_at_time", required = false) String versionAtTime,
+            @RequestParam(name = "path", required = false) String path,
+            @RequestHeader(name = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE)
+                    String accept) {
 
-  private HttpStatus getSuccessStatus(HttpMethod method) {
-    switch (method) {
-      case POST: {
-        return HttpStatus.CREATED;
-      }
-      case DELETE: {
-        return HttpStatus.NO_CONTENT;
-      }
-      default: {
-        return HttpStatus.OK;
-      }
+        // Check ehr exists
+        ehrService.checkEhrExists(ehrId);
+
+        assertValidPath(path);
+
+        // Get directory root entry for ehr
+        UUID directoryUuid = ehrService.getDirectoryId(ehrId);
+        if (directoryUuid == null) {
+            throw new ObjectNotFoundException(
+                    "DIRECTORY",
+                    String.format(
+                            "There is no directory stored for EHR with id %s. Maybe it has been deleted?",
+                            ehrId.toString()));
+        }
+        ObjectVersionId directoryId = new ObjectVersionId(directoryUuid.toString());
+
+        final Optional<FolderDto> foundFolder;
+        // Get the folder entry from database
+        Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
+        if (versionAtTime != null && temporal.isPresent()) {
+            foundFolder = folderService.getByTimeStamp(
+                    directoryId, Timestamp.from(temporal.get().toInstant()), path);
+        } else {
+            foundFolder = folderService.getLatest(directoryId, path);
+        }
+        if (foundFolder.isEmpty()) {
+            throw new ObjectNotFoundException(
+                    "folder", "The FOLDER for ehrId " + ehrId.toString() + " does not exist.");
+        }
+
+        return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
-  }
 
-
-  /**
-   * Assert that the given path is valid.
-   *
-   * @param path the path to check
-   * @throws InvalidApiParameterException if the path is invalid
-   */
-  private void assertValidPath(String path) {
-    if (path == null) {
-      return;
+    private DirectoryResponseData buildResponse(FolderDto folderDto) {
+        DirectoryResponseData resBody = new DirectoryResponseData();
+        resBody.setDetails(folderDto.getDetails());
+        resBody.setFolders(folderDto.getFolders());
+        resBody.setItems(folderDto.getItems());
+        resBody.setName(folderDto.getName());
+        resBody.setUid(folderDto.getUid());
+        return resBody;
     }
 
-    try {
-      Paths.get(path);
-    } catch (InvalidPathException e) {
-      throw new InvalidApiParameterException("The value of path parameter is invalid", e);
-    }
-  }
+    private ResponseEntity<DirectoryResponseData> createDirectoryResponse(
+            HttpMethod method, String prefer, String accept, FolderDto folderDto, UUID ehrId) {
+        HttpHeaders headers = new HttpHeaders();
+        HttpStatus successStatus;
+        DirectoryResponseData body;
 
-  private void checkDirectoryVersionConflicts(ObjectVersionId requestedFolderId, UUID ehrId) {
-    UUID directoryUuid;
-    if (!ehrService.hasEhr(ehrId) || (directoryUuid = ehrService.getDirectoryId(ehrId)) == null) {
-      //Let the service layer handle this, to ensure same behaviour across the application
-      return;
-    }
-    int latestVersion = folderService.getLastVersionNumber(
-        new ObjectVersionId(directoryUuid.toString()));
-    // TODO: Change column 'directory' in EHR to String with ObjectVersionId
-    String directoryId = String.format(
-        "%s::%s::%d",
-        directoryUuid,
-        ehrService.getServerConfig().getNodename(),
-        latestVersion
-    );
+        if (prefer != null && prefer.equals(RETURN_REPRESENTATION)) {
+            headers.setContentType(resolveContentType(accept, MediaType.APPLICATION_XML));
+            body = buildResponse(folderDto);
+            successStatus = getSuccessStatus(method);
+        } else {
+            body = null;
+            successStatus = HttpStatus.NO_CONTENT;
+        }
 
-    if (requestedFolderId != null && !requestedFolderId.toString().equals(directoryId)) {
-      throw new PreconditionFailedException(
-          "If-Match version_uid does not match latest version.",
-          directoryId,
-          encodePath(getBaseEnvLinkURL()
-                     + "/rest/openehr/v1/ehr/"
-                     + ehrId.toString()
-                     + "/directory/" + directoryId
-          )
-      );
+        if (folderDto != null) {
+            String versionUid = folderDto.getUid().toString();
+
+            headers.setETag("\"" + versionUid + "\"");
+            headers.setLocation(URI.create(encodePath(
+                    getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/directory/" + versionUid)));
+            // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
+            headers.setLastModified(DateTime.now().getMillis());
+        }
+
+        return new ResponseEntity<>(body, headers, successStatus);
     }
-  }
+
+    private HttpStatus getSuccessStatus(HttpMethod method) {
+        switch (method) {
+            case POST: {
+                return HttpStatus.CREATED;
+            }
+            case DELETE: {
+                return HttpStatus.NO_CONTENT;
+            }
+            default: {
+                return HttpStatus.OK;
+            }
+        }
+    }
+
+    /**
+     * Assert that the given path is valid.
+     *
+     * @param path the path to check
+     * @throws InvalidApiParameterException if the path is invalid
+     */
+    private void assertValidPath(String path) {
+        if (path == null) {
+            return;
+        }
+
+        try {
+            Paths.get(path);
+        } catch (InvalidPathException e) {
+            throw new InvalidApiParameterException("The value of path parameter is invalid", e);
+        }
+    }
+
+    private void checkDirectoryVersionConflicts(ObjectVersionId requestedFolderId, UUID ehrId) {
+        UUID directoryUuid;
+        if (!ehrService.hasEhr(ehrId) || (directoryUuid = ehrService.getDirectoryId(ehrId)) == null) {
+            // Let the service layer handle this, to ensure same behaviour across the application
+            return;
+        }
+        int latestVersion = folderService.getLastVersionNumber(new ObjectVersionId(directoryUuid.toString()));
+        // TODO: Change column 'directory' in EHR to String with ObjectVersionId
+        String directoryId = String.format(
+                "%s::%s::%d", directoryUuid, ehrService.getServerConfig().getNodename(), latestVersion);
+
+        if (requestedFolderId != null && !requestedFolderId.toString().equals(directoryId)) {
+            throw new PreconditionFailedException(
+                    "If-Match version_uid does not match latest version.",
+                    directoryId,
+                    encodePath(getBaseEnvLinkURL()
+                            + "/rest/openehr/v1/ehr/"
+                            + ehrId.toString()
+                            + "/directory/" + directoryId));
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,9 +22,9 @@ import org.jooq.Table;
 /**
  * this class maintains the state of joins to build depending on the selected attributes
  */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452","java:S1075"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452", "java:S1075"})
 public class JoinSetup {
-    //boolean indicating the resulting joins to generate
+    // boolean indicating the resulting joins to generate
     private boolean joinComposition = false;
     private boolean joinEventContext = false;
     private boolean joinSubject = false;
@@ -37,7 +37,9 @@ public class JoinSetup {
 
     private boolean useEntry = false;
 
-    protected Table partyJoinRef; //this table reference is used by forTableField() it indicates on which table the join is to be done
+    protected Table
+            partyJoinRef; // this table reference is used by forTableField() it indicates on which table the join is to
+    // be done
 
     public boolean isJoinComposition() {
         return joinComposition;
@@ -126,8 +128,8 @@ public class JoinSetup {
     public boolean isUseEntry() {
         return useEntry;
     }
-    
-    public JoinSetup merge(JoinSetup anotherJoinSetup){
+
+    public JoinSetup merge(JoinSetup anotherJoinSetup) {
         joinComposition = joinComposition || anotherJoinSetup.isJoinComposition();
         joinComposer = joinComposer || anotherJoinSetup.isJoinComposer();
         joinEventContext = joinEventContext || anotherJoinSetup.isJoinEventContext();
@@ -139,7 +141,7 @@ public class JoinSetup {
         joinSystem = joinSystem || anotherJoinSetup.isJoinSystem();
         containsEhrStatus = containsEhrStatus || anotherJoinSetup.isContainsEhrStatus();
         useEntry = useEntry || anotherJoinSetup.isUseEntry();
-        
+
         return this;
     }
 }

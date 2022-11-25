@@ -1,5 +1,7 @@
 /*
- * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2021-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.config.security;
 
 import java.util.Arrays;
@@ -49,70 +50,75 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @EnableWebSecurity
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-  public static final String PROFILE_SCOPE = "PROFILE";
+    public static final String PROFILE_SCOPE = "PROFILE";
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private final SecurityProperties securityProperties;
+    private final SecurityProperties securityProperties;
 
-  private final OAuth2ResourceServerProperties oAuth2rProperties;
+    private final OAuth2ResourceServerProperties oAuth2rProperties;
 
-  public OAuth2SecurityConfiguration(SecurityProperties securityProperties,
-      OAuth2ResourceServerProperties oAuth2rProperties) {
-    this.securityProperties = securityProperties;
-    this.oAuth2rProperties = oAuth2rProperties;
-  }
+    public OAuth2SecurityConfiguration(
+            SecurityProperties securityProperties, OAuth2ResourceServerProperties oAuth2rProperties) {
+        this.securityProperties = securityProperties;
+        this.oAuth2rProperties = oAuth2rProperties;
+    }
 
-  @PostConstruct
-  public void initialize() {
-    logger.info("Using OAuth2 authentication");
-    logger.debug("Using issuer URI: {}", oAuth2rProperties.getJwt().getIssuerUri());
-    logger.debug("Using user role: {}", securityProperties.getOauth2UserRole());
-    logger.debug("Using admin role: {}", securityProperties.getOauth2AdminRole());
-  }
+    @PostConstruct
+    public void initialize() {
+        logger.info("Using OAuth2 authentication");
+        logger.debug("Using issuer URI: {}", oAuth2rProperties.getJwt().getIssuerUri());
+        logger.debug("Using user role: {}", securityProperties.getOauth2UserRole());
+        logger.debug("Using admin role: {}", securityProperties.getOauth2AdminRole());
+    }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    String userRole = securityProperties.getOauth2UserRole();
-    String adminRole = securityProperties.getOauth2AdminRole();
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        String userRole = securityProperties.getOauth2UserRole();
+        String adminRole = securityProperties.getOauth2AdminRole();
 
-    // @formatter:off
-    http
-        .cors()
-          .and()
-        .authorizeRequests()
-          .antMatchers("/rest/admin/**", "/management/**").hasRole(adminRole)
-          .anyRequest().hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
-          .and()
-        .oauth2ResourceServer()
-          .jwt()
-            .jwtAuthenticationConverter(getJwtAuthenticationConverter());
-    // @formatter:on
-  }
+        // @formatter:off
+        http.cors()
+                .and()
+                .authorizeRequests()
+                .antMatchers("/rest/admin/**", "/management/**")
+                .hasRole(adminRole)
+                .anyRequest()
+                .hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
+                .and()
+                .oauth2ResourceServer()
+                .jwt()
+                .jwtAuthenticationConverter(getJwtAuthenticationConverter());
+        // @formatter:on
+    }
 
-  // Converter creates list of "ROLE_*" (upper case) authorities for each "realm access" role
-  // and "roles" role from JWT
-  @SuppressWarnings("unchecked")
-  private Converter<Jwt, AbstractAuthenticationToken> getJwtAuthenticationConverter() {
-    var converter = new JwtAuthenticationConverter();
-    converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-      Map<String, Object> realmAccess;
-      realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
+    // Converter creates list of "ROLE_*" (upper case) authorities for each "realm access" role
+    // and "roles" role from JWT
+    @SuppressWarnings("unchecked")
+    private Converter<Jwt, AbstractAuthenticationToken> getJwtAuthenticationConverter() {
+        var converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Map<String, Object> realmAccess;
+            realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
 
-      Collection<GrantedAuthority> authority = new HashSet<>();
-      if (realmAccess != null && realmAccess.containsKey("roles")) {
-        authority.addAll(((List<String>) realmAccess.get("roles")).stream()
-            .map(roleName -> "ROLE_" + roleName.toUpperCase()).map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList()));
-      }
+            Collection<GrantedAuthority> authority = new HashSet<>();
+            if (realmAccess != null && realmAccess.containsKey("roles")) {
+                authority.addAll(((List<String>) realmAccess.get("roles"))
+                        .stream()
+                                .map(roleName -> "ROLE_" + roleName.toUpperCase())
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList()));
+            }
 
-      if (jwt.getClaims().containsKey("scope")) {
-        authority.addAll(Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
-            .map(roleName -> "ROLE_" + roleName.toUpperCase()).map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList()));
-      }
-      return authority;
-    });
-    return converter;
-  }
+            if (jwt.getClaims().containsKey("scope")) {
+                authority.addAll(
+                        Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
+                                .map(roleName -> "ROLE_" + roleName.toUpperCase())
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList()));
+            }
+            return authority;
+        });
+        return converter;
+    }
 }

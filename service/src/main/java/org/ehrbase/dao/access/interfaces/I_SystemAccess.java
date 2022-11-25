@@ -1,5 +1,7 @@
 /*
- * Copyright 2015-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2015-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +17,11 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.jooq.SystemAccess;
+import static org.ehrbase.jooq.pg.Tables.SYSTEM;
 
 import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.SYSTEM;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.jooq.SystemAccess;
 
 /**
  * System access layer interface.

@@ -1,3 +1,0 @@
-{
-  "q": "SELECT e/ehr_id/value, e/time_created/value FROM EHR e LIMIT 5 ORDER BY e/time_created ASC"
-}

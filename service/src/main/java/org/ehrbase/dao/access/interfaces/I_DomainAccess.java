@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +17,7 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import java.sql.Connection;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
@@ -28,8 +25,6 @@ import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.IntrospectService;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-
-import java.sql.Connection;
 
 /**
  * Helper to hold SQL context and knowledge cache reference
@@ -63,7 +58,6 @@ public interface I_DomainAccess {
     String KEY_SET_POOL_PREPARED_STATEMENTS = "set_pool_prepared_statement";
     String KEY_SET_MAX_PREPARED_STATEMENTS = "set_max_prepared_statements";
     String KEY_INTROSPECT_CACHE = "introspect";
-
 
     static I_DomainAccess getInstance(I_DomainAccess dataAccess) {
         return new ServiceDataAccess(dataAccess);

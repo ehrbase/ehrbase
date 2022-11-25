@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH,  Hannover Medical School, and Luis Marco-Ruiz (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,23 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.interfaces;
 
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import org.ehrbase.dao.access.jooq.FolderAccess;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.ehrbase.dao.access.jooq.FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.joda.time.DateTime;
-
-import java.sql.Timestamp;
-import java.time.OffsetDateTime;
-import java.util.*;
-
 
 /**
  *@Created by Luis Marco-Ruiz on Jun 13, 2019
@@ -40,14 +41,24 @@ import java.util.*;
 /**
  * Data Access Object for CRUD operations on instances of {@link  com.nedap.archie.rm.directory.Folder}.
  */
-public interface I_FolderAccess extends I_VersionedCRUD {
+public interface I_FolderAccess extends I_VersionedCRUD, I_Compensatable {
+
+    public static I_FolderAccess retrieveByVersion(I_DomainAccess domainAccess, UUID folderId, int version) {
+        return FolderAccess.retrieveByVersion(domainAccess, folderId, version);
+    }
+
+    static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return FolderAccess.isDeleted(domainAccess, versionedObjectId);
+    }
+
+    UUID getEhrId();
 
     /**
      * Get the list of subfolders for the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
      * @return Map<UUID, I_FolderAccess> whose key is the UUID of the child {@link  com.nedap.archie.rm.directory.Folder}, and whose value is the I_FolderAccess for the child {@link  com.nedap.archie.rm.directory.Folder}.
      * @throws Exception
      */
-    Map<UUID, I_FolderAccess>  getSubfoldersList();
+    Map<UUID, I_FolderAccess> getSubfoldersList();
 
     /**
      * Get the items references stored as a part of the given {@link  com.nedap.archie.rm.directory.Folder}
@@ -63,8 +74,9 @@ public interface I_FolderAccess extends I_VersionedCRUD {
      * @param ehrId of the {@link com.nedap.archie.rm.ehr.Ehr} that references the {@link  com.nedap.archie.rm.directory.Folder} provided as param.
      * @return {@link I_FolderAccess} with the information to persist the provided {@link  com.nedap.archie.rm.directory.Folder}
      */
-    static I_FolderAccess getNewFolderAccessInstance(I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId){
-        return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId);
+    static I_FolderAccess getNewFolderAccessInstance(
+            I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId, String tenantIdentifier) {
+        return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId, tenantIdentifier);
     }
 
     /**
@@ -74,26 +86,24 @@ public interface I_FolderAccess extends I_VersionedCRUD {
      * @return the {@link I_FolderAccess} that provides DB access to the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to the provided folderId param.
      * @throws Exception
      */
-    static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId){
+    static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId) {
         return FolderAccess.retrieveInstanceForExistingFolder(domainAccess, folderId);
     }
 
-    static I_FolderAccess retrieveInstanceForExistingFolder(I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp){
+    static I_FolderAccess retrieveInstanceForExistingFolder(
+            I_DomainAccess domainAccess, UUID folderId, Timestamp timestamp) {
         return FolderHistoryAccess.retrieveInstanceForExistingFolder(domainAccess, folderId, timestamp);
     }
 
-    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId){
+    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId) {
         return FolderAccess.retrieveInstanceForExistingFolder(
-                domainAccess,
-                FolderUtils.extractUuidFromObjectVersionId(folderId)
-        );
+                domainAccess, FolderUtils.extractUuidFromObjectVersionId(folderId));
     }
 
-    static I_FolderAccess getInstanceForExistingFolder(I_DomainAccess domainAccess, ObjectVersionId folderId, Timestamp timestamp) {
+    static I_FolderAccess getInstanceForExistingFolder(
+            I_DomainAccess domainAccess, ObjectVersionId folderId, Timestamp timestamp) {
         return FolderAccess.retrieveInstanceForExistingFolder(
-                domainAccess,
-                FolderUtils.extractUuidFromObjectVersionId(folderId)
-        );
+                domainAccess, FolderUtils.extractUuidFromObjectVersionId(folderId));
     }
 
     /**
@@ -103,7 +113,8 @@ public interface I_FolderAccess extends I_VersionedCRUD {
      * @param nodeName Node name to build version ID with (access layer doesn't have access to this info)
      * @return Set of {@link ObjectVersionId} for linked folders
      */
-    static Set<ObjectVersionId> retrieveFolderVersionIdsInContribution(I_DomainAccess domainAccess, UUID contribution, String nodeName) {
+    static Set<ObjectVersionId> retrieveFolderVersionIdsInContribution(
+            I_DomainAccess domainAccess, UUID contribution, String nodeName) {
         return FolderAccess.retrieveFolderVersionIdsInContribution(domainAccess, contribution, nodeName);
     }
 

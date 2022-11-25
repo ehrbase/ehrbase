@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,7 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public class SystemAttribute extends RMObjectAttribute {
 
     protected TableField tableField;
@@ -37,7 +37,7 @@ public class SystemAttribute extends RMObjectAttribute {
 
     @Override
     public Field<?> sqlField() {
-        return as(DSL.field(JoinBinder.systemRecordTable.getName()+"."+tableField.getName()));
+        return as(DSL.field(JoinBinder.systemRecordTable.getName() + "." + tableField.getName()));
     }
 
     @Override

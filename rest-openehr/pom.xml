@@ -28,10 +28,14 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.21.1</version>
+        <version>0.22.0</version>
     </parent>
 
     <artifactId>rest-openehr</artifactId>
+
+    <properties>
+        <license-header.dir>../</license-header.dir>
+    </properties>
 
     <dependencies>
         <dependency>

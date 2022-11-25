@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2020 Christian Chevalley, Vitasystems GmbH and Hannover Medical School
-
- * This file is part of Project EHRbase
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,11 @@
  */
 package org.ehrbase.aql.containment;
 
-import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.webtemplate.parser.NodeId;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.ehrbase.service.KnowledgeCacheService;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 /**
  * Convenience class to perform specific Containment operations related to containment path resolution
@@ -37,44 +36,41 @@ public class Containments {
         this.containmentSet = containmentSet.getContainmentList();
     }
 
-    public boolean hasUnresolvedContainment(String templateId){
-        for (Object containment: containmentSet){
+    public boolean hasUnresolvedContainment(String templateId) {
+        for (Object containment : containmentSet) {
 
-
-            if (containment instanceof Containment && ((Containment)containment).getPath(templateId) == null)
+            if (containment instanceof Containment && ((Containment) containment).getPath(templateId) == null)
                 return true;
-
         }
         return false;
     }
 
     public void resolveContainers(String templateId) {
 
-        //traverse the list from the last containment and resolve the ones with path
+        // traverse the list from the last containment and resolve the ones with path
         List<Object> containmentList = new ArrayList<>();
         containmentList.addAll(containmentSet);
 
-       for (int i = 0; i < containmentList.size(); i++){
-           if (containmentList.get(i) instanceof Containment) {
-               Containment containment = (Containment)containmentList.get(i);
+        for (int i = 0; i < containmentList.size(); i++) {
+            if (containmentList.get(i) instanceof Containment) {
+                Containment containment = (Containment) containmentList.get(i);
 
-               if (containment.getClassName().equals("COMPOSITION") && containment.getArchetypeId() == null) {
-                   continue;
-               }
+                if (containment.getClassName().equals("COMPOSITION") && containment.getArchetypeId() == null) {
+                    continue;
+                }
 
-               if (containment.getPath(templateId) == null) {
-                   List sublist = containmentList.subList(i, containmentList.size());
-                   //build the jsonpath expression up to this containment
-                   List<NodeId> jsonQuery = new JsonPathQueryBuilder(sublist).assemble();
-                   //get the path for this template
-                   JsonPathQueryResult jsonPathQueryResult = new Templates(knowledgeCacheService).resolveForTemplate(templateId, jsonQuery);
-                   if (jsonPathQueryResult != null) {
-                       containment.setPath(templateId, jsonPathQueryResult.getAqlPath());
-                   }
-
-               }
-           }
+                if (containment.getPath(templateId) == null) {
+                    List sublist = containmentList.subList(i, containmentList.size());
+                    // build the jsonpath expression up to this containment
+                    List<NodeId> jsonQuery = new JsonPathQueryBuilder(sublist).assemble();
+                    // get the path for this template
+                    JsonPathQueryResult jsonPathQueryResult =
+                            new Templates(knowledgeCacheService).resolveForTemplate(templateId, jsonQuery);
+                    if (jsonPathQueryResult != null) {
+                        containment.setPath(templateId, jsonPathQueryResult.getAqlPath());
+                    }
+                }
+            }
         }
-
     }
 }

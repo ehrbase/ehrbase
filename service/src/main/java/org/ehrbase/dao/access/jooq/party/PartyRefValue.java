@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Vitasystems GmbH and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.dao.access.jooq.party;
 
 import com.nedap.archie.rm.generic.PartyProxy;
@@ -45,20 +44,21 @@ class PartyRefValue {
      * extract the attributes of party_ref
      * @return
      */
-    PartyRefValue attributes(){
+    PartyRefValue attributes() {
 
-        if (partyProxy.getExternalRef() == null) //PartySelf f.e.
-            return this;
+        if (partyProxy.getExternalRef() == null) // PartySelf f.e.
+        return this;
 
         PartyRef partyRef = partyProxy.getExternalRef();
 
         namespace = partyRef != null ? partyRef.getNamespace() : null;
         ObjectId objectId = partyRef.getId();
         value = objectId != null ? objectId.getValue() : null;
-        if (objectId != null && objectId instanceof GenericId)
-            scheme = ((GenericId)objectId).getScheme();
+        if (objectId != null && objectId instanceof GenericId) scheme = ((GenericId) objectId).getScheme();
         type = partyRef != null ? partyRef.getType() : null;
-        objectIdType = partyRef != null ? PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef)) : PartyRefIdType.undefined;
+        objectIdType = partyRef != null
+                ? PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef))
+                : PartyRefIdType.undefined;
 
         return this;
     }

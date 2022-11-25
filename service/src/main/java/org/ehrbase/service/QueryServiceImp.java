@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.service;
 
 import static java.lang.String.format;
@@ -36,6 +35,7 @@ import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.QueryService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
@@ -64,20 +64,32 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ExternalTerminologyValidation tsAdapter;
+    private final TenantService tenantService;
 
     @Autowired
-    public QueryServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, ExternalTerminologyValidation tsAdapter) {
+    public QueryServiceImp(
+            KnowledgeCacheService knowledgeCacheService,
+            DSLContext context,
+            ServerConfig serverConfig,
+            ExternalTerminologyValidation tsAdapter,
+            TenantService tenantService) {
 
         super(knowledgeCacheService, context, serverConfig);
         this.tsAdapter = tsAdapter;
+        this.tenantService = tenantService;
     }
 
-    private static BiConsumer<Map<?,?>,String> checkNonNull = (map, errMsg) -> { if(map == null) throw new IllegalArgumentException(errMsg); };
-    
-
+    private static BiConsumer<Map<?, ?>, String> checkNonNull = (map, errMsg) -> {
+        if (map == null) throw new IllegalArgumentException(errMsg);
+    };
 
     @Override
-    public QueryResultDto query(String queryString, Map<String, Object> parameters, QueryMode queryMode, boolean explain, Map<String, Set<Object>> auditResultMap) {
+    public QueryResultDto query(
+            String queryString,
+            Map<String, Object> parameters,
+            QueryMode queryMode,
+            boolean explain,
+            Map<String, Set<Object>> auditResultMap) {
 
         switch (queryMode) {
             case SQL:
@@ -85,17 +97,19 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
             case AQL:
                 return queryAql(
-                    queryString,
-                    explain,
-                    () -> new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString, parameters),
-                    auditResultMap);
+                        queryString,
+                        explain,
+                        () -> parameters == null
+                                ? new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString)
+                                : new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString, parameters),
+                        auditResultMap);
 
             default:
-                throw new IllegalArgumentException("Invalid query mode:"+queryMode);
+                throw new IllegalArgumentException("Invalid query mode:" + queryMode);
         }
     }
 
-    private QueryResultDto formatResult(AqlResult aqlResult, String queryString, boolean explain){
+    private QueryResultDto formatResult(AqlResult aqlResult, String queryString, boolean explain) {
         QueryResultDto dto = new QueryResultDto();
         dto.setExecutedAQL(queryString);
         dto.setVariables(aqlResult.getVariables());
@@ -104,13 +118,14 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         for (Record record : aqlResult.getRecords()) {
             ResultHolder fieldMap = new ResultHolder();
             for (Field field : record.fields()) {
-                //process non-hidden variables
+                // process non-hidden variables
                 if (aqlResult.variablesContains(field.getName())) {
-                    //check whether to use field name or alias
+                    // check whether to use field name or alias
                     if (record.getValue(field) instanceof JsonElement) {
-                        fieldMap.putResult(field.getName(), new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
-                    } else
-                        fieldMap.putResult(field.getName(), record.getValue(field));
+                        fieldMap.putResult(
+                                field.getName(),
+                                new StructuredString((record.getValue(field)).toString(), StructuredStringFormat.JSON));
+                    } else fieldMap.putResult(field.getName(), record.getValue(field));
                 }
             }
 
@@ -126,23 +141,28 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     }
 
     private static final String ERR_MAP_NON_NULL = "Arg[%s] must not be null";
-    
-    
-    private QueryResultDto queryAql(String queryString, boolean explain, Supplier<AqlResult> resultSupplier, Map<String, Set<Object>> auditResultMap) {
-      checkNonNull.accept(auditResultMap, format(ERR_MAP_NON_NULL, "auditResultMap"));
-      try {
-          AqlResult aqlResult = resultSupplier.get();
-          auditResultMap.putAll(aqlResult.getAuditResultMap());
-          return formatResult(aqlResult, queryString, explain);
-      } catch(RestClientException rce) {
-          throw new BadGatewayException("Bad gateway exception: "+rce.getCause().getMessage());
-      } catch (DataAccessException dae){
-          throw new GeneralRequestProcessingException("Data Access Error: "+dae.getCause().getMessage());
-      } catch (IllegalArgumentException iae){
-          throw new IllegalArgumentException(iae.getMessage());
-      } catch (Exception e){
-          throw new IllegalArgumentException("Could not process query/stored-query, reason: " + e);
-      }
+
+    private QueryResultDto queryAql(
+            String queryString,
+            boolean explain,
+            Supplier<AqlResult> resultSupplier,
+            Map<String, Set<Object>> auditResultMap) {
+        checkNonNull.accept(auditResultMap, format(ERR_MAP_NON_NULL, "auditResultMap"));
+        try {
+            AqlResult aqlResult = resultSupplier.get();
+            auditResultMap.putAll(aqlResult.getAuditResultMap());
+            return formatResult(aqlResult, queryString, explain);
+        } catch (RestClientException rce) {
+            throw new BadGatewayException(
+                    "Bad gateway exception: " + rce.getCause().getMessage());
+        } catch (DataAccessException dae) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error: " + dae.getCause().getMessage());
+        } catch (IllegalArgumentException iae) {
+            throw new IllegalArgumentException(iae.getMessage());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Could not process query/stored-query, reason: " + e);
+        }
     }
 
     private QueryResultDto querySql(String queryString) {
@@ -161,74 +181,77 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         return dto;
     }
 
-    //=== DEFINITION: manage stored queries
+    // === DEFINITION: manage stored queries
     @Override
-    public List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName){
+    public List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName) {
 
         List<QueryDefinitionResultDto> resultDtos = new ArrayList<>();
         try {
-            if (fullyQualifiedName == null || fullyQualifiedName.isEmpty()){
+            if (fullyQualifiedName == null || fullyQualifiedName.isEmpty()) {
                 for (I_StoredQueryAccess storedQueryAccess : StoredQueryAccess.retrieveQualifiedList(getDataAccess())) {
                     resultDtos.add(mapToQueryDefinitionDto(storedQueryAccess));
                 }
-            }
-            else {
-                for (I_StoredQueryAccess storedQueryAccess : StoredQueryAccess.retrieveQualifiedList(getDataAccess(), fullyQualifiedName)) {
+            } else {
+                for (I_StoredQueryAccess storedQueryAccess :
+                        StoredQueryAccess.retrieveQualifiedList(getDataAccess(), fullyQualifiedName)) {
                     resultDtos.add(mapToQueryDefinitionDto(storedQueryAccess));
                 }
             }
-        } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae){
+        } catch (DataAccessException dae) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error:" + dae.getCause().getMessage());
+        } catch (IllegalArgumentException iae) {
             throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new IllegalArgumentException("Could not retrieve stored query, reason:" + e);
         }
 
         return resultDtos;
     }
 
-
     @Override
-    public QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version){
-        String queryQualifiedName = qualifiedName + ((version != null && !version.isEmpty()) ? "/"+version : "");
+    public QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version) {
+        String queryQualifiedName = qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : "");
 
         I_StoredQueryAccess storedQueryAccess;
         try {
             storedQueryAccess = StoredQueryAccess.retrieveQualified(getDataAccess(), queryQualifiedName);
-        } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae){
+        } catch (DataAccessException dae) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error:" + dae.getCause().getMessage());
+        } catch (IllegalArgumentException iae) {
             throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerException(e.getMessage());
         }
 
         return mapToQueryDefinitionDto(storedQueryAccess);
-
     }
 
     @Override
     public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
 
-        //validate the query syntax
+        // validate the query syntax
         try {
             new AqlExpression().parse(queryString);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new IllegalArgumentException("Invalid query, reason:" + e);
         }
 
+        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+
         try {
             String queryQualifiedName = qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : "");
-            I_StoredQueryAccess storedQueryAccess = new StoredQueryAccess(getDataAccess(), queryQualifiedName, queryString);
+            I_StoredQueryAccess storedQueryAccess =
+                    new StoredQueryAccess(getDataAccess(), queryQualifiedName, queryString, tenantIdentifier);
             storedQueryAccess.commit();
             return mapToQueryDefinitionDto(storedQueryAccess);
-        } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae){
+        } catch (DataAccessException dae) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error:" + dae.getCause().getMessage());
+        } catch (IllegalArgumentException iae) {
             throw new IllegalArgumentException(iae.getMessage());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerException(e.getMessage());
         }
     }
@@ -237,17 +260,19 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     public QueryDefinitionResultDto updateStoredQuery(String qualifiedName, String version, String queryString) {
 
         try {
-            I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : ""));
+            I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(
+                    getDataAccess(), qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : ""));
 
             storedQueryAccess.setQueryText(queryString);
 
             storedQueryAccess.update(Timestamp.from(Instant.now()));
             return mapToQueryDefinitionDto(storedQueryAccess);
-        } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae){
+        } catch (DataAccessException dae) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error:" + dae.getCause().getMessage());
+        } catch (IllegalArgumentException iae) {
             throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerException(e.getMessage());
         }
     }
@@ -256,15 +281,17 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     public QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version) {
 
         try {
-            I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : ""));
+            I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(
+                    getDataAccess(), qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : ""));
 
             storedQueryAccess.delete();
             return mapToQueryDefinitionDto(storedQueryAccess);
-        } catch (DataAccessException dae){
-            throw new GeneralRequestProcessingException("Data Access Error:"+dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae){
+        } catch (DataAccessException dae) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error:" + dae.getCause().getMessage());
+        } catch (IllegalArgumentException iae) {
             throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new InternalServerException(e.getMessage());
         }
     }
@@ -272,7 +299,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private QueryDefinitionResultDto mapToQueryDefinitionDto(I_StoredQueryAccess storedQueryAccess) {
         QueryDefinitionResultDto dto = new QueryDefinitionResultDto();
         dto.setSaved(storedQueryAccess.getCreationDate().toInstant().atZone(ZoneId.systemDefault()));
-        dto.setQualifiedName(storedQueryAccess.getReverseDomainName()+"::"+storedQueryAccess.getSemanticId());
+        dto.setQualifiedName(storedQueryAccess.getReverseDomainName() + "::" + storedQueryAccess.getSemanticId());
         dto.setVersion(storedQueryAccess.getSemver());
         dto.setQueryText(storedQueryAccess.getQueryText());
         dto.setType(storedQueryAccess.getQueryType());

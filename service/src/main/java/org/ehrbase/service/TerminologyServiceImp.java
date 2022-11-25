@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Christian Chevalley (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,21 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.service;
 
-import org.ehrbase.terminology.openehr.TerminologyService;
+import java.util.Map;
+import javax.annotation.PostConstruct;
 import org.ehrbase.terminology.openehr.CodeSetAccess;
 import org.ehrbase.terminology.openehr.OpenEHRCodeSetIdentifiers;
 import org.ehrbase.terminology.openehr.TerminologyAccess;
+import org.ehrbase.terminology.openehr.TerminologyService;
 import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
 import org.ehrbase.terminology.openehr.implementation.LocalizedTerminologies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.util.Map;
 
 @Service
 @Transactional
@@ -104,12 +102,12 @@ public class TerminologyServiceImp implements TerminologyService {
 
     @Override
     public String[] terminologyIdentifiers() {
-        return localizedTerminologies.getDefault().terminologyIdentifiers().toArray(new String[]{});
+        return localizedTerminologies.getDefault().terminologyIdentifiers().toArray(new String[] {});
     }
 
     @Override
     public String[] terminologyIdentifiers(String language) {
-        return localizedTerminologies.locale(language).terminologyIdentifiers().toArray(new String[]{});
+        return localizedTerminologies.locale(language).terminologyIdentifiers().toArray(new String[] {});
     }
 
     @Override
@@ -124,12 +122,12 @@ public class TerminologyServiceImp implements TerminologyService {
 
     @Override
     public String[] codeSetIdentifiers() {
-        return localizedTerminologies.getDefault().codeSetIdentifiers().toArray(new String[]{});
+        return localizedTerminologies.getDefault().codeSetIdentifiers().toArray(new String[] {});
     }
 
     @Override
     public String[] codeSetIdentifiers(String language) {
-        return localizedTerminologies.locale(language).codeSetIdentifiers().toArray(new String[]{});
+        return localizedTerminologies.locale(language).codeSetIdentifiers().toArray(new String[] {});
     }
 
     @Override
@@ -138,12 +136,12 @@ public class TerminologyServiceImp implements TerminologyService {
     }
 
     @Override
-    public AttributeCodesetMapping codesetMapping(){
+    public AttributeCodesetMapping codesetMapping() {
         return localizedTerminologies.codesetMapping();
     }
 
     @Override
-    public LocalizedTerminologies localizedTerminologies(){
+    public LocalizedTerminologies localizedTerminologies() {
         return localizedTerminologies;
     }
 }
