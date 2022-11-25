@@ -187,7 +187,7 @@ public class QueryProcessor extends TemplateMetaData {
                     unionSetQuery = select;
                     first = false;
                 } else {
-                    unionSetQuery.union(select);
+                    unionSetQuery.unionAll(select);
                 }
             }
         }
