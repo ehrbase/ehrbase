@@ -1,8 +1,8 @@
-# EHRbase ![Maven Central](https://img.shields.io/maven-central/v/org.ehrbase.openehr/server) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ehrbase/ehrbase?sort=semver) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ehrbase_ehrbase&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ehrbase_ehrbase) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md) 
+# EHRbase ![Maven Central](https://img.shields.io/maven-central/v/org.ehrbase.openehr/server) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ehrbase/ehrbase?sort=semver) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ehrbase_ehrbase&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ehrbase_ehrbase) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md) 
 
 [![EHRbase Logo](ehrbase.png)](ehrbase.png) 
 
-EHRbase is an [openEHR](openehr.org) Clinical Data Repository, providing a standard-based backend for interoperable clinical applications. It implements the latest version of the openEHR Reference Model (RM 1.0.4) and version 1.4 of the Archetype Definition Language (ADL). Applications can use the capabilities of EHRbase through the latest version of the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and model-based queries using the [Archetype Query Language](https://specifications.openehr.org/releases/QUERY/latest/AQL.html).
+EHRbase is an [openEHR](https://www.openehr.org/) Clinical Data Repository, providing a standard-based backend for interoperable clinical applications. It implements the latest version of the openEHR Reference Model (RM 1.0.4) and version 1.4 of the Archetype Definition Language (ADL). Applications can use the capabilities of EHRbase through the latest version of the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and model-based queries using the [Archetype Query Language](https://specifications.openehr.org/releases/QUERY/latest/AQL.html).
 
 ----
 
@@ -150,18 +150,7 @@ Please be aware that `@formatter:off/on` should only be used on rare occasions t
 
 ## Running the tests
 
-This command will run all tests from `tests/robot` folder.
-DB and server application will be started/stopped by the tests accordingly. You *must not* start them by hand.
-
-> NOTE: Make sure you meet the PREREQUISITES mentioned in tests/README.md prior to test execution.
->
-> Please Check the README in `tests` folder for more details.
-
-```bash
-cd tests
-./run_local_tests.sh
-```
-
+For integration tests please refer to the [integration-test](https://github.com/ehrbase/integration-tests)
 
 ## Deployment
 
@@ -170,7 +159,7 @@ cd tests
 
 ## Updating
 
-Before updating to a new version of EHRBase check UPDATING.md for any backwards-incompatible changes and additional
+Before updating to a new version of EHRBase check [UPDATING.md](UPDATING.md) for any backwards-incompatible changes and additional
 steps needed in EHRBase. New Releases may introduce DB changes. It is thus recommend to make a DB backup before
 updating.
 
