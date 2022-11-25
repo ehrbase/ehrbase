@@ -46,9 +46,9 @@ public interface I_KnowledgeCache {
      * @throws StateConflictException when template with same template ID is already in the system
      * @throws InternalServerException when an unspecified problem occurs
      */
-    String addOperationalTemplate(InputStream content);
+    String addOperationalTemplate(InputStream content, String tenantIdentifier);
 
-    String addOperationalTemplate(OPERATIONALTEMPLATE template);
+    String addOperationalTemplate(OPERATIONALTEMPLATE template, String tenantIdentifier);
 
     List<TemplateMetaData> listAllOperationalTemplates() throws IOException;
 

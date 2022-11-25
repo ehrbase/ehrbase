@@ -51,13 +51,13 @@ public class PersistedPartyProxy {
         this.domainAccess = domainAccess;
     }
 
-    public UUID create(PartyProxy partyProxy) {
+    public UUID create(PartyProxy partyProxy, String tenantIdentifier) {
         if (PartyUtils.isPartySelf(partyProxy)) {
-            return new PersistedPartySelf(domainAccess).store(partyProxy);
+            return new PersistedPartySelf(domainAccess).store(partyProxy, tenantIdentifier);
         } else if (PartyUtils.isPartyRelated(partyProxy)) {
-            return new PersistedPartyRelated(domainAccess).store(partyProxy);
+            return new PersistedPartyRelated(domainAccess).store(partyProxy, tenantIdentifier);
         } else if (PartyUtils.isPartyIdentified(partyProxy)) {
-            return new PersistedPartyIdentified(domainAccess).store(partyProxy);
+            return new PersistedPartyIdentified(domainAccess).store(partyProxy, tenantIdentifier);
         } else {
             throw new InternalServerException(
                     "Unhandled Party type detected:" + partyProxy.getClass().getSimpleName());
@@ -110,13 +110,13 @@ public class PersistedPartyProxy {
         return proxy.hasNext() ? proxy.next() : null;
     }
 
-    public UUID getOrCreate(PartyProxy partyProxy) {
+    public UUID getOrCreate(PartyProxy partyProxy, String tenantIdentifier) {
         if (PartyUtils.isPartySelf(partyProxy)) {
-            return new PersistedPartySelf(domainAccess).getOrCreate(partyProxy);
+            return new PersistedPartySelf(domainAccess).getOrCreate(partyProxy, tenantIdentifier);
         } else if (PartyUtils.isPartyRelated(partyProxy)) {
-            return new PersistedPartyRelated(domainAccess).getOrCreate(partyProxy);
+            return new PersistedPartyRelated(domainAccess).getOrCreate(partyProxy, tenantIdentifier);
         } else if (PartyUtils.isPartyIdentified(partyProxy)) {
-            return new PersistedPartyIdentified(domainAccess).getOrCreate(partyProxy);
+            return new PersistedPartyIdentified(domainAccess).getOrCreate(partyProxy, tenantIdentifier);
         } else {
             throw new InternalServerException(
                     "Unhandled Party type detected:" + partyProxy.getClass().getSimpleName());
@@ -127,7 +127,13 @@ public class PersistedPartyProxy {
      * Get or create a PartyIdentified instance with the given parameters.
      */
     public UUID getOrCreate(
-            String name, String code, String scheme, String namespace, String type, List<DvIdentifier> identifiers) {
+            String name,
+            String code,
+            String scheme,
+            String namespace,
+            String type,
+            List<DvIdentifier> identifiers,
+            String tenantIdentifier) {
         // Check conformance to openEHR spec
         if (identifiers == null || identifiers.isEmpty()) {
             throw new IllegalArgumentException("Can't create PartyIdentified with invalid list of identifiers.");
@@ -139,7 +145,7 @@ public class PersistedPartyProxy {
         // Create and persist object
         var partyIdentified =
                 new PartyIdentified(new PartyRef(new GenericId(code, scheme), namespace, type), name, identifiers);
-        return getOrCreate(partyIdentified);
+        return getOrCreate(partyIdentified, tenantIdentifier);
     }
 
     /**

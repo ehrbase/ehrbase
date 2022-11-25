@@ -37,15 +37,17 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      *
      * @param domain SQL context
      * @param ehrId  the EHR uuid this contribution belong to
+     * @param tenantIdentifier the tenant identifier to which the ContributionAccess object belongs to
      * @return a new minimal {@link I_ContributionAccess}
      */
-    static I_ContributionAccess getInstance(I_DomainAccess domain, UUID ehrId) {
+    static I_ContributionAccess getInstance(I_DomainAccess domain, UUID ehrId, String tenantIdentifier) {
         return new ContributionAccess(
                 domain.getContext(),
                 domain.getKnowledgeManager(),
                 domain.getIntrospectService(),
                 domain.getServerConfig(),
-                ehrId);
+                ehrId,
+                tenantIdentifier);
     }
 
     /**
@@ -206,6 +208,11 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      *
      */
     void setEhrId(UUID ehrId);
+
+    /**
+     * get the contribution namespace
+     */
+    String getNamespace();
 
     String getDataType();
 

@@ -86,7 +86,7 @@ public class PersistedPartyIdentified extends PersistedParty {
     }
 
     @Override
-    public UUID store(PartyProxy partyProxy) {
+    public UUID store(PartyProxy partyProxy, String tenantIdentifier) {
         PartyRefValue partyRefValue = new PartyRefValue(partyProxy).attributes();
 
         // store a new party identified
@@ -100,7 +100,8 @@ public class PersistedPartyIdentified extends PersistedParty {
                         PARTY_IDENTIFIED.PARTY_REF_SCHEME,
                         PARTY_IDENTIFIED.PARTY_REF_TYPE,
                         PARTY_IDENTIFIED.PARTY_TYPE,
-                        PARTY_IDENTIFIED.OBJECT_ID_TYPE)
+                        PARTY_IDENTIFIED.OBJECT_ID_TYPE,
+                        PARTY_IDENTIFIED.NAMESPACE)
                 .values(
                         ((PartyIdentified) partyProxy).getName(),
                         partyRefValue.getNamespace(),
@@ -108,12 +109,13 @@ public class PersistedPartyIdentified extends PersistedParty {
                         partyRefValue.getScheme(),
                         partyRefValue.getType(),
                         PartyType.party_identified,
-                        partyRefValue.getObjectIdType())
+                        partyRefValue.getObjectIdType(),
+                        tenantIdentifier)
                 .returning(PARTY_IDENTIFIED.ID)
                 .fetchOne()
                 .getId();
         // store identifiers
-        new PartyIdentifiers(domainAccess).store((PartyIdentified) partyProxy, partyIdentifiedUuid);
+        new PartyIdentifiers(domainAccess).store((PartyIdentified) partyProxy, partyIdentifiedUuid, tenantIdentifier);
 
         return partyIdentifiedUuid;
     }

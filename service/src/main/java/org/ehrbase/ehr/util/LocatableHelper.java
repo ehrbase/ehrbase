@@ -19,7 +19,7 @@ package org.ehrbase.ehr.util;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.ehrbase.webtemplate.parser.AqlPath;
+import org.ehrbase.aql.dto.path.AqlPath;
 
 /**
  * Utility class for path manipulation.

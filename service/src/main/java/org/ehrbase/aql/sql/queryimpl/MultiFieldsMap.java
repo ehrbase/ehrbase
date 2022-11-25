@@ -19,6 +19,7 @@ package org.ehrbase.aql.sql.queryimpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.ehrbase.aql.definition.LateralJoinDefinition;
 
 public class MultiFieldsMap {
 
@@ -78,5 +79,32 @@ public class MultiFieldsMap {
             if (multiFields.fieldsSize() > upperbound) upperbound = multiFields.fieldsSize();
         }
         return upperbound;
+    }
+
+    /**
+     * traverse the list of existing definition and identify a lateral join matching this variable path, template and SQL expression
+     * @param templateId
+     * @param candidateLateralExpression
+     * @return
+     */
+    public Optional<LateralJoinDefinition> matchingLateralJoin(String templateId, String candidateLateralExpression) {
+        return matchingLateralJoin(multiFieldsListAsMap.values(), templateId, candidateLateralExpression);
+    }
+
+    /**
+     * traverse the list of existing definition and identify a lateral join matching this variable path, template and SQL expression
+     * @param multiFieldsCollection
+     * @param templateId
+     * @param candidateLateralExpression
+     * @return
+     */
+    public static Optional<LateralJoinDefinition> matchingLateralJoin(
+            Collection<MultiFields> multiFieldsCollection, String templateId, String candidateLateralExpression) {
+        return multiFieldsCollection.stream()
+                .map(MultiFields::getVariableDefinition)
+                .map(vd -> vd.getLastLateralJoin(templateId))
+                .filter(Objects::nonNull)
+                .filter(lj -> lj.getSqlExpression().equals(candidateLateralExpression))
+                .findFirst();
     }
 }

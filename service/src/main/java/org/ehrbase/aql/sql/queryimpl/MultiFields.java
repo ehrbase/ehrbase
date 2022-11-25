@@ -72,7 +72,7 @@ public class MultiFields {
         return fields.size();
     }
 
-    private QualifiedAqlField getQualifiedField(int index) {
+    public QualifiedAqlField getQualifiedField(int index) {
         return fields.get(index);
     }
 
@@ -80,14 +80,12 @@ public class MultiFields {
         return fields.iterator();
     }
 
-    public QualifiedAqlField getLastQualifiedField() {
+    public QualifiedAqlField getLastQualifiedField() throws UnknownVariableException {
         if (fieldsSize() > 0) return fields.get(fieldsSize() - 1);
-        else
-            return new QualifiedAqlField(
-                    new NullField(variableDefinition, DefaultColumnId.value(variableDefinition)).instance());
+        else throw new UnknownVariableException(variableDefinition.getPath());
     }
 
-    public QualifiedAqlField getQualifiedFieldOrLast(int index) {
+    public QualifiedAqlField getQualifiedFieldOrLast(int index) throws UnknownVariableException {
         if (index >= fieldsSize()) return getLastQualifiedField();
         else return getQualifiedField(index);
     }

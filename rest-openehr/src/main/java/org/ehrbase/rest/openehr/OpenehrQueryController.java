@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -55,6 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@TenantAware
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/query")
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {

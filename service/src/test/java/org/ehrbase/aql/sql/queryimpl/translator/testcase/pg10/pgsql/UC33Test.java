@@ -27,7 +27,7 @@ public class UC33Test extends UC33 {
     public UC33Test() {
         super();
         this.expectedSqlExpression =
-                "select ARRAY.COLUMN as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\" join lateral (\n"
+                "select (ARRAY.COLUMN)::TEXT as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\" join lateral (\n"
                         + "  select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n"
                         + "  cast(ehr_join.id as uuid), \n"
                         + "  'local'\n"

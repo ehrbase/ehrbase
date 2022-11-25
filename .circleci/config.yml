@@ -222,11 +222,21 @@ workflows:
           requires:
             - build-ehrbase
 
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - SECURITY-test:
           context: org-global
           requires:
             - build-ehrbase
             - QUERYSERVICE-test-1
+
+      - CORS-test:
+          context: org-global
+          requires:
+            - build-ehrbase
 
       - ADMIN-test:
           context: org-global
@@ -263,7 +273,9 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
+            - CORS-test
             - ADMIN-test
 
       - sonar-analysis:
@@ -465,7 +477,17 @@ workflows:
           requires:
             - build-ehrbase
 
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build-ehrbase
+
       - SECURITY-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+
+      - CORS-test:
           context: org-global
           requires:
             - build-ehrbase
@@ -505,7 +527,9 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
+            - CORS-test
             - ADMIN-test
 
       - sonar-analysis:
@@ -729,7 +753,15 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - NEWQUERY-test-set:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - SECURITY-test:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
+      - CORS-test:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
@@ -767,7 +799,9 @@ workflows:
             - KNOWLEDGE-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
+            - NEWQUERY-test-set
             - SECURITY-test
+            - CORS-test
             - ADMIN-test
 
 
@@ -840,6 +874,7 @@ jobs:
       - save-build-ehrbase-job-caches
       - collect-ehrbase-unittest-results
       - save-ehrbase-test-results
+      #- git-clone-robot-integration-tests-repo
       # - run: echo MOCKED JOB 1          # USE FOR PIPELINE DEBUGGING ONLY
       # - cache-out-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
       # - cache-in-ehrbase-workspace     # USE FOR PIPELINE DEBUGGING ONLY
@@ -868,10 +903,13 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "Sanity"
           test-suite-path: "SANITY_TESTS"
           test-suite-name: "SANITY"
+      - persist-robot-requirements-file
 
   COMPOSITION-tests-1:
     executor: docker-py3-java11-postgres
@@ -879,6 +917,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_create"
           test-suite-path: "COMPOSITION_TESTS"
@@ -891,6 +931,8 @@ jobs:
       - run: echo MOCKED JOB 3
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get"
           test-suite-path: "COMPOSITION_TESTS"
@@ -902,6 +944,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_get_versioned"
           test-suite-path: "COMPOSITION_TESTS"
@@ -913,6 +957,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_update"
           test-suite-path: "COMPOSITION_TESTS"
@@ -924,6 +970,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_delete"
           test-suite-path: "COMPOSITION_TESTS"
@@ -935,6 +983,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -946,6 +996,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -957,6 +1009,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -968,6 +1022,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -979,6 +1035,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -990,6 +1048,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1001,6 +1061,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1012,6 +1074,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1023,6 +1087,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_dtz"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1034,6 +1100,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "compositionANDcomposition_ism_transitions"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1045,6 +1113,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "Template"
           test-suite-path: "TEMPLATE_TESTS"
@@ -1056,6 +1126,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "HeadersChecks"
           test-suite-path: "COMPOSITION_TESTS"
@@ -1067,6 +1139,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EhrScapeTag"
           test-suite-path: "EHRSCAPE_TESTS"
@@ -1077,6 +1151,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "MOCKSUITE"
           test-suite-path: "MOCK_FHIR_TESTS"
@@ -1088,6 +1164,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "CONTRIBUTION"
           test-suite-path: "CONTRIBUTION_TESTS"
@@ -1099,6 +1177,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "directory"
           test-suite-path: "DIRECTORY_TESTS"
@@ -1110,6 +1190,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EHR_SERVICE"
           test-suite-path: "EHR_SERVICE_TESTS"
@@ -1120,6 +1202,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "EHR_STATUS"
           test-suite-path: "EHR_STATUS_TESTS"
@@ -1130,6 +1214,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "OPT"
           test-suite-path: "KNOWLEDGE_TESTS"
@@ -1142,11 +1228,24 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           include-tags: "aql_adhoc-queryANDaql_empty_db"
           test-suite-path: "QUERY_SERVICE_TESTS"
           test-suite-name: "ADHOC-QUERY-1"
 
+  NEWQUERY-test-set:
+    executor: docker-py3-java11-postgres
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          include-tags: "NEW_query_test_set"
+          test-suite-path: "QUERY_TESTS"
+          test-suite-name: "NEW_QUERY_TESTS"
 
   QUERYSERVICE-test-2:
     # executor: docker-py3-java11-postgres
@@ -1156,6 +1255,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
       - restore_cache:
           keys:
@@ -1219,13 +1320,33 @@ jobs:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: "http://localhost:8081/auth/realms/ehrbase"
     steps:
       - checkout
-      - install-and-configure-keycloak
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - install-and-configure-keycloak
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
           include-tags: "SECURITY_oauth"
           # test-suite-path: ""
           test-suite-name: "SECURITY"
+
+  CORS-test:
+    # executor: docker-py3-java11-postgres
+    executor: machine-ubuntu-2004
+    environment:
+      SUT: TEST
+      ADMINAPI_ACTIVE: "TRUE"
+      SYSTEM_ALLOWTEMPLATEOVERWRITE: "TRUE"
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          sut: "TEST"
+          include-tags: "HTTPACCESSCONTROL"
+          test-suite-path: "CORS_TESTS"
+          test-suite-name: "CORS"
 
   ADMIN-test:
     # executor: docker-py3-java11-postgres
@@ -1237,6 +1358,8 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
           sut: "ADMIN-TEST"
           include-tags: "ADMIN"
@@ -1412,7 +1535,7 @@ commands:
             fi
             jps
             cd ~/projects/tests
-            robot --include << parameters.include-tags >> \
+            robot --include "<< parameters.include-tags >>" \
                   --skip TODO --skip future -e obsolete -e libtest \
                   --console dotted \
                   --loglevel TRACE \
@@ -1422,7 +1545,7 @@ commands:
                   --flattenkeywords name:_resources.* \
                   --outputdir results/<< parameters.test-suite-name >> \
                   --timestampoutputs \
-                  --name << parameters.test-suite-name >> \
+                  --name "<< parameters.test-suite-name >>" \
                   -v SUT:<< parameters.sut >> \
                   -v NODENAME:<< parameters.nodename >> \
                   -v ALLOW-TEMPLATE-OVERWRITE:<< parameters.allow-template-overwrite >> \
@@ -1439,13 +1562,13 @@ commands:
     description: Persist Robot tests folder to workspace
     parameters:
       suite-results-folder-name:
-        description: Titel of generated Robot Outputs
+        description: Title of generated Robot Outputs
         type: string
     steps:
       - run:
           name: PERSIST ROBOT TEST RESULTS
           when: always
-          command: echo "persist test results"
+          command: echo "persist test results & requirements.txt file"
       - persist_to_workspace:
           root: /home/circleci
           paths:
@@ -1464,8 +1587,7 @@ commands:
     steps:
       - run:
           command: |
-            cd tests
-            pip install -r requirements.txt
+            pip install -r ~/projects/tests/requirements.txt
       - run:
           name: POST PROCESS & MERGE TEST RESULTS
           when: always
@@ -1504,7 +1626,11 @@ commands:
           path: ~/projects/tests/results/
 
 
-
+  persist-robot-requirements-file:
+    steps:
+      - persist_to_workspace:
+          root: /home/circleci
+          paths: projects/tests/requirements.txt
 
 
   # ///////////////////////////////////////////////////////////////////////////
@@ -1519,6 +1645,39 @@ commands:
             git clone git@github.com:ehrbase/openEHR_SDK.git
             ls -la
   
+  git-clone-robot-integration-tests-repo:
+    steps:
+      - run:
+          name: CLONE ROBOT INTEGRATION TESTS REPO
+          command: |
+            pwd
+            ls -la
+            integration_folder=/home/circleci/projects/integration-tests
+            if [ -d "$integration_folder" ]; then
+              echo "'$integration_folder' found! Skipping clone repo to path '$integration_folder'"
+            else
+              echo "'$integration_folder' not found! Cloning external repo in progress ..."
+              git clone git@github.com:ehrbase/integration-tests.git
+              ls -la
+            fi
+
+  move-integration-tests-content-to-local-tests-folder:
+    steps:
+      - run:
+          name: MOVE INTEGRATION TESTS CONTENT TO LOCAL PROJECT TESTS FOLDER
+          command: |
+            pwd
+            robot_folder_path=/home/circleci/projects/tests/robot/
+            if [ -d "robot_folder_path" ]; then
+              echo "Tests folder from root project contains robot folder"
+              ls -la /home/circleci/projects/tests/robot/
+            else
+              echo "Moving files and folders to root project, tests folder ..."
+              mv -v /home/circleci/projects/integration-tests/tests/* /home/circleci/projects/tests/
+              ls -la /home/circleci/projects/tests/
+              echo "-------------------"
+              ls -la /home/circleci/projects/tests/robot/
+            fi
 
   git-checkout-sdk-sync-branch:
     steps:
@@ -1960,6 +2119,8 @@ commands:
       - run:
           name: Install Python requirements
           command: |
+            pwd
+            ls -la
             python -c "import site; print(site.getsitepackages())"
             pip install -r ~/projects/tests/requirements.txt
 

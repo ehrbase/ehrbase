@@ -51,7 +51,7 @@ class PartyIdentifiers {
      * @param partyIdentified
      * @param partyIdentifiedUuid
      */
-    void store(PartyIdentified partyIdentified, UUID partyIdentifiedUuid) {
+    void store(PartyIdentified partyIdentified, UUID partyIdentifiedUuid, String tenantIdentifier) {
         List<DvIdentifier> identifierList = partyIdentified.getIdentifiers();
 
         if (identifierList != null) {
@@ -65,13 +65,15 @@ class PartyIdentifiers {
                                     IDENTIFIER.ID_VALUE,
                                     IDENTIFIER.ISSUER,
                                     IDENTIFIER.ASSIGNER,
-                                    IDENTIFIER.TYPE_NAME)
+                                    IDENTIFIER.TYPE_NAME,
+                                    IDENTIFIER.NAMESPACE)
                             .values(
                                     partyIdentifiedUuid,
                                     identifier.getId(),
                                     identifier.getIssuer(),
                                     identifier.getAssigner(),
-                                    identifier.getType())
+                                    identifier.getType(),
+                                    tenantIdentifier)
                             .execute();
             }
         }

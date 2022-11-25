@@ -44,7 +44,7 @@ public interface TemplateStorage {
      * @param template @see {@link OPERATIONALTEMPLATE}
      * @throws RuntimeException template Id or uuid are not unique
      */
-    void storeTemplate(OPERATIONALTEMPLATE template);
+    void storeTemplate(OPERATIONALTEMPLATE template, String tenantIdentifier);
 
     /**
      * Find and return a saved Template by templateId

@@ -60,7 +60,7 @@ public class AttestationAccess extends DataAccess implements I_AttestationAccess
             throw new InternalServerException("fetching attestation failed", e);
         }
 
-        auditDetailsAccess = new AuditDetailsAccess(getDataAccess());
+        auditDetailsAccess = new AuditDetailsAccess(getDataAccess(), this.attestationRecord.getNamespace());
         try {
             auditDetailsAccess.setRecord(
                     getDataAccess().getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(getAuditId())));

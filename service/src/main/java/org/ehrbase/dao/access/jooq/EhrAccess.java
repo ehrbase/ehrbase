@@ -53,6 +53,7 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
+import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.ContributionDef;
@@ -67,6 +68,7 @@ import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Record1;
@@ -119,16 +121,17 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             UUID systemId,
             UUID directoryId,
             UUID accessId,
-            UUID ehrId) {
+            UUID ehrId,
+            String tenantIdentifier) {
         super(context, null, null, serverConfig);
 
         this.ehrRecord = context.newRecord(EHR_);
         // checking for and executing case of custom ehr ID
-        ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UUID::randomUUID));
+        ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UuidGenerator::randomUUID));
 
         // init a new EHR_STATUS with default values to associate with this EHR
-        this.statusAccess = new StatusAccess(this, ehrRecord.getId());
-        this.statusAccess.getStatusRecord().setId(UUID.randomUUID());
+        this.statusAccess = new StatusAccess(this, ehrRecord.getId(), tenantIdentifier);
+        this.statusAccess.getStatusRecord().setId(UuidGenerator.randomUUID());
         this.statusAccess.getStatusRecord().setIsModifiable(true);
         this.statusAccess.getStatusRecord().setIsQueryable(true);
         this.statusAccess.getStatusRecord().setParty(partyId);
@@ -137,6 +140,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         ehrRecord.setSystemId(systemId);
         ehrRecord.setDirectory(directoryId);
         ehrRecord.setAccess(accessId);
+        ehrRecord.setNamespace(tenantIdentifier);
 
         if (ehrRecord.getSystemId() == null) { // storeComposition a default entry for the current system
             ehrRecord.setSystemId(I_SystemAccess.createOrRetrieveLocalSystem(this));
@@ -145,7 +149,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         this.isNew = true;
 
         // associate a contribution with this EHR
-        contributionAccess = I_ContributionAccess.getInstance(this, ehrRecord.getId());
+        contributionAccess = I_ContributionAccess.getInstance(this, ehrRecord.getId(), tenantIdentifier);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
     }
 
@@ -155,11 +159,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      * @param domainAccess DB domain access object
      * @param ehrId        EHR ID, necessary to create an EHR status and contributions
      */
-    private EhrAccess(I_DomainAccess domainAccess, UUID ehrId) {
+    private EhrAccess(I_DomainAccess domainAccess, UUID ehrId, String tenantIdentifier) {
         super(domainAccess);
-        statusAccess = new StatusAccess(this, ehrId); // minimal association with STATUS
+        statusAccess = new StatusAccess(this, ehrId, tenantIdentifier); // minimal association with STATUS
         // associate a contribution with this EHR
-        contributionAccess = I_ContributionAccess.getInstance(this, ehrId);
+        contributionAccess = I_ContributionAccess.getInstance(this, ehrId, I_TenantAccess.currentTenantIdentifier());
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
     }
 
@@ -263,8 +267,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             throw new IllegalArgumentException("Version number must be > 0");
         }
 
-        EhrAccess ehrAccess =
-                new EhrAccess(domainAccess, ehrId); // minimal access, needs attributes to be set before returning
+        EhrAccess ehrAccess = new EhrAccess(
+                domainAccess,
+                ehrId,
+                I_TenantAccess
+                        .currentTenantIdentifier()); // minimal access, needs attributes to be set before returning
         EhrRecord record;
 
         // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten
@@ -350,7 +357,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     public static I_EhrAccess retrieveInstance(I_DomainAccess domainAccess, UUID ehrId) {
         DSLContext context = domainAccess.getContext();
-        EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId);
+        EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId, I_TenantAccess.currentTenantIdentifier());
 
         EhrRecord record;
 
@@ -608,7 +615,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                     this.contributionAccess.getAuditsSystemId(),
                     this.contributionAccess.getAuditsCommitter(),
                     ContributionChangeType.MODIFICATION,
-                    this.contributionAccess.getAuditsDescription()));
+                    this.contributionAccess.getAuditsDescription(),
+                    ehrRecord.getNamespace()));
 
             statusAccess.setOtherDetails(otherDetails);
             result = statusAccess.update(
@@ -672,8 +680,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             // So the plain EHR object change, e.g. only with new directory reference, shall not have a separate
             // contribution.
         } else if (hasStatusChanged) {
-            this.contributionAccess =
-                    new ContributionAccess(this, getEhrRecord().getId());
+            this.contributionAccess = new ContributionAccess(
+                    this, getEhrRecord().getId(), getEhrRecord().getNamespace());
             provisionContributionAccess(
                     contributionAccess, committerId, systemId, description, state, contributionChangeType);
             this.contributionAccess.commit();
@@ -843,7 +851,9 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             setName(status.getName());
         }
 
-        UUID subjectUuid = new PersistedPartyProxy(getDataAccess()).getOrCreate(status.getSubject());
+        UUID subjectUuid = new PersistedPartyProxy(getDataAccess())
+                .getOrCreate(
+                        status.getSubject(), getStatusAccess().getStatusRecord().getNamespace());
         setParty(subjectUuid);
 
         hasStatusChanged = true;

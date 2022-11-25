@@ -17,12 +17,16 @@
  */
 package org.ehrbase.service;
 
+import com.nedap.archie.query.RMPathQuery;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import com.nedap.archie.rmobjectvalidator.APathQueryCache;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.UnprocessableEntityException;
@@ -37,6 +41,7 @@ import org.ehrbase.webtemplate.model.WebTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -52,28 +57,69 @@ public class ValidationServiceImp implements ValidationService {
 
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
-    private static final RMObjectValidator RM_OBJECT_VALIDATOR =
-            new RMObjectValidator(ArchieRMInfoLookup.getInstance(), s -> null);
-
     private final KnowledgeCacheService knowledgeCacheService;
 
     private final TerminologyService terminologyService;
 
-    private final CompositionValidator compositionValidator = new CompositionValidator();
+    private final ThreadLocal<CompositionValidator> compositionValidator;
+
+    private final Map<String, RMPathQuery> rmPathQueryCache = new ConcurrentHashMap<>();
 
     public ValidationServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             TerminologyService terminologyService,
             ServerConfig serverConfig,
-            ObjectProvider<ExternalTerminologyValidation> objectProvider) {
+            ObjectProvider<ExternalTerminologyValidation> objectProvider,
+            @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
 
-        objectProvider.ifAvailable(compositionValidator::setExternalTerminologyValidation);
-
-        if (serverConfig.isDisableStrictValidation()) {
+        boolean disableStrictValidation = serverConfig.isDisableStrictValidation();
+        if (disableStrictValidation) {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
-            compositionValidator.setRunInvariantChecks(false);
+        }
+
+        APathQueryCache delegator;
+        if (sharedAqlQueryCache) {
+            delegator = new APathQueryCache() {
+                @Override
+                public RMPathQuery getApathQuery(String query) {
+                    return rmPathQueryCache.computeIfAbsent(query, RMPathQuery::new);
+                }
+            };
+        } else {
+            logger.warn("shared RMPathQueryCache is disabled");
+            delegator = null;
+        }
+        compositionValidator = ThreadLocal.withInitial(() -> {
+            CompositionValidator validator =
+                    createCompositionValidator(objectProvider, disableStrictValidation, delegator);
+            return validator;
+        });
+    }
+
+    private static CompositionValidator createCompositionValidator(
+            ObjectProvider<ExternalTerminologyValidation> objectProvider,
+            boolean disableStrictValidation,
+            APathQueryCache delegator) {
+        CompositionValidator validator = new CompositionValidator();
+        objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
+        validator.setRunInvariantChecks(!disableStrictValidation);
+        setSharedAqlQueryCache(validator, delegator);
+        return validator;
+    }
+
+    private static void setSharedAqlQueryCache(CompositionValidator validator, APathQueryCache delegator) {
+        if (delegator == null) {
+            return;
+        }
+        try {
+            // as RMObjectValidator.queryCache is hard-coded, it is replaced via reflection
+            Field queryCacheField = RMObjectValidator.class.getDeclaredField("queryCache");
+            queryCacheField.setAccessible(true);
+            queryCacheField.set(validator.getRmObjectValidator(), delegator);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException("Failed to inject shared RMPathQuery cache", e);
         }
     }
 
@@ -87,7 +133,7 @@ public class ValidationServiceImp implements ValidationService {
         }
 
         // Validate the composition based on WebTemplate
-        var constraintViolations = compositionValidator.validate(composition, webTemplate);
+        var constraintViolations = compositionValidator.get().validate(composition, webTemplate);
         if (!constraintViolations.isEmpty()) {
             throw new ConstraintViolationException(constraintViolations);
         }
@@ -136,7 +182,8 @@ public class ValidationServiceImp implements ValidationService {
         }
 
         // first, check the built EhrStatus using the general Archie RM-Validator
-        List<RMObjectValidationMessage> rmObjectValidationMessages = RM_OBJECT_VALIDATOR.validate(ehrStatus);
+        List<RMObjectValidationMessage> rmObjectValidationMessages =
+                compositionValidator.get().getRmObjectValidator().validate(ehrStatus);
 
         if (!rmObjectValidationMessages.isEmpty()) {
             StringBuilder stringBuilder = new StringBuilder();

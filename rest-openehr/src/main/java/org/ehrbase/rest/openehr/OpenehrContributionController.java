@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",

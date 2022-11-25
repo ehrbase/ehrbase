@@ -66,7 +66,8 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
 
     @Override
     public MultiFields makeField(
-            String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause) {
+            String templateId, String identifier, I_VariableDefinition variableDefinition, Clause clause)
+            throws UnknownVariableException {
         // resolve composition attributes and/or context
         String columnAlias = variableDefinition.getPath();
         FieldResolutionContext fieldResolutionContext = new FieldResolutionContext(
@@ -140,7 +141,8 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
     }
 
     @Override
-    public MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition) {
+    public MultiFields whereField(String templateId, String identifier, I_VariableDefinition variableDefinition)
+            throws UnknownVariableException {
         return makeField(templateId, identifier, variableDefinition, Clause.WHERE);
     }
 
@@ -170,7 +172,8 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
         return joinSetup;
     }
 
-    private void deriveLateralJoinForPredicate(I_VariableDefinition variableDefinition, Field retField) {
+    private void deriveLateralJoinForPredicate(I_VariableDefinition variableDefinition, Field retField)
+            throws UnknownVariableException {
 
         // encode a pseudo variable to get the predicate in the where clause
         VariableDefinition pseudoVar = new VariableDefinition(
@@ -201,7 +204,7 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                         DSL.field(variableDefinition.getPredicateDefinition().getOperand2())
                                 .cast(String.class)));
 
-        new LateralJoins().create(NIL_TEMPLATE, selectQuery, variableDefinition, Clause.SELECT);
+        LateralJoins.create(NIL_TEMPLATE, selectQuery, variableDefinition, Clause.SELECT);
     }
 
     private Comparator comparatorFromSQL(String sql) {

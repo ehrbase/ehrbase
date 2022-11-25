@@ -48,6 +48,7 @@ import org.jooq.impl.DSL;
  * @author Renaud Subiger
  * @since 1.0
  */
+@SuppressWarnings("serial")
 public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> {
 
     // source of pattern: https://gist.github.com/gregopet/8d0feb4fe4075a8525c1175243ee38b0
@@ -59,28 +60,31 @@ public class SysPeriodBinder implements Binding<Object, AbstractMap.SimpleEntry<
     public Converter<Object, AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>> converter() {
         return new Converter<>() {
 
+            @SuppressWarnings("unchecked")
             @Override
             public AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime> from(Object databaseObject) {
                 if (databaseObject == null) {
                     return null;
-                }
+                } else if (databaseObject instanceof AbstractMap.SimpleEntry)
+                    return (AbstractMap.SimpleEntry<OffsetDateTime, OffsetDateTime>) databaseObject;
+                else {
+                    Matcher m = PATTERN.matcher("" + databaseObject);
+                    if (m.find()) {
+                        String lowerStr = m.group(1).replace(" ", "T");
+                        String upperStr = m.group(2);
 
-                Matcher m = PATTERN.matcher("" + databaseObject);
-                if (m.find()) {
-                    String lowerStr = m.group(1).replace(" ", "T");
-                    String upperStr = m.group(2);
+                        OffsetDateTime lower = OffsetDateTime.parse(lowerStr);
 
-                    OffsetDateTime lower = OffsetDateTime.parse(lowerStr);
-
-                    if (upperStr != null) { // can be empty
-                        upperStr = upperStr.replace(" ", "T");
-                        OffsetDateTime upper = OffsetDateTime.parse(upperStr);
-                        return new AbstractMap.SimpleEntry<>(lower, upper);
+                        if (upperStr != null) { // can be empty
+                            upperStr = upperStr.replace(" ", "T");
+                            OffsetDateTime upper = OffsetDateTime.parse(upperStr);
+                            return new AbstractMap.SimpleEntry<>(lower, upper);
+                        } else {
+                            return new AbstractMap.SimpleEntry<>(lower, null);
+                        }
                     } else {
-                        return new AbstractMap.SimpleEntry<>(lower, null);
+                        throw new IllegalArgumentException("Unsupported range : " + databaseObject);
                     }
-                } else {
-                    throw new IllegalArgumentException("Unsupported range : " + databaseObject);
                 }
             }
 

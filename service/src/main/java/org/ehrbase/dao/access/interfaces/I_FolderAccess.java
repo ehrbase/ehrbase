@@ -24,7 +24,11 @@ import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
@@ -37,7 +41,17 @@ import org.joda.time.DateTime;
 /**
  * Data Access Object for CRUD operations on instances of {@link  com.nedap.archie.rm.directory.Folder}.
  */
-public interface I_FolderAccess extends I_VersionedCRUD {
+public interface I_FolderAccess extends I_VersionedCRUD, I_Compensatable {
+
+    public static I_FolderAccess retrieveByVersion(I_DomainAccess domainAccess, UUID folderId, int version) {
+        return FolderAccess.retrieveByVersion(domainAccess, folderId, version);
+    }
+
+    static boolean isDeleted(I_DomainAccess domainAccess, UUID versionedObjectId) {
+        return FolderAccess.isDeleted(domainAccess, versionedObjectId);
+    }
+
+    UUID getEhrId();
 
     /**
      * Get the list of subfolders for the {@link  com.nedap.archie.rm.directory.Folder} that corresponds to this {@link  I_FolderAccess}
@@ -61,8 +75,8 @@ public interface I_FolderAccess extends I_VersionedCRUD {
      * @return {@link I_FolderAccess} with the information to persist the provided {@link  com.nedap.archie.rm.directory.Folder}
      */
     static I_FolderAccess getNewFolderAccessInstance(
-            I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId) {
-        return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId);
+            I_DomainAccess domainAccess, Folder folder, DateTime dateTime, UUID ehrId, String tenantIdentifier) {
+        return FolderAccess.getNewFolderAccessInstance(domainAccess, folder, dateTime, ehrId, tenantIdentifier);
     }
 
     /**

@@ -19,11 +19,11 @@ package org.ehrbase.aql.sql.binding;
 
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION;
 
-public class SetReturningFunction {
+import java.util.regex.Pattern;
 
-    private final String expression;
+public final class SetReturningFunction {
 
-    private static final String SUPPORTED_SET_RETURNING_FUNCTION =
+    private static final Pattern SUPPORTED_SET_RETURNING_FUNCTION = Pattern.compile(
             // ignore new line, any char, check for boundary
             "(?s).*\\b(" +
                     // json array
@@ -31,14 +31,15 @@ public class SetReturningFunction {
                     +
                     // String array
                     "|regexp_match|regexp_matches|regexp_split_to_array|regexp_split_to_table"
-                    + ")\\b.*";
+                    + ")\\b.*",
+            Pattern.CASE_INSENSITIVE);
 
-    public SetReturningFunction(String expression) {
-        this.expression = expression;
+    private SetReturningFunction() {
+        // NOOP
     }
 
-    public boolean isUsed() {
-        if (expression == null) return false;
-        return expression.toLowerCase().matches(SUPPORTED_SET_RETURNING_FUNCTION);
+    public static boolean isUsed(String expression) {
+        return expression != null
+                && SUPPORTED_SET_RETURNING_FUNCTION.matcher(expression).matches();
     }
 }

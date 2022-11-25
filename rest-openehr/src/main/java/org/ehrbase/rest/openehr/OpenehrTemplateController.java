@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -63,6 +64,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/definition/template",

@@ -127,10 +127,6 @@ public class EventContextResolver extends AttributeResolver {
                 return new SimpleEventContextAttribute(fieldResolutionContext, joinSetup)
                         .forTableField(EVENT_CONTEXT.LOCATION)
                         .sqlField();
-            case CONTEXT_SETTING:
-                return new SimpleEventContextAttribute(fieldResolutionContext, joinSetup)
-                        .forTableField(EVENT_CONTEXT.LOCATION)
-                        .sqlField();
             default:
                 throw new IllegalStateException("Unhandled path:" + path);
         }

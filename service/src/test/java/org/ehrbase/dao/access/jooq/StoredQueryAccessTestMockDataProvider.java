@@ -21,8 +21,14 @@ import static org.ehrbase.jooq.pg.Tables.STORED_QUERY;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.joda.time.format.DateTimeFormat;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record1;
+import org.jooq.Record7;
+import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockDataProvider;
 import org.jooq.tools.jdbc.MockExecuteContext;
@@ -51,22 +57,24 @@ public class StoredQueryAccessTestMockDataProvider implements MockDataProvider {
             return mock;
 
         } else if (sql2.startsWith(
-                "select \"ehr\".\"stored_query\".\"reverse_domain_name\", \"ehr\".\"stored_query\".\"semantic_id\", \"ehr\".\"stored_query\".\"semver\", \"ehr\".\"stored_query\".\"query_text\", \"ehr\".\"stored_query\".\"creation_date\", \"ehr\".\"stored_query\".\"type\" from \"ehr\".\"stored_query\"")) {
+                "select \"ehr\".\"stored_query\".\"reverse_domain_name\", \"ehr\".\"stored_query\".\"semantic_id\", \"ehr\".\"stored_query\".\"semver\", \"ehr\".\"stored_query\".\"query_text\", \"ehr\".\"stored_query\".\"creation_date\", \"ehr\".\"stored_query\".\"type\", \"ehr\".\"stored_query\".\"namespace\" from \"ehr\".\"stored_query\"")) {
             MockResult[] mock2 = new MockResult[1];
-            Result<Record6<String, String, String, String, Timestamp, String>> result = create.newResult(
+            Result<Record7<String, String, String, String, Timestamp, String, String>> result = create.newResult(
                     STORED_QUERY.REVERSE_DOMAIN_NAME,
                     STORED_QUERY.SEMANTIC_ID,
                     STORED_QUERY.SEMVER,
                     STORED_QUERY.QUERY_TEXT,
                     STORED_QUERY.CREATION_DATE,
-                    STORED_QUERY.TYPE);
+                    STORED_QUERY.TYPE,
+                    STORED_QUERY.NAMESPACE);
             result.add(create.newRecord(
                             STORED_QUERY.REVERSE_DOMAIN_NAME,
                             STORED_QUERY.SEMANTIC_ID,
                             STORED_QUERY.SEMVER,
                             STORED_QUERY.QUERY_TEXT,
                             STORED_QUERY.CREATION_DATE,
-                            STORED_QUERY.TYPE)
+                            STORED_QUERY.TYPE,
+                            STORED_QUERY.NAMESPACE)
                     .values(
                             "org.example.departmentx.test",
                             "diabetes-patient-overview",
@@ -75,7 +83,8 @@ public class StoredQueryAccessTestMockDataProvider implements MockDataProvider {
                             new Timestamp(DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")
                                     .parseDateTime("2019-08-22 13:41:50.478")
                                     .getMillis()),
-                            "AQL"));
+                            "AQL",
+                            TenantAuthentication.DEFAULT_TENANT_ID));
             mock2[0] = new MockResult(1, result);
             return mock2;
 
