@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Predicate;
+
 import org.apache.commons.lang3.function.TriFunction;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
@@ -29,15 +31,14 @@ import org.ehrbase.tenant.TokenSupport;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 
-public abstract class AuthenticatedExtractionStrategy<A extends Authentication>
-        implements TenantIdExtractionStrategy<String> {
+public abstract class AuthenticatedExtractionStrategy<A extends Authentication> implements TenantIdExtractionStrategy<String> {
 
     static class TenantAuthenticationAdapter implements MethodInterceptor {
         private static Method tenantIdCall;
@@ -85,20 +86,17 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication>
                 return (TenantAuthentication<String>) created;
             };
 
-    public static class TokenAuthenticatedExtractionStrategy
-            extends AuthenticatedExtractionStrategy<AbstractAuthenticationToken> {
+    public static class TokenAuthenticatedExtractionStrategy extends AuthenticatedExtractionStrategy<AbstractAuthenticationToken> {
         public TokenAuthenticatedExtractionStrategy() {
-            super(AbstractAuthenticationToken.class);
+            super(auth -> auth instanceof AbstractAuthenticationToken);
         }
 
-        public Optional<TenantAuthentication<String>> extractWithPrior(
-                Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
+        public Optional<TenantAuthentication<String>> extractWithPrior(Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
             SecurityContext ctx = SecurityContextHolder.getContext();
 
             if (ctx.getAuthentication() instanceof AbstractAuthenticationToken auth) {
                 if (auth.getCredentials() instanceof AbstractOAuth2Token token) {
-                    Optional<String> optTenantId =
-                            TokenSupport.extractClaim(token.getTokenValue(), DefaultTenantAuthentication.TENANT_CLAIM);
+                    Optional<String> optTenantId = TokenSupport.extractClaim(token.getTokenValue(), DefaultTenantAuthentication.TENANT_CLAIM);
 
                     if (optTenantId.isPresent())
                         return Optional.of(TO_AUTH.apply(auth, token.getTokenValue(), optTenantId.get()));
@@ -110,7 +108,7 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication>
                                 priorAuthentication.get().getTenantId()));
                     } else throw new IllegalStateException();
                 } else {
-                    throw new AccessDeniedException("Unsupported Token");
+                    return Optional.empty();
                 }
             } else throw new IllegalStateException();
         }
@@ -120,13 +118,12 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication>
         }
     }
 
-    public static class AuthenticationExtractionStrategy extends AuthenticatedExtractionStrategy<Authentication> {
+    public static class AuthenticationExtractionStrategy extends AuthenticatedExtractionStrategy<UsernamePasswordAuthenticationToken> {
         public AuthenticationExtractionStrategy() {
-            super(Authentication.class);
+            super(auth -> auth instanceof UsernamePasswordAuthenticationToken);
         }
 
-        public Optional<TenantAuthentication<String>> extractWithPrior(
-                Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
+        public Optional<TenantAuthentication<String>> extractWithPrior(Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
             SecurityContext ctx = SecurityContextHolder.getContext();
 
             if (priorAuthentication.isPresent())
@@ -142,17 +139,17 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication>
         }
     }
 
-    private final Class<A> authenticationClass;
+    private final Predicate<Authentication> predicate;
 
-    protected AuthenticatedExtractionStrategy(Class<A> clazz) {
-        this.authenticationClass = clazz;
+    protected AuthenticatedExtractionStrategy(Predicate<Authentication> predicate) {
+        this.predicate = predicate;
     }
 
     public boolean accept(Object... args) {
         SecurityContext ctx = SecurityContextHolder.getContext();
         Authentication theAuthentication = ctx.getAuthentication();
 
-        return null != theAuthentication && authenticationClass.isAssignableFrom(theAuthentication.getClass());
+        return null != theAuthentication && predicate.test(theAuthentication);
     }
 
     public Optional<TenantAuthentication<String>> extract(Object... args) {
