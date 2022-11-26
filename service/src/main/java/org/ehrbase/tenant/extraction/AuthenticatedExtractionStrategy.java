@@ -39,6 +39,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 
 public abstract class AuthenticatedExtractionStrategy<A extends Authentication> implements TenantIdExtractionStrategy<String> {
+// @format:off
 
     static class TenantAuthenticationAdapter implements MethodInterceptor {
         private static Method tenantIdCall;
@@ -155,4 +156,5 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication> 
     public Optional<TenantAuthentication<String>> extract(Object... args) {
         return extract(null, args);
     }
+// @format:on    
 }
