@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Predicate;
-
 import org.apache.commons.lang3.function.TriFunction;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
@@ -38,8 +37,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 
-public abstract class AuthenticatedExtractionStrategy<A extends Authentication> implements TenantIdExtractionStrategy<String> {
 // @format:off
+public abstract class AuthenticatedExtractionStrategy<A extends Authentication> implements TenantIdExtractionStrategy<String> {
 
     static class TenantAuthenticationAdapter implements MethodInterceptor {
         private static Method tenantIdCall;
@@ -156,5 +155,5 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication> 
     public Optional<TenantAuthentication<String>> extract(Object... args) {
         return extract(null, args);
     }
-// @format:on    
 }
+// @format:on
