@@ -59,6 +59,7 @@ public class AdminContributionController extends BaseController {
         this.contributionService = contributionService;
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_UPDATE)
     @PutMapping(
             path = "/{ehr_id}/contribution/{contribution_id}",
@@ -102,6 +103,7 @@ public class AdminContributionController extends BaseController {
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_DELETE)
     @DeleteMapping(path = "/{ehr_id}/contribution/{contribution_id}")
     @ApiResponses(

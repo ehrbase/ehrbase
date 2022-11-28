@@ -19,6 +19,7 @@ package org.ehrbase.api.authorization;
 
 public enum EhrbasePermission {
     EHRBASE_DENY_ALL("ehrbase:deny:all"),
+    EHRBASE_ADMIN_ACCESS("ehrbase:admin:access"),
 
     EHRBASE_COMPOSITION_CREATE("ehrbase:composition:create"),
     EHRBASE_COMPOSITION_DELETE("ehrbase:composition:delete"),

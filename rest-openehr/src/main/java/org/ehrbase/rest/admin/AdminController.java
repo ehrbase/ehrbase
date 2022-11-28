@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminController extends BaseController {
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_SYSTEM_STATUS)
     @GetMapping(path = "/status")
     @ApiResponses(

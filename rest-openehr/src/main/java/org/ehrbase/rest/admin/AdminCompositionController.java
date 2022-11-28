@@ -61,6 +61,7 @@ public class AdminCompositionController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
     @DeleteMapping(path = "/{ehr_id}/composition/{composition_id}")
     @ApiResponses(

@@ -56,6 +56,7 @@ public class AdminEhrController extends BaseController {
         this.ehrService = ehrService;
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE)
     @PutMapping(
             path = "/{ehr_id}",
@@ -98,6 +99,7 @@ public class AdminEhrController extends BaseController {
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_DELETE)
     @DeleteMapping(path = "/{ehr_id}")
     @ApiResponses(

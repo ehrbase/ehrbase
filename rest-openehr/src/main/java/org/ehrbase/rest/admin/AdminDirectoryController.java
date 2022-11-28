@@ -60,6 +60,7 @@ public class AdminDirectoryController extends BaseController {
         this.folderService = folderService;
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_DELETE)
     @DeleteMapping(path = "/{ehr_id}/directory/{directory_id}")
     @ApiResponses(

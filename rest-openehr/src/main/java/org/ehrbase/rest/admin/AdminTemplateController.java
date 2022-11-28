@@ -58,6 +58,7 @@ public class AdminTemplateController extends BaseController {
     @Autowired
     AdminApiConfiguration adminApiConfiguration;
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_UPDATE)
     @PutMapping(
             path = "/{template_id}",
@@ -102,6 +103,7 @@ public class AdminTemplateController extends BaseController {
         return ResponseEntity.ok().headers(headers).body(updatedTemplate);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_DELETE)
     @DeleteMapping(path = "/{template_id}")
     @ApiResponses(
@@ -126,6 +128,7 @@ public class AdminTemplateController extends BaseController {
         return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_DELETE)
     @DeleteMapping(path = "/all")
     @ApiResponses(
