@@ -26,12 +26,16 @@ RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" && \
     su - postgres -c "psql < /postgres/createdb.sql" && \
     su - postgres -c "pg_ctl -D ${PGDATA} -w stop"
 
-# INSTALL JAVA 11 JDK
-RUN apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community && \
+# INSTALL JAVA 17 JDK
+ENV JAVA_HOME /usr/lib/jvm/java-17-temurin
+ENV PATH $JAVA_HOME/bin:$PATH
+RUN wget -O /etc/apk/keys/adoptium.rsa.pub https://packages.adoptium.net/artifactory/api/security/keypair/public/repositories/apk && \
+    echo 'https://packages.adoptium.net/artifactory/apk/alpine/main' >> /etc/apk/repositories && \
+    su -c "apk add temurin-17" && \
     java --version
 
 # INSTALL MAVEN
-ENV MAVEN_VERSION 3.6.3
+ENV MAVEN_VERSION 3.8.6
 ENV MAVEN_HOME /usr/lib/mvn
 ENV PATH $MAVEN_HOME/bin:$PATH
 RUN wget http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz && \
@@ -40,7 +44,7 @@ RUN wget http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/ap
     mv apache-maven-$MAVEN_VERSION /usr/lib/mvn && \
     mvn --version
 
-# CACHE EHRBASE DEPENDENCIES
+# COPY POMs
 RUN ls -la
 COPY ./pom.xml ./pom.xml
 COPY ./api/pom.xml ./api/pom.xml
@@ -53,7 +57,6 @@ COPY ./service/pom.xml ./service/pom.xml
 COPY ./test-coverage/pom.xml ./test-coverage/pom.xml
 COPY ./plugin/pom.xml ./plugin/pom.xml
 COPY ./bom/pom.xml ./bom/pom.xml
-RUN mvn dependency:go-offline -B
 
 # COPY SOURCEFILES
 COPY ./api/src ./api/src
@@ -64,15 +67,6 @@ COPY ./rest-ehr-scape/src ./rest-ehr-scape/src
 COPY ./rest-openehr/src ./rest-openehr/src
 COPY ./service/src ./service/src
 COPY ./plugin/src ./plugin/src
-RUN mvn compile dependency:go-offline \
-    -Dflyway.skip=true \
-    -Djooq.codegen.skip=true \
-    -Dmaven.main.skip
-
-# START DB AND COMPILE EHRBASE
-RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" && \
-    mvn compile -Dmaven.test.skip && \
-    su - postgres -c "pg_ctl -D ${PGDATA} -w stop"
 
 # START DB AND PACKAGE EHRBASE .JAR
 RUN ls -la; \
@@ -94,7 +88,7 @@ RUN ls -la; \
 
 
 # FINAL EHRBASE IMAGE WITH JRE AND JAR ONLY
-FROM --platform=$BUILDPLATFORM openjdk:11-jre-slim AS final
+FROM --platform=$BUILDPLATFORM eclipse-temurin:17-jre-ubi9-minimal AS final
 COPY --from=builder /tmp/ehrbase.jar .
 COPY --from=builder /tmp/ehrbase_version .
 COPY .docker_scripts/docker-entrypoint.sh .

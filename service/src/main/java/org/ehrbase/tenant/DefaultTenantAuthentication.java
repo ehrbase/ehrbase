@@ -23,14 +23,19 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.Payload;
 import org.apache.commons.codec.binary.Base64;
 import org.ehrbase.api.tenant.TenantAuthentication;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
 public class DefaultTenantAuthentication extends AbstractAuthenticationToken implements TenantAuthentication<String> {
     private static final long serialVersionUID = -187707458684929521L;
     public static final String TENANT_CLAIM = "tnt";
 
-    public static <T> DefaultTenantAuthentication of(TenantAuthentication<T> auth) {
-        return new DefaultTenantAuthentication(auth.getAuthentication().toString());
+    public static <T> DefaultTenantAuthentication of(TenantAuthentication<T> auth, Converter<T, String> converter) {
+        DefaultTenantAuthentication defAuth = new DefaultTenantAuthentication();
+        defAuth.tenantId = auth.getTenantId();
+        defAuth.raw = converter.convert(auth.getAuthentication());
+        defAuth.token = JWT.decode(defAuth.raw);
+        return defAuth;
     }
 
     public static <T> DefaultTenantAuthentication of(String tenantId) {

@@ -20,6 +20,8 @@ package org.ehrbase;
 import java.util.List;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
 import org.ehrbase.tenant.TenantAspect;
+import org.ehrbase.tenant.extraction.AuthenticatedExtractionStrategy.AuthenticationExtractionStrategy;
+import org.ehrbase.tenant.extraction.AuthenticatedExtractionStrategy.TokenAuthenticatedExtractionStrategy;
 import org.ehrbase.tenant.extraction.DefaultExtractionStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,5 +41,15 @@ public class ServiceModuleConfiguration {
     @Bean
     public TenantIdExtractionStrategy<String> defaultStrategy() {
         return new DefaultExtractionStrategy();
+    }
+
+    @Bean
+    public TenantIdExtractionStrategy<String> tokenAuthenticatedExtractionStrategy() {
+        return new TokenAuthenticatedExtractionStrategy();
+    }
+
+    @Bean
+    public TenantIdExtractionStrategy<String> authenticationExtractionStrategy() {
+        return new AuthenticationExtractionStrategy();
     }
 }

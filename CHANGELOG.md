@@ -7,8 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+ - Authorization enhancements [#1002](https://github.com/ehrbase/ehrbase/pull/1002)
+   - Impl. API extensions needed for authorization
+   - Added annotations on all REST endpoints to support authorization decissions
  ### Changed 
- ### Fixed 
+ - JAVA 17 baseline
+ - Spring Boot 2.7.4
+ - Upgrade openEHR_SDK to version 1.24.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ ### Fixed
 
 ## [0.22.0]
 ### Added
