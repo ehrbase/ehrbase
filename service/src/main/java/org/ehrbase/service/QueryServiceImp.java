@@ -99,7 +99,9 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
                 return queryAql(
                         queryString,
                         explain,
-                        () -> new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString, parameters),
+                        () -> parameters == null
+                                ? new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString)
+                                : new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString, parameters),
                         auditResultMap);
 
             default:

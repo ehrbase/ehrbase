@@ -28,8 +28,8 @@ public class UC12Test extends UC12 {
         super();
         this.expectedSqlExpression =
                 "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" from (select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\" join lateral (\n"
-                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n"
-                        + " AS COLUMN) as \"ARRAY\" on true where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN  IN  ( 'Hepatitis A','Hepatitis B' ) ))) as \"\"";
+                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \n"
+                        + " AS COLUMN) as \"ARRAY\" on true where (\"ehr\".\"entry\".\"template_id\" = ? and (ARRAY.COLUMN #>>'{/description[at0001],/items[at0002],0,/value,value}' IN  ( 'Hepatitis A','Hepatitis B' ) ))) as \"\"";
     }
 
     @Test

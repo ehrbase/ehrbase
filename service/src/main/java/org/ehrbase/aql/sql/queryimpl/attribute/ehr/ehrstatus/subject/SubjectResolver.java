@@ -34,6 +34,7 @@ public class SubjectResolver extends PartyResolver {
     public Field<?> sqlField(String path) {
         joinSetup.setPartyJoinRef(subjectRef);
         joinSetup.setJoinSubject(true);
+        joinSetup.setJoinEhrStatus(true);
 
         return super.sqlField(path);
     }
