@@ -28,13 +28,13 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>bom</artifactId>
-        <version>0.22.0</version>
+        <version>0.23.0</version>
         <relativePath>/bom/pom.xml</relativePath>
     </parent>
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>0.22.0</version>
+    <version>0.23.0</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -53,8 +53,8 @@
 
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <license-header.dir>./</license-header.dir>
         <!-- PostgreSQL Database Properties -->

@@ -24,6 +24,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
@@ -54,6 +56,8 @@ public class AdminEhrController extends BaseController {
         this.ehrService = ehrService;
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE)
     @PutMapping(
             path = "/{ehr_id}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -95,6 +99,8 @@ public class AdminEhrController extends BaseController {
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_DELETE)
     @DeleteMapping(path = "/{ehr_id}")
     @ApiResponses(
             value = {

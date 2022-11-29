@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -60,13 +61,17 @@ public class TenantAspect implements ExtractionStrategyAware {
 
     private static final String ERR_NON_TENANT_ID = "Fatal error, no tenant id avaliable";
 
+    /*
+     * currently we support only TenantAuthentication<String>. when more
+     * is needed we must implement a more sophisticated conversion.
+     */
     @Around("matchTenantAnnotation(tenantAnnotation)")
     public Object securedCall(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable {
         if (isMethodTenantAware(pjp, tenantAnnotation)) {
             Object[] args = pjp.getArgs();
             TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
             SecurityContext ctx = SecurityContextHolder.getContext();
-            ctx.setAuthentication(DefaultTenantAuthentication.of(tenant));
+            ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, a -> a.toString()));
         }
         return pjp.proceed();
     }
@@ -90,11 +95,17 @@ public class TenantAspect implements ExtractionStrategyAware {
     }
 
     private TenantAuthentication<?> extract(Object... args) {
-        return extractionStrategies.stream()
-                .filter(s -> s.accept(args))
-                .map(s -> s.extract(args))
-                .filter(opt -> opt.isPresent())
-                .map(opt -> opt.get())
-                .reduce(null, (str1, str2) -> str2);
+        Optional<TenantAuthentication<?>> priorAuth = Optional.empty();
+
+        for (TenantIdExtractionStrategy<?> strg : extractionStrategies) {
+            if (!strg.accept(args)) continue;
+
+            Optional<? extends TenantAuthentication<?>> extract = strg.extractWithPrior(priorAuth, args);
+            if (!extract.isPresent()) continue;
+
+            priorAuth = (Optional<TenantAuthentication<?>>) extract;
+        }
+
+        return priorAuth.get();
     }
 }

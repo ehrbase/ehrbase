@@ -27,6 +27,8 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -79,6 +81,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_CREATE)
     @Override
     @PostMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> createDirectory(
@@ -100,6 +103,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_UPDATE)
     @Override
     @PutMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> updateDirectory(
@@ -128,6 +132,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_DELETE)
     @Override
     @DeleteMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> deleteDirectory(
@@ -149,6 +154,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
     @Override
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
@@ -172,6 +178,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
     @Override
     @GetMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(
