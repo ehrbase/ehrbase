@@ -58,6 +58,7 @@ import org.ehrbase.serialisation.dbencoding.RawJson;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvDateTime;
 import org.ehrbase.service.RecordedDvText;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.InsertQuery;
 import org.jooq.JSONB;
@@ -75,20 +76,18 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 public class ContextAccess extends DataAccess implements I_ContextAccess {
-
     private static final String DB_INCONSISTENCY = "DB inconsistency";
 
     private final Logger log = LoggerFactory.getLogger(ContextAccess.class);
-
     private final List<ParticipationRecord> participations = new ArrayList<>();
-
     private EventContextRecord eventContextRecord;
 
-    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext) {
+    public ContextAccess(
+            DSLContext context, ServerConfig serverConfig, EventContext eventContext, String tenantIdentifier) {
         super(context, null, null, serverConfig);
         if (eventContext == null) return;
         eventContextRecord = context.newRecord(EVENT_CONTEXT);
-        setRecordFields(UUID.randomUUID(), eventContext);
+        setRecordFields(UuidGenerator.randomUUID(), eventContext, tenantIdentifier);
     }
 
     private ContextAccess(I_DomainAccess domainAccess) {
@@ -225,20 +224,22 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
      * @param eventContext
      */
     @Override
-    public void setRecordFields(UUID id, EventContext eventContext) {
+    public void setRecordFields(UUID id, EventContext eventContext, String tenantIdentifier) {
         RecordedDvDateTime recordedDvDateTime = new RecordedDvDateTime(eventContext.getStartTime());
         eventContextRecord.setStartTime(recordedDvDateTime.toTimestamp());
+        eventContextRecord.setNamespace(tenantIdentifier);
         recordedDvDateTime.zoneId().ifPresent(eventContextRecord::setStartTimeTzid);
         if (eventContext.getEndTime() != null) {
             recordedDvDateTime = new RecordedDvDateTime(eventContext.getEndTime());
             eventContextRecord.setEndTime(recordedDvDateTime.toTimestamp());
             recordedDvDateTime.zoneId().ifPresent(eventContextRecord::setEndTimeTzid);
         }
-        eventContextRecord.setId(id != null ? id : UUID.randomUUID());
+        eventContextRecord.setId(id != null ? id : UuidGenerator.randomUUID());
 
         // Health care facility
         if (eventContext.getHealthCareFacility() != null) {
-            UUID healthcareFacilityId = new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility());
+            UUID healthcareFacilityId =
+                    new PersistedPartyProxy(this).getOrCreate(eventContext.getHealthCareFacility(), tenantIdentifier);
 
             eventContextRecord.setFacility(healthcareFacilityId);
         }
@@ -280,9 +281,10 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 }
 
                 performer = (PartyIdentified) setPerformer;
-                UUID performerUuid = new PersistedPartyProxy(this).getOrCreate(performer);
+                UUID performerUuid = new PersistedPartyProxy(this).getOrCreate(performer, tenantIdentifier);
                 // set the performer
                 participationRecord.setPerformer(performerUuid);
+                participationRecord.setNamespace(tenantIdentifier);
                 participations.add(participationRecord);
             }
         }
@@ -311,6 +313,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         insertQuery.addValue(EVENT_CONTEXT.END_TIME_TZID, eventContextRecord.getEndTimeTzid());
         insertQuery.addValue(EVENT_CONTEXT.FACILITY, eventContextRecord.getFacility());
         insertQuery.addValue(EVENT_CONTEXT.LOCATION, eventContextRecord.getLocation());
+        insertQuery.addValue(EVENT_CONTEXT.NAMESPACE, eventContextRecord.getNamespace());
         if (eventContextRecord.getOtherContext() != null)
             insertQuery.addValue(EVENT_CONTEXT.OTHER_CONTEXT, eventContextRecord.getOtherContext());
         insertQuery.addValue(EVENT_CONTEXT.SETTING, eventContextRecord.getSetting());
@@ -359,7 +362,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
                         participationRecord.update();
                     } else {
-                        participationRecord.setId(UUID.randomUUID());
+                        participationRecord.setId(UuidGenerator.randomUUID());
                         participationRecord.store();
                     }
                 } catch (DataAccessException e) { // generalize DB exceptions

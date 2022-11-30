@@ -24,6 +24,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
@@ -57,6 +59,8 @@ public class AdminContributionController extends BaseController {
         this.contributionService = contributionService;
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_UPDATE)
     @PutMapping(
             path = "/{ehr_id}/contribution/{contribution_id}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -99,6 +103,8 @@ public class AdminContributionController extends BaseController {
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_DELETE)
     @DeleteMapping(path = "/{ehr_id}/contribution/{contribution_id}")
     @ApiResponses(
             value = {

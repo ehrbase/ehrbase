@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
@@ -49,6 +51,7 @@ public class QueryController extends BaseController {
         this.queryService = Objects.requireNonNull(queryService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @PostMapping
     public ResponseEntity<QueryResponseData> query(
             @RequestParam(value = "explain", defaultValue = "false") Boolean explain, @RequestBody() String content) {

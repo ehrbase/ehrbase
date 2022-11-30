@@ -18,10 +18,7 @@
 package org.ehrbase.aql.sql.binding;
 
 import org.ehrbase.aql.definition.I_VariableDefinition;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryimpl.MultiFields;
+import org.ehrbase.aql.sql.queryimpl.*;
 
 /**
  * evaluate the SQL expression for locatables in the ITEM_STRUCTURE: OBSERVATION, INSTRUCTION, CLUSTER etc.
@@ -43,7 +40,8 @@ public class LocatableItem {
         this.clause = clause;
     }
 
-    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition) {
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition)
+            throws UnknownVariableException {
         MultiFields multiFields;
 
         multiFields =

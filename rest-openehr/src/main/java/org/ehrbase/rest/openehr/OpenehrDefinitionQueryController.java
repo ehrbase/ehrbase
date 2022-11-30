@@ -22,6 +22,9 @@ import com.google.gson.GsonBuilder;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
@@ -34,8 +37,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/definition/query",
@@ -61,6 +71,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
      * @param qualifiedQueryName
      * @return
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_READ)
     @RequestMapping(
             value = {"/{qualified_query_name}", ""},
             method = RequestMethod.GET)
@@ -76,6 +87,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         return ResponseEntity.ok(responseData);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_READ)
     @RequestMapping(
             value = {"/{qualified_query_name}/{version}"},
             method = RequestMethod.GET) //
@@ -94,8 +106,9 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_CREATE)
     @RequestMapping(
-            value = {"/{qualified_query_name}/{version}{?type}", "/{qualified_query_name}{?type}"},
+            value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
             method = RequestMethod.PUT)
     @Override
     public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
@@ -126,6 +139,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_DELETE)
     @RequestMapping(
             value = {"/{qualified_query_name}/{version}"},
             method = RequestMethod.DELETE)

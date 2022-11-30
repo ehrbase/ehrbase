@@ -34,14 +34,20 @@ spring:
     name: ehrbase
 
   cache:
-    jcache:
+    type: jcache # change to type redis if usage of redis distributed cache is intended
+    jcache: # jcache parameters are only used if cache.type=jcache
       config: classpath:ehcache.xml
+
+  # the following redis properties are only used if the cache.type=redis
+  redis:
+    host: localhost
+    port: 6379
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: # http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
+          issuer-uri:  # http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
   profiles:
     active: local
   datasource:

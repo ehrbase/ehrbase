@@ -20,6 +20,7 @@ package org.ehrbase.aql.sql.queryimpl;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.io.IOException;
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
@@ -37,7 +38,8 @@ public class MultiFieldJsonbEntryQueryTest extends TestAqlBase {
     public void setUp() throws IOException {
 
         // add test template with non unique paths to identified node
-        knowledge.addOperationalTemplate(TemplateTestData.NON_UNIQUE_AQL_PATH.getStream());
+        knowledge.addOperationalTemplate(
+                TemplateTestData.NON_UNIQUE_AQL_PATH.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
 
         String query = "select\n" + "a/description[at0001]/items[at0002]/name/value\n"
                 + "from EHR e\n"

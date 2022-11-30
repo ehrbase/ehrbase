@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -55,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@TenantAware
 @RestController
 @RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/query")
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
@@ -78,6 +82,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @GetMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
@@ -113,6 +118,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @PostMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
@@ -143,6 +149,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH)
     @Override
     @GetMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
@@ -193,6 +200,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH)
     @Override
     @PostMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")

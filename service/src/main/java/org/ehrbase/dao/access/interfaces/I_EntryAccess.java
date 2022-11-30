@@ -44,8 +44,13 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      * @see Composition
      */
     static I_EntryAccess getNewInstance(
-            I_DomainAccess domain, String templateId, Integer sequence, UUID compositionId, Composition composition) {
-        return new EntryAccess(domain, templateId, sequence, compositionId, composition);
+            I_DomainAccess domain,
+            String templateId,
+            Integer sequence,
+            UUID compositionId,
+            Composition composition,
+            String tenantIdentifier) {
+        return new EntryAccess(domain, templateId, sequence, compositionId, composition, tenantIdentifier);
     }
 
     /**

@@ -17,9 +17,7 @@
  */
 package org.ehrbase.aql.sql.binding;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
@@ -27,16 +25,9 @@ import org.ehrbase.aql.definition.LateralJoinDefinition;
 import org.ehrbase.aql.definition.LateralVariable;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
-import org.ehrbase.aql.sql.queryimpl.CompositionAttributeQuery;
-import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
-import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
-import org.ehrbase.aql.sql.queryimpl.MultiFields;
-import org.ehrbase.aql.sql.queryimpl.MultiFieldsMap;
-import org.ehrbase.aql.sql.queryimpl.VariablePath;
+import org.ehrbase.aql.sql.queryimpl.*;
 import org.ehrbase.aql.sql.queryimpl.value_field.ISODateTime;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.jooq.Condition;
-import org.jooq.Field;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 
 /**
@@ -64,9 +55,12 @@ public class WhereBinder {
     private static final Set<String> SQL_OPERATORS = Set.of(
             "=", "!=", ">", ">=", "<", "<=", MATCHES, EXISTS, NOT, IS, TRUE, FALSE, NULL, UNKNOWN, DISTINCT, FROM,
             BETWEEN, "(", ")", "{", "}");
-    public static final String COMPOSITION = "COMPOSITION";
-    public static final String CONTENT = "content";
-    public static final String EHR = "EHR";
+    /**
+     * list of subquery and operators
+     */
+    private static final Pattern SQL_CONDITIONAL_FUNCTIONAL_OPERATOR_PATTERN =
+            Pattern.compile("(?i)(like|ilike|substr|in|not in)");
+
     public static final String OR = "OR";
     public static final String XOR = "XOR";
     public static final String AND = "AND";
@@ -75,67 +69,60 @@ public class WhereBinder {
     public static final String SOME = "SOME";
     public static final String ALL = "ALL";
 
-    // also finds #>>
-    public static final String ENTRY_JSONB_SELECTION_OP = "\"ehr\".\"entry\".\"entry\" #>";
-    public static final String TYPECAST_OP = "::";
+    enum ExistsMode {
+        NOT_EXISTS,
+        EXISTS,
+        UNSET
+    }
 
-    private final I_DomainAccess domainAccess;
-
-    private CompositionAttributeQuery compositionAttributeQuery;
     private final List<Object> whereClause;
-    private PathResolver pathResolver;
-    private boolean isWholeComposition = false;
-    private String compositionName = null;
-    // list of subquery and operators
-    private static final Pattern SQL_CONDITIONAL_FUNCTIONAL_OPERATOR_PATTERN =
-            Pattern.compile("\\s*(like|ilike|substr|in|not in)\\s*", Pattern.CASE_INSENSITIVE);
     private boolean requiresJSQueryClosure = false;
     private boolean isFollowedBySQLConditionalOperator = false;
 
-    public WhereBinder(
-            I_DomainAccess domainAccess,
-            CompositionAttributeQuery compositionAttributeQuery,
-            List<Object> whereClause,
-            PathResolver pathResolver) {
-        this.compositionAttributeQuery = compositionAttributeQuery;
+    private final WhereVariable whereVariable;
+
+    public WhereBinder(List<Object> whereClause, PathResolver pathResolver) {
         this.whereClause = whereClause;
-        this.pathResolver = pathResolver;
-        this.domainAccess = domainAccess;
-    }
-
-    private TaggedStringBuilder encodeWhereVariable(
-            int whereCursor, MultiFieldsMap multiFieldsMap, I_VariableDefinition variableDefinition) {
-        String identifier = variableDefinition.getIdentifier();
-        String className = pathResolver.classNameOf(identifier);
-        if (className == null)
-            throw new IllegalArgumentException("Could not bind identifier in WHERE clause:'" + identifier + "'");
-
-        Field<?> field = multiFieldsMap
-                .get(variableDefinition.getIdentifier(), variableDefinition.getPath())
-                .getQualifiedFieldOrLast(whereCursor)
-                .getSQLField();
-
-        if (field == null) {
-            return null;
-        }
-        return new TaggedStringBuilder(field.toString(), I_TaggedStringBuilder.TagField.SQLQUERY);
+        whereVariable = new WhereVariable(pathResolver);
     }
 
     private TaggedStringBuilder buildWhereCondition(
-            int whereCursor, MultiFieldsMap multiFieldsMap, TaggedStringBuilder taggedBuffer, List<Object> item) {
+            ExistsMode existsMode,
+            int whereCursor,
+            MultiFieldsMap multiFieldsMap,
+            int selectCursor,
+            MultiFieldsMap multiSelectFieldsMap,
+            TaggedStringBuilder taggedBuffer,
+            List<Object> item)
+            throws UnknownVariableException {
         for (Object part : item) {
             if (part instanceof String) taggedBuffer.append((String) part);
             else if (part instanceof VariableDefinition) {
                 // substitute the identifier
-                TaggedStringBuilder taggedStringBuilder =
-                        encodeWhereVariable(whereCursor, multiFieldsMap, (VariableDefinition) part);
+                TaggedStringBuilder taggedStringBuilder = whereVariable.encodeWhereVariable(
+                        existsMode,
+                        isFollowedBySQLConditionalOperator,
+                        whereCursor,
+                        multiFieldsMap,
+                        selectCursor,
+                        multiSelectFieldsMap,
+                        (VariableDefinition) part,
+                        null);
+                isFollowedBySQLConditionalOperator = whereVariable.isFollowedBySQLConditionalOperator();
+
                 if (taggedStringBuilder != null) {
                     taggedBuffer.append(taggedStringBuilder.toString());
                     taggedBuffer.setTagField(taggedStringBuilder.getTagField());
                 }
             } else if (part instanceof List) {
-                TaggedStringBuilder taggedStringBuilder =
-                        buildWhereCondition(whereCursor, multiFieldsMap, taggedBuffer, (List) part);
+                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(
+                        existsMode,
+                        whereCursor,
+                        multiFieldsMap,
+                        selectCursor,
+                        multiSelectFieldsMap,
+                        taggedBuffer,
+                        (List) part);
                 taggedBuffer.append(taggedStringBuilder.toString());
                 taggedBuffer.setTagField(taggedStringBuilder.getTagField());
             }
@@ -147,7 +134,9 @@ public class WhereBinder {
             String templateId,
             int whereCursor,
             MultiFieldsMap multiWhereFieldsMap,
-            MultiFieldsMap multiSelectFieldsMap) {
+            int selectCursor,
+            MultiFieldsMap multiSelectFieldsMap)
+            throws UnknownVariableException {
 
         boolean unresolvedVariable = false;
 
@@ -159,6 +148,7 @@ public class WhereBinder {
         List<Object> whereItems = new ArrayList<>(whereClause);
         boolean notExists = false;
         boolean inSubqueryOperator = false;
+        ExistsMode inExists = ExistsMode.UNSET;
 
         for (int cursor = 0; cursor < whereItems.size(); cursor++) {
             Object item = whereItems.get(cursor);
@@ -175,8 +165,10 @@ public class WhereBinder {
 
                     case NOT:
                         // check if precedes 'EXISTS'
-                        if (whereItems.get(cursor + 1).toString().equalsIgnoreCase(EXISTS)) notExists = true;
-                        else {
+                        if (whereItems.get(cursor + 1).toString().equalsIgnoreCase(EXISTS)) {
+                            notExists = true;
+                            inExists = ExistsMode.NOT_EXISTS;
+                        } else {
                             taggedBuffer = new WhereJsQueryExpression(
                                             taggedBuffer, requiresJSQueryClosure, isFollowedBySQLConditionalOperator)
                                     .closure();
@@ -197,6 +189,7 @@ public class WhereBinder {
                         whereItems.add(cursor + 2, notExists ? "IS " : "IS NOT ");
                         whereItems.add(cursor + 3, "NULL");
                         notExists = false;
+                        if (inExists.equals(ExistsMode.UNSET)) inExists = ExistsMode.EXISTS;
                         break;
 
                     default:
@@ -224,69 +217,92 @@ public class WhereBinder {
                 // look ahead and check if followed by a sql operator
                 TaggedStringBuilder taggedStringBuilder = new TaggedStringBuilder();
                 if (isFollowedBySQLConditionalOperator(cursor)) {
-                    TaggedStringBuilder encodedVar =
-                            encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item);
+                    TaggedStringBuilder encodedVar = whereVariable.encodeWhereVariable(
+                            inExists,
+                            isFollowedBySQLConditionalOperator,
+                            whereCursor,
+                            multiWhereFieldsMap,
+                            selectCursor,
+                            multiSelectFieldsMap,
+                            (I_VariableDefinition) item,
+                            null);
+                    isFollowedBySQLConditionalOperator = whereVariable.isFollowedBySQLConditionalOperator();
+                    inExists = whereVariable.inExists();
+
                     String expanded =
                             expandForLateral(templateId, encodedVar, (I_VariableDefinition) item, multiSelectFieldsMap);
+
                     if (StringUtils.isNotBlank(expanded)) taggedStringBuilder.append(expanded);
                     else {
                         unresolvedVariable = true;
                         break;
                     }
                 } else {
-                    if (((I_VariableDefinition) item).getPath() != null && isWholeComposition) {
-                        // assume a composition
-                        // look ahead for name/value condition (used to produce the composition root)
-                        if (compositionName == null)
-                            compositionName = compositionNameValue(((I_VariableDefinition) item).getIdentifier());
+                    // if the path contains node predicate expression uses a SQL syntax instead of jsquery
+                    if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
+                        TaggedStringBuilder variableSQL = whereVariable.encodeWhereVariable(
+                                inExists,
+                                isFollowedBySQLConditionalOperator,
+                                whereCursor,
+                                multiWhereFieldsMap,
+                                selectCursor,
+                                multiSelectFieldsMap,
+                                (I_VariableDefinition) item,
+                                null);
+                        isFollowedBySQLConditionalOperator = whereVariable.isFollowedBySQLConditionalOperator();
+                        inExists = whereVariable.inExists();
 
-                        if (compositionName != null) {
-                            taggedStringBuilder =
-                                    encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item);
-                        } else
-                            throw new IllegalArgumentException(
-                                    "A composition name/value is required to resolve where statement when querying for a whole composition");
-                    } else {
-                        // if the path contains node predicate expression uses a SQL syntax instead of jsquery
-                        if (new VariablePath(((I_VariableDefinition) item).getPath()).hasPredicate()) {
-                            String expanded = expandForLateral(
-                                    templateId,
-                                    encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item),
-                                    (I_VariableDefinition) item,
-                                    multiSelectFieldsMap);
-                            if (StringUtils.isNotBlank(expanded)) {
-                                taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
-                                inSubqueryOperator = false;
-                            } else {
-                                unresolvedVariable = true;
-                                break;
-                            }
-                            isFollowedBySQLConditionalOperator = true;
-                            requiresJSQueryClosure = false;
+                        String expanded = expandForLateral(
+                                templateId, variableSQL, (I_VariableDefinition) item, multiSelectFieldsMap);
+                        if (StringUtils.isNotBlank(expanded)) {
+                            taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
+                            inSubqueryOperator = false;
                         } else {
-                            String expanded = expandForLateral(
-                                    templateId,
-                                    encodeWhereVariable(whereCursor, multiWhereFieldsMap, (I_VariableDefinition) item),
-                                    (I_VariableDefinition) item,
-                                    multiSelectFieldsMap);
-                            if (StringUtils.isNotBlank(expanded)) {
-                                taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
-                                inSubqueryOperator = false;
-                            } else {
-                                unresolvedVariable = true;
-                                break;
-                            }
+                            unresolvedVariable = true;
+                            break;
+                        }
+                        isFollowedBySQLConditionalOperator = true;
+                        requiresJSQueryClosure = false;
+                    } else {
+                        // use select variable path used for this selectCursor if applicable!
+                        String expanded = expandForLateral(
+                                templateId,
+                                whereVariable.encodeWhereVariable(
+                                        inExists,
+                                        isFollowedBySQLConditionalOperator,
+                                        whereCursor,
+                                        multiWhereFieldsMap,
+                                        selectCursor,
+                                        multiSelectFieldsMap,
+                                        (I_VariableDefinition) item,
+                                        null),
+                                (I_VariableDefinition) item,
+                                multiSelectFieldsMap);
+                        isFollowedBySQLConditionalOperator = whereVariable.isFollowedBySQLConditionalOperator();
+                        inExists = whereVariable.inExists();
+
+                        if (StringUtils.isNotBlank(expanded)) {
+                            taggedStringBuilder.append(encodeForSubquery(expanded, inSubqueryOperator));
+                            inSubqueryOperator = false;
+                        } else {
+                            unresolvedVariable = true;
+                            break;
                         }
                     }
                 }
 
-                if (taggedStringBuilder != null) {
-                    taggedBuffer.append(taggedStringBuilder.toString());
-                    taggedBuffer.setTagField(taggedStringBuilder.getTagField());
-                }
+                taggedBuffer.append(taggedStringBuilder.toString());
+                taggedBuffer.setTagField(taggedStringBuilder.getTagField());
+
             } else if (item instanceof List) {
-                TaggedStringBuilder taggedStringBuilder =
-                        buildWhereCondition(whereCursor, multiWhereFieldsMap, taggedBuffer, (List) item);
+                TaggedStringBuilder taggedStringBuilder = buildWhereCondition(
+                        inExists,
+                        whereCursor,
+                        multiWhereFieldsMap,
+                        selectCursor,
+                        multiSelectFieldsMap,
+                        taggedBuffer,
+                        (List) item);
                 taggedBuffer.append(taggedStringBuilder.toString());
                 taggedBuffer.setTagField(taggedStringBuilder.getTagField());
             }
@@ -312,7 +328,7 @@ public class WhereBinder {
             Object nextToken = whereClause.get(cursor + 1);
             if (nextToken instanceof String
                     && SQL_CONDITIONAL_FUNCTIONAL_OPERATOR_PATTERN
-                            .matcher((String) nextToken)
+                            .matcher(((String) nextToken).trim())
                             .matches()) {
                 isFollowedBySQLConditionalOperator = true;
                 return true;
@@ -357,9 +373,9 @@ public class WhereBinder {
             if (isFollowedBySQLConditionalOperator) { // at the moment, only for epoch_offset
                 int variableClosure = taggedBuffer.lastIndexOf("}'");
                 if (variableClosure > 0) {
-                    int variableInitial = taggedBuffer.lastIndexOf(ENTRY_JSONB_SELECTION_OP);
+                    int variableInitial = taggedBuffer.lastIndexOf("\"ehr\".\"entry\".\"entry\" #>>");
                     if (variableInitial >= 0 && variableInitial < variableClosure) {
-                        taggedBuffer.insert(variableClosure + "}'".length(), ")" + TYPECAST_OP + castAs);
+                        taggedBuffer.insert(variableClosure + "}'".length(), ")::" + castAs);
                         taggedBuffer.insert(variableInitial, "(");
                     }
                 }
@@ -367,12 +383,9 @@ public class WhereBinder {
             return item;
         }
 
-        if (SQL_OPERATORS.contains(item.toUpperCase())) {
-            return " " + item + " ";
-        }
-        if (item.contains(TYPECAST_OP) && taggedBuffer.indexOf(JoinBinder.COMPOSITION_JOIN) >= 0) {
-            return item.split(TYPECAST_OP)[0] + "'";
-        }
+        if (SQL_OPERATORS.contains(item.toUpperCase())) return " " + item + " ";
+        if (taggedBuffer.toString().contains(JoinBinder.COMPOSITION_JOIN) && item.contains("::"))
+            return item.split("::")[0] + "'";
         if (requiresJSQueryClosure
                 && !isFollowedBySQLConditionalOperator
                 && taggedBuffer.indexOf("#") > 0
@@ -391,7 +404,7 @@ public class WhereBinder {
 
         switch (taggedStringBuilder.getTagField()) {
             case JSQUERY:
-                wrapped = JsonbEntryQuery.JSQUERY_COMPOSITION_OPEN + taggedStringBuilder.toString();
+                wrapped = JsonbEntryQuery.JSQUERY_COMPOSITION_OPEN + taggedStringBuilder;
                 requiresJSQueryClosure = true;
                 break;
             case SQLQUERY:
@@ -411,15 +424,17 @@ public class WhereBinder {
             I_VariableDefinition variableDefinition,
             MultiFieldsMap multiSelectFieldsMap) {
         String expanded = expandForCondition(encodedVar);
-        if (new SetReturningFunction(expanded).isUsed()) {
+        final boolean isAlreadyCast;
 
+        if (SetReturningFunction.isUsed(expanded)) {
+            isAlreadyCast = false;
             // check if this variable is already defined as a lateral join from the projection (SELECT)
             MultiFields selectFields =
                     multiSelectFieldsMap.get(variableDefinition.getIdentifier(), variableDefinition.getPath());
 
             if (selectFields != null
                     && selectFields.getVariableDefinition().getLateralJoinDefinitions(templateId) != null) {
-                // TODO: get the matching lateral join... not the LAST!
+                // TODO: get the matching lateral join... not the LAST! XXX??
                 LateralJoinDefinition lateralJoinDefinition =
                         reconciliateWithAliasedTable(expanded, selectFields.getVariableDefinition(), templateId);
                 if (lateralJoinDefinition == null) return null;
@@ -429,9 +444,27 @@ public class WhereBinder {
                 variableDefinition.setAlias(new LateralVariable(
                                 lateralJoinDefinition.getTable().getName(), lateralJoinDefinition.getLateralVariable())
                         .alias());
-            } else new LateralJoins().create(templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE);
+            } else {
+                // check for an existing lateral join for this template
+                multiSelectFieldsMap
+                        .matchingLateralJoin(templateId, expanded)
+                        .ifPresentOrElse(
+                                lj -> LateralJoins.reuse(lj, templateId, variableDefinition),
+                                () -> LateralJoins.create(
+                                        templateId, encodedVar, variableDefinition, IQueryImpl.Clause.WHERE));
+            }
 
             expanded = variableDefinition.getAlias();
+        } else {
+            isAlreadyCast = true;
+        }
+
+        if (whereVariable.hasRightMostJsonbExpression())
+            expanded = expanded + whereVariable.getRightMostJsonbExpression();
+
+        if (variableDefinition.getSelectType() != null && !isAlreadyCast) {
+            expanded =
+                    "(" + expanded + ")::" + variableDefinition.getSelectType().getCastTypeName() + " ";
         }
 
         return expanded;
@@ -442,15 +475,17 @@ public class WhereBinder {
 
         Set<LateralJoinDefinition> definedLateralJoins = variableDefinition.getLateralJoinDefinitions(templateId);
 
-        String expandedCleaned = expanded.substring(0, expanded.length() - 1)
-                .substring(1)
-                .replace("\n", "")
-                .replace(" ", "");
+        for (LateralJoinDefinition lateralJoinDefinition : definedLateralJoins) {
+            if (lateralJoinDefinition
+                    .getSqlExpression()
+                    .replace("\n", "")
+                    .replace(" ", "")
+                    .contains(expanded.substring(0, expanded.length() - 1)
+                            .substring(1)
+                            .replace("\n", "")
+                            .replace(" ", ""))) return lateralJoinDefinition;
+        }
 
-        return definedLateralJoins.stream()
-                .filter(d ->
-                        d.getSqlExpression().replace("\n", "").replace(" ", "").contains(expandedCleaned))
-                .findFirst()
-                .orElse(null);
+        return null;
     }
 }

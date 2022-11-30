@@ -55,6 +55,7 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.support.SafeNav;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
@@ -104,13 +105,14 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             String templateId,
             Integer sequence,
             UUID compositionId,
-            Composition composition) {
+            Composition composition,
+            String tenantIdentifier) {
         super(
                 domainAccess.getContext(),
                 domainAccess.getKnowledgeManager(),
                 domainAccess.getIntrospectService(),
                 domainAccess.getServerConfig());
-        setFields(templateId, sequence, compositionId, composition);
+        setFields(templateId, sequence, compositionId, composition, tenantIdentifier);
     }
 
     private EntryAccess(I_DomainAccess domainAccess) {
@@ -251,9 +253,23 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
             EntryHistoryRecord entryHistoryRecord = existingEntryHistory.get();
             entryAccess.entryRecord = domainAccess.getContext().newRecord(ENTRY);
+            entryAccess.entryRecord.setNamespace(entryHistoryRecord.getNamespace());
             entryAccess.entryRecord.from(entryHistoryRecord);
             entryAccess.composition =
                     new RawJson().unmarshal(entryHistoryRecord.getEntry().data(), Composition.class);
+
+            DvCodedTextRecord category = entryHistoryRecord.getCategory();
+
+            //            SafeNav<DvCodedText> safeDvCodedText = SafeNav
+            //                .of(category)
+            //                .get(c -> c.getValue())
+            //                .get(s -> new DvCodedText(s, (CodePhrase) null))
+            //                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
+            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
+            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
+            SafeNav<DvCodedText> safeDvCodedText = SafeNav.of(category)
+                    .get(c -> new DvCodedText(c.getValue(), c.getDefiningCode().getCodeString()));
+            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
 
             setCompositionAttributes(entryAccess.composition, values);
             buildArchetypeDetails(entryAccess);
@@ -369,7 +385,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      * @param compositionId ID of composition
      * @param composition   {@link Composition} object with more information for the entry
      */
-    private void setFields(String templateId, Integer sequence, UUID compositionId, Composition composition) {
+    private void setFields(
+            String templateId, Integer sequence, UUID compositionId, Composition composition, String tenantIdentifier) {
 
         entryRecord = getContext().newRecord(ENTRY);
 
@@ -377,6 +394,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         entryRecord.setSequence(sequence);
         entryRecord.setCompositionId(compositionId);
         entryRecord.setRmVersion(composition.getArchetypeDetails().getRmVersion());
+        entryRecord.setNamespace(tenantIdentifier);
         new RecordedDvCodedText().toDB(entryRecord, ENTRY.CATEGORY, composition.getCategory());
         setCompositionFields(entryRecord, composition);
 
@@ -406,7 +424,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         ENTRY.ENTRY_,
                         ENTRY.SYS_TRANSACTION,
                         ENTRY.NAME,
-                        ENTRY.RM_VERSION)
+                        ENTRY.RM_VERSION,
+                        ENTRY.NAMESPACE)
                 .values(
                         DSL.val(getSequence()),
                         DSL.val(getCompositionId()),
@@ -417,7 +436,9 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
                         DSL.val(getEntryJson()),
                         DSL.val(transactionTime),
                         DSL.val(getCompositionName()),
-                        DSL.val(getRmVersion()))
+                        DSL.val(getRmVersion()),
+                        // we do not expose the namespace
+                        DSL.val(entryRecord.getNamespace()))
                 .returning(ENTRY.ID)
                 .fetchOne();
 

@@ -53,6 +53,7 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.FolderService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
@@ -84,6 +85,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     private final CompositionService compositionService;
     private final EhrService ehrService;
     private final FolderService folderService;
+    private final TenantService tenantService;
 
     enum SupportedClasses {
         COMPOSITION,
@@ -98,11 +100,13 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             EhrService ehrService,
             FolderService folderService,
             DSLContext context,
-            ServerConfig serverConfig) {
+            ServerConfig serverConfig,
+            TenantService tenantService) {
         super(knowledgeCacheService, context, serverConfig);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
         this.folderService = folderService;
+        this.tenantService = tenantService;
     }
 
     @Override
@@ -155,8 +159,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
+        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+
         // create new empty/standard-value contribution - will be updated later with full details
-        I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(this.getDataAccess(), ehrId);
+        I_ContributionAccess contributionAccess =
+                I_ContributionAccess.getInstance(this.getDataAccess(), ehrId, tenantIdentifier);
         // parse and set audit information from input
         AuditDetails audit = ContributionServiceHelper.parseAuditDetails(content, format);
         contributionAccess.setAuditDetailsValues(audit);
@@ -535,8 +542,10 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         UUID auditId = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId)
                 .getHasAuditDetails();
 
-        I_AuditDetailsAccess auditDetailsAccess =
-                new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), auditId);
+        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+
+        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess(), tenantIdentifier)
+                .retrieveInstance(this.getDataAccess(), auditId);
 
         String systemId = auditDetailsAccess.getSystemId().toString();
         PartyProxy committer =

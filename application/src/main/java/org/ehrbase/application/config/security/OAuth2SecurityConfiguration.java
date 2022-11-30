@@ -45,9 +45,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
  * @author Jake Smolka
  * @since 1.0.0
  */
+@Deprecated
 @Configuration
-@ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 @EnableWebSecurity
+@ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     public static final String PROFILE_SCOPE = "PROFILE";

@@ -36,13 +36,17 @@ public class LateralJoins {
 
     private static int seed = 1;
 
-    public void create(
+    private LateralJoins() {
+        // NOOP
+    }
+
+    public static void create(
             String templateId, TaggedStringBuilder encodedVar, I_VariableDefinition item, IQueryImpl.Clause clause) {
         var originalSqlExpression = encodedVar.toString();
 
         if (originalSqlExpression.isBlank()) return;
 
-        // check for existing lateral join in variable definition
+        // check for existing lateral join in the SAME variable definition
         if (item.getLateralJoinDefinitions(templateId) != null
                 && !item.getLateralJoinDefinitions(templateId).isEmpty()) {
             for (LateralJoinDefinition lateralJoinDefinition : item.getLateralJoinDefinitions(templateId)) {
@@ -66,13 +70,13 @@ public class LateralJoins {
         // insert the variable alias used for the lateral join expression
         encodedVar.replaceLast(")", " AS " + variableAlias + ")");
         Table<Record> table = DSL.table(encodedVar.toString()).as(tableAlias);
-        item.setLateralJoinTable(
-                templateId,
-                new LateralJoinDefinition(originalSqlExpression, table, variableAlias, JoinType.JOIN, null, clause));
-        item.setAlias(new LateralVariable(tableAlias, variableAlias).alias());
+
+        LateralJoinDefinition lateralJoinDefinition =
+                new LateralJoinDefinition(originalSqlExpression, table, variableAlias, JoinType.JOIN, null, clause);
+        reuse(lateralJoinDefinition, templateId, item);
     }
 
-    public void create(
+    public static void create(
             String templateId, SelectQuery selectSelectStep, I_VariableDefinition item, IQueryImpl.Clause clause) {
         if (selectSelectStep == null) return;
         int hashValue = selectSelectStep.hashCode(); // cf. SonarLint
@@ -96,6 +100,14 @@ public class LateralJoins {
                         DSL.condition(true),
                         clause));
         item.setSubstituteFieldVariable(variableAlias);
+    }
+
+    public static void reuse(
+            LateralJoinDefinition lateralJoinDefinition, String templateId, I_VariableDefinition item) {
+        item.setLateralJoinTable(templateId, lateralJoinDefinition);
+        item.setAlias(new LateralVariable(
+                        lateralJoinDefinition.getTable().getName(), lateralJoinDefinition.getLateralVariable())
+                .alias());
     }
 
     private static synchronized int inc() {

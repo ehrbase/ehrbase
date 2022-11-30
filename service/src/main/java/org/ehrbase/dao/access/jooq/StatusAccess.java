@@ -67,17 +67,18 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     private I_ContributionAccess contributionAccess; // locally referenced contribution associated to this status
     private I_AuditDetailsAccess auditDetailsAccess; // audit associated with this status
 
-    public StatusAccess(I_DomainAccess domainAccess, UUID ehrId) {
+    public StatusAccess(I_DomainAccess domainAccess, UUID ehrId, String tenantIdentifier) {
         super(domainAccess);
 
         statusRecord = getContext().newRecord(STATUS);
+        statusRecord.setNamespace(tenantIdentifier);
 
         // associate a contribution with this composition
-        contributionAccess = I_ContributionAccess.getInstance(this, ehrId);
+        contributionAccess = I_ContributionAccess.getInstance(this, ehrId, tenantIdentifier);
         contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
 
         // associate status' own audit with this status access instance
-        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess());
+        auditDetailsAccess = I_AuditDetailsAccess.getInstance(getDataAccess(), tenantIdentifier);
     }
 
     @Override
@@ -180,19 +181,26 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     private Integer internalDelete(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
+        String tenantIdentifier = statusRecord.getNamespace();
         statusRecord.setSysTransaction(Timestamp.valueOf(timestamp));
         statusRecord.delete();
 
         // create new deletion audit
         var delAudit = I_AuditDetailsAccess.getInstance(
-                this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description);
+                this,
+                systemId,
+                committerId,
+                I_ConceptAccess.ContributionChangeType.DELETED,
+                description,
+                tenantIdentifier);
         UUID delAuditId = delAudit.commit();
 
         // create new, BUT already moved to _history, version documenting the deletion
-        return createAndCommitNewDeletedVersionAsHistory(delAuditId, statusRecord.getInContribution());
+        return createAndCommitNewDeletedVersionAsHistory(
+                delAuditId, statusRecord.getInContribution(), tenantIdentifier);
     }
 
-    private int createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib) {
+    private int createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib, String tenantIdentifier) {
         // a bit hacky: create new, BUT already moved to _history, version documenting the deletion
         // (Normal approach of first .update() then .delete() won't work, because postgres' transaction optimizer will
         // just skip the update if it will get deleted anyway.)
@@ -204,6 +212,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         newRecord.setArchetypeNodeId(statusRecord.getArchetypeNodeId());
         newRecord.setAttestationRef(statusRecord.getAttestationRef());
         newRecord.setName(statusRecord.getName());
+        newRecord.setNamespace(tenantIdentifier);
         newRecord.setIsModifiable(statusRecord.getIsModifiable());
         newRecord.setIsQueryable(statusRecord.getIsQueryable());
         newRecord.setOtherDetails(statusRecord.getOtherDetails());
@@ -242,7 +251,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
             return null;
         }
 
-        return createStatusAccessForRetrieval(domainAccess, record, null);
+        return createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
     }
 
     public static I_StatusAccess retrieveInstanceByNamedSubject(I_DomainAccess domainAccess, String partyName) {
@@ -261,7 +270,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
             return null;
         }
 
-        return createStatusAccessForRetrieval(domainAccess, record, null);
+        return createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
     }
 
     public static I_StatusAccess retrieveInstanceByParty(I_DomainAccess domainAccess, UUID partyIdentified) {
@@ -280,7 +289,15 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
             return null;
         }
 
-        return createStatusAccessForRetrieval(domainAccess, record, null);
+        return createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
+    }
+
+    public static I_StatusAccess retrieveByVersion(I_DomainAccess domainAccess, UUID statusId, int version) {
+        if (version == getLatestVersionNumber(domainAccess, statusId)) return retrieveInstance(domainAccess, statusId);
+
+        Map<Integer, I_StatusAccess> allVersions = getVersionMapOfStatus(domainAccess, statusId);
+
+        return allVersions.get(Integer.valueOf(version));
     }
 
     // fetch latest status
@@ -303,7 +320,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                         .fetch();
                 // get latest
                 if (recordsRes.get(0) != null) {
-                    record = historyRecToNormalRec(recordsRes.get(0));
+                    record = historyRecToNormalRec(domainAccess, recordsRes.get(0));
                 }
             }
         }
@@ -312,7 +329,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
             return null;
         }
 
-        return createStatusAccessForRetrieval(domainAccess, record, null);
+        return createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
     }
 
     public static Map<ObjectVersionId, I_StatusAccess> retrieveInstanceByContribution(
@@ -361,7 +378,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
         // fetch matching entry
         StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(statusId));
         if (record != null) {
-            I_StatusAccess statusAccess = createStatusAccessForRetrieval(domainAccess, record, null);
+            I_StatusAccess statusAccess =
+                    createStatusAccessForRetrieval(domainAccess, record, null, record.getNamespace());
             versionMap.put(versionCounter, statusAccess);
 
             versionCounter--;
@@ -376,7 +394,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
                 .fetch();
 
         for (StatusHistoryRecord historyRecord : historyRecords) {
-            I_StatusAccess historyAccess = createStatusAccessForRetrieval(domainAccess, null, historyRecord);
+            I_StatusAccess historyAccess =
+                    createStatusAccessForRetrieval(domainAccess, null, historyRecord, historyRecord.getNamespace());
             versionMap.put(versionCounter, historyAccess);
             versionCounter--;
         }
@@ -399,20 +418,23 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
      * @return Resulting access object
      */
     private static I_StatusAccess createStatusAccessForRetrieval(
-            I_DomainAccess domainAccess, StatusRecord record, StatusHistoryRecord historyRecord) {
+            I_DomainAccess domainAccess,
+            StatusRecord record,
+            StatusHistoryRecord historyRecord,
+            String tenantIdentifier) {
         StatusAccess statusAccess;
         if (record != null) {
-            statusAccess = new StatusAccess(domainAccess, record.getEhrId());
+            statusAccess = new StatusAccess(domainAccess, record.getEhrId(), tenantIdentifier);
             statusAccess.setStatusRecord(record);
         } else if (historyRecord != null) {
-            statusAccess = new StatusAccess(domainAccess, historyRecord.getEhrId());
+            statusAccess = new StatusAccess(domainAccess, historyRecord.getEhrId(), tenantIdentifier);
             statusAccess.setStatusRecord(historyRecord);
         } else {
             throw new InternalServerException("Error creating version map of EHR_STATUS");
         }
 
         // retrieve corresponding audit
-        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess())
+        I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(domainAccess.getDataAccess(), tenantIdentifier)
                 .retrieveInstance(domainAccess.getDataAccess(), statusAccess.getAuditDetailsId());
         statusAccess.setAuditDetailsAccess(auditAccess);
 
@@ -441,20 +463,8 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     @Override
     public void setStatusRecord(StatusHistoryRecord input) {
-        this.statusRecord = new StatusRecord(
-                input.getId(),
-                input.getEhrId(),
-                input.getIsQueryable(),
-                input.getIsModifiable(),
-                input.getParty(),
-                input.getOtherDetails(),
-                null,
-                null,
-                input.getHasAudit(),
-                input.getAttestationRef(),
-                input.getInContribution(),
-                input.getArchetypeNodeId(),
-                input.getName());
+        statusRecord = StatusAccess.historyRecToNormalRec(getDataAccess(), input);
+        statusRecord.setSysPeriod(null);
     }
 
     @Override
@@ -515,21 +525,24 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
      * @param statusHistoryRecord Given history record
      * @return Converted normal record
      */
-    protected static StatusRecord historyRecToNormalRec(StatusHistoryRecord statusHistoryRecord) {
-        return new StatusRecord(
-                statusHistoryRecord.getId(),
-                statusHistoryRecord.getEhrId(),
-                statusHistoryRecord.getIsQueryable(),
-                statusHistoryRecord.getIsModifiable(),
-                statusHistoryRecord.getParty(),
-                statusHistoryRecord.getOtherDetails(),
-                statusHistoryRecord.getSysTransaction(),
-                statusHistoryRecord.getSysPeriod(),
-                statusHistoryRecord.getHasAudit(),
-                statusHistoryRecord.getAttestationRef(),
-                statusHistoryRecord.getInContribution(),
-                statusHistoryRecord.getArchetypeNodeId(),
-                statusHistoryRecord.getName());
+    protected static StatusRecord historyRecToNormalRec(
+            I_DomainAccess domainAccess, StatusHistoryRecord statusHistoryRecord) {
+        StatusRecord statusRecord = domainAccess.getContext().newRecord(STATUS);
+        statusRecord.setId(statusHistoryRecord.getId());
+        statusRecord.setEhrId(statusHistoryRecord.getEhrId());
+        statusRecord.setIsQueryable(statusHistoryRecord.getIsQueryable());
+        statusRecord.setIsModifiable(statusHistoryRecord.getIsModifiable());
+        statusRecord.setParty(statusHistoryRecord.getParty());
+        statusRecord.setOtherDetails(statusHistoryRecord.getOtherDetails());
+        statusRecord.setSysTransaction(statusHistoryRecord.getSysTransaction());
+        statusRecord.setSysPeriod(statusHistoryRecord.getSysPeriod());
+        statusRecord.setHasAudit(statusHistoryRecord.getHasAudit());
+        statusRecord.setAttestationRef(statusHistoryRecord.getAttestationRef());
+        statusRecord.setInContribution(statusHistoryRecord.getInContribution());
+        statusRecord.setArchetypeNodeId(statusHistoryRecord.getArchetypeNodeId());
+        statusRecord.setName(statusHistoryRecord.getName());
+        statusRecord.setNamespace(statusHistoryRecord.getNamespace());
+        return statusRecord;
     }
 
     public static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {
@@ -652,5 +665,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     @Override
     public UUID getEhrId() {
         return this.statusRecord.getEhrId();
+    }
+
+    @Override
+    public Timestamp getSysTransaction() {
+        return this.statusRecord.getSysTransaction();
     }
 }

@@ -18,11 +18,11 @@
 package org.ehrbase.application.web;
 
 import java.io.IOException;
-import java.util.UUID;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.ehrbase.util.UuidGenerator;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -59,6 +59,6 @@ public class LoggingContextFilter extends OncePerRequestFilter {
     }
 
     private String generateId() {
-        return UUID.randomUUID().toString();
+        return UuidGenerator.randomUUID().toString();
     }
 }

@@ -26,6 +26,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -54,6 +57,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_composition",
@@ -73,6 +77,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}")
     @Override
     public ResponseEntity<VersionedObjectResponseData<Composition>> retrieveVersionedCompositionByVersionedObjectUid(
@@ -97,6 +102,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
@@ -121,6 +127,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
@@ -158,6 +165,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "

@@ -17,9 +17,14 @@
  */
 package org.ehrbase.service;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javax.sql.DataSource;
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.jooq.ExecuteContext;
 import org.jooq.SQLDialect;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,7 +66,22 @@ public class PersistenceConfig {
 
     @Bean
     public DataSourceConnectionProvider connectionProvider() {
-        return new DataSourceConnectionProvider(transactionAwareDataSource());
+        return new DataSourceConnectionProvider(transactionAwareDataSource()) {
+            public static final String DB_SET_TENANT_ID =
+                    "SET ehrbase.current_tenant = " + "'" + TenantAuthentication.DEFAULT_TENANT_ID + "'";
+
+            public Connection acquire() {
+                try {
+                    Connection connection = super.acquire();
+                    try (Statement sql = connection.createStatement()) {
+                        sql.execute(DB_SET_TENANT_ID);
+                    }
+                    return connection;
+                } catch (SQLException e) {
+                    throw new DataAccessException("Failed to set default tenant", e);
+                }
+            }
+        };
     }
 
     @Bean
@@ -71,14 +91,14 @@ public class PersistenceConfig {
 
     @Bean
     @Primary
-    public DefaultDSLContext dsl() {
-        return new DefaultDSLContext(configuration());
+    public DefaultDSLContext dsl(DefaultConfiguration cfg) {
+        return new DefaultDSLContext(cfg);
     }
 
     @Bean
-    public DefaultConfiguration configuration() {
+    public DefaultConfiguration configuration(DataSourceConnectionProvider provider) {
         DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
-        jooqConfiguration.set(connectionProvider());
+        jooqConfiguration.set(provider);
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
 
         SQLDialect dialect = SQLDialect.POSTGRES;

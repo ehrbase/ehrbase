@@ -25,15 +25,19 @@ public class QualifiedAqlField {
     protected String itemCategory =
             null; // the category of the object as per the WebTemplate (f.e. CLUSTER, ELEMENT ...)
     private Field<?> field; // the actual field
+    private String
+            rightMostJsonbExpression; // whenever we use lateral we have to separate the lateral sql from the select
+    // part
 
     public QualifiedAqlField(Field<?> field) {
         this.field = field;
     }
 
-    public QualifiedAqlField(Field<?> field, String itemType, String itemCategory) {
+    public QualifiedAqlField(Field<?> field, String itemType, String itemCategory, String rightMostJsonbExpression) {
         this.field = field;
         this.itemType = itemType;
         this.itemCategory = itemCategory;
+        this.rightMostJsonbExpression = rightMostJsonbExpression;
     }
 
     public Field<?> getSQLField() {
@@ -45,10 +49,23 @@ public class QualifiedAqlField {
     }
 
     public QualifiedAqlField duplicate() {
-        return new QualifiedAqlField(this.getSQLField(), this.itemType, this.itemCategory);
+        return new QualifiedAqlField(
+                this.getSQLField(), this.itemType, this.itemCategory, this.rightMostJsonbExpression);
     }
 
     public boolean isQualified() {
         return itemType != null && itemCategory != null;
+    }
+
+    public String getItemType() {
+        return itemType;
+    }
+
+    public String getRightMostJsonbExpression() {
+        return rightMostJsonbExpression;
+    }
+
+    public boolean hasRightMostJsonbExpression() {
+        return rightMostJsonbExpression != null;
     }
 }

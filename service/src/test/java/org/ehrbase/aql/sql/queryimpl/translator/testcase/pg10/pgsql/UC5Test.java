@@ -26,11 +26,10 @@ public class UC5Test extends UC5 {
 
     public UC5Test() {
         super();
-        this.expectedSqlExpression = "select ARRAY.COLUMN as \"/description[at0001]/items[at0002]/value/value\""
-                + " from \"ehr\".\"entry\" join lateral (\n"
-                + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)#>>'{/description[at0001],/items[at0002],0,/value,value}') \n"
-                + " AS COLUMN) as \"ARRAY\" on true"
-                + " where \"ehr\".\"entry\".\"template_id\" = ?";
+        this.expectedSqlExpression =
+                "select (ARRAY.COLUMN#>>'{/description[at0001],/items[at0002],0,/value,value}')::TEXT as \"/description[at0001]/items[at0002]/value/value\" from \"ehr\".\"entry\" join lateral (\n"
+                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \n"
+                        + " AS COLUMN) as \"ARRAY\" on true where \"ehr\".\"entry\".\"template_id\" = ?";
     }
 
     @Test

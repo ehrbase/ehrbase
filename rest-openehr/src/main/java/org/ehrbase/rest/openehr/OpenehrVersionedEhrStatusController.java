@@ -26,6 +26,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -52,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_ehr_status",
@@ -67,6 +71,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping
     @Override
     public ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
@@ -90,6 +95,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping(path = "/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
@@ -113,6 +119,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping(path = "/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
@@ -161,6 +168,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping(path = "/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "

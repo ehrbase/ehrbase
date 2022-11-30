@@ -32,6 +32,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -72,6 +75,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jake Smolka
  * @since 1.0.0
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
@@ -85,6 +89,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_CREATE)
     @PostMapping(
             value = "/{ehr_id}/composition",
             consumes = {"application/xml", "application/json"})
@@ -152,6 +157,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_UPDATE)
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -255,6 +261,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -334,37 +341,18 @@ public class OpenehrCompositionController extends BaseController implements Comp
     }
 
     /**
-     * Acts as overloaded function and calls the overlapping and more specific method
-     * getCompositionByTime. Catches both "/{ehr_id}/composition/{version_uid}" and
-     * "/{ehr_id}/composition/{versioned_object_uid}" which works because their processing is the
-     * same. "{?version_at_time}" is hidden in swagger-ui, it only is here to be piped through.
-     */
-    @GetMapping("/{ehr_id}/composition/{version_uid}")
-    // checkAbacPre /-Post attributes (type, subject, payload, content type)
-    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
-            + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
-    @Override
-    public ResponseEntity<CompositionResponseData> getCompositionByVersionId(
-            @RequestHeader(value = ACCEPT, required = false) String accept,
-            @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "version_uid") String versionUid,
-            @RequestParam(value = "version_at_time", required = false) String versionAtTime,
-            HttpServletRequest request) {
-        return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime, request);
-    }
-
-    /**
      * This mapping combines both GETs "/{ehr_id}/composition/{version_uid}" (via overlapping path)
      * and "/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}" (here). This is necessary
      * because of the overlapping paths. Both mappings are specified to behave almost the same, so
      * this solution works in this case.
      */
-    @GetMapping("/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @GetMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @Override
-    public ResponseEntity getCompositionByTime(
+    public ResponseEntity getComposition(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,

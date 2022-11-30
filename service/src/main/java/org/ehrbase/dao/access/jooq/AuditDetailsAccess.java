@@ -27,10 +27,14 @@ import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.*;
+import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
@@ -41,9 +45,10 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     private AuditDetailsRecord auditDetailsRecord;
 
-    public AuditDetailsAccess(I_DomainAccess dataAccess) {
+    public AuditDetailsAccess(I_DomainAccess dataAccess, String tenantIdentifier) {
         super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
+        this.auditDetailsRecord.setNamespace(tenantIdentifier);
     }
 
     public AuditDetailsAccess(
@@ -51,22 +56,26 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
             UUID systemId,
             UUID committer,
             I_ConceptAccess.ContributionChangeType changeType,
-            String description) {
+            String description,
+            String tenantIdentifier) {
         super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
         auditDetailsRecord.setSystemId(systemId);
         auditDetailsRecord.setCommitter(committer);
         setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
         auditDetailsRecord.setDescription(description);
+        auditDetailsRecord.setNamespace(tenantIdentifier);
     }
 
     @Override
     public I_AuditDetailsAccess retrieveInstance(I_DomainAccess dataAccess, UUID auditId) {
-        AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(dataAccess);
+        AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(dataAccess, auditDetailsRecord.getNamespace());
 
         try {
             auditDetailsAccess.auditDetailsRecord =
                     dataAccess.getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
+            if (!auditDetailsAccess.auditDetailsRecord.getNamespace().equals(this.auditDetailsRecord.getNamespace()))
+                throw new InternalServerException("Tenant id missmatch: Calling for id");
         } catch (Exception e) {
             throw new InternalServerException("fetching audit_details failed", e);
         }
@@ -88,8 +97,8 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     @Override
     public UUID commit(Timestamp transactionTime) {
         auditDetailsRecord.setTimeCommitted(transactionTime);
-        auditDetailsRecord.setTimeCommittedTzid(
-                ZonedDateTime.now().getZone().getId()); // extracting only TZ, ignoring now() itself
+        auditDetailsRecord.setTimeCommittedTzid(ZonedDateTime.now().getZone().getId()); // extracting only TZ, ignoring
+        // now() itself
         int result = auditDetailsRecord.insert();
         if (result == 1) {
             return auditDetailsRecord.getId();
@@ -119,7 +128,8 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     }
 
     /**
-     * @throws org.jooq.exception.DataAccessException when query executing went wrong
+     * @throws org.jooq.exception.DataAccessException  when query executing went
+     *                                                 wrong
      * @throws org.jooq.exception.DataChangedException on DB inconsistency
      */
     @Override
@@ -128,7 +138,8 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
         if (force || auditDetailsRecord.changed()) {
             auditDetailsRecord.setId(UUID.randomUUID()); // force to create new entry from old values
-            // auditDetailsRecord.setTimeCommitted(transactionTime); // TODO-447: does this make query CI tests fail?
+            // auditDetailsRecord.setTimeCommitted(transactionTime); // TODO-447: does this
+            // make query CI tests fail?
             result = auditDetailsRecord.insert() == 1;
         }
 
@@ -229,6 +240,9 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
 
     @Override
     public void setRecord(AuditDetailsRecord record) {
+        if (StringUtils.isEmpty(record.getNamespace())) record.setNamespace(this.auditDetailsRecord.getNamespace());
+        if (!this.auditDetailsRecord.getNamespace().equals(record.getNamespace()))
+            throw new InternalServerException("Tenant id missmatch");
         this.auditDetailsRecord = record;
     }
 
@@ -236,7 +250,10 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     public AuditDetails getAsAuditDetails() {
         String systemId = getSystemId().toString();
         PartyProxy party = new PersistedPartyProxy(this).retrieve(getCommitter());
-        DvDateTime time = new DvDateTime(getTimeCommitted().toLocalDateTime());
+        DvDateTime time = new DvDateTime(getTimeCommitted()
+                .toInstant()
+                .atZone(ZoneId.of(auditDetailsRecord.getTimeCommittedTzid()))
+                .toOffsetDateTime());
         DvCodedText changeType = new DvCodedText(
                 getChangeType().getLiteral(),
                 new CodePhrase(
@@ -246,5 +263,10 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
                                 .getCode())));
         DvText description = new DvText(getDescription());
         return new AuditDetails(systemId, party, time, changeType, description);
+    }
+
+    @Override
+    public String getNamespace() {
+        return auditDetailsRecord.getNamespace();
     }
 }

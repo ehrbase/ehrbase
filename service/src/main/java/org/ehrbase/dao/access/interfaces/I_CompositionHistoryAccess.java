@@ -26,7 +26,7 @@ import org.ehrbase.jooq.pg.tables.records.CompositionHistoryRecord;
  * Stripped down DAO interface to perform some `*_history` table related actions. Composition access handling in general is
  * done through the {@link CompositionAccess} class.
  */
-public interface I_CompositionHistoryAccess extends I_SimpleCRUD {
+public interface I_CompositionHistoryAccess extends I_SimpleCRUD, I_Compensatable {
 
     /**
      * Creates DAO object with the latest existing history record matching the given composition ID.
@@ -36,6 +36,10 @@ public interface I_CompositionHistoryAccess extends I_SimpleCRUD {
      */
     static I_CompositionHistoryAccess retrieveLatest(I_DomainAccess domainAccess, UUID compositionId) {
         return CompositionHistoryAccess.retrieveLatest(domainAccess, compositionId);
+    }
+
+    static I_CompositionHistoryAccess retrieveByVersion(I_DomainAccess domainAccess, UUID compositionId, int version) {
+        return CompositionHistoryAccess.retrieveByVersion(domainAccess, compositionId, version);
     }
 
     void setRecord(CompositionHistoryRecord record);

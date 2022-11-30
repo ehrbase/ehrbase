@@ -28,6 +28,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -51,6 +54,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
@@ -64,6 +68,7 @@ public class OpenehrContributionController extends BaseController implements Con
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_CREATE)
     @PostMapping(
             value = "/{ehr_id}/contribution",
             consumes = {"application/xml", "application/json"})
@@ -123,6 +128,7 @@ public class OpenehrContributionController extends BaseController implements Con
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_READ)
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
     @Override
     public ResponseEntity getContribution(

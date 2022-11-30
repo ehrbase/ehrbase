@@ -65,11 +65,13 @@ public class FolderAccessTest {
     protected I_DomainAccess testDomainAccess;
     protected DSLContext context;
     protected I_KnowledgeCache knowledge;
+    private String tenantId;
 
     @Before
     public void beforeClass() {
         /*DSLContext*/
         context = getMockingContext();
+        tenantId = UUID.randomUUID().toString();
 
         try {
             testDomainAccess = new DummyDataAccess(context, null, null, KnowledgeCacheHelper.buildServerConfig());
@@ -89,7 +91,7 @@ public class FolderAccessTest {
     @Test
     @Ignore
     public void shouldRetriveFolderAccessByUid() throws Exception {
-        FolderAccess fa1 = new FolderAccess(testDomainAccess);
+        FolderAccess fa1 = new FolderAccess(testDomainAccess, tenantId);
         FolderAccess fa2 = (FolderAccess) FolderAccess.retrieveInstanceForExistingFolder(
                 fa1, UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
         assertEquals("folder_archetype.v1", fa2.getFolderRecord().getArchetypeNodeId());
@@ -195,7 +197,7 @@ public class FolderAccessTest {
     @Test
     @Ignore
     public void shouldRetrieveFolderAccessWithItems() throws Exception {
-        FolderAccess fa1 = new FolderAccess(testDomainAccess);
+        FolderAccess fa1 = new FolderAccess(testDomainAccess, tenantId);
         FolderAccess fa2 = (FolderAccess) FolderAccess.retrieveInstanceForExistingFolder(
                 fa1, UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
 
@@ -307,9 +309,9 @@ public class FolderAccessTest {
         folder.setDetails(is);
 
         // insert folder
-        FolderAccess fa1 = new FolderAccess(testDomainAccess);
+        FolderAccess fa1 = new FolderAccess(testDomainAccess, tenantId);
         FolderAccess fa2 = (FolderAccess) FolderAccess.getNewFolderAccessInstance(
-                fa1, folder, DateTime.now(), UUID.fromString("f6a2af65-fe89-45a4-9456-07c5e17b1634"));
+                fa1, folder, DateTime.now(), UUID.fromString("f6a2af65-fe89-45a4-9456-07c5e17b1634"), tenantId);
 
         assertEquals(
                 "f8a2af65-fe89-45a4-9456-07c5e17b1634",
@@ -432,9 +434,9 @@ public class FolderAccessTest {
         folder2.addFolder(folder3);
 
         // insert folder
-        FolderAccess fa1 = new FolderAccess(testDomainAccess);
+        FolderAccess fa1 = new FolderAccess(testDomainAccess, tenantId);
         FolderAccess fa2 = (FolderAccess) FolderAccess.getNewFolderAccessInstance(
-                fa1, folder, DateTime.now(), UUID.fromString("f6a2af65-fe89-45a4-9456-07c5e17b1634"));
+                fa1, folder, DateTime.now(), UUID.fromString("f6a2af65-fe89-45a4-9456-07c5e17b1634"), tenantId);
 
         assertEquals(
                 "f8a2af65-fe89-45a4-9456-07c5e17b1634",
@@ -560,7 +562,7 @@ public class FolderAccessTest {
     @Ignore
     public void shouldUpdateExistingFolder() throws Exception {
         // 1-retrieve a DAO for an existing folder in the DB
-        FolderAccess fa1 = new FolderAccess(testDomainAccess);
+        FolderAccess fa1 = new FolderAccess(testDomainAccess, tenantId);
         FolderAccess fa2 = (FolderAccess) FolderAccess.retrieveInstanceForExistingFolder(
                 fa1, UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
         assertEquals("folder_archetype.v1", fa2.getFolderRecord().getArchetypeNodeId());
@@ -615,7 +617,7 @@ public class FolderAccessTest {
     @Test
     @Ignore
     public void shouldDeleteExistingFolder() {
-        I_FolderAccess fa1 = new FolderAccess(testDomainAccess);
+        I_FolderAccess fa1 = new FolderAccess(testDomainAccess, tenantId);
         fa1.setFolderId(UUID.fromString("00550555-ec91-4025-838d-09ddb4e999cb"));
         int affectedRows = fa1.delete(LocalDateTime.now(), UUID.randomUUID());
         // assertEquals(5, affectedRows); commented since metadata indicating that affected rows are 5 could not be
@@ -629,10 +631,10 @@ public class FolderAccessTest {
 
         Folder folder = generateFolderFromTestFile(FolderTestDataCanonicalJson.FLAT_FOLDER_INSERT);
 
-        I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(testDomainAccess, ehrId);
+        I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(testDomainAccess, ehrId, tenantId);
 
         I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
-                testDomainAccess, folder, Timestamp.from(Instant.now()), ehrId, contributionAccess);
+                testDomainAccess, folder, Timestamp.from(Instant.now()), ehrId, contributionAccess, tenantId);
 
         assertThat(folderAccess).isNotNull();
         assertThat(folderAccess.getSubfoldersList().size()).isEqualTo(0);
@@ -646,10 +648,10 @@ public class FolderAccessTest {
         UUID ehrId = UUID.randomUUID();
         Folder folder = generateFolderFromTestFile(FolderTestDataCanonicalJson.NESTED_FOLDER);
 
-        I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(testDomainAccess, ehrId);
+        I_ContributionAccess contributionAccess = I_ContributionAccess.getInstance(testDomainAccess, ehrId, tenantId);
 
         I_FolderAccess folderAccess = FolderAccess.buildNewFolderAccessHierarchy(
-                testDomainAccess, folder, Timestamp.from(Instant.now()), ehrId, contributionAccess);
+                testDomainAccess, folder, Timestamp.from(Instant.now()), ehrId, contributionAccess, tenantId);
 
         assertThat(folderAccess).isNotNull();
         assertThat(folderAccess.getSubfoldersList().size()).isEqualTo(2);

@@ -29,6 +29,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -59,6 +62,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr resource of openEHR REST API
  */
+@TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
@@ -73,6 +77,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
     @PostMapping // (consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
@@ -96,6 +101,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         return internalPostEhrProcessing(accept, prefer, ehrId, request);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
@@ -170,6 +176,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by ID
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(path = "/{ehr_id}")
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     @Override
@@ -190,6 +197,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by subject (id and namespace)
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(params = {"subject_id", "subject_namespace"})
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     @Override
