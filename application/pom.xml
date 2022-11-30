@@ -33,8 +33,6 @@
 
     <properties>
         <docker.image.prefix>vitasystems/hip-openehr</docker.image.prefix>
-        <docker-maven-plugin.version>0.40.2</docker-maven-plugin.version>
-        <database.host>localhost</database.host>
     </properties>
 
     <dependencies>
@@ -138,17 +136,6 @@
             <artifactId>test-data</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
-            <version>1.17.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>1.17.4</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -164,55 +151,6 @@
                         <configuration>
                             <mainClass>org.ehrbase.application.EhrBase</mainClass>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>${docker-maven-plugin.version}</version>
-                <configuration>
-                    <images>
-                        <image>
-                            <name>ehrbase/ehrbase-postgres:latest</name>
-                            <alias>postgres</alias>
-                            <run>
-                                <env>
-                                    <POSTGRES_PASSWORD>postgres</POSTGRES_PASSWORD>
-                                    <POSTGRES_USER>postgres</POSTGRES_USER>
-                                    <EHRBASE_USER>ehrbase</EHRBASE_USER>
-                                    <EHRBASE_PASSWORD>ehrbase</EHRBASE_PASSWORD>
-                                </env>
-                                <ports>
-                                    <port>${database.port}:${database.port}</port>
-                                </ports>
-                                <wait>
-                                    <!--<log>database system is ready to accept connections</log>-->
-                                    <time>15000</time>
-                                </wait>
-                                <log>
-                                    <enabled>true</enabled>
-                                    <prefix>DB__</prefix>
-                                    <color>red</color>
-                                </log>
-                            </run>
-                        </image>
-                    </images>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>prepare-it-environment</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>remove-it-environment</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
