@@ -14,6 +14,11 @@ security:
 
 server:
   port: 8080
+  servlet:
+    context-path: /ehrbase
+
+
+ehrbase:
   # Optional custom server nodename
   # nodename: 'local.test.org'
 
@@ -25,5 +30,3 @@ server:
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 1
     iterationScanDepth: 1
 
-  servlet:
-    context-path: /ehrbase

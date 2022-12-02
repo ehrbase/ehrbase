@@ -17,29 +17,27 @@
  */
 package org.ehrbase.application.config;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 @Configuration
-@ConfigurationProperties(prefix = "server")
-public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig {
+@ConfigurationProperties(prefix = "ehrbase")
+public class EhrbaseConfiguration implements org.ehrbase.api.definitions.ServerConfig, EnvironmentAware {
 
-    @Min(1025)
-    @Max(65536)
-    private int port;
-
+    private Environment environment;
     private String nodename = "local.ehrbase.org";
     private AqlConfig aqlConfig;
     private boolean disableStrictValidation = false;
 
     public int getPort() {
-        return port;
+        return this.environment.getProperty("server.port", Integer.class);
     }
 
+    @Deprecated
     public void setPort(int port) {
-        this.port = port;
+        throw new RuntimeException("Do not set the port ...");
     }
 
     public String getNodename() {
@@ -66,6 +64,11 @@ public class ServerConfigImp implements org.ehrbase.api.definitions.ServerConfig
 
     public void setAqlConfig(AqlConfig aqlConfig) {
         this.aqlConfig = aqlConfig;
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 
     public static class AqlConfig {

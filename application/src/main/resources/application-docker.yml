@@ -29,11 +29,12 @@ security:
 
 server:
   port: 8080
-  # Optional custom server nodename
-  # nodename: 'local.test.org'
   servlet:
     context-path: /ehrbase
 
+ehrbase:
+  # Optional custom server nodename
+  # nodename: 'local.test.org'
   aqlConfig:
     # if true, WHERE clause is using jsquery, false uses SQL only
     useJsQuery: false
