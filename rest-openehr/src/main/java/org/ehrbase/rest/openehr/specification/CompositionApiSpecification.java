@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.servlet.http.HttpServletRequest;
-import org.ehrbase.response.openehr.CompositionResponseData;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "COMPOSITION")
@@ -76,21 +75,12 @@ public interface CompositionApiSpecification {
             HttpServletRequest request);
 
     @Operation(
-            summary = "Get composition by version id",
-            externalDocs =
-                    @ExternalDocumentation(
-                            url =
-                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get"))
-    ResponseEntity<CompositionResponseData> getCompositionByVersionId(
-            String accept, String ehrIdString, String versionUid, String versionAtTime, HttpServletRequest request);
-
-    @Operation(
             summary = "Get composition at time",
             externalDocs =
                     @ExternalDocumentation(
                             url =
-                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get-1"))
-    ResponseEntity getCompositionByTime(
+                                    "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get"))
+    ResponseEntity getComposition(
             String accept,
             String ehrIdString,
             String versionedObjectUid,

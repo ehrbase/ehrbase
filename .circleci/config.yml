@@ -819,9 +819,10 @@ jobs:
   #    "Y8888P"     `"Y8888Y"'    88888888P"    "Y88888P"
 
   build package ehrbase with locally built sdk from sync-branch:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     steps:
       - checkout
+      - install-java17
       - install-maven
       - git-clone-sdk-repo
       - git-checkout-sdk-sync-branch
@@ -841,9 +842,10 @@ jobs:
 
   run java integration tests - sdk:
     # executor: machine-ubuntu-2004
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     steps:
       - checkout
+      - install-java17
       - install-maven
       - restore-workspace
       - cache-out-sdk-m2-dependencies-sync-branch
@@ -854,19 +856,21 @@ jobs:
 
 
   check-codestyle:
-    executor: docker-python3-java11
+    executor: docker-python3
     # executor: machine-ubuntu-2004
     steps:
       - checkout
+      - install-java17
       - install-maven
       - maven-check-codestyle
 
 
   build-ehrbase:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
+      - install-java17
       - install-maven
       - restore-build-ehrbase-job-caches
       - maven-package
@@ -882,7 +886,7 @@ jobs:
 
   run-SDK-integration-tests:
     description: Run openEHR_SDK's Java integration tests (w/ EHRbase + DB running).
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     steps:
       - checkout
       - attach-target-folder
@@ -898,7 +902,7 @@ jobs:
       - save-sdk-test-results
 
   SANITY-tests:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -912,7 +916,7 @@ jobs:
       - persist-robot-requirements-file
 
   COMPOSITION-tests-1:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -925,7 +929,7 @@ jobs:
           test-suite-name: "COMPOSITION_1"
 
   COMPOSITION-tests-2:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - run: echo MOCKED JOB 3
@@ -939,7 +943,7 @@ jobs:
           test-suite-name: "COMPOSITION_2"
 
   COMPOSITION-tests-3:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -952,7 +956,7 @@ jobs:
           test-suite-name: "COMPOSITION_3"
 
   COMPOSITION-tests-4:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -965,7 +969,7 @@ jobs:
           test-suite-name: "COMPOSITION_4"
 
   COMPOSITION-tests-5:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -978,7 +982,7 @@ jobs:
           test-suite-name: "COMPOSITION_5"
 
   COMPOSITION-tests-6:
-    executor: docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin
+    executor: docker-py3-postgres-ci-timezone-berlin-postgres-timezone-berlin
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -991,7 +995,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_BERLIN_POSTGRES_TIMEZONE_BERLIN"
 
   COMPOSITION-tests-7:
-    executor: docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-utc
+    executor: docker-py3-postgres-ci-timezone-berlin-postgres-timezone-utc
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1004,7 +1008,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_BERLIN_POSTGRES_TIMEZONE_UTC"
 
   COMPOSITION-tests-8:
-    executor: docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-shanghai
+    executor: docker-py3-postgres-ci-timezone-berlin-postgres-timezone-shanghai
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1017,7 +1021,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_BERLIN_POSTGRES_TIMEZONE_SHANGHAI"
 
   COMPOSITION-tests-9:
-    executor: docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-berlin
+    executor: docker-py3-postgres-ci-timezone-utc-postgres-timezone-berlin
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1030,7 +1034,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_UTC_POSTGRES_TIMEZONE_BERLIN"
 
   COMPOSITION-tests-10:
-    executor: docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-utc
+    executor: docker-py3-postgres-ci-timezone-utc-postgres-timezone-utc
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1043,7 +1047,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_UTC_POSTGRES_TIMEZONE_UTC"
 
   COMPOSITION-tests-11:
-    executor: docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-shanghai
+    executor: docker-py3-postgres-ci-timezone-utc-postgres-timezone-shanghai
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1056,7 +1060,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_UTC_POSTGRES_TIMEZONE_SHANGHAI"
 
   COMPOSITION-tests-12:
-    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-berlin
+    executor: docker-py3-postgres-ci-timezone-shanghai-postgres-timezone-berlin
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1069,7 +1073,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_BERLIN"
 
   COMPOSITION-tests-13:
-    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-utc
+    executor: docker-py3-postgres-ci-timezone-shanghai-postgres-timezone-utc
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1082,7 +1086,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_UTC"
 
   COMPOSITION-tests-14:
-    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
+    executor: docker-py3-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1095,7 +1099,7 @@ jobs:
           test-suite-name: "COMPOSITION_CI_TIMEZONE_SHANGHAI_POSTGRES_TIMEZONE_SHANGHAI"
 
   COMPOSITION-tests-15:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1108,7 +1112,7 @@ jobs:
           test-suite-name: "COMPOSITION_15"
 
   TEMPLATE-tests:
-    executor: docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
+    executor: docker-py3-postgres-ci-timezone-shanghai-postgres-timezone-shanghai
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1121,7 +1125,7 @@ jobs:
           test-suite-name: "TEMPLATE_TESTS"
 
   HEADER-tests:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1134,7 +1138,7 @@ jobs:
           test-suite-name: "HEADER-tests"
 
   EHRScape-tests:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1159,7 +1163,7 @@ jobs:
           test-suite-name: "TERMINOLOGY_MOCK"
 
   CONTRIBUTION-test:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1172,7 +1176,7 @@ jobs:
           test-suite-name: "CONTRIBUTION"
 
   DIRECTORY-test:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1185,7 +1189,7 @@ jobs:
           test-suite-name: "DIRECTORY"
 
   EHRSERVICE-test:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     # executor: machine-ubuntu-2004
     steps:
       - checkout
@@ -1198,7 +1202,7 @@ jobs:
           test-suite-name: "EHR_SERVICE"
 
   EHRSTATUS-test:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     steps:
       - checkout
       - restore-workspace
@@ -1210,7 +1214,7 @@ jobs:
           test-suite-name: "EHR_STATUS"
 
   KNOWLEDGE-test:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     steps:
       - checkout
       - restore-workspace
@@ -1224,7 +1228,7 @@ jobs:
           cache-enabled: false
 
   QUERYSERVICE-test-1:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     steps:
       - checkout
       - restore-workspace
@@ -1236,7 +1240,7 @@ jobs:
           test-suite-name: "ADHOC-QUERY-1"
 
   NEWQUERY-test-set:
-    executor: docker-py3-java11-postgres
+    executor: docker-py3-postgres
     steps:
       - checkout
       - restore-workspace
@@ -1248,13 +1252,14 @@ jobs:
           test-suite-name: "NEW_QUERY_TESTS"
 
   QUERYSERVICE-test-2:
-    # executor: docker-py3-java11-postgres
+    # executor: docker-py3-postgres
     executor: machine-ubuntu-2004
     environment:
       SUT: TEST
     steps:
       - checkout
       - restore-workspace
+      - install-java17
       - git-clone-robot-integration-tests-repo
       - move-integration-tests-content-to-local-tests-folder
       # - cache-out-ehrbase-workspace       # USE FOR PIPELINE DEBUGGING ONLY
@@ -1321,6 +1326,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - install-java17
       - git-clone-robot-integration-tests-repo
       - move-integration-tests-content-to-local-tests-folder
       - install-and-configure-keycloak
@@ -1331,7 +1337,7 @@ jobs:
           test-suite-name: "SECURITY"
 
   CORS-test:
-    # executor: docker-py3-java11-postgres
+    # executor: docker-py3-postgres
     executor: machine-ubuntu-2004
     environment:
       SUT: TEST
@@ -1340,6 +1346,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - install-java17
       - git-clone-robot-integration-tests-repo
       - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
@@ -1349,7 +1356,7 @@ jobs:
           test-suite-name: "CORS"
 
   ADMIN-test:
-    # executor: docker-py3-java11-postgres
+    # executor: docker-py3-postgres
     executor: machine-ubuntu-2004
     environment:
       SUT: TEST
@@ -1358,6 +1365,7 @@ jobs:
     steps:
       - checkout
       - restore-workspace
+      - install-java17
       - git-clone-robot-integration-tests-repo
       - move-integration-tests-content-to-local-tests-folder
       - run-robot-tests:
@@ -1368,15 +1376,16 @@ jobs:
 
 
   ROBOT-TEST-REPORT:
-    executor: docker-python3-java11
+    executor: docker-python3
     steps:
       - restore-test-results-folder
       - merge-robot-outputs
 
   sonar-analysis:
-    executor: docker-python3-java11
+    executor: docker-python3
     steps:
       - checkout
+      - install-java17
       - attach_workspace:
           at: /home/circleci
       - run:
@@ -1482,6 +1491,7 @@ commands:
 
     steps:
       # - cache-out-python-requirements
+      - install-java17
       - install-maven
       - install-python3-requirements
       - install-xml-cli-tool
@@ -1644,7 +1654,7 @@ commands:
           command: |
             git clone git@github.com:ehrbase/openEHR_SDK.git
             ls -la
-  
+
   git-clone-robot-integration-tests-repo:
     steps:
       - run:
@@ -1734,13 +1744,14 @@ commands:
       Executes all SDK java tests (unit and integration)
       This requires EHRbase + DB to be running during test execution.
     steps:
+      - install-java17
       - install-maven
       - install-xml-cli-tool
       - run:
           name: Start EHRbase server and run all test of SDK
           command: |
             ls -la
-            
+            java --version
             EHRbase_VERSION=$(xmlstarlet sel -t -m "/_:project/_:version" -v .   pom.xml )
             echo ${EHRbase_VERSION}
             cd ~/projects    # NOTE: This is where the target folder w/ artifacts were persisted to in previous step.
@@ -1903,7 +1914,6 @@ commands:
 
   build-and-test-ehrbase:
     steps:
-      # - install-maven
       - force-ehrbase-build-to-use-local-sdk-version
       - run:
           name: Maven build EHRbase
@@ -1913,6 +1923,7 @@ commands:
 
   start-ehrbase-server:
     steps:
+      - install-java17
       - install-maven
       - install-xml-cli-tool
       - run:
@@ -2033,28 +2044,43 @@ commands:
             # git config --global push.followTags true
             git remote -v
 
-  install-java-11:
-    description: Install Zulu Java 11
+  install-java17:
+    description: Install Java 17 (if not already installed)
     steps:
       - run:
-          name: Install Zulu Java 11
+          name: Install Java 17
           command: |
-            wget https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.3%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.3_7.tar.gz -O /tmp/openjdk-11.tar.gz
-            sudo mkdir -p /usr/lib/jvm
-            sudo tar xfvz /tmp/openjdk-11.tar.gz --directory /usr/lib/jvm
-            rm -f /tmp/openjdk-11.tar.gz
-            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
-            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
+            if [ ! -d "/usr/lib/jvm/jdk-17.0.5+8" ]; then
+              wget https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.5_8.tar.gz -O /tmp/openjdk-17.tar.gz
+              sudo mkdir -p /usr/lib/jvm
+              sudo tar xfvz /tmp/openjdk-17.tar.gz --directory /usr/lib/jvm
+              rm -f /tmp/openjdk-17.tar.gz
+              export JAVA_HOME=/usr/lib/jvm/jdk-17.0.5+8
+              export PATH=$PATH:$JAVA_HOME/bin
+              sudo sh -c 'for bin in /usr/lib/jvm/jdk-17.0.5+8/bin/*; do update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin) $bin 100; done'
+              sudo sh -c 'for bin in /usr/lib/jvm/jdk-17.0.5+8/bin/*; do update-alternatives --set $(basename $bin) $bin; done'
+            fi
+            java --version
+
 
   install-maven:
-    description: Install Maven tool only if it's not already installed
+    description: Install Maven 3.8.6 (if not already installed)
     steps:
       - run:
           name: Install Maven tool
           command: |
             sudo killall -9 apt-get || true
-            sudo apt -y update
-            [ -f /usr/bin/mvn ] && echo "Maven is already installed." || sudo apt install maven -y
+            if [ ! -d "/usr/lib/maven/apache-maven-3.8.6" ]; then
+              wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -O /tmp/maven.tar.gz
+              sudo mkdir -p /usr/lib/maven
+              sudo tar xfvz /tmp/maven.tar.gz --directory /usr/lib/maven
+              rm -f /tmp/maven.tar.gz
+              export MAVEN_HOME=/usr/lib/maven/apache-maven-3.8.6
+              export PATH=$MAVEN_HOME/bin:$PATH
+              sudo update-alternatives --install /usr/bin/mvn mvn /usr/lib/maven/apache-maven-3.8.6/bin/mvn 100
+              sudo update-alternatives --set mvn /usr/lib/maven/apache-maven-3.8.6/bin/mvn
+            fi
+            mvn --version
 
   install-and-configure-keycloak:
     description: Setups a Keycloak Docker instance and restores a previously exportd configuration.
@@ -2162,9 +2188,9 @@ commands:
           command: |
             mkdir -p ~/download
             cd ~/download
-            [ -e jacoco-0.8.6.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.6/jacoco-0.8.6.zip
+            [ -e jacoco-0.8.6.zip ] || wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.8/jacoco-0.8.8.zip
             mkdir -p ~/jacoco
-            unzip -uo jacoco-0.8.6.zip -d ~/jacoco
+            unzip -uo jacoco-0.8.8.zip -d ~/jacoco
       - persist_to_workspace:
           name: Persist Jacoco Download (~/jacoco)
           root: /home/circleci
@@ -2469,22 +2495,22 @@ executors:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
 
-  docker-python3-java11:
+  docker-python3:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image: circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image: cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
 
-  docker-py3-java11-postgres:
+  docker-py3-postgres:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2500,7 +2526,7 @@ executors:
   docker-mock-server:
     working_directory: ~/projects
     docker:
-      - image: circleci/python:3.8.5-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2520,12 +2546,12 @@ executors:
           MOCKSERVER_SERVER_PORT: 1080
           MOCKSERVER_LOG_LEVEL: DEBUG
 
-  docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-berlin:
+  docker-py3-postgres-ci-timezone-berlin-postgres-timezone-berlin:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2541,12 +2567,12 @@ executors:
           PGDATA: /tmp
           TZ: "Europe/Berlin"
 
-  docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-utc:
+  docker-py3-postgres-ci-timezone-berlin-postgres-timezone-utc:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2562,12 +2588,12 @@ executors:
           PGDATA: /tmp
           TZ: "UTC"
 
-  docker-py3-java11-postgres-ci-timezone-berlin-postgres-timezone-shanghai:
+  docker-py3-postgres-ci-timezone-berlin-postgres-timezone-shanghai:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2583,12 +2609,12 @@ executors:
           PGDATA: /tmp
           TZ: "Asia/Shanghai"
 
-  docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-berlin:
+  docker-py3-postgres-ci-timezone-utc-postgres-timezone-berlin:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2604,12 +2630,12 @@ executors:
           PGDATA: /tmp
           TZ: "Europe/Berlin"
 
-  docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-utc:
+  docker-py3-postgres-ci-timezone-utc-postgres-timezone-utc:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2625,12 +2651,12 @@ executors:
           PGDATA: /tmp
           TZ: "UTC"
 
-  docker-py3-java11-postgres-ci-timezone-utc-postgres-timezone-shanghai:
+  docker-py3-postgres-ci-timezone-utc-postgres-timezone-shanghai:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2646,12 +2672,12 @@ executors:
           PGDATA: /tmp
           TZ: "Asia/Shanghai"
 
-  docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-berlin:
+  docker-py3-postgres-ci-timezone-shanghai-postgres-timezone-berlin:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2667,12 +2693,12 @@ executors:
           PGDATA: /tmp
           TZ: "Europe/Berlin"
 
-  docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-utc:
+  docker-py3-postgres-ci-timezone-shanghai-postgres-timezone-utc:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2688,12 +2714,12 @@ executors:
           PGDATA: /tmp
           TZ: "UTC"
 
-  docker-py3-java11-postgres-ci-timezone-shanghai-postgres-timezone-shanghai:
+  docker-py3-postgres-ci-timezone-shanghai-postgres-timezone-shanghai:
     working_directory: ~/projects
     docker:
-      # - image: circleci/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
-      # - image:  circleci/python:3.8.5-buster-node-browsers
-      - image: circleci/python:3.8.5-node-browsers
+      # - image: cimg/python@sha256:e1c98a85c5ee62ac52a2779fe5abe2677f021c8e3158e4fb2d569c7b9c6ac073
+      # - image:  cimg/python:3.8.5-buster-node-browsers
+      - image: cimg/python:3.8.14-node
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2708,23 +2734,6 @@ executors:
           POSTGRES_PASSWORD: postgres
           PGDATA: /tmp
           TZ: "Asia/Shanghai"
-
-  machine-ubuntu-1604:
-    description: |
-      Ubuntu 1604 VM
-      - Python/Python3
-      - Pip/Pip3
-      - Java 8 and Maven
-      - Docker 18.06
-      - Docker-Compose 1.22.0
-    working_directory: ~/projects
-    environment:
-      PIPELINE_ID: << pipeline.id >>
-      BRANCH_NAME: << pipeline.git.branch >>
-    machine:
-      # image: circleci/classic:201808-01
-      # image: ubuntu-1604:201903-01
-      image: ubuntu-1604:202007-01
 
 
   machine-ubuntu-2004:
@@ -2760,14 +2769,6 @@ executors:
       image: ubuntu-2004:202008-01
 
 
-
-
-
-
-
-
-
-
 # oooooooooo.        .o.         .oooooo.   oooo    oooo ooooo     ooo ooooooooo.
 # `888'   `Y8b      .888.       d8P'  `Y8b  `888   .8P'  `888'     `8' `888   `Y88.
 #  888     888     .8"888.     888           888  d8'     888       8   888   .d88'
@@ -2777,7 +2778,24 @@ executors:
 # o888bood8P'  o88o     o8888o  `Y8bood8P'  o888o  o888o    `YbodP'    o888o
 #
 # [ BACKUP ]
-
+#
+#  machine-ubuntu-1604:
+#    description: |
+#      Ubuntu 1604 VM
+#      - Python/Python3
+#      - Pip/Pip3
+#      - Java 8 and Maven
+#      - Docker 18.06
+#      - Docker-Compose 1.22.0
+#    working_directory: ~/projects
+#    environment:
+#      PIPELINE_ID: << pipeline.id >>
+#      BRANCH_NAME: << pipeline.git.branch >>
+#    machine:
+#      # image: circleci/classic:201808-01
+#      # image: ubuntu-1604:201903-01
+#      image: ubuntu-1604:202007-01
+#
 # upload-test-status-report-to-slack:
 #   description: Uploads status report to Slack
 #   steps:

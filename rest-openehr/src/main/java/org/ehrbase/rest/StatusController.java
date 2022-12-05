@@ -26,6 +26,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.response.openehr.StatusResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,7 @@ public class StatusController extends BaseController {
         this.statusService = Objects.requireNonNull(statusService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_SYSTEM_STATUS)
     @GetMapping(path = "/status")
     @Operation(summary = "Get status information on running EHRbase server instance")
     @ApiResponses(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,19 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.tenant;
+package org.ehrbase.tenant;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.impl.JWTParser;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.Payload;
 import java.util.Optional;
+import org.apache.commons.codec.binary.Base64;
 
-public interface TenantIdExtractionStrategy<T> {
-    public int priority();
+public abstract class TokenSupport {
 
-    public boolean accept(Object... args);
-
-    public Optional<TenantAuthentication<T>> extract(Object... args);
-
-    public default Optional<TenantAuthentication<T>> extractWithPrior(
-            Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
-        return extract(args);
+    public static Optional<String> extractClaim(String token, String claim) {
+        DecodedJWT jwt = JWT.decode(token);
+        Payload payload = new JWTParser().parsePayload(new String(Base64.decodeBase64(jwt.getPayload())));
+        return Optional.ofNullable(payload.getClaim(claim).asString());
     }
 }

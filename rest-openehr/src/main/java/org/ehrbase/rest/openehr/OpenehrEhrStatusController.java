@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -72,6 +74,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
@@ -101,6 +104,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping(path = "/{version_uid}")
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
@@ -128,6 +132,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
     @Override
     @PutMapping
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")

@@ -13,6 +13,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
  ### Fixed 
 
+## [0.23.0]
+ ### Added
+ - Authorization enhancements [#1002](https://github.com/ehrbase/ehrbase/pull/1002)
+   - Impl. API extensions needed for authorization
+   - Added annotations on all REST endpoints to support authorization decissions
+ ### Changed 
+ - Upgrade openEHR_SDK to version 1.24.0-SNAPSHOT see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ - JAVA 17 baseline
+ - Spring Boot 2.7.4
+ - Upgrade openEHR_SDK to version 1.24.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ ### Fixed
+
 ## [0.22.0]
 ### Added
 - Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
@@ -530,4 +542,5 @@ the next release this file will provide a proper overview.
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
 
 [0.22.0]: https://github.com/ehrbase/ehrbase/compare/v0.21.1...v0.22.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.22.0...HEAD
+[0.23.0]: https://github.com/ehrbase/ehrbase/compare/v0.22.0...v0.23.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...HEAD

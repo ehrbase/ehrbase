@@ -24,7 +24,7 @@
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>bom</artifactId>
-    <version>0.23.0-SNAPSHOT</version>
+    <version>0.24.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>EHRbase</name>
@@ -115,11 +115,12 @@
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
         <maven-jacoco-plugin.version>0.8.7</maven-jacoco-plugin.version>
-        <maven-nexus-staging-plugin.version>1.6.8</maven-nexus-staging-plugin.version>
+        <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <postgressql.version>42.4.1</postgressql.version>
-        <prometheus.version>1.8.2</prometheus.version>
-        <spring-boot.version>2.5.12</spring-boot.version>
+
+        <prometheus.version>1.10.0</prometheus.version>
+        <spring-boot.version>2.7.4</spring-boot.version>
         <spring-security.version>5.5.5</spring-security.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->
