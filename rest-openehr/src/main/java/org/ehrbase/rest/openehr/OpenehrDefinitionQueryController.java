@@ -19,12 +19,14 @@ package org.ehrbase.rest.openehr;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
@@ -109,9 +111,12 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_CREATE)
     @RequestMapping(
             value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
+            produces = {MediaType.APPLICATION_JSON_VALUE},
+            consumes = {MediaType.TEXT_PLAIN_VALUE},
             method = RequestMethod.PUT)
     @Override
     public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
+            @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(value = "version") Optional<String> version,
@@ -121,22 +126,35 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         log.debug("putStoreQuery invoked with the following input: " + qualifiedQueryName + ", version:" + version
                 + ", query:" + queryPayload + ", type=" + type);
 
-        // use the payload from adhoc POST:
-        // get the query and parameters if any
-        Gson gson = new GsonBuilder().create();
-
-        Map<String, Object> mapped = gson.fromJson(queryPayload, Map.class);
-        String aql = (String) mapped.get("q");
+        var format = extractCompositionFormat(contentType);
+        String aql;
+        switch (format) {
+            case JSON: {
+                // use the payload from adhoc POST:
+                // get the query and parameters if any
+                Gson gson = new GsonBuilder().create();
+                Map<String, Object> mapped = gson.fromJson(queryPayload, Map.class);
+                aql = (String) mapped.get("q");
+                break;
+            }
+            case TEXT: {
+                aql = queryPayload;
+                break;
+            }
+            default:
+                throw new UnexpectedSwitchCaseException(format);
+        }
 
         if (aql == null || aql.isEmpty())
             return new ResponseEntity(
                     new ErrorBodyPayload("Invalid query", "no aql query provided in payload").toString(),
                     HttpStatus.BAD_REQUEST);
 
-        QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(
-                queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql));
+        new QueryDefinitionResponseData(queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql));
 
-        return ResponseEntity.ok(queryDefinitionResponseData);
+        return ResponseEntity.ok()
+                .location(URI.create(this.encodePath(getBaseEnvLinkURL())))
+                .build();
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_DELETE)

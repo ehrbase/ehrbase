@@ -189,6 +189,8 @@ public abstract class BaseController {
             compositionFormat = CompositionFormat.XML;
         } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
             compositionFormat = CompositionFormat.JSON;
+        } else if (mediaType.isCompatibleWith(MediaType.TEXT_PLAIN)) {
+            compositionFormat = CompositionFormat.TEXT;
         } else {
             throw new NotAcceptableException("Only compositions in XML or JSON are supported at the moment");
         }
@@ -268,7 +270,8 @@ public abstract class BaseController {
         MediaType.sortBySpecificityAndQuality(mediaTypes);
         MediaType contentType = mediaTypes.stream()
                 .filter(mediaType -> mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)
-                        || mediaType.isCompatibleWith(MediaType.APPLICATION_XML))
+                        || mediaType.isCompatibleWith(MediaType.APPLICATION_XML)
+                        || mediaType.isCompatibleWith(MediaType.TEXT_PLAIN))
                 .findFirst()
                 .orElseThrow(() -> new InvalidApiParameterException("Wrong Content-Type header in request"));
 
