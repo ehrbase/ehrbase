@@ -46,7 +46,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     private AuditDetailsRecord auditDetailsRecord;
 
     public AuditDetailsAccess(I_DomainAccess dataAccess, String tenantIdentifier) {
-        super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
+        super(dataAccess);
         this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
         this.auditDetailsRecord.setNamespace(tenantIdentifier);
     }
@@ -58,8 +58,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
             I_ConceptAccess.ContributionChangeType changeType,
             String description,
             String tenantIdentifier) {
-        super(dataAccess.getContext(), null, null, dataAccess.getServerConfig());
-        this.auditDetailsRecord = dataAccess.getContext().newRecord(AUDIT_DETAILS);
+        this(dataAccess, tenantIdentifier);
         auditDetailsRecord.setSystemId(systemId);
         auditDetailsRecord.setCommitter(committer);
         setChangeType(I_ConceptAccess.fetchContributionChangeType(this, changeType));
