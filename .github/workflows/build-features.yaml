@@ -1,0 +1,35 @@
+name: build-fix-and-feature-branches
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'feat/**'
+      - 'fix/**'
+    paths-ignore:
+      - '.circleci/**'
+      - '.docker_scripts/**'
+      - '.github/**'
+      - 'doc/**'
+      - 'tests/**'
+      - '**/*.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: ./mvnw verify
