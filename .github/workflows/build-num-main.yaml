@@ -1,0 +1,33 @@
+name: build-num-main
+
+on:
+  push:
+    branches:
+      - num-main
+    paths-ignore:
+      - '.circleci/**'
+      - '.docker_scripts/**'
+      - '.github/**'
+      - 'doc/**'
+      - 'tests/**'
+      - '**/*.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: ./mvnw verify
