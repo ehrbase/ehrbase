@@ -29,5 +29,39 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
+      - name: Set some variables for the build
+        run: |
+          if [ ${{ github.ref }} != 'refs/heads/num-main' ]; then
+            echo "IS NOT num-main branch"
+            echo "BUILD_VERSION=0.24.$GITHUB_RUN_NUMBER-PR" >> $GITHUB_ENV
+          else
+            echo "IS main branch"
+            echo "BUILD_VERSION=0.24.$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: See some values
+        run: |
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
+          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER"
+          echo "BUILD_VERSION=$BUILD_VERSION"
+
+      - name: Echo Env Vars through Context
+        run: |
+          echo "$GITHUB_CONTEXT"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set Build-Version in pom.xml
+        run: ./mvnw versions:set -DnewVersion=$BUILD_VERSION
+
       - name: Build with Maven
         run: ./mvnw verify
+
+      - name: Docker push image
+        run: ./mvnw io.fabric8:docker-maven-plugin:0.40.2:push
