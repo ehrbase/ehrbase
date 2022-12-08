@@ -62,7 +62,6 @@ import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.InsertQuery;
 import org.jooq.JSONB;
-import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.UpdateQuery;
 import org.jooq.exception.DataAccessException;
@@ -172,16 +171,29 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                                 .EVENT_CONTEXT
                                 .eq(eventContextHistoryRecord.getId())
                                 .and(PARTICIPATION_HISTORY.SYS_TRANSACTION.eq(transactionTime)))
-                .forEach(record -> {
-                    // retrieve performer
-                    PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(record.getPerformer());
+                .forEach(historyRecord -> {
 
-                    DvInterval<DvDateTime> startTime = convertDvIntervalDvDateTimeFromRecord(eventContextHistoryRecord);
-                    DvCodedText mode = convertModeFromRecord(eventContextHistoryRecord);
+                    // retrieve performer
+                    PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(historyRecord.getPerformer());
+
+                    DvInterval<DvDateTime> startTime = null;
+                    if (historyRecord.getTimeLower() != null) { // start time null value is allowed for participation
+                        startTime = new DvInterval<>(
+                                new RecordedDvDateTime()
+                                        .decodeDvDateTime(historyRecord.getTimeLower(), historyRecord.getTimeLowerTz()),
+                                new RecordedDvDateTime()
+                                        .decodeDvDateTime(
+                                                historyRecord.getTimeUpper(), historyRecord.getTimeUpperTz()));
+                    }
+                    DvCodedText mode = null;
+                    if (historyRecord.getMode() != null) {
+                        mode = (DvCodedText)
+                                new RecordedDvCodedText().fromDB(historyRecord, PARTICIPATION_HISTORY.MODE);
+                    }
 
                     Participation participation = new Participation(
                             performer,
-                            (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
+                            (DvText) new RecordedDvCodedText().fromDB(historyRecord, PARTICIPATION_HISTORY.FUNCTION),
                             mode,
                             startTime);
 
@@ -493,19 +505,33 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         // get the participations
         getContext()
                 .fetch(PARTICIPATION, PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId()))
-                .forEach(record -> {
+                .forEach(participationRecord -> {
                     // retrieve performer
-                    PartyProxy performer = new PersistedPartyProxy(this).retrieve(record.getPerformer());
+                    PartyProxy performer = new PersistedPartyProxy(this).retrieve(participationRecord.getPerformer());
 
-                    DvInterval<DvDateTime> dvInterval = convertDvIntervalDvDateTimeFromRecord(record);
-
-                    DvCodedText mode = convertModeFromRecord(record);
+                    DvInterval<DvDateTime> startTime = null;
+                    if (participationRecord.getTimeLower()
+                            != null) { // start time null value is allowed for participation
+                        startTime = new DvInterval<>(
+                                new RecordedDvDateTime()
+                                        .decodeDvDateTime(
+                                                participationRecord.getTimeLower(),
+                                                participationRecord.getTimeLowerTz()),
+                                new RecordedDvDateTime()
+                                        .decodeDvDateTime(
+                                                participationRecord.getTimeUpper(),
+                                                participationRecord.getTimeUpperTz()));
+                    }
+                    DvCodedText mode = null;
+                    if (participationRecord.getMode() != null) {
+                        mode = (DvCodedText) new RecordedDvCodedText().fromDB(participationRecord, PARTICIPATION.MODE);
+                    }
 
                     Participation participation = new Participation(
                             performer,
-                            (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
+                            (DvText) new RecordedDvCodedText().fromDB(participationRecord, PARTICIPATION.FUNCTION),
                             mode,
-                            dvInterval);
+                            startTime);
 
                     participationList.add(participation);
                 });
@@ -529,34 +555,6 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 eventContextRecord.getLocation(),
                 concept,
                 otherContext);
-    }
-
-    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record) {
-        DvInterval<DvDateTime> dvDateTimeDvInterval = null;
-        if (record.get(PARTICIPATION.TIME_LOWER) != null) { // start time null value is allowed for participation
-            dvDateTimeDvInterval = new DvInterval<>(
-                    new RecordedDvDateTime()
-                            .decodeDvDateTime(
-                                    record.get(PARTICIPATION.TIME_LOWER), record.get(PARTICIPATION.TIME_LOWER_TZ)),
-                    new RecordedDvDateTime()
-                            .decodeDvDateTime(
-                                    record.get(PARTICIPATION.TIME_UPPER), record.get(PARTICIPATION.TIME_UPPER_TZ)));
-        }
-        return dvDateTimeDvInterval;
-    }
-
-    private static DvCodedText convertModeFromRecord(Record record) {
-        DvCodedText mode;
-        try {
-            if (record.get(PARTICIPATION.MODE) != null) {
-                mode = (DvCodedText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
-            } else {
-                mode = null;
-            }
-        } catch (IllegalArgumentException e) {
-            throw new InternalServerException(DB_INCONSISTENCY, e);
-        }
-        return mode;
     }
 
     @Override
