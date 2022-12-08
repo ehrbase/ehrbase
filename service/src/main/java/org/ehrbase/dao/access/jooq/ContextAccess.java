@@ -96,6 +96,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     public static I_ContextAccess retrieveInstance(I_DomainAccess domainAccess, UUID id) {
         ContextAccess contextAccess = new ContextAccess(domainAccess);
+        // We explicitly do not fetch the participations, since we do not update them. They are replaced in case of an
+        // update
         contextAccess.eventContextRecord = domainAccess.getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.ID.eq(id));
         return contextAccess;
     }
@@ -249,6 +251,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         new RecordedDvCodedText().toDB(eventContextRecord, EVENT_CONTEXT.SETTING, eventContext.getSetting());
 
+        // We always replace participations -> remove the old ones if any
+        participations.clear();
         if (eventContext.getParticipations() != null) {
             for (Participation participation : eventContext.getParticipations()) {
                 ParticipationRecord participationRecord = getContext().newRecord(PARTICIPATION);
@@ -354,20 +358,20 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     @Override
     public Boolean update(Timestamp transactionTime) {
         // updateComposition participations
+        // We replace participations, instead of updating them, because we have no concrete criteria which
+        // participations should be updated
+        getContext()
+                .deleteFrom(PARTICIPATION)
+                .where(PARTICIPATION.EVENT_CONTEXT.eq(getId()))
+                .execute();
         for (ParticipationRecord participationRecord : participations) {
             participationRecord.setSysTransaction(transactionTime);
-            if (participationRecord.changed()) {
-                // check if commit or updateComposition (exists or not...)
-                try {
-                    if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
-                        participationRecord.update();
-                    } else {
-                        participationRecord.setId(UuidGenerator.randomUUID());
-                        participationRecord.store();
-                    }
-                } catch (DataAccessException e) { // generalize DB exceptions
-                    throw new InternalServerException(DB_INCONSISTENCY, e);
-                }
+            // check if commit or updateComposition (exists or not...)
+            try {
+                participationRecord.setId(UuidGenerator.randomUUID());
+                participationRecord.store();
+            } catch (DataAccessException e) { // generalize DB exceptions
+                throw new InternalServerException(DB_INCONSISTENCY, e);
             }
         }
         // ignore the temporal field since it is maintained by an external trigger!
