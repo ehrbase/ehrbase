@@ -64,4 +64,4 @@ jobs:
         run: ./mvnw verify
 
       - name: Docker push image
-        run: ./mvnw io.fabric8:docker-maven-plugin:0.40.2:push
+        run: ./mvnw -pl build-docker-image io.fabric8:docker-maven-plugin:0.40.2:push
