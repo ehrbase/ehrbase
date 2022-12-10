@@ -146,7 +146,8 @@
                       <DB_USER>ehrbase</DB_USER>
                       <DB_PASS>ehrbase</DB_PASS>
                       <SPRING_REDIS_HOST>redis</SPRING_REDIS_HOST>
-                      <SECURITY_AUTHTYPE>NONE</SECURITY_AUTHTYPE>
+                      <SECURITY_AUTHTYPE>BASIC</SECURITY_AUTHTYPE>
+                      <MANAGEMENT_SERVER_PORT>7979</MANAGEMENT_SERVER_PORT>
                       <MANAGEMENT_ENDPOINTS_WEB_EXPOSURE>env,health,info,metrics,prometheus</MANAGEMENT_ENDPOINTS_WEB_EXPOSURE>"
                       <MANAGEMENT_ENDPOINTS_WEB_BASEPATH>/management</MANAGEMENT_ENDPOINTS_WEB_BASEPATH>
                       <MANAGEMENT_ENDPOINT_ENV_ENABLED>false</MANAGEMENT_ENDPOINT_ENV_ENABLED>
@@ -165,7 +166,7 @@
                     <wait>
                       <http>
                         <!--<url>http://localhost:9080/ehrbase/management/health/liveness</url>-->
-                        <url>http://localhost:9080/ehrbase/management/health</url>
+                        <url>http://localhost:9999/management/health</url>
                         <method>get</method>
                         <status>200</status>
                       </http>

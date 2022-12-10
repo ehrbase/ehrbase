@@ -23,6 +23,8 @@ import static org.ehrbase.application.config.security.SecurityProperties.USER;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.context.ShutdownEndpoint;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -79,7 +81,9 @@ public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
                 .ignoringAntMatchers("/rest/**")
                 .and()
                 .authorizeRequests()
-                .antMatchers("/rest/admin/**", "/management/**")
+                .requestMatchers(EndpointRequest.to(ShutdownEndpoint.class)).hasRole(ADMIN)
+                .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
+                .antMatchers("/rest/admin/**")
                 .hasRole(ADMIN)
                 .anyRequest()
                 .hasAnyRole(ADMIN, USER)

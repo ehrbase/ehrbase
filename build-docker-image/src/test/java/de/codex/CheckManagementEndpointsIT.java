@@ -15,7 +15,7 @@ public class CheckManagementEndpointsIT {
 
   @Test
   void testHealth() {
-    ResponseEntity<String> response = rest.getForEntity("http://localhost:9080/ehrbase/management/health", String.class);
+    ResponseEntity<String> response = rest.getForEntity("http://localhost:9999/management/health", String.class);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     log.info("----- HEALTH_ENDPOINT_RESPONSE_BODY ------");
     log.info(response.getBody());
@@ -23,9 +23,16 @@ public class CheckManagementEndpointsIT {
 
   @Test
   void testLiveness() {
-    ResponseEntity<String> response = rest.getForEntity("http://localhost:9080/ehrbase/management/health/liveness", String.class);
+    ResponseEntity<String> response = rest.getForEntity("http://localhost:9999/management/health/liveness", String.class);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     log.info("----- LIVENESS_ENDPOINT_RESPONSE_BODY ------");
+    log.info(response.getBody());
+  }
+  @Test
+  void testReadiness() {
+    ResponseEntity<String> response = rest.getForEntity("http://localhost:9999/management/health/readiness", String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    log.info("----- READINESS_ENDPOINT_RESPONSE_BODY ------");
     log.info(response.getBody());
   }
 }
