@@ -41,13 +41,7 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
      * @return a new minimal {@link I_ContributionAccess}
      */
     static I_ContributionAccess getInstance(I_DomainAccess domain, UUID ehrId, String tenantIdentifier) {
-        return new ContributionAccess(
-                domain.getContext(),
-                domain.getKnowledgeManager(),
-                domain.getIntrospectService(),
-                domain.getServerConfig(),
-                ehrId,
-                tenantIdentifier);
+        return new ContributionAccess(domain, ehrId, tenantIdentifier);
     }
 
     /**

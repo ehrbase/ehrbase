@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class StatusServiceImp extends BaseServiceImp implements StatusService {
 
-    @Autowired
+    @Autowired(required = false)
     private BuildProperties buildProperties;
 
     @Autowired

@@ -18,11 +18,11 @@
 package org.ehrbase.application.web;
 
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.ehrbase.util.UuidGenerator;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -49,7 +49,7 @@ public class LoggingContextFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            MDC.put("traceId", generateId());
+            MDC.put("traceId", generateTraceId());
             logger.trace("Set traceId for current request");
 
             filterChain.doFilter(request, response);
@@ -58,7 +58,7 @@ public class LoggingContextFilter extends OncePerRequestFilter {
         }
     }
 
-    private String generateId() {
-        return UuidGenerator.randomUUID().toString();
+    private String generateTraceId() {
+        return Long.toString(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE), 16);
     }
 }

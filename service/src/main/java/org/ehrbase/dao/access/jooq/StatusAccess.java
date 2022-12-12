@@ -20,6 +20,7 @@ package org.ehrbase.dao.access.jooq;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
 import static org.ehrbase.jooq.pg.Tables.STATUS_HISTORY;
+import static org.jooq.impl.DSL.count;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvCodedText;
@@ -28,6 +29,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -50,8 +52,13 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.ehrbase.service.RecordedDvCodedText;
+import org.jooq.AggregateFunction;
 import org.jooq.DSLContext;
+import org.jooq.Param;
+import org.jooq.Record1;
 import org.jooq.Result;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 /**
  * Persistence operations on EHR status.
@@ -547,17 +554,21 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
     public static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {
 
-        if (!hasPreviousVersionOfStatus(domainAccess, statusId)) {
-            return 1;
-        }
+        DSLContext ctx = domainAccess.getContext();
+        Param<UUID> uuidParam = DSL.param("id", statusId);
+        Table<Record1<Integer>> unionAll = ctx.select(count(STATUS.ID))
+                .from(STATUS)
+                .where(STATUS.ID.eq(uuidParam))
+                .unionAll(ctx.select(count(STATUS_HISTORY.ID))
+                        .from(STATUS_HISTORY)
+                        .where(STATUS_HISTORY.ID.eq(uuidParam)))
+                .asTable("version_counts");
 
-        int versionCount = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.ID.eq(statusId));
+        AggregateFunction<BigDecimal> sum = DSL.sum(unionAll.field(0, Integer.class));
 
-        return versionCount + 1;
-    }
+        int version = ctx.select(sum).from(unionAll).fetchOne(sum).intValue();
 
-    private static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
-        return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
+        return version;
     }
 
     public static boolean exists(I_DomainAccess domainAccess, UUID ehrStatusId) {

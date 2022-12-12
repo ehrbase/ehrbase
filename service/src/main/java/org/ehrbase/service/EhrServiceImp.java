@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -99,6 +100,12 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         this.tenantService = tenantService;
     }
 
+    @PostConstruct
+    public void init() {
+        // Create local system UUID
+        getSystemUuid();
+    }
+
     private UUID getEmptyPartyByTenant() {
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
         return new PersistedPartyProxy(getDataAccess()).getOrCreate(new PartySelf(), tenantIdentifier);
@@ -132,7 +139,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
 
         UUID systemId = getSystemUuid();
-        UUID committerId = getCurrentUserId(tenantService.getCurrentTenantIdentifier());
+        UUID committerId = getCurrentUserId();
 
         try { // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(
@@ -281,7 +288,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         // execute actual update and check for success
         if (ehrAccess
                 .update(
-                        getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
+                        getCurrentUserId(),
                         getSystemUuid(),
                         contributionId,
                         null,
@@ -310,15 +317,6 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
         UUID subjectUuid = new PersistedPartyRef(getDataAccess()).findInDB(subjectId, nameSpace);
         return Optional.ofNullable(I_EhrAccess.retrieveInstanceBySubject(getDataAccess(), subjectUuid));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean doesEhrExist(UUID ehrId) {
-        Optional<I_EhrAccess> ehrAccess = Optional.ofNullable(I_EhrAccess.retrieveInstance(getDataAccess(), ehrId));
-        return ehrAccess.isPresent();
     }
 
     /**
@@ -382,13 +380,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     /*TODO This method should be cached...
     For contributions it may be called n times where n is the number of versions in the contribution which will in turn mean
     n SQL queries are performed*/
-    public boolean isModifiable(UUID ehrId) {
+    public Boolean isModifiable(UUID ehrId) {
         return I_EhrAccess.isModifiable(getDataAccess(), ehrId);
-    }
-
-    @Override
-    public boolean hasStatus(UUID statusId) {
-        return I_StatusAccess.exists(getDataAccess(), statusId);
     }
 
     @Override
