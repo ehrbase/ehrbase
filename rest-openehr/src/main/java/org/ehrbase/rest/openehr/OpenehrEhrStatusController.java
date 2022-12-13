@@ -53,6 +53,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 /**
  * Controller for /ehr/{ehrId}/ehr_status resource of openEHR REST API
  *
@@ -148,6 +150,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
+        versionUid = unwrap(versionUid, '"');
         if (!latestVersionUid.equals(versionUid)) {
             throw new PreconditionFailedException("Given If-Match header does not match latest existing version");
         }

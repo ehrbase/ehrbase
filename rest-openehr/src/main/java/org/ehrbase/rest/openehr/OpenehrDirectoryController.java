@@ -56,6 +56,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 /**
  * Controller for openEHR /directory endpoints
  *
@@ -116,6 +118,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestBody Folder folder) {
 
+        folderId.setValue(unwrap(folderId.getValue(), '"'));
+
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);
 
@@ -141,6 +145,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
+
+        folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);
