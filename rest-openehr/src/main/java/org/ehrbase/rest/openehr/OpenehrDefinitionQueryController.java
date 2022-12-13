@@ -28,17 +28,20 @@ import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.QueryService;
+import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
 import org.ehrbase.response.openehr.QueryDefinitionResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
+import org.ehrbase.rest.util.InternalResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -47,11 +50,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+
 @TenantAware
 @RestController
 @RequestMapping(
         path = "${openehr-api.context-path:/rest/openehr}/v1/definition/query",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+        produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
     static final Logger log = LoggerFactory.getLogger(OpenehrDefinitionQueryController.class);
@@ -109,11 +115,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_CREATE)
-    @RequestMapping(
-            value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
-            produces = {MediaType.APPLICATION_JSON_VALUE},
-            consumes = {MediaType.TEXT_PLAIN_VALUE},
-            method = RequestMethod.PUT)
+    @PutMapping( value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
     @Override
     public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
@@ -150,11 +152,43 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                     new ErrorBodyPayload("Invalid query", "no aql query provided in payload").toString(),
                     HttpStatus.BAD_REQUEST);
 
-        new QueryDefinitionResponseData(queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql));
+        return internalPutDefinitionProcessing(qualifiedQueryName, version, format, aql);
+    }
 
-        return ResponseEntity.ok()
-                .location(URI.create(this.encodePath(getBaseEnvLinkURL())))
-                .build();
+    private ResponseEntity<QueryDefinitionResponseData> internalPutDefinitionProcessing(String qualifiedQueryName,
+                              Optional<String> version, CompositionFormat format, String aql) {
+        QueryDefinitionResponseData respData =
+                new QueryDefinitionResponseData(queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql));
+
+
+        HttpHeaders respHeaders = new HttpHeaders();
+        respHeaders.setContentType(resolveContentType(APPLICATION_JSON_VALUE));
+        respHeaders.setLocation(URI.create(this.encodePath(getBaseEnvLinkURL())));
+
+        Optional<InternalResponse<QueryDefinitionResponseData>> internalResponse =
+                Optional.of(new InternalResponse<>(respData, respHeaders));
+
+        switch (format) {
+            case JSON: {
+                return internalResponse.map(i -> Optional.ofNullable(i.getResponseData())
+                                .map(j -> ResponseEntity.ok()
+                                        .headers(i.getHeaders())
+                                        .body(j))
+                                // when the body is empty
+                                .orElse(ResponseEntity.ok()
+                                        .headers(i.getHeaders())
+                                        .build()))
+                        // when no response could be created at all
+                        .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+            }
+            case TEXT: {
+                return ResponseEntity.ok()
+                        .headers(respHeaders)
+                        .build();
+            }
+            default:
+                throw new UnexpectedSwitchCaseException(format);
+        }
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_DELETE)

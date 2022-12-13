@@ -39,6 +39,7 @@ public interface DefinitionQueryApiSpecification {
 
     @Operation(
             summary = "Store a query",
+            description = "Content type application/json is still supported but it's deprecated, please use a text/plain instead.",
             externalDocs =
                     @ExternalDocumentation(
                             url =
