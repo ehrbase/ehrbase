@@ -29,12 +29,12 @@ import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
 import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
 import org.ehrbase.response.openehr.QueryDefinitionResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
-import org.ehrbase.rest.util.InternalResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,31 +157,17 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     private ResponseEntity<QueryDefinitionResponseData> internalPutDefinitionProcessing(String qualifiedQueryName,
                               Optional<String> version, CompositionFormat format, String aql) {
-        QueryDefinitionResponseData respData =
-                new QueryDefinitionResponseData(queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql));
-
-
-        HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(resolveContentType(APPLICATION_JSON_VALUE));
-        respHeaders.setLocation(URI.create(this.encodePath(getBaseEnvLinkURL())));
-
-        Optional<InternalResponse<QueryDefinitionResponseData>> internalResponse =
-                Optional.of(new InternalResponse<>(respData, respHeaders));
+        QueryDefinitionResultDto storedQuery =
+                queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
 
         switch (format) {
             case JSON: {
-                return internalResponse.map(i -> Optional.ofNullable(i.getResponseData())
-                                .map(j -> ResponseEntity.ok()
-                                        .headers(i.getHeaders())
-                                        .body(j))
-                                // when the body is empty
-                                .orElse(ResponseEntity.ok()
-                                        .headers(i.getHeaders())
-                                        .build()))
-                        // when no response could be created at all
-                        .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                return ResponseEntity.ok(new QueryDefinitionResponseData(storedQuery));
             }
             case TEXT: {
+                HttpHeaders respHeaders = new HttpHeaders();
+                respHeaders.setContentType(resolveContentType(APPLICATION_JSON_VALUE));
+                respHeaders.setLocation(URI.create(this.encodePath(getBaseEnvLinkURL())));
                 return ResponseEntity.ok()
                         .headers(respHeaders)
                         .build();
