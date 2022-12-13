@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import java.net.URI;
@@ -52,8 +54,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.apache.commons.lang3.StringUtils.unwrap;
 
 /**
  * Controller for /ehr/{ehrId}/ehr_status resource of openEHR REST API

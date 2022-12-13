@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
@@ -55,8 +57,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.apache.commons.lang3.StringUtils.unwrap;
 
 /**
  * Controller for openEHR /directory endpoints

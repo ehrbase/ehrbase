@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.net.URI;
@@ -41,17 +44,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 @TenantAware
 @RestController
@@ -115,7 +115,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_CREATE)
-    @PutMapping( value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
+    @PutMapping(value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"})
     @Override
     public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
@@ -155,8 +155,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         return internalPutDefinitionProcessing(qualifiedQueryName, version, format, aql);
     }
 
-    private ResponseEntity<QueryDefinitionResponseData> internalPutDefinitionProcessing(String qualifiedQueryName,
-                              Optional<String> version, CompositionFormat format, String aql) {
+    private ResponseEntity<QueryDefinitionResponseData> internalPutDefinitionProcessing(
+            String qualifiedQueryName, Optional<String> version, CompositionFormat format, String aql) {
         QueryDefinitionResultDto storedQuery =
                 queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
 
@@ -168,9 +168,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                 HttpHeaders respHeaders = new HttpHeaders();
                 respHeaders.setContentType(resolveContentType(APPLICATION_JSON_VALUE));
                 respHeaders.setLocation(URI.create(this.encodePath(getBaseEnvLinkURL())));
-                return ResponseEntity.ok()
-                        .headers(respHeaders)
-                        .build();
+                return ResponseEntity.ok().headers(respHeaders).build();
             }
             default:
                 throw new UnexpectedSwitchCaseException(format);
