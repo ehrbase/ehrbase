@@ -17,8 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.apache.commons.lang3.StringUtils.unwrap;
-
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
@@ -118,8 +116,6 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestBody Folder folder) {
 
-        folderId.setValue(unwrap(folderId.getValue(), '"'));
-
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);
 
@@ -145,8 +141,6 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
-
-        folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);

@@ -17,8 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.apache.commons.lang3.StringUtils.unwrap;
-
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import java.net.URI;
@@ -150,7 +148,6 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
-        versionUid = unwrap(versionUid, '"');
         if (!latestVersionUid.equals(versionUid)) {
             throw new PreconditionFailedException("Given If-Match header does not match latest existing version");
         }
