@@ -52,6 +52,7 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.tables.records.EventContextHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.ParticipationHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.ParticipationRecord;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.ehrbase.serialisation.dbencoding.RawJson;
@@ -176,19 +177,13 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     // retrieve performer
                     PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(historyRecord.getPerformer());
 
-                    DvInterval<DvDateTime> startTime = null;
-                    if (historyRecord.getTimeLower() != null) { // start time null value is allowed for participation
-                        startTime = new DvInterval<>(
-                                new RecordedDvDateTime()
-                                        .decodeDvDateTime(historyRecord.getTimeLower(), historyRecord.getTimeLowerTz()),
-                                new RecordedDvDateTime()
-                                        .decodeDvDateTime(
-                                                historyRecord.getTimeUpper(), historyRecord.getTimeUpperTz()));
-                    }
-                    DvCodedText mode = null;
+                    DvInterval<DvDateTime> startTime = getStartTimeInterval(historyRecord);
+                    DvCodedText mode;
                     if (historyRecord.getMode() != null) {
                         mode = (DvCodedText)
                                 new RecordedDvCodedText().fromDB(historyRecord, PARTICIPATION_HISTORY.MODE);
+                    } else {
+                        mode = null;
                     }
 
                     Participation participation = new Participation(
@@ -509,22 +504,12 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                     // retrieve performer
                     PartyProxy performer = new PersistedPartyProxy(this).retrieve(participationRecord.getPerformer());
 
-                    DvInterval<DvDateTime> startTime = null;
-                    if (participationRecord.getTimeLower()
-                            != null) { // start time null value is allowed for participation
-                        startTime = new DvInterval<>(
-                                new RecordedDvDateTime()
-                                        .decodeDvDateTime(
-                                                participationRecord.getTimeLower(),
-                                                participationRecord.getTimeLowerTz()),
-                                new RecordedDvDateTime()
-                                        .decodeDvDateTime(
-                                                participationRecord.getTimeUpper(),
-                                                participationRecord.getTimeUpperTz()));
-                    }
-                    DvCodedText mode = null;
+                    DvInterval<DvDateTime> startTime = getStartTimeInterval(participationRecord);
+                    DvCodedText mode;
                     if (participationRecord.getMode() != null) {
                         mode = (DvCodedText) new RecordedDvCodedText().fromDB(participationRecord, PARTICIPATION.MODE);
+                    } else {
+                        mode = null;
                     }
 
                     Participation participation = new Participation(
@@ -555,6 +540,32 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 eventContextRecord.getLocation(),
                 concept,
                 otherContext);
+    }
+
+    private static DvInterval<DvDateTime> getStartTimeInterval(ParticipationHistoryRecord historyRecord) {
+        if (historyRecord.getTimeLower() != null) { // start time null value is allowed for participation
+            return new DvInterval<>(
+                    new RecordedDvDateTime()
+                            .decodeDvDateTime(historyRecord.getTimeLower(), historyRecord.getTimeLowerTz()),
+                    new RecordedDvDateTime()
+                            .decodeDvDateTime(historyRecord.getTimeUpper(), historyRecord.getTimeUpperTz()));
+        } else {
+            return null;
+        }
+    }
+
+    private static DvInterval<DvDateTime> getStartTimeInterval(ParticipationRecord participationRecord) {
+        if (participationRecord.getTimeLower() != null) {
+            // start time null value is allowed for participation
+            return new DvInterval<>(
+                    new RecordedDvDateTime()
+                            .decodeDvDateTime(participationRecord.getTimeLower(), participationRecord.getTimeLowerTz()),
+                    new RecordedDvDateTime()
+                            .decodeDvDateTime(
+                                    participationRecord.getTimeUpper(), participationRecord.getTimeUpperTz()));
+        } else {
+            return null;
+        }
     }
 
     @Override
