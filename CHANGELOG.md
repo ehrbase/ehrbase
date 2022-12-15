@@ -13,6 +13,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
+- Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
 
 ## [0.23.0]
  ### Added
