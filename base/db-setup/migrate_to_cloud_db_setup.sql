@@ -24,12 +24,6 @@ EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.folder_items_history', 'true
 
 CREATE TRIGGER versioning_trigger
   BEFORE INSERT OR UPDATE OR DELETE
-  ON ehr.audit_details
-  FOR EACH ROW
-EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.audit_details_history', true);
-
-CREATE TRIGGER versioning_trigger
-  BEFORE INSERT OR UPDATE OR DELETE
   ON ehr.status
   FOR EACH ROW
 EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.status_history', true);
