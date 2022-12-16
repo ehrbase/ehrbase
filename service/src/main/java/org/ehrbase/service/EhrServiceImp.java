@@ -49,7 +49,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
@@ -85,9 +84,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
-    public static final String COULD_NOT_UPDATE_THE_EHR_STATUS_PROVIDED_AN_EXISTING_PARTY =
-            "Couldn't update the EHR_STATUS, provided an existing party id [%s] and party namespace [%s] for EHR with id %s";
-
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private final TenantService tenantService;
@@ -274,14 +270,6 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
 
         check(status);
-
-        String subjectId = status.getSubject().getExternalRef().getId().getValue();
-        String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
-        Optional<UUID> subject = findBySubject(subjectId, subjectNamespace);
-        if (subject.isPresent() && !subject.get().equals(ehrId)) {
-            throw new InvalidApiParameterException(String.format(
-                    COULD_NOT_UPDATE_THE_EHR_STATUS_PROVIDED_AN_EXISTING_PARTY, subjectId, subjectNamespace, ehrId));
-        }
 
         // pre-step: check for valid ehrId
         if (!hasEhr(ehrId)) {
