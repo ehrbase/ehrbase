@@ -26,14 +26,11 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
+import com.nedap.archie.rm.generic.*;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -275,12 +272,17 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
         check(status);
 
-        String subjectId = status.getSubject().getExternalRef().getId().getValue();
-        String subjectNamespace = status.getSubject().getExternalRef().getNamespace();
-        Optional<UUID> subject = findBySubject(subjectId, subjectNamespace);
-        if (subject.isPresent() && !subject.get().equals(ehrId)) {
-            throw new InvalidApiParameterException(String.format(
-                    COULD_NOT_UPDATE_THE_EHR_STATUS_PROVIDED_AN_EXISTING_PARTY, subjectId, subjectNamespace, ehrId));
+        Optional<PartyRef> partyRef =
+                Optional.ofNullable(status).map(EhrStatus::getSubject).map(PartyProxy::getExternalRef);
+
+        if (partyRef.isPresent()) {
+            String subjectId = partyRef.get().getId().getValue();
+            String namespace = partyRef.get().getNamespace();
+            Optional<UUID> subject = findBySubject(subjectId, namespace);
+            if (subject.isPresent() && !subject.get().equals(ehrId)) {
+                throw new InvalidApiParameterException(String.format(
+                        COULD_NOT_UPDATE_THE_EHR_STATUS_PROVIDED_AN_EXISTING_PARTY, subjectId, namespace, ehrId));
+            }
         }
 
         // pre-step: check for valid ehrId
