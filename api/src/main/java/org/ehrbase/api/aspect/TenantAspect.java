@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,14 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.authorization;
+package org.ehrbase.api.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.tenant.ExtractionStrategyAware;
+import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
 
-public interface AuthorizationAspect {
-    public void matchEhrbaseAuthorization();
-
-    public void matchEhrbaseAuthorizations();
-
-    public Object action(ProceedingJoinPoint pjp) throws Throwable;
+public interface TenantAspect extends ExtractionStrategyAware, AnnotationAspect {
+//    public void matchTenantAnnotation(org.ehrbase.api.annotations.TenantAware tenantAnnotation);
+//    public Object action(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable;
+    public <T> void addExtractionStrategy(TenantIdExtractionStrategy<T> strategy);
 }
