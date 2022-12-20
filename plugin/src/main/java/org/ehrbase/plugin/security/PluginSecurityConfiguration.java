@@ -18,26 +18,34 @@
 package org.ehrbase.plugin.security;
 
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Objects;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.SourceLocation;
 import org.aspectj.runtime.internal.AroundClosure;
-import org.ehrbase.api.authorization.AuthorizationAspect;
+import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.aspect.AnnotationAspect;
+import org.ehrbase.api.aspect.AuthorizationAspect;
+import org.ehrbase.api.aspect.TenantAspect;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 import org.springframework.beans.BeansException;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 
 public class PluginSecurityConfiguration implements ApplicationContextAware {
-    // @format:off
+  // @format:off
   @SuppressWarnings("rawtypes")
   private static class SignatureAdap implements org.aspectj.lang.reflect.MethodSignature {
     private final MethodInvocation invocation;
@@ -81,26 +89,34 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
     }
   }
   
-  private static class AuthorizationAspectAdapter implements MethodInterceptor {
-    private final AuthorizationAspect aspect;
+  private abstract static class AspectAdapter implements MethodInterceptor {
+    private final AnnotationAspect aspect;
 
-    AuthorizationAspectAdapter(AuthorizationAspect aspect) {
-      this.aspect = aspect;
-    }
+    AspectAdapter(AnnotationAspect aspect) { this.aspect = aspect; }
+    protected AnnotationAspect getAspect() { return aspect; }
+    public abstract Object invoke(MethodInvocation invocation) throws Throwable;
+  }
 
-    public Object invoke(MethodInvocation invocation) throws Throwable {
-      return aspect.action(new ProceedingJoinPointAdapter(invocation));
+  public static class AnyOfAspectsCondition extends AnyNestedCondition {
+    public AnyOfAspectsCondition() {
+      super(ConfigurationPhase.REGISTER_BEAN);
     }
+    
+    @ConditionalOnBean(value = AuthorizationAspect.class)
+    static class OnAuthorization {} 
+    
+    @ConditionalOnBean(value = TenantAspect.class)
+    static class OnTenant {}
   }
   
   private ApplicationContext applicationContext;
-
+  
   @Bean
-  @ConditionalOnBean(value = AuthorizationAspect.class)
+  @Conditional(AnyOfAspectsCondition.class)
   public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
     return new DefaultAdvisorAutoProxyCreator();
   }
-
+  
   @Bean
   @ConditionalOnBean(value = AuthorizationAspect.class)
   public Advisor authorizationAspect() {
@@ -109,7 +125,29 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
 
     return new DefaultPointcutAdvisor(
         new AnnotationMatchingPointcut(null, EhrbaseAuthorization.class, true),
-        new AuthorizationAspectAdapter(theAspect));
+        new AspectAdapter(theAspect) {
+          public Object invoke(MethodInvocation invocation) throws Throwable {
+            return getAspect().action(new ProceedingJoinPointAdapter(invocation), null);
+          }
+        });
+  }
+  
+  @Bean
+  @ConditionalOnBean(value = TenantAspect.class)
+  public Advisor tenantAspect() {
+    ApplicationContext parentCtx = applicationContext.getParent();
+    TenantAspect theAspect = parentCtx.getBean(TenantAspect.class);
+
+    return new DefaultPointcutAdvisor(
+        new AnnotationMatchingPointcut(TenantAware.class, true),
+        new AspectAdapter(theAspect) {
+          public Object invoke(MethodInvocation invocation) throws Throwable {
+            Method method = invocation.getMethod();
+            Class<?> declaringClass = method.getDeclaringClass();
+            TenantAware annotation =  Objects.requireNonNull(declaringClass.getAnnotation(TenantAware.class));
+            return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotation));
+          }
+        });
   }
 
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
