@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -115,6 +116,10 @@ public abstract class BaseController {
     protected String getBaseEnvLinkURL() {
 
         return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
+    }
+
+    protected URI getRequestUri() {
+        return ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri();
     }
 
     /**

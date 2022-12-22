@@ -22,7 +22,7 @@ import static org.springframework.http.MediaType.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.net.URI;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,6 +52,8 @@ import org.springframework.web.bind.annotation.*;
         path = "${openehr-api.context-path:/rest/openehr}/v1/definition/query",
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
+
+    private static final String AQL = "AQL";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -123,6 +125,12 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                 queryPayload,
                 type);
 
+        if (!AQL.equalsIgnoreCase(type)) {
+            return new ResponseEntity(
+                    new ErrorBodyPayload("Invalid query", String.format("Query type:%s not supported!", type)).toString(),
+                    HttpStatus.BAD_REQUEST);
+        }
+
         MediaType mediaType = resolveContentType(contentType);
         String aql = queryPayload;
 
@@ -168,7 +176,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
             HttpHeaders respHeaders = new HttpHeaders();
             respHeaders.setContentType(APPLICATION_JSON);
-            respHeaders.setLocation(URI.create(this.encodePath(getBaseEnvLinkURL())));
+            respHeaders.setLocation(getRequestUri());
 
             return ResponseEntity.ok().headers(respHeaders).build();
         } else {
