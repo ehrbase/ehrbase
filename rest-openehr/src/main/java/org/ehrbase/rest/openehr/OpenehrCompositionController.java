@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
@@ -185,7 +187,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
         // check if composition ID path variable is valid
         compositionService.exists(versionedObjectUid);
 
-        // If the If-Match is not the latest latest existing version, throw error
+        ifMatch = unwrap(ifMatch, '"');
+        // If the If-Match is not the latest existing version, throw error
         if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::"
                         + compositionService.getLastVersionNumber(
                                 extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString())))
