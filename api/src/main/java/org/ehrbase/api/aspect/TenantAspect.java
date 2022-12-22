@@ -17,13 +17,9 @@
  */
 package org.ehrbase.api.aspect;
 
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.tenant.ExtractionStrategyAware;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
 
 public interface TenantAspect extends ExtractionStrategyAware, AnnotationAspect {
-//    public void matchTenantAnnotation(org.ehrbase.api.annotations.TenantAware tenantAnnotation);
-//    public Object action(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable;
     public <T> void addExtractionStrategy(TenantIdExtractionStrategy<T> strategy);
 }

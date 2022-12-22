@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -70,23 +69,24 @@ public class TenantAspect implements org.ehrbase.api.aspect.TenantAspect {
     public Object action(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable {
         return action(pjp, List.of(tenantAnnotation));
     }
-    
+
     @Override
     public Object action(ProceedingJoinPoint pjp, List<Annotation> annotations) throws Throwable {
-      annotations.stream()
-        .filter(a -> a instanceof TenantAware)
-        .map(a -> (TenantAware) a)
-        .findFirst()
-        .ifPresent(tenantAnnotation -> {
-            if(isMethodTenantAware(pjp, tenantAnnotation)) {
-                Object[] args = pjp.getArgs();
-                TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
-                SecurityContext ctx = SecurityContextHolder.getContext();
-                ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, a -> a.toString()));
-        }});
-      return pjp.proceed();
+        annotations.stream()
+                .filter(a -> a instanceof TenantAware)
+                .map(a -> (TenantAware) a)
+                .findFirst()
+                .ifPresent(tenantAnnotation -> {
+                    if (isMethodTenantAware(pjp, tenantAnnotation)) {
+                        Object[] args = pjp.getArgs();
+                        TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
+                        SecurityContext ctx = SecurityContextHolder.getContext();
+                        ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, a -> a.toString()));
+                    }
+                });
+        return pjp.proceed();
     }
-    
+
     private boolean isMethodTenantAware(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) {
         if (pjp instanceof MethodInvocationProceedingJoinPoint
                 && ((MethodInvocationProceedingJoinPoint) pjp).getSignature() instanceof MethodSignature) {
@@ -121,6 +121,6 @@ public class TenantAspect implements org.ehrbase.api.aspect.TenantAspect {
     }
 
     public List<Class<? extends Annotation>> matchAnnotations() {
-      return List.of(TenantAware.class);
+        return List.of(TenantAware.class);
     }
 }
