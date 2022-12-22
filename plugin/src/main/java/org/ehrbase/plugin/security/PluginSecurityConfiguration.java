@@ -20,7 +20,6 @@ package org.ehrbase.plugin.security;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -45,7 +44,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
 public class PluginSecurityConfiguration implements ApplicationContextAware {
-  // @format:off
+    // @format:off
   @SuppressWarnings("rawtypes")
   private static class SignatureAdap implements org.aspectj.lang.reflect.MethodSignature {
     private final MethodInvocation invocation;

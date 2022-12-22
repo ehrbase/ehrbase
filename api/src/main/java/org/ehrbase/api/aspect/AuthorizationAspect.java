@@ -17,10 +17,4 @@
  */
 package org.ehrbase.api.aspect;
 
-import org.aspectj.lang.ProceedingJoinPoint;
-
-public interface AuthorizationAspect extends AnnotationAspect {
-//    public void matchEhrbaseAuthorization();
-//    public void matchEhrbaseAuthorizations();
-//    public Object action(ProceedingJoinPoint pjp) throws Throwable;
-}
+public interface AuthorizationAspect extends AnnotationAspect {}
