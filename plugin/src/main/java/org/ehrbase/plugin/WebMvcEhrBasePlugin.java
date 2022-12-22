@@ -44,7 +44,7 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
     protected final ApplicationContext createApplicationContext() {
         return getDispatcherServlet().getWebApplicationContext();
     }
-    
+
     public final DispatcherServlet getDispatcherServlet() {
         if (dispatcherServlet == null) {
             dispatcherServlet = buildDispatcherServlet();
@@ -52,26 +52,27 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
             WebApplicationContext applicationContext = dispatcherServlet.getWebApplicationContext();
             initPluginSecurity(applicationContext);
 
-            EhrBasePluginManagerInterface pluginManager = (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
+            EhrBasePluginManagerInterface pluginManager =
+                    (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
 
-            if (applicationContext instanceof ConfigurableApplicationContext ctx)
-                loadProperties(ctx, pluginManager);
+            if (applicationContext instanceof ConfigurableApplicationContext ctx) loadProperties(ctx, pluginManager);
         }
 
         return dispatcherServlet;
     }
-    
-    private static final String WARN_PLUGIN_SEC = "Can not Configure Plugin Security, check that setting Classloader and Registering of Components is Possible";
-    
+
+    private static final String WARN_PLUGIN_SEC =
+            "Can not Configure Plugin Security, check that setting Classloader and Registering of Components is Possible";
+
     private void initPluginSecurity(WebApplicationContext ctx) {
-      EhrBasePluginManagerInterface pluginManager = (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
-      
-      if((ctx instanceof AbstractApplicationContext a1) && (ctx instanceof AnnotationConfigRegistry a2)) {
-        a1.setClassLoader(wrapper.getPluginClassLoader());
-        a2.register(PluginSecurityConfiguration.class);
-        a1.setParent(pluginManager.getApplicationContext());
-      } else
-        log.warn(WARN_PLUGIN_SEC);
+        EhrBasePluginManagerInterface pluginManager =
+                (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
+
+        if ((ctx instanceof AbstractApplicationContext a1) && (ctx instanceof AnnotationConfigRegistry a2)) {
+            a1.setClassLoader(wrapper.getPluginClassLoader());
+            a2.register(PluginSecurityConfiguration.class);
+            a1.setParent(pluginManager.getApplicationContext());
+        } else log.warn(WARN_PLUGIN_SEC);
     }
 
     /**
