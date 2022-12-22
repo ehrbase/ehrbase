@@ -22,7 +22,6 @@ import static org.springframework.http.MediaType.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -127,7 +126,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         if (!AQL.equalsIgnoreCase(type)) {
             return new ResponseEntity(
-                    new ErrorBodyPayload("Invalid query", String.format("Query type:%s not supported!", type)).toString(),
+                    new ErrorBodyPayload("Invalid query", String.format("Query type:%s not supported!", type))
+                            .toString(),
                     HttpStatus.BAD_REQUEST);
         }
 
