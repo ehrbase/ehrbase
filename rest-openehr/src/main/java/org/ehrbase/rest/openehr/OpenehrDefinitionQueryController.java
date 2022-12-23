@@ -133,13 +133,17 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         }
 
         MediaType mediaType = MediaType.parseMediaType(contentType);
-        String aql = queryPayload;
+        String aql;
 
         if (APPLICATION_JSON.isCompatibleWith(mediaType)) { // use the payload from adhoc POST:
             // get the query and parameters if any
             Gson gson = new GsonBuilder().create();
             Map<String, Object> mapped = gson.fromJson(queryPayload, Map.class);
             aql = (String) mapped.get("q");
+        } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
+            aql = queryPayload;
+        } else {
+            throw new UnexpectedSwitchCaseException(mediaType.getType());
         }
 
         if (isBlank(aql)) {
