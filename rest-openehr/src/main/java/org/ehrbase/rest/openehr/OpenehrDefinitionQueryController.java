@@ -108,7 +108,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_CREATE)
     @PutMapping(
             value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
-            produces = {TEXT_PLAIN_VALUE, APPLICATION_JSON_VALUE})
+            consumes = {TEXT_PLAIN_VALUE, APPLICATION_JSON_VALUE},
+            produces = {APPLICATION_JSON_VALUE})
     public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
             @RequestHeader(value = ACCEPT, required = false) String accept,
@@ -131,7 +132,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                     HttpStatus.BAD_REQUEST);
         }
 
-        MediaType mediaType = resolveContentType(contentType);
+        MediaType mediaType = MediaType.parseMediaType(contentType);
         String aql = queryPayload;
 
         if (APPLICATION_JSON.isCompatibleWith(mediaType)) { // use the payload from adhoc POST:
