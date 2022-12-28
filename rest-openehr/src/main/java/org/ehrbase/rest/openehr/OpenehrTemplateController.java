@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -83,6 +85,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
     /*
        ADL 1.4
     */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     @PostMapping("/adl1.4")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
@@ -146,6 +149,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping("/adl1.4")
     @Override
     public ResponseEntity getTemplatesClassic(
@@ -173,6 +177,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping("/adl1.4/{template_id}")
     @Override
     public ResponseEntity getTemplateClassic(
@@ -200,6 +205,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping(path = "/adl1.4/{template_id}/example")
     public ResponseEntity<String> getTemplateExample(
             @RequestHeader(value = ACCEPT, required = false) String accept,
@@ -226,7 +232,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
        ADL 2
        TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
     */
-    @PostMapping("/adl2/{?version}")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
+    @PostMapping("/adl2")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
     public ResponseEntity<TemplateResponseData> createTemplateNew(
@@ -262,6 +269,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
     // significantly
     // also, this endpoint combines what is listed as two endpoints:
     // https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-adl-2-template-get
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping("/adl2/{template_id}/{version_pattern}")
     @Override
     public ResponseEntity<TemplateResponseData> getTemplateNew(

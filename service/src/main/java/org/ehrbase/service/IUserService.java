@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,19 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.tenant;
+package org.ehrbase.service;
 
-import java.util.Optional;
+import java.util.UUID;
 
-public interface TenantIdExtractionStrategy<T> {
-    public int priority();
-
-    public boolean accept(Object... args);
-
-    public Optional<TenantAuthentication<T>> extract(Object... args);
-
-    public default Optional<TenantAuthentication<T>> extractWithPrior(
-            Optional<TenantAuthentication<?>> priorAuthentication, Object... args) {
-        return extract(args);
-    }
+public interface IUserService {
+    UUID getCurrentUserId();
 }

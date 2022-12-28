@@ -34,9 +34,7 @@ spring:
     name: ehrbase
 
   cache:
-    type: jcache # change to type redis if usage of redis distributed cache is intended
-    jcache: # jcache parameters are only used if cache.type=jcache
-      config: classpath:ehcache.xml
+    type: CAFFEINE # change to type redis if usage of redis distributed cache is intended
 
   # the following redis properties are only used if the cache.type=redis
   redis:
@@ -47,7 +45,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: # http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
+          issuer-uri:  # http://localhost:8081/auth/realms/ehrbase  # Example issuer URI - or set via env var
   profiles:
     active: local
   datasource:
@@ -140,6 +138,11 @@ server:
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
     iterationScanDepth: 2
 
+  tomcat:
+    threads:
+      min-spare: 200
+      max: 200
+
   # Option to disable strict invariant validation.
   # disable-strict-validation: true
 
@@ -202,7 +205,7 @@ validation:
       fhir:
         type: FHIR
         url: https://r4.ontoserver.csiro.au/fhir/
-    
+
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
   ssl:

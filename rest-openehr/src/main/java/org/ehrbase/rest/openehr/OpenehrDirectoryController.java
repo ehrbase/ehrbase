@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
@@ -27,6 +29,8 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -79,6 +83,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_CREATE)
     @Override
     @PostMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> createDirectory(
@@ -100,6 +105,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_UPDATE)
     @Override
     @PutMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> updateDirectory(
@@ -111,6 +117,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestBody Folder folder) {
+
+        folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);
@@ -128,6 +136,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_DELETE)
     @Override
     @DeleteMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> deleteDirectory(
@@ -136,6 +145,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
+
+        folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);
@@ -149,6 +160,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
     @Override
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
@@ -172,6 +184,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
     @Override
     @GetMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(

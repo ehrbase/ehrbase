@@ -30,6 +30,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -75,6 +77,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
     @PostMapping // (consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
@@ -98,6 +101,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         return internalPostEhrProcessing(accept, prefer, ehrId, request);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
@@ -172,6 +176,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by ID
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(path = "/{ehr_id}")
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     @Override
@@ -192,6 +197,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by subject (id and namespace)
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(params = {"subject_id", "subject_namespace"})
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     @Override
@@ -239,21 +245,16 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         // check for valid format header to produce content accordingly
         MediaType contentType = resolveContentType(accept);
 
-        // Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatusEhrScape(ehrId,
-        // CompositionFormat.FLAT);    // older, keep until rework of formatting
-        Optional<EhrStatus> ehrStatus = Optional.of(ehrService.getEhrStatus(ehrId));
-        if (ehrStatus.isEmpty()) {
-            return Optional.empty();
-        }
-
         // create either null or maximum response data class
         T minimalOrRepresentation = factory.get();
 
         if (minimalOrRepresentation != null) {
+
+            EhrStatus ehrStatus = ehrService.getEhrStatus(ehrId);
             // populate maximum response data
             EhrResponseData objByReference = minimalOrRepresentation;
             objByReference.setEhrId(new HierObjectId(ehrId.toString()));
-            objByReference.setEhrStatus(ehrStatus.get());
+            objByReference.setEhrStatus(ehrStatus);
             objByReference.setSystemId(
                     new HierObjectId(ehrService.getSystemUuid().toString()));
             DvDateTime timeCreated = ehrService.getCreationTime(ehrId);

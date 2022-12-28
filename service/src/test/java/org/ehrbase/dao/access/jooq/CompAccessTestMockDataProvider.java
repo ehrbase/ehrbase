@@ -21,7 +21,11 @@ import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record1;
+import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockDataProvider;
 import org.jooq.tools.jdbc.MockExecuteContext;
@@ -104,13 +108,18 @@ public class CompAccessTestMockDataProvider implements MockDataProvider {
                         .values(13)); // if a timestamp bigger than any in the composition_history table is received
                 // return the max num of rows, 13
                 mock[0] = new MockResult(1, result2);
-            } else if (sql2.toUpperCase()
-                    .startsWith(
-                            "select row_id, in_contribution, ehr_id, language, territory, composer, sys_transaction from \n"
-                                    + "  (select ROW_NUMBER() OVER (ORDER BY sys_transaction ASC ) AS row_id, * from ehr.composition_history WHERE")) {
             } else {
-                throw new SQLException("time stamp not mocked, add it for appropiate mocking");
+                throw new SQLException("time stamp not mocked, add it for appropriate mocking");
             }
+        } else if (sql2.contains("\"version_counts\"")) {
+            // CompositionAccess::getLastVersionNumber for shouldReturnVersionByTimestamp()
+            Field<Integer> c = DSL.count();
+            Result<Record1<Integer>> result2 = create.newResult(c);
+            result2.add(create.newRecord(c).values(14));
+            mock[0] = new MockResult(1, result2);
+
+        } else {
+            throw new RuntimeException("Mock missing for query: " + sql2.toUpperCase());
         }
 
         return mock;

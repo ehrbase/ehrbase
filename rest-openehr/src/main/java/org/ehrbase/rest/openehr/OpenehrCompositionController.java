@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
@@ -33,6 +35,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -87,6 +91,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_CREATE)
     @PostMapping(
             value = "/{ehr_id}/composition",
             consumes = {"application/xml", "application/json"})
@@ -127,14 +132,16 @@ public class OpenehrCompositionController extends BaseController implements Comp
         Optional<InternalResponse<CompositionResponseData>>
                 respData; // variable to overload with more specific object if requested
 
+        Supplier<CompositionResponseData> responseDataSupplier;
         if (Optional.ofNullable(prefer)
                 .map(i -> i.equals(RETURN_REPRESENTATION))
                 .orElse(false)) { // null safe way to test prefer header
-            respData = buildCompositionResponseData(
-                    ehrId, compositionUuid, 0, accept, uri, headerList, () -> new CompositionResponseData(null, null));
+            responseDataSupplier = () -> new CompositionResponseData(null, null);
         } else { // "minimal" is default fallback
-            respData = buildCompositionResponseData(ehrId, compositionUuid, 0, accept, uri, headerList, () -> null);
+            responseDataSupplier = () -> null;
         }
+        respData =
+                buildCompositionResponseData(ehrId, compositionUuid, 1, accept, uri, headerList, responseDataSupplier);
 
         // Enriches request attributes with current compositionId for later audit processing
         request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
@@ -154,6 +161,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_UPDATE)
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -179,7 +187,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
         // check if composition ID path variable is valid
         compositionService.exists(versionedObjectUid);
 
-        // If the If-Match is not the latest latest existing version, throw error
+        ifMatch = unwrap(ifMatch, '"');
+        // If the If-Match is not the latest existing version, throw error
         if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::"
                         + compositionService.getLastVersionNumber(
                                 extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString())))
@@ -257,6 +266,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -336,37 +346,18 @@ public class OpenehrCompositionController extends BaseController implements Comp
     }
 
     /**
-     * Acts as overloaded function and calls the overlapping and more specific method
-     * getCompositionByTime. Catches both "/{ehr_id}/composition/{version_uid}" and
-     * "/{ehr_id}/composition/{versioned_object_uid}" which works because their processing is the
-     * same. "{?version_at_time}" is hidden in swagger-ui, it only is here to be piped through.
-     */
-    @GetMapping("/{ehr_id}/composition/{version_uid}")
-    // checkAbacPre /-Post attributes (type, subject, payload, content type)
-    @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
-            + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
-    @Override
-    public ResponseEntity<CompositionResponseData> getCompositionByVersionId(
-            @RequestHeader(value = ACCEPT, required = false) String accept,
-            @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "version_uid") String versionUid,
-            @RequestParam(value = "version_at_time", required = false) String versionAtTime,
-            HttpServletRequest request) {
-        return getCompositionByTime(accept, ehrIdString, versionUid, versionAtTime, request);
-    }
-
-    /**
      * This mapping combines both GETs "/{ehr_id}/composition/{version_uid}" (via overlapping path)
      * and "/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}" (here). This is necessary
      * because of the overlapping paths. Both mappings are specified to behave almost the same, so
      * this solution works in this case.
      */
-    @GetMapping("/{ehr_id}/composition/{versioned_object_uid}{?version_at_time}")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @GetMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
             + "@ehrService.getSubjectExtRef(#ehrIdString), returnObject, #accept)")
     @Override
-    public ResponseEntity getCompositionByTime(
+    public ResponseEntity getComposition(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
@@ -384,11 +375,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
-        int version = 0; // fallback 0 means latest version
-        if (extractVersionFromVersionUid(versionedObjectUid) != 0) {
-            // the given ID contains a version, therefore this is case GET {version_uid}
-            version = extractVersionFromVersionUid(versionedObjectUid);
-        } else {
+        int version = extractVersionFromVersionUid(versionedObjectUid);
+        if (version == 0) {
             // case GET {versioned_object_uid}{?version_at_time}
             Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
             if (versionAtTime != null && temporal.isPresent()) {
@@ -446,7 +434,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
     private <T extends CompositionResponseData> Optional<InternalResponse<T>> buildCompositionResponseData(
             UUID ehrId,
             UUID compositionId,
-            Integer version,
+            int version,
             String accept,
             URI uri,
             List<String> headerList,
@@ -454,6 +442,13 @@ public class OpenehrCompositionController extends BaseController implements Comp
         // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
         // lambda request
         T minimalOrRepresentation = factory.get();
+
+        final int versionNumber;
+        if (version <= 0) {
+            versionNumber = compositionService.getLastVersionNumber(compositionId);
+        } else {
+            versionNumber = version;
+        }
 
         // do minimal scope steps
         // create and supplement headers with data depending on which headers are requested
@@ -466,7 +461,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 case ETAG:
                     respHeaders.setETag("\"" + compositionId + "::"
                             + compositionService.getServerConfig().getNodename() + "::"
-                            + compositionService.getLastVersionNumber(compositionId) + "\"");
+                            + versionNumber + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for
@@ -487,12 +482,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
             CompositionResponseData objByReference = (CompositionResponseData) minimalOrRepresentation;
 
             CompositionFormat format = extractCompositionFormat(accept);
-
-            // version handling allows to request specific version
-            Integer versionNumber = version;
-            if (versionNumber == 0) {
-                versionNumber = compositionService.getLastVersionNumber(compositionId);
-            }
 
             Optional<CompositionDto> compositionDto = compositionService
                     .retrieve(ehrId, compositionId, versionNumber)

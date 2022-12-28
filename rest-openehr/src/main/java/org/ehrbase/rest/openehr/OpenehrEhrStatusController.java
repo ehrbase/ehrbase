@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import java.net.URI;
@@ -28,6 +30,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -72,6 +76,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
@@ -101,6 +106,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping(path = "/{version_uid}")
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
@@ -128,6 +134,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
     @Override
     @PutMapping
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
@@ -143,6 +150,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
+        versionUid = unwrap(versionUid, '"');
         if (!latestVersionUid.equals(versionUid)) {
             throw new PreconditionFailedException("Given If-Match header does not match latest existing version");
         }

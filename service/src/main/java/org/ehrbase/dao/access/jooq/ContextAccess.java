@@ -52,6 +52,7 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.tables.records.EventContextHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
+import org.ehrbase.jooq.pg.tables.records.ParticipationHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.ParticipationRecord;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.ehrbase.serialisation.dbencoding.RawJson;
@@ -62,7 +63,6 @@ import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.InsertQuery;
 import org.jooq.JSONB;
-import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.UpdateQuery;
 import org.jooq.exception.DataAccessException;
@@ -96,6 +96,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
     public static I_ContextAccess retrieveInstance(I_DomainAccess domainAccess, UUID id) {
         ContextAccess contextAccess = new ContextAccess(domainAccess);
+        // We explicitly do not fetch the participations, since we do not update them. They are replaced in case of an
+        // update
         contextAccess.eventContextRecord = domainAccess.getContext().fetchOne(EVENT_CONTEXT, EVENT_CONTEXT.ID.eq(id));
         return contextAccess;
     }
@@ -170,16 +172,23 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                                 .EVENT_CONTEXT
                                 .eq(eventContextHistoryRecord.getId())
                                 .and(PARTICIPATION_HISTORY.SYS_TRANSACTION.eq(transactionTime)))
-                .forEach(record -> {
-                    // retrieve performer
-                    PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(record.getPerformer());
+                .forEach(historyRecord -> {
 
-                    DvInterval<DvDateTime> startTime = convertDvIntervalDvDateTimeFromRecord(eventContextHistoryRecord);
-                    DvCodedText mode = convertModeFromRecord(eventContextHistoryRecord);
+                    // retrieve performer
+                    PartyProxy performer = new PersistedPartyProxy(domainAccess).retrieve(historyRecord.getPerformer());
+
+                    DvInterval<DvDateTime> startTime = getStartTimeInterval(historyRecord);
+                    DvCodedText mode;
+                    if (historyRecord.getMode() != null) {
+                        mode = (DvCodedText)
+                                new RecordedDvCodedText().fromDB(historyRecord, PARTICIPATION_HISTORY.MODE);
+                    } else {
+                        mode = null;
+                    }
 
                     Participation participation = new Participation(
                             performer,
-                            (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
+                            (DvText) new RecordedDvCodedText().fromDB(historyRecord, PARTICIPATION_HISTORY.FUNCTION),
                             mode,
                             startTime);
 
@@ -249,6 +258,8 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
 
         new RecordedDvCodedText().toDB(eventContextRecord, EVENT_CONTEXT.SETTING, eventContext.getSetting());
 
+        // We always replace participations -> remove the old ones if any
+        participations.clear();
         if (eventContext.getParticipations() != null) {
             for (Participation participation : eventContext.getParticipations()) {
                 ParticipationRecord participationRecord = getContext().newRecord(PARTICIPATION);
@@ -354,20 +365,20 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     @Override
     public Boolean update(Timestamp transactionTime) {
         // updateComposition participations
+        // We replace participations, instead of updating them, because we have no concrete criteria which
+        // participations should be updated
+        getContext()
+                .deleteFrom(PARTICIPATION)
+                .where(PARTICIPATION.EVENT_CONTEXT.eq(getId()))
+                .execute();
         for (ParticipationRecord participationRecord : participations) {
             participationRecord.setSysTransaction(transactionTime);
-            if (participationRecord.changed()) {
-                // check if commit or updateComposition (exists or not...)
-                try {
-                    if (getContext().fetchExists(PARTICIPATION, PARTICIPATION.ID.eq(participationRecord.getId()))) {
-                        participationRecord.update();
-                    } else {
-                        participationRecord.setId(UuidGenerator.randomUUID());
-                        participationRecord.store();
-                    }
-                } catch (DataAccessException e) { // generalize DB exceptions
-                    throw new InternalServerException(DB_INCONSISTENCY, e);
-                }
+            // check if commit or updateComposition (exists or not...)
+            try {
+                participationRecord.setId(UuidGenerator.randomUUID());
+                participationRecord.store();
+            } catch (DataAccessException e) { // generalize DB exceptions
+                throw new InternalServerException(DB_INCONSISTENCY, e);
             }
         }
         // ignore the temporal field since it is maintained by an external trigger!
@@ -489,19 +500,23 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
         // get the participations
         getContext()
                 .fetch(PARTICIPATION, PARTICIPATION.EVENT_CONTEXT.eq(eventContextRecord.getId()))
-                .forEach(record -> {
+                .forEach(participationRecord -> {
                     // retrieve performer
-                    PartyProxy performer = new PersistedPartyProxy(this).retrieve(record.getPerformer());
+                    PartyProxy performer = new PersistedPartyProxy(this).retrieve(participationRecord.getPerformer());
 
-                    DvInterval<DvDateTime> dvInterval = convertDvIntervalDvDateTimeFromRecord(record);
-
-                    DvCodedText mode = convertModeFromRecord(record);
+                    DvInterval<DvDateTime> startTime = getStartTimeInterval(participationRecord);
+                    DvCodedText mode;
+                    if (participationRecord.getMode() != null) {
+                        mode = (DvCodedText) new RecordedDvCodedText().fromDB(participationRecord, PARTICIPATION.MODE);
+                    } else {
+                        mode = null;
+                    }
 
                     Participation participation = new Participation(
                             performer,
-                            (DvText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.FUNCTION),
+                            (DvText) new RecordedDvCodedText().fromDB(participationRecord, PARTICIPATION.FUNCTION),
                             mode,
-                            dvInterval);
+                            startTime);
 
                     participationList.add(participation);
                 });
@@ -527,32 +542,30 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
                 otherContext);
     }
 
-    private static DvInterval<DvDateTime> convertDvIntervalDvDateTimeFromRecord(Record record) {
-        DvInterval<DvDateTime> dvDateTimeDvInterval = null;
-        if (record.get(PARTICIPATION.TIME_LOWER) != null) { // start time null value is allowed for participation
-            dvDateTimeDvInterval = new DvInterval<>(
+    private static DvInterval<DvDateTime> getStartTimeInterval(ParticipationHistoryRecord historyRecord) {
+        if (historyRecord.getTimeLower() != null) { // start time null value is allowed for participation
+            return new DvInterval<>(
                     new RecordedDvDateTime()
-                            .decodeDvDateTime(
-                                    record.get(PARTICIPATION.TIME_LOWER), record.get(PARTICIPATION.TIME_LOWER_TZ)),
+                            .decodeDvDateTime(historyRecord.getTimeLower(), historyRecord.getTimeLowerTz()),
                     new RecordedDvDateTime()
-                            .decodeDvDateTime(
-                                    record.get(PARTICIPATION.TIME_UPPER), record.get(PARTICIPATION.TIME_UPPER_TZ)));
+                            .decodeDvDateTime(historyRecord.getTimeUpper(), historyRecord.getTimeUpperTz()));
+        } else {
+            return null;
         }
-        return dvDateTimeDvInterval;
     }
 
-    private static DvCodedText convertModeFromRecord(Record record) {
-        DvCodedText mode;
-        try {
-            if (record.get(PARTICIPATION.MODE) != null) {
-                mode = (DvCodedText) new RecordedDvCodedText().fromDB(record, PARTICIPATION.MODE);
-            } else {
-                mode = null;
-            }
-        } catch (IllegalArgumentException e) {
-            throw new InternalServerException(DB_INCONSISTENCY, e);
+    private static DvInterval<DvDateTime> getStartTimeInterval(ParticipationRecord participationRecord) {
+        if (participationRecord.getTimeLower() != null) {
+            // start time null value is allowed for participation
+            return new DvInterval<>(
+                    new RecordedDvDateTime()
+                            .decodeDvDateTime(participationRecord.getTimeLower(), participationRecord.getTimeLowerTz()),
+                    new RecordedDvDateTime()
+                            .decodeDvDateTime(
+                                    participationRecord.getTimeUpper(), participationRecord.getTimeUpperTz()));
+        } else {
+            return null;
         }
-        return mode;
     }
 
     @Override

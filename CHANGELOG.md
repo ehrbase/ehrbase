@@ -6,15 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+ ### Added
+- add caches for ehr.concept, ehr.territory, ehr.language([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
+- unwrap if match additional double quotes ([#1022](https://github.com/ehrbase/ehrbase/pull/1022))
+ ### Changed
+- use caffeine cache instead of ehcache as ehcache has unnecessary blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
+- remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
+ ### Fixed 
+- maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
+
+## [0.23.0]
+ ### Added
+ - Authorization enhancements [#1002](https://github.com/ehrbase/ehrbase/pull/1002)
+   - Impl. API extensions needed for authorization
+   - Added annotations on all REST endpoints to support authorization decissions
+ ### Changed 
+ - Upgrade openEHR_SDK to version 1.24.0-SNAPSHOT see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ - JAVA 17 baseline
+ - Spring Boot 2.7.4
+ - Upgrade openEHR_SDK to version 1.24.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ ### Fixed
+
+## [0.22.0]
 ### Added
 - Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
-### Changed
+### Changed 
+ - Upgrade openEHR_SDK to version 1.23.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 - Change DB-model to save Data in a namespace ([#994](https://github.com/ehrbase/ehrbase/pull/994))
 ### Fixed
 - Error causing a 500 Response when requesting a deleted composition via ECIS GET Composition Endpoint ([#875](https://github.com/ehrbase/ehrbase/pull/875))
 - Update folder was not always corectly updating it items ([#974](https://github.com/ehrbase/ehrbase/pull/974))
 - AuditDetails had timezone missing ([#998](https://github.com/ehrbase/ehrbase/pull/998))
-- numerus AQL fixes ([#1001](https://github.com/ehrbase/ehrbase/pull/1001))
+- numerus AQL fixes ([#1001](https://github.com/ehrbase/ehrbase/pull/1001), [#1006](https://github.com/ehrbase/ehrbase/pull/1006))
 
 ## [0.21.1]
 
@@ -520,4 +543,6 @@ the next release this file will provide a proper overview.
 
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.21.1...HEAD
+[0.22.0]: https://github.com/ehrbase/ehrbase/compare/v0.21.1...v0.22.0
+[0.23.0]: https://github.com/ehrbase/ehrbase/compare/v0.22.0...v0.23.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...HEAD

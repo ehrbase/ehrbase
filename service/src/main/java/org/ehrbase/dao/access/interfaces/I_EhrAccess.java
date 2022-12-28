@@ -61,15 +61,7 @@ public interface I_EhrAccess extends I_SimpleCRUD {
             UUID accessId,
             UUID ehrId,
             String tenantIdentifier) {
-        return new EhrAccess(
-                domain.getContext(),
-                domain.getServerConfig(),
-                partyId,
-                systemId,
-                directoryId,
-                accessId,
-                ehrId,
-                tenantIdentifier);
+        return new EhrAccess(domain, partyId, systemId, directoryId, accessId, ehrId, tenantIdentifier);
     }
 
     /**
@@ -312,9 +304,9 @@ public interface I_EhrAccess extends I_SimpleCRUD {
      *
      * @param domainAccess Context
      * @param ehrId EHR ID to check
-     * @return true if EHR.ehr_status.isModifiable, false otherwise (missing EHR will also return false)
+     * @return true if EHR.ehr_status.isModifiable, false if not, null if EHR does not exist
      */
-    static boolean isModifiable(I_DomainAccess domainAccess, UUID ehrId) {
+    static Boolean isModifiable(I_DomainAccess domainAccess, UUID ehrId) {
         return EhrAccess.isModifiable(domainAccess, ehrId);
     }
 }
