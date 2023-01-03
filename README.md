@@ -2,7 +2,7 @@
 
 [![EHRbase Logo](ehrbase.png)](ehrbase.png) 
 
-EHRbase is an [openEHR](https://www.openehr.org/) Clinical Data Repository, providing a standard-based backend for interoperable clinical applications. It implements the latest version of the openEHR Reference Model (RM 1.0.4) and version 1.4 of the Archetype Definition Language (ADL). Applications can use the capabilities of EHRbase through the latest version of the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and model-based queries using the [Archetype Query Language](https://specifications.openehr.org/releases/QUERY/latest/AQL.html).
+EHRbase is an [openEHR](https://www.openehr.org/) Clinical Data Repository, providing a standard-based backend for interoperable clinical applications. It implements the latest version of the openEHR Reference Model (RM 1.1.0) and version 1.4 of the Archetype Definition Language (ADL). Applications can use the capabilities of EHRbase through the latest version of the [openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and model-based queries using the [Archetype Query Language](https://specifications.openehr.org/releases/QUERY/latest/AQL.html).
 
 ----
 
@@ -15,23 +15,6 @@ Please check the [CHANGELOG](https://github.com/ehrbase/ehrbase/blob/develop/CHA
 
 ## Quick Start: Run EHRbase with Docker
 See our [Run EHRbase + DB with Docker-Compose](https://ehrbase.readthedocs.io/en/latest/03_development/04_docker_images/01_ehrbase/02_use_image/index.html#run-ehrbase-db-with-docker-compose) documentation page for a quick start.
-
-## Running the tests
-
-This command will run all tests from `tests/robot` folder.
-DB and server application will be started/stopped by the tests accordingly. You *must not* start them by hand.
-
-Make sure you meet the PREREQUISITES mentioned in `tests/README.md` prior to test execution.
-
-```bash
-cd tests
-./run_local_tests.sh
-```
-
-## Deployment
-
- 1. `java -jar application/target/application-*.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
- 2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
 
 ## Acknowledgments
 
@@ -62,7 +45,7 @@ image to get started quickly.
 
 > NOTE: Building EHRbase requires a properly set up and running DB for the following steps.
 
-Run `./db-setup/createdb.sql` as `postgres` User.
+Run `./base/db-setup/createdb.sql` as `postgres` User.
 
 You can also use this Docker image which is a preconfigured Postgres database:
 ```shell
@@ -150,7 +133,7 @@ Please be aware that `@formatter:off/on` should only be used on rare occasions t
 
 ## Running the tests
 
-For integration tests please refer to the [integration-test](https://github.com/ehrbase/integration-tests)
+For integration tests please refer to the [integration-test](https://github.com/ehrbase/integration-tests) repository
 
 ## Deployment
 
