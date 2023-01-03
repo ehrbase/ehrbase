@@ -1,16 +1,21 @@
-## Changes
+# Changes
 
-<!-- Describe your changes in a short list -->
+> Describe your changes in a short and concise list.
 
-- First change
+# Related issue
 
-## Related issue
+> Reference related issues, and use one of the [closing keywords, e.g. closes or fixes](https://help.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword) to link the corresponding issue, if any.
 
-<!-- Use one of the closing keywords like "Closes" or "Fixes" to link the corresponding issue (see https://help.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword for help) -->
+# Additional information 
 
+> Provide additional information for this change, if needed.
 
-## Additional information and checks
+# Pre-Merge checklist
 
-<!-- If there are more checks or data to be provided, put it here -->
-
-- [ ] Pull request linked in changelog
+- [] New code is tested
+- [] Present and new tests pass
+- [] Documentation is updated
+- [] The build is working without errors
+- [] No new Sonar issues introduced
+- [] Changelog is updated
+- [] Code has been reviewed 
