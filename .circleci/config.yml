@@ -2065,21 +2065,21 @@ commands:
 
 
   install-maven:
-    description: Install Maven 3.8.6 (if not already installed)
+    description: Install Maven 3.8.7 (if not already installed)
     steps:
       - run:
           name: Install Maven tool
           command: |
             sudo killall -9 apt-get || true
-            if [ ! -d "/usr/lib/maven/apache-maven-3.8.6" ]; then
-              wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -O /tmp/maven.tar.gz
+            if [ ! -d "/usr/lib/maven/apache-maven-3.8.7" ]; then
+              wget https://dlcdn.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz -O /tmp/maven.tar.gz
               sudo mkdir -p /usr/lib/maven
               sudo tar xfvz /tmp/maven.tar.gz --directory /usr/lib/maven
               rm -f /tmp/maven.tar.gz
-              export MAVEN_HOME=/usr/lib/maven/apache-maven-3.8.6
+              export MAVEN_HOME=/usr/lib/maven/apache-maven-3.8.7
               export PATH=$MAVEN_HOME/bin:$PATH
-              sudo update-alternatives --install /usr/bin/mvn mvn /usr/lib/maven/apache-maven-3.8.6/bin/mvn 100
-              sudo update-alternatives --set mvn /usr/lib/maven/apache-maven-3.8.6/bin/mvn
+              sudo update-alternatives --install /usr/bin/mvn mvn /usr/lib/maven/apache-maven-3.8.7/bin/mvn 100
+              sudo update-alternatives --set mvn /usr/lib/maven/apache-maven-3.8.7/bin/mvn
             fi
             mvn --version
 
