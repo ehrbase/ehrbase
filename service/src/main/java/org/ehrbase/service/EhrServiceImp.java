@@ -275,19 +275,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
 
         check(status);
-
-        Optional<PartyRef> partyRef =
-                Optional.ofNullable(status).map(EhrStatus::getSubject).map(PartyProxy::getExternalRef);
-
-        if (partyRef.isPresent()) {
-            String subjectId = partyRef.get().getId().getValue();
-            String namespace = partyRef.get().getNamespace();
-            Optional<UUID> ehrIdOpt = findBySubject(subjectId, namespace);
-            if (ehrIdOpt.isPresent() && !ehrIdOpt.get().equals(ehrId)) {
-                throw new InvalidApiParameterException(
-                        String.format(EHR_NOT_FOUND_WITH_SUPPLIED_SUBJECT, subjectId, namespace));
-            }
-        }
+        checkEhrExistForParty(ehrId, status);
 
         // pre-step: check for valid ehrId
         if (!hasEhr(ehrId)) {
@@ -317,6 +305,21 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                     "Problem updating EHR_STATUS"); // unexpected problem. expected ones are thrown inside of update()
 
         return UUID.fromString(getEhrStatus(ehrId).getUid().getRoot().getValue());
+    }
+
+    private void checkEhrExistForParty(UUID ehrId, EhrStatus status) {
+        Optional<PartyRef> partyRef =
+                Optional.ofNullable(status).map(EhrStatus::getSubject).map(PartyProxy::getExternalRef);
+
+        if (partyRef.isPresent()) {
+            String subjectId = partyRef.get().getId().getValue();
+            String namespace = partyRef.get().getNamespace();
+            Optional<UUID> ehrIdOpt = findBySubject(subjectId, namespace);
+            if (ehrIdOpt.isPresent() && !ehrIdOpt.get().equals(ehrId)) {
+                throw new InvalidApiParameterException(
+                        String.format(EHR_NOT_FOUND_WITH_SUPPLIED_SUBJECT, subjectId, namespace));
+            }
+        }
     }
 
     private void check(EhrStatus status) {
