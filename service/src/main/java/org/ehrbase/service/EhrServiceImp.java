@@ -88,7 +88,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
     public static final String EHR_NOT_FOUND_WITH_SUPPLIED_SUBJECT =
-            "No EHR with supplied subject parameters found (partyId=[%s] and partyNamespace:[%s])";
+            "No EHR with supplied subject parameters found (partyId=[%s] and partyNamespace:[%s]). Please make sure the ehr id is correct.";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private final TenantService tenantService;
