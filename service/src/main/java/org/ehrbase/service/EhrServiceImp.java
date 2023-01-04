@@ -82,9 +82,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
-    public static final String COULD_NOT_UPDATE_THE_EHR_STATUS_PROVIDED_AN_EXISTING_PARTY =
-            "Couldn't update the EHR_STATUS, provided an existing party id [%s] and party namespace [%s] for EHR with id %s";
-
+    public static final String EHR_NOT_FOUND_WITH_SUPPLIED_SUBJECT =
+            "No EHR with supplied subject parameters found (partyId=[%s] and partyNamespace:[%s])";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private final TenantService tenantService;
@@ -278,10 +277,10 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         if (partyRef.isPresent()) {
             String subjectId = partyRef.get().getId().getValue();
             String namespace = partyRef.get().getNamespace();
-            Optional<UUID> subject = findBySubject(subjectId, namespace);
-            if (subject.isPresent() && !subject.get().equals(ehrId)) {
-                throw new InvalidApiParameterException(String.format(
-                        COULD_NOT_UPDATE_THE_EHR_STATUS_PROVIDED_AN_EXISTING_PARTY, subjectId, namespace, ehrId));
+            Optional<UUID> ehrIdOpt = findBySubject(subjectId, namespace);
+            if (ehrIdOpt.isPresent() && !ehrIdOpt.get().equals(ehrId)) {
+                throw new InvalidApiParameterException(
+                        String.format(EHR_NOT_FOUND_WITH_SUPPLIED_SUBJECT, subjectId, namespace));
             }
         }
 
