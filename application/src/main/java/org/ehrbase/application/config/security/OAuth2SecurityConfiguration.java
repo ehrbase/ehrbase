@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +51,14 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @EnableWebSecurity
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
+    private static final String PUBLIC = "PUBLIC";
+    private static final String PRIVATE = "PRIVATE";
+
+    @Value("${management.endpoints.web.access:ADMIN_ONLY}")
+    private String managementEndpointsAccessType;
+
+    @Value("${management.endpoints.web.base-path:/actuator}/**")
+    private String managementBasePath;
 
     public static final String PROFILE_SCOPE = "PROFILE";
 
@@ -79,11 +88,30 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
         String adminRole = securityProperties.getOauth2AdminRole();
 
         // @formatter:off
-        http.cors()
-                .and()
-                .authorizeRequests()
-                .antMatchers("/rest/admin/**", "/management/**")
-                .hasRole(adminRole)
+        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
+                expressionInterceptUrlRegistry = http.cors()
+                        .and()
+                        .authorizeRequests()
+                        .antMatchers("/rest/admin/**")
+                        .hasRole(adminRole)
+                        .antMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                        .permitAll();
+
+        if (managementEndpointsAccessType.equals(PUBLIC)) {
+            expressionInterceptUrlRegistry
+                    .and()
+                    .authorizeRequests()
+                    .antMatchers(this.managementBasePath)
+                    .permitAll();
+        } else if (!managementEndpointsAccessType.equals(PRIVATE)) {
+            expressionInterceptUrlRegistry
+                    .and()
+                    .authorizeRequests()
+                    .antMatchers(this.managementBasePath)
+                    .hasRole(adminRole);
+        }
+
+        expressionInterceptUrlRegistry
                 .anyRequest()
                 .hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
                 .and()
