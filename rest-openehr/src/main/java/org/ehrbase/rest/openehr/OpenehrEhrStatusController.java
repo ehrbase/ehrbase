@@ -76,10 +76,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestParam(name = "version_at_time", required = false) String versionAtTime,
@@ -106,10 +106,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping(path = "/{version_uid}")
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @PathVariable(name = "version_uid") String versionUid,
@@ -134,10 +134,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
     @Override
     @PutMapping
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
             @PathVariable("ehr_id") UUID ehrId,
             @RequestHeader(name = IF_MATCH) String versionUid,
