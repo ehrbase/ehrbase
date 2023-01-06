@@ -171,8 +171,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
                     String openehrAuditDetails, // TODO, see EHR-267
             @RequestHeader(value = ACCEPT, required = false) String accept) {
 
-        checkAcceptXmlOnlyCompability(accept);
-
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/definition/template/adl1.4"));
 
         List<String> headerList =
@@ -201,8 +199,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
                     String openehrAuditDetails, // TODO, see EHR-267
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
-
-        checkAcceptXmlOnlyCompability(accept);
 
         URI uri = URI.create(
                 this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/definition/template/adl1.4/" + templateId));
@@ -361,8 +357,19 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 // (handled by temporary variable)
                 TemplateResponseData objByReference = (TemplateResponseData) oneOrAllTemplates;
 
+                // parse and set accepted format. with XML as fallback for empty header and error for non supported header
+                MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
+                OperationalTemplateFormat format;
+                if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
+                    format = OperationalTemplateFormat.XML;
+                } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+                    format = OperationalTemplateFormat.JSON;
+                } else {
+                    throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
+                }
+
                 // TODO very simple now, needs more sophisticated templateService
-                String template = templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
+                String template = templateService.findOperationalTemplate(templateId, format);
                 objByReference.set(template);
 
                 // finally set last header // TODO only XML for now
