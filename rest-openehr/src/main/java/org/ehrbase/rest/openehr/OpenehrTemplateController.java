@@ -63,6 +63,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_XML;
+
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
@@ -85,10 +88,10 @@ public class OpenehrTemplateController extends BaseController implements Templat
     /*
        ADL 1.4
     */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
+    @Override
     @PostMapping("/adl1.4")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @Override
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     public ResponseEntity createTemplateClassic(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
@@ -99,9 +102,12 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestBody String template) {
 
         // TODO: only XML at the moment
-        if (!MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
+        if (!MediaType.parseMediaType(contentType).isCompatibleWith(APPLICATION_XML)) {
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Only XML is supported at the moment");
         }
+
+        // TODO:: Not sure if we need that validation. Clarify it
+        checkAcceptXmlOnlyCompability(accept);
 
         TemplateDocument document;
         try {
@@ -147,16 +153,25 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    private void checkAcceptXmlOnlyCompability(String accept) {
+        // parse and set accepted format. with XML as fallback for empty header and error for non-supported header
+        if (!APPLICATION_XML.isCompatibleWith(resolveContentType(accept, APPLICATION_XML))) {
+            throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
+        }
+    }
+
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
-    @GetMapping("/adl1.4")
     @Override
+    @GetMapping("/adl1.4")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity getTemplatesClassic(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
                     String openehrAuditDetails, // TODO, see EHR-267
             @RequestHeader(value = ACCEPT, required = false) String accept) {
+
+        checkAcceptXmlOnlyCompability(accept);
 
         URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/definition/template/adl1.4"));
 
@@ -177,15 +192,17 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
-    @GetMapping("/adl1.4/{template_id}")
     @Override
+    @GetMapping("/adl1.4/{template_id}")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity getTemplateClassic(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
                     String openehrAuditDetails, // TODO, see EHR-267
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
+
+        checkAcceptXmlOnlyCompability(accept);
 
         URI uri = URI.create(
                 this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/definition/template/adl1.4/" + templateId));
@@ -205,8 +222,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping(path = "/adl1.4/{template_id}/example")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity<String> getTemplateExample(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
@@ -216,9 +233,9 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         HttpHeaders respHeaders = new HttpHeaders();
         if (format.equals(CompositionFormat.XML)) {
-            respHeaders.setContentType(MediaType.APPLICATION_XML);
+            respHeaders.setContentType(APPLICATION_XML);
         } else if (format.equals(CompositionFormat.JSON)) {
-            respHeaders.setContentType(MediaType.APPLICATION_JSON);
+            respHeaders.setContentType(APPLICATION_JSON);
         }
 
         return ResponseEntity.ok()
@@ -232,10 +249,10 @@ public class OpenehrTemplateController extends BaseController implements Templat
        ADL 2
        TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
     */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
+    @Override
     @PostMapping("/adl2")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @Override
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     public ResponseEntity<TemplateResponseData> createTemplateNew(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
@@ -253,7 +270,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
         URI url = URI.create("todo");
         // TODO - continuing stub but list of headers most likely the correct list of necessary ones
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(APPLICATION_JSON);
         headers.setLocation(url);
         headers.setETag("\"something...\"");
         headers.setLastModified(1234565778);
@@ -269,9 +286,9 @@ public class OpenehrTemplateController extends BaseController implements Templat
     // significantly
     // also, this endpoint combines what is listed as two endpoints:
     // https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-adl-2-template-get
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
-    @GetMapping("/adl2/{template_id}/{version_pattern}")
     @Override
+    @GetMapping("/adl2/{template_id}/{version_pattern}")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity<TemplateResponseData> getTemplateNew(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
@@ -288,7 +305,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
         URI url = URI.create("todo");
         // TODO - continuing stub but list of headers most likely the correct list of necessary ones
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(APPLICATION_JSON);
         headers.setLocation(url);
         headers.setETag("\"something...\"");
         headers.setLastModified(1234565778);
@@ -337,17 +354,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
             }
         }
 
-        // parse and set accepted format. with XML as fallback for empty header and error for non supported header
-        MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
-        OperationalTemplateFormat format;
-        if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            format = OperationalTemplateFormat.XML;
-        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            format = OperationalTemplateFormat.JSON;
-        } else {
-            throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
-        }
-
         // is null when request wants only metadata returned, so skips provisioning of body if null
         if (oneOrAllTemplates != null) {
             if (oneOrAllTemplates.getClass().equals(TemplateResponseData.class)) { // get only one template
@@ -356,11 +362,11 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 TemplateResponseData objByReference = (TemplateResponseData) oneOrAllTemplates;
 
                 // TODO very simple now, needs more sophisticated templateService
-                String template = templateService.findOperationalTemplate(templateId, format);
+                String template = templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
                 objByReference.set(template);
 
                 // finally set last header // TODO only XML for now
-                respHeaders.setContentType(MediaType.APPLICATION_XML);
+                respHeaders.setContentType(APPLICATION_XML);
 
             } else if (oneOrAllTemplates.getClass().equals(TemplatesResponseData.class)) { // get all templates
                 TemplatesResponseData objByReference = (TemplatesResponseData) oneOrAllTemplates;
