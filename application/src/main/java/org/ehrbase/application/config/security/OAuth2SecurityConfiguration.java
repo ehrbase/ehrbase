@@ -52,38 +52,35 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @EnableWebSecurity
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
     private static final String PUBLIC = "PUBLIC";
     private static final String PRIVATE = "PRIVATE";
-
-    private final WebEndpointProperties managementWebEndpointProperties;
-
-    @Value("${management.endpoints.web.access:ADMIN_ONLY}")
-    private String managementEndpointsAccessType;
-
-    @Value("${management.endpoints.web.base-path:/actuator}/**")
-    private String managementBasePath;
-
     public static final String PROFILE_SCOPE = "PROFILE";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Value("${management.endpoints.web.access:ADMIN_ONLY}")
+    private String managementEndpointsAccessType;
+
     private final SecurityProperties securityProperties;
 
-    private final OAuth2ResourceServerProperties oAuth2rProperties;
+    private final OAuth2ResourceServerProperties oAuth2Properties;
+
+    private final WebEndpointProperties managementWebEndpointProperties;
 
     public OAuth2SecurityConfiguration(
             SecurityProperties securityProperties,
-            OAuth2ResourceServerProperties oAuth2rProperties,
+            OAuth2ResourceServerProperties oAuth2Properties,
             WebEndpointProperties managementWebEndpointProperties) {
         this.securityProperties = securityProperties;
-        this.oAuth2rProperties = oAuth2rProperties;
+        this.oAuth2Properties = oAuth2Properties;
         this.managementWebEndpointProperties = managementWebEndpointProperties;
     }
 
     @PostConstruct
     public void initialize() {
         logger.info("Using OAuth2 authentication");
-        logger.debug("Using issuer URI: {}", oAuth2rProperties.getJwt().getIssuerUri());
+        logger.debug("Using issuer URI: {}", oAuth2Properties.getJwt().getIssuerUri());
         logger.debug("Using user role: {}", securityProperties.getOauth2UserRole());
         logger.debug("Using admin role: {}", securityProperties.getOauth2AdminRole());
     }
