@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_XML;
+
 import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -62,9 +65,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_XML;
 
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
@@ -357,7 +357,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 // (handled by temporary variable)
                 TemplateResponseData objByReference = (TemplateResponseData) oneOrAllTemplates;
 
-                // parse and set accepted format. with XML as fallback for empty header and error for non supported header
+                // parse and set accepted format. with XML as fallback for empty header and error for non supported
+                // header
                 MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
                 OperationalTemplateFormat format;
                 if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
