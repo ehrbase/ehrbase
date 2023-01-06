@@ -106,7 +106,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Only XML is supported at the moment");
         }
 
-        // TODO:: Not sure if we need that validation. Clarify it
         checkAcceptXmlOnlyCompability(accept);
 
         TemplateDocument document;
@@ -350,24 +349,23 @@ public class OpenehrTemplateController extends BaseController implements Templat
             }
         }
 
+        // parse and set accepted format. with XML as fallback for empty header and error for non supported header
+        MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
+        OperationalTemplateFormat format;
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
+            format = OperationalTemplateFormat.XML;
+        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            format = OperationalTemplateFormat.JSON;
+        } else {
+            throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
+        }
+
         // is null when request wants only metadata returned, so skips provisioning of body if null
         if (oneOrAllTemplates != null) {
             if (oneOrAllTemplates.getClass().equals(TemplateResponseData.class)) { // get only one template
                 // when this "if" is true the following casting can be executed and data manipulated by reference
                 // (handled by temporary variable)
                 TemplateResponseData objByReference = (TemplateResponseData) oneOrAllTemplates;
-
-                // parse and set accepted format. with XML as fallback for empty header and error for non supported
-                // header
-                MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
-                OperationalTemplateFormat format;
-                if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-                    format = OperationalTemplateFormat.XML;
-                } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-                    format = OperationalTemplateFormat.JSON;
-                } else {
-                    throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
-                }
 
                 // TODO very simple now, needs more sophisticated templateService
                 String template = templateService.findOperationalTemplate(templateId, format);
