@@ -27,6 +27,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;
@@ -54,6 +55,8 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private static final String PUBLIC = "PUBLIC";
     private static final String PRIVATE = "PRIVATE";
 
+    private final WebEndpointProperties managementWebEndpointProperties;
+
     @Value("${management.endpoints.web.access:ADMIN_ONLY}")
     private String managementEndpointsAccessType;
 
@@ -69,9 +72,12 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final OAuth2ResourceServerProperties oAuth2rProperties;
 
     public OAuth2SecurityConfiguration(
-            SecurityProperties securityProperties, OAuth2ResourceServerProperties oAuth2rProperties) {
+            SecurityProperties securityProperties,
+            OAuth2ResourceServerProperties oAuth2rProperties,
+            WebEndpointProperties managementWebEndpointProperties) {
         this.securityProperties = securityProperties;
         this.oAuth2rProperties = oAuth2rProperties;
+        this.managementWebEndpointProperties = managementWebEndpointProperties;
     }
 
     @PostConstruct
@@ -101,13 +107,13 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
             expressionInterceptUrlRegistry
                     .and()
                     .authorizeRequests()
-                    .antMatchers(this.managementBasePath)
+                    .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**")
                     .permitAll();
         } else if (!managementEndpointsAccessType.equals(PRIVATE)) {
             expressionInterceptUrlRegistry
                     .and()
                     .authorizeRequests()
-                    .antMatchers(this.managementBasePath)
+                    .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**")
                     .hasRole(adminRole);
         }
 
