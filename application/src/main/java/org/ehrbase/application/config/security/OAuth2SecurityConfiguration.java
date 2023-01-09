@@ -56,6 +56,7 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private static final String PUBLIC = "PUBLIC";
     private static final String PRIVATE = "PRIVATE";
+    public static final String ADMIN_ONLY = "ADMIN_ONLY";
     public static final String PROFILE_SCOPE = "PROFILE";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -92,31 +93,34 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
         String adminRole = securityProperties.getOauth2AdminRole();
 
         // @formatter:off
-        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
-                expressionInterceptUrlRegistry = http.cors()
-                        .and()
-                        .authorizeRequests()
-                        .antMatchers("/rest/admin/**")
-                        .hasRole(adminRole)
-                        .antMatchers("/swagger-ui/**", "/v3/api-docs/**")
-                        .permitAll();
+        var registry = http.cors()
+                .and()
+                .authorizeRequests()
+                .antMatchers("/rest/admin/**")
+                .hasRole(adminRole)
+                .antMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                .permitAll();
 
-        if (managementEndpointsAccessType.equals(PUBLIC)) {
-            expressionInterceptUrlRegistry
-                    .and()
-                    .authorizeRequests()
-                    .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**")
-                    .permitAll();
-        } else if (!managementEndpointsAccessType.equals(PRIVATE)) {
-            expressionInterceptUrlRegistry
-                    .and()
-                    .authorizeRequests()
-                    .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**")
-                    .hasRole(adminRole);
+        var managementAuthorizedUrl = registry.and()
+                .authorizeRequests()
+                .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**");
+
+        // The access to management endpoints can be controlled
+        switch (managementEndpointsAccessType) {
+            case ADMIN_ONLY ->
+            // endpoints are locked behind an authorization and are only available for users with the admin role
+            managementAuthorizedUrl.hasRole(adminRole);
+            case PRIVATE ->
+            // endpoints are locked behind an authorization, but are available to any role
+            managementAuthorizedUrl.hasAnyRole(adminRole, userRole, PROFILE_SCOPE);
+            case PUBLIC ->
+            // endpoints can be accessed without an authorization
+            managementAuthorizedUrl.permitAll();
+            default -> throw new IllegalStateException(String.format(
+                    "Unexpected management endpoints access control type %s", managementEndpointsAccessType));
         }
 
-        expressionInterceptUrlRegistry
-                .anyRequest()
+        registry.anyRequest()
                 .hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
                 .and()
                 .oauth2ResourceServer()
