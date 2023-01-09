@@ -87,8 +87,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
-    public static final String EHR_NOT_FOUND_WITH_SUPPLIED_SUBJECT =
-            "No EHR with supplied subject parameters found (partyId=[%s] and partyNamespace:[%s]). Please make sure the ehr id is correct.";
+    public static final String PARTY_ID_ALREADY_USED =
+            "Supplied partyId=[%s] is used by a different EHR in the same partyNamespace:[%s].";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private final TenantService tenantService;
@@ -316,8 +316,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             String namespace = partyRef.get().getNamespace();
             Optional<UUID> ehrIdOpt = findBySubject(subjectId, namespace);
             if (ehrIdOpt.isPresent() && !ehrIdOpt.get().equals(ehrId)) {
-                throw new InvalidApiParameterException(
-                        String.format(EHR_NOT_FOUND_WITH_SUPPLIED_SUBJECT, subjectId, namespace));
+                throw new InvalidApiParameterException(String.format(PARTY_ID_ALREADY_USED, subjectId, namespace));
             }
         }
     }
