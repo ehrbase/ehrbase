@@ -108,13 +108,14 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // The access to management endpoints can be controlled
         switch (managementEndpointsAccessType) {
             case ADMIN_ONLY ->
-            // endpoints are locked behind an authorization and are only available for users with the admin role
+            // management endpoints are locked behind an authorization
+            // and are only available for users with the admin role
             managementAuthorizedUrl.hasRole(adminRole);
             case PRIVATE ->
-            // endpoints are locked behind an authorization, but are available to any role
+            // management endpoints are locked behind an authorization, but are available to any role
             managementAuthorizedUrl.hasAnyRole(adminRole, userRole, PROFILE_SCOPE);
             case PUBLIC ->
-            // endpoints can be accessed without an authorization
+            // management endpoints can be accessed without an authorization
             managementAuthorizedUrl.permitAll();
             default -> throw new IllegalStateException(String.format(
                     "Unexpected management endpoints access control type %s", managementEndpointsAccessType));
