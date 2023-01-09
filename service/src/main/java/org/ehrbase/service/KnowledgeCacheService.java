@@ -569,6 +569,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             throw new IllegalArgumentException("Supplied template has nil or empty concept");
         }
 
+        if (template.getLanguage() == null || template.getLanguage().isNil()) {
+            throw new IllegalArgumentException("Supplied template has nil or empty language");
+        }
+
         if (template.getDefinition() == null || template.getDefinition().isNil()) {
             throw new IllegalArgumentException("Supplied template has nil or empty definition");
         }
