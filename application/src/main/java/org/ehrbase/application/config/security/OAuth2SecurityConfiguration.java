@@ -105,7 +105,6 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**");
 
-        // The access to management endpoints can be controlled
         switch (managementEndpointsAccessType) {
             case ADMIN_ONLY ->
             // management endpoints are locked behind an authorization
