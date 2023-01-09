@@ -1318,7 +1318,7 @@ jobs:
 
 
   SECURITY-test:
-    executor: docker-mock-server   #machine-ubuntu-2004
+    executor: machine-ubuntu-2004
     environment:
       SUT: TEST
       SECURITY_AUTHTYPE: OAUTH
