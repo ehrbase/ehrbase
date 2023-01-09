@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
 - add caches for ehr.concept, ehr.territory, ehr.language([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - unwrap if match additional double quotes ([#1022](https://github.com/ehrbase/ehrbase/pull/1022))
+- Expose management and swagger endpoints publicly([#1030](https://github.com/ehrbase/ehrbase/pull/1030))
  ### Changed
 - use caffeine cache instead of ehcache as ehcache has unnecessary blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
