@@ -14,7 +14,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
-
+- Fixes NullPointerException while sending ehr status request(GET/PUT) when abac is enabled ([#1031](https://github.com/ehrbase/ehrbase/pull/1031))
 ## [0.23.0]
  ### Added
  - Authorization enhancements [#1002](https://github.com/ehrbase/ehrbase/pull/1002)
