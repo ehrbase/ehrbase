@@ -14,6 +14,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
+- Fixed accept header validation([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
 
 ## [0.23.0]
  ### Added
