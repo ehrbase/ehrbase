@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
 public class PluginSecurityConfiguration implements ApplicationContextAware {
-    // @format:off
+  // @format:off
   @SuppressWarnings("rawtypes")
   private static class SignatureAdap implements org.aspectj.lang.reflect.MethodSignature {
     private final MethodInvocation invocation;
@@ -88,6 +88,7 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
     }
   }
   
+  // @format:on
   private abstract static class AspectAdapter implements MethodInterceptor {
     private final AnnotationAspect aspect;
 
@@ -152,5 +153,4 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
   }
-  // @format:on
 }

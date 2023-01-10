@@ -36,17 +36,17 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Aspect
-public class TenantAspect implements org.ehrbase.api.aspect.TenantAspect {
+public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect {
     private List<TenantIdExtractionStrategy<?>> extractionStrategies;
 
-    public TenantAspect() {
+    public DefaultTenantAspect() {
         this(new ArrayList<>());
     }
 
     private static final Comparator<TenantIdExtractionStrategy<?>> PRIORITY_SORT =
             (s1, s2) -> s1.priority() - s2.priority();
 
-    public TenantAspect(List<TenantIdExtractionStrategy<?>> extractionStrategies) {
+    public DefaultTenantAspect(List<TenantIdExtractionStrategy<?>> extractionStrategies) {
         extractionStrategies.sort(PRIORITY_SORT);
         this.extractionStrategies = extractionStrategies;
     }
