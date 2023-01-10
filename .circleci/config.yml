@@ -2087,7 +2087,6 @@ commands:
   download-and-install-docker-compose:
     description: Download and install docker compose image
     steps:
-      - checkout
       - setup_remote_docker:
           docker_layer_caching: true
           version: 20.10.12
@@ -2098,10 +2097,6 @@ commands:
             curl -L "https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-linux-x86_64" -o ~/docker-compose
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - run:
-          name: Build test image
-          command: |
-            docker build -t tests .
       - run:
           name: Spin up database
           command: |
