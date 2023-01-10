@@ -2087,6 +2087,10 @@ commands:
   download-and-install-docker-compose:
     description: Download and install docker compose image
     steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 20.10.12
       - run:
           name: Download and Install Docker instance
           command: |
