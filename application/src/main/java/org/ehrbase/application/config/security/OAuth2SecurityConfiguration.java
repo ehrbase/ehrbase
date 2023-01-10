@@ -36,6 +36,7 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -92,34 +93,31 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
         String adminRole = securityProperties.getOauth2AdminRole();
 
         // @formatter:off
-        var registry = http.cors()
-                .and()
-                .authorizeRequests()
-                .antMatchers("/rest/admin/**")
-                .hasRole(adminRole)
-                .antMatchers("/swagger-ui/**", "/v3/api-docs/**")
-                .permitAll();
+        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
+                expressionInterceptUrlRegistry = http.cors()
+                        .and()
+                        .authorizeRequests()
+                        .antMatchers("/rest/admin/**")
+                        .hasRole(adminRole)
+                        .antMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                        .permitAll();
 
-        var managementAuthorizedUrl = registry.and()
-                .authorizeRequests()
-                .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**");
-
-        switch (managementEndpointsAccessType) {
-            case ADMIN_ONLY ->
-            // management endpoints are locked behind an authorization
-            // and are only available for users with the admin role
-            managementAuthorizedUrl.hasRole(adminRole);
-            case PRIVATE ->
-            // management endpoints are locked behind an authorization, but are available to any role
-            managementAuthorizedUrl.hasAnyRole(adminRole, userRole, PROFILE_SCOPE);
-            case PUBLIC ->
-            // management endpoints can be accessed without an authorization
-            managementAuthorizedUrl.permitAll();
-            default -> throw new IllegalStateException(String.format(
-                    "Unexpected management endpoints access control type %s", managementEndpointsAccessType));
+        if (managementEndpointsAccessType.equals(PUBLIC)) {
+            expressionInterceptUrlRegistry
+                    .and()
+                    .authorizeRequests()
+                    .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**")
+                    .permitAll();
+        } else if (!managementEndpointsAccessType.equals(PRIVATE)) {
+            expressionInterceptUrlRegistry
+                    .and()
+                    .authorizeRequests()
+                    .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**")
+                    .hasRole(adminRole);
         }
 
-        registry.anyRequest()
+        expressionInterceptUrlRegistry
+                .anyRequest()
                 .hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
                 .and()
                 .oauth2ResourceServer()
