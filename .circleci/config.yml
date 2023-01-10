@@ -2093,7 +2093,7 @@ commands:
             apk update && apk upgrade && apk add curl
             curl -L "https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-linux-x86_64" -o ~/docker-compose
             chmod +x ~/docker-compose
-            mv ~/docker-compose /usr/local/bin/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - run:
           name: Build test image
           command: |
