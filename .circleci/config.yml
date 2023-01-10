@@ -2090,7 +2090,7 @@ commands:
       - run:
           name: Download and Install Docker instance
           command: |
-            apk update && apk upgrade && apk add curl
+            sudo apt -y update && sudo apt upgrade && sudo apt install curl
             curl -L "https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-linux-x86_64" -o ~/docker-compose
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
