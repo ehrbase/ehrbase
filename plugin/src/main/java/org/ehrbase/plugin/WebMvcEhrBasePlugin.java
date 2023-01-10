@@ -61,9 +61,6 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
         return dispatcherServlet;
     }
 
-    private static final String WARN_PLUGIN_SEC =
-            "Can not Configure Plugin Security, check that setting Classloader and Registering of Components is Possible";
-
     private void initPluginSecurity(WebApplicationContext ctx) {
         EhrBasePluginManagerInterface pluginManager =
                 (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
