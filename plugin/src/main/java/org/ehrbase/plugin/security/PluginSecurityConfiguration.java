@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 
 public class PluginSecurityConfiguration implements ApplicationContextAware {
-  // @format:off
+    // @format:off
   @SuppressWarnings("rawtypes")
   private static class SignatureAdap implements org.aspectj.lang.reflect.MethodSignature {
     private final MethodInvocation invocation;
@@ -89,68 +89,73 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
   }
   
   // @format:on
-  private abstract static class AspectAdapter implements MethodInterceptor {
-    private final AnnotationAspect aspect;
+    private abstract static class AspectAdapter implements MethodInterceptor {
+        private final AnnotationAspect aspect;
 
-    AspectAdapter(AnnotationAspect aspect) { this.aspect = aspect; }
-    protected AnnotationAspect getAspect() { return aspect; }
-    public abstract Object invoke(MethodInvocation invocation) throws Throwable;
-  }
+        AspectAdapter(AnnotationAspect aspect) {
+            this.aspect = aspect;
+        }
 
-  public static class AnyOfAspectsCondition extends AnyNestedCondition {
-    public AnyOfAspectsCondition() {
-      super(ConfigurationPhase.REGISTER_BEAN);
+        protected AnnotationAspect getAspect() {
+            return aspect;
+        }
+
+        public abstract Object invoke(MethodInvocation invocation) throws Throwable;
     }
-    
+
+    public static class AnyOfAspectsCondition extends AnyNestedCondition {
+        public AnyOfAspectsCondition() {
+            super(ConfigurationPhase.REGISTER_BEAN);
+        }
+
+        @ConditionalOnBean(value = AuthorizationAspect.class)
+        static class OnAuthorization {}
+
+        @ConditionalOnBean(value = TenantAspect.class)
+        static class OnTenant {}
+    }
+
+    private ApplicationContext applicationContext;
+
+    @Bean
+    @Conditional(AnyOfAspectsCondition.class)
+    public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
+        return new DefaultAdvisorAutoProxyCreator();
+    }
+
+    @Bean
     @ConditionalOnBean(value = AuthorizationAspect.class)
-    static class OnAuthorization {} 
-    
+    public Advisor authorizationAspect() {
+        ApplicationContext parentCtx = applicationContext.getParent();
+        AuthorizationAspect theAspect = parentCtx.getBean(AuthorizationAspect.class);
+
+        return new DefaultPointcutAdvisor(
+                new AnnotationMatchingPointcut(null, EhrbaseAuthorization.class, true), new AspectAdapter(theAspect) {
+                    public Object invoke(MethodInvocation invocation) throws Throwable {
+                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), null);
+                    }
+                });
+    }
+
+    @Bean
     @ConditionalOnBean(value = TenantAspect.class)
-    static class OnTenant {}
-  }
-  
-  private ApplicationContext applicationContext;
-  
-  @Bean
-  @Conditional(AnyOfAspectsCondition.class)
-  public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
-    return new DefaultAdvisorAutoProxyCreator();
-  }
-  
-  @Bean
-  @ConditionalOnBean(value = AuthorizationAspect.class)
-  public Advisor authorizationAspect() {
-    ApplicationContext parentCtx = applicationContext.getParent();
-    AuthorizationAspect theAspect = parentCtx.getBean(AuthorizationAspect.class);
+    public Advisor tenantAspect() {
+        ApplicationContext parentCtx = applicationContext.getParent();
+        TenantAspect theAspect = parentCtx.getBean(TenantAspect.class);
 
-    return new DefaultPointcutAdvisor(
-        new AnnotationMatchingPointcut(null, EhrbaseAuthorization.class, true),
-        new AspectAdapter(theAspect) {
-          public Object invoke(MethodInvocation invocation) throws Throwable {
-            return getAspect().action(new ProceedingJoinPointAdapter(invocation), null);
-          }
-        });
-  }
-  
-  @Bean
-  @ConditionalOnBean(value = TenantAspect.class)
-  public Advisor tenantAspect() {
-    ApplicationContext parentCtx = applicationContext.getParent();
-    TenantAspect theAspect = parentCtx.getBean(TenantAspect.class);
+        return new DefaultPointcutAdvisor(
+                new AnnotationMatchingPointcut(TenantAware.class, true), new AspectAdapter(theAspect) {
+                    public Object invoke(MethodInvocation invocation) throws Throwable {
+                        Method method = invocation.getMethod();
+                        Class<?> declaringClass = method.getDeclaringClass();
+                        TenantAware annotation =
+                                Objects.requireNonNull(declaringClass.getAnnotation(TenantAware.class));
+                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotation));
+                    }
+                });
+    }
 
-    return new DefaultPointcutAdvisor(
-        new AnnotationMatchingPointcut(TenantAware.class, true),
-        new AspectAdapter(theAspect) {
-          public Object invoke(MethodInvocation invocation) throws Throwable {
-            Method method = invocation.getMethod();
-            Class<?> declaringClass = method.getDeclaringClass();
-            TenantAware annotation =  Objects.requireNonNull(declaringClass.getAnnotation(TenantAware.class));
-            return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotation));
-          }
-        });
-  }
-
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    this.applicationContext = applicationContext;
-  }
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 }
