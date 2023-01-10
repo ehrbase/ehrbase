@@ -1318,7 +1318,7 @@ jobs:
 
 
   SECURITY-test:
-    executor: docker-mock-server    #docker-mock-server    #machine-ubuntu-2004
+    executor: machine-ubuntu-2004    #docker-mock-server    #machine-ubuntu-2004
     environment:
       SUT: TEST
       SECURITY_AUTHTYPE: OAUTH
@@ -1329,7 +1329,8 @@ jobs:
       - install-java17
       - git-clone-robot-integration-tests-repo
       - move-integration-tests-content-to-local-tests-folder
-      - download-and-install-docker-compose
+      #- download-and-install-docker-compose
+      - download-and-install-mockserver
       - install-and-configure-keycloak
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
@@ -2102,6 +2103,18 @@ commands:
           command: |
             docker-compose down -v   
             docker-compose up -d
+
+  download-and-install-mockserver:
+    description: Download and install latest version of Mockserver Docker image
+    steps:
+      - run:
+          name: Download mockserver
+          command: |
+            docker pull mockserver/mockserver
+      - run:
+          name:
+          command: |
+            docker run -d --rm -P mockserver/mockserver
 
   install-and-configure-keycloak:
     description: Setups a Keycloak Docker instance and restores a previously exportd configuration.
