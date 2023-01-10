@@ -64,7 +64,7 @@ import org.springframework.web.client.RestClientException;
 @SuppressWarnings("unchecked")
 public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    public static final String SEMVER_REGEX =
+    private static final String SEMVER_REGEX =
             "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
     private final ExternalTerminologyValidation tsAdapter;
     private final TenantService tenantService;
