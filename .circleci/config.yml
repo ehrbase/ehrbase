@@ -2546,8 +2546,6 @@ executors:
         environment:
           MOCKSERVER_SERVER_PORT: 1080
           MOCKSERVER_LOG_LEVEL: DEBUG
-    machine:
-      image: ubuntu-2004:202008-01
 
   docker-py3-postgres-ci-timezone-berlin-postgres-timezone-berlin:
     working_directory: ~/projects
