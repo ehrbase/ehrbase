@@ -61,17 +61,6 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
         return dispatcherServlet;
     }
 
-    private void initPluginSecurity(WebApplicationContext ctx) {
-        EhrBasePluginManagerInterface pluginManager =
-                (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
-
-        if ((ctx instanceof AbstractApplicationContext a1) && (ctx instanceof AnnotationConfigRegistry a2)) {
-            a1.setClassLoader(wrapper.getPluginClassLoader());
-            a2.register(PluginSecurityConfiguration.class);
-            a1.setParent(pluginManager.getApplicationContext());
-        } else log.warn(WARN_PLUGIN_SEC);
-    }
-
     private static final String WARN_PLUGIN_SEC =
             "Can not Configure Plugin Security, check that setting Classloader and Registering of Components is Possible";
 
