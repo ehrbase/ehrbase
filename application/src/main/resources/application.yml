@@ -156,6 +156,11 @@ management:
       base-path: '/management'
       exposure:
         include: 'env, health, info, metrics, prometheus'
+        # The access to management endpoints can be controlled
+        # ADMIN_ONLY - (default) endpoints are locked behind an authorization and are only available for users with the admin role
+        # PRIVATE - endpoints are locked behind an authorization, but are available to any role
+        # PUBLIC - endpoints can be accessed without an authorization
+      access: ADMIN_ONLY
   # Per endpoint settings
   endpoint:
     # Env endpoint - Shows information on environment of EHRbase

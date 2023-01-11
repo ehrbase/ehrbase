@@ -1,20 +1,17 @@
 ---
 name: Task
-about: A general task that has to be done. Can be a research or other common work to be done.
+about: A general task, e.g. research or other common work to be done
 labels: task
 ---
-## Background ##
 
-<!-- Describe the task and the research goal that is expected after this issue has been moved to done -->
+# Background
 
-## Acceptance Criteria ##
+> Describe the goal of this task, and the expectations or impacts on EHRbase after this task has been completed.
 
-<!-- Add items here or describe what is expected as the result of the task, i.e. a wiki entry, a 
-conceptual document or a configured tool that executes recurring tasks. -->
+# Task specification
 
-- [ ] Item1
+> Add specific steps or work descriptions with the expected results.
 
-## Definition of Done ##
+# Further information
 
-- [ ] Output has been reviewed or presented and has been approved
-- [ ] Documentation has been updated (Sphinx, Javadoc, Guidelines, etc.) if applicable
+> Add additional information, if needed.

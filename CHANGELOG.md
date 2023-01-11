@@ -10,11 +10,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - add caches for ehr.concept, ehr.territory, ehr.language([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - add stored query text plain request support ([#1021](https://github.com/ehrbase/ehrbase/pull/1021))
 - unwrap if match additional double quotes ([#1022](https://github.com/ehrbase/ehrbase/pull/1022))
+- general support for tenants and authorization for plugins
+- Expose management and swagger endpoints publicly([#1030](https://github.com/ehrbase/ehrbase/pull/1030))
  ### Changed
 - use caffeine cache instead of ehcache as ehcache has unnecessary blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
+- Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
 
 ## [0.23.0]
  ### Added
