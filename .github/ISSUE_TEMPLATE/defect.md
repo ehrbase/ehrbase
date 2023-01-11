@@ -18,7 +18,7 @@ labels: bug
 
 # Steps to reproduce
 
-> Describe the steps that you have taken until the unexpected behavior occured. Please try to add as many details as possible, and include data and templates as attachments.
+> Describe the steps that you have taken until the unexpected behavior occurred. Please try to add as many details as possible, and include data and templates as attachments.
 
 # Actual result
 
