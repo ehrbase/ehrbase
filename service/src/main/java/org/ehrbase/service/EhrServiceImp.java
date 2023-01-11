@@ -88,7 +88,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
     public static final String PARTY_ID_ALREADY_USED =
-            "Supplied partyId=[%s] is used by a different EHR in the same partyNamespace:[%s].";
+            "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s].";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private final TenantService tenantService;
