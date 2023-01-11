@@ -17,6 +17,7 @@
  */
 package org.ehrbase.tenant;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,7 +29,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.tenant.ExtractionStrategyAware;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
 import org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint;
@@ -36,17 +36,17 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Aspect
-public class TenantAspect implements ExtractionStrategyAware {
+public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect {
     private List<TenantIdExtractionStrategy<?>> extractionStrategies;
 
-    public TenantAspect() {
+    public DefaultTenantAspect() {
         this(new ArrayList<>());
     }
 
     private static final Comparator<TenantIdExtractionStrategy<?>> PRIORITY_SORT =
             (s1, s2) -> s1.priority() - s2.priority();
 
-    public TenantAspect(List<TenantIdExtractionStrategy<?>> extractionStrategies) {
+    public DefaultTenantAspect(List<TenantIdExtractionStrategy<?>> extractionStrategies) {
         extractionStrategies.sort(PRIORITY_SORT);
         this.extractionStrategies = extractionStrategies;
     }
@@ -66,13 +66,24 @@ public class TenantAspect implements ExtractionStrategyAware {
      * is needed we must implement a more sophisticated conversion.
      */
     @Around("matchTenantAnnotation(tenantAnnotation)")
-    public Object securedCall(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable {
-        if (isMethodTenantAware(pjp, tenantAnnotation)) {
-            Object[] args = pjp.getArgs();
-            TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
-            SecurityContext ctx = SecurityContextHolder.getContext();
-            ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, a -> a.toString()));
-        }
+    public Object action(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) throws Throwable {
+        return action(pjp, List.of(tenantAnnotation));
+    }
+
+    @Override
+    public Object action(ProceedingJoinPoint pjp, List<Annotation> annotations) throws Throwable {
+        annotations.stream()
+                .filter(a -> a instanceof TenantAware)
+                .map(a -> (TenantAware) a)
+                .findFirst()
+                .ifPresent(tenantAnnotation -> {
+                    if (isMethodTenantAware(pjp, tenantAnnotation)) {
+                        Object[] args = pjp.getArgs();
+                        TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
+                        SecurityContext ctx = SecurityContextHolder.getContext();
+                        ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, a -> a.toString()));
+                    }
+                });
         return pjp.proceed();
     }
 
@@ -107,5 +118,9 @@ public class TenantAspect implements ExtractionStrategyAware {
         }
 
         return priorAuth.get();
+    }
+
+    public List<Class<? extends Annotation>> matchAnnotations() {
+        return List.of(TenantAware.class);
     }
 }
