@@ -17,6 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
 - Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
+- Fixed status update if party already exist for ehr([#1024](https://github.com/ehrbase/ehrbase/pull/1024))
 
 ## [0.23.0]
  ### Added
