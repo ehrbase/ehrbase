@@ -9,12 +9,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
 - add caches for ehr.concept, ehr.territory, ehr.language([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - unwrap if match additional double quotes ([#1022](https://github.com/ehrbase/ehrbase/pull/1022))
+- general support for tenants and authorization for plugins
+- Expose management and swagger endpoints publicly([#1030](https://github.com/ehrbase/ehrbase/pull/1030))
  ### Changed
 - use caffeine cache instead of ehcache as ehcache has unnecessary blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
-- fixed status update if party already exist for ehr([#1024](https://github.com/ehrbase/ehrbase/pull/1024))
+- Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
+- Fixed status update if party already exist for ehr([#1024](https://github.com/ehrbase/ehrbase/pull/1024))
 
 ## [0.23.0]
  ### Added
