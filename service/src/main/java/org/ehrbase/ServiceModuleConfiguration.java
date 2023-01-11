@@ -19,7 +19,7 @@ package org.ehrbase;
 
 import java.util.List;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
-import org.ehrbase.tenant.TenantAspect;
+import org.ehrbase.tenant.DefaultTenantAspect;
 import org.ehrbase.tenant.extraction.AuthenticatedExtractionStrategy.AuthenticationExtractionStrategy;
 import org.ehrbase.tenant.extraction.AuthenticatedExtractionStrategy.TokenAuthenticatedExtractionStrategy;
 import org.ehrbase.tenant.extraction.DefaultExtractionStrategy;
@@ -34,8 +34,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 public class ServiceModuleConfiguration {
 
     @Bean
-    public TenantAspect tenantAspect(List<TenantIdExtractionStrategy<?>> strategies) {
-        return new TenantAspect(strategies);
+    public DefaultTenantAspect tenantAspect(List<TenantIdExtractionStrategy<?>> strategies) {
+        return new DefaultTenantAspect(strategies);
     }
 
     @Bean
