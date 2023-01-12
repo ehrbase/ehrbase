@@ -1318,7 +1318,7 @@ jobs:
 
 
   SECURITY-test:
-    executor: machine-ubuntu-2004
+    executor: machine-ubuntu-2004    #docker-mock-server   #machine-ubuntu-2004
     environment:
       SUT: TEST
       SECURITY_AUTHTYPE: OAUTH
@@ -1329,6 +1329,8 @@ jobs:
       - install-java17
       - git-clone-robot-integration-tests-repo
       - move-integration-tests-content-to-local-tests-folder
+      #- download-and-install-docker-compose
+      - download-and-install-mockserver
       - install-and-configure-keycloak
       - run-robot-tests:
           sut: "TEST -v AUTH_TYPE:OAUTH"
@@ -2083,6 +2085,37 @@ commands:
             fi
             mvn --version
 
+  download-and-install-docker-compose:
+    description: Download and install docker compose image
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 20.10.12
+      - run:
+          name: Download and Install Docker instance
+          command: |
+            sudo apt -y update && sudo apt upgrade && sudo apt install curl
+            curl -L "https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-linux-x86_64" -o ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+      - run:
+          name: Spin up database
+          command: |
+            docker-compose down -v   
+            docker-compose up -d
+
+  download-and-install-mockserver:
+    description: Download and install latest version of Mockserver Docker image
+    steps:
+      - run:
+          name: Download mockserver
+          command: |
+            docker pull mockserver/mockserver
+      - run:
+          name:
+          command: |
+            docker run -d --rm -p 1080:1080 --env MOCKSERVER_SERVER_PORT=1080 mockserver/mockserver
+
   install-and-configure-keycloak:
     description: Setups a Keycloak Docker instance and restores a previously exportd configuration.
     steps:
@@ -2546,6 +2579,7 @@ executors:
         environment:
           MOCKSERVER_SERVER_PORT: 1080
           MOCKSERVER_LOG_LEVEL: DEBUG
+      - image: docker:17.05.0-ce-git
 
   docker-py3-postgres-ci-timezone-berlin-postgres-timezone-berlin:
     working_directory: ~/projects

@@ -28,12 +28,14 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.Attestation;
 import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -49,6 +51,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
@@ -84,6 +87,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public static final String DESCRIPTION = "description";
+    public static final String PARTY_ID_ALREADY_USED =
+            "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s].";
     private Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationService validationService;
     private final TenantService tenantService;
@@ -270,6 +275,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
 
         check(status);
+        checkEhrExistForParty(ehrId, status);
 
         // pre-step: check for valid ehrId
         if (!hasEhr(ehrId)) {
@@ -299,6 +305,20 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                     "Problem updating EHR_STATUS"); // unexpected problem. expected ones are thrown inside of update()
 
         return UUID.fromString(getEhrStatus(ehrId).getUid().getRoot().getValue());
+    }
+
+    private void checkEhrExistForParty(UUID ehrId, EhrStatus status) {
+        Optional<PartyRef> partyRef =
+                Optional.ofNullable(status).map(EhrStatus::getSubject).map(PartyProxy::getExternalRef);
+
+        if (partyRef.isPresent()) {
+            String subjectId = partyRef.get().getId().getValue();
+            String namespace = partyRef.get().getNamespace();
+            Optional<UUID> ehrIdOpt = findBySubject(subjectId, namespace);
+            if (ehrIdOpt.isPresent() && !ehrIdOpt.get().equals(ehrId)) {
+                throw new InvalidApiParameterException(String.format(PARTY_ID_ALREADY_USED, subjectId, namespace));
+            }
+        }
     }
 
     private void check(EhrStatus status) {
