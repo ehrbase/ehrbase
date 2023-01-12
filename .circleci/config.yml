@@ -2114,7 +2114,7 @@ commands:
       - run:
           name:
           command: |
-            docker run -d --rm -p 1080:1080 mockserver/mockserver
+            docker run -d --rm -P --env MOCKSERVER_SERVER_PORT=1080 mockserver/mockserver 
 
   install-and-configure-keycloak:
     description: Setups a Keycloak Docker instance and restores a previously exportd configuration.
