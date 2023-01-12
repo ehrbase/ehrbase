@@ -279,6 +279,7 @@ workflows:
             - ADMIN-test
 
       - sonar-analysis:
+          context: org-global
           requires:
             - run-SDK-integration-tests
             # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
@@ -532,6 +533,7 @@ workflows:
             - ADMIN-test
 
       - sonar-analysis:
+          context: org-global
           requires:
             - run-SDK-integration-tests
             # TODO: reactivate this after https://github.com/ehrbase/ehrbase/issues/330
