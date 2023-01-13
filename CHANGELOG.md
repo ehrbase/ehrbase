@@ -17,7 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
 - Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
-- Fixed accept header validation([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
+- Change response code from 400 to 406 Not Acceptable on querying POST template endpoint with not supported `Accept` header application/json([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
 
 ## [0.23.0]
  ### Added
