@@ -89,7 +89,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
        ADL 1.4
     */
     @Override
-    @PostMapping("/adl1.4")
+    @PostMapping(path = "/adl1.4", produces = {MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     public ResponseEntity createTemplateClassic(
@@ -105,8 +105,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
         if (!MediaType.parseMediaType(contentType).isCompatibleWith(APPLICATION_XML)) {
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Only XML is supported at the moment");
         }
-
-        checkAcceptXmlOnlyCompability(accept);
 
         TemplateDocument document;
         try {
@@ -150,13 +148,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
                                 .build()))
                 // when no response could be created at all
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-    }
-
-    private void checkAcceptXmlOnlyCompability(String accept) {
-        // parse and set accepted format. with XML as fallback for empty header and error for non-supported header
-        if (!APPLICATION_XML.isCompatibleWith(resolveContentType(accept, APPLICATION_XML))) {
-            throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
-        }
     }
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
