@@ -89,7 +89,9 @@ public class OpenehrTemplateController extends BaseController implements Templat
        ADL 1.4
     */
     @Override
-    @PostMapping(path = "/adl1.4", produces = {MediaType.APPLICATION_XML_VALUE})
+    @PostMapping(
+            path = "/adl1.4",
+            produces = {MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     public ResponseEntity createTemplateClassic(
