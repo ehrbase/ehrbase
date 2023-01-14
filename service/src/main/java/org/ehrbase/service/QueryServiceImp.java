@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.gson.JsonElement;
 import java.sql.Timestamp;
@@ -34,6 +35,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.aql.compiler.AqlExpression;
@@ -61,8 +63,9 @@ import org.springframework.web.client.RestClientException;
 @Service
 @SuppressWarnings("unchecked")
 public class QueryServiceImp extends BaseServiceImp implements QueryService {
-    private Logger logger = LoggerFactory.getLogger(getClass());
-
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final String SEMVER_REGEX =
+            "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
     private final ExternalTerminologyValidation tsAdapter;
     private final TenantService tenantService;
 
@@ -230,6 +233,12 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
     @Override
     public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
+
+        // TODO:: There is no proper way to handle the exception coming from jooq
+        // need to improve exception handling
+        if (isBlank(version) || !version.matches(SEMVER_REGEX)) {
+            throw new InvalidApiParameterException("Incorrect version. Use the full SEMVER format");
+        }
 
         // validate the query syntax
         try {
