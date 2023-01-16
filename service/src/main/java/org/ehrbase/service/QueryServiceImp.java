@@ -235,7 +235,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
 
         // TODO:: There is no proper way to handle the exception coming from jooq
-        // need to improve exception handling
+        // need to improve exception handling and fix version retrieval from db
         if (isNotBlank(version) && !version.matches(SEMVER_REGEX)) {
             throw new InvalidApiParameterException("Incorrect version. Use the full SEMVER format");
         }
