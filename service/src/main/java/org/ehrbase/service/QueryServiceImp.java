@@ -234,9 +234,10 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     @Override
     public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
 
-        // TODO:: There is no proper way to handle the exception coming from jooq
-        // need to improve exception handling and fix version retrieval from db
+        // check if version is not blank and matches the SEMVER, otherwise version will be 0.0.0
         if (isNotBlank(version) && !version.matches(SEMVER_REGEX)) {
+            // TODO:: There is no proper way to handle the exception coming from jooq
+            // need to improve exception handling and fix version retrieval from db
             throw new InvalidApiParameterException("Incorrect version. Use the full SEMVER format");
         }
 
