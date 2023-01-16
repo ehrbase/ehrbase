@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
 - add caches for ehr.concept, ehr.territory, ehr.language([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
+- add stored query text plain request support ([#1021](https://github.com/ehrbase/ehrbase/pull/1021))
 - unwrap if match additional double quotes ([#1022](https://github.com/ehrbase/ehrbase/pull/1022))
 - general support for tenants and authorization for plugins
 - Expose management and swagger endpoints publicly([#1030](https://github.com/ehrbase/ehrbase/pull/1030))
