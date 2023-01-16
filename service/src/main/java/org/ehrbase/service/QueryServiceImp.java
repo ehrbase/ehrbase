@@ -18,7 +18,7 @@
 package org.ehrbase.service;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.google.gson.JsonElement;
 import java.sql.Timestamp;
@@ -236,7 +236,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
         // TODO:: There is no proper way to handle the exception coming from jooq
         // need to improve exception handling
-        if (isBlank(version) || !version.matches(SEMVER_REGEX)) {
+        if (isNotBlank(version) && !version.matches(SEMVER_REGEX)) {
             throw new InvalidApiParameterException("Incorrect version. Use the full SEMVER format");
         }
 
