@@ -1,4 +1,5 @@
-# EHRbase ![Maven Central](https://img.shields.io/maven-central/v/org.ehrbase.openehr/server) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ehrbase/ehrbase?sort=semver) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ehrbase_ehrbase&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ehrbase_ehrbase) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md) 
+# EHRbase 
+![Maven Central](https://img.shields.io/maven-central/v/org.ehrbase.openehr/server) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ehrbase/ehrbase?sort=semver) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ehrbase_ehrbase&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ehrbase_ehrbase) [![Documentation Status](https://readthedocs.org/projects/ehrbase/badge/?version=latest)](https://ehrbase.readthedocs.io/en/latest/?badge=latest) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md) 
 
 [![EHRbase Logo](ehrbase.png)](ehrbase.png) 
 
