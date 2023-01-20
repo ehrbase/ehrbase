@@ -39,12 +39,19 @@ public interface DefinitionQueryApiSpecification {
 
     @Operation(
             summary = "Store a query",
+            description =
+                    "Content type application/json is still supported but it's deprecated, please use text/plain instead.",
             externalDocs =
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-put"))
     ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
-            String accept, String qualifiedQueryName, Optional<String> version, String type, String queryPayload);
+            String contentType,
+            String accept,
+            String qualifiedQueryName,
+            Optional<String> version,
+            String type,
+            String queryPayload);
 
     @Operation(
             summary = "Get stored query and info/metadata",
