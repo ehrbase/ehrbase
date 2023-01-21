@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - num-main
+      - 'feature/**'
+      - 'feat/**'
+      - 'fix/**'
     paths-ignore:
       - '.circleci/**'
       - '.docker_scripts/**'
