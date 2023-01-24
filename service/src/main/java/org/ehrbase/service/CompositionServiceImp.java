@@ -582,6 +582,11 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     }
 
     @Override
+    public String retrieveTemplateId(UUID compositionId) {
+        return I_EntryAccess.getTemplateIdFromEntry(getDataAccess(), compositionId);
+    }
+
+    @Override
     public boolean exists(UUID versionedObjectId) {
         return I_CompositionAccess.exists(this.getDataAccess(), versionedObjectId);
     }

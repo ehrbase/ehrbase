@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ContextAccess;
@@ -119,14 +120,28 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         super(domainAccess);
     }
 
+    public static String getTemplateIdFromEntry(I_DomainAccess domainAccess, UUID compositionId) {
+        return fetchEntryByCompositionId(domainAccess, compositionId)
+                .map(EntryRecord::getTemplateId)
+                .filter(StringUtils::isNotBlank)
+                .orElse(null);
+    }
+
+    private static Optional<EntryRecord> fetchEntryByCompositionId(I_DomainAccess domainAccess, UUID compositionId) {
+        try {
+            return domainAccess.getContext().fetchOptional(ENTRY, ENTRY.COMPOSITION_ID.eq(compositionId));
+        } catch (Exception e) {
+            throw new IllegalArgumentException(String.format("Could not retrieve entry. Exception: %s", e));
+        }
+    }
+
     /**
      * @throws IllegalArgumentException if DB is inconsistent or operation fails
      */
     public static I_EntryAccess retrieveInstanceInComposition(
             I_DomainAccess domainAccess, I_CompositionAccess compositionAccess) {
 
-        Optional<EntryRecord> existingEntry =
-                domainAccess.getContext().fetchOptional(ENTRY, ENTRY.COMPOSITION_ID.eq(compositionAccess.getId()));
+        Optional<EntryRecord> existingEntry = fetchEntryByCompositionId(domainAccess, compositionAccess.getId());
         if (existingEntry.isEmpty()) {
             return null;
         }
