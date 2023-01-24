@@ -69,6 +69,7 @@ security:
 # Attribute Based Access Control
 abac:
   enabled: false
+  audit-queue-class: org.openehealth.ipf.commons.audit.queue.AsynchronousAuditMessageQueue
   # Server URL incl. trailing "/"!
   server: http://localhost:3001/rest/v1/policy/execute/name/
   # Definition of the JWT claim which contains the organization ID.
