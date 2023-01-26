@@ -18,22 +18,15 @@
 package org.ehrbase.application.abac;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.ehrbase.api.exception.InternalServerException;
-import org.openehealth.ipf.boot.atna.IpfAtnaConfigurationProperties;
-import org.openehealth.ipf.commons.audit.queue.AsynchronousAuditMessageQueue;
-import org.openehealth.ipf.commons.audit.queue.AuditMessageQueue;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -89,25 +82,10 @@ public class AbacConfig {
     private Map<AbacType, Policy> policy;
 
     @Bean
-    public AbacCheck abacCheck(HttpClient httpClient) {
+    public AbacCheck abacCheck(HttpClient httpClient)
         return new AbacCheck(httpClient);
     }
 
-    @Bean
-    @Primary
-    @Autowired
-    @ConditionalOnMissingBean
-    public AuditMessageQueue auditMessageQueue1(IpfAtnaConfigurationProperties config) throws Exception {
-        AuditMessageQueue auditMessageQueue =
-                config.getAuditQueueClass().getConstructor().newInstance();
-        if (auditMessageQueue instanceof AsynchronousAuditMessageQueue) {
-            ((AsynchronousAuditMessageQueue) auditMessageQueue)
-                    .setExecutorService(Executors.newCachedThreadPool(new ThreadFactoryBuilder()
-                            .setNameFormat("async-audit-message-pool-%d")
-                            .build()));
-        }
-        return auditMessageQueue;
-    }
 
     public URI getServer() {
         return server;

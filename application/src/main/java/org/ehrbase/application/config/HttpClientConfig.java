@@ -24,9 +24,21 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.openehealth.ipf.boot.atna.IpfAtnaConfigurationProperties;
+import org.openehealth.ipf.commons.audit.queue.AsynchronousAuditMessageQueue;
+import org.openehealth.ipf.commons.audit.queue.AuditMessageQueue;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 @EnableConfigurationProperties
@@ -58,6 +70,23 @@ public class HttpClientConfig {
             this.client = builder.build();
         }
         return client;
+    }
+
+
+    @Bean
+    @Primary
+    @Autowired
+    @ConditionalOnMissingBean
+    public AuditMessageQueue auditMessageQueue1(IpfAtnaConfigurationProperties config) throws Exception {
+        AuditMessageQueue auditMessageQueue =
+                config.getAuditQueueClass().getConstructor().newInstance();
+        if (auditMessageQueue instanceof AsynchronousAuditMessageQueue) {
+            ((AsynchronousAuditMessageQueue) auditMessageQueue)
+                    .setExecutorService(Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+                            .setNameFormat("async-audit-message-pool-%d")
+                            .build()));
+        }
+        return auditMessageQueue;
     }
 
     public URI getProxy() {
