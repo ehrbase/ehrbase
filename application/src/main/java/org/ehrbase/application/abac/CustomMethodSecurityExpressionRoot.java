@@ -253,21 +253,17 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
      * @return The value of the requested claim
      */
     private String getRequestedClaim(AbstractAuthenticationToken token, String requestedAbacClaim) {
-        String claim;
+        String claim = EMPTY;
         Object principal = token.getCredentials();
         if (principal instanceof Jwt) {
             Map<String, Object> claims = ((Jwt) principal).getClaims();
-            if (claims.containsKey(requestedAbacClaim)) {
+            if (claims != null && claims.containsKey(requestedAbacClaim)) {
                 claim = claims.get(requestedAbacClaim).toString();
-            } else {
-                claim = EMPTY;
             }
         } else if (principal instanceof DecodedJWT) {
             Map<String, Claim> claims = ((DecodedJWT) principal).getClaims();
-            if (claims.containsKey(requestedAbacClaim)) {
+            if (claims != null && claims.containsKey(requestedAbacClaim)) {
                 claim = claims.get(requestedAbacClaim).asString();
-            } else {
-                claim = EMPTY;
             }
         } else {
             throw new IllegalArgumentException("Invalid authentication, no claims available.");
