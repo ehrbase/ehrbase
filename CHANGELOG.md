@@ -22,6 +22,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixes NullPointerException while sending ehr status request(GET/PUT) when abac is enabled ([#1031](https://github.com/ehrbase/ehrbase/pull/1031))
 - Fixed status update if party already exist for ehr([#1024](https://github.com/ehrbase/ehrbase/pull/1024))
 - Change response code from 400 to 406 Not Acceptable on querying POST template endpoint with unsupported `Accept` header application/json([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
+- Fixed abac default tenant claims validation([#1041](https://github.com/ehrbase/ehrbase/pull/1041))
 
 ## [0.23.0]
  ### Added
