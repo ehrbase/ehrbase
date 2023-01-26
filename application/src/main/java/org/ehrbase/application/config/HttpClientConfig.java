@@ -17,6 +17,7 @@
  */
 package org.ehrbase.application.config;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.net.URI;
@@ -24,14 +25,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.concurrent.Executors;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.openehealth.ipf.boot.atna.IpfAtnaConfigurationProperties;
 import org.openehealth.ipf.commons.audit.queue.AsynchronousAuditMessageQueue;
 import org.openehealth.ipf.commons.audit.queue.AuditMessageQueue;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -71,7 +68,6 @@ public class HttpClientConfig {
         }
         return client;
     }
-
 
     @Bean
     @Primary
