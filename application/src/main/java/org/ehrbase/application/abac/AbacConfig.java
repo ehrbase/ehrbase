@@ -85,7 +85,6 @@ public class AbacConfig {
         return new AbacCheck(httpClient);
     }
 
-
     public URI getServer() {
         return server;
     }
