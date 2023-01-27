@@ -17,10 +17,6 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
-import static org.ehrbase.jooq.pg.Tables.ENTRY_HISTORY;
-import static org.ehrbase.jooq.pg.Tables.TERRITORY;
-
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.Link;
@@ -66,13 +62,13 @@ import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.Condition;
-import org.jooq.JSONB;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.ehrbase.jooq.pg.Tables.*;
 
 /**
  * Operations on the Entry part of a Composition (Entry is archetyped).
@@ -120,19 +116,15 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         super(domainAccess);
     }
 
-    public static String getTemplateIdFromEntry(I_DomainAccess domainAccess, UUID compositionId) {
-        return fetchEntryByCompositionId(domainAccess, compositionId)
-                .map(EntryRecord::getTemplateId)
-                .filter(StringUtils::isNotBlank)
+    public static String fetchTemplateIdByCompositionId(I_DomainAccess domainAccess, UUID compositionId) {
+        return Optional.ofNullable(domainAccess
+                        .getContext()
+                        .select(ENTRY.TEMPLATE_ID)
+                        .from(ENTRY)
+                        .where(ENTRY.COMPOSITION_ID.equal(compositionId))
+                        .fetchOne())
+                .map(Record1::component1)
                 .orElse(null);
-    }
-
-    private static Optional<EntryRecord> fetchEntryByCompositionId(I_DomainAccess domainAccess, UUID compositionId) {
-        try {
-            return domainAccess.getContext().fetchOptional(ENTRY, ENTRY.COMPOSITION_ID.eq(compositionId));
-        } catch (Exception e) {
-            throw new IllegalArgumentException(String.format("Could not retrieve entry. Exception: %s", e));
-        }
     }
 
     /**
@@ -141,7 +133,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     public static I_EntryAccess retrieveInstanceInComposition(
             I_DomainAccess domainAccess, I_CompositionAccess compositionAccess) {
 
-        Optional<EntryRecord> existingEntry = fetchEntryByCompositionId(domainAccess, compositionAccess.getId());
+        Optional<EntryRecord> existingEntry =
+                domainAccess.getContext().fetchOptional(ENTRY, ENTRY.COMPOSITION_ID.eq(compositionAccess.getId()));
         if (existingEntry.isEmpty()) {
             return null;
         }

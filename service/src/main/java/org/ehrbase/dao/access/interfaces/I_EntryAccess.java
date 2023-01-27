@@ -74,7 +74,7 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      * @return The template ID of the composition as a string.
      */
     static String getTemplateIdFromEntry(I_DomainAccess domainAccess, UUID compositionId) {
-        return EntryAccess.getTemplateIdFromEntry(domainAccess, compositionId);
+        return EntryAccess.fetchTemplateIdByCompositionId(domainAccess, compositionId);
     }
 
     /**
