@@ -25,10 +25,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import org.openehealth.ipf.boot.atna.IpfAtnaConfigurationProperties;
 import org.openehealth.ipf.commons.audit.queue.AsynchronousAuditMessageQueue;
 import org.openehealth.ipf.commons.audit.queue.AuditMessageQueue;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -74,6 +76,7 @@ public class HttpClientConfig {
     @Autowired
     @ConditionalOnMissingBean
     public AuditMessageQueue auditMessageQueue1(IpfAtnaConfigurationProperties config) throws Exception {
+        MDC.setContextMap(new HashMap<>());
         AuditMessageQueue auditMessageQueue =
                 config.getAuditQueueClass().getConstructor().newInstance();
         if (auditMessageQueue instanceof AsynchronousAuditMessageQueue) {
