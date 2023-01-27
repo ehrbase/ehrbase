@@ -48,7 +48,7 @@ import org.springframework.web.bind.annotation.*;
 @TenantAware
 @RestController
 @RequestMapping(
-        path = "${openehr-api.context-path:/rest/openehr}/v1/definition/query",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/definition/query",
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
@@ -181,7 +181,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
             HttpHeaders respHeaders = new HttpHeaders();
             respHeaders.setContentType(APPLICATION_JSON);
-            respHeaders.setLocation(getRequestUri());
+            respHeaders.setLocation(getLocationUri(DEFINITION, QUERY, storedQuery.getVersion()));
 
             return ResponseEntity.ok().headers(respHeaders).build();
         } else {

@@ -57,7 +57,7 @@ import org.springframework.web.bind.annotation.RestController;
 @TenantAware
 @RestController
 @RequestMapping(
-        path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrContributionController extends BaseController implements ContributionApiSpecification {
 
@@ -91,8 +91,7 @@ public class OpenehrContributionController extends BaseController implements Con
         UUID contributionId =
                 contributionService.commitContribution(ehrId, contribution, extractCompositionFormat(contentType));
 
-        URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString()
-                + "/contribution/" + contributionId.toString()));
+        URI uri = getLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString());
 
         List<String> headerList = Arrays.asList(
                 LOCATION,
@@ -141,8 +140,7 @@ public class OpenehrContributionController extends BaseController implements Con
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID contributionUid = getContributionVersionedObjectUidString(contributionUidString);
 
-        URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString()
-                + "/contribution/" + contributionUid.toString()));
+        URI uri = getLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionUid.toString());
 
         List<String> headerList = Arrays.asList(
                 LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE handled separately
