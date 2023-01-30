@@ -17,6 +17,12 @@
  */
 package org.ehrbase.application.abac;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.io.IOException;
@@ -42,13 +48,13 @@ import org.ehrbase.aql.compiler.AuditVariables;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.rest.BaseController;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 /**
  * Implementation of custom security expression, to be used in e.g. @PreAuthorize(..) to allow ABAC
@@ -225,35 +231,77 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
 
     /**
      * Handles organization ID extraction. Uses token's claim.
-     * @param jwt Token
+     * @param token Token
      * @param requestMap ABAC request attribute map to add the result
      */
-    private void organizationHandling(JwtAuthenticationToken jwt, Map<String, Object> requestMap) {
-        if (jwt.getTokenAttributes().containsKey(abacConfig.getOrganizationClaim())) {
-            String orgaId = (String) jwt.getTokenAttributes().get(abacConfig.getOrganizationClaim());
-            requestMap.put(ORGANIZATION, orgaId);
-        } else {
-            // organization configured but claim not available
+    private void organizationHandling(AbstractAuthenticationToken token, Map<String, Object> requestMap) {
+        String orgId = getRequestedClaim(token, abacConfig.getOrganizationClaim());
+
+        if (isBlank(orgId)) {
+            // organization configured but claim not available or empty
             throw new IllegalArgumentException(
-                    "ABAC use of an organization claim is configured but " + "can't be retrieved from the given JWT.");
+                    "ABAC use of an organization claim is configured but can't be retrieved from the given JWT.");
         }
+
+        requestMap.put(ORGANIZATION, orgId);
+    }
+
+    /**
+     * Extracts the requested claim from the token's claims.
+     * @param token Token
+     * @param requestedAbacClaim The claim to be retrieved
+     * @return The value of the requested claim
+     */
+    private String getRequestedClaim(AbstractAuthenticationToken token, String requestedAbacClaim) {
+        String claim = EMPTY;
+        Object principal = token.getCredentials();
+        if (principal instanceof Jwt jwt) {
+            Map<String, Object> claims = jwt.getClaims();
+            if (claims != null && claims.containsKey(requestedAbacClaim)) {
+                claim = claims.get(requestedAbacClaim).toString();
+            }
+        } else if (principal instanceof DecodedJWT jwt) {
+            Map<String, Claim> claims = jwt.getClaims();
+            if (claims != null && claims.containsKey(requestedAbacClaim)) {
+                claim = claims.get(requestedAbacClaim).asString();
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid authentication, no claims available.");
+        }
+
+        return claim;
+    }
+
+    /**
+     * Extracts the patient claim from the token's claims.
+     * @param token Token
+     * @return The patient claim
+     */
+    private String getPatient(AbstractAuthenticationToken token) {
+        String tokenPatient = getRequestedClaim(token, abacConfig.getPatientClaim());
+
+        if (isBlank(tokenPatient)) {
+            throw new IllegalArgumentException("ABAC: Patient parameter configured, but no claim attribute available.");
+        }
+
+        return tokenPatient;
     }
 
     /**
      * Handles patient ID extraction. Either uses token's claim or EHR's subject.
-     * @param jwt Token
+     * @param token Token
      * @param subject Subject from EHR
      * @param requestMap ABAC request attribute map to add the result
      */
     @SuppressWarnings("unchecked")
     boolean patientHandling(
-            JwtAuthenticationToken jwt, String subject, Map<String, Object> requestMap, String type, Object payload) {
+            AbstractAuthenticationToken token,
+            String subject,
+            Map<String, Object> requestMap,
+            String type,
+            Object payload) {
 
-        if (!jwt.getTokenAttributes().containsKey(abacConfig.getPatientClaim())) {
-            throw new IllegalArgumentException(
-                    "ABAC: Patient parameter configured, but no claim " + "attribute available.");
-        }
-        String tokenPatient = (String) jwt.getTokenAttributes().get(abacConfig.getPatientClaim());
+        String tokenPatient = getPatient(token);
 
         boolean isQuery = type.equals(BaseController.QUERY);
 
@@ -307,39 +355,39 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
                 String content = "";
                 if (authType.equals(POST)) {
                     // @PostAuthorize gives a ResponseEntity type for "returnObject", so payload is of that type
-                    if (((ResponseEntity<?>) payload).hasBody()) {
-                        Object body = ((ResponseEntity<?>) payload).getBody();
-                        // can have "No content" here (even with some data in the body) if the compo was (logically)
-                        // deleted
-                        if (((ResponseEntity<?>) payload).getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-                            if (body instanceof Map) {
-                                Object error = ((Map<?, ?>) body).get("error");
-                                if (error != null && ((String) error).contains("delet")) {
-                                    // composition was deleted, so nothing to check here, skip
-                                    break;
-                                }
-                            }
-                            throw new InternalServerException(
-                                    "ABAC: Unexpected empty response from composition reuquest");
-                        }
-                        if (body instanceof OriginalVersionResponseData) {
-                            // case of versioned_composition --> fast path, because template is easy to get
-                            if (((OriginalVersionResponseData<?>) body).getData() instanceof Composition) {
-                                String template = Objects.requireNonNull(
-                                                ((Composition) ((OriginalVersionResponseData<?>) body).getData())
-                                                        .getArchetypeDetails()
-                                                        .getTemplateId())
-                                        .getValue();
-                                requestMap.put(TEMPLATE, template);
-                                break; // special case, so done here, exit
-                            }
-                        } else if (body instanceof String) {
-                            content = (String) body;
-                        } else {
-                            throw new InternalServerException("ABAC: unexpected composition payload object");
-                        }
-                    } else {
+                    if (!(payload instanceof ResponseEntity<?>)) {
                         throw new InternalServerException("ABAC: unexpected empty response body");
+                    }
+                    ResponseEntity<?> responseEntity = (ResponseEntity<?>) payload;
+                    if (!responseEntity.hasBody()) {
+                        throw new InternalServerException("ABAC: unexpected empty response body");
+                    }
+                    Object body = responseEntity.getBody();
+                    if (NO_CONTENT.equals(responseEntity.getStatusCode())) {
+                        if (body instanceof Map) {
+                            Object error = ((Map<?, ?>) body).get("error");
+                            if (error != null && ((String) error).contains("delet")) {
+                                // composition was deleted, so nothing to check here, skip
+                                break;
+                            }
+                        }
+                        throw new InternalServerException("ABAC: Unexpected empty response from composition request");
+                    }
+                    if (body instanceof OriginalVersionResponseData) {
+                        // case of versioned_composition --> fast path, because template is easy to get
+                        Object data = ((OriginalVersionResponseData<?>) body).getData();
+                        if (data instanceof Composition) {
+                            String template = Objects.requireNonNull(((Composition) data)
+                                            .getArchetypeDetails()
+                                            .getTemplateId())
+                                    .getValue();
+                            requestMap.put(TEMPLATE, template);
+                            break; // special case, so done here, exit
+                        }
+                    } else if (body instanceof String) {
+                        content = (String) body;
+                    } else {
+                        throw new InternalServerException("ABAC: unexpected composition payload object");
                     }
                 } else if (authType.equals(PRE)) {
                     try {
@@ -497,14 +545,12 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
      * @param auth Auth object.
      * @return JWT Auth Token
      */
-    private JwtAuthenticationToken getJwtAuthenticationToken(Authentication auth) {
-        JwtAuthenticationToken jwt;
-        if (auth instanceof JwtAuthenticationToken) {
-            jwt = (JwtAuthenticationToken) auth;
+    private AbstractAuthenticationToken getJwtAuthenticationToken(Authentication auth) {
+        if (auth instanceof AbstractAuthenticationToken jwt) {
+            return jwt;
         } else {
             throw new IllegalArgumentException("ABAC: Invalid authentication, no JWT available.");
         }
-        return jwt;
     }
 
     @Override
