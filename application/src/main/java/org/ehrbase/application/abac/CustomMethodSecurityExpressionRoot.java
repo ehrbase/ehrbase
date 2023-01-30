@@ -255,13 +255,13 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
     private String getRequestedClaim(AbstractAuthenticationToken token, String requestedAbacClaim) {
         String claim = EMPTY;
         Object principal = token.getCredentials();
-        if (principal instanceof Jwt) {
-            Map<String, Object> claims = ((Jwt) principal).getClaims();
+        if (principal instanceof Jwt jwt) {
+            Map<String, Object> claims = jwt.getClaims();
             if (claims != null && claims.containsKey(requestedAbacClaim)) {
                 claim = claims.get(requestedAbacClaim).toString();
             }
-        } else if (principal instanceof DecodedJWT) {
-            Map<String, Claim> claims = ((DecodedJWT) principal).getClaims();
+        } else if (principal instanceof DecodedJWT jwt) {
+            Map<String, Claim> claims = jwt.getClaims();
             if (claims != null && claims.containsKey(requestedAbacClaim)) {
                 claim = claims.get(requestedAbacClaim).asString();
             }
@@ -546,13 +546,11 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
      * @return JWT Auth Token
      */
     private AbstractAuthenticationToken getJwtAuthenticationToken(Authentication auth) {
-        AbstractAuthenticationToken jwt;
-        if (auth instanceof AbstractAuthenticationToken) {
-            jwt = (AbstractAuthenticationToken) auth;
+        if (auth instanceof AbstractAuthenticationToken jwt) {
+            return jwt;
         } else {
             throw new IllegalArgumentException("ABAC: Invalid authentication, no JWT available.");
         }
-        return jwt;
     }
 
     @Override
