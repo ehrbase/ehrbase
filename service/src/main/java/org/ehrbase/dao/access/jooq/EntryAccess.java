@@ -456,7 +456,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public UUID commit() {
         throw new InternalServerException("INTERNAL: commit without transaction time is not legal");
@@ -503,7 +503,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public Boolean update() {
         throw new InternalServerException(
@@ -515,7 +515,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated
     @Override
     public Boolean update(Boolean force) {
         throw new InternalServerException(
