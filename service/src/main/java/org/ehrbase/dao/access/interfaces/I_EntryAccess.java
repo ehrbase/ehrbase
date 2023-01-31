@@ -67,6 +67,17 @@ public interface I_EntryAccess extends I_SimpleCRUD {
     }
 
     /**
+     * Retrieves the template ID from a composition entry using the given composition ID and domain access.
+     *
+     * @param domainAccess The domain access object used to retrieve the composition entry.
+     * @param compositionId The UUID of the composition whose template ID is to be retrieved.
+     * @return The template ID of the composition as a string.
+     */
+    static String getTemplateIdFromEntry(I_DomainAccess domainAccess, UUID compositionId) {
+        return EntryAccess.fetchTemplateIdByCompositionId(domainAccess, compositionId);
+    }
+
+    /**
      * Retrieve the {@link I_EntryAccess} linked to given composition history.
      *
      * @param domainAccess             SQL context
