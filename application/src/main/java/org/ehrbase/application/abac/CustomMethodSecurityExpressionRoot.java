@@ -379,9 +379,8 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
                         // case of versioned_composition --> fast path, because template is easy to get
                         Object data = ((OriginalVersionResponseData<?>) body).getData();
                         if (data instanceof Composition composition) {
-                            String template = Objects.requireNonNull((composition)
-                                            .getArchetypeDetails()
-                                            .getTemplateId())
+                            String template = Objects.requireNonNull(
+                                            (composition).getArchetypeDetails().getTemplateId())
                                     .getValue();
                             requestMap.put(TEMPLATE, template);
                             break; // special case, so done here, exit
