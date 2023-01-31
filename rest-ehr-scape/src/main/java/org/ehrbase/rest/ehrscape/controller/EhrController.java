@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.ehrscape.controller;
 
+import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nedap.archie.rm.datavalues.DvText;
@@ -53,8 +55,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
 /**
  * Controller for /ehr resource of EhrScape REST API

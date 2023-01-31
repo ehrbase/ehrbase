@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.ehrscape.controller;
 
+import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
+
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.Objects;
@@ -48,8 +50,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
 @RestController
 @RequestMapping(
@@ -194,7 +194,7 @@ public class CompositionController extends BaseController {
 
     private Meta buildMeta(String compositionUid) {
         RestHref url = new RestHref();
-        url.setUrl(createLocationUri(COMPOSITION,compositionUid));
+        url.setUrl(createLocationUri(COMPOSITION, compositionUid));
         Meta meta = new Meta();
         meta.setHref(url);
         return meta;

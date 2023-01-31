@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.ehrscape.controller;
 
+import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
+import static org.ehrbase.rest.ehrscape.controller.BaseController.TEMPLATE;
+
 import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,9 +51,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
-import static org.ehrbase.rest.ehrscape.controller.BaseController.TEMPLATE;
 
 @RestController
 @RequestMapping(
