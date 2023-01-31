@@ -252,7 +252,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                     break;
                 case LOCATION:
                     try {
-                        URI url = getLocationUri(
+                        URI url = createLocationUri(
                                 EHR,
                                 ehrId.toString(),
                                 EHR_STATUS,

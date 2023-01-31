@@ -119,7 +119,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         String templateId = templateService.create(document.getTemplate());
 
-        URI uri = getLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId);
+        URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId);
 
         List<String> headerList = Arrays.asList(
                 LOCATION,
@@ -163,7 +163,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
                     String openehrAuditDetails, // TODO, see EHR-267
             @RequestHeader(value = ACCEPT, required = false) String accept) {
 
-        URI uri = getLocationUri(DEFINITION, TEMPLATE, ADL_1_4);
+        URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4);
 
         List<String> headerList =
                 Collections.emptyList(); // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so
@@ -192,7 +192,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
 
-        URI uri = getLocationUri(DEFINITION, ADL_1_4, templateId);
+        URI uri = createLocationUri(DEFINITION, ADL_1_4, templateId);
 
         List<String> headerList = Arrays.asList(
                 LOCATION,

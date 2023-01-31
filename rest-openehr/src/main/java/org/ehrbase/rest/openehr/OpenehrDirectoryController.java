@@ -255,7 +255,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             String versionUid = folderDto.getUid().toString();
 
             headers.setETag("\"" + versionUid + "\"");
-            headers.setLocation(getLocationUri(EHR, ehrId.toString(), DIRECTORY, versionUid));
+            headers.setLocation(createLocationUri(EHR, ehrId.toString(), DIRECTORY, versionUid));
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());
         }
@@ -310,7 +310,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             throw new PreconditionFailedException(
                     "If-Match version_uid does not match latest version.",
                     directoryId,
-                    getLocationUri(EHR, ehrId.toString(), DIRECTORY, directoryId)
+                    createLocationUri(EHR, ehrId.toString(), DIRECTORY, directoryId)
                             .toString());
         }
     }

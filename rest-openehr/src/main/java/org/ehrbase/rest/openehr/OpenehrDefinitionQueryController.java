@@ -182,7 +182,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             HttpHeaders respHeaders = new HttpHeaders();
             respHeaders.setContentType(APPLICATION_JSON);
             respHeaders.setLocation(
-                    getLocationUri(DEFINITION, QUERY, storedQuery.getQualifiedName(), storedQuery.getVersion()));
+                    createLocationUri(DEFINITION, QUERY, storedQuery.getQualifiedName(), storedQuery.getVersion()));
 
             return ResponseEntity.ok().headers(respHeaders).build();
         } else {

@@ -142,7 +142,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
     private ResponseEntity<EhrResponseData> internalPostEhrProcessing(
             String accept, String prefer, UUID resultEhrId, HttpServletRequest request) {
-        URI url = getLocationUri(EHR, resultEhrId.toString());
+        URI url = createLocationUri(EHR, resultEhrId.toString());
 
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
@@ -273,7 +273,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                     break;
                 case LOCATION:
                     try {
-                        URI url = getLocationUri(EHR, ehrId.toString());
+                        URI url = createLocationUri(EHR, ehrId.toString());
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());

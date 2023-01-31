@@ -54,6 +54,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
+
 /**
  * Controller for /ehr resource of EhrScape REST API
  *
@@ -61,7 +63,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jake Smolka
  */
 @RestController
-@RequestMapping(path = "/rest/ecis/v1/ehr")
+@RequestMapping(path = API_ECIS_CONTEXT_PATH_WITH_VERSION + "/ehr")
 public class EhrController extends BaseController {
 
     private static final String MODIFIABLE = "modifiable";
@@ -103,7 +105,7 @@ public class EhrController extends BaseController {
         UUID ehrId = ehrService.create(null, status);
 
         // TODO: use config file or alike to set the basic api path
-        URI url = URI.create(getBaseEnvLinkURL() + "/rest/ecis/v1/ehr/" + ehrId.toString());
+        URI url = URI.create(createLocationUri() + "/rest/ecis/v1/ehr/" + ehrId.toString());
         return Optional.ofNullable(ehrId)
                 .flatMap(i -> buildEhrResponseData(i, Action.CREATE, contentType))
                 .map(ResponseEntity.created(url)::body)
@@ -213,7 +215,7 @@ public class EhrController extends BaseController {
         responseData.setEhrStatus(ehrStatus.get());
         RestHref url = new RestHref();
         // TODO: use config file or alike to set the basic api path
-        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/ehr/" + responseData.getEhrId());
+        url.setUrl(createLocationUri(EHR, responseData.getEhrId().toString()));
         Meta meta = new Meta();
         meta.setHref(url);
         responseData.setMeta(meta);

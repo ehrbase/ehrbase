@@ -91,7 +91,7 @@ public class OpenehrContributionController extends BaseController implements Con
         UUID contributionId =
                 contributionService.commitContribution(ehrId, contribution, extractCompositionFormat(contentType));
 
-        URI uri = getLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString());
+        URI uri = createLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString());
 
         List<String> headerList = Arrays.asList(
                 LOCATION,
@@ -140,7 +140,7 @@ public class OpenehrContributionController extends BaseController implements Con
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID contributionUid = getContributionVersionedObjectUidString(contributionUidString);
 
-        URI uri = getLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionUid.toString());
+        URI uri = createLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionUid.toString());
 
         List<String> headerList = Arrays.asList(
                 LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE handled separately

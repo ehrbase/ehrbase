@@ -117,16 +117,6 @@ public abstract class BaseController {
         return metaMap;
     }
 
-    /**
-     * This method is intended to return the base URI, however it is currently returning the request URI.
-     *
-     * @deprecated This method is deprecated and should not be used in favor of a more updated version.
-     */
-    @Deprecated(forRemoval = true)
-    protected String getBaseEnvLinkURL() {
-        return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
-    }
-
     protected String getContextPath() {
         return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
     }
@@ -137,18 +127,18 @@ public abstract class BaseController {
     /**
      * Returns a URI for list of segments.
      * The segments are appended to the base path and encoded to ensure safe usage in a URI.
-     * This method uses the UriComponentsBuilder from Spring Framework to construct the URI.
      *
      * @param pathSegments List of segments to append to the base URL
      * @return URI for the given base URL and segments
      */
-    protected URI getLocationUri(String... pathSegments) {
+    protected URI createLocationUri(String... pathSegments) {
         return UriComponentsBuilder.fromHttpUrl(getContextPath())
                 .path(this.encodePath(apiContextPathWithVersion))
                 .pathSegment(pathSegments)
                 .build()
                 .toUri();
     }
+
     /**
      * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception
      * when no UUID representation can be created. This case is equal to no matching object.

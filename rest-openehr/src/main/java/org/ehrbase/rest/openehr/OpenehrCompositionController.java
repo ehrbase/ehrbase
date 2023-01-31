@@ -119,7 +119,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         var compositionUuid = compositionService
                 .create(ehrId, compoObj)
                 .orElseThrow(() -> new InternalServerException("Failed to create composition"));
-        URI uri = getLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionUuid.toString());
+        URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionUuid.toString());
 
         List<String> headerList = Arrays.asList(
                 LOCATION,
@@ -216,7 +216,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .orElseThrow(() -> new InternalServerException("Failed to create composition"))
                     .toString();
 
-            URI uri = getLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionVersionUid);
+            URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionVersionUid);
 
             // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
             List<String> headerList = Arrays.asList(LOCATION, ETAG, LAST_MODIFIED);
@@ -298,7 +298,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 + compositionService.getServerConfig().getNodename() + "::"
                 + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
         // TODO change to dynamic linking --> postponed, see EHR-230
-        URI uri = getLocationUri(EHR, ehrId.toString(), COMPOSITION, latestVersionId);
+        URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, latestVersionId);
 
         // If precedingVersionUid parameter doesn't match latest version
         if (!compositionService
@@ -385,7 +385,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             } // else continue with fallback: latest version
         }
 
-        URI uri = getLocationUri(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid);
+        URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid);
 
         List<String> headerList = Arrays.asList(
                 LOCATION,
