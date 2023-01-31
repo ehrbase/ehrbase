@@ -116,13 +116,12 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
     }
 
     public static String fetchTemplateIdByCompositionId(I_DomainAccess domainAccess, UUID compositionId) {
-        return Optional.ofNullable(domainAccess
-                        .getContext()
-                        .select(ENTRY.TEMPLATE_ID)
-                        .from(ENTRY)
-                        .where(ENTRY.COMPOSITION_ID.equal(compositionId))
-                        .fetchOne())
-                .map(Record1::component1)
+        return domainAccess
+                .getContext()
+                .select(ENTRY.TEMPLATE_ID)
+                .from(ENTRY)
+                .where(ENTRY.COMPOSITION_ID.equal(compositionId))
+                .fetchOptional(ENTRY.TEMPLATE_ID)
                 .orElse(null);
     }
 
