@@ -105,7 +105,7 @@ public class EhrController extends BaseController {
         UUID ehrId = ehrService.create(null, status);
 
         // TODO: use config file or alike to set the basic api path
-        URI url = URI.create(createLocationUri() + "/rest/ecis/v1/ehr/" + ehrId.toString());
+        URI url = URI.create(createLocationUri(EHR, ehrId.toString()));
         return Optional.ofNullable(ehrId)
                 .flatMap(i -> buildEhrResponseData(i, Action.CREATE, contentType))
                 .map(ResponseEntity.created(url)::body)
