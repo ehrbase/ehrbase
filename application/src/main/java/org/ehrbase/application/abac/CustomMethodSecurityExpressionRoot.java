@@ -355,11 +355,13 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
                 String content = "";
                 if (authType.equals(POST)) {
                     // @PostAuthorize gives a ResponseEntity type for "returnObject", so payload is of that type
-                    if (!(payload instanceof ResponseEntity<?>)) {
-                        throw new InternalServerException("ABAC: unexpected empty response body");
+                    if (!(payload instanceof ResponseEntity<?> responseEntity)) {
+                        throw new InternalServerException("ABAC: unexpected payload type");
                     }
-                    ResponseEntity<?> responseEntity = (ResponseEntity<?>) payload;
                     if (!responseEntity.hasBody()) {
+                        if (NO_CONTENT.equals(responseEntity.getStatusCode())) {
+                            return;
+                        }
                         throw new InternalServerException("ABAC: unexpected empty response body");
                     }
                     Object body = responseEntity.getBody();
@@ -376,8 +378,8 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
                     if (body instanceof OriginalVersionResponseData) {
                         // case of versioned_composition --> fast path, because template is easy to get
                         Object data = ((OriginalVersionResponseData<?>) body).getData();
-                        if (data instanceof Composition) {
-                            String template = Objects.requireNonNull(((Composition) data)
+                        if (data instanceof Composition composition) {
+                            String template = Objects.requireNonNull((composition)
                                             .getArchetypeDetails()
                                             .getTemplateId())
                                     .getValue();
