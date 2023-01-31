@@ -1,4 +1,4 @@
-name: build-num-main
+name: build
 
 on:
   push:
@@ -10,7 +10,6 @@ on:
     paths-ignore:
       - '.circleci/**'
       - '.docker_scripts/**'
-      - '.github/**'
       - 'doc/**'
       - 'tests/**'
       - '**/*.md'
@@ -36,10 +35,10 @@ jobs:
         run: |
           if [ ${{ github.ref }} != 'refs/heads/num-main' ]; then
             echo "IS NOT num-main branch"
-            echo "BUILD_VERSION=0.24.$GITHUB_RUN_NUMBER-PR" >> $GITHUB_ENV
+            echo "BUILD_VERSION=0.23.x-num-$GITHUB_RUN_NUMBER-PR" >> $GITHUB_ENV
           else
             echo "IS main branch"
-            echo "BUILD_VERSION=0.24.$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
+            echo "BUILD_VERSION=0.23.x-num-$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
           fi
         shell: bash
 
@@ -48,7 +47,12 @@ jobs:
           echo "GITHUB_REF=$GITHUB_REF"
           echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
           echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER"
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID"
           echo "BUILD_VERSION=$BUILD_VERSION"
+
+      - name: Run env
+        run: |
+          env
 
       - name: Echo Env Vars through Context
         run: |
