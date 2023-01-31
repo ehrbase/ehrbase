@@ -15,27 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.tenant;
+package org.ehrbase.api.plugin;
 
-import java.util.Map;
-
-public interface Tenant {
-    public enum StdProperties {
-      HOST("host"), REALM("realm"), CLIENT_ID("client-id");
-
-      private final String prop;
-      
-      private StdProperties(String p) {
-        this.prop = p;
-      }
-      
-      public String toString() {
-        return prop;
-      }      
-      
-    }
-  
-    public String getTenantId();
-    public String getTenantName();
-    public Map<String,Object> getTenantProperties();
+public interface PluginEventListener {
+  public boolean accept(PluginEvent event);
+  public void handle(PluginEvent event);
 }
