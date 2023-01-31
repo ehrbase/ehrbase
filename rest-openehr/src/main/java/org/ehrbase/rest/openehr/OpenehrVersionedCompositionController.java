@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RestController;
 @TenantAware
 @RestController
 @RequestMapping(
-        path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_composition",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/versioned_composition",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrVersionedCompositionController extends BaseController
         implements VersionedCompositionApiSpecification {
