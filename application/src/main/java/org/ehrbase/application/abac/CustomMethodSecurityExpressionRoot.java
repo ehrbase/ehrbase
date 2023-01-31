@@ -380,7 +380,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
                         Object data = ((OriginalVersionResponseData<?>) body).getData();
                         if (data instanceof Composition composition) {
                             String template = Objects.requireNonNull(
-                                            (composition).getArchetypeDetails().getTemplateId())
+                                            composition.getArchetypeDetails().getTemplateId())
                                     .getValue();
                             requestMap.put(TEMPLATE, template);
                             break; // special case, so done here, exit
