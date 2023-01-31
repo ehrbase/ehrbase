@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @TenantAware
 @RestController
-@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/query")
+@RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/query")
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
 
     private static final String EHR_ID_VALUE = "ehr_id/value";
