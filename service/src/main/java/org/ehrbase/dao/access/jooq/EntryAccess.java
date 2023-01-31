@@ -271,8 +271,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             //                .get(c -> c.getValue())
             //                .get(s -> new DvCodedText(s, (CodePhrase) null))
             //                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
-            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
-            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
+            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;})
+            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get())
             SafeNav<DvCodedText> safeDvCodedText = SafeNav.of(category)
                     .get(c -> new DvCodedText(c.getValue(), c.getDefiningCode().getCodeString()));
             values.put(SystemValue.CATEGORY, safeDvCodedText.get());
@@ -456,7 +456,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public UUID commit() {
         throw new InternalServerException("INTERNAL: commit without transaction time is not legal");
@@ -503,7 +503,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public Boolean update() {
         throw new InternalServerException(
@@ -515,7 +515,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public Boolean update(Boolean force) {
         throw new InternalServerException(
