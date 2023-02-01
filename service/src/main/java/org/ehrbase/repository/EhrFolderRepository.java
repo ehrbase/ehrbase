@@ -21,9 +21,14 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,6 +40,7 @@ import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Loader;
+import org.jooq.Result;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +60,11 @@ public class EhrFolderRepository {
 
     @Transactional
     public void commit(List<EhrFolderRecord> folderRecordList) {
+
+        folderRecordList.forEach(r -> {
+            r.setSysVersion(1);
+            r.setSysPeriodLower(OffsetDateTime.now());
+        });
         try {
             Loader<EhrFolderRecord> execute = context.loadInto(EhrFolder.EHR_FOLDER)
                     .bulkAfter(500)
@@ -72,6 +83,50 @@ public class EhrFolderRepository {
         }
     }
 
+    public Optional<Folder> getLatest(UUID ehrId) {
+
+        Result<EhrFolderRecord> ehrFolderRecords =
+                context.fetch(EhrFolder.EHR_FOLDER.where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId)));
+
+        if (ehrFolderRecords.isNotEmpty()) {
+            return Optional.of(from(ehrFolderRecords));
+        } else {
+
+            return Optional.empty();
+        }
+    }
+
+    public Folder from(Result<EhrFolderRecord> ehrFolderRecords) {
+
+        Map<List<String>, EhrFolderRecord> byPathMap = ehrFolderRecords.stream()
+                .collect(Collectors.toMap(
+                        ehrFolderRecord ->
+                                Arrays.stream(ehrFolderRecord.getPath()).toList(),
+                        Function.identity()));
+
+        return from(
+                byPathMap.keySet().stream().filter(l -> l.size() == 1).findAny().orElseThrow(), byPathMap);
+    }
+
+    private Folder from(List<String> path, Map<List<String>, EhrFolderRecord> byPathMap) {
+
+        Folder folder =
+                new CanonicalJson().unmarshal(byPathMap.get(path).getFields().data(), Folder.class);
+
+        byPathMap.keySet().stream().filter(l -> l.size() == path.size() + 1).forEach(nextPath -> {
+            Folder subFolder = from(
+                    nextPath,
+                    byPathMap.entrySet().stream()
+                            .filter(e -> e.getKey().size() >= nextPath.size()
+                                    && e.getKey().subList(0, nextPath.size()).equals(nextPath))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+            folder.addFolder(subFolder);
+        });
+
+        return folder;
+    }
+
     public boolean hasDirectory(UUID ehrId) {
 
         return context.fetchExists(EhrFolder.EHR_FOLDER.where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId)));
@@ -79,7 +134,7 @@ public class EhrFolderRepository {
 
     public List<EhrFolderRecord> to(UUID ehrId, Folder folder) {
 
-        return flatten(folder).stream().map(p -> to(p, ehrId)).collect(Collectors.toList());
+        return flatten(folder).stream().map(p -> to(p, ehrId)).toList();
     }
 
     private EhrFolderRecord to(Pair<List<String>, Folder> pair, UUID ehrId) {

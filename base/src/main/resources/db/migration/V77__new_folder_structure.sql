@@ -21,12 +21,14 @@
 create table ehr.ehr_folder
 (
     id        uuid ,
-    ehr_id         uuid,
+    ehr_id         uuid NOT NULL ,
     contribution_id uuid,
     archetype_node_id TEXT,
     path     TEXT[],
     contains     uuid[],
     fields         jsonb,
+    sys_version INT,
+    sys_period_lower timestamptz NOT NULL,
     PRIMARY KEY (ehr_id,id),
     FOREIGN KEY (ehr_id) REFERENCES ehr.ehr (id),
     FOREIGN KEY (contribution_id) REFERENCES ehr.contribution(id)
@@ -34,3 +36,21 @@ create table ehr.ehr_folder
 
 create index folder2_path_idx ON ehr.ehr_folder USING btree ((path[2]),ehr_id);
 create index archetype_node_idx ON ehr.ehr_folder USING btree (archetype_node_id,(path[2]),ehr_id);
+
+create table ehr.ehr_folder_history
+(
+    id        uuid ,
+    ehr_id         uuid NOT NULL ,
+    contribution_id uuid,
+    archetype_node_id TEXT,
+    path     TEXT[],
+    contains     uuid[],
+    fields         jsonb,
+    sys_version INT,
+    sys_period_lower timestamptz NOT NULL,
+    sys_period_upper timestamptz ,
+    sys_deleted boolean NOT NULL ,
+    PRIMARY KEY (ehr_id,id),
+    FOREIGN KEY (ehr_id) REFERENCES ehr.ehr (id),
+    FOREIGN KEY (contribution_id) REFERENCES ehr.contribution(id)
+);

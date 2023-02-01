@@ -56,7 +56,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
     @Override
     public Optional<Folder> get(UUID ehrId, ObjectVersionId folderId, String path) {
-        return Optional.empty();
+        return ehrFolderRepository.getLatest(ehrId);
     }
 
     @Override

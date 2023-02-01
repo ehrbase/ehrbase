@@ -188,22 +188,10 @@ public class OpenehrDirectoryController extends BaseController implements Direct
                     String accept) {
 
         // Check ehr exists
-        ehrService.checkEhrExists(ehrId);
 
         assertValidPath(path);
 
-        // Get directory root entry for ehr
-        UUID directoryUuid = ehrService.getDirectoryId(ehrId);
-        if (directoryUuid == null) {
-            throw new ObjectNotFoundException(
-                    "DIRECTORY",
-                    String.format(
-                            "There is no directory stored for EHR with id %s. Maybe it has been deleted?",
-                            ehrId.toString()));
-        }
-        ObjectVersionId directoryId = new ObjectVersionId(directoryUuid.toString());
-
-        final Optional<Folder> foundFolder = Optional.empty();
+        final Optional<Folder> foundFolder = folderService.get(ehrId, null, path);
         // Get the folder entry from database
         Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
 
