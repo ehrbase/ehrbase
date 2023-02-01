@@ -37,7 +37,7 @@ public class StoredQueryQualifiedNameTest {
 
         assertEquals("org.example.departmentx.test", storedQueryQualifiedName.reverseDomainName());
         assertEquals("diabetes-patient-overview", storedQueryQualifiedName.semanticId());
-        assertEquals("1.0.2", storedQueryQualifiedName.semVer());
+        assertEquals("1.0.2", storedQueryQualifiedName.semVer().toVersionString());
     }
 
     @Test
