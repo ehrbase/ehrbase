@@ -245,14 +245,15 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
         checkVersionCombination(requestedVersion, dbSemVer);
 
-        // if not final version and already existing: update
-        boolean isUpdate = dbSemVer.isPreRelease();
-
         SemVer newVersion = SemVerUtil.determineVersion(requestedVersion, dbSemVer);
 
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
         I_StoredQueryAccess storedQueryAccess =
                 new StoredQueryAccess(getDataAccess(), qualifiedName, newVersion, queryString, tenantIdentifier);
+
+        // if not final version and already existing: update
+        boolean isUpdate = dbSemVer.isPreRelease();
+
         try {
             if (isUpdate) {
                 storedQueryAccess.update(Timestamp.from(Instant.now()));

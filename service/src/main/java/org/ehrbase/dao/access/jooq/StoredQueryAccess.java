@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -113,13 +112,21 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             return STORED_QUERY.SEMVER.eq(semVer.toVersionString());
 
         } else {
-            final String numberComponent = "\\.\\d+";
-            StringBuilder sb = new StringBuilder(Pattern.quote(semVer.toVersionString()));
+            StringBuilder sb = new StringBuilder();
+            sb.append("^");
 
-            Stream.of(semVer.major(), semVer.minor(), semVer.patch())
+            if (semVer.isNoVersion()) {
+                sb.append("\\d+");
+            } else {
+                sb.append(semVer.toVersionString().replace(".", "\\."));
+            }
+
+            Stream.of(semVer.minor(), semVer.patch())
                     .filter(Objects::isNull)
-                    .map(n -> numberComponent)
+                    .map(n -> "\\.\\d+")
                     .forEach(sb::append);
+
+            sb.append("$");
 
             return STORED_QUERY.SEMVER.likeRegex(sb.toString());
         }
