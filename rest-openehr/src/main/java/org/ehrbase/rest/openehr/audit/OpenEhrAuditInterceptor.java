@@ -143,9 +143,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
             return null;
         }
 
-        String encoded = (authorization.length() <= BASIC.length())
-                ? ""
-                : authorization.substring(BASIC.length(), authorization.length());
+        String encoded = (authorization.length() <= BASIC.length()) ? "" : authorization.substring(BASIC.length());
         String credentials = new String(base64Decode(encoded));
 
         int colonIndex = credentials.indexOf(":");
