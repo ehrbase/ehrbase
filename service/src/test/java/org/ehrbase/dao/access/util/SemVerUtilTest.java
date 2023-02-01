@@ -43,7 +43,7 @@ class SemVerUtilTest {
     @Test
     void determineVersionFromRelease() {
         SemVer req = SemVer.parse("1.2.3");
-        assertThat(SemVerUtil.determineVersion(req, null)).isEqualTo(SemVer.parse("1.2.3"));
+        assertThat(SemVerUtil.determineVersion(req, SemVer.NO_VERSION)).isEqualTo(SemVer.parse("1.2.3"));
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> SemVerUtil.determineVersion(req, req));
     }
@@ -51,28 +51,30 @@ class SemVerUtilTest {
     @Test
     void determineVersionSnapshot() {
         SemVer req = SemVer.parse("1.2.3-SNAPSHOT");
-        assertThat(SemVerUtil.determineVersion(req, null)).isEqualTo(SemVer.parse("1.2.3-SNAPSHOT"));
+        assertThat(SemVerUtil.determineVersion(req, SemVer.NO_VERSION)).isEqualTo(SemVer.parse("1.2.3-SNAPSHOT"));
         assertThat(SemVerUtil.determineVersion(req, SemVer.parse("1.2.3-SNAPSHOT")))
                 .isEqualTo(SemVer.parse("1.2.3-SNAPSHOT"));
     }
 
     @Test
     void determineVersionAuto() {
-        assertThat(SemVerUtil.determineVersion(null, null)).isEqualTo(SemVer.parse("1.0.0"));
-        assertThat(SemVerUtil.determineVersion(null, SemVer.parse("41.2.3"))).isEqualTo(SemVer.parse("42.0.0"));
+        assertThat(SemVerUtil.determineVersion(SemVer.NO_VERSION, SemVer.NO_VERSION))
+                .isEqualTo(SemVer.parse("1.0.0"));
+        assertThat(SemVerUtil.determineVersion(SemVer.NO_VERSION, SemVer.parse("41.2.3")))
+                .isEqualTo(SemVer.parse("42.0.0"));
     }
 
     @Test
     void determineVersionFromPartialMajor() {
         SemVer req = SemVer.parse("42");
-        assertThat(SemVerUtil.determineVersion(req, null)).isEqualTo(SemVer.parse("42.0.0"));
+        assertThat(SemVerUtil.determineVersion(req, SemVer.NO_VERSION)).isEqualTo(SemVer.parse("42.0.0"));
         assertThat(SemVerUtil.determineVersion(req, SemVer.parse("42.4.5"))).isEqualTo(SemVer.parse("42.5.0"));
     }
 
     @Test
     void determineVersionFromPartialMinor() {
         SemVer req = SemVer.parse("3.42");
-        assertThat(SemVerUtil.determineVersion(req, null)).isEqualTo(SemVer.parse("3.42.0"));
+        assertThat(SemVerUtil.determineVersion(req, SemVer.NO_VERSION)).isEqualTo(SemVer.parse("3.42.0"));
         assertThat(SemVerUtil.determineVersion(req, SemVer.parse("3.42.5"))).isEqualTo(SemVer.parse("3.42.6"));
     }
 }

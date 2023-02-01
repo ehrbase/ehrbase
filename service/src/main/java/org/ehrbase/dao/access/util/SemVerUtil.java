@@ -23,12 +23,17 @@ import org.springframework.lang.NonNull;
 public class SemVerUtil {
 
     /**
-     * From the
+     * Based on a (potentially partial) version and the latest existing version that matches the pattern,
+     * the subsequent version is generated.
+     * Snapshot versions are retained.
+     *
      * @param requestSemVer
      * @param dbSemVer
      * @return
+     * @throws IllegalArgumentException if a release version already exists
      */
-    public static @NonNull SemVer determineVersion(SemVer requestSemVer, SemVer dbSemVer) {
+    public static @NonNull SemVer determineVersion(@NonNull SemVer requestSemVer, @NonNull SemVer dbSemVer)
+            throws IllegalArgumentException {
         int major;
         int minor;
         int patch;
@@ -39,7 +44,7 @@ public class SemVerUtil {
             patch = 0;
 
         } else if (!requestSemVer.isPartial()) {
-            if (dbSemVer != null && !requestSemVer.isPreRelease()) {
+            if (!dbSemVer.isNoVersion() && !requestSemVer.isPreRelease()) {
                 throw new IllegalArgumentException("Release versions must not be replaced");
             }
             return requestSemVer;
@@ -58,7 +63,7 @@ public class SemVerUtil {
     }
 
     private static int incrementOrDefault(SemVer semVer, ToIntFunction<SemVer> func, int fallback) {
-        if (semVer == null) {
+        if (semVer.isNoVersion()) {
             return fallback;
         } else {
             return func.applyAsInt(semVer) + 1;

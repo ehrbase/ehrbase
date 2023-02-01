@@ -41,7 +41,7 @@ public class StoredQueryQualifiedNameTest {
     }
 
     @Test
-    public void testUncompleteName() {
+    public void testIncompleteName() {
         String name = "org.example.departmentx.test::diabetes-patient-overview";
 
         StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name, null);
@@ -54,7 +54,7 @@ public class StoredQueryQualifiedNameTest {
     }
 
     @Test
-    public void testBadlyformedName() {
+    public void testBadlyFormedName() {
         String name = "org.example.departmentx.test";
         SemVer version = SemVer.parse("");
 
