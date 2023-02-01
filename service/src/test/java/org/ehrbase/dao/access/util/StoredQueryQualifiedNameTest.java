@@ -20,7 +20,7 @@ package org.ehrbase.dao.access.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
@@ -58,10 +58,8 @@ public class StoredQueryQualifiedNameTest {
         String name = "org.example.departmentx.test";
         SemVer version = SemVer.parse("");
 
-        try {
+        assertThrows(IllegalArgumentException.class, () -> {
             new StoredQueryQualifiedName(name, version);
-            fail();
-        } catch (Exception e) {
-        }
+        });
     }
 }
