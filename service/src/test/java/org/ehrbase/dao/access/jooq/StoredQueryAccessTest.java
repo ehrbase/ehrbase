@@ -69,12 +69,14 @@ public class StoredQueryAccessTest {
         // assuming it does exist for now
         String qualifiedName = "org.example.departmentx.test::diabetes-patient-overview";
 
-        I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(testDomainAccess, qualifiedName);
+        I_StoredQueryAccess storedQueryAccess =
+                StoredQueryAccess.retrieveQualified(testDomainAccess, qualifiedName, null);
 
         assertNotNull(storedQueryAccess);
 
-        assertEquals(
-                "org.example.departmentx.test::diabetes-patient-overview/1.0.2", storedQueryAccess.getQualifiedName());
+        assertEquals("org.example.departmentx.test", storedQueryAccess.getReverseDomainName());
+        assertEquals("diabetes-patient-overview", storedQueryAccess.getSemanticId());
+        assertEquals("1.0.2", storedQueryAccess.getSemver());
         assertEquals("a_query", storedQueryAccess.getQueryText());
         assertEquals(
                 new Timestamp(DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")
@@ -93,13 +95,14 @@ public class StoredQueryAccessTest {
         String queryText = "a_query";
 
         I_StoredQueryAccess storedQueryAccess = new StoredQueryAccess(
-                        testDomainAccess, qualifiedName, queryText, TenantAuthentication.DEFAULT_TENANT_ID)
+                        testDomainAccess, qualifiedName, null, queryText, TenantAuthentication.DEFAULT_TENANT_ID)
                 .commit();
 
         assertNotNull(storedQueryAccess);
 
-        assertEquals(
-                "org.example.departmentx.test::diabetes-patient-overview/1.0.2", storedQueryAccess.getQualifiedName());
+        assertEquals("org.example.departmentx.test", storedQueryAccess.getReverseDomainName());
+        assertEquals("diabetes-patient-overview", storedQueryAccess.getSemanticId());
+        assertEquals("1.0.2", storedQueryAccess.getSemver());
         assertEquals("a_query", storedQueryAccess.getQueryText());
         assertEquals(
                 new Timestamp(DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")

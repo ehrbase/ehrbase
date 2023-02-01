@@ -50,7 +50,5 @@ public interface QueryService extends BaseService {
     // === DEFINITION: manage stored queries
     QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString);
 
-    QueryDefinitionResultDto updateStoredQuery(String qualifiedName, String version, String queryString);
-
     QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version);
 }

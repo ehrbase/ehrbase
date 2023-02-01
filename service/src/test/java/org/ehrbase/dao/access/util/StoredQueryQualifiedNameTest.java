@@ -17,7 +17,10 @@
  */
 package org.ehrbase.dao.access.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -25,9 +28,10 @@ public class StoredQueryQualifiedNameTest {
 
     @Test
     public void testFullName() {
-        String name = "org.example.departmentx.test::diabetes-patient-overview/1.0.2";
+        String name = "org.example.departmentx.test::diabetes-patient-overview";
+        SemVer version = SemVer.parse("1.0.2");
 
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name);
+        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name, version);
 
         assertNotNull(storedQueryQualifiedName);
 
@@ -40,7 +44,7 @@ public class StoredQueryQualifiedNameTest {
     public void testUncompleteName() {
         String name = "org.example.departmentx.test::diabetes-patient-overview";
 
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name);
+        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name, null);
 
         assertNotNull(storedQueryQualifiedName);
 
@@ -51,10 +55,11 @@ public class StoredQueryQualifiedNameTest {
 
     @Test
     public void testBadlyformedName() {
-        String name = "org.example.departmentx.test/diabetes-patient-overview";
+        String name = "org.example.departmentx.test";
+        SemVer version = SemVer.parse("");
 
         try {
-            new StoredQueryQualifiedName(name);
+            new StoredQueryQualifiedName(name, version);
             fail();
         } catch (Exception e) {
         }

@@ -45,7 +45,7 @@ public interface DefinitionQueryApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-put"))
-    ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
+    ResponseEntity<QueryDefinitionResponseData> putStoredQuery(
             String contentType,
             String accept,
             String qualifiedQueryName,

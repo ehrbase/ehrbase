@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.google.gson.JsonElement;
 import java.sql.Timestamp;
@@ -27,15 +26,19 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.aql.compiler.AqlExpression;
@@ -44,6 +47,9 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.jooq.AqlQueryHandler;
 import org.ehrbase.dao.access.jooq.StoredQueryAccess;
+import org.ehrbase.dao.access.util.InvalidVersionFormatException;
+import org.ehrbase.dao.access.util.SemVer;
+import org.ehrbase.dao.access.util.SemVerUtil;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -64,8 +70,6 @@ import org.springframework.web.client.RestClientException;
 @SuppressWarnings("unchecked")
 public class QueryServiceImp extends BaseServiceImp implements QueryService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String SEMVER_REGEX =
-            "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
     private final ExternalTerminologyValidation tsAdapter;
     private final TenantService tenantService;
 
@@ -108,7 +112,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
                         auditResultMap);
 
             default:
-                throw new IllegalArgumentException("Invalid query mode:" + queryMode);
+                throw new IllegalArgumentException("Invalid query mode: " + queryMode);
         }
     }
 
@@ -155,15 +159,15 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
             AqlResult aqlResult = resultSupplier.get();
             auditResultMap.putAll(aqlResult.getAuditResultMap());
             return formatResult(aqlResult, queryString, explain);
-        } catch (RestClientException rce) {
+        } catch (RestClientException e) {
             throw new BadGatewayException(
-                    "Bad gateway exception: " + rce.getCause().getMessage());
-        } catch (DataAccessException dae) {
+                    "Bad gateway exception: " + e.getCause().getMessage());
+        } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
-                    "Data Access Error: " + dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e) {
+                    "Data Access Error: " + e.getCause().getMessage());
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException("Could not process query/stored-query, reason: " + e);
         }
     }
@@ -172,8 +176,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         Map<String, Object> result;
         try {
             result = I_EntryAccess.queryJSON(getDataAccess(), queryString);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
+        } catch (RuntimeException e) {
             throw new InternalServerException(e);
         }
 
@@ -187,45 +190,36 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     // === DEFINITION: manage stored queries
     @Override
     public List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName) {
-
-        List<QueryDefinitionResultDto> resultDtos = new ArrayList<>();
+        String name = StringUtils.defaultIfEmpty(fullyQualifiedName, null);
         try {
-            if (fullyQualifiedName == null || fullyQualifiedName.isEmpty()) {
-                for (I_StoredQueryAccess storedQueryAccess : StoredQueryAccess.retrieveQualifiedList(getDataAccess())) {
-                    resultDtos.add(mapToQueryDefinitionDto(storedQueryAccess));
-                }
-            } else {
-                for (I_StoredQueryAccess storedQueryAccess :
-                        StoredQueryAccess.retrieveQualifiedList(getDataAccess(), fullyQualifiedName)) {
-                    resultDtos.add(mapToQueryDefinitionDto(storedQueryAccess));
-                }
-            }
-        } catch (DataAccessException dae) {
+            List<StoredQueryAccess> storedQueries = StoredQueryAccess.retrieveQualifiedList(getDataAccess(), name);
+            return storedQueries.stream().map(this::mapToQueryDefinitionDto).toList();
+        } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
-                    "Data Access Error:" + dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Could not retrieve stored query, reason:" + e);
+                    "Data Access Error: " + e.getCause().getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("Could not retrieve stored query, reason: " + e, e);
         }
-
-        return resultDtos;
     }
 
     @Override
     public QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version) {
-        String queryQualifiedName = qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : "");
+        SemVer requestedVersion = parseRequestSemVer(version);
 
         I_StoredQueryAccess storedQueryAccess;
         try {
-            storedQueryAccess = StoredQueryAccess.retrieveQualified(getDataAccess(), queryQualifiedName);
-        } catch (DataAccessException dae) {
+            storedQueryAccess = StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName, requestedVersion);
+        } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
-                    "Data Access Error:" + dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e) {
+                    "Data Access Error: " + e.getCause().getMessage(), e);
+        } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
+        }
+
+        if (storedQueryAccess == null) {
+            throw new IllegalArgumentException("Could not retrieve stored query for qualified name: " + qualifiedName);
         }
 
         return mapToQueryDefinitionDto(storedQueryAccess);
@@ -234,75 +228,102 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     @Override
     public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
 
-        // check if version is not blank and matches the SEMVER, otherwise version will be 0.0.0
-        if (isNotBlank(version) && !version.matches(SEMVER_REGEX)) {
-            // TODO:: There is no proper way to handle the exception coming from jooq
-            // need to improve exception handling and fix version retrieval from db
-            throw new InvalidApiParameterException("Incorrect version. Use the full SEMVER format");
-        }
+        SemVer requestedVersion = parseRequestSemVer(version);
 
         // validate the query syntax
         try {
             new AqlExpression().parse(queryString);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid query, reason:" + e);
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("Invalid query, reason:" + e, e);
         }
+
+        // lookup version in db
+        SemVer dbSemVer = Optional.ofNullable(
+                        StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName, requestedVersion))
+                .map(q -> SemVer.parse(q.getSemver()))
+                .orElse(SemVer.NO_VERSION);
+
+        checkVersionCombination(requestedVersion, dbSemVer);
+
+        // if not final version and already existing: update
+        boolean isUpdate = dbSemVer.isPreRelease();
+
+        SemVer newVersion = SemVerUtil.determineVersion(requestedVersion, dbSemVer);
 
         String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
-
+        I_StoredQueryAccess storedQueryAccess =
+                new StoredQueryAccess(getDataAccess(), qualifiedName, newVersion, queryString, tenantIdentifier);
         try {
-            String queryQualifiedName = qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : "");
-            I_StoredQueryAccess storedQueryAccess =
-                    new StoredQueryAccess(getDataAccess(), queryQualifiedName, queryString, tenantIdentifier);
-            storedQueryAccess.commit();
-            return mapToQueryDefinitionDto(storedQueryAccess);
-        } catch (DataAccessException dae) {
+            if (isUpdate) {
+                storedQueryAccess.update(Timestamp.from(Instant.now()));
+            } else {
+                storedQueryAccess.commit();
+            }
+        } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
-                    "Data Access Error:" + dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerException(e.getMessage());
+                    "Data Access Error: " + e.getCause().getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
+        return mapToQueryDefinitionDto(storedQueryAccess);
     }
 
-    @Override
-    public QueryDefinitionResultDto updateStoredQuery(String qualifiedName, String version, String queryString) {
+    private static void checkVersionCombination(SemVer requestSemVer, SemVer dbSemVer) {
+        if (dbSemVer.isNoVersion()) {
+            // Noop: no issue
+        } else if (dbSemVer.isPartial()) {
+            throw new IllegalStateException("The database contains stored queries with partial versions");
 
-        try {
-            I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(
-                    getDataAccess(), qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : ""));
+        } else if (dbSemVer.isPreRelease()) {
+            if (!requestSemVer.isPreRelease()) {
+                throw new RuntimeException(
+                        "Pre-release " + dbSemVer + " was provided when " + requestSemVer + " was requested");
+            }
+        } else {
+            // release
+            if (requestSemVer.isPreRelease()) {
+                throw new RuntimeException(
+                        "Version " + dbSemVer + " was provided when pre-release " + requestSemVer + " was requested");
 
-            storedQueryAccess.setQueryText(queryString);
-
-            storedQueryAccess.update(Timestamp.from(Instant.now()));
-            return mapToQueryDefinitionDto(storedQueryAccess);
-        } catch (DataAccessException dae) {
-            throw new GeneralRequestProcessingException(
-                    "Data Access Error:" + dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerException(e.getMessage());
+            } else if (requestSemVer.isRelease()) {
+                throw new StateConflictException("Version already exists");
+            }
         }
     }
 
     @Override
     public QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version) {
 
+        SemVer requestedVersion = parseRequestSemVer(version);
+        if (requestedVersion.isNoVersion() || requestedVersion.isPartial()) {
+            throw new InvalidApiParameterException("A qualified version has to be specified");
+        }
+
         try {
-            I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(
-                    getDataAccess(), qualifiedName + ((version != null && !version.isEmpty()) ? "/" + version : ""));
+            I_StoredQueryAccess storedQueryAccess =
+                    StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName, requestedVersion);
+
+            if (storedQueryAccess == null) {
+                throw new ObjectNotFoundException(
+                        "stored query",
+                        "Could not retrieve stored query for qualified name: " + qualifiedName + " version:" + version);
+            }
 
             storedQueryAccess.delete();
             return mapToQueryDefinitionDto(storedQueryAccess);
         } catch (DataAccessException dae) {
             throw new GeneralRequestProcessingException(
                     "Data Access Error:" + dae.getCause().getMessage());
-        } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException(iae.getMessage());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
+        }
+    }
+
+    private static SemVer parseRequestSemVer(String version) {
+        try {
+            return SemVer.parse(version);
+        } catch (InvalidVersionFormatException e) {
+            throw new InvalidApiParameterException("Incorrect version. Use the SEMVER format.", e);
         }
     }
 
