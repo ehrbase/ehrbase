@@ -25,7 +25,7 @@ import org.springframework.lang.NonNull;
 
 public record SemVer(Integer major, Integer minor, Integer patch, String suffix) {
     public static final Pattern SEMVER_REGEX = Pattern.compile(
-            "(0|[1-9]\\d*)(\\.(0|[1-9]\\d*)(\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?)?)?");
+            "(0|[1-9]\\d*)(?:\\.(0|[1-9]\\d*)(?:\\.(0|[1-9]\\d*)(?:-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)+)?)?)?");
 
     public static final SemVer NO_VERSION = new SemVer(null, null, null, null);
 
@@ -41,9 +41,9 @@ public record SemVer(Integer major, Integer minor, Integer patch, String suffix)
 
         return new SemVer(
                 integerFromGroup(matcher, 1),
+                integerFromGroup(matcher, 2),
                 integerFromGroup(matcher, 3),
-                integerFromGroup(matcher, 5),
-                group(matcher, 6).orElse(null));
+                group(matcher, 4).orElse(null));
     }
 
     public String toVersionString() {
