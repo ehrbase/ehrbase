@@ -17,19 +17,14 @@
  */
 package org.ehrbase.plugin;
 
-import org.ehrbase.api.plugin.PluginEventing;
-import org.ehrbase.plugin.event.PluginSubsystemEventManager;
 import org.ehrbase.plugin.security.PluginSecurityConfiguration;
 import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigRegistry;
 import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -56,7 +51,6 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
 
             WebApplicationContext applicationContext = dispatcherServlet.getWebApplicationContext();
             initPluginSecurity(applicationContext);
-            initPluginEventing(applicationContext);
 
             EhrBasePluginManagerInterface pluginManager =
                     (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
@@ -67,21 +61,6 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
         return dispatcherServlet;
     }
     
-    private void initPluginEventing(WebApplicationContext ctx) {
-      EhrBasePluginManagerInterface pluginManager = (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
-      ApplicationContext pCtx = pluginManager.getApplicationContext();
-      
-      try {
-        BeanFactoryUtils.beanOfType(pCtx, PluginEventing.class);
-        return;
-      } catch(NoSuchBeanDefinitionException ex) {
-        PluginEventing pluginEventing = new PluginSubsystemEventManager();
-        
-        if(pCtx instanceof GenericApplicationContext a)
-          a.registerBean(PluginEventing.class, () -> pluginEventing);
-      }
-    }
-
     private static final String WARN_PLUGIN_SEC =
             "Can not Configure Plugin Security, check that setting Classloader and Registering of Components is Possible";
 
