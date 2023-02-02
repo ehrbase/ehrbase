@@ -17,13 +17,7 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
-import static org.apache.commons.lang3.StringUtils.startsWithIgnoreCase;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
-import com.auth0.jwt.interfaces.DecodedJWT;
-import java.security.Principal;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -33,13 +27,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.rest.util.AuthHelper;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -89,7 +83,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
         auditDataset.setMethod(HttpMethod.valueOf(request.getMethod()));
 
         // SourceParticipant
-        auditDataset.setSourceParticipantUserId(getCurrentAuthenticatedUsername(request));
+        auditDataset.setSourceParticipantUserId(AuthHelper.getCurrentAuthenticatedUsername(request));
         auditDataset.setSourceParticipantNetworkId(getClientIpAddress(request));
 
         // EventOutcomeIndicator and EventOutcomeDescription
@@ -116,51 +110,6 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     }
 
     protected abstract AuditMessage[] getAuditMessages(T auditDataset);
-
-    protected String getCurrentAuthenticatedUsername(HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
-        if (principal == null) {
-            return null;
-        }
-
-        if (principal instanceof AbstractAuthenticationToken token && token.getPrincipal() instanceof DecodedJWT jwt) {
-            if (jwt.getSubject() != null) {
-                return jwt.getSubject();
-            } else if (request.getHeader(AUTHORIZATION) != null
-                    && request.getHeader(AUTHORIZATION).startsWith("Basic")) {
-                return getBasicAuthUsername(request);
-            } else {
-                return null;
-            }
-        }
-
-        return principal.getName();
-    }
-
-    private String getBasicAuthUsername(HttpServletRequest request) {
-        String authorization = request.getHeader(AUTHORIZATION);
-        if (authorization == null || !startsWithIgnoreCase(authorization, "basic ")) {
-            return null;
-        }
-
-        String encoded = (authorization.length() <= BASIC.length()) ? "" : authorization.substring(BASIC.length());
-        String credentials = new String(base64Decode(encoded));
-
-        int colonIndex = credentials.indexOf(":");
-        if (colonIndex == -1) {
-            return null;
-        }
-
-        return credentials.substring(0, colonIndex);
-    }
-
-    private byte[] base64Decode(String value) {
-        try {
-            return Base64.getDecoder().decode(value);
-        } catch (Exception ex) {
-            return new byte[0];
-        }
-    }
 
     protected String getClientIpAddress(HttpServletRequest request) {
         String address = request.getHeader("X-Forwarded-For");
