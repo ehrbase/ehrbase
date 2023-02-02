@@ -80,6 +80,13 @@ class SemVerTest {
             Assertions.assertThat(ver.patch()).isEqualTo(3);
             Assertions.assertThat(ver.suffix()).isEqualTo("SNAPSHOT");
         }
+        {
+            SemVer ver = SemVer.parse("1.2.3-THE-SNAPSHOT.1.42");
+            Assertions.assertThat(ver.major()).isEqualTo(1);
+            Assertions.assertThat(ver.minor()).isEqualTo(2);
+            Assertions.assertThat(ver.patch()).isEqualTo(3);
+            Assertions.assertThat(ver.suffix()).isEqualTo("THE-SNAPSHOT.1.42");
+        }
     }
 
     @ParameterizedTest
@@ -91,6 +98,7 @@ class SemVerTest {
                 "1-SNAPSHOT",
                 "-SNAPSHOT",
                 "1.2.3.4",
+                "1.2.3-SNAPSHOT.01",
                 "1.0.0-alpha+001",
                 "1.0.0+20130313144700",
                 "1.0.0-beta+exp.sha.5114f85",

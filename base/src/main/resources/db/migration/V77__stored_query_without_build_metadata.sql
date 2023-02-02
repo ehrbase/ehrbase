@@ -32,7 +32,7 @@ ALTER TABLE ehr.stored_query
 ALTER TABLE ehr.stored_query
     ADD CONSTRAINT stored_query_semver_check
         CHECK (semver ~*
-               '^(0|[1-9]\d*)(\.(0|[1-9]\d*)(\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)+)?)?)?$');
+               '^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$');
 
 ALTER TABLE ehr.stored_query
     ENABLE ROW LEVEL SECURITY;

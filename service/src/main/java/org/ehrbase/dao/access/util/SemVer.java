@@ -24,8 +24,46 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 
 public record SemVer(Integer major, Integer minor, Integer patch, String suffix) {
-    public static final Pattern SEMVER_REGEX = Pattern.compile(
-            "(0|[1-9]\\d*)(?:\\.(0|[1-9]\\d*)(?:\\.(0|[1-9]\\d*)(?:-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)+)?)?)?");
+
+    private static String capturing(String content) {
+        return "(" + content + ")";
+    }
+
+    private static String nonCapturing(String content) {
+        return "(?:" + content + ")";
+    }
+
+    private static String optionalNonCapturing(String content) {
+        return nonCapturing(content) + '?';
+    }
+
+    /**
+     * partial, release and pre-release versions are permitted
+     */
+    public static final Pattern SEMVER_REGEX;
+
+    static {
+        String dot = "\\.";
+        String versionPart = "0|[1-9]\\d*";
+        String versionGroup = capturing(versionPart);
+
+        String preReleaseIdentifier = nonCapturing(versionPart + "|\\d*[a-zA-Z-][0-9a-zA-Z-]*");
+        String dotSeparatedPreReleaseIdentifiers =
+                preReleaseIdentifier + nonCapturing(dot + preReleaseIdentifier) + '*';
+
+        SEMVER_REGEX = Pattern.compile(
+                // major
+                versionGroup
+                        + optionalNonCapturing(dot
+                                // minor
+                                + versionGroup
+                                + optionalNonCapturing(dot
+                                        // patch
+                                        + versionGroup
+                                        // dot-separated pre-release identifiers:
+                                        // numeric identifier prohibits leading 0
+                                        + optionalNonCapturing('-' + capturing(dotSeparatedPreReleaseIdentifiers)))));
+    }
 
     public static final SemVer NO_VERSION = new SemVer(null, null, null, null);
 
