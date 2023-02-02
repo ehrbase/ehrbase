@@ -34,6 +34,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.jooq.pg.tables.EhrFolder;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
@@ -53,9 +54,12 @@ public class EhrFolderRepository {
     private final DSLContext context;
     private final ServerConfig serverConfig;
 
-    public EhrFolderRepository(DSLContext context, ServerConfig serverConfig) {
+    private final TenantService tenantService;
+
+    public EhrFolderRepository(DSLContext context, ServerConfig serverConfig, TenantService tenantService) {
         this.context = context;
         this.serverConfig = serverConfig;
+        this.tenantService = tenantService;
     }
 
     @Transactional
@@ -64,6 +68,7 @@ public class EhrFolderRepository {
         folderRecordList.forEach(r -> {
             r.setSysVersion(1);
             r.setSysPeriodLower(OffsetDateTime.now());
+            r.setNamespace(tenantService.getCurrentTenantIdentifier());
         });
         try {
             Loader<EhrFolderRecord> execute = context.loadInto(EhrFolder.EHR_FOLDER)

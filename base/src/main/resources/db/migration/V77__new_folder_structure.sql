@@ -27,6 +27,7 @@ create table ehr.ehr_folder
     path     TEXT[],
     contains     uuid[],
     fields         jsonb,
+    namespace TEXT default '1f332a66-0e57-11ed-861d-0242ac120002',
     sys_version INT,
     sys_period_lower timestamptz NOT NULL,
     PRIMARY KEY (ehr_id,id),
@@ -37,6 +38,9 @@ create table ehr.ehr_folder
 create index folder2_path_idx ON ehr.ehr_folder USING btree ((path[2]),ehr_id);
 create index archetype_node_idx ON ehr.ehr_folder USING btree (archetype_node_id,(path[2]),ehr_id);
 
+ALTER TABLE ehr.ehr_folder ENABLE ROW LEVEL SECURITY;
+CREATE POLICY ehr_policy_all ON ehr.ehr_folder FOR ALL USING (namespace = current_setting('ehrbase.current_tenant')) WITH CHECK (namespace = current_setting('ehrbase.current_tenant'));
+
 create table ehr.ehr_folder_history
 (
     id        uuid ,
@@ -46,6 +50,7 @@ create table ehr.ehr_folder_history
     path     TEXT[],
     contains     uuid[],
     fields         jsonb,
+    namespace TEXT default '1f332a66-0e57-11ed-861d-0242ac120002',
     sys_version INT,
     sys_period_lower timestamptz NOT NULL,
     sys_period_upper timestamptz ,
@@ -54,3 +59,6 @@ create table ehr.ehr_folder_history
     FOREIGN KEY (ehr_id) REFERENCES ehr.ehr (id),
     FOREIGN KEY (contribution_id) REFERENCES ehr.contribution(id)
 );
+
+ALTER TABLE ehr.ehr_folder_history ENABLE ROW LEVEL SECURITY;
+CREATE POLICY ehr_policy_all ON ehr.ehr_folder_history FOR ALL USING (namespace = current_setting('ehrbase.current_tenant')) WITH CHECK (namespace = current_setting('ehrbase.current_tenant'));
