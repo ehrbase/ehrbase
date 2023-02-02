@@ -53,7 +53,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for openEHR REST API QUERY resource.
- * XXX query executions seem to consist of a lot of code duplication
  *
  * @author Jake Smolka
  * @author Renaud Subiger
