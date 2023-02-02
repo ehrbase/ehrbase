@@ -21,7 +21,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
-import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -249,27 +248,30 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
     /**
      * Extracts the requested claim from the token's claims.
      * @param token Token
-     * @param requestedAbacClaim The claim to be retrieved
+     * @param requestedClaim The claim to be retrieved
      * @return The value of the requested claim
      */
-    private String getRequestedClaim(AbstractAuthenticationToken token, String requestedAbacClaim) {
-        String claim = EMPTY;
+    private String getRequestedClaim(AbstractAuthenticationToken token, String requestedClaim) {
+        String claim;
         Object principal = token.getCredentials();
+
         if (principal instanceof Jwt jwt) {
-            Map<String, Object> claims = jwt.getClaims();
-            if (claims != null && claims.containsKey(requestedAbacClaim)) {
-                claim = claims.get(requestedAbacClaim).toString();
-            }
+            claim = getClaim(jwt.getClaims(), requestedClaim);
         } else if (principal instanceof DecodedJWT jwt) {
-            Map<String, Claim> claims = jwt.getClaims();
-            if (claims != null && claims.containsKey(requestedAbacClaim)) {
-                claim = claims.get(requestedAbacClaim).asString();
-            }
+            claim = getClaim(jwt.getClaims(), requestedClaim);
         } else {
             throw new IllegalArgumentException("Invalid authentication, no claims available.");
         }
 
         return claim;
+    }
+
+    private String getClaim(Map<String, ?> claims, String requestedClaim) {
+        if (claims != null && claims.containsKey(requestedClaim)) {
+            return claims.get(requestedClaim).toString();
+        }
+
+        return EMPTY;
     }
 
     /**
