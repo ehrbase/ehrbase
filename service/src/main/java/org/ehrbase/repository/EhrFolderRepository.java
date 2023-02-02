@@ -20,13 +20,13 @@ package org.ehrbase.repository;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,14 +34,19 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.jooq.pg.tables.EhrFolder;
+import org.ehrbase.jooq.pg.tables.EhrFolderHistory;
+import org.ehrbase.jooq.pg.tables.records.EhrFolderHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Loader;
+import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.Table;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,15 +71,18 @@ public class EhrFolderRepository {
     public void commit(List<EhrFolderRecord> folderRecordList) {
 
         folderRecordList.forEach(r -> {
-            r.setSysVersion(1);
             r.setSysPeriodLower(OffsetDateTime.now());
             r.setNamespace(tenantService.getCurrentTenantIdentifier());
         });
+        executeInsert(folderRecordList, EhrFolder.EHR_FOLDER);
+    }
+
+    private <T extends Record> void executeInsert(List<T> folderRecordList, Table<?> table) {
         try {
-            Loader<EhrFolderRecord> execute = context.loadInto(EhrFolder.EHR_FOLDER)
+            Loader<?> execute = context.loadInto(table)
                     .bulkAfter(500)
                     .loadRecords(folderRecordList)
-                    .fields(EhrFolder.EHR_FOLDER.fields())
+                    .fields(table.fields())
                     .execute();
 
             if (!execute.result().errors().isEmpty()) {
@@ -88,17 +96,61 @@ public class EhrFolderRepository {
         }
     }
 
-    public Optional<Folder> getLatest(UUID ehrId) {
+    @Transactional
+    public void update(List<EhrFolderRecord> folderRecordList) {
 
-        Result<EhrFolderRecord> ehrFolderRecords =
-                context.fetch(EhrFolder.EHR_FOLDER.where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId)));
+        UUID ehrId = folderRecordList.get(0).getEhrId();
+        Result<EhrFolderRecord> old = getLatest(ehrId);
 
-        if (ehrFolderRecords.isNotEmpty()) {
-            return Optional.of(from(ehrFolderRecords));
-        } else {
-
-            return Optional.empty();
+        if (old.isEmpty()
+                || old.get(0).getSysVersion() + 1 != folderRecordList.get(0).getSysVersion()) {
+            throw new PreconditionFailedException("If-Match version_uid does not match latest version.");
         }
+
+        int execute = context.deleteFrom(EhrFolder.EHR_FOLDER)
+                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
+                .execute();
+
+        if (execute == 0) {
+            throw new PreconditionFailedException("If-Match version_uid does not match latest version.");
+        }
+
+        commit(folderRecordList);
+
+        List<EhrFolderHistoryRecord> historyRecords =
+                old.stream().map(this::toHistory).toList();
+
+        executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
+    }
+
+    private EhrFolderHistoryRecord toHistory(EhrFolderRecord record) {
+        EhrFolderHistoryRecord historyRecord = new EhrFolderHistoryRecord();
+
+        historyRecord.setId(record.getId());
+        historyRecord.setEhrId(record.getEhrId());
+        historyRecord.setContributionId(record.getContributionId());
+        historyRecord.setArchetypeNodeId(record.getArchetypeNodeId());
+        historyRecord.setPath(record.getPath());
+        historyRecord.setContains(record.getContains());
+        historyRecord.setFields(record.getFields());
+        historyRecord.setNamespace(record.getNamespace());
+        historyRecord.setSysVersion(record.getSysVersion());
+        historyRecord.setSysPeriodLower(record.getSysPeriodLower());
+        historyRecord.setSysPeriodUpper(OffsetDateTime.now());
+        historyRecord.setSysDeleted(false);
+        if (!historyRecord.getSysPeriodUpper().isAfter(historyRecord.getSysPeriodLower())) {
+            historyRecord.setSysPeriodUpper(historyRecord.getSysPeriodLower().plusNanos(1));
+        }
+
+        return historyRecord;
+    }
+
+    public Result<EhrFolderRecord> getLatest(UUID ehrId) {
+
+        return context.selectFrom(EhrFolder.EHR_FOLDER)
+                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
+                .fetch();
     }
 
     public Folder from(Result<EhrFolderRecord> ehrFolderRecords) {
@@ -139,7 +191,15 @@ public class EhrFolderRepository {
 
     public List<EhrFolderRecord> to(UUID ehrId, Folder folder) {
 
-        return flatten(folder).stream().map(p -> to(p, ehrId)).toList();
+        List<EhrFolderRecord> ehrFolderRecords =
+                flatten(folder).stream().map(p -> to(p, ehrId)).toList();
+
+        if (folder.getUid() instanceof ObjectVersionId objectVersionId) {
+            ehrFolderRecords.forEach(r -> r.setSysVersion(
+                    Integer.valueOf(objectVersionId.getVersionTreeId().getValue())));
+        }
+
+        return ehrFolderRecords;
     }
 
     private EhrFolderRecord to(Pair<List<String>, Folder> pair, UUID ehrId) {

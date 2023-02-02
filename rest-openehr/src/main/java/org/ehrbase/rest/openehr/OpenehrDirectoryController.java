@@ -115,12 +115,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
-        // Check version conflicts if EHR and directory exist
-        checkDirectoryVersionConflicts(folderId, ehrId);
-
         // Update folder and get new version
-        Folder updatedFolder = null;
-        // folderService.update(ehrId, folderId, folder);
+        Folder updatedFolder = folderService.update(ehrId, folder, folderId);
 
         return createDirectoryResponse(HttpMethod.PUT, prefer, accept, updatedFolder, ehrId);
     }

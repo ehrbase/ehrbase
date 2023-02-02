@@ -26,9 +26,11 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.dao.access.util.FolderUtils;
+import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,7 +58,14 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
     @Override
     public Optional<Folder> get(UUID ehrId, ObjectVersionId folderId, String path) {
-        return ehrFolderRepository.getLatest(ehrId);
+        Result<EhrFolderRecord> ehrFolderRecords = ehrFolderRepository.getLatest(ehrId);
+
+        if (ehrFolderRecords.isNotEmpty()) {
+            return Optional.of(ehrFolderRepository.from(ehrFolderRecords));
+        } else {
+
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -71,20 +80,38 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         FolderUtils.checkSiblingNameConflicts(folder);
 
-        updateUuid(folder, true);
+        updateUuid(folder, true, 1);
 
         ehrFolderRepository.commit(ehrFolderRepository.to(ehrId, folder));
 
         return folder;
     }
 
-    private void updateUuid(Folder folder, boolean root) {
+    @Override
+    public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches) {
+        // validation
+        ehrServiceImp.checkEhrExistsAndIsModifiable(ehrId);
+        if (!ehrFolderRepository.hasDirectory(ehrId)) {
+            throw new StateConflictException(
+                    String.format("EHR with id %s dos not contains a directory.", ehrId.toString()));
+        }
+
+        FolderUtils.checkSiblingNameConflicts(folder);
+
+        int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
+        updateUuid(folder, true, version + 1);
+        ehrFolderRepository.update(ehrFolderRepository.to(ehrId, folder));
+
+        return folder;
+    }
+
+    private void updateUuid(Folder folder, boolean root, int version) {
 
         if (folder.getUid() == null) {
 
             if (root) {
-                folder.setUid(
-                        new ObjectVersionId(UuidGenerator.randomUUID() + "::" + serverConfig.getNodename() + "::1"));
+                folder.setUid(new ObjectVersionId(
+                        UuidGenerator.randomUUID() + "::" + serverConfig.getNodename() + "::" + version));
             } else {
                 folder.setUid(HierObjectId.createRandomUUID());
             }
@@ -92,7 +119,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         if (folder.getFolders() != null) {
 
-            folder.getFolders().forEach(folder1 -> updateUuid(folder1, false));
+            folder.getFolders().forEach(folder1 -> updateUuid(folder1, false, version));
         }
     }
 }

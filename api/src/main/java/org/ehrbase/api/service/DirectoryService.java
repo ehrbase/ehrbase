@@ -27,4 +27,6 @@ public interface DirectoryService extends BaseService {
     Optional<Folder> get(UUID ehrId, ObjectVersionId folderId, String path);
 
     Folder create(UUID ehrId, Folder folder);
+
+    Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches);
 }
