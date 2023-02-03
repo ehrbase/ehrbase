@@ -63,7 +63,6 @@ public class AuthHelper {
                 .map(DecodedJWT::getSubject)
                 .orElse(EMPTY);
 
-        // TODO:: for some  reason for basic auth not working principal.getName() default tenant jwt context is running
         if (isBlank(username)
                 && request.getHeader(AUTHORIZATION) != null
                 && request.getHeader(AUTHORIZATION).startsWith("Basic")) {

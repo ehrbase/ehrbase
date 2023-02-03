@@ -80,8 +80,6 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     protected void enrichDataset(T auditDataset, HttpServletRequest request, HttpServletResponse response) {
         auditDataset.setMethod(HttpMethod.valueOf(request.getMethod()));
 
-        // TODO:: It is good to have the username available at the tenant level because in this scenario,
-        // the security context is being replaced, and there is no straightforward way to retrieve the username.
         String username = AuthHelper.getCurrentAuthenticatedUsername(request);
         // SourceParticipant
         auditDataset.setSourceParticipantUserId(username);
