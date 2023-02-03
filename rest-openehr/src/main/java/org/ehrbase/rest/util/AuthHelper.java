@@ -22,7 +22,6 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Base64;
@@ -35,7 +34,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.StringUtils;
 
 public class AuthHelper {
-
 
     private static final String AUTHENTICATION_SCHEME_BASIC = "Basic";
 
