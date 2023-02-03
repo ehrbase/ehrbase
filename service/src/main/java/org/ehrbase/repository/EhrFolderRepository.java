@@ -103,7 +103,9 @@ public class EhrFolderRepository {
         Result<EhrFolderRecord> old = getLatest(ehrId);
 
         if (old.isEmpty()
-                || old.get(0).getSysVersion() + 1 != folderRecordList.get(0).getSysVersion()) {
+                || findRoot(old).getSysVersion() + 1
+                        != findRoot(folderRecordList).getSysVersion()
+                || !findRoot(old).getId().equals(findRoot(folderRecordList).getId())) {
             throw new PreconditionFailedException("If-Match version_uid does not match latest version.");
         }
 
@@ -122,6 +124,14 @@ public class EhrFolderRepository {
                 old.stream().map(this::toHistory).toList();
 
         executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
+    }
+
+    EhrFolderRecord findRoot(List<EhrFolderRecord> folderRecordList) {
+
+        return folderRecordList.stream()
+                .filter(r -> r.getPath().length == 1)
+                .findAny()
+                .orElseThrow();
     }
 
     private EhrFolderHistoryRecord toHistory(EhrFolderRecord record) {

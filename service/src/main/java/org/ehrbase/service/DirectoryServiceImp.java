@@ -80,7 +80,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         FolderUtils.checkSiblingNameConflicts(folder);
 
-        updateUuid(folder, true, 1);
+        updateUuid(folder, true, UuidGenerator.randomUUID(), 1);
 
         ehrFolderRepository.commit(ehrFolderRepository.to(ehrId, folder));
 
@@ -99,19 +99,18 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
         FolderUtils.checkSiblingNameConflicts(folder);
 
         int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
-        updateUuid(folder, true, version + 1);
+        updateUuid(folder, true, UUID.fromString(ifMatches.getObjectId().getValue()), version + 1);
         ehrFolderRepository.update(ehrFolderRepository.to(ehrId, folder));
 
         return folder;
     }
 
-    private void updateUuid(Folder folder, boolean root, int version) {
+    private void updateUuid(Folder folder, boolean root, UUID rootUuid, int version) {
 
         if (folder.getUid() == null) {
 
             if (root) {
-                folder.setUid(new ObjectVersionId(
-                        UuidGenerator.randomUUID() + "::" + serverConfig.getNodename() + "::" + version));
+                folder.setUid(new ObjectVersionId(rootUuid + "::" + serverConfig.getNodename() + "::" + version));
             } else {
                 folder.setUid(HierObjectId.createRandomUUID());
             }
@@ -119,7 +118,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         if (folder.getFolders() != null) {
 
-            folder.getFolders().forEach(folder1 -> updateUuid(folder1, false, version));
+            folder.getFolders().forEach(folder1 -> updateUuid(folder1, false, rootUuid, version));
         }
     }
 }
