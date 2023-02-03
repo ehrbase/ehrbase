@@ -46,8 +46,6 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
 
     public static final String START_TIME_ATTRIBUTE = OpenEhrAuditInterceptor.class.getName() + ".START_TIME";
 
-    public static final String BASIC = "Basic ";
-
     protected final AuditContext auditContext;
 
     protected final EhrService ehrService;
@@ -82,8 +80,11 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     protected void enrichDataset(T auditDataset, HttpServletRequest request, HttpServletResponse response) {
         auditDataset.setMethod(HttpMethod.valueOf(request.getMethod()));
 
+        // TODO:: It is good to have the username available at the tenant level because in this scenario,
+        // the security context is being replaced, and there is no straightforward way to retrieve the username.
+        String username = AuthHelper.getCurrentAuthenticatedUsername(request);
         // SourceParticipant
-        auditDataset.setSourceParticipantUserId(AuthHelper.getCurrentAuthenticatedUsername(request));
+        auditDataset.setSourceParticipantUserId(username);
         auditDataset.setSourceParticipantNetworkId(getClientIpAddress(request));
 
         // EventOutcomeIndicator and EventOutcomeDescription

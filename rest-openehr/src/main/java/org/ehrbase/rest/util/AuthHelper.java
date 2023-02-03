@@ -22,6 +22,8 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Base64;
 import java.util.Map;
@@ -30,10 +32,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.util.StringUtils;
 
 public class AuthHelper {
 
-    private static final String BASIC = "Basic ";
+
+    private static final String AUTHENTICATION_SCHEME_BASIC = "Basic";
 
     private AuthHelper() {}
 
@@ -110,8 +114,17 @@ public class AuthHelper {
             return null;
         }
 
-        String encoded = (authorization.length() <= BASIC.length()) ? "" : authorization.substring(BASIC.length());
-        String credentials = new String(base64Decode(encoded));
+        authorization = authorization.trim();
+        if (!StringUtils.startsWithIgnoreCase(authorization, AUTHENTICATION_SCHEME_BASIC)) {
+            return null;
+        }
+
+        if (authorization.equalsIgnoreCase(AUTHENTICATION_SCHEME_BASIC)) {
+            return null;
+        }
+
+        byte[] base64Token = authorization.substring(6).getBytes(StandardCharsets.UTF_8);
+        String credentials = new String(base64Decode(base64Token), StandardCharsets.UTF_8);
 
         int colonIndex = credentials.indexOf(":");
         if (colonIndex == -1) {
@@ -121,7 +134,7 @@ public class AuthHelper {
         return credentials.substring(0, colonIndex);
     }
 
-    private static byte[] base64Decode(String value) {
+    private static byte[] base64Decode(byte[] value) {
         try {
             return Base64.getDecoder().decode(value);
         } catch (Exception ex) {
