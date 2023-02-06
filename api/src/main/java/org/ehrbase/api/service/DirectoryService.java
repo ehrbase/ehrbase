@@ -21,10 +21,11 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 public interface DirectoryService extends BaseService {
 
-    Optional<Folder> get(UUID ehrId, ObjectVersionId folderId, String path);
+    Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path);
 
     Folder create(UUID ehrId, Folder folder);
 

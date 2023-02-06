@@ -20,8 +20,10 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.DirectoryService;
@@ -30,7 +32,6 @@ import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
-import org.jooq.Result;
 import org.springframework.stereotype.Service;
 
 /**
@@ -57,10 +58,18 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
     }
 
     @Override
-    public Optional<Folder> get(UUID ehrId, ObjectVersionId folderId, String path) {
-        Result<EhrFolderRecord> ehrFolderRecords = ehrFolderRepository.getLatest(ehrId);
+    public Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path) {
 
-        if (ehrFolderRecords.isNotEmpty()) {
+        List<EhrFolderRecord> ehrFolderRecords;
+        if (folderId == null) {
+            ehrFolderRecords = ehrFolderRepository.getLatest(ehrId);
+        } else {
+
+            ehrFolderRecords = ehrFolderRepository.fromHistory(ehrFolderRepository.getVersion(
+                    ehrId, Integer.parseInt(folderId.getVersionTreeId().getValue())));
+        }
+
+        if (!ehrFolderRecords.isEmpty()) {
             return Optional.of(ehrFolderRepository.from(ehrFolderRecords));
         } else {
 

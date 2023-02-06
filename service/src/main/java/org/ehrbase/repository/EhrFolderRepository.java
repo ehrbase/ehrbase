@@ -47,6 +47,7 @@ import org.jooq.Loader;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -156,6 +157,28 @@ public class EhrFolderRepository {
         return historyRecord;
     }
 
+    public List<EhrFolderRecord> fromHistory(List<EhrFolderHistoryRecord> historyRecords) {
+
+        return historyRecords.stream().map(this::fromHistory).toList();
+    }
+
+    private EhrFolderRecord fromHistory(EhrFolderHistoryRecord historyRecord) {
+        EhrFolderRecord folderRecord = new EhrFolderRecord();
+
+        folderRecord.setId(historyRecord.getId());
+        folderRecord.setEhrId(historyRecord.getEhrId());
+        folderRecord.setContributionId(historyRecord.getContributionId());
+        folderRecord.setArchetypeNodeId(historyRecord.getArchetypeNodeId());
+        folderRecord.setPath(historyRecord.getPath());
+        folderRecord.setContains(historyRecord.getContains());
+        folderRecord.setFields(historyRecord.getFields());
+        folderRecord.setNamespace(historyRecord.getNamespace());
+        folderRecord.setSysVersion(historyRecord.getSysVersion());
+        folderRecord.setSysPeriodLower(historyRecord.getSysPeriodLower());
+
+        return folderRecord;
+    }
+
     public Result<EhrFolderRecord> getLatest(UUID ehrId) {
 
         return context.selectFrom(EhrFolder.EHR_FOLDER)
@@ -163,7 +186,22 @@ public class EhrFolderRepository {
                 .fetch();
     }
 
-    public Folder from(Result<EhrFolderRecord> ehrFolderRecords) {
+    public Result<EhrFolderHistoryRecord> getVersion(UUID ehrId, int version) {
+
+        return context.select(EhrFolder.EHR_FOLDER.fields())
+                .select(DSL.field("null").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()))
+                .select(DSL.field("false").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
+                .from(EhrFolder.EHR_FOLDER)
+                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(version))
+                .unionAll(context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
+                        .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
+                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION.eq(version)))
+                .fetch()
+                .into(EhrFolderHistory.EHR_FOLDER_HISTORY);
+    }
+
+    public Folder from(List<EhrFolderRecord> ehrFolderRecords) {
 
         Map<List<String>, EhrFolderRecord> byPathMap = ehrFolderRecords.stream()
                 .collect(Collectors.toMap(

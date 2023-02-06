@@ -163,8 +163,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         assertValidPath(path);
 
         // Get the folder entry from database
-        Optional<Folder> foundFolder = Optional.empty();
-        // folderService.get(versionUid, path);
+        Optional<Folder> foundFolder = folderService.get(ehrId, versionUid, path);
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
                     "DIRECTORY", String.format("Folder with id %s does not exist.", versionUid.toString()));
