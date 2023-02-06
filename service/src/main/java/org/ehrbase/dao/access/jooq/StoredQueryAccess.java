@@ -17,12 +17,13 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import static org.ehrbase.dao.access.util.SemVerUtil.partialVersionPattern;
 import static org.ehrbase.jooq.pg.Tables.STORED_QUERY;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
@@ -79,7 +80,7 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
     /**
      * return null if couldn't retrieve instance with given settings
      */
-    public static StoredQueryAccess retrieveQualified(
+    public static Optional<StoredQueryAccess> retrieveQualified(
             I_DomainAccess domainAccess, String qualifiedName, @NonNull SemVer version) {
 
         // Split the qualified name in fields
@@ -91,48 +92,26 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
         condition = condition.and(versionConstraint(semVer));
         var unordered = domainAccess.getContext().selectFrom(STORED_QUERY).where(condition);
 
-        StoredQueryRecord queryRecord;
+        Optional<StoredQueryRecord> queryRecord;
         if (semVer.isRelease() || semVer.isPreRelease()) {
             // equals => only one result
-            queryRecord = unordered.fetchOne();
+            queryRecord = unordered.fetchOptional();
         } else {
             var ordered = unordered.orderBy(orderBySemVerStream(SortOrder.DESC).toList());
-            queryRecord = ordered.limit(1).fetchOne();
+            queryRecord = ordered.limit(1).fetchOptional();
         }
 
-        if (queryRecord == null) {
-            return null;
-        } else {
-            return new StoredQueryAccess(domainAccess, queryRecord, queryRecord.getNamespace());
-        }
+        return queryRecord.map(r -> new StoredQueryAccess(domainAccess, r, r.getNamespace()));
     }
 
     private static @NonNull Condition versionConstraint(SemVer semVer) {
         if (semVer.isRelease() || semVer.isPreRelease()) {
             return STORED_QUERY.SEMVER.eq(semVer.toVersionString());
-
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("^");
-
-            if (semVer.isNoVersion()) {
-                sb.append("\\d+");
-            } else {
-                sb.append(semVer.toVersionString().replace(".", "\\."));
-            }
-
-            Stream.of(semVer.minor(), semVer.patch())
-                    .filter(Objects::isNull)
-                    .map(n -> "\\.\\d+")
-                    .forEach(sb::append);
-
-            sb.append("$");
-
-            return STORED_QUERY.SEMVER.likeRegex(sb.toString());
+            return STORED_QUERY.SEMVER.likeRegex(partialVersionPattern(semVer));
         }
     }
 
-    @Deprecated()
     private static Condition nameConstraint(StoredQueryQualifiedName storedQueryQualifiedName) {
         return STORED_QUERY
                 .REVERSE_DOMAIN_NAME
@@ -142,7 +121,8 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
 
     /**
      * Retrieves list of all stored queries on the system matched by qualifiedQueryName as pattern.
-     * If pattern should given be in the format of [{namespace}::]{query-name}, and when is empty, it will be treated as "wildcard" in the search.
+     * If pattern should be given in the format of [{namespace}::]{query-name},
+     * and when is empty, it will be treated as "wildcard" in the search.
      */
     public static List<StoredQueryAccess> retrieveQualifiedList(
             I_DomainAccess domainAccess, String qualifiedQueryName) {

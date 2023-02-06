@@ -68,10 +68,9 @@ public class StoredQueryAccessTest {
         // assuming it does exist for now
         String qualifiedName = "org.example.departmentx.test::diabetes-patient-overview";
 
-        I_StoredQueryAccess storedQueryAccess =
-                StoredQueryAccess.retrieveQualified(testDomainAccess, qualifiedName, SemVer.NO_VERSION);
-
-        assertNotNull(storedQueryAccess);
+        I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(
+                        testDomainAccess, qualifiedName, SemVer.NO_VERSION)
+                .orElseThrow(AssertionError::new);
 
         assertEquals("org.example.departmentx.test", storedQueryAccess.getReverseDomainName());
         assertEquals("diabetes-patient-overview", storedQueryAccess.getSemanticId());

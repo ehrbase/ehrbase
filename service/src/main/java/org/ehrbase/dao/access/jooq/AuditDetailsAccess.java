@@ -74,7 +74,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
             auditDetailsAccess.auditDetailsRecord =
                     dataAccess.getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
             if (!auditDetailsAccess.auditDetailsRecord.getNamespace().equals(this.auditDetailsRecord.getNamespace()))
-                throw new InternalServerException("Tenant id missmatch: Calling for id");
+                throw new InternalServerException("Tenant id mismatch: Calling for id");
         } catch (Exception e) {
             throw new InternalServerException("fetching audit_details failed", e);
         }
@@ -241,7 +241,7 @@ public class AuditDetailsAccess extends DataAccess implements I_AuditDetailsAcce
     public void setRecord(AuditDetailsRecord record) {
         if (StringUtils.isEmpty(record.getNamespace())) record.setNamespace(this.auditDetailsRecord.getNamespace());
         if (!this.auditDetailsRecord.getNamespace().equals(record.getNamespace()))
-            throw new InternalServerException("Tenant id missmatch");
+            throw new InternalServerException("Tenant id mismatch");
         this.auditDetailsRecord = record;
     }
 

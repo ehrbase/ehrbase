@@ -57,6 +57,11 @@ public final class StoredQueryQualifiedName {
     }
 
     public String toString() {
-        return reverseDomainName + "::" + semanticId + (semVer.isNoVersion() ? "" : ("/" + semVer));
+        StringBuilder sb =
+                new StringBuilder().append(reverseDomainName).append("::").append(semanticId);
+        if (!semVer.isNoVersion()) {
+            sb.append('/').append(semVer);
+        }
+        return sb.toString();
     }
 }

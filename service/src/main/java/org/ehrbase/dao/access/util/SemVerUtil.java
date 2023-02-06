@@ -17,7 +17,9 @@
  */
 package org.ehrbase.dao.access.util;
 
+import java.util.Objects;
 import java.util.function.ToIntFunction;
+import java.util.stream.Stream;
 import org.springframework.lang.NonNull;
 
 public class SemVerUtil {
@@ -30,10 +32,10 @@ public class SemVerUtil {
      * @param requestSemVer
      * @param dbSemVer
      * @return
-     * @throws IllegalArgumentException if a release version already exists
+     * @throws VersionConflictException if a release version already exists
      */
     public static @NonNull SemVer determineVersion(@NonNull SemVer requestSemVer, @NonNull SemVer dbSemVer)
-            throws IllegalArgumentException {
+            throws VersionConflictException {
         int major;
         int minor;
         int patch;
@@ -45,7 +47,7 @@ public class SemVerUtil {
 
         } else if (!requestSemVer.isPartial()) {
             if (!dbSemVer.isNoVersion() && !requestSemVer.isPreRelease()) {
-                throw new IllegalArgumentException("Release versions must not be replaced");
+                throw new VersionConflictException("Release versions must not be replaced");
             }
             return requestSemVer;
 
@@ -68,5 +70,36 @@ public class SemVerUtil {
         } else {
             return func.applyAsInt(semVer) + 1;
         }
+    }
+
+    /**
+     * Creates a regex pattern that matches all releases satisfying the given partial version
+     *
+     * @param partialVersion
+     * @return
+     * @throws IllegalArgumentException if a release or pre-release version is provided
+     */
+    public static String partialVersionPattern(SemVer partialVersion) throws IllegalArgumentException {
+        if (!partialVersion.isPartial()) {
+            throw new IllegalArgumentException("Only partial versions are supported");
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("^");
+
+        if (partialVersion.isNoVersion()) {
+            sb.append("\\d+");
+        } else {
+            sb.append(partialVersion.toVersionString().replace(".", "\\."));
+        }
+
+        Stream.of(partialVersion.minor(), partialVersion.patch())
+                .filter(Objects::isNull)
+                .map(n -> "\\.\\d+")
+                .forEach(sb::append);
+
+        sb.append("$");
+
+        return sb.toString();
     }
 }

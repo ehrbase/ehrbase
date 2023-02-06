@@ -50,6 +50,7 @@ import org.ehrbase.dao.access.jooq.StoredQueryAccess;
 import org.ehrbase.dao.access.util.InvalidVersionFormatException;
 import org.ehrbase.dao.access.util.SemVer;
 import org.ehrbase.dao.access.util.SemVerUtil;
+import org.ehrbase.dao.access.util.VersionConflictException;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -193,7 +194,9 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         String name = StringUtils.defaultIfEmpty(fullyQualifiedName, null);
         try {
             List<StoredQueryAccess> storedQueries = StoredQueryAccess.retrieveQualifiedList(getDataAccess(), name);
-            return storedQueries.stream().map(this::mapToQueryDefinitionDto).toList();
+            return storedQueries.stream()
+                    .map(QueryServiceImp::mapToQueryDefinitionDto)
+                    .toList();
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
                     "Data Access Error: " + e.getCause().getMessage(), e);
@@ -208,7 +211,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     public QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version) {
         SemVer requestedVersion = parseRequestSemVer(version);
 
-        I_StoredQueryAccess storedQueryAccess;
+        Optional<StoredQueryAccess> storedQueryAccess;
         try {
             storedQueryAccess = StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName, requestedVersion);
         } catch (DataAccessException e) {
@@ -218,11 +221,10 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
             throw new InternalServerException(e.getMessage());
         }
 
-        if (storedQueryAccess == null) {
-            throw new IllegalArgumentException("Could not retrieve stored query for qualified name: " + qualifiedName);
-        }
-
-        return mapToQueryDefinitionDto(storedQueryAccess);
+        return storedQueryAccess
+                .map(QueryServiceImp::mapToQueryDefinitionDto)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Could not retrieve stored query for qualified name: " + qualifiedName));
     }
 
     @Override
@@ -238,8 +240,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         }
 
         // lookup version in db
-        SemVer dbSemVer = Optional.ofNullable(
-                        StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName, requestedVersion))
+        SemVer dbSemVer = StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName, requestedVersion)
                 .map(q -> SemVer.parse(q.getSemver()))
                 .orElse(SemVer.NO_VERSION);
 
@@ -263,7 +264,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
                     "Data Access Error: " + e.getCause().getMessage(), e);
-        } catch (IllegalArgumentException e) {
+        } catch (VersionConflictException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
         return mapToQueryDefinitionDto(storedQueryAccess);
@@ -301,17 +302,17 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         }
 
         try {
-            I_StoredQueryAccess storedQueryAccess =
-                    StoredQueryAccess.retrieveQualified(getDataAccess(), qualifiedName, requestedVersion);
-
-            if (storedQueryAccess == null) {
-                throw new ObjectNotFoundException(
-                        "stored query",
-                        "Could not retrieve stored query for qualified name: " + qualifiedName + " version:" + version);
-            }
+            I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(
+                            getDataAccess(), qualifiedName, requestedVersion)
+                    .orElseThrow(() -> new ObjectNotFoundException(
+                            "stored query",
+                            "Could not retrieve stored query for qualified name: " + qualifiedName + " version:"
+                                    + version));
 
             storedQueryAccess.delete();
             return mapToQueryDefinitionDto(storedQueryAccess);
+        } catch (ObjectNotFoundException e) {
+            throw e;
         } catch (DataAccessException dae) {
             throw new GeneralRequestProcessingException(
                     "Data Access Error:" + dae.getCause().getMessage());
@@ -328,7 +329,7 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         }
     }
 
-    private QueryDefinitionResultDto mapToQueryDefinitionDto(I_StoredQueryAccess storedQueryAccess) {
+    private static QueryDefinitionResultDto mapToQueryDefinitionDto(I_StoredQueryAccess storedQueryAccess) {
         QueryDefinitionResultDto dto = new QueryDefinitionResultDto();
         dto.setSaved(storedQueryAccess.getCreationDate().toInstant().atZone(ZoneId.systemDefault()));
         dto.setQualifiedName(storedQueryAccess.getReverseDomainName() + "::" + storedQueryAccess.getSemanticId());
