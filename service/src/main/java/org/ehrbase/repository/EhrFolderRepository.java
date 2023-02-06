@@ -30,12 +30,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.TenantService;
+import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.EhrFolder;
 import org.ehrbase.jooq.pg.tables.EhrFolderHistory;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderHistoryRecord;
@@ -58,22 +60,38 @@ import org.springframework.transaction.annotation.Transactional;
 public class EhrFolderRepository {
 
     private final DSLContext context;
-    private final ServerConfig serverConfig;
 
     private final TenantService tenantService;
 
-    public EhrFolderRepository(DSLContext context, ServerConfig serverConfig, TenantService tenantService) {
+    private final ContributionRepository contributionRepository;
+
+    public EhrFolderRepository(
+            DSLContext context, TenantService tenantService, ContributionRepository contributionRepository) {
         this.context = context;
-        this.serverConfig = serverConfig;
         this.tenantService = tenantService;
+        this.contributionRepository = contributionRepository;
     }
 
     @Transactional
-    public void commit(List<EhrFolderRecord> folderRecordList) {
+    public void commit(List<EhrFolderRecord> folderRecordList, @Nullable UUID contributionId) {
 
+        store(folderRecordList, contributionId, ContributionChangeType.creation);
+    }
+
+    private void store(
+            List<EhrFolderRecord> folderRecordList,
+            UUID contributionId,
+            ContributionChangeType contributionChangeType) {
+        if (contributionId == null) {
+            contributionId = contributionRepository.createDefault(
+                    folderRecordList.get(0).getEhrId(), ContributionDataType.folder, contributionChangeType);
+        }
+
+        UUID finalContributionId = contributionId;
         folderRecordList.forEach(r -> {
             r.setSysPeriodLower(OffsetDateTime.now());
             r.setNamespace(tenantService.getCurrentTenantIdentifier());
+            r.setContributionId(finalContributionId);
         });
         executeInsert(folderRecordList, EhrFolder.EHR_FOLDER);
     }
@@ -119,7 +137,7 @@ public class EhrFolderRepository {
             throw new PreconditionFailedException("If-Match version_uid does not match latest version.");
         }
 
-        commit(folderRecordList);
+        store(folderRecordList, null, ContributionChangeType.modification);
 
         List<EhrFolderHistoryRecord> historyRecords =
                 old.stream().map(this::toHistory).toList();
@@ -237,10 +255,10 @@ public class EhrFolderRepository {
         return context.fetchExists(EhrFolder.EHR_FOLDER.where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId)));
     }
 
-    public List<EhrFolderRecord> to(UUID ehrId, Folder folder) {
+    public List<EhrFolderRecord> toRecord(UUID ehrId, Folder folder) {
 
         List<EhrFolderRecord> ehrFolderRecords =
-                flatten(folder).stream().map(p -> to(p, ehrId)).toList();
+                flatten(folder).stream().map(p -> toRecord(p, ehrId)).toList();
 
         if (folder.getUid() instanceof ObjectVersionId objectVersionId) {
             ehrFolderRecords.forEach(r -> r.setSysVersion(
@@ -250,9 +268,9 @@ public class EhrFolderRepository {
         return ehrFolderRecords;
     }
 
-    private EhrFolderRecord to(Pair<List<String>, Folder> pair, UUID ehrId) {
+    private EhrFolderRecord toRecord(Pair<List<String>, Folder> pair, UUID ehrId) {
 
-        EhrFolderRecord folder2Record = new EhrFolderRecord();
+        EhrFolderRecord folder2Record = context.newRecord(EhrFolder.EHR_FOLDER);
 
         folder2Record.setEhrId(ehrId);
 

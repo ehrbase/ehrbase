@@ -91,7 +91,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         updateUuid(folder, true, UuidGenerator.randomUUID(), 1);
 
-        ehrFolderRepository.commit(ehrFolderRepository.to(ehrId, folder));
+        ehrFolderRepository.commit(ehrFolderRepository.toRecord(ehrId, folder), null);
 
         return folder;
     }
@@ -109,7 +109,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
         updateUuid(folder, true, UUID.fromString(ifMatches.getObjectId().getValue()), version + 1);
-        ehrFolderRepository.update(ehrFolderRepository.to(ehrId, folder));
+        ehrFolderRepository.update(ehrFolderRepository.toRecord(ehrId, folder));
 
         return folder;
     }
@@ -121,7 +121,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
             if (root) {
                 folder.setUid(new ObjectVersionId(rootUuid + "::" + serverConfig.getNodename() + "::" + version));
             } else {
-                folder.setUid(HierObjectId.createRandomUUID());
+                folder.setUid(new HierObjectId(UuidGenerator.randomUUID().toString()));
             }
         }
 

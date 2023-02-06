@@ -22,7 +22,7 @@ create table ehr.ehr_folder
 (
     id                uuid,
     ehr_id            uuid        NOT NULL,
-    contribution_id   uuid,
+    contribution_id   uuid        NOT NULL,
     archetype_node_id TEXT,
     path              TEXT[],
     contains          uuid[],
@@ -46,7 +46,7 @@ create table ehr.ehr_folder_history
 (
     id                uuid,
     ehr_id            uuid        NOT NULL,
-    contribution_id   uuid,
+    contribution_id   uuid        NOT NULL,
     archetype_node_id TEXT,
     path              TEXT[],
     contains          uuid[],
