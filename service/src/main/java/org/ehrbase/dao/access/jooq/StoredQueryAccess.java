@@ -17,7 +17,6 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import static org.ehrbase.dao.access.util.SemVerUtil.partialVersionPattern;
 import static org.ehrbase.jooq.pg.Tables.STORED_QUERY;
 
 import java.sql.Timestamp;
@@ -107,9 +106,13 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
     private static @NonNull Condition versionConstraint(SemVer semVer) {
         if (semVer.isRelease() || semVer.isPreRelease()) {
             return STORED_QUERY.SEMVER.eq(semVer.toVersionString());
-        } else {
-            return STORED_QUERY.SEMVER.likeRegex(partialVersionPattern(semVer));
         }
+        Condition noPreRelease = STORED_QUERY.SEMVER.notContains("-");
+        if (semVer.isNoVersion()) {
+            return noPreRelease;
+        }
+        Condition prefixMatch = STORED_QUERY.SEMVER.like(semVer.toVersionString() + ".%");
+        return prefixMatch.and(noPreRelease);
     }
 
     private static Condition nameConstraint(StoredQueryQualifiedName storedQueryQualifiedName) {
@@ -135,9 +138,15 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             semanticId = null;
             reverseDomainName = null;
         } else {
-            String[] qn = qualifiedQueryName.split("::");
-            reverseDomainName = qn.length < 2 ? null : StringUtils.defaultIfEmpty(qn[1], null);
-            semanticId = qn.length == 0 ? null : StringUtils.defaultIfEmpty(qn[qn.length - 1], null);
+            // qualifiedQueryName is optional
+            int pos = qualifiedQueryName.indexOf("::");
+            if (pos < 0) {
+                reverseDomainName = null;
+                semanticId = qualifiedQueryName;
+            } else {
+                reverseDomainName = StringUtils.defaultIfEmpty(qualifiedQueryName.substring(0, pos), null);
+                semanticId = StringUtils.defaultIfEmpty(qualifiedQueryName.substring(pos + 2), null);
+            }
         }
 
         List<Condition> constraints = new ArrayList<>();
