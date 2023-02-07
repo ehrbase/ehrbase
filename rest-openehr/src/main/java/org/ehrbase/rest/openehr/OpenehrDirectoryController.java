@@ -166,7 +166,10 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         Optional<Folder> foundFolder = folderService.get(ehrId, versionUid, path);
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
-                    "DIRECTORY", String.format("Folder with id %s does not exist.", versionUid.toString()));
+                    "DIRECTORY",
+                    String.format(
+                            "Folder with id %s and path %s does not exist.",
+                            versionUid.toString(), path != null ? path : "/"));
         }
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
@@ -200,7 +203,9 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         */
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
-                    "folder", "The FOLDER for ehrId " + ehrId.toString() + " does not exist.");
+                    "folder",
+                    "The FOLDER for ehrId %s and path %s does not exist."
+                            .formatted(ehrId.toString(), path != null ? path : "/"));
         }
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);

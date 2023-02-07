@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.DirectoryService;
@@ -70,11 +72,26 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
         }
 
         if (!ehrFolderRecords.isEmpty()) {
-            return Optional.of(ehrFolderRepository.from(ehrFolderRecords));
+            return findByPath(ehrFolderRepository.from(ehrFolderRecords), StringUtils.split(path, '/'));
         } else {
 
             return Optional.empty();
         }
+    }
+
+    private Optional<Folder> findByPath(Folder root, String[] path) {
+
+        if (ArrayUtils.isEmpty(path)) {
+            return Optional.of(root);
+        }
+        if (root.getFolders() == null) {
+            return Optional.empty();
+        }
+
+        return root.getFolders().stream()
+                .filter(sf -> sf.getNameAsString().equals(path[0]))
+                .findAny()
+                .flatMap(sf -> findByPath(sf, ArrayUtils.subarray(path, 1, path.length)));
     }
 
     @Override
