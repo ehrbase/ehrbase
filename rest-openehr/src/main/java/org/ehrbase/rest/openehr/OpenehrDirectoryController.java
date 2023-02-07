@@ -136,11 +136,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
-        // Check version conflicts if EHR and directory exist
-        checkDirectoryVersionConflicts(folderId, ehrId);
-
-        // actually delete the EHR root folder
-        //    folderService.delete(ehrId, folderId);
+        folderService.delete(ehrId, folderId);
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }

@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -59,6 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class EhrFolderRepository {
 
+    public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version.";
     private final DSLContext context;
 
     private final TenantService tenantService;
@@ -121,28 +123,37 @@ public class EhrFolderRepository {
         UUID ehrId = folderRecordList.get(0).getEhrId();
         Result<EhrFolderRecord> old = getLatest(ehrId);
 
+        boolean isDeleted = false;
+        if (old.isEmpty()) {
+
+            Result<EhrFolderHistoryRecord> history = getLatestHistory(ehrId);
+
+            if (history.isNotEmpty() && BooleanUtils.isTrue(history.get(0).getSysDeleted())) {
+
+                old = history.into(EhrFolder.EHR_FOLDER);
+                isDeleted = true;
+            }
+        }
+
         if (old.isEmpty()
                 || findRoot(old).getSysVersion() + 1
                         != findRoot(folderRecordList).getSysVersion()
                 || !findRoot(old).getId().equals(findRoot(folderRecordList).getId())) {
-            throw new PreconditionFailedException("If-Match version_uid does not match latest version.");
+            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
         }
+        if (!isDeleted) {
 
-        int execute = context.deleteFrom(EhrFolder.EHR_FOLDER)
-                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
-                .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
-                .execute();
+            context.deleteFrom(EhrFolder.EHR_FOLDER)
+                    .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
+                    .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
+                    .execute();
 
-        if (execute == 0) {
-            throw new PreconditionFailedException("If-Match version_uid does not match latest version.");
+            List<EhrFolderHistoryRecord> historyRecords =
+                    old.stream().map(this::toHistory).toList();
+            executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
         }
 
         store(folderRecordList, null, ContributionChangeType.modification);
-
-        List<EhrFolderHistoryRecord> historyRecords =
-                old.stream().map(this::toHistory).toList();
-
-        executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
     }
 
     EhrFolderRecord findRoot(List<EhrFolderRecord> folderRecordList) {
@@ -183,6 +194,50 @@ public class EhrFolderRepository {
                 .fetch();
     }
 
+    public Result<EhrFolderHistoryRecord> getLatestHistory(UUID ehrid) {
+
+        return context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
+                .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrid))
+                .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION.eq(
+                        context.select(DSL.coalesce(DSL.max(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION), 0))
+                                .from(EhrFolderHistory.EHR_FOLDER_HISTORY)
+                                .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrid))
+                                .getQuery()))
+                .fetch();
+    }
+
+    @Transactional
+    public void delete(UUID ehrId, UUID rootFolderId, int version) {
+
+        Result<EhrFolderRecord> old = getLatest(ehrId);
+
+        if (old.isEmpty()
+                || findRoot(old).getSysVersion() != version
+                || !findRoot(old).getId().equals(rootFolderId)) {
+            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
+        }
+
+        int execute = context.deleteFrom(EhrFolder.EHR_FOLDER)
+                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
+                .execute();
+
+        if (execute == 0) {
+            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
+        }
+
+        List<EhrFolderHistoryRecord> historyRecords =
+                old.stream().map(this::toHistory).toList();
+
+        executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
+
+        historyRecords.forEach(h -> {
+            h.setSysVersion(h.getSysVersion() + 1);
+            h.setSysDeleted(true);
+        });
+        executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
+    }
+
     public Result<EhrFolderHistoryRecord> getVersion(UUID ehrId, int version) {
 
         return context.select(EhrFolder.EHR_FOLDER.fields())
@@ -193,7 +248,8 @@ public class EhrFolderRepository {
                 .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(version))
                 .unionAll(context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
                         .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
-                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION.eq(version)))
+                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION.eq(version))
+                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.isFalse()))
                 .fetch()
                 .into(EhrFolderHistory.EHR_FOLDER_HISTORY);
     }
@@ -231,7 +287,12 @@ public class EhrFolderRepository {
 
     public boolean hasDirectory(UUID ehrId) {
 
-        return context.fetchExists(EhrFolder.EHR_FOLDER.where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId)));
+        return context.fetchExists(context.selectOne()
+                .from(EhrFolder.EHR_FOLDER)
+                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
+                .unionAll(context.selectOne()
+                        .from(EhrFolderHistory.EHR_FOLDER_HISTORY)
+                        .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))));
     }
 
     public List<EhrFolderRecord> toRecord(UUID ehrId, Folder folder) {

@@ -30,4 +30,6 @@ public interface DirectoryService extends BaseService {
     Folder create(UUID ehrId, Folder folder);
 
     Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches);
+
+    void delete(UUID ehrId, ObjectVersionId ifMatches);
 }

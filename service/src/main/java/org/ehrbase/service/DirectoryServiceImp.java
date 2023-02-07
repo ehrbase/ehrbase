@@ -131,6 +131,18 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
         return folder;
     }
 
+    @Override
+    public void delete(UUID ehrId, ObjectVersionId ifMatches) {
+
+        // validation
+        ehrServiceImp.checkEhrExistsAndIsModifiable(ehrId);
+
+        ehrFolderRepository.delete(
+                ehrId,
+                UUID.fromString(ifMatches.getObjectId().getValue()),
+                Integer.valueOf(ifMatches.getVersionTreeId().getValue()));
+    }
+
     private void updateUuid(Folder folder, boolean root, UUID rootUuid, int version) {
 
         if (folder.getUid() == null) {
