@@ -153,19 +153,10 @@ public class EhrFolderRepository {
                 .orElseThrow();
     }
 
-    private EhrFolderHistoryRecord toHistory(EhrFolderRecord record) {
-        EhrFolderHistoryRecord historyRecord = new EhrFolderHistoryRecord();
+    private EhrFolderHistoryRecord toHistory(EhrFolderRecord ehrFolderRecord) {
 
-        historyRecord.setId(record.getId());
-        historyRecord.setEhrId(record.getEhrId());
-        historyRecord.setContributionId(record.getContributionId());
-        historyRecord.setArchetypeNodeId(record.getArchetypeNodeId());
-        historyRecord.setPath(record.getPath());
-        historyRecord.setContains(record.getContains());
-        historyRecord.setFields(record.getFields());
-        historyRecord.setNamespace(record.getNamespace());
-        historyRecord.setSysVersion(record.getSysVersion());
-        historyRecord.setSysPeriodLower(record.getSysPeriodLower());
+        EhrFolderHistoryRecord historyRecord = ehrFolderRecord.into(EhrFolderHistory.EHR_FOLDER_HISTORY);
+
         historyRecord.setSysPeriodUpper(OffsetDateTime.now());
         historyRecord.setSysDeleted(false);
         if (!historyRecord.getSysPeriodUpper().isAfter(historyRecord.getSysPeriodLower())) {
@@ -181,20 +172,8 @@ public class EhrFolderRepository {
     }
 
     private EhrFolderRecord fromHistory(EhrFolderHistoryRecord historyRecord) {
-        EhrFolderRecord folderRecord = new EhrFolderRecord();
 
-        folderRecord.setId(historyRecord.getId());
-        folderRecord.setEhrId(historyRecord.getEhrId());
-        folderRecord.setContributionId(historyRecord.getContributionId());
-        folderRecord.setArchetypeNodeId(historyRecord.getArchetypeNodeId());
-        folderRecord.setPath(historyRecord.getPath());
-        folderRecord.setContains(historyRecord.getContains());
-        folderRecord.setFields(historyRecord.getFields());
-        folderRecord.setNamespace(historyRecord.getNamespace());
-        folderRecord.setSysVersion(historyRecord.getSysVersion());
-        folderRecord.setSysPeriodLower(historyRecord.getSysPeriodLower());
-
-        return folderRecord;
+        return historyRecord.into(EhrFolder.EHR_FOLDER);
     }
 
     public Result<EhrFolderRecord> getLatest(UUID ehrId) {
@@ -302,7 +281,7 @@ public class EhrFolderRepository {
 
         if (folder.getFolders() != null) {
             List<UUID[]> collect =
-                    folder.getFolders().stream().map(this::findItems).collect(Collectors.toList());
+                    folder.getFolders().stream().map(this::findItems).toList();
 
             for (UUID[] a : collect) {
 
