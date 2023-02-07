@@ -15,32 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.dao.access.interfaces;
+package org.ehrbase.dao.access.util;
 
-import java.sql.Timestamp;
-
-public interface I_StoredQueryAccess {
-    I_StoredQueryAccess commit(Timestamp transactionTime);
-
-    I_StoredQueryAccess commit();
-
-    Boolean update(Timestamp transactionTime);
-
-    Boolean update(Timestamp transactionTime, boolean force);
-
-    Integer delete();
-
-    String getReverseDomainName();
-
-    String getSemanticId();
-
-    String getSemver();
-
-    String getQueryText();
-
-    void setQueryText(String queryText);
-
-    Timestamp getCreationDate();
-
-    String getQueryType();
+public class InvalidVersionFormatException extends IllegalArgumentException {
+    public InvalidVersionFormatException(String semVerStr) {
+        super("Invalid version format: " + semVerStr);
+    }
 }

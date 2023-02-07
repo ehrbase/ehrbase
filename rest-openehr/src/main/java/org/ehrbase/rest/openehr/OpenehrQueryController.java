@@ -64,7 +64,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
 
     private static final String EHR_ID_VALUE = "ehr_id/value";
-    private static final String LATEST = "LATEST";
     private static final String QUERY_PARAMETERS = "query_parameters";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -174,7 +173,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version != null ? version : LATEST);
+                queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
         String query = queryDefinitionResultDto.getQueryText();
 
@@ -192,8 +191,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
 
         QueryResponseData queryResponseData = invoke(query, queryParameter, request);
-        queryResponseData.setName(
-                queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
+        setQueryName(queryDefinitionResultDto, queryResponseData);
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -219,13 +217,12 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
         QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version != null ? version : LATEST);
+                queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
         String query = queryDefinitionResultDto.getQueryText();
 
         if (query == null) {
-            var message = MessageFormat.format(
-                    "Could not retrieve AQL {0}/{1}", qualifiedQueryName, version != null ? version : LATEST);
+            var message = MessageFormat.format("Could not retrieve AQL {0}/{1}", qualifiedQueryName, version);
             throw new ObjectNotFoundException("AQL", message);
         }
 
@@ -243,9 +240,14 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
         QueryResponseData queryResponseData = invoke(query, queryParameter, request);
 
+        setQueryName(queryDefinitionResultDto, queryResponseData);
+        return ResponseEntity.ok(queryResponseData);
+    }
+
+    private static void setQueryName(
+            QueryDefinitionResultDto queryDefinitionResultDto, QueryResponseData queryResponseData) {
         queryResponseData.setName(
                 queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
-        return ResponseEntity.ok(queryResponseData);
     }
 
     private QueryResponseData executeQuery(String aql, Map<String, Object> parameters, HttpServletRequest request) {

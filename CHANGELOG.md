@@ -16,6 +16,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - use caffeine cache instead of ehcache as ehcache has unnecessary blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - Performance improvements of the composition audit.([#1042](https://github.com/ehrbase/ehrbase/pull/1042))
+- improved versioning of stored queries ([#1050](https://github.com/ehrbase/ehrbase/pull/1050))
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
 - Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
