@@ -21,21 +21,24 @@ import java.util.Map;
 
 public interface Tenant {
     public enum StdProperties {
-      HOST("host"), REALM("realm"), CLIENT_ID("client-id");
+        HOST("host"),
+        REALM("realm"),
+        CLIENT_ID("client-id");
 
-      private final String prop;
-      
-      private StdProperties(String p) {
-        this.prop = p;
-      }
-      
-      public String toString() {
-        return prop;
-      }      
-      
+        private final String prop;
+
+        private StdProperties(String p) {
+            this.prop = p;
+        }
+
+        public String toString() {
+            return prop;
+        }
     }
-  
+
     public String getTenantId();
+
     public String getTenantName();
-    public Map<String,Object> getTenantProperties();
+
+    public Map<String, Object> getTenantProperties();
 }

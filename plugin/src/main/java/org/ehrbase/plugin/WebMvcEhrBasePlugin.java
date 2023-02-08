@@ -31,7 +31,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-
 /**
  * @author Stefan Spiska
  */
@@ -64,9 +63,9 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
 
         return dispatcherServlet;
     }
-    
+
     private static String DISABLE_PLUGIN_AUTHORIZATION = "authorization.service.disable.for.%s";
-    
+
     private static final String WARN_PLUGIN_SEC =
             "Can not Configure Plugin Security, check that setting Classloader and Registering of Components is Possible";
 
@@ -81,20 +80,17 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
             a1.setParent(pluginManager.getApplicationContext());
         } else log.warn(WARN_PLUGIN_SEC);
     }
-    
+
     private AuthorizationInfo createAuthorizationInfoOf(EhrBasePluginManagerInterface pluginManager) {
-      PluginDescriptor descriptor = getWrapper().getDescriptor();
-      String pluginId = descriptor.getPluginId();
-      
-      Environment env = pluginManager.getApplicationContext().getEnvironment();
-      String authProp = String.format(DISABLE_PLUGIN_AUTHORIZATION, pluginId);
-      
-      if(!env.containsProperty(authProp))
-        return new AuthorizationInfo.AuthorizationEnabled();
-      else if(env.getProperty(authProp, boolean.class))
-        return new AuthorizationInfo.AuthorizationDisabled();
-      else
-        return new AuthorizationInfo.AuthorizationEnabled();
+        PluginDescriptor descriptor = getWrapper().getDescriptor();
+        String pluginId = descriptor.getPluginId();
+
+        Environment env = pluginManager.getApplicationContext().getEnvironment();
+        String authProp = String.format(DISABLE_PLUGIN_AUTHORIZATION, pluginId);
+
+        if (!env.containsProperty(authProp)) return new AuthorizationInfo.AuthorizationEnabled();
+        else if (env.getProperty(authProp, boolean.class)) return new AuthorizationInfo.AuthorizationDisabled();
+        else return new AuthorizationInfo.AuthorizationEnabled();
     }
 
     /**

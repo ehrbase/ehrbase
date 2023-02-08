@@ -20,7 +20,6 @@ package org.ehrbase.plugin.security;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -89,7 +88,7 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
       }
     }
     // @format:on
-    
+
     private abstract static class AspectAdapter implements MethodInterceptor {
         private final AnnotationAspect aspect;
 
