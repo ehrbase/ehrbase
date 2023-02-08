@@ -20,6 +20,7 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,9 +68,24 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
             ehrFolderRecords = ehrFolderRepository.getLatest(ehrId);
         } else {
 
-            ehrFolderRecords = ehrFolderRepository.fromHistory(ehrFolderRepository.getVersion(
+            ehrFolderRecords = ehrFolderRepository.fromHistory(ehrFolderRepository.getByVersion(
                     ehrId, Integer.parseInt(folderId.getVersionTreeId().getValue())));
         }
+
+        if (!ehrFolderRecords.isEmpty()) {
+            return findByPath(ehrFolderRepository.from(ehrFolderRecords), StringUtils.split(path, '/'));
+        } else {
+
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, @Nullable String path) {
+
+        List<EhrFolderRecord> ehrFolderRecords;
+
+        ehrFolderRecords = ehrFolderRepository.fromHistory(ehrFolderRepository.getByTime(ehrId, time));
 
         if (!ehrFolderRecords.isEmpty()) {
             return findByPath(ehrFolderRepository.from(ehrFolderRecords), StringUtils.split(path, '/'));

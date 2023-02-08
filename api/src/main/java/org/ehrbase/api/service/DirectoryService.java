@@ -19,6 +19,7 @@ package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -26,6 +27,8 @@ import javax.annotation.Nullable;
 public interface DirectoryService extends BaseService {
 
     Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path);
+
+    Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, @Nullable String path);
 
     Folder create(UUID ehrId, Folder folder);
 

@@ -238,7 +238,7 @@ public class EhrFolderRepository {
         executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
     }
 
-    public Result<EhrFolderHistoryRecord> getVersion(UUID ehrId, int version) {
+    public Result<EhrFolderHistoryRecord> getByVersion(UUID ehrId, int version) {
 
         return context.select(EhrFolder.EHR_FOLDER.fields())
                 .select(DSL.field("null").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()))
@@ -249,6 +249,26 @@ public class EhrFolderRepository {
                 .unionAll(context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
                         .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
                         .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION.eq(version))
+                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.isFalse()))
+                .fetch()
+                .into(EhrFolderHistory.EHR_FOLDER_HISTORY);
+    }
+
+    public Result<EhrFolderHistoryRecord> getByTime(UUID ehrId, OffsetDateTime time) {
+
+        return context.select(EhrFolder.EHR_FOLDER.fields())
+                .select(DSL.field("null").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()))
+                .select(DSL.field("false").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
+                .from(EhrFolder.EHR_FOLDER)
+                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EhrFolder.EHR_FOLDER.SYS_PERIOD_LOWER.lessOrEqual(time))
+                .unionAll(context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
+                        .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
+                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_LOWER.lessOrEqual(time))
+                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY
+                                .SYS_PERIOD_UPPER
+                                .greaterThan(time)
+                                .or(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.isNull()))
                         .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.isFalse()))
                 .fetch()
                 .into(EhrFolderHistory.EHR_FOLDER_HISTORY);

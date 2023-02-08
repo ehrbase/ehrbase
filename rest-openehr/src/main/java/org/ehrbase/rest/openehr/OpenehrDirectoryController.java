@@ -185,18 +185,16 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         assertValidPath(path);
 
-        final Optional<Folder> foundFolder = folderService.get(ehrId, null, path);
+        final Optional<Folder> foundFolder;
         // Get the folder entry from database
         Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
 
-        /*
-        if (versionAtTime != null && temporal.isPresent()) {
-            foundFolder = folderService.getByTimeStamp(
-                    directoryId, Timestamp.from(temporal.get().toInstant()), path);
+        if (temporal.isPresent()) {
+            foundFolder = folderService.getByTime(ehrId, temporal.get(), path);
         } else {
-            foundFolder = folderService.getLatest(directoryId, path);
+            foundFolder = folderService.get(ehrId, null, path);
         }
-        */
+
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
                     "folder",
