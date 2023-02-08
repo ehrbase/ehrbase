@@ -393,6 +393,7 @@ public class EhrFolderRepository {
         return pairs;
     }
 
+    @Transactional
     public void adminDelete(UUID ehrId) {
 
         context.deleteFrom(EHR_FOLDER).where(EHR_FOLDER.EHR_ID.eq(ehrId)).execute();

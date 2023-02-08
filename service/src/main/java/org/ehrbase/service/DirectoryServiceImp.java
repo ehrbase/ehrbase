@@ -30,14 +30,16 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.DirectoryService;
-import org.ehrbase.dao.access.interfaces.I_FolderAccess;
+import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +50,7 @@ import org.springframework.stereotype.Service;
 public class DirectoryServiceImp extends BaseServiceImp implements DirectoryService {
 
     private final ServerConfig serverConfig;
-    private final EhrServiceImp ehrServiceImp;
+    private final EhrService ehrService;
 
     private final EhrFolderRepository ehrFolderRepository;
 
@@ -56,11 +58,11 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
             KnowledgeCacheService knowledgeCacheService,
             DSLContext context,
             ServerConfig serverConfig,
-            EhrServiceImp ehrServiceImp,
+            EhrService ehrService,
             EhrFolderRepository ehrFolderRepository) {
         super(knowledgeCacheService, context, serverConfig);
         this.serverConfig = serverConfig;
-        this.ehrServiceImp = ehrServiceImp;
+        this.ehrService = ehrService;
         this.ehrFolderRepository = ehrFolderRepository;
     }
 
@@ -118,7 +120,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
     public Folder create(UUID ehrId, Folder folder) {
 
         // validation
-        ehrServiceImp.checkEhrExistsAndIsModifiable(ehrId);
+        ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (ehrFolderRepository.hasDirectory(ehrId)) {
             throw new StateConflictException(
                     String.format("EHR with id %s already contains a directory.", ehrId.toString()));
@@ -144,7 +146,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
     @Override
     public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches) {
         // validation
-        ehrServiceImp.checkEhrExistsAndIsModifiable(ehrId);
+        ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasDirectory(ehrId)) {
             throw new StateConflictException(
                     String.format("EHR with id %s dos not contains a directory.", ehrId.toString()));
@@ -163,12 +165,12 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
     public void delete(UUID ehrId, ObjectVersionId ifMatches) {
 
         // validation
-        ehrServiceImp.checkEhrExistsAndIsModifiable(ehrId);
+        ehrService.checkEhrExistsAndIsModifiable(ehrId);
 
         ehrFolderRepository.delete(
                 ehrId,
                 UUID.fromString(ifMatches.getObjectId().getValue()),
-                Integer.valueOf(ifMatches.getVersionTreeId().getValue()));
+                Integer.parseInt(ifMatches.getVersionTreeId().getValue()));
     }
 
     private void updateUuid(Folder folder, boolean root, UUID rootUuid, int version) {
@@ -185,6 +187,28 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
         if (folder.getFolders() != null) {
 
             folder.getFolders().forEach(folder1 -> updateUuid(folder1, false, rootUuid, version));
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void adminDeleteFolder(UUID ehrId, UUID folderId) {
+
+        // Check if EHR exists
+        if (!this.ehrService.hasEhr(ehrId)) {
+            throw new ObjectNotFoundException("Admin Directory", String.format("EHR with id %s does not exist", ehrId));
+        }
+
+        Result<EhrFolderRecord> latest = ehrFolderRepository.getLatest(ehrId);
+
+        if (latest.isNotEmpty()) {
+            Folder from = ehrFolderRepository.from(latest);
+
+            if (!UUID.fromString(from.getUid().getValue()).equals(folderId)) {
+                throw new IllegalArgumentException("FolderIds do not match");
+            }
+
+            ehrFolderRepository.adminDelete(ehrId);
         }
     }
 }

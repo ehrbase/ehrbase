@@ -35,4 +35,6 @@ public interface DirectoryService extends BaseService {
     Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches);
 
     void delete(UUID ehrId, ObjectVersionId ifMatches);
+
+    void adminDeleteFolder(UUID ehrId, UUID folderId);
 }
