@@ -222,7 +222,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
         if (latest.isNotEmpty()) {
             Folder from = ehrFolderRepository.from(latest);
 
-            if (!UUID.fromString(from.getUid().getValue()).equals(folderId)) {
+            if (!UUID.fromString(from.getUid().getRoot().getValue()).equals(folderId)) {
                 throw new IllegalArgumentException("FolderIds do not match");
             }
 
