@@ -20,6 +20,8 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.UID;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,11 +32,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.DirectoryService;
+import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 /**
@@ -122,7 +126,15 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         FolderUtils.checkSiblingNameConflicts(folder);
 
-        updateUuid(folder, true, UuidGenerator.randomUUID(), 1);
+        updateUuid(
+                folder,
+                true,
+                Optional.ofNullable(folder.getUid())
+                        .map(UIDBasedId::getRoot)
+                        .map(UID::getValue)
+                        .map(UUID::fromString)
+                        .orElse(UuidGenerator.randomUUID()),
+                1);
 
         ehrFolderRepository.commit(ehrFolderRepository.toRecord(ehrId, folder), null);
 
@@ -161,7 +173,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
     private void updateUuid(Folder folder, boolean root, UUID rootUuid, int version) {
 
-        if (folder.getUid() == null) {
+        if (folder.getUid() == null || root) {
 
             if (root) {
                 folder.setUid(new ObjectVersionId(rootUuid + "::" + serverConfig.getNodename() + "::" + version));

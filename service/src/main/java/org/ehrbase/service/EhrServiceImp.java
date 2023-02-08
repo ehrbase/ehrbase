@@ -67,6 +67,7 @@ import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
 import org.ehrbase.jooq.pg.Routines;
+import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -93,16 +94,20 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     private final ValidationService validationService;
     private final TenantService tenantService;
 
+    private final EhrFolderRepository ehrFolderRepository;
+
     @Autowired
     public EhrServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             ValidationService validationService,
             DSLContext context,
             ServerConfig serverConfig,
-            TenantService tenantService) {
+            TenantService tenantService,
+            EhrFolderRepository ehrFolderRepository) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.tenantService = tenantService;
+        this.ehrFolderRepository = ehrFolderRepository;
     }
 
     @PostConstruct
@@ -502,6 +507,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void adminDeleteEhr(UUID ehrId) {
+
+        ehrFolderRepository.adminDelete(ehrId);
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         ehrAccess.adminDeleteEhr();
     }

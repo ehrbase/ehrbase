@@ -17,6 +17,9 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.tables.EhrFolder.EHR_FOLDER;
+import static org.ehrbase.jooq.pg.tables.EhrFolderHistory.EHR_FOLDER_HISTORY;
+
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
@@ -39,8 +42,6 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.EhrFolder;
-import org.ehrbase.jooq.pg.tables.EhrFolderHistory;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
@@ -95,7 +96,7 @@ public class EhrFolderRepository {
             r.setNamespace(tenantService.getCurrentTenantIdentifier());
             r.setContributionId(finalContributionId);
         });
-        executeInsert(folderRecordList, EhrFolder.EHR_FOLDER);
+        executeInsert(folderRecordList, EHR_FOLDER);
     }
 
     private <T extends Record> void executeInsert(List<T> folderRecordList, Table<?> table) {
@@ -130,7 +131,7 @@ public class EhrFolderRepository {
 
             if (history.isNotEmpty() && BooleanUtils.isTrue(history.get(0).getSysDeleted())) {
 
-                old = history.into(EhrFolder.EHR_FOLDER);
+                old = history.into(EHR_FOLDER);
                 isDeleted = true;
             }
         }
@@ -143,14 +144,14 @@ public class EhrFolderRepository {
         }
         if (!isDeleted) {
 
-            context.deleteFrom(EhrFolder.EHR_FOLDER)
-                    .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
-                    .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
+            context.deleteFrom(EHR_FOLDER)
+                    .where(EHR_FOLDER.EHR_ID.eq(ehrId))
+                    .and(EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
                     .execute();
 
             List<EhrFolderHistoryRecord> historyRecords =
                     old.stream().map(this::toHistory).toList();
-            executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
+            executeInsert(historyRecords, EHR_FOLDER_HISTORY);
         }
 
         store(folderRecordList, null, ContributionChangeType.modification);
@@ -166,7 +167,7 @@ public class EhrFolderRepository {
 
     private EhrFolderHistoryRecord toHistory(EhrFolderRecord ehrFolderRecord) {
 
-        EhrFolderHistoryRecord historyRecord = ehrFolderRecord.into(EhrFolderHistory.EHR_FOLDER_HISTORY);
+        EhrFolderHistoryRecord historyRecord = ehrFolderRecord.into(EHR_FOLDER_HISTORY);
 
         historyRecord.setSysPeriodUpper(OffsetDateTime.now());
         historyRecord.setSysDeleted(false);
@@ -184,24 +185,22 @@ public class EhrFolderRepository {
 
     private EhrFolderRecord fromHistory(EhrFolderHistoryRecord historyRecord) {
 
-        return historyRecord.into(EhrFolder.EHR_FOLDER);
+        return historyRecord.into(EHR_FOLDER);
     }
 
     public Result<EhrFolderRecord> getLatest(UUID ehrId) {
 
-        return context.selectFrom(EhrFolder.EHR_FOLDER)
-                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
-                .fetch();
+        return context.selectFrom(EHR_FOLDER).where(EHR_FOLDER.EHR_ID.eq(ehrId)).fetch();
     }
 
     public Result<EhrFolderHistoryRecord> getLatestHistory(UUID ehrid) {
 
-        return context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
-                .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrid))
-                .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION.eq(
-                        context.select(DSL.coalesce(DSL.max(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION), 0))
-                                .from(EhrFolderHistory.EHR_FOLDER_HISTORY)
-                                .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrid))
+        return context.selectFrom(EHR_FOLDER_HISTORY)
+                .where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrid))
+                .and(EHR_FOLDER_HISTORY.SYS_VERSION.eq(
+                        context.select(DSL.coalesce(DSL.max(EHR_FOLDER_HISTORY.SYS_VERSION), 0))
+                                .from(EHR_FOLDER_HISTORY)
+                                .where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrid))
                                 .getQuery()))
                 .fetch();
     }
@@ -217,9 +216,9 @@ public class EhrFolderRepository {
             throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
         }
 
-        int execute = context.deleteFrom(EhrFolder.EHR_FOLDER)
-                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
-                .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
+        int execute = context.deleteFrom(EHR_FOLDER)
+                .where(EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EHR_FOLDER.SYS_VERSION.eq(old.get(0).getSysVersion()))
                 .execute();
 
         if (execute == 0) {
@@ -229,49 +228,49 @@ public class EhrFolderRepository {
         List<EhrFolderHistoryRecord> historyRecords =
                 old.stream().map(this::toHistory).toList();
 
-        executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
+        executeInsert(historyRecords, EHR_FOLDER_HISTORY);
 
         historyRecords.forEach(h -> {
             h.setSysVersion(h.getSysVersion() + 1);
             h.setSysDeleted(true);
         });
-        executeInsert(historyRecords, EhrFolderHistory.EHR_FOLDER_HISTORY);
+        executeInsert(historyRecords, EHR_FOLDER_HISTORY);
     }
 
     public Result<EhrFolderHistoryRecord> getByVersion(UUID ehrId, int version) {
 
-        return context.select(EhrFolder.EHR_FOLDER.fields())
-                .select(DSL.field("null").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()))
-                .select(DSL.field("false").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
-                .from(EhrFolder.EHR_FOLDER)
-                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
-                .and(EhrFolder.EHR_FOLDER.SYS_VERSION.eq(version))
-                .unionAll(context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
-                        .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
-                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_VERSION.eq(version))
-                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.isFalse()))
+        return context.select(EHR_FOLDER.fields())
+                .select(DSL.field("null").as(EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()))
+                .select(DSL.field("false").as(EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
+                .from(EHR_FOLDER)
+                .where(EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EHR_FOLDER.SYS_VERSION.eq(version))
+                .unionAll(context.selectFrom(EHR_FOLDER_HISTORY)
+                        .where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
+                        .and(EHR_FOLDER_HISTORY.SYS_VERSION.eq(version))
+                        .and(EHR_FOLDER_HISTORY.SYS_DELETED.isFalse()))
                 .fetch()
-                .into(EhrFolderHistory.EHR_FOLDER_HISTORY);
+                .into(EHR_FOLDER_HISTORY);
     }
 
     public Result<EhrFolderHistoryRecord> getByTime(UUID ehrId, OffsetDateTime time) {
 
-        return context.select(EhrFolder.EHR_FOLDER.fields())
-                .select(DSL.field("null").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()))
-                .select(DSL.field("false").as(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
-                .from(EhrFolder.EHR_FOLDER)
-                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
-                .and(EhrFolder.EHR_FOLDER.SYS_PERIOD_LOWER.lessOrEqual(time))
-                .unionAll(context.selectFrom(EhrFolderHistory.EHR_FOLDER_HISTORY)
-                        .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
-                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_LOWER.lessOrEqual(time))
-                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY
+        return context.select(EHR_FOLDER.fields())
+                .select(DSL.field("null").as(EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()))
+                .select(DSL.field("false").as(EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
+                .from(EHR_FOLDER)
+                .where(EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EHR_FOLDER.SYS_PERIOD_LOWER.lessOrEqual(time))
+                .unionAll(context.selectFrom(EHR_FOLDER_HISTORY)
+                        .where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
+                        .and(EHR_FOLDER_HISTORY.SYS_PERIOD_LOWER.lessOrEqual(time))
+                        .and(EHR_FOLDER_HISTORY
                                 .SYS_PERIOD_UPPER
                                 .greaterThan(time)
-                                .or(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.isNull()))
-                        .and(EhrFolderHistory.EHR_FOLDER_HISTORY.SYS_DELETED.isFalse()))
+                                .or(EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.isNull()))
+                        .and(EHR_FOLDER_HISTORY.SYS_DELETED.isFalse()))
                 .fetch()
-                .into(EhrFolderHistory.EHR_FOLDER_HISTORY);
+                .into(EHR_FOLDER_HISTORY);
     }
 
     public Folder from(List<EhrFolderRecord> ehrFolderRecords) {
@@ -308,11 +307,9 @@ public class EhrFolderRepository {
     public boolean hasDirectory(UUID ehrId) {
 
         return context.fetchExists(context.selectOne()
-                .from(EhrFolder.EHR_FOLDER)
-                .where(EhrFolder.EHR_FOLDER.EHR_ID.eq(ehrId))
-                .unionAll(context.selectOne()
-                        .from(EhrFolderHistory.EHR_FOLDER_HISTORY)
-                        .where(EhrFolderHistory.EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))));
+                .from(EHR_FOLDER)
+                .where(EHR_FOLDER.EHR_ID.eq(ehrId))
+                .unionAll(context.selectOne().from(EHR_FOLDER_HISTORY).where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))));
     }
 
     public List<EhrFolderRecord> toRecord(UUID ehrId, Folder folder) {
@@ -330,7 +327,7 @@ public class EhrFolderRepository {
 
     private EhrFolderRecord toRecord(Pair<List<String>, Folder> pair, UUID ehrId) {
 
-        EhrFolderRecord folder2Record = context.newRecord(EhrFolder.EHR_FOLDER);
+        EhrFolderRecord folder2Record = context.newRecord(EHR_FOLDER);
 
         folder2Record.setEhrId(ehrId);
 
@@ -394,5 +391,13 @@ public class EhrFolderRepository {
         }
 
         return pairs;
+    }
+
+    public void adminDelete(UUID ehrId) {
+
+        context.deleteFrom(EHR_FOLDER).where(EHR_FOLDER.EHR_ID.eq(ehrId)).execute();
+        context.deleteFrom(EHR_FOLDER_HISTORY)
+                .where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
+                .execute();
     }
 }
