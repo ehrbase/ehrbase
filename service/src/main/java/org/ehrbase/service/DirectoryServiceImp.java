@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
@@ -47,7 +46,7 @@ import org.springframework.stereotype.Service;
  * @author Stefan Spiska
  */
 @Service
-public class DirectoryServiceImp extends BaseServiceImp implements DirectoryService {
+public class DirectoryServiceImp extends BaseServiceImp implements InternalDirectoryService {
 
     private final ServerConfig serverConfig;
     private final EhrService ehrService;
@@ -119,6 +118,12 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
     @Override
     public Folder create(UUID ehrId, Folder folder) {
 
+        return create(ehrId, folder, null);
+    }
+
+    @Override
+    public Folder create(UUID ehrId, Folder folder, UUID contributionId) {
+
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (ehrFolderRepository.hasDirectory(ehrId)) {
@@ -138,13 +143,19 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
                         .orElse(UuidGenerator.randomUUID()),
                 1);
 
-        ehrFolderRepository.commit(ehrFolderRepository.toRecord(ehrId, folder), null);
+        ehrFolderRepository.commit(ehrFolderRepository.toRecord(ehrId, folder), contributionId);
 
         return folder;
     }
 
     @Override
     public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches) {
+
+        return update(ehrId, folder, ifMatches, null);
+    }
+
+    @Override
+    public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId) {
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasDirectory(ehrId)) {
@@ -156,7 +167,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
 
         int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
         updateUuid(folder, true, UUID.fromString(ifMatches.getObjectId().getValue()), version + 1);
-        ehrFolderRepository.update(ehrFolderRepository.toRecord(ehrId, folder));
+        ehrFolderRepository.update(ehrFolderRepository.toRecord(ehrId, folder), contributionId);
 
         return folder;
     }
@@ -164,13 +175,20 @@ public class DirectoryServiceImp extends BaseServiceImp implements DirectoryServ
     @Override
     public void delete(UUID ehrId, ObjectVersionId ifMatches) {
 
+        delete(ehrId, ifMatches);
+    }
+
+    @Override
+    public void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contbutionId) {
+
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
 
         ehrFolderRepository.delete(
                 ehrId,
                 UUID.fromString(ifMatches.getObjectId().getValue()),
-                Integer.parseInt(ifMatches.getVersionTreeId().getValue()));
+                Integer.parseInt(ifMatches.getVersionTreeId().getValue()),
+                contbutionId);
     }
 
     private void updateUuid(Folder folder, boolean root, UUID rootUuid, int version) {

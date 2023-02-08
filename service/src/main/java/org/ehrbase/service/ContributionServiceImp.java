@@ -52,7 +52,6 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.api.service.FolderService;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
@@ -84,7 +83,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
     private final CompositionService compositionService;
     private final EhrService ehrService;
-    private final FolderService folderService;
+    private final InternalDirectoryService folderService;
     private final TenantService tenantService;
 
     enum SupportedClasses {
@@ -98,7 +97,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             KnowledgeCacheService knowledgeCacheService,
             CompositionService compositionService,
             EhrService ehrService,
-            FolderService folderService,
+            InternalDirectoryService folderService,
             DSLContext context,
             ServerConfig serverConfig,
             TenantService tenantService) {
@@ -348,17 +347,9 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 // "AMENDMENT" for audit in access layer
             case MODIFICATION:
                 // preceding_version_uid check
-                Integer latestVersion = folderService.getLastVersionNumber(version.getPrecedingVersionUid());
-                String id = version.getPrecedingVersionUid().toString();
-                // remove version number after "::" and add queried version number to compare with given one
-                String actualPreceding =
-                        id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
-                if (!actualPreceding.equals(version.getPrecedingVersionUid().toString())) {
-                    throw new PreconditionFailedException(
-                            "Given preceding_version_uid for FOLDER object does not match latest existing version");
-                }
+
                 // call modification of the given folder
-                folderService.update(ehrId, version.getPrecedingVersionUid(), versionRmObject, contributionId);
+                folderService.update(ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId);
                 break;
             case DELETED: // case of deletion change type, but request also has payload (TODO: should that be even
                 // allowed?

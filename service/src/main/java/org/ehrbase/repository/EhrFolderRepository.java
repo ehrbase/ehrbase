@@ -119,7 +119,7 @@ public class EhrFolderRepository {
     }
 
     @Transactional
-    public void update(List<EhrFolderRecord> folderRecordList) {
+    public void update(List<EhrFolderRecord> folderRecordList, UUID contributionId) {
 
         UUID ehrId = folderRecordList.get(0).getEhrId();
         Result<EhrFolderRecord> old = getLatest(ehrId);
@@ -154,7 +154,7 @@ public class EhrFolderRepository {
             executeInsert(historyRecords, EHR_FOLDER_HISTORY);
         }
 
-        store(folderRecordList, null, ContributionChangeType.modification);
+        store(folderRecordList, contributionId, ContributionChangeType.modification);
     }
 
     EhrFolderRecord findRoot(List<EhrFolderRecord> folderRecordList) {
@@ -206,7 +206,7 @@ public class EhrFolderRepository {
     }
 
     @Transactional
-    public void delete(UUID ehrId, UUID rootFolderId, int version) {
+    public void delete(UUID ehrId, UUID rootFolderId, int version, UUID contributionId) {
 
         Result<EhrFolderRecord> old = getLatest(ehrId);
 
@@ -230,9 +230,16 @@ public class EhrFolderRepository {
 
         executeInsert(historyRecords, EHR_FOLDER_HISTORY);
 
+        if (contributionId == null) {
+            contributionId = contributionRepository.createDefault(
+                    ehrId, ContributionDataType.folder, ContributionChangeType.deleted);
+        }
+
+        UUID finalContributionId = contributionId;
         historyRecords.forEach(h -> {
             h.setSysVersion(h.getSysVersion() + 1);
             h.setSysDeleted(true);
+            h.setContributionId(finalContributionId);
         });
         executeInsert(historyRecords, EHR_FOLDER_HISTORY);
     }
