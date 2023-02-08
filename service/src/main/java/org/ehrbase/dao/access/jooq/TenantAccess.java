@@ -17,6 +17,7 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.tenant.Tenant;
@@ -36,8 +36,6 @@ import org.ehrbase.jooq.pg.tables.records.TenantRecord;
 import org.jooq.DSLContext;
 import org.jooq.JSON;
 import org.jooq.Result;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TenantAccess implements I_TenantAccess {
     private final TenantRecord record;
@@ -77,22 +75,23 @@ public class TenantAccess implements I_TenantAccess {
                 .map(rec -> new TenantAccess(ctx, rec))
                 .orElse(null);
     }
-    
-    private static Function<Map<String,Object>,String> mapToJson = map -> {
-      if(map == null) return null;
-      
-      ExceptionalSupplier<String,Exception> sup = () -> new ObjectMapper().writeValueAsString(map); 
-      return sup.get(); 
+
+    private static Function<Map<String, Object>, String> mapToJson = map -> {
+        if (map == null) return null;
+
+        ExceptionalSupplier<String, Exception> sup = () -> new ObjectMapper().writeValueAsString(map);
+        return sup.get();
     };
-    
+
     @SuppressWarnings("unchecked")
-    private static Function<JSON,Map<String,Object>> jsonToMap = json -> {
-      if(json == null || StringUtils.isEmpty(json.data())) return Collections.emptyMap();
-      
-      ExceptionalSupplier<Map<String,Object>,Exception> sup = () -> (Map<String,Object>) new ObjectMapper().readValue(json.data(), Map.class);
-      return sup.get(); 
-    };     
-    
+    private static Function<JSON, Map<String, Object>> jsonToMap = json -> {
+        if (json == null || StringUtils.isEmpty(json.data())) return Collections.emptyMap();
+
+        ExceptionalSupplier<Map<String, Object>, Exception> sup =
+                () -> (Map<String, Object>) new ObjectMapper().readValue(json.data(), Map.class);
+        return sup.get();
+    };
+
     @Override
     public Tenant convert() {
         return new Tenant() {
@@ -105,7 +104,7 @@ public class TenantAccess implements I_TenantAccess {
             }
 
             public Map<String, Object> getTenantProperties() {
-              return jsonToMap.apply(record.getTenantProperties());
+                return jsonToMap.apply(record.getTenantProperties());
             }
         };
     }
