@@ -57,7 +57,6 @@ import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
-import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
@@ -141,7 +140,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
         ContributionDto contribution = new ContributionDto(
                 contributionId,
-                retrieveUuidsOfContributionObjects(contributionId),
+                retrieveUuidsOfContributionObjects(ehrId, contributionId),
                 retrieveAuditDetails(contributionId));
 
         return Optional.of(contribution);
@@ -496,11 +495,12 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     /**
      * retrieval of IDs of all objects that are saved as part of the given contribution
      *
+     * @param ehrId
      * @param contribution ID of source contribution
      * @return Map with ID of the object as key and type ("composition", "folder",...) as value
      * @throws IllegalArgumentException on error when retrieving compositions
      */
-    private Map<String, String> retrieveUuidsOfContributionObjects(UUID contribution) {
+    private Map<String, String> retrieveUuidsOfContributionObjects(UUID ehrId, UUID contribution) {
         Map<String, String> objRefs = new HashMap<>();
 
         // query for compositions   // TODO: refactor to use service layer only!?
@@ -515,9 +515,8 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 this.getDataAccess(), contribution, getServerConfig().getNodename());
         statuses.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_EHRSTATUS));
 
-        // query for folders        // TODO: refactor to use service layer only!?
-        Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(
-                getDataAccess(), contribution, getServerConfig().getNodename());
+        // query for folders
+        Set<ObjectVersionId> folders = new HashSet<>(folderService.findForContribution(ehrId, contribution));
         folders.forEach(f -> objRefs.put(f.toString(), TYPE_FOLDER));
 
         return objRefs;

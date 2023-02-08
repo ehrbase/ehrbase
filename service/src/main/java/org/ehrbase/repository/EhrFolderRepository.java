@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.TenantService;
@@ -68,11 +69,17 @@ public class EhrFolderRepository {
 
     private final ContributionRepository contributionRepository;
 
+    private final ServerConfig serverConfig;
+
     public EhrFolderRepository(
-            DSLContext context, TenantService tenantService, ContributionRepository contributionRepository) {
+            DSLContext context,
+            TenantService tenantService,
+            ContributionRepository contributionRepository,
+            ServerConfig serverConfig) {
         this.context = context;
         this.tenantService = tenantService;
         this.contributionRepository = contributionRepository;
+        this.serverConfig = serverConfig;
     }
 
     @Transactional
@@ -407,5 +414,23 @@ public class EhrFolderRepository {
         context.deleteFrom(EHR_FOLDER_HISTORY)
                 .where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
                 .execute();
+    }
+
+    public List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId) {
+
+        return context
+                .select(EHR_FOLDER.ID, EHR_FOLDER.SYS_VERSION)
+                .from(EHR_FOLDER)
+                .where(EHR_FOLDER.EHR_ID.eq(ehrId))
+                .and(EHR_FOLDER.CONTRIBUTION_ID.eq(contributionId))
+                .unionAll(context.select(EHR_FOLDER_HISTORY.ID, EHR_FOLDER_HISTORY.SYS_VERSION)
+                        .from(EHR_FOLDER_HISTORY)
+                        .where(EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId))
+                        .and(EHR_FOLDER_HISTORY.CONTRIBUTION_ID.eq(contributionId)))
+                .fetch()
+                .stream()
+                .map(r -> new ObjectVersionId(
+                        r.value1().toString() + "::" + serverConfig.getNodename() + "::" + r.value2()))
+                .toList();
     }
 }

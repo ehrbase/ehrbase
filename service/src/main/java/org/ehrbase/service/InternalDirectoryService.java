@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.util.List;
 import java.util.UUID;
 import org.ehrbase.api.service.DirectoryService;
 
@@ -31,4 +32,6 @@ public interface InternalDirectoryService extends DirectoryService {
     Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId);
 
     void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contbutionId);
+
+    List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId);
 }

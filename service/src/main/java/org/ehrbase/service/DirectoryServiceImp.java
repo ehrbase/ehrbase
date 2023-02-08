@@ -229,4 +229,10 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
             ehrFolderRepository.adminDelete(ehrId);
         }
     }
+
+    @Override
+    public List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId) {
+
+        return ehrFolderRepository.findForContribution(ehrId, contributionId);
+    }
 }
