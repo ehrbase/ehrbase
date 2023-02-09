@@ -3,7 +3,6 @@
 This file documents any backwards-incompatible changes in EHRBase and
 assists users migrating to a new version.
 
-
 ## EHRbase 0.19.0
 
 ### Database Configuration
@@ -21,7 +20,7 @@ If an old version of the scripts was used this statement needs to be run manuall
 
 ## EHRbase 0.21.0
 
-## Switch to native Postgres
+### Switch to native Postgres
 
 Before 0.21.0 EHRbase offered two setups, one using the
 extensions   [temporal tables](https://github.com/arkhipov/temporal_tables),
@@ -31,7 +30,29 @@ To migrate a postgres without those extensions run `base/db-setup/migrate_to_clo
 you used the old `base/db-setup/cloud_db_setup.sql`
 or run the EHRbase Postgres docker image.
 
-## Fix Duplicate User issue
+### Fix Duplicate User issue
+
 Prior to release 0.21.0, EHRbase contained a bug that creates a new internal user for each request.
 
-The execution of the Flyway migration script `V71__merge_duplicate_users.sql` may take its time as the duplicates are being consolidated.
+The execution of the Flyway migration script `V71__merge_duplicate_users.sql` may take its time as the duplicates are
+being consolidated.
+
+## EHRbase 0.24.0
+
+### Switch to new directory structure
+
+With release 0.24.0 a new Structure to store EHR directory was introduced. There is no automatic migration of old EHR
+directory data into the new structure.
+If you used EHR directory and are fine with losing the old data you can run in postgres as admin
+
+```
+-- remove Ehr directory!!!
+
+begin;
+alter table ehr.ehr drop column if exists directory;
+TRUNCATE ehr.folder, ehr.folder_hierarchy, ehr.folder_items,ehr.folder_history,ehr.folder_items_history,ehr.folder_hierarchy_history;
+alter table ehr.ehr add column directory uuid references ehr.folder(id);
+commit ;
+```
+
+If you need to migrate old EHR directory data please contact us.

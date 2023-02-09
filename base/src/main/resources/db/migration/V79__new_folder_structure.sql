@@ -17,6 +17,29 @@
  *
  */
 
+DO
+$$
+    DECLARE
+        count_folder         INTEGER;
+        count_folder_history INTEGER;
+    BEGIN
+        ALTER TABLE ehr.folder
+            DISABLE ROW LEVEL SECURITY;
+        ALTER TABLE ehr.folder_history
+            DISABLE ROW LEVEL SECURITY;
+        SELECT count(*) FROM ehr.folder INTO count_folder;
+        SELECT count(*) FROM ehr.folder_history INTO count_folder_history;
+        ALTER TABLE ehr.folder
+            ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE ehr.folder_history
+            ENABLE ROW LEVEL SECURITY;
+
+        IF count_folder != 0 or count_folder_history != 0
+        THEN
+            RAISE EXCEPTION 'Can not automatically migrate directory. See UPDATING.md';
+        END IF;
+    END
+$$;
 
 create table ehr.ehr_folder
 (
