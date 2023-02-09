@@ -31,6 +31,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.util.FolderUtils;
@@ -184,7 +185,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasDirectory(ehrId)) {
-            throw new StateConflictException(
+            throw new PreconditionFailedException(
                     String.format("EHR with id %s dos not contains a directory.", ehrId.toString()));
         }
 
