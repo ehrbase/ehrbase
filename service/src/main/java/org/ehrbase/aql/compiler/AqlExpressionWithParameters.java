@@ -17,8 +17,8 @@
  */
 package org.ehrbase.aql.compiler;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -50,17 +50,20 @@ public class AqlExpressionWithParameters extends AqlExpression {
     public AqlExpressionWithParameters parse(String expression, String jsonParameterMap) {
 
         // get the map from the json expression
-        Gson gson = new GsonBuilder().create();
+        Map<String, Object> parameterMap;
+        try {
+            parameterMap = new ObjectMapper().readerForMapOf(Object.class).readValue(jsonParameterMap);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
 
-        Map<String, Object> parameterMap = gson.fromJson(jsonParameterMap, Map.class);
+        Map<String, Object> parameters = (Map<String, Object>) parameterMap.get(PARAMETERS_KEY);
 
         // get the map from query-parameters
-        if (!parameterMap.containsKey(PARAMETERS_KEY))
+        if (parameters == null) {
             throw new IllegalArgumentException("Json map does not contain " + PARAMETERS_KEY);
-
-        parameterMap = (Map<String, Object>) parameterMap.get(PARAMETERS_KEY);
-
-        return parse(expression, parameterMap);
+        }
+        return parse(expression, parameters);
     }
 
     /**
