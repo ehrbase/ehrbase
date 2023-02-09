@@ -153,13 +153,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
         try { // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(
-                    getDataAccess(),
-                    subjectUuid,
-                    systemId,
-                    null,
-                    null,
-                    ehrId,
-                    tenantService.getCurrentTenantIdentifier());
+                    getDataAccess(), subjectUuid, systemId, null, ehrId, tenantService.getCurrentTenantIdentifier());
             ehrAccess.setStatus(status);
             return ehrAccess.commit(committerId, systemId, DESCRIPTION);
         } catch (Exception e) {
@@ -479,31 +473,6 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public UUID getDirectoryId(UUID ehrId) {
-        try {
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-            return ehrAccess.getDirectoryId();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw new InternalServerException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean removeDirectory(UUID ehrId) {
-        try {
-            return I_EhrAccess.removeDirectory(getDataAccess(), ehrId);
-        } catch (Exception e) {
-            logger.error(String.format(
-                    "Could not remove directory from EHR with id %s.\nReason: %s", ehrId.toString(), e.getMessage()));
-            throw new InternalServerException(e.getMessage(), e);
-        }
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void adminDeleteEhr(UUID ehrId) {

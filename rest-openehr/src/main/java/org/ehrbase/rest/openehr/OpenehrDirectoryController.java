@@ -31,7 +31,6 @@ import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.DirectoryResponseData;
@@ -270,27 +269,6 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             Paths.get(path);
         } catch (InvalidPathException e) {
             throw new InvalidApiParameterException("The value of path parameter is invalid", e);
-        }
-    }
-
-    private void checkDirectoryVersionConflicts(ObjectVersionId requestedFolderId, UUID ehrId) {
-        UUID directoryUuid;
-        if (!ehrService.hasEhr(ehrId) || (directoryUuid = ehrService.getDirectoryId(ehrId)) == null) {
-            // Let the service layer handle this, to ensure same behaviour across the application
-            return;
-        }
-        int latestVersion = 1;
-        // folderService.getLastVersionNumber(new ObjectVersionId(directoryUuid.toString()));
-        // TODO: Change column 'directory' in EHR to String with ObjectVersionId
-        String directoryId = String.format(
-                "%s::%s::%d", directoryUuid, ehrService.getServerConfig().getNodename(), latestVersion);
-
-        if (requestedFolderId != null && !requestedFolderId.toString().equals(directoryId)) {
-            throw new PreconditionFailedException(
-                    "If-Match version_uid does not match latest version.",
-                    directoryId,
-                    createLocationUri(EHR, ehrId.toString(), DIRECTORY, directoryId)
-                            .toString());
         }
     }
 }
