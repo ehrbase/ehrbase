@@ -175,7 +175,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
     @Override
     public void delete(UUID ehrId, ObjectVersionId ifMatches) {
 
-        delete(ehrId, ifMatches);
+        delete(ehrId, ifMatches, null);
     }
 
     @Override
@@ -183,6 +183,10 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
+        if (!ehrFolderRepository.hasDirectory(ehrId)) {
+            throw new StateConflictException(
+                    String.format("EHR with id %s dos not contains a directory.", ehrId.toString()));
+        }
 
         ehrFolderRepository.delete(
                 ehrId,
