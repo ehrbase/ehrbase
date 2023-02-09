@@ -17,45 +17,51 @@
  */
 package org.ehrbase.dao.access.util;
 
-public class StoredQueryQualifiedName {
+import org.springframework.lang.NonNull;
 
-    String name;
+public final class StoredQueryQualifiedName {
 
-    public StoredQueryQualifiedName(String name) {
+    private final String reverseDomainName;
+    private final String semanticId;
 
-        if (!name.contains("::"))
+    private final SemVer semVer;
+
+    public StoredQueryQualifiedName(@NonNull String qualifiedName, @NonNull SemVer version) {
+
+        String[] nameParts = qualifiedName.split("::");
+
+        if (nameParts.length != 2 || qualifiedName.contains("/"))
             throw new IllegalArgumentException(
                     "Qualified name is not valid (https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_package):"
-                            + name);
+                            + qualifiedName);
 
-        this.name = name;
-    }
-
-    public StoredQueryQualifiedName(String reverseDomainName, String semanticId, String semVer) {
-        this.name = reverseDomainName + "::" + semanticId + "/" + semVer;
+        this.reverseDomainName = nameParts[0];
+        this.semanticId = nameParts[1];
+        this.semVer = version;
     }
 
     public String reverseDomainName() {
-        return name.split("::")[0];
+        return reverseDomainName;
     }
 
     public String semanticId() {
-        return (name.split("::")[1]).split("/")[0];
+        return semanticId;
     }
 
-    public String semVer() {
-        String semVer = null;
-
-        if (name.contains("/")) semVer = name.split("/")[1];
-
+    public SemVer semVer() {
         return semVer;
     }
 
-    public boolean isSetSemVer() {
-        return name.contains("/");
+    public boolean hasVersion() {
+        return !semVer.isNoVersion();
     }
 
     public String toString() {
-        return name;
+        StringBuilder sb =
+                new StringBuilder().append(reverseDomainName).append("::").append(semanticId);
+        if (!semVer.isNoVersion()) {
+            sb.append('/').append(semVer);
+        }
+        return sb.toString();
     }
 }

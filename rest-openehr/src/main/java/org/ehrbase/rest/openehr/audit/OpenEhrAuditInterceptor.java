@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
-import java.security.Principal;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Set;
@@ -28,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.rest.util.AuthHelper;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
@@ -80,8 +80,9 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     protected void enrichDataset(T auditDataset, HttpServletRequest request, HttpServletResponse response) {
         auditDataset.setMethod(HttpMethod.valueOf(request.getMethod()));
 
+        String username = AuthHelper.getCurrentAuthenticatedUsername(request);
         // SourceParticipant
-        auditDataset.setSourceParticipantUserId(getCurrentAuthenticatedUsername(request));
+        auditDataset.setSourceParticipantUserId(username);
         auditDataset.setSourceParticipantNetworkId(getClientIpAddress(request));
 
         // EventOutcomeIndicator and EventOutcomeDescription
@@ -108,14 +109,6 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     }
 
     protected abstract AuditMessage[] getAuditMessages(T auditDataset);
-
-    protected String getCurrentAuthenticatedUsername(HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
-        if (principal == null) {
-            return null;
-        }
-        return principal.getName();
-    }
 
     protected String getClientIpAddress(HttpServletRequest request) {
         String address = request.getHeader("X-Forwarded-For");

@@ -17,9 +17,7 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
-import static org.ehrbase.jooq.pg.Tables.ENTRY_HISTORY;
-import static org.ehrbase.jooq.pg.Tables.TERRITORY;
+import static org.ehrbase.jooq.pg.Tables.*;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.FeederAudit;
@@ -65,10 +63,8 @@ import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.Condition;
-import org.jooq.JSONB;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +113,16 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
     private EntryAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
+    }
+
+    public static String fetchTemplateIdByCompositionId(I_DomainAccess domainAccess, UUID compositionId) {
+        return domainAccess
+                .getContext()
+                .select(ENTRY.TEMPLATE_ID)
+                .from(ENTRY)
+                .where(ENTRY.COMPOSITION_ID.equal(compositionId))
+                .fetchOptional(ENTRY.TEMPLATE_ID)
+                .orElse(null);
     }
 
     /**
@@ -265,8 +271,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             //                .get(c -> c.getValue())
             //                .get(s -> new DvCodedText(s, (CodePhrase) null))
             //                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
-            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
-            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
+            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;})
+            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get())
             SafeNav<DvCodedText> safeDvCodedText = SafeNav.of(category)
                     .get(c -> new DvCodedText(c.getValue(), c.getDefiningCode().getCodeString()));
             values.put(SystemValue.CATEGORY, safeDvCodedText.get());
@@ -450,7 +456,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public UUID commit() {
         throw new InternalServerException("INTERNAL: commit without transaction time is not legal");
@@ -497,7 +503,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public Boolean update() {
         throw new InternalServerException(
@@ -509,7 +515,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public Boolean update(Boolean force) {
         throw new InternalServerException(

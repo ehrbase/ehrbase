@@ -15,6 +15,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed
 - use caffeine cache instead of ehcache as ehcache has unnecessary blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
+- Performance improvements of the composition audit.([#1042](https://github.com/ehrbase/ehrbase/pull/1042))
+- improved versioning of stored queries ([#1050](https://github.com/ehrbase/ehrbase/pull/1050))
  ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
 - Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
@@ -23,6 +25,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed status update if party already exist for ehr([#1024](https://github.com/ehrbase/ehrbase/pull/1024))
 - Change response code from 400 to 406 Not Acceptable on querying POST template endpoint with unsupported `Accept` header application/json([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
 - Fixed abac default tenant claims validation([#1041](https://github.com/ehrbase/ehrbase/pull/1041))
+- Fixed incorrect path in Location http header([#1044](https://github.com/ehrbase/ehrbase/pull/1044))
+- Fixed get deleted composition returns 500([#1048](https://github.com/ehrbase/ehrbase/pull/1048))
 
 ## [0.23.0]
  ### Added

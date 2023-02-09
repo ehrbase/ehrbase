@@ -18,7 +18,11 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.http.MediaType.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,12 +47,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @TenantAware
 @RestController
 @RequestMapping(
-        path = "${openehr-api.context-path:/rest/openehr}/v1/definition/query",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/definition/query",
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
@@ -99,7 +111,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                 "getStoredQueryVersion invoked with the following input: {}, version:{}", qualifiedQueryName, version);
 
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(
-                queryService.retrieveStoredQuery(qualifiedQueryName, version.isPresent() ? version.get() : null));
+                queryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
@@ -110,7 +122,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
             consumes = {TEXT_PLAIN_VALUE, APPLICATION_JSON_VALUE},
             produces = {APPLICATION_JSON_VALUE})
-    public ResponseEntity<QueryDefinitionResponseData> putStoreQuery(
+    public ResponseEntity<QueryDefinitionResponseData> putStoredQuery(
             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
@@ -181,7 +193,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
             HttpHeaders respHeaders = new HttpHeaders();
             respHeaders.setContentType(APPLICATION_JSON);
-            respHeaders.setLocation(getRequestUri());
+            respHeaders.setLocation(
+                    createLocationUri(DEFINITION, QUERY, storedQuery.getQualifiedName(), storedQuery.getVersion()));
 
             return ResponseEntity.ok().headers(respHeaders).build();
         } else {

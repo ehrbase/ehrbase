@@ -71,6 +71,14 @@ public interface CompositionService extends BaseService, VersionedObjectService<
     String getTemplateIdFromInputComposition(String content, CompositionFormat format);
 
     /**
+     * Retrieves the template ID associated with a given composition ID.
+     *
+     * @param compositionId The UUID of the composition for which to retrieve the template ID
+     * @return The template ID associated with the given composition ID
+     */
+    String retrieveTemplateId(UUID compositionId);
+
+    /**
      * Gets the version of a composition that is closest in time before timestamp
      * @param compositionId UUID (versioned_object_id) of composition
      * @param timestamp Given time
