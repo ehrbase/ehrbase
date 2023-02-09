@@ -19,6 +19,7 @@ package org.ehrbase.application.config.web;
 
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.EhrAuditInterceptor;
@@ -46,16 +47,19 @@ public class WebConfiguration implements WebMvcConfigurer {
     private final EhrService ehrService;
 
     private final CompositionService compositionService;
+    private final TenantService tenantService;
 
     public WebConfiguration(
             CorsProperties properties,
             AuditContext auditContext,
             EhrService ehrService,
-            CompositionService compositionService) {
+            CompositionService compositionService,
+            TenantService tenantService) {
         this.properties = properties;
         this.auditContext = auditContext;
         this.ehrService = ehrService;
         this.compositionService = compositionService;
+        this.tenantService = tenantService;
     }
 
     @Override
@@ -72,13 +76,14 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         if (auditContext.isAuditEnabled()) {
             // Composition endpoint
-            registry.addInterceptor(new CompositionAuditInterceptor(auditContext, ehrService, compositionService))
+            registry.addInterceptor(new CompositionAuditInterceptor(
+                            auditContext, ehrService, compositionService, tenantService))
                     .addPathPatterns("/rest/openehr/v1/**/composition/**");
             // Ehr endpoint
-            registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService))
+            registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns("/rest/openehr/v1/ehr", "/rest/openehr/v1/ehr/*");
             // Query endpoint
-            registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService))
+            registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns("/rest/openehr/v1/query/**");
         }
     }

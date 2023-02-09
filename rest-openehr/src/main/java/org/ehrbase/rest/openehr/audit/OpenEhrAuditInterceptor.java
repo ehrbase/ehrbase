@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.rest.util.AuthHelper;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
@@ -49,10 +50,12 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
     protected final AuditContext auditContext;
 
     protected final EhrService ehrService;
+    protected final TenantService tenantService;
 
-    protected OpenEhrAuditInterceptor(AuditContext auditContext, EhrService ehrService) {
+    protected OpenEhrAuditInterceptor(AuditContext auditContext, EhrService ehrService, TenantService tenantService) {
         this.auditContext = auditContext;
         this.ehrService = ehrService;
+        this.tenantService = tenantService;
     }
 
     @Override
@@ -106,6 +109,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
 
         // Patient ParticipantObjectIdentification
         auditDataset.addPatientParticipantObjectIds(getPatientNumbers(request));
+        auditDataset.setEnterpriseSiteId(tenantService.getCurrentTenantIdentifier());
     }
 
     protected abstract AuditMessage[] getAuditMessages(T auditDataset);

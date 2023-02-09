@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.StringUtils;
 
@@ -49,12 +48,13 @@ public class AuthHelper {
         Principal principal = request.getUserPrincipal();
         String username;
 
-        // Check if the principal is null and get the principal from the SecurityContext if necessary
+        // Check if the principal is null
         if (principal == null) {
-            principal = SecurityContextHolder.getContext().getAuthentication();
+            // return null when no auth
+            return null;
         }
 
-        username = Optional.ofNullable(principal)
+        username = Optional.of(principal)
                 .filter(AbstractAuthenticationToken.class::isInstance)
                 .map(AbstractAuthenticationToken.class::cast)
                 .map(AbstractAuthenticationToken::getPrincipal)
