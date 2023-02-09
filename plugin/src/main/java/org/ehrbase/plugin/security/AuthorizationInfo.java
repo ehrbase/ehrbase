@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,30 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.tenant;
+package org.ehrbase.plugin.security;
 
-import java.util.Map;
+public interface AuthorizationInfo {
+    public boolean isDisabled();
 
-public interface Tenant {
-    public enum StdProperties {
-        HOST("host"),
-        REALM("realm"),
-        CLIENT_ID("client-id");
-
-        private final String prop;
-
-        private StdProperties(String p) {
-            this.prop = p;
-        }
-
-        public String toString() {
-            return prop;
+    public static class AuthorizationDisabled implements AuthorizationInfo {
+        public boolean isDisabled() {
+            return true;
         }
     }
 
-    public String getTenantId();
-
-    public String getTenantName();
-
-    public Map<String, Object> getTenantProperties();
+    public static class AuthorizationEnabled implements AuthorizationInfo {
+        public boolean isDisabled() {
+            return false;
+        }
+    }
 }

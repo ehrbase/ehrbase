@@ -1,70 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>server</artifactId>
-        <groupId>org.ehrbase.openehr</groupId>
-        <version>0.24.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>server</artifactId>
+    <groupId>org.ehrbase.openehr</groupId>
+    <version>0.24.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>plugin</artifactId>
+  <artifactId>plugin</artifactId>
 
-    <properties>
-        <license-header.dir>../</license-header.dir>
-    </properties>
+  <properties>
+    <license-header.dir>../</license-header.dir>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.nedap.healthcare.archie</groupId>
-            <artifactId>openehr-rm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.pf4j</groupId>
-            <artifactId>pf4j-spring</artifactId>
-            <version>0.7.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ehrbase.openehr.sdk</groupId>
-            <artifactId>opt-1.4</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ehrbase.openehr.sdk</groupId>
-            <artifactId>response-dto</artifactId>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>com.nedap.healthcare.archie</groupId>
+      <artifactId>openehr-rm</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
-            <artifactId>jooq-pg</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.pf4j</groupId>
+      <artifactId>pf4j-spring</artifactId>
+      <version>0.7.0</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.ehrbase.openehr</groupId>
-            <artifactId>api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq</artifactId>
-        </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ehrbase.openehr.sdk</groupId>
+      <artifactId>opt-1.4</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ehrbase.openehr.sdk</groupId>
+      <artifactId>response-dto</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>jooq-pg</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
 </project>
