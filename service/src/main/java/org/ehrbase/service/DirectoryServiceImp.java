@@ -160,7 +160,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasDirectory(ehrId)) {
-            throw new StateConflictException(
+            throw new PreconditionFailedException(
                     String.format("EHR with id %s dos not contains a directory.", ehrId.toString()));
         }
 
