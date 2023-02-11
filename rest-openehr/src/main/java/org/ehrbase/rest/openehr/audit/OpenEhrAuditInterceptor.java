@@ -19,7 +19,6 @@ package org.ehrbase.rest.openehr.audit;
 
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -142,13 +141,10 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
         }
         return ehrIds;
     }
-    // TenantSupport.currentTenantIdentifier();
-    // TODO:: Creates set with null value that should not be possible for ipf
-    // ehrService.getSubjectExtRef(ehrId.toString())
+
     protected Set<String> getPatientNumbers(HttpServletRequest request) {
         return getEhrIds(request).stream()
                 .map(ehrId -> ehrService.getSubjectExtRef(ehrId.toString()))
-                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 }
