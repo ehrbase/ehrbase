@@ -27,10 +27,11 @@ import java.security.Principal;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.util.StringUtils;
 
 public class AuthHelper {
 
@@ -46,35 +47,37 @@ public class AuthHelper {
      */
     public static String getCurrentAuthenticatedUsername(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
-        String username;
 
-        // Check if the principal is null
-        if (principal == null) {
-            // return null when no auth
-            return null;
-        }
+        // TODO: The getName method has been added to DefaultTenantAuthentication, so this implementation is no longer
+        // needed.
+        // and should be removed
+        // It should now only be verified whether the name is semantically correct to be used in a tenant and it is
+        // appropriate, relevant,
+        // and meaningful based on the intended purpose or context of the tenant.
 
-        username = Optional.of(principal)
+        return Optional.ofNullable(principal)
                 .filter(AbstractAuthenticationToken.class::isInstance)
                 .map(AbstractAuthenticationToken.class::cast)
                 .map(AbstractAuthenticationToken::getPrincipal)
                 .filter(DecodedJWT.class::isInstance)
                 .map(DecodedJWT.class::cast)
                 .map(DecodedJWT::getSubject)
-                .orElse(EMPTY);
+                .filter(StringUtils::isBlank)
+                .orElseGet(() -> {
+                    Function<Principal, String> username = p -> p != null ? p.getName() : null;
+                    if (hasBasicAuthHeader(request)) {
+                        return Optional.ofNullable(getBasicAuthUsername(request))
+                                .filter(StringUtils::isNotBlank)
+                                .orElse(username.apply(principal));
+                    } else {
+                        return username.apply(principal);
+                    }
+                });
+    }
 
-        if (isBlank(username)
-                && request.getHeader(AUTHORIZATION) != null
-                && request.getHeader(AUTHORIZATION).startsWith("Basic")) {
-            username = getBasicAuthUsername(request);
-        }
-
-        // If the username is still blank, use the name from the Principal
-        if (isBlank(username) && principal != null) {
-            username = principal.getName();
-        }
-
-        return username;
+    private static boolean hasBasicAuthHeader(HttpServletRequest request) {
+        return request.getHeader(AUTHORIZATION) != null
+                && request.getHeader(AUTHORIZATION).startsWith(AUTHENTICATION_SCHEME_BASIC);
     }
 
     /**
@@ -112,7 +115,7 @@ public class AuthHelper {
         }
 
         authorization = authorization.trim();
-        if (!StringUtils.startsWithIgnoreCase(authorization, AUTHENTICATION_SCHEME_BASIC)) {
+        if (!startsWithIgnoreCase(authorization, AUTHENTICATION_SCHEME_BASIC)) {
             return null;
         }
 

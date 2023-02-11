@@ -17,6 +17,9 @@
  */
 package org.ehrbase.application.config.web;
 
+import static java.lang.String.format;
+import static org.ehrbase.rest.BaseController.*;
+
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.TenantService;
@@ -25,6 +28,7 @@ import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.EhrAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
 import org.openehealth.ipf.commons.audit.AuditContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -39,6 +43,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CorsProperties.class)
 public class WebConfiguration implements WebMvcConfigurer {
+
+    @Value(API_CONTEXT_PATH_WITH_VERSION)
+    protected String apiContextPath;
 
     private final CorsProperties properties;
 
@@ -78,13 +85,13 @@ public class WebConfiguration implements WebMvcConfigurer {
             // Composition endpoint
             registry.addInterceptor(new CompositionAuditInterceptor(
                             auditContext, ehrService, compositionService, tenantService))
-                    .addPathPatterns("/rest/openehr/v1/**/composition/**");
+                    .addPathPatterns(format("%s/**/%s/**", apiContextPath, COMPOSITION));
             // Ehr endpoint
             registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService, tenantService))
-                    .addPathPatterns("/rest/openehr/v1/ehr", "/rest/openehr/v1/ehr/*");
+                    .addPathPatterns(format("%s/%s", apiContextPath, EHR), format("%s/%s/*", apiContextPath, EHR));
             // Query endpoint
             registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService, tenantService))
-                    .addPathPatterns("/rest/openehr/v1/query/**");
+                    .addPathPatterns(format("%s/%s/**", apiContextPath, QUERY));
         }
     }
 }
