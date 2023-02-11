@@ -57,7 +57,7 @@ public abstract class OpenEhrAuditMessageBuilder<T extends OpenEhrAuditMessageBu
 
     protected final T addAuditSource(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
         delegate.setAuditSource(
-                auditContext.getAuditSourceId(), auditDataset.getEnterpriseSiteId(), auditContext.getAuditSource());
+                auditContext.getAuditSourceId(), auditDataset.getAuditEnterpriseSiteId(), auditContext.getAuditSource());
         return self();
     }
 

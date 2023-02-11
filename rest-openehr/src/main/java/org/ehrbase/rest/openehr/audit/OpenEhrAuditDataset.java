@@ -33,7 +33,7 @@ public class OpenEhrAuditDataset implements Serializable {
     private EventOutcomeIndicator eventOutcomeIndicator;
 
     private String eventOutcomeDescription;
-    private String enterpriseSiteId;
+    private String auditEnterpriseSiteId;
 
     private HttpMethod method;
 
@@ -114,11 +114,11 @@ public class OpenEhrAuditDataset implements Serializable {
         return hasPatientParticipantObjectIds() && patientParticipantObjectIds.size() == 1;
     }
 
-    public String getEnterpriseSiteId() {
-        return enterpriseSiteId;
+    public String getAuditEnterpriseSiteId() {
+        return auditEnterpriseSiteId;
     }
 
-    public void setEnterpriseSiteId(String enterpriseSiteId) {
-        this.enterpriseSiteId = enterpriseSiteId;
+    public void setAuditEnterpriseSiteId(String auditEnterpriseSiteId) {
+        this.auditEnterpriseSiteId = auditEnterpriseSiteId;
     }
 }

@@ -109,7 +109,7 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
 
         // Patient ParticipantObjectIdentification
         auditDataset.addPatientParticipantObjectIds(getPatientNumbers(request));
-        auditDataset.setEnterpriseSiteId(tenantService.getCurrentTenantIdentifier());
+        auditDataset.setAuditEnterpriseSiteId(tenantService.getCurrentTenantIdentifier());
     }
 
     protected abstract AuditMessage[] getAuditMessages(T auditDataset);
