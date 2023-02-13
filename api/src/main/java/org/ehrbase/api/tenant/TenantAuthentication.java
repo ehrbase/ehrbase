@@ -22,8 +22,6 @@ public interface TenantAuthentication<T> {
 
     public String getTenantId();
 
-    public String getName();
-
     public static String getDefaultTenantId() {
         return DEFAULT_TENANT_ID;
     }

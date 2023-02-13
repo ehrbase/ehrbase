@@ -47,14 +47,6 @@ public class AuthHelper {
      */
     public static String getCurrentAuthenticatedUsername(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
-
-        // TODO: The getName method has been added to DefaultTenantAuthentication, so this implementation is no longer
-        // needed.
-        // and should be removed
-        // It should now only be verified whether the name is semantically correct to be used in a tenant and it is
-        // appropriate, relevant,
-        // and meaningful based on the intended purpose or context of the tenant.
-
         return Optional.ofNullable(principal)
                 .filter(AbstractAuthenticationToken.class::isInstance)
                 .map(AbstractAuthenticationToken.class::cast)

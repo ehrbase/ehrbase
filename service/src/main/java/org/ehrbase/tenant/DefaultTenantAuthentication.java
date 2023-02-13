@@ -29,12 +29,10 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 public class DefaultTenantAuthentication extends AbstractAuthenticationToken implements TenantAuthentication<String> {
     private static final long serialVersionUID = -187707458684929521L;
     public static final String TENANT_CLAIM = "tnt";
-    private String name;
 
     public static <T> DefaultTenantAuthentication of(TenantAuthentication<T> auth, Converter<T, String> converter) {
         DefaultTenantAuthentication defAuth = new DefaultTenantAuthentication();
         defAuth.tenantId = auth.getTenantId();
-        defAuth.name = auth.getName();
         defAuth.raw = converter.convert(auth.getAuthentication());
         defAuth.token = JWT.decode(defAuth.raw);
         return defAuth;
@@ -84,10 +82,5 @@ public class DefaultTenantAuthentication extends AbstractAuthenticationToken imp
     @Override
     public String getAuthentication() {
         return raw;
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
     }
 }
