@@ -168,29 +168,26 @@ public class EhrController extends BaseController {
             throw new GeneralRequestProcessingException("Invalid content format", e);
         }
 
-        String subjectId = Optional.of("subjectId")
-                .map(attributes::get)
-                .map(String.class::cast)
-                .filter(StringUtils::isNotBlank)
+        String subjectId = getAttribute(attributes, "subjectId", String.class)
                 .orElseThrow(() -> new InvalidApiParameterException("subjectId missing"));
 
-        String subjectNamespace = Optional.of("subjectNamespace")
-                .map(attributes::get)
-                .map(String.class::cast)
-                .filter(StringUtils::isNotBlank)
+        String subjectNamespace = getAttribute(attributes, "subjectNamespace", String.class)
                 .orElseThrow(() -> new InvalidApiParameterException("subjectNamespace missing"));
 
         PartySelf subject = new PartySelf(new PartyRef(new HierObjectId(subjectId), subjectNamespace, "PERSON"));
         ehrStatus.setSubject(subject);
 
-        if (attributes.containsKey(MODIFIABLE)) {
-            ehrStatus.setModifiable((Boolean) attributes.get(MODIFIABLE));
-        }
+        getAttribute(attributes, MODIFIABLE, Boolean.class).ifPresent(ehrStatus::setModifiable);
+        getAttribute(attributes, QUERYABLE, Boolean.class).ifPresent(ehrStatus::setQueryable);
 
-        if (attributes.containsKey(QUERYABLE)) {
-            ehrStatus.setQueryable((Boolean) attributes.get(QUERYABLE));
-        }
         return ehrStatus;
+    }
+
+    private static <T> Optional<T> getAttribute(Map<String, Object> attributes, String key, Class<T> valueType) {
+        return Optional.of(key)
+                .map(attributes::get)
+                .map(valueType::cast)
+                .filter(v -> valueType != String.class || StringUtils.isNotBlank((String) v));
     }
 
     private Optional<EhrResponseData> buildEhrResponseData(UUID ehrId, Action create, String contentType) {

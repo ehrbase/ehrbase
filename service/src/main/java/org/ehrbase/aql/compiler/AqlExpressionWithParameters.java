@@ -17,8 +17,6 @@
  */
 package org.ehrbase.aql.compiler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -26,44 +24,10 @@ import java.util.regex.Pattern;
 
 public class AqlExpressionWithParameters extends AqlExpression {
 
-    public static final String PARAMETERS_KEY = "query-parameters";
-
     public AqlExpressionWithParameters parse(String query, Map<String, Object> parameterValues) {
         String query1 = substitute(query, parameterValues);
         super.parse(query1);
         return this;
-    }
-
-    /**
-     * get the parameter values from a json expression in the format:
-     *
-     *   "query-parameters": {
-     *     "ehr_id": "7d44b88c-4199-4bad-97dc-d78268e01398",
-     *     "systolic_bp": 140
-     *   }
-     *
-     * @param expression
-     * @param jsonParameterMap
-     * @return
-     */
-    @Override
-    public AqlExpressionWithParameters parse(String expression, String jsonParameterMap) {
-
-        // get the map from the json expression
-        Map<String, Object> parameterMap;
-        try {
-            parameterMap = new ObjectMapper().readerForMapOf(Object.class).readValue(jsonParameterMap);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-
-        Map<String, Object> parameters = (Map<String, Object>) parameterMap.get(PARAMETERS_KEY);
-
-        // get the map from query-parameters
-        if (parameters == null) {
-            throw new IllegalArgumentException("Json map does not contain " + PARAMETERS_KEY);
-        }
-        return parse(expression, parameters);
     }
 
     /**
