@@ -27,11 +27,11 @@ import org.ehrbase.api.service.DirectoryService;
  * @author Stefan Spiska
  */
 public interface InternalDirectoryService extends DirectoryService {
-    Folder create(UUID ehrId, Folder folder, UUID contributionId);
+    Folder create(UUID ehrId, Folder folder, UUID contributionId, UUID auditId);
 
-    Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId);
+    Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId, UUID auditId);
 
-    void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contbutionId);
+    void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contributionId, UUID auditId);
 
     List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId);
 }

@@ -119,11 +119,11 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
     @Override
     public Folder create(UUID ehrId, Folder folder) {
 
-        return create(ehrId, folder, null);
+        return create(ehrId, folder, null, null);
     }
 
     @Override
-    public Folder create(UUID ehrId, Folder folder, UUID contributionId) {
+    public Folder create(UUID ehrId, Folder folder, UUID contributionId, UUID auditId) {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
@@ -144,7 +144,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
                         .orElse(UuidGenerator.randomUUID()),
                 1);
 
-        ehrFolderRepository.commit(ehrFolderRepository.toRecord(ehrId, folder), contributionId);
+        ehrFolderRepository.commit(ehrFolderRepository.toRecord(ehrId, folder), contributionId, auditId);
 
         return folder;
     }
@@ -152,11 +152,11 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
     @Override
     public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches) {
 
-        return update(ehrId, folder, ifMatches, null);
+        return update(ehrId, folder, ifMatches, null, null);
     }
 
     @Override
-    public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId) {
+    public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId, UUID auditId) {
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasDirectory(ehrId)) {
@@ -168,7 +168,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
 
         int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
         updateUuid(folder, true, UUID.fromString(ifMatches.getObjectId().getValue()), version + 1);
-        ehrFolderRepository.update(ehrFolderRepository.toRecord(ehrId, folder), contributionId);
+        ehrFolderRepository.update(ehrFolderRepository.toRecord(ehrId, folder), contributionId, auditId);
 
         return folder;
     }
@@ -176,11 +176,11 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
     @Override
     public void delete(UUID ehrId, ObjectVersionId ifMatches) {
 
-        delete(ehrId, ifMatches, null);
+        delete(ehrId, ifMatches, null, null);
     }
 
     @Override
-    public void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contbutionId) {
+    public void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contributionId, UUID auditId) {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
@@ -193,7 +193,8 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
                 ehrId,
                 UUID.fromString(ifMatches.getObjectId().getValue()),
                 Integer.parseInt(ifMatches.getVersionTreeId().getValue()),
-                contbutionId);
+                contributionId,
+                auditId);
     }
 
     private void updateUuid(Folder folder, boolean root, UUID rootUuid, int version) {

@@ -46,6 +46,7 @@ create table ehr.ehr_folder
     id                uuid,
     ehr_id            uuid        NOT NULL,
     contribution_id   uuid        NOT NULL,
+    audit_id          uuid        NOT NULL,
     archetype_node_id TEXT,
     path              TEXT[],
     contains          uuid[],
@@ -55,7 +56,8 @@ create table ehr.ehr_folder
     sys_period_lower  timestamptz NOT NULL,
     PRIMARY KEY (ehr_id, id),
     FOREIGN KEY (ehr_id) REFERENCES ehr.ehr (id),
-    FOREIGN KEY (contribution_id) REFERENCES ehr.contribution (id)
+    FOREIGN KEY (contribution_id) REFERENCES ehr.contribution (id),
+    FOREIGN KEY (audit_id) REFERENCES ehr.audit_details (id)
 );
 
 create index folder2_path_idx ON ehr.ehr_folder USING btree ((path[2]), ehr_id);
@@ -70,6 +72,7 @@ create table ehr.ehr_folder_history
     id                uuid,
     ehr_id            uuid        NOT NULL,
     contribution_id   uuid        NOT NULL,
+    audit_id          uuid        NOT NULL,
     archetype_node_id TEXT,
     path              TEXT[],
     contains          uuid[],
@@ -81,7 +84,8 @@ create table ehr.ehr_folder_history
     sys_deleted       boolean     NOT NULL,
     PRIMARY KEY (ehr_id, id, sys_version),
     FOREIGN KEY (ehr_id) REFERENCES ehr.ehr (id),
-    FOREIGN KEY (contribution_id) REFERENCES ehr.contribution (id)
+    FOREIGN KEY (contribution_id) REFERENCES ehr.contribution (id),
+    FOREIGN KEY (audit_id) REFERENCES ehr.audit_details (id)
 );
 
 ALTER TABLE ehr.ehr_folder_history
@@ -90,15 +94,19 @@ CREATE POLICY ehr_policy_all ON ehr.ehr_folder_history FOR ALL USING (namespace 
 
 -- Remove old folder structure
 
-alter table ehr.ehr drop column if exists directory;
+alter table ehr.ehr
+    drop column if exists directory;
 drop table ehr.folder, ehr.folder_hierarchy, ehr.folder_items,ehr.folder_history,ehr.folder_items_history,ehr.folder_hierarchy_history,ehr.object_ref, ehr.object_ref_history;
 
-drop function  ehr.admin_delete_folder(folder_id_input uuid);
+drop function ehr.admin_delete_folder(folder_id_input uuid);
 drop function ehr.admin_delete_folder_history(folder_id_input uuid);
-drop function  ehr.admin_delete_folder_obj_ref_history(contribution_id_input uuid);
+drop function ehr.admin_delete_folder_obj_ref_history(contribution_id_input uuid);
 
 create or replace function admin_delete_ehr_full(ehr_id_param uuid)
-    returns TABLE(deleted boolean)
+    returns TABLE
+            (
+                deleted boolean
+            )
     language plpgsql
 as
 $$
@@ -207,17 +215,18 @@ $$
 DECLARE
     ehr_uuid ALIAS FOR $1;
     server_id ALIAS FOR $2;
-    contribution_json_array JSONB[];
-    contribution_details JSONB;
+    contribution_json_array        JSONB[];
+    contribution_details           JSONB;
     composition_version_json_array JSONB[];
-    composition_in_ehr_id RECORD;
-    folder_version_json_array JSONB[];
-    folder_in_ehr_id RECORD;
+    composition_in_ehr_id          RECORD;
+    folder_version_json_array      JSONB[];
+    folder_in_ehr_id               RECORD;
 BEGIN
 
     FOR contribution_details IN (SELECT ehr.js_contribution(contribution.id, server_id)
                                  FROM ehr.contribution
-                                 WHERE contribution.ehr_id = ehr_uuid AND contribution.contribution_type != 'ehr')
+                                 WHERE contribution.ehr_id = ehr_uuid
+                                   AND contribution.contribution_type != 'ehr')
         LOOP
             contribution_json_array := array_append(contribution_json_array, contribution_details);
         END LOOP;
@@ -237,36 +246,29 @@ BEGIN
         END LOOP;
 
 
+    RETURN (WITH ehr_data AS (SELECT ehr.id                as ehr_id,
+                                     ehr.date_created      as date_created,
+                                     ehr.date_created_tzid as date_created_tz,
+                                     ehr.access            as access,
+                                     system.settings       as system_value
+                              FROM ehr.ehr
+                                       JOIN ehr.system ON system.id = ehr.system_id
+                              WHERE ehr.id = ehr_uuid)
+            SELECT jsonb_strip_nulls(
+                           jsonb_build_object(
+                                   '_type', 'EHR',
+                                   'ehr_id', ehr.js_canonical_hier_object_id(ehr_data.ehr_id),
+                                   'system_id', ehr.js_canonical_hier_object_id(ehr_data.system_value),
+                                   'ehr_status', ehr.js_ehr_status(ehr_data.ehr_id, server_id),
+                                   'time_created', ehr.js_dv_date_time(ehr_data.date_created, ehr_data.date_created_tz),
+                                   'contributions', contribution_json_array,
+                                   'compositions', composition_version_json_array
+                               )
+                       -- 'ehr_access'
+                       -- 'tags'
+                       )
 
-    RETURN (
-        WITH ehr_data AS (
-            SELECT
-                ehr.id as ehr_id,
-                ehr.date_created  as date_created,
-                ehr.date_created_tzid as date_created_tz,
-                ehr.access as access,
-                system.settings as system_value
-            FROM ehr.ehr
-                     JOIN ehr.system ON system.id = ehr.system_id
-            WHERE ehr.id = ehr_uuid
-        )
-        SELECT
-            jsonb_strip_nulls(
-                    jsonb_build_object(
-                            '_type', 'EHR',
-                            'ehr_id', ehr.js_canonical_hier_object_id(ehr_data.ehr_id),
-                            'system_id', ehr.js_canonical_hier_object_id(ehr_data.system_value),
-                            'ehr_status', ehr.js_ehr_status(ehr_data.ehr_id, server_id),
-                            'time_created', ehr.js_dv_date_time(ehr_data.date_created, ehr_data.date_created_tz),
-                            'contributions', contribution_json_array,
-                            'compositions', composition_version_json_array
-                        )
-                -- 'ehr_access'
-                -- 'tags'
-                )
-
-        FROM ehr_data
-    );
+            FROM ehr_data);
 END
 $$;
 

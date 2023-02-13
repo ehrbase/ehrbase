@@ -339,7 +339,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                folderService.create(ehrId, versionRmObject, contributionId);
+                folderService.create(ehrId, versionRmObject, contributionId, null);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use
                 // the type
@@ -348,12 +348,12 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 // preceding_version_uid check
 
                 // call modification of the given folder
-                folderService.update(ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId);
+                folderService.update(ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId, null);
                 break;
             case DELETED: // case of deletion change type, but request also has payload (TODO: should that be even
                 // allowed?
                 // specification-wise it's not forbidden)
-                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId);
+                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, null);
                 break;
             case SYNTHESIS: // TODO
             case UNKNOWN: // TODO

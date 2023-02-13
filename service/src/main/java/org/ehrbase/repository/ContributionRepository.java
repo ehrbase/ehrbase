@@ -60,6 +60,24 @@ public class ContributionRepository {
     public UUID createDefault(
             UUID ehrId, ContributionDataType contributionType, ContributionChangeType contributionChangeType) {
 
+        UUID auditDetailsRecordId = createDefaultAudit(contributionChangeType);
+
+        ContributionRecord contributionRecord = context.newRecord(Contribution.CONTRIBUTION);
+
+        contributionRecord.setId(UuidGenerator.randomUUID());
+        contributionRecord.setEhrId(ehrId);
+        contributionRecord.setContributionType(contributionType);
+        contributionRecord.setState(ContributionState.complete);
+        contributionRecord.setHasAudit(auditDetailsRecordId);
+        contributionRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+
+        contributionRecord.store();
+
+        return contributionRecord.getId();
+    }
+
+    @Transactional
+    public UUID createDefaultAudit(ContributionChangeType contributionChangeType) {
         AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
 
         auditDetailsRecord.setId(UuidGenerator.randomUUID());
@@ -71,18 +89,6 @@ public class ContributionRepository {
         auditDetailsRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
 
         auditDetailsRecord.store();
-
-        ContributionRecord contributionRecord = context.newRecord(Contribution.CONTRIBUTION);
-
-        contributionRecord.setId(UuidGenerator.randomUUID());
-        contributionRecord.setEhrId(ehrId);
-        contributionRecord.setContributionType(contributionType);
-        contributionRecord.setState(ContributionState.complete);
-        contributionRecord.setHasAudit(auditDetailsRecord.getId());
-        contributionRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
-
-        contributionRecord.store();
-
-        return contributionRecord.getId();
+        return auditDetailsRecord.getId();
     }
 }
