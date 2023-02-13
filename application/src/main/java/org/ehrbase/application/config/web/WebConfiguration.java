@@ -17,7 +17,6 @@
  */
 package org.ehrbase.application.config.web;
 
-import static java.lang.String.format;
 import static org.ehrbase.rest.BaseController.*;
 
 import org.ehrbase.api.service.CompositionService;
@@ -43,6 +42,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CorsProperties.class)
 public class WebConfiguration implements WebMvcConfigurer {
+
+    private static final String EHR_PATH_PATTERN = "%s/%s/*";
+    private static final String QUERY_PATH_PATTERN = "%s/%s/**";
+    private static final String CREATE_EHR_PATH_PATTERN = "%s/%s";
+    private static final String COMPOSITION_PATH_PATTERN = "%s/%s/*/%s/**";
 
     @Value(API_CONTEXT_PATH_WITH_VERSION)
     protected String apiContextPath;
@@ -85,13 +89,15 @@ public class WebConfiguration implements WebMvcConfigurer {
             // Composition endpoint
             registry.addInterceptor(new CompositionAuditInterceptor(
                             auditContext, ehrService, compositionService, tenantService))
-                    .addPathPatterns(format("%s/**/%s/**", apiContextPath, COMPOSITION));
+                    .addPathPatterns(COMPOSITION_PATH_PATTERN.formatted(apiContextPath, EHR, COMPOSITION));
             // Ehr endpoint
             registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService, tenantService))
-                    .addPathPatterns(format("%s/%s", apiContextPath, EHR), format("%s/%s/*", apiContextPath, EHR));
+                    .addPathPatterns(
+                            CREATE_EHR_PATH_PATTERN.formatted(apiContextPath, EHR),
+                            EHR_PATH_PATTERN.formatted(apiContextPath, EHR));
             // Query endpoint
             registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService, tenantService))
-                    .addPathPatterns(format("%s/%s/**", apiContextPath, QUERY));
+                    .addPathPatterns(QUERY_PATH_PATTERN.formatted(apiContextPath, QUERY));
         }
     }
 }

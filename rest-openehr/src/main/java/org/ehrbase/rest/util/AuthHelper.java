@@ -54,7 +54,7 @@ public class AuthHelper {
                 .filter(DecodedJWT.class::isInstance)
                 .map(DecodedJWT.class::cast)
                 .map(DecodedJWT::getSubject)
-                .filter(StringUtils::isBlank)
+                .filter(StringUtils::isNotBlank)
                 .orElseGet(() -> {
                     Function<Principal, String> username = p -> p != null ? p.getName() : null;
                     if (hasBasicAuthHeader(request)) {
