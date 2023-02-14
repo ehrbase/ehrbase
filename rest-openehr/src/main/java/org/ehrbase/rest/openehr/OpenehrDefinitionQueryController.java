@@ -24,15 +24,17 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.util.Map;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
 import java.util.Optional;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
+import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
+import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.openehr.ErrorBodyPayload;
@@ -146,22 +148,30 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         MediaType mediaType = MediaType.parseMediaType(contentType);
         String aql;
+        if (APPLICATION_JSON.isCompatibleWith(mediaType)) {
+            // assume same format as adhoc POST
+            aql = Optional.of(queryPayload)
+                    .map(p -> {
+                        try {
+                            return new ObjectMapper().readTree(p);
+                        } catch (JsonProcessingException e) {
+                            throw new GeneralRequestProcessingException("Invalid content format", e);
+                        }
+                    })
+                    .map(n -> n.get("q"))
+                    .filter(JsonNode::isTextual)
+                    .map(JsonNode::asText)
+                    .orElse(null);
 
-        if (APPLICATION_JSON.isCompatibleWith(mediaType)) { // use the payload from adhoc POST:
-            // get the query and parameters if any
-            Gson gson = new GsonBuilder().create();
-            Map<String, Object> mapped = gson.fromJson(queryPayload, Map.class);
-            aql = (String) mapped.get("q");
         } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
             aql = queryPayload;
         } else {
-            throw new UnexpectedSwitchCaseException(mediaType.getType());
+            throw new UnsupportedMediaTypeException(mediaType.getType());
         }
 
         if (isBlank(aql)) {
             return new ResponseEntity(
-                    new ErrorBodyPayload("Invalid query", "no aql query provided in payload").toString(),
-                    HttpStatus.BAD_REQUEST);
+                    new ErrorBodyPayload("Invalid query", "no aql query provided").toString(), HttpStatus.BAD_REQUEST);
         }
 
         QueryDefinitionResultDto storedQuery =
