@@ -26,7 +26,7 @@ import org.ehrbase.jooq.pg.enums.PartyRefIdType;
 /**
  * handles party_ref attribute of a party proxy
  */
-class PartyRefValue {
+public class PartyRefValue {
 
     private final PartyProxy partyProxy;
 
@@ -36,7 +36,7 @@ class PartyRefValue {
     private String type = null;
     private PartyRefIdType objectIdType = PartyRefIdType.undefined;
 
-    PartyRefValue(PartyProxy partyProxy) {
+    public PartyRefValue(PartyProxy partyProxy) {
         this.partyProxy = partyProxy;
     }
 
@@ -44,7 +44,7 @@ class PartyRefValue {
      * extract the attributes of party_ref
      * @return
      */
-    PartyRefValue attributes() {
+    public PartyRefValue attributes() {
 
         if (partyProxy.getExternalRef() == null) // PartySelf f.e.
         return this;
@@ -63,23 +63,23 @@ class PartyRefValue {
         return this;
     }
 
-    String getNamespace() {
+    public String getNamespace() {
         return namespace;
     }
 
-    String getValue() {
+    public String getValue() {
         return value;
     }
 
-    String getScheme() {
+    public String getScheme() {
         return scheme;
     }
 
-    String getType() {
+    public String getType() {
         return type;
     }
 
-    PartyRefIdType getObjectIdType() {
+    public PartyRefIdType getObjectIdType() {
         return objectIdType;
     }
 }

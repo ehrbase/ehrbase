@@ -24,7 +24,6 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +37,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
@@ -48,10 +46,7 @@ import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
-import org.jooq.Loader;
-import org.jooq.Record;
 import org.jooq.Result;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,7 +88,9 @@ public class EhrFolderRepository {
             UUID contributionId,
             ContributionChangeType contributionChangeType,
             UUID auditId) {
+
         if (contributionId == null) {
+
             contributionId = contributionRepository.createDefault(
                     folderRecordList.get(0).getEhrId(), ContributionDataType.folder, contributionChangeType);
         }
@@ -111,26 +108,8 @@ public class EhrFolderRepository {
             r.setContributionId(finalContributionId);
             r.setAuditId(finalAuditId);
         });
-        executeInsert(folderRecordList, EHR_FOLDER);
-    }
 
-    private <T extends Record> void executeInsert(List<T> folderRecordList, Table<?> table) {
-        try {
-            Loader<?> execute = context.loadInto(table)
-                    .bulkAfter(500)
-                    .loadRecords(folderRecordList)
-                    .fields(table.fields())
-                    .execute();
-
-            if (!execute.result().errors().isEmpty()) {
-
-                throw new InternalServerException(execute.result().errors().stream()
-                        .map(e -> e.exception().getMessage())
-                        .collect(Collectors.joining(";")));
-            }
-        } catch (IOException e) {
-            throw new InternalServerException(e);
-        }
+        RepostoryHelper.executeBulkInsert(context, folderRecordList, EHR_FOLDER);
     }
 
     @Transactional
@@ -166,7 +145,8 @@ public class EhrFolderRepository {
 
             List<EhrFolderHistoryRecord> historyRecords =
                     old.stream().map(this::toHistory).toList();
-            executeInsert(historyRecords, EHR_FOLDER_HISTORY);
+
+            RepostoryHelper.executeBulkInsert(context, historyRecords, EHR_FOLDER_HISTORY);
         }
 
         store(folderRecordList, contributionId, ContributionChangeType.modification, auditId);
@@ -243,7 +223,7 @@ public class EhrFolderRepository {
         List<EhrFolderHistoryRecord> historyRecords =
                 old.stream().map(this::toHistory).toList();
 
-        executeInsert(historyRecords, EHR_FOLDER_HISTORY);
+        RepostoryHelper.executeBulkInsert(context, historyRecords, EHR_FOLDER_HISTORY);
 
         if (contributionId == null) {
             contributionId = contributionRepository.createDefault(
@@ -263,7 +243,8 @@ public class EhrFolderRepository {
             h.setContributionId(finalContributionId);
             h.setAuditId(finalAuditId);
         });
-        executeInsert(historyRecords, EHR_FOLDER_HISTORY);
+
+        RepostoryHelper.executeBulkInsert(context, historyRecords, EHR_FOLDER_HISTORY);
     }
 
     public Result<EhrFolderHistoryRecord> getByVersion(UUID ehrId, int version) {

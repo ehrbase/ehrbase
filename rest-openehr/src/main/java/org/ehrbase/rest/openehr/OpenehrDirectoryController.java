@@ -66,12 +66,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr")
 public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {
 
-    private final DirectoryService folderService;
+    private final DirectoryService directoryService;
 
     private final EhrService ehrService;
 
-    public OpenehrDirectoryController(DirectoryService folderService, EhrService ehrService) {
-        this.folderService = folderService;
+    public OpenehrDirectoryController(DirectoryService directoryService, EhrService ehrService) {
+        this.directoryService = directoryService;
         this.ehrService = ehrService;
     }
 
@@ -90,7 +90,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestBody Folder folder) {
 
-        var createdFolder = folderService.create(ehrId, folder);
+        var createdFolder = directoryService.create(ehrId, folder);
 
         return createDirectoryResponse(HttpMethod.POST, prefer, accept, createdFolder, ehrId);
     }
@@ -114,7 +114,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         // Update folder and get new version
-        Folder updatedFolder = folderService.update(ehrId, folder, folderId);
+        Folder updatedFolder = directoryService.update(ehrId, folder, folderId);
 
         return createDirectoryResponse(HttpMethod.PUT, prefer, accept, updatedFolder, ehrId);
     }
@@ -134,7 +134,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
-        folderService.delete(ehrId, folderId);
+        directoryService.delete(ehrId, folderId);
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
@@ -157,7 +157,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         assertValidPath(path);
 
         // Get the folder entry from database
-        Optional<Folder> foundFolder = folderService.get(ehrId, versionUid, path);
+        Optional<Folder> foundFolder = directoryService.get(ehrId, versionUid, path);
         if (foundFolder.isEmpty()) {
             throw new ObjectNotFoundException(
                     "DIRECTORY",
@@ -188,9 +188,9 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
 
         if (temporal.isPresent()) {
-            foundFolder = folderService.getByTime(ehrId, temporal.get(), path);
+            foundFolder = directoryService.getByTime(ehrId, temporal.get(), path);
         } else {
-            foundFolder = folderService.get(ehrId, null, path);
+            foundFolder = directoryService.get(ehrId, null, path);
         }
 
         if (foundFolder.isEmpty()) {

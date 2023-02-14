@@ -47,6 +47,7 @@ public class SystemService {
 
     @PostConstruct
     private void init() {
+
         Optional<UUID> uuid = systemRepository.findSystemId(serverConfig.getNodename());
 
         if (uuid.isEmpty()) {
