@@ -19,6 +19,9 @@ package org.ehrbase.application.config.web;
 
 import static org.ehrbase.rest.BaseController.*;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.TenantService;
@@ -43,10 +46,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableConfigurationProperties(CorsProperties.class)
 public class WebConfiguration implements WebMvcConfigurer {
 
-    private static final String EHR_PATH_PATTERN = "%s/%s/*";
-    private static final String QUERY_PATH_PATTERN = "%s/%s/**";
-    private static final String CREATE_EHR_PATH_PATTERN = "%s/%s";
-    private static final String COMPOSITION_PATH_PATTERN = "%s/%s/*/%s/**";
+    private static final String ANY_SEGMENT = "*";
+    private static final String ANY_TRAILING_SEGMENTS = "**";
 
     @Value(API_CONTEXT_PATH_WITH_VERSION)
     protected String apiContextPath;
@@ -89,15 +90,17 @@ public class WebConfiguration implements WebMvcConfigurer {
             // Composition endpoint
             registry.addInterceptor(new CompositionAuditInterceptor(
                             auditContext, ehrService, compositionService, tenantService))
-                    .addPathPatterns(COMPOSITION_PATH_PATTERN.formatted(apiContextPath, EHR, COMPOSITION));
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_TRAILING_SEGMENTS));
             // Ehr endpoint
             registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService, tenantService))
-                    .addPathPatterns(
-                            CREATE_EHR_PATH_PATTERN.formatted(apiContextPath, EHR),
-                            EHR_PATH_PATTERN.formatted(apiContextPath, EHR));
+                    .addPathPatterns(contextPathPattern(EHR), contextPathPattern(EHR, ANY_SEGMENT));
             // Query endpoint
             registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService, tenantService))
-                    .addPathPatterns(QUERY_PATH_PATTERN.formatted(apiContextPath, QUERY));
+                    .addPathPatterns(contextPathPattern(QUERY, ANY_TRAILING_SEGMENTS));
         }
+    }
+
+    private String contextPathPattern(String... segments) {
+        return Stream.concat(Stream.of(apiContextPath), Arrays.stream(segments)).collect(Collectors.joining("/"));
     }
 }

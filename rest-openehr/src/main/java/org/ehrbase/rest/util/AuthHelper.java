@@ -27,7 +27,6 @@ import java.security.Principal;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -55,21 +54,12 @@ public class AuthHelper {
                 .map(DecodedJWT.class::cast)
                 .map(DecodedJWT::getSubject)
                 .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> {
-                    Function<Principal, String> username = p -> p != null ? p.getName() : null;
-                    if (hasBasicAuthHeader(request)) {
-                        return Optional.ofNullable(getBasicAuthUsername(request))
-                                .filter(StringUtils::isNotBlank)
-                                .orElse(username.apply(principal));
-                    } else {
-                        return username.apply(principal);
-                    }
-                });
-    }
-
-    private static boolean hasBasicAuthHeader(HttpServletRequest request) {
-        return request.getHeader(AUTHORIZATION) != null
-                && request.getHeader(AUTHORIZATION).startsWith(AUTHENTICATION_SCHEME_BASIC);
+                .orElseGet(() -> Optional.of(request)
+                        .map(AuthHelper::getBasicAuthUsername)
+                        .filter(StringUtils::isNotBlank)
+                        .orElseGet(() -> Optional.ofNullable(principal)
+                                .map(Principal::getName)
+                                .orElse(null)));
     }
 
     /**
