@@ -61,17 +61,6 @@ public class Templates {
      * @return
      */
     public JsonPathQueryResult resolveForTemplate(String templateId, List<NodeId> jsonQueryExpression) {
-
-        /*
-        Map<String, Object> results = new OptJsonPath(knowledgeCache).evaluate(templateId,jsonQueryExpression);
-        JsonPathQueryResult jsonPathQueryResult = knowledgeCache.resolveForTemplate(templateId, jsonQueryExpression);
-
-        if (results != null && !results.isEmpty()){
-            return  new JsonPathQueryResult(templateId, results);
-        }
-        return null;
-
-        */
         return knowledgeCache.resolveForTemplate(templateId, jsonQueryExpression);
     }
 
@@ -83,9 +72,8 @@ public class Templates {
     public String rootArchetypeNodeId(String templateId) {
         try {
             return knowledgeCache.getQueryOptMetaData(templateId).getTree().getNodeId();
-
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not retrieve template meta data:" + e);
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("Could not retrieve template meta data: " + e, e);
         }
     }
 }
