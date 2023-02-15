@@ -72,14 +72,13 @@ public class QueryController extends BaseController {
 
         String type = matcherKey.group(1);
         if ("aql".equalsIgnoreCase(type)) {
-            // NOOP
+            String query = content.substring(content.indexOf(':') + 1, content.lastIndexOf('\"'));
+            return query.substring(query.indexOf('\"') + 1);
+
         } else if ("sql".equalsIgnoreCase(type)) {
             throw new InvalidApiParameterException("SQL queries are no longer supported");
         } else {
             throw new InvalidApiParameterException("No query parameter supplied");
         }
-
-        String query = content.substring(content.indexOf(':') + 1, content.lastIndexOf('\"'));
-        return query.substring(query.indexOf('\"') + 1);
     }
 }
