@@ -17,7 +17,13 @@
  */
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.generic.PartyProxy;
+import java.util.UUID;
+
 /**
  * @author Stefan Spiska
  */
-public interface PartyService {}
+public interface PartyService {
+
+    UUID findOrCreateParty(PartyProxy partyProxy);
+}

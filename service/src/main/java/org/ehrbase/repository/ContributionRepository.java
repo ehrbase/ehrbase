@@ -17,10 +17,14 @@
  */
 package org.ehrbase.repository;
 
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -30,6 +34,7 @@ import org.ehrbase.jooq.pg.tables.Contribution;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.service.IUserService;
+import org.ehrbase.service.PartyService;
 import org.ehrbase.service.SystemService;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
@@ -46,13 +51,20 @@ public class ContributionRepository {
     private final SystemService systemService;
     private final IUserService userService;
 
+    private final PartyService partyService;
+
     private final TenantService tenantService;
 
     public ContributionRepository(
-            DSLContext context, SystemService systemService, IUserService userService, TenantService tenantService) {
+            DSLContext context,
+            SystemService systemService,
+            IUserService userService,
+            PartyService partyService,
+            TenantService tenantService) {
         this.context = context;
         this.systemService = systemService;
         this.userService = userService;
+        this.partyService = partyService;
         this.tenantService = tenantService;
     }
 
@@ -90,5 +102,41 @@ public class ContributionRepository {
 
         auditDetailsRecord.store();
         return auditDetailsRecord.getId();
+    }
+
+    @Transactional
+    public UUID createAudit(com.nedap.archie.rm.generic.AuditDetails auditDetails) {
+
+        AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
+
+        auditDetailsRecord.setId(UuidGenerator.randomUUID());
+        auditDetailsRecord.setTimeCommitted(Timestamp.from(Instant.now()));
+        auditDetailsRecord.setTimeCommittedTzid(ZonedDateTime.now().getZone().getId());
+        // according to https://specifications.openehr.org/releases/RM/latest/common.html#_audit_details_class
+        // this should be set to Identifier of the logical EHR system where the change was committed.
+        auditDetailsRecord.setSystemId(systemService.getSystemUuid());
+        auditDetailsRecord.setCommitter(partyService.findOrCreateParty(auditDetails.getCommitter()));
+        auditDetailsRecord.setChangeType(to(auditDetails.getChangeType()));
+        // We just save the text here wich is not 100 % correct here.
+        auditDetailsRecord.setDescription(Optional.ofNullable(auditDetails.getDescription())
+                .map(DvText::getValue)
+                .orElse(null));
+        auditDetailsRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+
+        auditDetailsRecord.store();
+        return auditDetailsRecord.getId();
+    }
+
+    ContributionChangeType to(DvCodedText changeType) {
+
+        return switch (changeType.getDefiningCode().getCodeString()) {
+            case "249" -> ContributionChangeType.creation;
+            case "250" -> ContributionChangeType.amendment;
+            case "251" -> ContributionChangeType.modification;
+            case "252" -> ContributionChangeType.synthesis;
+            case "253" -> ContributionChangeType.Unknown;
+            case "523" -> ContributionChangeType.deleted;
+            default -> throw new UnexpectedSwitchCaseException(changeType.toString());
+        };
     }
 }

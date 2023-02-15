@@ -17,6 +17,7 @@
  */
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.generic.PartyProxy;
 import java.util.UUID;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.cache.CacheOptions;
@@ -76,5 +77,11 @@ public class PartyServiceImp implements IUserService, PartyService {
     private UUID createUserInternal(CacheKey<String> key) {
 
         return partyProxyRepository.createInternalUser(key.getVal());
+    }
+
+    @Override
+    public UUID findOrCreateParty(PartyProxy partyProxy) {
+
+        return partyProxyRepository.findMatching(partyProxy).orElse(partyProxyRepository.create(partyProxy));
     }
 }

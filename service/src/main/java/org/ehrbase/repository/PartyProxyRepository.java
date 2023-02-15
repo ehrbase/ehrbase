@@ -193,7 +193,7 @@ public class PartyProxyRepository {
         }
     }
 
-    public Optional<UUID> findInDBSelf(PartySelf partyProxy) {
+    private Optional<UUID> findInDBSelf(PartySelf partyProxy) {
         Optional<UUID> partySelfUUID = findInDB(partyProxy.getExternalRef());
 
         if (partySelfUUID.isEmpty() && partyProxy.getExternalRef() == null) { // find the generic PARTY_SELF in DB
@@ -213,7 +213,7 @@ public class PartyProxyRepository {
         return partySelfUUID;
     }
 
-    public Optional<UUID> findInDBPartyRelated(PartyRelated partyProxy) {
+    private Optional<UUID> findInDBPartyRelated(PartyRelated partyProxy) {
         Optional<UUID> uuid = findInDB(partyProxy.getExternalRef());
 
         // see https://www.postgresql.org/docs/11/rowtypes.html for syntax on accessing specific attributes in UDT
@@ -243,7 +243,7 @@ public class PartyProxyRepository {
         return uuid;
     }
 
-    public boolean compare(PartyIdentifiedRecord partyIdentifiedRecord, List<DvIdentifier> identifiers) {
+    private boolean compare(PartyIdentifiedRecord partyIdentifiedRecord, List<DvIdentifier> identifiers) {
         List<DvIdentifier> identifiersFromDB =
                 context.fetch(IDENTIFIER, IDENTIFIER.PARTY.eq(partyIdentifiedRecord.getId())).stream()
                         .map(idConvert::apply)
@@ -261,7 +261,7 @@ public class PartyProxyRepository {
         return identifier;
     };
 
-    public boolean compare(List<DvIdentifier> identifiersFromDB, List<DvIdentifier> identifiers) {
+    private boolean compare(List<DvIdentifier> identifiersFromDB, List<DvIdentifier> identifiers) {
 
         if (identifiersFromDB == null && identifiers == null) {
             return true;

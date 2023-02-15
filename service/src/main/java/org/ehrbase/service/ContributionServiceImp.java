@@ -60,6 +60,7 @@ import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
+import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
 import org.jooq.DSLContext;
@@ -85,6 +86,8 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     private final InternalDirectoryService folderService;
     private final TenantService tenantService;
 
+    private final ContributionRepository contributionRepository;
+
     enum SupportedClasses {
         COMPOSITION,
         EHRSTATUS,
@@ -99,12 +102,14 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             InternalDirectoryService folderService,
             DSLContext context,
             ServerConfig serverConfig,
-            TenantService tenantService) {
+            TenantService tenantService,
+            ContributionRepository contributionRepository) {
         super(knowledgeCacheService, context, serverConfig);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
         this.folderService = folderService;
         this.tenantService = tenantService;
+        this.contributionRepository = contributionRepository;
     }
 
     @Override
@@ -336,10 +341,12 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
+        UUID audit = contributionRepository.createAudit(version.getCommitAudit());
+
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                folderService.create(ehrId, versionRmObject, contributionId, null);
+                folderService.create(ehrId, versionRmObject, contributionId, audit);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use
                 // the type
@@ -348,12 +355,12 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 // preceding_version_uid check
 
                 // call modification of the given folder
-                folderService.update(ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId, null);
+                folderService.update(ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId, audit);
                 break;
             case DELETED: // case of deletion change type, but request also has payload (TODO: should that be even
                 // allowed?
                 // specification-wise it's not forbidden)
-                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, null);
+                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
                 break;
             case SYNTHESIS: // TODO
             case UNKNOWN: // TODO
