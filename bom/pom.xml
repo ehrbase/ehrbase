@@ -120,7 +120,7 @@
         <postgressql.version>42.4.1</postgressql.version>
 
         <prometheus.version>1.10.0</prometheus.version>
-        <spring-boot.version>2.7.6</spring-boot.version>
+        <spring-boot.version>2.7.8</spring-boot.version>
         <spring-security.version>5.5.7</spring-security.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->
