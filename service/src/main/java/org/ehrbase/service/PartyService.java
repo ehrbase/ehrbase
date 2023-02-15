@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.generic.PartyProxy;
@@ -25,5 +26,11 @@ import java.util.UUID;
  */
 public interface PartyService {
 
-    UUID findOrCreateParty(PartyProxy partyProxy);
+  /**
+   * Trys to find a Party matching <code>partyProxy</code> otherwise creates it.
+   *
+   * @param partyProxy
+   * @return {@link UUID} of the corresponding DB object.
+   */
+  UUID findOrCreateParty(PartyProxy partyProxy);
 }

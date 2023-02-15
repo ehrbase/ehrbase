@@ -26,15 +26,52 @@ import javax.annotation.Nullable;
 
 public interface DirectoryService extends BaseService {
 
+    /**
+     * Get the Folder for Ehr with id equal <code>ehrId</code>
+     * @param ehrId
+     * @param folderId if <code>null</code> latest version will be returned
+     * @param path optional return folder at <code>path</code>
+     * @return
+     */
     Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path);
 
+    /**
+     * Get the Folder for Ehr with id equal <code>ehrId</code> for a specific point in time;
+     * @param ehrId
+     * @param time
+     * @param path optional return folder at <code>path</code>
+     * @return
+     */
     Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, @Nullable String path);
 
+    /**
+     *  Create a new folder for Ehr with id equal <code>ehrId</code>
+     * @param ehrId
+     * @param folder
+     * @return
+     */
     Folder create(UUID ehrId, Folder folder);
 
+    /**
+     * Update the folder for Ehr with id equal <code>ehrId</code>
+     * @param ehrId
+     * @param folder
+     * @param ifMatches expected version before update for optimistic looking
+     * @return
+     */
     Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches);
 
+    /**
+     * delete the folder for Ehr with id equal <code>ehrId</code>
+     * @param ehrId
+     * @param ifMatches expected version before delete for optimistic looking
+     */
     void delete(UUID ehrId, ObjectVersionId ifMatches);
 
+    /**
+     * Physical delete a folder with all History
+     * @param ehrId
+     * @param folderId
+     */
     void adminDeleteFolder(UUID ehrId, UUID folderId);
 }

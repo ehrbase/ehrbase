@@ -15,23 +15,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.ehrbase.api.service.DirectoryService;
+import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.repository.ContributionRepository;
 
 /**
  * @author Stefan Spiska
  */
 public interface InternalDirectoryService extends DirectoryService {
-    Folder create(UUID ehrId, Folder folder, UUID contributionId, UUID auditId);
 
-    Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId, UUID auditId);
+  /**
+   * Create a new folder for Ehr with id equal <code>ehrId</code>
+   *
+   * @param ehrId
+   * @param folder
+   * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
+   * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+   * @return
+   */
+  Folder create(UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId);
 
-    void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contributionId, UUID auditId);
+  /**
+   * Update the folder for Ehr with id equal <code>ehrId</code>
+   *
+   * @param ehrId
+   * @param folder
+   * @param ifMatches      expected version before update for optimistic looking
+   * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
+   * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+   * @return
+   */
+  Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, @Nullable UUID contributionId, @Nullable UUID auditId);
 
-    List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId);
+  /**
+   * delete the folder for Ehr with id equal <code>ehrId</code>
+   *
+   * @param ehrId
+   * @param ifMatches      expected version before delete for optimistic looking
+   * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
+   * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+   */
+  void delete(UUID ehrId, ObjectVersionId ifMatches, @Nullable UUID contributionId, @Nullable UUID auditId);
+
+  List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId);
 }
