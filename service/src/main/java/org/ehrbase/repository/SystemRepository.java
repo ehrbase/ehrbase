@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Handles DB-Access to {@link org.ehrbase.jooq.pg.tables.System}
  * @author Stefan Spiska
  */
 @Repository
@@ -40,11 +41,20 @@ public class SystemRepository {
         this.context = context;
     }
 
+    /**
+     * Creates a new System in the DB
+     * @param systemRecord
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void commit(SystemRecord systemRecord) {
         context.insertInto(System.SYSTEM).set(systemRecord).execute();
     }
 
+    /**
+     * Find the uuid of the system in the DB corresponding to <code>system</code>
+     * @param system
+     * @return
+     */
     public Optional<UUID> findSystemId(String system) {
 
         return Optional.ofNullable(context.select(System.SYSTEM.ID)

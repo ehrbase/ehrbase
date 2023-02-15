@@ -58,6 +58,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Handles DB-Access to {@link org.ehrbase.jooq.pg.tables.PartyIdentified} and {@link org.ehrbase.jooq.pg.tables.Identifier}
  * @author Stefan Spiska
  */
 @Repository
@@ -72,6 +73,11 @@ public class PartyProxyRepository {
         this.tenantService = tenantService;
     }
 
+    /**
+     * Find the party id of a ehrbase user corresponding to <code>username</code>
+     * @param username
+     * @return
+     */
     public Optional<UUID> findInternalUserId(String username) {
         var condition = IDENTIFIER
                 .ID_VALUE
@@ -82,6 +88,11 @@ public class PartyProxyRepository {
         return context.fetchOptional(IDENTIFIER, condition).map(IdentifierRecord::getParty);
     }
 
+    /**
+     * Create a {@link PartyIdentified} for a ehrbase user corresponding to <code>username</code>
+     * @param username
+     * @return
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public UUID createInternalUser(String username) {
 
@@ -101,6 +112,11 @@ public class PartyProxyRepository {
         return create(user);
     }
 
+    /**
+     * Creates a new {@link PartyProxy} in the DB.
+     * @param partyProxy
+     * @return
+     */
     @Transactional
     public UUID create(PartyProxy partyProxy) {
 
@@ -148,6 +164,24 @@ public class PartyProxyRepository {
         return partyIdentifiedRecord.getId();
     }
 
+    /**
+     * Find the uuid a {@link PartyProxy} in the DB wich matches the given <code>partyProxy</code>
+     * @param partyProxy
+     * @return
+     */
+    public Optional<UUID> findMatching(PartyProxy partyProxy) {
+
+        if (partyProxy instanceof PartySelf partySelf) {
+            return findInDBSelf(partySelf);
+        } else if (partyProxy instanceof PartyRelated partyRelated) {
+            return findInDBPartyRelated(partyRelated);
+        } else if (partyProxy instanceof PartyIdentified partyIdentified) {
+            return findInDBIdentified(partyIdentified);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     private DvCodedTextRecord relationshipAsRecord(PartyProxy partyProxy) {
 
         DvCodedText relationship = ((PartyRelated) partyProxy).getRelationship();
@@ -178,19 +212,6 @@ public class PartyProxyRepository {
         identifierRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
 
         return identifierRecord;
-    }
-
-    public Optional<UUID> findMatching(PartyProxy partyProxy) {
-
-        if (partyProxy instanceof PartySelf partySelf) {
-            return findInDBSelf(partySelf);
-        } else if (partyProxy instanceof PartyRelated partyRelated) {
-            return findInDBPartyRelated(partyRelated);
-        } else if (partyProxy instanceof PartyIdentified partyIdentified) {
-            return findInDBIdentified(partyIdentified);
-        } else {
-            throw new UnsupportedOperationException();
-        }
     }
 
     private Optional<UUID> findInDBSelf(PartySelf partyProxy) {

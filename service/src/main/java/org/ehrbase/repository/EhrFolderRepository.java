@@ -52,6 +52,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Handles DB-Access to {@link org.ehrbase.jooq.pg.tables.EhrFolder} and {@link org.ehrbase.jooq.pg.tables.EhrFolderHistory}
  * @author Stefan Spiska
  */
 @Repository
@@ -77,6 +78,12 @@ public class EhrFolderRepository {
         this.serverConfig = serverConfig;
     }
 
+    /**
+     * Create a new Folder in the DB
+     * @param folderRecordList
+     * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
+     * @param auditId If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     */
     @Transactional
     public void commit(List<EhrFolderRecord> folderRecordList, @Nullable UUID contributionId, @Nullable UUID auditId) {
 
@@ -111,7 +118,12 @@ public class EhrFolderRepository {
 
         RepostoryHelper.executeBulkInsert(context, folderRecordList, EHR_FOLDER);
     }
-
+    /**
+     * Update a Folder in the DB
+     * @param folderRecordList
+     * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
+     * @param auditId If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     */
     @Transactional
     public void update(List<EhrFolderRecord> folderRecordList, UUID contributionId, UUID auditId) {
 
@@ -152,7 +164,7 @@ public class EhrFolderRepository {
         store(folderRecordList, contributionId, ContributionChangeType.modification, auditId);
     }
 
-    EhrFolderRecord findRoot(List<EhrFolderRecord> folderRecordList) {
+    private EhrFolderRecord findRoot(List<EhrFolderRecord> folderRecordList) {
 
         return folderRecordList.stream()
                 .filter(r -> r.getPath().length == 1)
@@ -183,11 +195,20 @@ public class EhrFolderRepository {
         return historyRecord.into(EHR_FOLDER);
     }
 
+    /**
+     * Get the latest aktive (not deleted) Version from the DB for a given Ehr.
+     * @param ehrId
+     * @return
+     */
     public Result<EhrFolderRecord> getLatest(UUID ehrId) {
 
         return context.selectFrom(EHR_FOLDER).where(EHR_FOLDER.EHR_ID.eq(ehrId)).fetch();
     }
-
+    /**
+     * Get the latest Version from the History in the DB for a given Ehr.
+     * @param ehrid
+     * @return
+     */
     public Result<EhrFolderHistoryRecord> getLatestHistory(UUID ehrid) {
 
         return context.selectFrom(EHR_FOLDER_HISTORY)
@@ -199,7 +220,14 @@ public class EhrFolderRepository {
                                 .getQuery()))
                 .fetch();
     }
-
+    /**
+     * Delete a  Folder in the DB
+     * @param ehrId
+     * @param rootFolderId
+     * @param version Version to be deleted. Must match latest.
+     * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
+     * @param auditId If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     */
     @Transactional
     public void delete(UUID ehrId, UUID rootFolderId, int version, UUID contributionId, UUID auditId) {
 

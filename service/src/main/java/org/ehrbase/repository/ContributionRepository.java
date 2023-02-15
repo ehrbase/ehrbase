@@ -42,6 +42,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Handles DB-Access to {@link Contribution} and {@link AuditDetails}
  * @author Stefan Spiska
  */
 @Repository
@@ -68,6 +69,13 @@ public class ContributionRepository {
         this.tenantService = tenantService;
     }
 
+    /**
+     * Create the default contribution in the DB for usage in case data is not saved via explicit provided contribution. Sets the committer from the auth context.
+     * @param ehrId
+     * @param contributionType
+     * @param contributionChangeType
+     * @return {@link UUID} of the corresponding Database Record.
+     */
     @Transactional
     public UUID createDefault(
             UUID ehrId, ContributionDataType contributionType, ContributionChangeType contributionChangeType) {
@@ -88,6 +96,11 @@ public class ContributionRepository {
         return contributionRecord.getId();
     }
 
+    /**
+     * Create the default audit in the DB  for usage in case data is not saved via explicit provided contribution. Sets the committer from the auth context.
+     * @param contributionChangeType
+     * @return {@link UUID} of the corresponding Database Record.
+     */
     @Transactional
     public UUID createDefaultAudit(ContributionChangeType contributionChangeType) {
         AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
@@ -104,6 +117,11 @@ public class ContributionRepository {
         return auditDetailsRecord.getId();
     }
 
+    /**
+     * Creates a Audit in the Database
+     * @param auditDetails {@link AuditDetails} from which to take the data.
+     * @return {@link UUID} of the corresponding Database Record.
+     */
     @Transactional
     public UUID createAudit(com.nedap.archie.rm.generic.AuditDetails auditDetails) {
 
@@ -127,7 +145,7 @@ public class ContributionRepository {
         return auditDetailsRecord.getId();
     }
 
-    ContributionChangeType to(DvCodedText changeType) {
+    private ContributionChangeType to(DvCodedText changeType) {
 
         return switch (changeType.getDefiningCode().getCodeString()) {
             case "249" -> ContributionChangeType.creation;
