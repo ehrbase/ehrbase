@@ -117,11 +117,10 @@
         <maven-jacoco-plugin.version>0.8.7</maven-jacoco-plugin.version>
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <postgressql.version>42.4.1</postgressql.version>
+        <postgresql.version>42.5.3</postgresql.version>
 
         <prometheus.version>1.10.0</prometheus.version>
-        <spring-boot.version>2.7.4</spring-boot.version>
-        <spring-security.version>5.5.5</spring-security.version>
+        <spring-boot.version>2.7.8</spring-boot.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->
         <log4j.version>2.17.2</log4j.version>
@@ -251,7 +250,7 @@
             <dependency>
                 <groupId>org.pf4j</groupId>
                 <artifactId>pf4j-spring</artifactId>
-                <version>0.7.0</version>
+                <version>0.8.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -268,7 +267,7 @@
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>${postgressql.version}</version>
+                <version>${postgresql.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
@@ -323,12 +322,10 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
-                <version>${spring-security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
-                <version>${spring-security.version}</version>
             </dependency>
             <dependency>
                 <!-- TODO migrate away from joda -->
@@ -443,7 +440,7 @@
                         <dependency>
                             <groupId>org.postgresql</groupId>
                             <artifactId>postgresql</artifactId>
-                            <version>${postgressql.version}</version>
+                            <version>${postgresql.version}</version>
                         </dependency>
                     </dependencies>
                     <executions>
