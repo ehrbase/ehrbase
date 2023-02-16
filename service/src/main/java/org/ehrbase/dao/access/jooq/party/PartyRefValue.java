@@ -21,6 +21,7 @@ import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.GenericId;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import java.util.Optional;
 import org.ehrbase.jooq.pg.enums.PartyRefIdType;
 
 /**
@@ -42,23 +43,24 @@ public class PartyRefValue {
 
     /**
      * extract the attributes of party_ref
+     *
      * @return
      */
     public PartyRefValue attributes() {
 
-        if (partyProxy.getExternalRef() == null) // PartySelf f.e.
-        return this;
+        if (partyProxy.getExternalRef() != null) { // PartySelf f.e.
 
-        PartyRef partyRef = partyProxy.getExternalRef();
+            PartyRef partyRef = partyProxy.getExternalRef();
 
-        namespace = partyRef != null ? partyRef.getNamespace() : null;
-        ObjectId objectId = partyRef.getId();
-        value = objectId != null ? objectId.getValue() : null;
-        if (objectId != null && objectId instanceof GenericId) scheme = ((GenericId) objectId).getScheme();
-        type = partyRef != null ? partyRef.getType() : null;
-        objectIdType = partyRef != null
-                ? PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef))
-                : PartyRefIdType.undefined;
+            namespace = partyRef.getNamespace();
+            ObjectId objectId = partyRef.getId();
+            value = Optional.ofNullable(objectId).map(ObjectId::getValue).orElse(null);
+            if (objectId instanceof GenericId genericId) {
+                scheme = (genericId).getScheme();
+            }
+            type = partyRef.getType();
+            objectIdType = PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef));
+        }
 
         return this;
     }
