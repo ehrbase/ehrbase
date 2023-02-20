@@ -65,12 +65,10 @@
         <dependency>
             <groupId>org.openehealth.ipf.boot</groupId>
             <artifactId>ipf-atna-spring-boot-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>3.3.0</version>
         </dependency>
     </dependencies>
 </project>
