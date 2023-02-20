@@ -37,6 +37,7 @@ GRANT ALL PRIVILEGES ON DATABASE ehrbase TO :db_user_admin;
 
 -- install the extensions
 \c ehrbase
+REVOKE CREATE ON SCHEMA public from PUBLIC;
 CREATE SCHEMA IF NOT EXISTS ehr AUTHORIZATION :db_user_admin;
 GRANT USAGE ON SCHEMA ehr to :db_user;
 GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA ehr to :db_user;
