@@ -33,14 +33,12 @@
 
     <properties>
         <license-header.dir>../</license-header.dir>
-        <java-jwt.version>3.3.0</java-jwt.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>${java-jwt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -103,7 +101,6 @@
         <dependency>
             <groupId>org.pf4j</groupId>
             <artifactId>pf4j-spring</artifactId>
-            <version>${pf4j-spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ehrbase.openehr.sdk</groupId>
