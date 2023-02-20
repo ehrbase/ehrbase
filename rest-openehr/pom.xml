@@ -35,6 +35,8 @@
 
     <properties>
         <license-header.dir>../</license-header.dir>
+        <ipf-atna-spring-boot-starter.version>4.0.0</ipf-atna-spring-boot-starter.version>
+        <java-jwt.version>3.3.0</java-jwt.version>
     </properties>
 
     <dependencies>
@@ -65,12 +67,12 @@
         <dependency>
             <groupId>org.openehealth.ipf.boot</groupId>
             <artifactId>ipf-atna-spring-boot-starter</artifactId>
-            <version>4.0.0</version>
+            <version>${ipf-atna-spring-boot-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>3.3.0</version>
+            <version>${java-jwt.version}</version>
         </dependency>
     </dependencies>
 </project>
