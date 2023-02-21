@@ -2203,7 +2203,7 @@ commands:
                         -e POSTGRES_USER=$POSTGRES_USER \
                         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d \
                         -e DISABLE_SECURITY=true \
-                        -p 5432:5432 ehrbase/ehrbase-postgres:res
+                        -p 5432:5432 ehrbase/ehrbase-postgres:13.4.v2
 
 
   setup-file-repo:
@@ -2548,7 +2548,7 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2564,7 +2564,7 @@ executors:
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2592,7 +2592,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "Europe/Berlin"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2613,7 +2613,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "Europe/Berlin"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2634,7 +2634,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "Europe/Berlin"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2655,7 +2655,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "UTC"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2676,7 +2676,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "UTC"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2697,7 +2697,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "UTC"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2718,7 +2718,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "Asia/Shanghai"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2739,7 +2739,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "Asia/Shanghai"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD
@@ -2760,7 +2760,7 @@ executors:
           password: $DOCKER_HUB_PASSWORD
         environment:
           TZ: "Asia/Shanghai"
-      - image: ehrbase/ehrbase-postgres:res
+      - image: ehrbase/ehrbase-postgres:13.4.v2
         auth:
           username: $DOCKER_USER
           password: $DOCKER_HUB_PASSWORD

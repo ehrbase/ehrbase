@@ -60,8 +60,8 @@
         <!-- PostgreSQL Database Properties -->
         <database.host>localhost</database.host>
         <database.port>5432</database.port>
-        <database.user>ehrbase_admin</database.user>
-        <database.pass>ehrbase_admin</database.pass>
+        <database.user>ehrbase</database.user>
+        <database.pass>ehrbase</database.pass>
         <database.name>ehrbase</database.name>
         <test.profile>unit</test.profile>
     </properties>

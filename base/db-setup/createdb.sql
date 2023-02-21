@@ -21,27 +21,23 @@
 -- The actual database schema is managed by flyway.
 --
 
-\set db_user `echo "$EHRBASE_USER"`
-\set db_pass `echo "$EHRBASE_PASSWORD"`
 
-\set db_user_admin `echo "$EHRBASE_USER_ADMIN"`
-\set db_pass_admin `echo "$EHRBASE_PASSWORD_ADMIN"`
 
-CREATE ROLE :db_user WITH LOGIN PASSWORD :'db_pass';
-CREATE ROLE :db_user_admin WITH LOGIN PASSWORD :'db_pass_admin';
+CREATE ROLE ehrbase WITH LOGIN PASSWORD 'ehrbase';
+CREATE ROLE ehrbase_restricted WITH LOGIN PASSWORD 'ehrbase_restricted';
 CREATE DATABASE ehrbase ENCODING 'UTF-8' TEMPLATE template0;
-GRANT ALL PRIVILEGES ON DATABASE ehrbase TO :db_user;
-GRANT ALL PRIVILEGES ON DATABASE ehrbase TO :db_user_admin;
+GRANT ALL PRIVILEGES ON DATABASE ehrbase TO ehrbase;
+GRANT ALL PRIVILEGES ON DATABASE ehrbase TO ehrbase;
 
 
 
 -- install the extensions
 \c ehrbase
 REVOKE CREATE ON SCHEMA public from PUBLIC;
-CREATE SCHEMA IF NOT EXISTS ehr AUTHORIZATION :db_user_admin;
-GRANT USAGE ON SCHEMA ehr to :db_user;
-GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA ehr to :db_user;
-CREATE SCHEMA IF NOT EXISTS ext AUTHORIZATION :db_user_admin;
+CREATE SCHEMA IF NOT EXISTS ehr AUTHORIZATION ehrbase;
+GRANT USAGE ON SCHEMA ehr to ehrbase_restricted;
+alter default privileges for user ehrbase in schema ehr grant select,insert,update,delete on tables to ehrbase_restricted;
+CREATE SCHEMA IF NOT EXISTS ext AUTHORIZATION ehrbase;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA ext;
 CREATE EXTENSION IF NOT EXISTS "ltree" SCHEMA ext;
 
@@ -50,7 +46,7 @@ ALTER DATABASE ehrbase SET search_path TO "$user",public,ext;
 -- ensure INTERVAL is ISO8601 encoded
 alter database ehrbase SET intervalstyle = 'iso_8601';
 
-GRANT ALL ON ALL FUNCTIONS IN SCHEMA ext TO :db_user;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA ext TO ehrbase_restricted;
 
 -- load the temporal_tables PLPG/SQL functions to emulate the coded extension
 -- original source: https://github.com/nearform/temporal_tables/blob/master/versioning_function.sql

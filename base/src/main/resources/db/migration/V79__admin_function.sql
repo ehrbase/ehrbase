@@ -155,6 +155,3 @@ BEGIN
 END
 $$;
 
-
-alter function admin_delete_ehr_full(uuid) owner to ehrbase_admin;
-
