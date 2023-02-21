@@ -27,7 +27,7 @@ CREATE ROLE ehrbase WITH LOGIN PASSWORD 'ehrbase';
 CREATE ROLE ehrbase_restricted WITH LOGIN PASSWORD 'ehrbase_restricted';
 CREATE DATABASE ehrbase ENCODING 'UTF-8' TEMPLATE template0;
 GRANT ALL PRIVILEGES ON DATABASE ehrbase TO ehrbase;
-GRANT ALL PRIVILEGES ON DATABASE ehrbase TO ehrbase;
+GRANT ALL PRIVILEGES ON DATABASE ehrbase TO ehrbase_restricted;
 
 
 

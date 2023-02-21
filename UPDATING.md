@@ -21,7 +21,7 @@ If an old version of the scripts was used this statement needs to be run manuall
 
 ## EHRbase 0.21.0
 
-## Switch to native Postgres
+### Switch to native Postgres
 
 Before 0.21.0 EHRbase offered two setups, one using the
 extensions   [temporal tables](https://github.com/arkhipov/temporal_tables),
@@ -31,7 +31,30 @@ To migrate a postgres without those extensions run `base/db-setup/migrate_to_clo
 you used the old `base/db-setup/cloud_db_setup.sql`
 or run the EHRbase Postgres docker image.
 
-## Fix Duplicate User issue
+### Fix Duplicate User issue
 Prior to release 0.21.0, EHRbase contained a bug that creates a new internal user for each request.
 
 The execution of the Flyway migration script `V71__merge_duplicate_users.sql` may take its time as the duplicates are being consolidated.
+
+## EHRbase 0.24.0
+
+### Switch to non-privileged user for DB Access
+
+Prior to 0.24.0 used one user for DDL Statements and to run the application's logic. With 0.24.0 these are run with different Users with different DB Privileges.
+To migrate run adjust the password in `base/db-setup/add_restricted_user.sql` and run it as DB-Admin. 
+After that adjust the ehrbase Properties:
+
+Set the migration to use the user with DDL Privilege:
+```
+spring:
+  flyway:
+    user: ehrbase
+    password: ehrbase
+```
+And set the application to use the restricted user
+```
+spring:
+  datasource:
+    username: ehrbase_restricted
+    password: ehrbase_restricted
+```
