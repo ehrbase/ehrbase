@@ -32,7 +32,6 @@
         <relativePath>/bom/pom.xml</relativePath>
     </parent>
 
-    <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
     <version>0.24.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -50,8 +49,6 @@
         <module>plugin</module>
     </modules>
 
-
-
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -65,7 +62,6 @@
         <database.name>ehrbase</database.name>
         <test.profile>unit</test.profile>
     </properties>
-
 
     <build>
         <plugins>
@@ -144,7 +140,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <!-- HANDLES JUNIT INTEGRATION TESTS -->
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
