@@ -17,7 +17,9 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import static org.ehrbase.jooq.pg.Tables.*;
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
+import static org.ehrbase.jooq.pg.Tables.ENTRY_HISTORY;
+import static org.ehrbase.jooq.pg.Tables.TERRITORY;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.FeederAudit;
@@ -51,7 +53,6 @@ import org.ehrbase.dao.access.interfaces.I_ContextAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
-import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.SafeNav;
 import org.ehrbase.jooq.pg.enums.EntryType;
@@ -63,8 +64,10 @@ import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
 import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
-import org.jooq.*;
+import org.jooq.Condition;
+import org.jooq.JSONB;
 import org.jooq.Record;
+import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,13 +287,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         } catch (Exception e) {
             throw new IllegalArgumentException(DB_INCONSISTENCY + e);
         }
-    }
-
-    /**
-     * @throws InternalServerException when the query failed
-     */
-    public static Map<String, Object> queryJSON(I_DomainAccess domainAccess, String queryString) {
-        return new AsyncSqlQuery(domainAccess, queryString).fetch();
     }
 
     private static void setCompositionAttributes(Composition composition, Map<SystemValue, Object> values) {
