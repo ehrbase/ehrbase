@@ -26,6 +26,19 @@ public interface TenantAuthentication<T> {
         return DEFAULT_TENANT_ID;
     }
 
+    /**
+     * Returns the name associated with this authentication object.
+     * <p>
+     * This method is intended to have the same semantic meaning as the {@link java.security.Principal#getName()}
+     * method, and returns different values depending on the type of authentication used.
+     * For example, if the authentication was performed using OAuth2, the name may correspond to the "sub" (subject)
+     * claim of the authentication token. If the authentication was performed using basic authentication,
+     * the name may correspond to the username used for authentication.
+     * <p>
+     * Note: Please note that this method does not return the tenant ID or tenant name.
+     *
+     * @return The name of the authenticated principal.
+     */
     String getName();
 
     T getAuthentication();

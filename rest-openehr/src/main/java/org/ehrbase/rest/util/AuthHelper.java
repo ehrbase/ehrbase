@@ -30,7 +30,6 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 public class AuthHelper {
@@ -38,27 +37,6 @@ public class AuthHelper {
     private static final String AUTHENTICATION_SCHEME_BASIC = "Basic";
 
     private AuthHelper() {}
-
-    /**
-     * Gets the currently authenticated username from the given HTTP request.
-     * TODO:: It's possible after adding getName() method to the TenantAuthentication interface
-     * that this method should be replaced with authenticationFacade.getAuthentication().getName()
-     *
-     * @param authentication The Authentication
-     * @return The username if it exists, or an empty string if not
-     */
-    public static String getCurrentAuthenticatedUsername(Authentication authentication) {
-        return getJwtSubject(authentication).orElseGet(() -> Optional.ofNullable(authentication)
-                .map(Authentication::getPrincipal)
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .map(String::new)
-                .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> Optional.ofNullable(authentication)
-                        .map(Principal::getName)
-                        .filter(StringUtils::isNotBlank)
-                        .orElse(null)));
-    }
 
     /**
      * Gets the currently authenticated username from the given HTTP request.
