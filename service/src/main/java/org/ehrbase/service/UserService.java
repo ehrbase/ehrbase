@@ -68,15 +68,12 @@ public class UserService implements IUserService {
     public UUID getCurrentUserId() {
         CacheKey<String> key = CacheKey.of(
                 authenticationFacade.getAuthentication().getName(), tenantService.getCurrentTenantIdentifier());
-        return userIdCache.get(key, () -> getOrCreateCurrentUserIdSnyc(key));
+        return userIdCache.get(key, () -> getOrCreateCurrentUserIdSync(key));
     }
 
-    private UUID getOrCreateCurrentUserIdSnyc(CacheKey<String> key) {
+    private UUID getOrCreateCurrentUserIdSync(CacheKey<String> key) {
         var existingUser = new PersistedPartyIdentified(dataAccess).findInternalUserId(key.getVal());
-        if (existingUser.isEmpty()) {
-            return createUserInternal(key);
-        }
-        return existingUser.get();
+        return existingUser.orElseGet(() -> createUserInternal(key));
     }
 
     /**
