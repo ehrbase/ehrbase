@@ -15,14 +15,16 @@ jobs:
 
     services:
       ehrbase-db:
-        image: ehrbase/ehrbase-postgres:13.4
+        image: ehrbase/ehrbase-postgres:13.4.v2
         ports:
           - 5432:5432
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          EHRBASE_USER: ehrbase
-          EHRBASE_PASSWORD: ehrbase
+          EHRBASE_USER_ADMIN: ehrbase
+          EHRBASE_PASSWORD_ADMIN: ehrbase
+          EHRBASE_USER: ehrbase_restricted
+          EHRBASE_PASSWORD: ehrbase_restricted
 
     steps:
       - name: Checkout
