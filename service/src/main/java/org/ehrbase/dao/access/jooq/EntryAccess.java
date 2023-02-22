@@ -53,7 +53,6 @@ import org.ehrbase.dao.access.interfaces.I_ContextAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
-import org.ehrbase.dao.access.query.AsyncSqlQuery;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.SafeNav;
 import org.ehrbase.jooq.pg.enums.EntryType;
@@ -117,6 +116,16 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
     private EntryAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
+    }
+
+    public static String fetchTemplateIdByCompositionId(I_DomainAccess domainAccess, UUID compositionId) {
+        return domainAccess
+                .getContext()
+                .select(ENTRY.TEMPLATE_ID)
+                .from(ENTRY)
+                .where(ENTRY.COMPOSITION_ID.equal(compositionId))
+                .fetchOptional(ENTRY.TEMPLATE_ID)
+                .orElse(null);
     }
 
     /**
@@ -265,8 +274,8 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
             //                .get(c -> c.getValue())
             //                .get(s -> new DvCodedText(s, (CodePhrase) null))
             //                .use(SafeNav.of(category).get(c -> c.getDefiningCode()).get(d -> d.getCodeString()))
-            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;});
-            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get());
+            //                .get((s, d) -> {d.setDefiningCode(new CodePhrase(s)); return d;})
+            //            values.put(SystemValue.CATEGORY, safeDvCodedText.get())
             SafeNav<DvCodedText> safeDvCodedText = SafeNav.of(category)
                     .get(c -> new DvCodedText(c.getValue(), c.getDefiningCode().getCodeString()));
             values.put(SystemValue.CATEGORY, safeDvCodedText.get());
@@ -278,13 +287,6 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
         } catch (Exception e) {
             throw new IllegalArgumentException(DB_INCONSISTENCY + e);
         }
-    }
-
-    /**
-     * @throws InternalServerException when the query failed
-     */
-    public static Map<String, Object> queryJSON(I_DomainAccess domainAccess, String queryString) {
-        return new AsyncSqlQuery(domainAccess, queryString).fetch();
     }
 
     private static void setCompositionAttributes(Composition composition, Map<SystemValue, Object> values) {
@@ -450,7 +452,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public UUID commit() {
         throw new InternalServerException("INTERNAL: commit without transaction time is not legal");
@@ -497,7 +499,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public Boolean update() {
         throw new InternalServerException(
@@ -509,7 +511,7 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
      *                                 class
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Override
     public Boolean update(Boolean force) {
         throw new InternalServerException(

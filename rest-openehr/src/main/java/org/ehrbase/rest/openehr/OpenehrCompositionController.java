@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
@@ -78,7 +80,7 @@ import org.springframework.web.bind.annotation.RestController;
 @TenantAware
 @RestController
 @RequestMapping(
-        path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrCompositionController extends BaseController implements CompositionApiSpecification {
 
@@ -117,9 +119,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         var compositionUuid = compositionService
                 .create(ehrId, compoObj)
                 .orElseThrow(() -> new InternalServerException("Failed to create composition"));
-
-        var uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString()
-                + "/composition/" + compositionUuid.toString()));
+        URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionUuid.toString());
 
         List<String> headerList = Arrays.asList(
                 LOCATION,
@@ -130,14 +130,16 @@ public class OpenehrCompositionController extends BaseController implements Comp
         Optional<InternalResponse<CompositionResponseData>>
                 respData; // variable to overload with more specific object if requested
 
+        Supplier<CompositionResponseData> responseDataSupplier;
         if (Optional.ofNullable(prefer)
                 .map(i -> i.equals(RETURN_REPRESENTATION))
                 .orElse(false)) { // null safe way to test prefer header
-            respData = buildCompositionResponseData(
-                    ehrId, compositionUuid, 0, accept, uri, headerList, () -> new CompositionResponseData(null, null));
+            responseDataSupplier = () -> new CompositionResponseData(null, null);
         } else { // "minimal" is default fallback
-            respData = buildCompositionResponseData(ehrId, compositionUuid, 0, accept, uri, headerList, () -> null);
+            responseDataSupplier = () -> null;
         }
+        respData =
+                buildCompositionResponseData(ehrId, compositionUuid, 1, accept, uri, headerList, responseDataSupplier);
 
         // Enriches request attributes with current compositionId for later audit processing
         request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
@@ -183,7 +185,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
         // check if composition ID path variable is valid
         compositionService.exists(versionedObjectUid);
 
-        // If the If-Match is not the latest latest existing version, throw error
+        ifMatch = unwrap(ifMatch, '"');
+        // If the If-Match is not the latest existing version, throw error
         if (!((versionedObjectUid + "::" + compositionService.getServerConfig().getNodename() + "::"
                         + compositionService.getLastVersionNumber(
                                 extractVersionedObjectUidFromVersionUid(versionedObjectUid.toString())))
@@ -213,8 +216,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .orElseThrow(() -> new InternalServerException("Failed to create composition"))
                     .toString();
 
-            var uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString()
-                    + "/composition/" + compositionVersionUid));
+            URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionVersionUid);
 
             // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
             List<String> headerList = Arrays.asList(LOCATION, ETAG, LAST_MODIFIED);
@@ -296,8 +298,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 + compositionService.getServerConfig().getNodename() + "::"
                 + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
         // TODO change to dynamic linking --> postponed, see EHR-230
-        URI uri = URI.create(this.encodePath(
-                getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/composition/" + latestVersionId));
+        URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, latestVersionId);
 
         // If precedingVersionUid parameter doesn't match latest version
         if (!compositionService
@@ -331,7 +332,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         } catch (ObjectNotFoundException e) {
             // if composition not available at all --> 404
             throw new ObjectNotFoundException(
-                    "composition",
+                    COMPOSITION,
                     "No EHR with the supplied ehr_id or no COMPOSITION with the supplied " + "preceding_version_uid.");
         } catch (StateConflictException e) {
             throw e;
@@ -370,11 +371,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
-        int version = 0; // fallback 0 means latest version
-        if (extractVersionFromVersionUid(versionedObjectUid) != 0) {
-            // the given ID contains a version, therefore this is case GET {version_uid}
-            version = extractVersionFromVersionUid(versionedObjectUid);
-        } else {
+        int version = extractVersionFromVersionUid(versionedObjectUid);
+        if (version == 0) {
             // case GET {versioned_object_uid}{?version_at_time}
             Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
             if (versionAtTime != null && temporal.isPresent()) {
@@ -383,12 +381,11 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 Optional<Integer> versionFromTimestamp = Optional.ofNullable(compositionService.getVersionByTimestamp(
                         compositionUid, temporal.get().toLocalDateTime()));
                 version = versionFromTimestamp.orElseThrow(() -> new ObjectNotFoundException(
-                        "composition", "No composition version matching the timestamp condition"));
+                        COMPOSITION, "No composition version matching the timestamp condition"));
             } // else continue with fallback: latest version
         }
 
-        URI uri = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString()
-                + "/composition/" + versionedObjectUid));
+        URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid);
 
         List<String> headerList = Arrays.asList(
                 LOCATION,
@@ -432,7 +429,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
     private <T extends CompositionResponseData> Optional<InternalResponse<T>> buildCompositionResponseData(
             UUID ehrId,
             UUID compositionId,
-            Integer version,
+            int version,
             String accept,
             URI uri,
             List<String> headerList,
@@ -440,6 +437,13 @@ public class OpenehrCompositionController extends BaseController implements Comp
         // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
         // lambda request
         T minimalOrRepresentation = factory.get();
+
+        final int versionNumber;
+        if (version <= 0) {
+            versionNumber = compositionService.getLastVersionNumber(compositionId);
+        } else {
+            versionNumber = version;
+        }
 
         // do minimal scope steps
         // create and supplement headers with data depending on which headers are requested
@@ -452,7 +456,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 case ETAG:
                     respHeaders.setETag("\"" + compositionId + "::"
                             + compositionService.getServerConfig().getNodename() + "::"
-                            + compositionService.getLastVersionNumber(compositionId) + "\"");
+                            + versionNumber + "\"");
                     break;
                 case LAST_MODIFIED:
                     // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for
@@ -474,12 +478,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
             CompositionFormat format = extractCompositionFormat(accept);
 
-            // version handling allows to request specific version
-            Integer versionNumber = version;
-            if (versionNumber == 0) {
-                versionNumber = compositionService.getLastVersionNumber(compositionId);
-            }
-
             Optional<CompositionDto> compositionDto = compositionService
                     .retrieve(ehrId, compositionId, versionNumber)
                     .map(c -> CompositionService.from(ehrId, c));
@@ -492,7 +490,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 // objByReference.setComposition(compositionService.serialize(compositionDto.get(), format));
             } else {
                 // TODO undo creation of composition, if applicable
-                throw new ObjectNotFoundException("composition", "Couldn't retrieve composition");
+                throw new ObjectNotFoundException(COMPOSITION, "Couldn't retrieve composition");
             }
 
             // finally set last header

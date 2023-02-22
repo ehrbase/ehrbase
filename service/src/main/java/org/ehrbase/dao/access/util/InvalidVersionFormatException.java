@@ -15,14 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.authorization;
+package org.ehrbase.dao.access.util;
 
-import org.aspectj.lang.ProceedingJoinPoint;
-
-public interface AuthorizationAspect {
-    public void matchEhrbaseAuthorization();
-
-    public void matchEhrbaseAuthorizations();
-
-    public Object action(ProceedingJoinPoint pjp) throws Throwable;
+public class InvalidVersionFormatException extends IllegalArgumentException {
+    public InvalidVersionFormatException(String semVerStr) {
+        super("Invalid version format: " + semVerStr);
+    }
 }

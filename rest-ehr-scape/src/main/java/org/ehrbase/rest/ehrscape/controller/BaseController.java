@@ -20,6 +20,7 @@ package org.ehrbase.rest.ehrscape.controller;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * This base controller implements the basic functionality for all specific controllers. This
@@ -29,6 +30,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  * @author Jake Smolka
  */
 public abstract class BaseController {
+    public static final String EHR = "ehr";
+    public static final String TEMPLATE = "template";
+    public static final String API_ECIS_CONTEXT_PATH_WITH_VERSION = "/rest/ecis/v1";
+    public static final String COMPOSITION = "composition";
 
     public Map<String, Map<String, String>> add2MetaMap(
             Map<String, Map<String, String>> metaMap, String key, String value) {
@@ -46,8 +51,22 @@ public abstract class BaseController {
         return metaMap;
     }
 
-    protected String getBaseEnvLinkURL() {
+    protected String getContextPath() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+    }
 
-        return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
+    /**
+     * Returns a URI for list of segments.
+     * The segments are appended to the base path and encoded to ensure safe usage in a URI.
+     *
+     * @param pathSegments List of segments to append to the base URL
+     * @return URI for the given base URL and segments
+     */
+    protected String createLocationUri(String... pathSegments) {
+        return UriComponentsBuilder.fromHttpUrl(getContextPath())
+                .path(API_ECIS_CONTEXT_PATH_WITH_VERSION)
+                .pathSegment(pathSegments)
+                .build()
+                .toUriString();
     }
 }

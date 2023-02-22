@@ -25,6 +25,7 @@ import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.support.DummyDataAccess;
+import org.ehrbase.dao.access.util.SemVer;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.service.KnowledgeCacheHelper;
 import org.joda.time.format.DateTimeFormat;
@@ -64,17 +65,16 @@ public class StoredQueryAccessTest {
 
     @Test
     public void testRetrieveAqlText() {
-        //        StoredQueryAccess storedQueryAccess = new StoredQueryAccess(testDomainAccess);
-
         // assuming it does exist for now
         String qualifiedName = "org.example.departmentx.test::diabetes-patient-overview";
 
-        I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(testDomainAccess, qualifiedName);
+        I_StoredQueryAccess storedQueryAccess = StoredQueryAccess.retrieveQualified(
+                        testDomainAccess, qualifiedName, SemVer.NO_VERSION)
+                .orElseThrow(AssertionError::new);
 
-        assertNotNull(storedQueryAccess);
-
-        assertEquals(
-                "org.example.departmentx.test::diabetes-patient-overview/1.0.2", storedQueryAccess.getQualifiedName());
+        assertEquals("org.example.departmentx.test", storedQueryAccess.getReverseDomainName());
+        assertEquals("diabetes-patient-overview", storedQueryAccess.getSemanticId());
+        assertEquals("1.0.2", storedQueryAccess.getSemver());
         assertEquals("a_query", storedQueryAccess.getQueryText());
         assertEquals(
                 new Timestamp(DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")
@@ -86,20 +86,23 @@ public class StoredQueryAccessTest {
     @Test
     @Ignore
     public void testCreate() {
-        //        StoredQueryAccess storedQueryAccess = new StoredQueryAccess(testDomainAccess);
-
         // assuming it does exist for now
         String qualifiedName = "org.example.departmentx.test::diabetes-patient-overview";
         String queryText = "a_query";
 
         I_StoredQueryAccess storedQueryAccess = new StoredQueryAccess(
-                        testDomainAccess, qualifiedName, queryText, TenantAuthentication.DEFAULT_TENANT_ID)
+                        testDomainAccess,
+                        qualifiedName,
+                        SemVer.NO_VERSION,
+                        queryText,
+                        TenantAuthentication.DEFAULT_TENANT_ID)
                 .commit();
 
         assertNotNull(storedQueryAccess);
 
-        assertEquals(
-                "org.example.departmentx.test::diabetes-patient-overview/1.0.2", storedQueryAccess.getQualifiedName());
+        assertEquals("org.example.departmentx.test", storedQueryAccess.getReverseDomainName());
+        assertEquals("diabetes-patient-overview", storedQueryAccess.getSemanticId());
+        assertEquals("1.0.2", storedQueryAccess.getSemver());
         assertEquals("a_query", storedQueryAccess.getQueryText());
         assertEquals(
                 new Timestamp(DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS")

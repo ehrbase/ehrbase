@@ -17,30 +17,35 @@
  */
 package org.ehrbase.dao.access.util;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StoredQueryQualifiedNameTest {
 
     @Test
-    public void testFullName() {
-        String name = "org.example.departmentx.test::diabetes-patient-overview/1.0.2";
+    void testFullName() {
+        String name = "org.example.departmentx.test::diabetes-patient-overview";
+        SemVer version = SemVer.parse("1.0.2");
 
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name);
+        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name, version);
 
         assertNotNull(storedQueryQualifiedName);
 
         assertEquals("org.example.departmentx.test", storedQueryQualifiedName.reverseDomainName());
         assertEquals("diabetes-patient-overview", storedQueryQualifiedName.semanticId());
-        assertEquals("1.0.2", storedQueryQualifiedName.semVer());
+        assertEquals("1.0.2", storedQueryQualifiedName.semVer().toVersionString());
     }
 
     @Test
-    public void testUncompleteName() {
+    void testIncompleteName() {
         String name = "org.example.departmentx.test::diabetes-patient-overview";
 
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name);
+        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name, null);
 
         assertNotNull(storedQueryQualifiedName);
 
@@ -50,13 +55,22 @@ public class StoredQueryQualifiedNameTest {
     }
 
     @Test
-    public void testBadlyformedName() {
-        String name = "org.example.departmentx.test/diabetes-patient-overview";
+    void testBadlyFormedName() {
+        String name = "org.example.departmentx.test";
+        SemVer version = SemVer.parse("");
 
-        try {
-            new StoredQueryQualifiedName(name);
-            fail();
-        } catch (Exception e) {
-        }
+        assertThrows(IllegalArgumentException.class, () -> {
+            new StoredQueryQualifiedName(name, version);
+        });
+    }
+
+    @Test
+    void testToString() {
+        assertThat(new StoredQueryQualifiedName(
+                        "org.example.departmentx.test::diabetes-patient-overview", SemVer.NO_VERSION))
+                .hasToString("org.example.departmentx.test::diabetes-patient-overview");
+        assertThat(new StoredQueryQualifiedName(
+                        "org.example.departmentx.test::diabetes-patient-overview", SemVer.parse("1.2")))
+                .hasToString("org.example.departmentx.test::diabetes-patient-overview/1.2");
     }
 }

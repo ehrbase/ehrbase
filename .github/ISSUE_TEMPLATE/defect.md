@@ -1,14 +1,13 @@
 ---
 name: Bug
-about: Something is not working as expected and must be fixed
+about: Report a bug encountered when working with EHRbase
 labels: bug
 ---
 
-## Configuration information
+# Environment information
 
-<!-- To reproduce your problem is is mandatory to give the following information. You can get all of
-them in one step by starting the EHRbase and requesting a GET on 
-`%ehrbaseBaseUri%/ehrbase/rest/status`.  -->
+> To help reproducing your problem it is mandatory to give some information on the environment. You can get an aggregate of this data by starting EHRbase and performing a GET request on 
+`%ehrbaseBaseUri%/ehrbase/rest/status`.
 
 - EHRbase version:
 - openEHR_SDK version:
@@ -17,28 +16,18 @@ them in one step by starting the EHRbase and requesting a GET on
 - Java Runtime version:
 - Operating System version:
 
-## Steps to reproduce ## 
+# Steps to reproduce
 
-<!-- Describe here what steps have to be executed with which data entered to reproduce the erroneous
-behaviour. Also include Operational Templates as an attachment if used. -->
+> Describe the steps that you have taken until the unexpected behavior occurred. Please try to add as many details as possible, and include data and templates as attachments.
 
-## Actual result ##
+# Actual result
 
-<!-- Describe the wrong output / behaviour. Attached images are always helpful. -->
+> Describe the wrong output / behavior.
 
-## Expected result (Acceptance Criteria) ##
+# Expected result
 
-<!-- Describe the expected output / behaviour. -->
+> Describe the expected output / behavior.
 
-## Definition of Done ##
+# Further information
 
-<!-- These checklist entries are used by our developers to deliver a solution with a base quality
-we want to acheive. If you want to add other points specific to this issue, put them into the section
-"Expected result (Acceptance Criteria)" -->
-
-- [ ] The defect is checked by an unit or an integration test (Robot)
-- [ ] Merge Request approved
-- [ ] Unit tests passed
-- [ ] Build without errors
-- [ ] Release notes prepared
-- [ ] No additional runtime warnings
+> Add additional information, if needed.

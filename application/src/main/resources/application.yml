@@ -34,9 +34,7 @@ spring:
     name: ehrbase
 
   cache:
-    type: jcache # change to type redis if usage of redis distributed cache is intended
-    jcache: # jcache parameters are only used if cache.type=jcache
-      config: classpath:ehcache.xml
+    type: CAFFEINE # change to type redis if usage of redis distributed cache is intended
 
   # the following redis properties are only used if the cache.type=redis
   redis:
@@ -55,6 +53,8 @@ spring:
 
   flyway:
     schemas: ehr
+    user: ehrbase
+    password: ehrbase
 
   jackson:
     default-property-inclusion: NON_NULL
@@ -140,6 +140,11 @@ server:
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 2
     iterationScanDepth: 2
 
+  tomcat:
+    threads:
+      min-spare: 200
+      max: 200
+
   # Option to disable strict invariant validation.
   # disable-strict-validation: true
 
@@ -153,6 +158,11 @@ management:
       base-path: '/management'
       exposure:
         include: 'env, health, info, metrics, prometheus'
+        # The access to management endpoints can be controlled
+        # ADMIN_ONLY - (default) endpoints are locked behind an authorization and are only available for users with the admin role
+        # PRIVATE - endpoints are locked behind an authorization, but are available to any role
+        # PUBLIC - endpoints can be accessed without an authorization
+      access: ADMIN_ONLY
   # Per endpoint settings
   endpoint:
     # Env endpoint - Shows information on environment of EHRbase
@@ -202,7 +212,7 @@ validation:
       fhir:
         type: FHIR
         url: https://r4.ontoserver.csiro.au/fhir/
-    
+
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
   ssl:

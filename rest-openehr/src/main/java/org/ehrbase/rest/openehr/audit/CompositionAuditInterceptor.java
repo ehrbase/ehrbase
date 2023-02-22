@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.ehrscape.CompositionDto;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.rest.openehr.audit.support.CompositionAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
@@ -45,8 +45,11 @@ public class CompositionAuditInterceptor extends OpenEhrAuditInterceptor<Composi
     private final CompositionService compositionService;
 
     public CompositionAuditInterceptor(
-            AuditContext auditContext, EhrService ehrService, CompositionService compositionService) {
-        super(auditContext, ehrService);
+            AuditContext auditContext,
+            EhrService ehrService,
+            CompositionService compositionService,
+            TenantService tenantService) {
+        super(auditContext, ehrService, tenantService);
         this.compositionService = compositionService;
     }
 
@@ -102,15 +105,6 @@ public class CompositionAuditInterceptor extends OpenEhrAuditInterceptor<Composi
             return null;
         }
 
-        Integer version = (Integer) request.getAttribute(VERSION_ATTRIBUTE);
-        if (version == null || version == 0) {
-            version = compositionService.getLastVersionNumber(compositionId);
-        }
-        UUID ehrId = compositionService.getEhrId(compositionId);
-        return compositionService
-                .retrieve(ehrId, compositionId, version)
-                .map(c -> CompositionService.from(ehrId, c))
-                .map(CompositionDto::getTemplateId)
-                .orElse(null);
+        return compositionService.retrieveTemplateId(compositionId);
     }
 }

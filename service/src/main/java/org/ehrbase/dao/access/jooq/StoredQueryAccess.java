@@ -22,14 +22,25 @@ import static org.ehrbase.jooq.pg.Tables.STORED_QUERY;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.util.SemVer;
 import org.ehrbase.dao.access.util.StoredQueryQualifiedName;
 import org.ehrbase.jooq.pg.tables.records.StoredQueryRecord;
 import org.joda.time.DateTime;
+import org.jooq.Condition;
+import org.jooq.OrderField;
+import org.jooq.SelectOrderByStep;
+import org.jooq.SelectWhereStep;
+import org.jooq.SortOrder;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 
 /**
  * Created by Christian Chevalley on 4/20/2015.
@@ -46,134 +57,138 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
     }
 
     public StoredQueryAccess(
-            I_DomainAccess domainAccess, String qualifiedQueryName, String sourceAqlText, String tenantIdentifier) {
+            I_DomainAccess domainAccess,
+            String qualifiedQueryName,
+            SemVer version,
+            String sourceAqlText,
+            String tenantIdentifier) {
         super(domainAccess);
 
         storedQueryRecord = domainAccess.getContext().newRecord(STORED_QUERY);
         storedQueryRecord.setNamespace(tenantIdentifier);
 
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(qualifiedQueryName);
+        StoredQueryQualifiedName qn = new StoredQueryQualifiedName(qualifiedQueryName, version);
 
-        storedQueryRecord.setReverseDomainName(storedQueryQualifiedName.reverseDomainName());
-        storedQueryRecord.setSemanticId(storedQueryQualifiedName.semanticId());
-        if (storedQueryQualifiedName.isSetSemVer()) storedQueryRecord.setSemver(storedQueryQualifiedName.semVer());
+        storedQueryRecord.setReverseDomainName(qn.reverseDomainName());
+        storedQueryRecord.setSemanticId(qn.semanticId());
+        storedQueryRecord.setSemver(version.toVersionString());
         storedQueryRecord.setQueryText(sourceAqlText);
         storedQueryRecord.setType("AQL");
     }
 
     /**
-     * @throws IllegalArgumentException if couldn't retrieve instance with given settings
+     * return null if couldn't retrieve instance with given settings
      */
-    public static StoredQueryAccess retrieveQualified(I_DomainAccess domainAccess, String qualifiedName) {
+    public static Optional<StoredQueryAccess> retrieveQualified(
+            I_DomainAccess domainAccess, String qualifiedName, @NonNull SemVer version) {
 
         // Split the qualified name in fields
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(qualifiedName);
+        StoredQueryQualifiedName qn = new StoredQueryQualifiedName(qualifiedName, version);
 
-        String reverseDomainName = storedQueryQualifiedName.reverseDomainName();
-        String semanticId = storedQueryQualifiedName.semanticId();
-        String semVer = storedQueryQualifiedName.semVer();
+        SemVer semVer = qn.semVer();
 
-        StoredQueryRecord queryRecord;
+        Condition condition = nameConstraint(qn);
+        condition = condition.and(versionConstraint(semVer));
+        var unordered = domainAccess.getContext().selectFrom(STORED_QUERY).where(condition);
 
-        // TODO: retrieve a stored query using a partial SEMVER
-
-        if (semVer != null && !semVer.toUpperCase().equals("LATEST")) {
-            // we do a seq search for query with SIMILAR to semver
-            queryRecord = domainAccess
-                    .getContext()
-                    .selectFrom(STORED_QUERY)
-                    .where(STORED_QUERY
-                            .REVERSE_DOMAIN_NAME
-                            .eq(reverseDomainName)
-                            .and(STORED_QUERY.SEMANTIC_ID.eq(semanticId))
-                            .and(STORED_QUERY.SEMVER.like(semVer + "%")))
-                    .orderBy(STORED_QUERY.SEMVER.desc())
-                    .limit(1)
-                    .fetchOne();
-        } else { // no semver specified, retrieve the latest by lexicographic order
-            queryRecord = domainAccess
-                    .getContext()
-                    .selectFrom(STORED_QUERY)
-                    .where(STORED_QUERY
-                            .REVERSE_DOMAIN_NAME
-                            .eq(reverseDomainName)
-                            .and(STORED_QUERY.SEMANTIC_ID.eq(semanticId)))
-                    .orderBy(STORED_QUERY.SEMVER.desc())
-                    .limit(1)
-                    .fetchOne();
+        Optional<StoredQueryRecord> queryRecord;
+        if (semVer.isRelease() || semVer.isPreRelease()) {
+            // equals => only one result
+            queryRecord = unordered.fetchOptional();
+        } else {
+            var ordered = unordered.orderBy(orderBySemVerStream(SortOrder.DESC).toList());
+            queryRecord = ordered.limit(1).fetchOptional();
         }
 
-        if (queryRecord == null) {
-            log.warn("Could not retrieve stored query for qualified name:" + qualifiedName);
-            throw new IllegalArgumentException("Could not retrieve stored query for qualified name:" + qualifiedName);
-        } else return new StoredQueryAccess(domainAccess, queryRecord, queryRecord.getNamespace());
+        return queryRecord.map(r -> new StoredQueryAccess(domainAccess, r, r.getNamespace()));
+    }
+
+    private static @NonNull Condition versionConstraint(SemVer semVer) {
+        if (semVer.isRelease() || semVer.isPreRelease()) {
+            return STORED_QUERY.SEMVER.eq(semVer.toVersionString());
+        }
+        Condition noPreRelease = STORED_QUERY.SEMVER.notContains("-");
+        if (semVer.isNoVersion()) {
+            return noPreRelease;
+        }
+        Condition prefixMatch = STORED_QUERY.SEMVER.like(semVer.toVersionString() + ".%");
+        return prefixMatch.and(noPreRelease);
+    }
+
+    private static Condition nameConstraint(StoredQueryQualifiedName storedQueryQualifiedName) {
+        return STORED_QUERY
+                .REVERSE_DOMAIN_NAME
+                .eq(storedQueryQualifiedName.reverseDomainName())
+                .and(STORED_QUERY.SEMANTIC_ID.eq(storedQueryQualifiedName.semanticId()));
     }
 
     /**
-     * @throws IllegalArgumentException if couldn't retrieve instance with given settings
+     * Retrieves list of all stored queries on the system matched by qualifiedQueryName as pattern.
+     * If pattern should be given in the format of [{namespace}::]{query-name},
+     * and when is empty, it will be treated as "wildcard" in the search.
      */
-    public static List<StoredQueryAccess> retrieveQualifiedList(I_DomainAccess domainAccess, String qualifiedName) {
+    public static List<StoredQueryAccess> retrieveQualifiedList(
+            I_DomainAccess domainAccess, String qualifiedQueryName) {
+        SelectWhereStep<StoredQueryRecord> selection = domainAccess.getContext().selectFrom(STORED_QUERY);
 
-        // Split the qualified name in fields
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(qualifiedName);
-
-        String reverseDomainName = storedQueryQualifiedName.reverseDomainName();
-        String semanticId = storedQueryQualifiedName.semanticId();
-
-        List<StoredQueryRecord> queryRecords;
-
-        // TODO: retrieve a stored query using a partial SEMVER
-
-        // no semver specified, retrieve the latest by lexicographic order
-        queryRecords = domainAccess
-                .getContext()
-                .selectFrom(STORED_QUERY)
-                .where(STORED_QUERY
-                        .REVERSE_DOMAIN_NAME
-                        .eq(reverseDomainName)
-                        .and(STORED_QUERY.SEMANTIC_ID.eq(semanticId)))
-                .orderBy(STORED_QUERY.SEMVER.desc())
-                .fetch();
-
-        List<StoredQueryAccess> storedQueryAccesses = new ArrayList<>();
-        if (queryRecords == null) {
-            log.warn("Could not retrieve Aql Text for qualified name:" + qualifiedName);
+        // Determine {query-name} and {namespace}
+        String semanticId;
+        String reverseDomainName;
+        if (StringUtils.isEmpty(qualifiedQueryName)) {
+            semanticId = null;
+            reverseDomainName = null;
         } else {
-            for (StoredQueryRecord storedQueryRecord : queryRecords) {
-                storedQueryAccesses.add(
-                        new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
+            // qualifiedQueryName is optional
+            int pos = qualifiedQueryName.indexOf("::");
+            if (pos < 0) {
+                reverseDomainName = null;
+                semanticId = qualifiedQueryName;
+            } else {
+                reverseDomainName = StringUtils.defaultIfEmpty(qualifiedQueryName.substring(0, pos), null);
+                semanticId = StringUtils.defaultIfEmpty(qualifiedQueryName.substring(pos + 2), null);
             }
         }
 
-        return storedQueryAccesses;
+        List<Condition> constraints = new ArrayList<>();
+        List<OrderField<?>> orderFields = new ArrayList<>();
+
+        if (reverseDomainName == null) {
+            orderFields.add(STORED_QUERY.REVERSE_DOMAIN_NAME.sort(SortOrder.ASC));
+        } else {
+            constraints.add(STORED_QUERY.REVERSE_DOMAIN_NAME.eq(reverseDomainName));
+        }
+
+        if (semanticId == null) {
+            orderFields.add(STORED_QUERY.SEMANTIC_ID.sort(SortOrder.ASC));
+        } else {
+            constraints.add(STORED_QUERY.SEMANTIC_ID.eq(semanticId));
+        }
+
+        SelectOrderByStep<StoredQueryRecord> unordered;
+        if (constraints.isEmpty()) {
+            unordered = selection;
+        } else {
+            unordered = selection.where(constraints);
+        }
+
+        var sortOrder = Stream.concat(orderFields.stream(), orderBySemVerStream(SortOrder.DESC))
+                .toList();
+
+        try (Stream<StoredQueryRecord> stream = unordered.orderBy(sortOrder).stream()) {
+            return stream.map(r -> new StoredQueryAccess(domainAccess, r, r.getNamespace()))
+                    .toList();
+        }
     }
 
-    /**
-     * retrieve the whole set of stored queries
-     * @param domainAccess
-     * @return
-     */
-    public static List<StoredQueryAccess> retrieveQualifiedList(I_DomainAccess domainAccess) {
-        List<StoredQueryRecord> queryRecords;
-
-        // no semver specified, retrieve the latest by lexicographic order
-        queryRecords = domainAccess
-                .getContext()
-                .selectFrom(STORED_QUERY)
-                .orderBy(STORED_QUERY.SEMVER.desc())
-                .fetch();
-
-        List<StoredQueryAccess> storedQueryAccesses = new ArrayList<>();
-        if (queryRecords == null) {
-            log.warn("Empty stored query set");
-        } else {
-            for (StoredQueryRecord storedQueryRecord : queryRecords) {
-                storedQueryAccesses.add(
-                        new StoredQueryAccess(domainAccess, storedQueryRecord, storedQueryRecord.getNamespace()));
-            }
-        }
-
-        return storedQueryAccesses;
+    private static Stream<OrderField<?>> orderBySemVerStream(SortOrder sortOrder) {
+        return Stream.of(
+                DSL.splitPart(STORED_QUERY.SEMVER, ".", 1).cast(Integer.class).sort(sortOrder),
+                DSL.splitPart(STORED_QUERY.SEMVER, ".", 2).cast(Integer.class).sort(sortOrder),
+                DSL.splitPart(DSL.splitPart(STORED_QUERY.SEMVER, ".", 3), "-", 1)
+                        .cast(Integer.class)
+                        .sort(sortOrder),
+                DSL.splitPart(DSL.splitPart(STORED_QUERY.SEMVER, ".", 3), "-", 2)
+                        .sort(sortOrder));
     }
 
     @Override
@@ -208,15 +223,6 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
     @Override
     public Integer delete() {
         return storedQueryRecord.delete();
-    }
-
-    @Override
-    public String getQualifiedName() {
-        return new StoredQueryQualifiedName(
-                        storedQueryRecord.getReverseDomainName(),
-                        storedQueryRecord.getSemanticId(),
-                        storedQueryRecord.getSemver())
-                .toString();
     }
 
     @Override

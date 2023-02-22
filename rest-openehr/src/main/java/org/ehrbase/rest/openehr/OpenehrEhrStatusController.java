@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import java.net.URI;
@@ -62,7 +64,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @TenantAware
 @RestController
-@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/ehr_status")
+@RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/ehr_status")
 public class OpenehrEhrStatusController extends BaseController implements EhrStatusApiSpecification {
 
     private final EhrService ehrService;
@@ -74,10 +76,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestParam(name = "version_at_time", required = false) String versionAtTime,
@@ -104,10 +106,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @Override
     @GetMapping(path = "/{version_uid}")
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @PathVariable(name = "version_uid") String versionUid,
@@ -132,10 +134,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
     @Override
     @PutMapping
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrIdString))")
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
+    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
             @PathVariable("ehr_id") UUID ehrId,
             @RequestHeader(name = IF_MATCH) String versionUid,
@@ -148,6 +150,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         // If-Match header check
         String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
+        versionUid = unwrap(versionUid, '"');
         if (!latestVersionUid.equals(versionUid)) {
             throw new PreconditionFailedException("Given If-Match header does not match latest existing version");
         }
@@ -249,9 +252,15 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                     break;
                 case LOCATION:
                     try {
-                        URI url = new URI(
-                                getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId + "/ehr_status/" + ehrStatusId
-                                        + "::" + ehrService.getServerConfig().getNodename() + "::" + version);
+                        URI url = createLocationUri(
+                                EHR,
+                                ehrId.toString(),
+                                EHR_STATUS,
+                                String.format(
+                                        "%s::%s::%s",
+                                        ehrStatusId,
+                                        ehrService.getServerConfig().getNodename(),
+                                        version));
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());

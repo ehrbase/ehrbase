@@ -65,7 +65,7 @@ import org.springframework.web.bind.annotation.RestController;
 @TenantAware
 @RestController
 @RequestMapping(
-        path = "${openehr-api.context-path:/rest/openehr}/v1/ehr",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrEhrController extends BaseController implements EhrApiSpecification {
 
@@ -142,7 +142,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
     private ResponseEntity<EhrResponseData> internalPostEhrProcessing(
             String accept, String prefer, UUID resultEhrId, HttpServletRequest request) {
-        URI url = URI.create(this.encodePath(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + resultEhrId.toString()));
+        URI url = createLocationUri(EHR, resultEhrId.toString());
 
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
@@ -245,21 +245,16 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         // check for valid format header to produce content accordingly
         MediaType contentType = resolveContentType(accept);
 
-        // Optional<EhrStatusDto> ehrStatus = ehrService.getEhrStatusEhrScape(ehrId,
-        // CompositionFormat.FLAT);    // older, keep until rework of formatting
-        Optional<EhrStatus> ehrStatus = Optional.of(ehrService.getEhrStatus(ehrId));
-        if (ehrStatus.isEmpty()) {
-            return Optional.empty();
-        }
-
         // create either null or maximum response data class
         T minimalOrRepresentation = factory.get();
 
         if (minimalOrRepresentation != null) {
+
+            EhrStatus ehrStatus = ehrService.getEhrStatus(ehrId);
             // populate maximum response data
             EhrResponseData objByReference = minimalOrRepresentation;
             objByReference.setEhrId(new HierObjectId(ehrId.toString()));
-            objByReference.setEhrStatus(ehrStatus.get());
+            objByReference.setEhrStatus(ehrStatus);
             objByReference.setSystemId(
                     new HierObjectId(ehrService.getSystemUuid().toString()));
             DvDateTime timeCreated = ehrService.getCreationTime(ehrId);
@@ -278,7 +273,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                     break;
                 case LOCATION:
                     try {
-                        URI url = new URI(getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId);
+                        URI url = createLocationUri(EHR, ehrId.toString());
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());

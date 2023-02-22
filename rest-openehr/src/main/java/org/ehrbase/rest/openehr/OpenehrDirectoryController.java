@@ -17,9 +17,10 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.unwrap;
+
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.net.URI;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -66,7 +67,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @TenantAware
 @RestController
-@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/ehr")
+@RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr")
 public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {
 
     private final FolderService folderService;
@@ -116,6 +117,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestBody Folder folder) {
 
+        folderId.setValue(unwrap(folderId.getValue(), '"'));
+
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);
 
@@ -141,6 +144,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
+
+        folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         // Check version conflicts if EHR and directory exist
         checkDirectoryVersionConflicts(folderId, ehrId);
@@ -250,8 +255,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             String versionUid = folderDto.getUid().toString();
 
             headers.setETag("\"" + versionUid + "\"");
-            headers.setLocation(URI.create(encodePath(
-                    getBaseEnvLinkURL() + "/rest/openehr/v1/ehr/" + ehrId.toString() + "/directory/" + versionUid)));
+            headers.setLocation(createLocationUri(EHR, ehrId.toString(), DIRECTORY, versionUid));
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());
         }
@@ -306,10 +310,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             throw new PreconditionFailedException(
                     "If-Match version_uid does not match latest version.",
                     directoryId,
-                    encodePath(getBaseEnvLinkURL()
-                            + "/rest/openehr/v1/ehr/"
-                            + ehrId.toString()
-                            + "/directory/" + directoryId));
+                    createLocationUri(EHR, ehrId.toString(), DIRECTORY, directoryId)
+                            .toString());
         }
     }
 }

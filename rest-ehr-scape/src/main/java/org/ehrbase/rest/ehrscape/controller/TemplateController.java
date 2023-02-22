@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.ehrscape.controller;
 
+import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
+import static org.ehrbase.rest.ehrscape.controller.BaseController.TEMPLATE;
+
 import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -51,7 +54,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(
-        path = "/rest/ecis/v1/template",
+        path = API_ECIS_CONTEXT_PATH_WITH_VERSION + "/" + TEMPLATE,
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class TemplateController extends BaseController {
 
@@ -120,7 +123,7 @@ public class TemplateController extends BaseController {
         responseData.setWebTemplate(new Filter().filter(templateService.findTemplate(templateId)));
         responseData.setAction(Action.RETRIEVE);
         RestHref url = new RestHref();
-        url.setUrl(getBaseEnvLinkURL() + "/rest/ecis/v1/template" + templateId + "/");
+        url.setUrl(createLocationUri(TEMPLATE, templateId));
         Meta meta = new Meta();
         meta.setHref(url);
         responseData.setMeta(meta);

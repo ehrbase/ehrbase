@@ -20,7 +20,6 @@ package org.ehrbase.api.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.response.ehrscape.QueryResultDto;
 
@@ -30,15 +29,13 @@ public interface QueryService extends BaseService {
      * parameters (key = 'query-parameters')
      *
      * @param queryString
-     * @param queryMode
+     * @param parameters  optional parameters
      * @param explain
-     * @param parameters optional parameters
      * @return
      */
     QueryResultDto query(
             String queryString,
             Map<String, Object> parameters,
-            QueryMode queryMode,
             boolean explain,
             Map<String, Set<Object>> auditResultMap);
 
@@ -49,8 +46,6 @@ public interface QueryService extends BaseService {
 
     // === DEFINITION: manage stored queries
     QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString);
-
-    QueryDefinitionResultDto updateStoredQuery(String qualifiedName, String version, String queryString);
 
     QueryDefinitionResultDto deleteStoredQuery(String qualifiedName, String version);
 }

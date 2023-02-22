@@ -19,11 +19,14 @@ package org.ehrbase.ehr.knowledge;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -82,4 +85,96 @@ public interface I_KnowledgeCache {
     boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template);
 
     JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> jsonQueryExpression);
+
+    ConceptValue getConceptByConceptId(int code, String language, BiFunction<Integer, String, ConceptValue> provider);
+
+    ConceptValue getConceptById(UUID uuid, Function<UUID, ConceptValue> provider);
+
+    ConceptValue getConceptByDescription(
+            String description, String language, BiFunction<String, String, ConceptValue> provider);
+
+    TerritoryValue getTerritoryCodeByTwoLetterCode(String territoryAsString, Function<String, TerritoryValue> provider);
+
+    LanguageValue getLanguageByCode(String languageCode, Function<String, LanguageValue> provider);
+
+    class ConceptValue implements Serializable {
+
+        private final UUID id;
+        private final int conceptId;
+        private final String description;
+        private final String language;
+
+        public ConceptValue(UUID id, int conceptId, String description, String language) {
+            this.id = id;
+            this.conceptId = conceptId;
+            this.description = description;
+            this.language = language;
+        }
+
+        public UUID getId() {
+            return id;
+        }
+
+        public int getConceptId() {
+            return conceptId;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+    }
+
+    class LanguageValue implements Serializable {
+
+        private final String code;
+        private final String description;
+
+        public LanguageValue(String code, String description) {
+            this.code = code;
+            this.description = description;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
+
+    class TerritoryValue implements Serializable {
+
+        private final int code;
+        private final String twoletter;
+        private final String threeletter;
+        private final String text;
+
+        public TerritoryValue(int code, String twoletter, String threeletter, String text) {
+            this.code = code;
+            this.twoletter = twoletter;
+            this.threeletter = threeletter;
+            this.text = text;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getTwoletter() {
+            return twoletter;
+        }
+
+        public String getThreeletter() {
+            return threeletter;
+        }
+
+        public String getText() {
+            return text;
+        }
+    }
 }

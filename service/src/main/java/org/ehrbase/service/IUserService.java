@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,19 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.definitions;
+package org.ehrbase.service;
 
-public enum QueryMode {
-    SQL("sql"),
-    AQL("aql");
+import java.util.UUID;
 
-    private final String code;
-
-    QueryMode(String code) {
-        this.code = code;
-    }
-
-    public String getCode() {
-        return code;
-    }
+public interface IUserService {
+    UUID getCurrentUserId();
 }

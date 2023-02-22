@@ -19,7 +19,6 @@ package org.ehrbase.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,7 +34,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -44,29 +45,33 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.cache.CacheOptions;
+import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.tenant.DefaultTenantAuthentication;
 import org.ehrbase.util.TemplateUtils;
-import org.ehrbase.util.WebTemplateNodeQuery;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 import org.ehrbase.webtemplate.parser.NodeId;
 import org.ehrbase.webtemplate.parser.OPTParser;
+import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Look up and caching for archetypes, openEHR showTemplates and Operational Templates. Search in
@@ -90,43 +95,9 @@ import org.springframework.transaction.annotation.Transactional;
  * @author C. Chevalley
  */
 @Service
-@Transactional
+// This service is not @Transactional since we only want to get DB connections when we really need to and an already
+// running transaction is propagated anyway
 public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectService {
-    static class CacheKey<T extends Serializable> implements Serializable {
-        private static final long serialVersionUID = -5926035933645900703L;
-
-        static <T0 extends Serializable> CacheKey<T0> of(T0 val, String tenantId) {
-            return new CacheKey<>(val, tenantId);
-        }
-
-        private final T val;
-        private final String tenantId;
-
-        public T getVal() {
-            return val;
-        }
-
-        public String getTenantId() {
-            return tenantId;
-        }
-
-        private CacheKey(T val, String tenantId) {
-            this.val = val;
-            this.tenantId = tenantId;
-        }
-
-        public int hashCode() {
-            return Objects.hash(val, tenantId);
-        }
-
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof CacheKey) || ((CacheKey) obj).val.getClass() != val.getClass())
-                return false;
-            CacheKey<T> ck = (CacheKey<T>) obj;
-            return val.equals(ck.val) && tenantId.equals(ck.tenantId);
-        }
-    }
 
     public static final String ELEMENT = "ELEMENT";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -138,16 +109,23 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache webTemplateCache;
     private final Cache fieldCache;
     private final Cache multivaluedCache;
-
     private final TenantService tenantService;
 
     // index val to val
     private final Map<CacheKey<UUID>, String> idxCacheUuidToTemplateId = new ConcurrentHashMap<>();
     // index val to val
     private final Map<String, CacheKey<UUID>> idxCacheTemplateIdToUuid = new ConcurrentHashMap<>();
+    private final Cache /*<UUID, ConceptValue>*/ conceptById;
+    private final Cache /*<Pair<Integer, String>, ConceptValue>*/ conceptByConceptId;
+    private final Cache /*<Pair<String, String>, ConceptValue>*/ conceptByDescription;
+    private final Cache /*<String, TerritoryValue>*/ territoryCache;
+    private final Cache /*<String, LanguageValue>*/ languageCache;
 
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
+
+    @Autowired
+    private DSLContext dslContext;
 
     public KnowledgeCacheService(
             TemplateStorage templateStorage,
@@ -164,7 +142,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         jsonPathQueryResultCache = cacheManager.getCache(CacheOptions.QUERY_CACHE);
         fieldCache = cacheManager.getCache(CacheOptions.FIELDS_CACHE);
         multivaluedCache = cacheManager.getCache(CacheOptions.MULTI_VALUE_CACHE);
+        conceptById = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_ID);
+        conceptByConceptId = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_CONCEPT_ID);
+        conceptByDescription = cacheManager.getCache(CacheOptions.CONCEPT_CACHE_DESCRIPTION);
 
+        territoryCache = cacheManager.getCache(CacheOptions.TERRITORY_CACHE);
+        languageCache = cacheManager.getCache(CacheOptions.LANGUAGE_CACHE);
         initializeCaches(cacheOptions.isPreInitialize());
     }
 
@@ -237,6 +220,14 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         collect.forEach(f -> {
             if (!f.isDone()) f.cancel(false);
         });
+        I_DomainAccess domainAccess = new DataAccess(dslContext, this, null, null) {
+            @Override
+            public DataAccess getDataAccess() {
+                return this;
+            }
+        };
+        List.of(I_ConceptAccess.ContributionChangeType.values())
+                .forEach(c -> I_ConceptAccess.fetchContributionChangeType(domainAccess, c));
     }
 
     @Override
@@ -380,30 +371,31 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                 CacheKey.of(uuid, tenantService.getCurrentTenantIdentifier()),
                 ck -> listAllOperationalTemplates().stream()
                         .filter(t -> t.getErrorList().isEmpty())
-                        .filter(t ->
-                                t.getOperationaltemplate().getUid().getValue().equals(ck.val.toString()))
+                        .filter(t -> t.getOperationaltemplate()
+                                .getUid()
+                                .getValue()
+                                .equals(ck.getVal().toString()))
                         .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
                         .findFirst()
                         .orElse(null));
     }
 
     private UUID findUuidByTemplateId(String templateId) {
-        return idxCacheTemplateIdToUuid.computeIfAbsent(templateId, id -> {
+        return idxCacheTemplateIdToUuid
+                .computeIfAbsent(templateId, id -> {
                     OPERATIONALTEMPLATE templ = retrieveOperationalTemplate(id)
                             .orElseThrow(() ->
                                     new IllegalArgumentException(String.format("Unknown template %s", templateId)));
                     return CacheKey.of(
                             UUID.fromString(templ.getUid().getValue()), tenantService.getCurrentTenantIdentifier());
                 })
-                .val;
+                .getVal();
     }
 
     @Override
     public WebTemplate getQueryOptMetaData(UUID uuid) {
         CacheKey<UUID> ck = CacheKey.of(uuid, tenantService.getCurrentTenantIdentifier());
-        WebTemplate retval = webTemplateCache.get(ck, WebTemplate.class);
-        if (retval == null) return buildAndCacheQueryOptMetaData(uuid);
-        return retval;
+        return webTemplateCache.get(ck, () -> buildQueryOptMetaData(uuid));
     }
 
     @Override
@@ -411,36 +403,30 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return getQueryOptMetaData(findUuidByTemplateId(templateId));
     }
 
-    private WebTemplate buildAndCacheQueryOptMetaData(UUID uuid) {
-        WebTemplate retval;
-        Optional<OPERATIONALTEMPLATE> operationaltemplate = Optional.empty();
+    private WebTemplate buildQueryOptMetaData(UUID uuid) {
+        Optional<OPERATIONALTEMPLATE> operationaltemplate;
 
         try {
             operationaltemplate = retrieveOperationalTemplate(uuid);
         } catch (Exception e) {
             log.warn(e.getMessage(), e);
+            operationaltemplate = Optional.empty();
         }
 
-        if (operationaltemplate.isPresent()) return buildAndCacheQueryOptMetaData(operationaltemplate.get());
-        else
-            throw new IllegalArgumentException(
-                    "Could not retrieve  knowledgeCacheService.getKnowledgeCache() cache for template Uid:" + uuid);
+        return operationaltemplate
+                .map(this::buildQueryOptMetaData)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Could not retrieve  knowledgeCacheService.getKnowledgeCache() cache for template Uid:"
+                                + uuid));
     }
 
-    private WebTemplate buildAndCacheQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
+    private WebTemplate buildQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
         log.info("Updating WebTemplate cache for template: {}", TemplateUtils.getTemplateId(operationaltemplate));
-
-        final WebTemplate visitor;
         try {
-            visitor = new OPTParser(operationaltemplate).parse();
+            return new OPTParser(operationaltemplate).parse();
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
-
-        webTemplateCache.put(
-                CacheKey.of(TemplateUtils.getUid(operationaltemplate), tenantService.getCurrentTenantIdentifier()),
-                visitor);
-        return visitor;
     }
 
     /**
@@ -478,98 +464,90 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> nodeIds) {
-        String tenantId = tenantService.getCurrentTenantIdentifier();
-        Triple<String, String, Collection<NodeId>> key = Triple.of(templateId, tenantId, nodeIds);
+        Triple<String, String, Collection<NodeId>> key =
+                Triple.of(templateId, tenantService.getCurrentTenantIdentifier(), nodeIds);
+        JsonPathQueryResult jsonPathQueryResult =
+                jsonPathQueryResultCache.get(key, () -> createJsonPathQueryResult(key));
 
-        JsonPathQueryResult jsonPathQueryResult = jsonPathQueryResultCache.get(key, JsonPathQueryResult.class);
+        return jsonPathQueryResult.getTemplateId() != null ? jsonPathQueryResult : null;
+    }
 
-        if (jsonPathQueryResult == null) {
-            WebTemplate webTemplate = getQueryOptMetaData(templateId);
-            List<WebTemplateNode> webTemplateNodeList = new ArrayList<>();
-            webTemplateNodeList.add(webTemplate.getTree());
+    private JsonPathQueryResult createJsonPathQueryResult(Triple<String, String, Collection<NodeId>> key) {
+        JsonPathQueryResult jsonPathQueryResult;
+        WebTemplate webTemplate = getQueryOptMetaData(key.getLeft());
+        List<WebTemplateNode> webTemplateNodeList = new ArrayList<>();
+        webTemplateNodeList.add(webTemplate.getTree());
 
-            for (NodeId nodeId : nodeIds) {
-                webTemplateNodeList = webTemplateNodeList.stream()
-                        .map(n -> n.findMatching(f -> {
-                            if (f.getNodeId() == null) return false;
-                            // compere only classname
-                            else if (nodeId.getNodeId() == null)
-                                return nodeId.getClassName().equals(new NodeId(f.getNodeId()).getClassName());
-                            else return nodeId.equals(new NodeId(f.getNodeId()));
-                        }))
-                        .flatMap(List::stream)
-                        .collect(Collectors.toList());
-            }
-
-            Set<String> uniquePaths = new TreeSet<>();
-            webTemplateNodeList.stream()
-                    .map(n -> n.getAqlPath(new WebTemplateNodeQuery(webTemplate, n).requiresNamePredicate()))
-                    .forEach(uniquePaths::add);
-
-            if (!uniquePaths.isEmpty()) jsonPathQueryResult = new JsonPathQueryResult(templateId, uniquePaths);
-            else {
-                // dummy result since null can not be path of a cache
-                jsonPathQueryResult = new JsonPathQueryResult(null, Collections.emptyMap());
-            }
-
-            jsonPathQueryResultCache.put(key, jsonPathQueryResult);
+        for (NodeId nodeId : key.getRight()) {
+            webTemplateNodeList = webTemplateNodeList.stream()
+                    .map(n -> n.findMatching(f -> {
+                        if (f.getNodeId() == null) return false;
+                        // compere only classname
+                        else if (nodeId.getNodeId() == null)
+                            return nodeId.getClassName().equals(new NodeId(f.getNodeId()).getClassName());
+                        else return nodeId.equals(new NodeId(f.getNodeId()));
+                    }))
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
         }
 
-        if (jsonPathQueryResult.getTemplateId() != null) return jsonPathQueryResult;
-        else /*Is dummy result*/ return null;
+        Set<String> uniquePaths = new TreeSet<>();
+        webTemplateNodeList.stream().map(n -> n.getAqlPath(false)).forEach(uniquePaths::add);
+
+        if (!uniquePaths.isEmpty()) {
+            jsonPathQueryResult = new JsonPathQueryResult(key.getLeft(), uniquePaths);
+        } else {
+            // dummy result since null can not be path of a cache
+            jsonPathQueryResult = new JsonPathQueryResult(null, Collections.emptyMap());
+        }
+        return jsonPathQueryResult;
     }
 
     @Override
     public ItemInfo getInfo(String templateId, String aql) {
-        Triple<String, String, String> key = Triple.of(templateId, tenantService.getCurrentTenantIdentifier(), aql);
-        ItemInfo itemInfo = fieldCache.get(key, ItemInfo.class);
+        TemplateIdAqlTuple key = new TemplateIdAqlTuple(templateId, aql, tenantService.getCurrentTenantIdentifier());
+        return fieldCache.get(key, () -> createItemInfo(key));
+    }
 
-        if (itemInfo == null) {
-            WebTemplate webTemplate = getQueryOptMetaData(templateId);
-            String type;
-            Optional<WebTemplateNode> node = webTemplate.findByAqlPath(aql);
-            if (node.isEmpty()) {
-                type = null;
-            } else if (node.get().getRmType().equals(ELEMENT)) {
-                // for element unwrap
-                type = node.get().getChildren().get(0).getRmType();
-            } else {
-                type = node.get().getRmType();
-            }
-            String category;
-
-            if (node.isEmpty()) {
-                category = null;
-            } else if (aql.endsWith("/value")) {
-                // for element unwrap
-                category = webTemplate
-                        .findByAqlPath(aql.replace("/value", ""))
-                        .filter(n -> n.getRmType().equals(ELEMENT))
-                        .map(n -> ELEMENT)
-                        .orElse("DATA_STRUCTURE");
-            } else {
-                category = "DATA_STRUCTURE";
-            }
-
-            itemInfo = new ItemInfo(type, category);
-            fieldCache.put(key, itemInfo);
+    private ItemInfo createItemInfo(TemplateIdAqlTuple key) {
+        WebTemplate webTemplate = getQueryOptMetaData(key.getTemplateId());
+        String keyAql = key.getAql();
+        Optional<WebTemplateNode> node = webTemplate.findByAqlPath(keyAql);
+        final String type;
+        if (node.isEmpty()) {
+            type = null;
+        } else if (node.get().getRmType().equals(ELEMENT)) {
+            // for element unwrap
+            type = node.get().getChildren().get(0).getRmType();
+        } else {
+            type = node.get().getRmType();
         }
-        return itemInfo;
+        String category;
+
+        if (node.isEmpty()) {
+            category = null;
+        } else if (keyAql.endsWith("/value")) {
+            // for element unwrap
+            category = webTemplate
+                    .findByAqlPath(keyAql.replace("/value", ""))
+                    .filter(n -> n.getRmType().equals(ELEMENT))
+                    .map(n -> ELEMENT)
+                    .orElse("DATA_STRUCTURE");
+        } else {
+            category = "DATA_STRUCTURE";
+        }
+
+        return new ItemInfo(type, category);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<String> multiValued(String templateId) {
-        CacheKey<String> key = CacheKey.of(templateId, tenantService.getCurrentTenantIdentifier());
-        List<String> list = multivaluedCache.get(key, List.class);
-
-        if (list == null) {
-            list = getQueryOptMetaData(templateId).multiValued().stream()
-                    .map(webTemplateNode -> webTemplateNode.getAqlPath(false))
-                    .collect(Collectors.toList());
-            multivaluedCache.put(key, list);
-        }
-        return list;
+        return multivaluedCache.get(
+                CacheKey.of(templateId, tenantService.getCurrentTenantIdentifier()),
+                () -> getQueryOptMetaData(templateId).multiValued().stream()
+                        .map(webTemplateNode -> webTemplateNode.getAqlPath(false))
+                        .collect(Collectors.toList()));
     }
 
     @Override
@@ -591,6 +569,10 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             throw new IllegalArgumentException("Supplied template has nil or empty concept");
         }
 
+        if (template.getLanguage() == null || template.getLanguage().isNil()) {
+            throw new IllegalArgumentException("Supplied template has nil or empty language");
+        }
+
         if (template.getDefinition() == null || template.getDefinition().isNil()) {
             throw new IllegalArgumentException("Supplied template has nil or empty definition");
         }
@@ -604,5 +586,54 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                     "The supplied template is not supported (unsupported types: {0})",
                     String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
         }
+    }
+
+    @Override
+    public ConceptValue getConceptByConceptId(
+            int conceptId, String language, BiFunction<Integer, String, ConceptValue> provider) {
+        ConceptValue concept = conceptByConceptId.get(Pair.of(conceptId, language), ConceptValue.class);
+        if (concept == null) {
+            concept = provider.apply(conceptId, language);
+            addConceptToCaches(concept);
+        }
+        return concept;
+    }
+
+    @Override
+    public ConceptValue getConceptById(UUID id, Function<UUID, ConceptValue> provider) {
+        ConceptValue concept = conceptById.get(id, ConceptValue.class);
+        if (concept == null) {
+            concept = provider.apply(id);
+            addConceptToCaches(concept);
+        }
+        return concept;
+    }
+
+    @Override
+    public ConceptValue getConceptByDescription(
+            String description, String language, BiFunction<String, String, ConceptValue> provider) {
+        ConceptValue concept = conceptByDescription.get(Pair.of(description, language), ConceptValue.class);
+        if (concept == null) {
+            concept = provider.apply(description, language);
+            addConceptToCaches(concept);
+        }
+        return concept;
+    }
+
+    private void addConceptToCaches(ConceptValue concept) {
+        conceptById.put(concept.getId(), concept);
+        conceptByConceptId.put(Pair.of(concept.getConceptId(), concept.getLanguage()), concept);
+        conceptByDescription.put(Pair.of(concept.getDescription(), concept.getLanguage()), concept);
+    }
+
+    @Override
+    public TerritoryValue getTerritoryCodeByTwoLetterCode(
+            String territoryAsString, Function<String, TerritoryValue> provider) {
+        return territoryCache.get(territoryAsString, () -> provider.apply(territoryAsString));
+    }
+
+    @Override
+    public LanguageValue getLanguageByCode(String languageCode, Function<String, LanguageValue> provider) {
+        return languageCache.get(languageCode, () -> provider.apply(languageCode));
     }
 }

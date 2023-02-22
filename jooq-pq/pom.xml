@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.23.0</version>
+        <version>0.24.0</version>
     </parent>
 
     <artifactId>jooq-pg</artifactId>
@@ -96,7 +96,7 @@
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>${postgressql.version}</version>
+                        <version>${postgresql.version}</version>
                     </dependency>
                 </dependencies>
                 <!-- Specify the plugin configuration.

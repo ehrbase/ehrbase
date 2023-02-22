@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;
@@ -51,24 +53,35 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    private static final String PUBLIC = "PUBLIC";
+    private static final String PRIVATE = "PRIVATE";
+    public static final String ADMIN_ONLY = "ADMIN_ONLY";
     public static final String PROFILE_SCOPE = "PROFILE";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Value("${management.endpoints.web.access:ADMIN_ONLY}")
+    private String managementEndpointsAccessType;
+
     private final SecurityProperties securityProperties;
 
-    private final OAuth2ResourceServerProperties oAuth2rProperties;
+    private final OAuth2ResourceServerProperties oAuth2Properties;
+
+    private final WebEndpointProperties managementWebEndpointProperties;
 
     public OAuth2SecurityConfiguration(
-            SecurityProperties securityProperties, OAuth2ResourceServerProperties oAuth2rProperties) {
+            SecurityProperties securityProperties,
+            OAuth2ResourceServerProperties oAuth2Properties,
+            WebEndpointProperties managementWebEndpointProperties) {
         this.securityProperties = securityProperties;
-        this.oAuth2rProperties = oAuth2rProperties;
+        this.oAuth2Properties = oAuth2Properties;
+        this.managementWebEndpointProperties = managementWebEndpointProperties;
     }
 
     @PostConstruct
     public void initialize() {
         logger.info("Using OAuth2 authentication");
-        logger.debug("Using issuer URI: {}", oAuth2rProperties.getJwt().getIssuerUri());
+        logger.debug("Using issuer URI: {}", oAuth2Properties.getJwt().getIssuerUri());
         logger.debug("Using user role: {}", securityProperties.getOauth2UserRole());
         logger.debug("Using admin role: {}", securityProperties.getOauth2AdminRole());
     }
@@ -79,12 +92,34 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
         String adminRole = securityProperties.getOauth2AdminRole();
 
         // @formatter:off
-        http.cors()
+        var registry = http.cors()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/rest/admin/**", "/management/**")
+                .antMatchers("/rest/admin/**")
                 .hasRole(adminRole)
-                .anyRequest()
+                .antMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                .permitAll();
+
+        var managementAuthorizedUrl = registry.and()
+                .authorizeRequests()
+                .antMatchers(this.managementWebEndpointProperties.getBasePath() + "/**");
+
+        switch (managementEndpointsAccessType) {
+            case ADMIN_ONLY ->
+            // management endpoints are locked behind an authorization
+            // and are only available for users with the admin role
+            managementAuthorizedUrl.hasRole(adminRole);
+            case PRIVATE ->
+            // management endpoints are locked behind an authorization, but are available to any role
+            managementAuthorizedUrl.hasAnyRole(adminRole, userRole, PROFILE_SCOPE);
+            case PUBLIC ->
+            // management endpoints can be accessed without an authorization
+            managementAuthorizedUrl.permitAll();
+            default -> throw new IllegalStateException(String.format(
+                    "Unexpected management endpoints access control type %s", managementEndpointsAccessType));
+        }
+
+        registry.anyRequest()
                 .hasAnyRole(adminRole, userRole, PROFILE_SCOPE)
                 .and()
                 .oauth2ResourceServer()

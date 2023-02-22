@@ -20,16 +20,18 @@ package org.ehrbase.rest.openehr;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
-import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
+import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.ehrbase.response.openehr.QueryResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
@@ -60,11 +62,10 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @TenantAware
 @RestController
-@RequestMapping(path = "${openehr-api.context-path:/rest/openehr}/v1/query")
+@RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/query")
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
 
     private static final String EHR_ID_VALUE = "ehr_id/value";
-    private static final String LATEST = "LATEST";
     private static final String QUERY_PARAMETERS = "query_parameters";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -174,7 +175,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version != null ? version : LATEST);
+                queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
         String query = queryDefinitionResultDto.getQueryText();
 
@@ -192,8 +193,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
 
         QueryResponseData queryResponseData = invoke(query, queryParameter, request);
-        queryResponseData.setName(
-                queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
+        setQueryName(queryDefinitionResultDto, queryResponseData);
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -219,13 +219,12 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
         QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version != null ? version : LATEST);
+                queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
         String query = queryDefinitionResultDto.getQueryText();
 
         if (query == null) {
-            var message = MessageFormat.format(
-                    "Could not retrieve AQL {0}/{1}", qualifiedQueryName, version != null ? version : LATEST);
+            var message = MessageFormat.format("Could not retrieve AQL {0}/{1}", qualifiedQueryName, version);
             throw new ObjectNotFoundException("AQL", message);
         }
 
@@ -243,9 +242,14 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
         QueryResponseData queryResponseData = invoke(query, queryParameter, request);
 
+        setQueryName(queryDefinitionResultDto, queryResponseData);
+        return ResponseEntity.ok(queryResponseData);
+    }
+
+    private static void setQueryName(
+            QueryDefinitionResultDto queryDefinitionResultDto, QueryResponseData queryResponseData) {
         queryResponseData.setName(
                 queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
-        return ResponseEntity.ok(queryResponseData);
     }
 
     private QueryResponseData executeQuery(String aql, Map<String, Object> parameters, HttpServletRequest request) {
@@ -254,8 +258,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
 
         // get the query and pass it to the service
-        queryResponseData =
-                new QueryResponseData(queryService.query(aql, parameters, QueryMode.AQL, false, auditResultMap));
+        queryResponseData = new QueryResponseData(queryService.query(aql, parameters, false, auditResultMap));
 
         // Enriches request attributes with EhrId(s) for later audit processing
         request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
@@ -306,23 +309,19 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     }
 
     private QueryResponseData invoke(String query, Map<String, Object> queryParameter, HttpServletRequest request) {
-        QueryResponseData queryResponseData;
-
         Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
 
-        if (queryParameter != null && !queryParameter.isEmpty()) {
-            Map<String, Object> parameters = new HashMap<>(queryParameter);
-            queryResponseData =
-                    new QueryResponseData(queryService.query(query, parameters, QueryMode.AQL, false, auditResultMap));
-        } else {
-            queryResponseData =
-                    new QueryResponseData(queryService.query(query, null, QueryMode.AQL, false, auditResultMap));
-        }
+        Map<String, Object> parameters = Optional.ofNullable(queryParameter)
+                .filter(MapUtils::isNotEmpty)
+                .map(HashMap::new)
+                .orElse(null);
+
+        QueryResultDto resultDto = queryService.query(query, parameters, false, auditResultMap);
 
         // Enriches request attributes with EhrId(s) for later audit processing
         request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
 
-        return queryResponseData;
+        return new QueryResponseData(resultDto);
     }
 
     String withOffsetLimit(String query, Map<String, Object> mapped) {

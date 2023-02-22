@@ -30,8 +30,6 @@ public interface I_StoredQueryAccess {
 
     Integer delete();
 
-    String getQualifiedName();
-
     String getReverseDomainName();
 
     String getSemanticId();

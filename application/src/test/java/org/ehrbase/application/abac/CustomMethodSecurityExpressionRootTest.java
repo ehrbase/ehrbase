@@ -32,6 +32,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 class CustomMethodSecurityExpressionRootTest {
@@ -56,14 +57,12 @@ class CustomMethodSecurityExpressionRootTest {
 
         AbacConfig cfg = anyAbacConfig(c -> c.setPatientClaim(CLAIM));
 
-        Map<String, Object> attr = new HashMap<>() {
-            {
-                put(CLAIM, theSubject);
-            }
-        };
-
-        JwtAuthenticationToken jwt = Mockito.mock(JwtAuthenticationToken.class);
-        Mockito.when(jwt.getTokenAttributes()).thenReturn(attr);
+        var token = Mockito.mock(JwtAuthenticationToken.class);
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim(CLAIM, theSubject)
+                .build();
+        Mockito.when(((Jwt) token.getCredentials())).thenReturn(jwt);
 
         EhrService service = Mockito.mock(EhrService.class);
         Mockito.when(service.getSubjectExtRefs(Mockito.isA(Collection.class))).thenReturn(subjectExtRef);
@@ -78,7 +77,7 @@ class CustomMethodSecurityExpressionRootTest {
             }
         };
 
-        return expr.patientHandling(jwt, theSubject, reqMap, BaseController.QUERY, payload);
+        return expr.patientHandling(token, theSubject, reqMap, BaseController.QUERY, payload);
     }
 
     @SuppressWarnings({"unchecked"})

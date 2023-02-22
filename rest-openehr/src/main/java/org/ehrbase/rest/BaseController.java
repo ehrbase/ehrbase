@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -27,11 +28,13 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 /**
@@ -89,12 +92,14 @@ public abstract class BaseController {
 
     // constants of all API resources
     public static final String EHR = "ehr";
-    public static final String EHR_STATUS = "ehrstatus";
+    public static final String EHR_STATUS = "ehr_status";
     public static final String COMPOSITION = "composition";
     public static final String DIRECTORY = "directory";
     public static final String CONTRIBUTION = "contribution";
     public static final String QUERY = "query";
     public static final String DEFINITION = "definition";
+    public static final String TEMPLATE = "template";
+    public static final String API_CONTEXT_PATH_WITH_VERSION = "${openehr-api.context-path:/rest/openehr}/v1";
 
     public Map<String, Map<String, String>> add2MetaMap(
             Map<String, Map<String, String>> metaMap, String key, String value) {
@@ -112,9 +117,26 @@ public abstract class BaseController {
         return metaMap;
     }
 
-    protected String getBaseEnvLinkURL() {
+    protected String getContextPath() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+    }
 
-        return ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
+    @Value(API_CONTEXT_PATH_WITH_VERSION)
+    protected String apiContextPathWithVersion;
+
+    /**
+     * Returns a URI for list of segments.
+     * The segments are appended to the base path and encoded to ensure safe usage in a URI.
+     *
+     * @param pathSegments List of segments to append to the base URL
+     * @return URI for the given base URL and segments
+     */
+    protected URI createLocationUri(String... pathSegments) {
+        return UriComponentsBuilder.fromHttpUrl(getContextPath())
+                .path(this.encodePath(apiContextPathWithVersion))
+                .pathSegment(pathSegments)
+                .build()
+                .toUri();
     }
 
     /**
@@ -141,7 +163,7 @@ public abstract class BaseController {
     protected UUID getCompositionVersionedObjectUidString(String compositionVersionedObjectUidString) {
         return extractUUIDFromStringWithError(
                 compositionVersionedObjectUidString,
-                "composition",
+                COMPOSITION,
                 "Composition not found, in fact, only UUID-type versionedObjectUids are supported");
     }
 
@@ -156,7 +178,7 @@ public abstract class BaseController {
     protected UUID getContributionVersionedObjectUidString(String compositionVersionedObjectUidString) {
         return extractUUIDFromStringWithError(
                 compositionVersionedObjectUidString,
-                "contribution",
+                CONTRIBUTION,
                 "Contribution not found, in fact, only UUID-type versionedObjectUids are supported");
     }
 

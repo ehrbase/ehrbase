@@ -58,7 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
 @TenantAware
 @RestController
 @RequestMapping(
-        path = "${openehr-api.context-path:/rest/openehr}/v1/ehr/{ehr_id}/versioned_ehr_status",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/versioned_ehr_status",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrVersionedEhrStatusController extends BaseController implements VersionedEhrStatusApiSpecification {
 
@@ -197,10 +197,6 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         }
 
         if (version < 1) throw new InvalidApiParameterException("Version can't be negative.");
-
-        if (!ehrService.hasStatus(versionedObjectId)) {
-            throw new ObjectNotFoundException("ehr_status", "No EHR_STATUS with given ID can be found.");
-        }
 
         Optional<OriginalVersion<EhrStatus>> ehrStatusOriginalVersion =
                 ehrService.getEhrStatusAtVersion(ehrId, versionedObjectId, version);
