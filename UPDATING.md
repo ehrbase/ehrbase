@@ -41,7 +41,7 @@ The execution of the Flyway migration script `V71__merge_duplicate_users.sql` ma
 ### Switch to non-privileged user for DB Access
 
 Prior to 0.24.0 used one user for DDL Statements and to run the application's logic. With 0.24.0 these are run with different Users with different DB Privileges.
-To migrate run adjust the password in `base/db-setup/add_restricted_user.sql` and run it as DB-Admin. 
+To migrate run adjust the password in `base/db-setup/add_restricted_user.sql` and run it as DB-Admin in the ehrbase DB. 
 After that adjust the ehrbase Properties:
 
 Set the migration to use the user with DDL Privilege:
