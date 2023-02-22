@@ -7,72 +7,105 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+ ### Changed 
+ ### Fixed 
+
+## [0.24.0]
+
+### Added
+
 - add caches for ehr.concept, ehr.territory, ehr.language([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - add stored query text plain request support ([#1021](https://github.com/ehrbase/ehrbase/pull/1021))
 - unwrap if match additional double quotes ([#1022](https://github.com/ehrbase/ehrbase/pull/1022))
 - general support for tenants and authorization for plugins
 - Expose management and swagger endpoints publicly([#1030](https://github.com/ehrbase/ehrbase/pull/1030))
 - Include tenant information in ATNA logs([#1055](https://github.com/ehrbase/ehrbase/pull/1055))
- ### Changed
-- use caffeine cache instead of ehcache as ehcache has unnecessary blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
+
+### Changed 
+ - Upgrade openEHR_SDK to version 1.24.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
+- use caffeine cache instead of ehcache as ehcache has unnecessary
+  blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - Performance improvements of the composition audit.([#1042](https://github.com/ehrbase/ehrbase/pull/1042))
 - improved versioning of stored queries ([#1050](https://github.com/ehrbase/ehrbase/pull/1050))
+- switch to non-privileged user for DB Access  ([#11064](https://github.com/ehrbase/ehrbase/pull/1064))
+
+### Fixed
+
 - Update spring-boot(spring-security), postgresql, pf4j-spring dependency version ([#1060](https://github.com/ehrbase/ehrbase/pull/1060))
 - Update jackson dependency version ([#1063](https://github.com/ehrbase/ehrbase/pull/1063))
- ### Fixed 
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
 - Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
-- Endpoint for storing queries gives a detailed error regarding incorrect version([#1032](https://github.com/ehrbase/ehrbase/pull/1032))
-- Fixes NullPointerException while sending ehr status request(GET/PUT) when abac is enabled ([#1031](https://github.com/ehrbase/ehrbase/pull/1031))
+- Endpoint for storing queries gives a detailed error regarding incorrect
+  version([#1032](https://github.com/ehrbase/ehrbase/pull/1032))
+- Fixes NullPointerException while sending ehr status request(GET/PUT) when abac is
+  enabled ([#1031](https://github.com/ehrbase/ehrbase/pull/1031))
 - Fixed status update if party already exist for ehr([#1024](https://github.com/ehrbase/ehrbase/pull/1024))
-- Change response code from 400 to 406 Not Acceptable on querying POST template endpoint with unsupported `Accept` header application/json([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
+- Change response code from 400 to 406 Not Acceptable on querying POST template endpoint with unsupported `Accept`
+  header application/json([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
 - Fixed abac default tenant claims validation([#1041](https://github.com/ehrbase/ehrbase/pull/1041))
 - Fixed incorrect path in Location http header([#1044](https://github.com/ehrbase/ehrbase/pull/1044))
 - Fixed get deleted composition returns 500([#1048](https://github.com/ehrbase/ehrbase/pull/1048))
 
 ## [0.23.0]
- ### Added
- - Authorization enhancements [#1002](https://github.com/ehrbase/ehrbase/pull/1002)
-   - Impl. API extensions needed for authorization
-   - Added annotations on all REST endpoints to support authorization decissions
- ### Changed 
- - Upgrade openEHR_SDK to version 1.24.0-SNAPSHOT see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
- - JAVA 17 baseline
- - Spring Boot 2.7.4
- - Upgrade openEHR_SDK to version 1.24.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
- ### Fixed
+
+### Added
+
+- Authorization enhancements [#1002](https://github.com/ehrbase/ehrbase/pull/1002)
+    - Impl. API extensions needed for authorization
+    - Added annotations on all REST endpoints to support authorization decissions
+
+### Changed
+
+- Upgrade openEHR_SDK to version 1.24.0-SNAPSHOT see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+- JAVA 17 baseline
+- Spring Boot 2.7.4
+- Upgrade openEHR_SDK to version 1.24.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
+### Fixed
 
 ## [0.22.0]
+
 ### Added
+
 - Add spotless plugin, Add codestyle check to workflows ([#864](https://github.com/ehrbase/ehrbase/pull/864))
-### Changed 
- - Upgrade openEHR_SDK to version 1.23.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
+### Changed
+
+- Upgrade openEHR_SDK to version 1.23.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 - Change DB-model to save Data in a namespace ([#994](https://github.com/ehrbase/ehrbase/pull/994))
+
 ### Fixed
-- Error causing a 500 Response when requesting a deleted composition via ECIS GET Composition Endpoint ([#875](https://github.com/ehrbase/ehrbase/pull/875))
+
+- Error causing a 500 Response when requesting a deleted composition via ECIS GET Composition
+  Endpoint ([#875](https://github.com/ehrbase/ehrbase/pull/875))
 - Update folder was not always corectly updating it items ([#974](https://github.com/ehrbase/ehrbase/pull/974))
 - AuditDetails had timezone missing ([#998](https://github.com/ehrbase/ehrbase/pull/998))
-- numerus AQL fixes ([#1001](https://github.com/ehrbase/ehrbase/pull/1001), [#1006](https://github.com/ehrbase/ehrbase/pull/1006))
+- numerus AQL
+  fixes ([#1001](https://github.com/ehrbase/ehrbase/pull/1001), [#1006](https://github.com/ehrbase/ehrbase/pull/1006))
 
 ## [0.21.1]
 
 ### Fixed
 
-- Fixed update script for user consolidation ([#865](https://github.com/ehrbase/ehrbase/pull/865))  
+- Fixed update script for user consolidation ([#865](https://github.com/ehrbase/ehrbase/pull/865))
 
 ## [0.21.0]
 
 ### Added
 
 - Implement template example endpoints ([#801](https://github.com/ehrbase/openEHR_SDK/pull/801))
-- Implement EHR_STATUS.is_modifiable semantics on service level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
+- Implement EHR_STATUS.is_modifiable semantics on service
+  level ([#791](https://github.com/ehrbase/openEHR_SDK/pull/791))
 - use bom for dependence management  ([#820](https://github.com/ehrbase/ehrbase/pull/820))
-- add  Release action  ([#831](https://github.com/ehrbase/ehrbase/pull/831)
+- add Release action  ([#831](https://github.com/ehrbase/ehrbase/pull/831)
 - Added hooks for the plugin system ([#816](https://github.com/ehrbase/ehrbase/pull/816))
-- Added index to `party_identified` to improve performance of find EHR by subject-id ([857](https://github.com/ehrbase/ehrbase/pull/857)))
+- Added index to `party_identified` to improve performance of find EHR by
+  subject-id ([857](https://github.com/ehrbase/ehrbase/pull/857)))
 
 ### Changed
+
 - Upgrade to Spring boot 2.5.12
   see [spring-framework-rce](https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement) ([#800](https://github.com/ehrbase/ehrbase/pull/800))
   .
@@ -82,9 +115,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
+- Handle 4xx status code related Spring MVC Exceptions, instead of making them all a 500, and handle
+  ResponseStatusException ([#803](https://github.com/ehrbase/openEHR_SDK/pull/803))
 - Fix duplicate users issue ([#826](https://github.com/ehrbase/ehrbase/pull/826)).
-- Fix validation errors in ECIS EHR endpoint ([#828](https://github.com/ehrbase/ehrbase/pull/828)) 
+- Fix validation errors in ECIS EHR endpoint ([#828](https://github.com/ehrbase/ehrbase/pull/828))
 - Fix 400 error in ECIS EHR update ([#834](https://github.com/ehrbase/ehrbase/pull/834))
 
 ## [0.20.0] (beta)
@@ -97,6 +131,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   order ([#782](https://github.com/ehrbase/openEHR_SDK/pull/782)).
 
 ### Changed
+
 - Update Archie to version 2.0.1 [#784](https://github.com/ehrbase/ehrbase/pull/784)
 - Add missing database indexes [#788](https://github.com/ehrbase/ehrbase/pull/788)
   and [#796](https://github.com/ehrbase/ehrbase/pull/796)
@@ -560,5 +595,8 @@ the next release this file will provide a proper overview.
 [0.9.0]: https://github.com/ehrbase/ehrbase/releases/tag/v0.9.0
 
 [0.22.0]: https://github.com/ehrbase/ehrbase/compare/v0.21.1...v0.22.0
+
 [0.23.0]: https://github.com/ehrbase/ehrbase/compare/v0.22.0...v0.23.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...HEAD
+
+[0.24.0]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...v0.24.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.24.0...HEAD

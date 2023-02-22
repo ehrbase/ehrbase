@@ -51,7 +51,7 @@ Run `./base/db-setup/createdb.sql` as `postgres` User.
 You can also use this Docker image which is a preconfigured Postgres database:
 ```shell
     docker network create ehrbase-net
-    docker run --name ehrdb --network ehrbase-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbase/ehrbase-postgres:latest
+    docker run --name ehrdb --network ehrbase-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 ehrbase/ehrbase-postgres:13.4.v2
 ```
 
 (For a preconfigured EHRbase application Docker image and its usage see the [documentation](https://ehrbase.readthedocs.io/en/latest/03_development/04_docker_images/index.html))

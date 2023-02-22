@@ -20,9 +20,7 @@ package org.ehrbase.dao.access.interfaces;
 import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.util.Map;
 import java.util.UUID;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.EntryAccess;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.jooq.JSONB;
@@ -91,21 +89,6 @@ public interface I_EntryAccess extends I_SimpleCRUD {
     }
 
     /**
-     * delete all entries belonging to a composition
-     *
-     * @param domainAccess  SQL access
-     * @param compositionId a composition id
-     * @return count of deleted
-     */
-    static Integer deleteFromComposition(I_DomainAccess domainAccess, UUID compositionId) {
-        return domainAccess
-                .getContext()
-                .delete(ENTRY)
-                .where(ENTRY.COMPOSITION_ID.eq(compositionId))
-                .execute();
-    }
-
-    /**
      * delete an entry
      *
      * @param domainAccess SQL access
@@ -114,18 +97,6 @@ public interface I_EntryAccess extends I_SimpleCRUD {
      */
     static Integer delete(I_DomainAccess domainAccess, UUID id) {
         return domainAccess.getContext().delete(ENTRY).where(ENTRY.ID.eq(id)).execute();
-    }
-
-    /**
-     * perform an arbitrary SQL query on entries and return the result set as a JSON string
-     *
-     * @param domainAccess SQL access
-     * @param query        a valid SQL queryJSON string
-     * @return a JSON formatted result set
-     * @throws InternalServerException when the query failed
-     */
-    static Map<String, Object> queryJSON(I_DomainAccess domainAccess, String query) {
-        return EntryAccess.queryJSON(domainAccess, query);
     }
 
     /**
