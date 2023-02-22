@@ -41,6 +41,8 @@ public class AuthHelper {
 
     /**
      * Gets the currently authenticated username from the given HTTP request.
+     * TODO:: It's possible after adding getName() method to the TenantAuthentication interface
+     * that this method should be replaced with authenticationFacade.getAuthentication().getName()
      *
      * @param authentication The Authentication
      * @return The username if it exists, or an empty string if not
