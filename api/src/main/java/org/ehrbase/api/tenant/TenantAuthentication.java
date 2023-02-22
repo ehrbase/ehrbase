@@ -18,11 +18,22 @@
 package org.ehrbase.api.tenant;
 
 public interface TenantAuthentication<T> {
-    String DEFAULT_TENANT_ID = "1f332a66-0e57-11ed-861d-0242ac120002";
 
-    String getTenantId();
+    public static final String DEFAULT_TENANT_ID = "1f332a66-0e57-11ed-861d-0242ac120002";
 
-    static String getDefaultTenantId() {
+    /**
+     * Returns the tenant ID associated with this authentication object.
+     *
+     * @return The tenant ID of the authenticated principal.
+     */
+    public String getTenantId();
+
+    /**
+     * Returns the default tenant ID.
+     *
+     * @return The default tenant ID.
+     */
+    public static String getDefaultTenantId() {
         return DEFAULT_TENANT_ID;
     }
 
@@ -39,7 +50,12 @@ public interface TenantAuthentication<T> {
      *
      * @return The name of the authenticated principal.
      */
-    String getName();
+    public String getName();
 
-    T getAuthentication();
+    /**
+     * Returns the authentication object.
+     *
+     * @return The authentication object.
+     */
+    public T getAuthentication();
 }
