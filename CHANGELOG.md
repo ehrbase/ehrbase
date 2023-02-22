@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
+## [0.24.0]
 
 ### Added
 
@@ -16,15 +21,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Expose management and swagger endpoints publicly([#1030](https://github.com/ehrbase/ehrbase/pull/1030))
 - Include tenant information in ATNA logs([#1055](https://github.com/ehrbase/ehrbase/pull/1055))
 
-### Changed
+### Changed 
+ - Upgrade openEHR_SDK to version 1.24.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 
 - use caffeine cache instead of ehcache as ehcache has unnecessary
   blocking([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - remove unnecessary DB queries([#1007](https://github.com/ehrbase/ehrbase/pull/1007))
 - Performance improvements of the composition audit.([#1042](https://github.com/ehrbase/ehrbase/pull/1042))
 - improved versioning of stored queries ([#1050](https://github.com/ehrbase/ehrbase/pull/1050))
+- switch to non-privileged user for DB Access  ([#11064](https://github.com/ehrbase/ehrbase/pull/1064))
 
 ### Fixed
+
 - Update spring-boot(spring-security), postgresql, pf4j-spring dependency version ([#1060](https://github.com/ehrbase/ehrbase/pull/1060))
 - Update jackson dependency version ([#1063](https://github.com/ehrbase/ehrbase/pull/1063))
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
@@ -590,4 +598,5 @@ the next release this file will provide a proper overview.
 
 [0.23.0]: https://github.com/ehrbase/ehrbase/compare/v0.22.0...v0.23.0
 
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...HEAD
+[0.24.0]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...v0.24.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.24.0...HEAD

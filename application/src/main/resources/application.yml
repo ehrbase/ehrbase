@@ -53,6 +53,8 @@ spring:
 
   flyway:
     schemas: ehr
+    user: ehrbase
+    password: ehrbase
 
   jackson:
     default-property-inclusion: NON_NULL
