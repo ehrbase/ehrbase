@@ -25,7 +25,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - improved versioning of stored queries ([#1050](https://github.com/ehrbase/ehrbase/pull/1050))
 
 ### Fixed
-
+- Update spring-boot(spring-security), postgresql, pf4j-spring dependency version ([#1060](https://github.com/ehrbase/ehrbase/pull/1060))
+- Update jackson dependency version ([#1063](https://github.com/ehrbase/ehrbase/pull/1063))
 - maintain a correct history of participations([#1016](https://github.com/ehrbase/ehrbase/pull/1016))
 - Fixed NullPointerException when language is missing ([#1023](https://github.com/ehrbase/ehrbase/pull/1023))
 - Endpoint for storing queries gives a detailed error regarding incorrect
