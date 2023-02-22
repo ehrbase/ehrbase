@@ -29,7 +29,6 @@ import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
-import org.ehrbase.rest.util.AuthHelper;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.springframework.cache.Cache;
@@ -68,11 +67,11 @@ public class UserService implements IUserService {
     @Override
     public UUID getCurrentUserId() {
         CacheKey<String> key = CacheKey.of(
-//                Check which is best solution AuthHelper.getCurrentAuthenticatedUsername(authenticationFacade.getAuthentication()),
-//                or authenticationFacade.getAuthentication().getName(), that is correct
-//                AuthHelper.getCurrentAuthenticatedUsername(authenticationFacade.getAuthentication()),
-                authenticationFacade.getAuthentication().getName(),
-                tenantService.getCurrentTenantIdentifier());
+                //                Check which is best solution
+                // AuthHelper.getCurrentAuthenticatedUsername(authenticationFacade.getAuthentication()),
+                //                or authenticationFacade.getAuthentication().getName(), that is correct
+                //                AuthHelper.getCurrentAuthenticatedUsername(authenticationFacade.getAuthentication()),
+                authenticationFacade.getAuthentication().getName(), tenantService.getCurrentTenantIdentifier());
         return userIdCache.get(key, () -> getOrCreateCurrentUserIdSync(key));
     }
 
