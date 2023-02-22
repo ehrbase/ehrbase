@@ -24,7 +24,7 @@
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>bom</artifactId>
-    <version>0.24.0</version>
+    <version>0.25.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>EHRbase</name>
@@ -102,7 +102,7 @@
         <archie.version>2.0.1</archie.version>
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
-        <ehrbase.sdk.version>1.24.0</ehrbase.sdk.version>
+        <ehrbase.sdk.version>1.25.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.4.4</flyway.version>
         <jackson-bom.version>2.13.5</jackson-bom.version>
         <javamelody.version>1.90.0</javamelody.version>
