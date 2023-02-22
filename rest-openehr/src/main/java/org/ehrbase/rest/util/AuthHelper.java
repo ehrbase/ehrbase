@@ -30,6 +30,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 public class AuthHelper {
@@ -41,11 +42,38 @@ public class AuthHelper {
     /**
      * Gets the currently authenticated username from the given HTTP request.
      *
+     * @param authentication The Authentication
+     * @return The username if it exists, or an empty string if not
+     */
+    public static String getCurrentAuthenticatedUsername(Authentication authentication) {
+        return getJwtSubject(authentication).orElseGet(() -> Optional.ofNullable(authentication)
+                .map(Authentication::getPrincipal)
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .map(String::new)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> Optional.ofNullable(authentication)
+                        .map(Principal::getName)
+                        .filter(StringUtils::isNotBlank)
+                        .orElse(null)));
+    }
+
+    /**
+     * Gets the currently authenticated username from the given HTTP request.
+     *
      * @param request The HTTP request
      * @return The username if it exists, or an empty string if not
      */
     public static String getCurrentAuthenticatedUsername(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
+        return getJwtSubject(principal).orElseGet(() -> Optional.of(request)
+                .map(AuthHelper::getBasicAuthUsername)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() ->
+                        Optional.ofNullable(principal).map(Principal::getName).orElse(null)));
+    }
+
+    private static Optional<String> getJwtSubject(Principal principal) {
         return Optional.ofNullable(principal)
                 .filter(AbstractAuthenticationToken.class::isInstance)
                 .map(AbstractAuthenticationToken.class::cast)
@@ -53,13 +81,7 @@ public class AuthHelper {
                 .filter(DecodedJWT.class::isInstance)
                 .map(DecodedJWT.class::cast)
                 .map(DecodedJWT::getSubject)
-                .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> Optional.of(request)
-                        .map(AuthHelper::getBasicAuthUsername)
-                        .filter(StringUtils::isNotBlank)
-                        .orElseGet(() -> Optional.ofNullable(principal)
-                                .map(Principal::getName)
-                                .orElse(null)));
+                .filter(StringUtils::isNotBlank);
     }
 
     /**
