@@ -155,3 +155,86 @@ BEGIN
 END
 $$;
 
+
+create or replace function admin_delete_event_context_for_compo(compo_id_input uuid)
+    returns TABLE(num integer, party uuid)
+    strict
+    language plpgsql
+    security definer
+    SET search_path = ehr, pg_temp
+as
+$$
+DECLARE
+    results RECORD;
+BEGIN
+    -- since for this admin op, we don't want to generate a history record for each delete!
+    ALTER TABLE ehr.event_context DISABLE TRIGGER versioning_trigger;
+    ALTER TABLE ehr.participation DISABLE TRIGGER versioning_trigger;
+
+    RETURN QUERY WITH
+                     linked_events(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1
+                         SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+                     ),
+                     linked_event_history(id) AS ( -- get linked EVENT_CONTEXT entities -- 0..1
+                         SELECT id, facility FROM ehr.event_context_history WHERE composition_id = compo_id_input
+                     ),
+                     linked_participations_for_events(id) AS ( -- get linked EVENT_CONTEXT entities -- for 0..1 events, each with * participations
+                         SELECT id, performer FROM ehr.participation WHERE event_context IN (SELECT linked_events.id  FROM linked_events)
+                     ),
+                     linked_participations_for_events_history(id) AS ( -- get linked EVENT_CONTEXT entities -- for 0..1 events, each with * participations
+                         SELECT id, performer FROM ehr.participation_history WHERE event_context IN (SELECT linked_event_history.id  FROM linked_event_history)
+                     ),
+                     parties(id) AS (
+                         SELECT facility FROM linked_events
+                         UNION
+                         SELECT performer FROM linked_participations_for_events
+                     ),
+                     delete_participation AS (
+                         DELETE FROM ehr.participation WHERE ehr.participation.id IN (SELECT linked_participations_for_events.id  FROM linked_participations_for_events)
+                     ),
+                     delete_participation_history AS (
+                         DELETE FROM ehr.participation_history WHERE ehr.participation_history.id IN (SELECT linked_participations_for_events_history.id  FROM linked_participations_for_events_history)
+                     ),
+                     delete_event_contexts AS (
+                         DELETE FROM ehr.event_context WHERE ehr.event_context.id IN (SELECT linked_events.id  FROM linked_events)
+                     ),
+                     delete_event_contexts_history AS (
+                         DELETE FROM ehr.event_context_history WHERE ehr.event_context_history.id IN (SELECT linked_event_history.id  FROM linked_event_history)
+                     )
+                 SELECT 1, parties.id FROM parties;
+
+    -- logging:
+
+    -- looping query is reconstructed from above CTEs, because they can't be reused here
+    FOR results IN (
+        SELECT b.id  FROM (
+                              SELECT id, performer FROM ehr.participation
+                              WHERE event_context IN (SELECT a.id  FROM (
+                                                                            SELECT id, facility FROM ehr.event_context WHERE composition_id = compo_id_input
+                                                                        ) AS a )
+                          ) AS b
+    )
+        LOOP
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'PARTICIPATION', results.id, now();
+        END LOOP;
+
+    -- looping query is reconstructed from above CTEs, because they can't be reused here
+    FOR results IN (
+        SELECT id, facility
+        FROM ehr.event_context
+        WHERE composition_id = compo_id_input)
+        LOOP
+            RAISE NOTICE 'Admin deletion - Type: % - ID: % - Time: %', 'EVENT_CONTEXT', results.id, now();
+        END LOOP;
+
+    -- restore disabled triggers
+    ALTER TABLE ehr.event_context ENABLE TRIGGER versioning_trigger;
+    ALTER TABLE ehr.participation ENABLE TRIGGER versioning_trigger;
+
+END;
+$$;
+
+
+
+
+
