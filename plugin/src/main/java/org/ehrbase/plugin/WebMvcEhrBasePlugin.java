@@ -87,6 +87,10 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
 
         Environment env = pluginManager.getApplicationContext().getEnvironment();
         String authProp = String.format(DISABLE_PLUGIN_AUTHORIZATION, pluginId);
+        
+        log.info("Contains Disabaled Property: " + env.containsProperty(authProp));
+        Boolean theProperty = env.getProperty(authProp, boolean.class);
+        log.info("Pluging Disabaled Property: " + theProperty);
 
         if (!env.containsProperty(authProp)) return new AuthorizationInfo.AuthorizationEnabled();
         else if (env.getProperty(authProp, boolean.class)) return new AuthorizationInfo.AuthorizationDisabled();
