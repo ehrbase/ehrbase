@@ -16,8 +16,13 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/ehrbase
-    username: ehrbase
+    username: ehrbase_restricted
+    password: ehrbase_restricted
+  flyway:
+    schemas: ehr
+    user: ehrbase
     password: ehrbase
+
     tomcat:
       maxIdle: 10
       max-active: 50

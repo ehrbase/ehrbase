@@ -19,8 +19,8 @@ package org.ehrbase.rest.ehrscape.controller;
 
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
@@ -34,6 +34,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
+import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.ehrscape.CompositionFormat;
@@ -141,7 +142,7 @@ public class EhrController extends BaseController {
     @PutMapping(path = "/{uuid}/status")
     public ResponseEntity<EhrResponseData> updateStatus(
             @PathVariable("uuid") UUID ehrId,
-            @RequestBody() String ehrStatus,
+            @RequestBody String ehrStatus,
             @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
         ehrService.updateStatus(ehrId, extractEhrStatus(ehrStatus), null);
@@ -156,32 +157,37 @@ public class EhrController extends BaseController {
         ehrStatus.setArchetypeNodeId("openEHR-EHR-EHR_STATUS.generic.v1");
         ehrStatus.setName(new DvText("EHR Status"));
 
-        if (StringUtils.isNotBlank(content)) {
-            Gson json = new GsonBuilder().create();
-            Map<String, Object> atributes = json.fromJson(content, Map.class);
-
-            Optional<String> subjectId = Optional.ofNullable(atributes.get("subjectId"))
-                    .map(String.class::cast)
-                    .filter(StringUtils::isNotBlank);
-            Optional<String> subjectNamespace = Optional.ofNullable(atributes.get("subjectNamespace"))
-                    .map(String.class::cast)
-                    .filter(StringUtils::isNotBlank);
-            if (subjectId.isEmpty() || subjectNamespace.isEmpty()) {
-                throw new InvalidApiParameterException("subjectId or subjectNamespace missing");
-            }
-            PartySelf subject =
-                    new PartySelf(new PartyRef(new HierObjectId(subjectId.get()), subjectNamespace.get(), "PERSON"));
-            ehrStatus.setSubject(subject);
-
-            if (atributes.containsKey(MODIFIABLE)) {
-                ehrStatus.setModifiable((Boolean) atributes.get(MODIFIABLE));
-            }
-
-            if (atributes.containsKey(QUERYABLE)) {
-                ehrStatus.setQueryable((Boolean) atributes.get(QUERYABLE));
-            }
+        if (StringUtils.isBlank(content)) {
+            return ehrStatus;
         }
+
+        Map<String, Object> attributes;
+        try {
+            attributes = new ObjectMapper().readerForMapOf(Object.class).readValue(content);
+        } catch (JsonProcessingException e) {
+            throw new GeneralRequestProcessingException("Invalid content format", e);
+        }
+
+        String subjectId = getAttribute(attributes, "subjectId", String.class)
+                .orElseThrow(() -> new InvalidApiParameterException("subjectId missing"));
+
+        String subjectNamespace = getAttribute(attributes, "subjectNamespace", String.class)
+                .orElseThrow(() -> new InvalidApiParameterException("subjectNamespace missing"));
+
+        PartySelf subject = new PartySelf(new PartyRef(new HierObjectId(subjectId), subjectNamespace, "PERSON"));
+        ehrStatus.setSubject(subject);
+
+        getAttribute(attributes, MODIFIABLE, Boolean.class).ifPresent(ehrStatus::setModifiable);
+        getAttribute(attributes, QUERYABLE, Boolean.class).ifPresent(ehrStatus::setQueryable);
+
         return ehrStatus;
+    }
+
+    private static <T> Optional<T> getAttribute(Map<String, Object> attributes, String key, Class<T> valueType) {
+        return Optional.of(key)
+                .map(attributes::get)
+                .map(valueType::cast)
+                .filter(v -> valueType != String.class || StringUtils.isNotBlank((String) v));
     }
 
     private Optional<EhrResponseData> buildEhrResponseData(UUID ehrId, Action create, String contentType) {

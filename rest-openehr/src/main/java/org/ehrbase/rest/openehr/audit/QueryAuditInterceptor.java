@@ -20,6 +20,7 @@ package org.ehrbase.rest.openehr.audit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.rest.openehr.audit.support.QueryAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
@@ -33,8 +34,8 @@ public class QueryAuditInterceptor extends OpenEhrAuditInterceptor<QueryAuditDat
 
     public static final String QUERY_ID_ATTRIBUTE = CompositionAuditInterceptor.class.getName() + ".QUERY_ID";
 
-    public QueryAuditInterceptor(AuditContext auditContext, EhrService ehrService) {
-        super(auditContext, ehrService);
+    public QueryAuditInterceptor(AuditContext auditContext, EhrService ehrService, TenantService tenantService) {
+        super(auditContext, ehrService, tenantService);
     }
 
     @Override

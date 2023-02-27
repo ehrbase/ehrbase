@@ -119,7 +119,7 @@ public class ContributionServiceHelper {
         Map<String, Object> splitContent = splitContent(content, format);
 
         // process versions: unmarshal to some iterable object & create RM objects out of input
-        List<Version> versions = null;
+        List<Version> versions;
 
         Object versionsContent = splitContent.get("versions");
         if (versionsContent instanceof List) {

@@ -58,10 +58,10 @@ public class PartyServiceImp implements IUserService, PartyService {
     public UUID getCurrentUserId() {
         CacheKey<String> key = CacheKey.of(
                 authenticationFacade.getAuthentication().getName(), tenantService.getCurrentTenantIdentifier());
-        return userIdCache.get(key, () -> getOrCreateCurrentUserIdSnyc(key));
+        return userIdCache.get(key, () -> getOrCreateCurrentUserIdSync(key));
     }
 
-    private UUID getOrCreateCurrentUserIdSnyc(CacheKey<String> key) {
+    private UUID getOrCreateCurrentUserIdSync(CacheKey<String> key) {
 
         var existingUser = partyProxyRepository.findInternalUserId(key.getVal());
 

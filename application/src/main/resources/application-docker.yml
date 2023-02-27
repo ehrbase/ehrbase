@@ -23,7 +23,10 @@ spring:
       maximum-pool-size: 50
       max-lifetime: 1800000
       minimum-idle: 10
-
+  flyway:
+    schemas: ehr
+    user: ${DB_USER_ADMIN}
+    password: ${DB_PASS_ADMIN}
 security:
   authType: NONE
 

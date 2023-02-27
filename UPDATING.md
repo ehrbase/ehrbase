@@ -31,13 +31,48 @@ you used the old `base/db-setup/cloud_db_setup.sql`
 or run the EHRbase Postgres docker image.
 
 ### Fix Duplicate User issue
-
 Prior to release 0.21.0, EHRbase contained a bug that creates a new internal user for each request.
 
 The execution of the Flyway migration script `V71__merge_duplicate_users.sql` may take its time as the duplicates are
 being consolidated.
 
 ## EHRbase 0.24.0
+
+### Switch to non-privileged user for DB Access
+
+Prior to 0.24.0 used one user for DDL Statements and to run the application's logic. With 0.24.0 these are run with different Users with different DB Privileges.
+To migrate run adjust the password in `base/db-setup/add_restricted_user.sql` and run it as DB-Admin in the ehrbase DB. 
+After that adjust the ehrbase Properties:
+
+Set the migration to use the user with DDL Privilege:
+```
+spring:
+  flyway:
+    user: ehrbase
+    password: ehrbase
+```
+And set the application to use the restricted user
+```
+spring:
+  datasource:
+    username: ehrbase_restricted
+    password: ehrbase_restricted
+```
+
+If you use the official Docker image you can also set this via
+
+```
+    environment:
+      DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
+      DB_USER_ADMIN: ehrbase
+      DB_PASS_ADMIN: ehrbase
+      DB_USER: ehrbase_restricted
+      DB_PASS: ehrbase_restricted
+```
+
+see `\docker-compose.yml `
+
+## EHRbase 0.25.0
 
 ### Switch to new directory structure
 
@@ -56,3 +91,4 @@ commit ;
 ```
 
 If you need to migrate old EHR directory data please contact us.
+The execution of the Flyway migration script `V71__merge_duplicate_users.sql` may take its time as the duplicates are being consolidated.

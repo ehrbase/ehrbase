@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr.audit;
 
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.TenantService;
 import org.ehrbase.rest.openehr.audit.support.EhrAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
@@ -27,8 +28,8 @@ import org.openehealth.ipf.commons.audit.model.AuditMessage;
  */
 public class EhrAuditInterceptor extends OpenEhrAuditInterceptor<OpenEhrAuditDataset> {
 
-    public EhrAuditInterceptor(AuditContext auditContext, EhrService ehrService) {
-        super(auditContext, ehrService);
+    public EhrAuditInterceptor(AuditContext auditContext, EhrService ehrService, TenantService tenantService) {
+        super(auditContext, ehrService, tenantService);
     }
 
     @Override

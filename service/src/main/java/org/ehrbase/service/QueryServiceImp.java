@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.definitions.QueryMode;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
@@ -43,7 +42,6 @@ import org.ehrbase.api.service.QueryService;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.sql.AqlResult;
-import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.interfaces.I_StoredQueryAccess;
 import org.ehrbase.dao.access.jooq.AqlQueryHandler;
 import org.ehrbase.dao.access.jooq.StoredQueryAccess;
@@ -95,26 +93,15 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
     public QueryResultDto query(
             String queryString,
             Map<String, Object> parameters,
-            QueryMode queryMode,
             boolean explain,
             Map<String, Set<Object>> auditResultMap) {
 
-        switch (queryMode) {
-            case SQL:
-                return querySql(queryString);
-
-            case AQL:
-                return queryAql(
-                        queryString,
-                        explain,
-                        () -> parameters == null
-                                ? new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString)
-                                : new AqlQueryHandler(getDataAccess(), tsAdapter).process(queryString, parameters),
-                        auditResultMap);
-
-            default:
-                throw new IllegalArgumentException("Invalid query mode: " + queryMode);
-        }
+        AqlQueryHandler handler = new AqlQueryHandler(getDataAccess(), tsAdapter);
+        return queryAql(
+                queryString,
+                explain,
+                () -> parameters == null ? handler.process(queryString) : handler.process(queryString, parameters),
+                auditResultMap);
     }
 
     private QueryResultDto formatResult(AqlResult aqlResult, String queryString, boolean explain) {
@@ -171,21 +158,6 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
         } catch (RuntimeException e) {
             throw new IllegalArgumentException("Could not process query/stored-query, reason: " + e);
         }
-    }
-
-    private QueryResultDto querySql(String queryString) {
-        Map<String, Object> result;
-        try {
-            result = I_EntryAccess.queryJSON(getDataAccess(), queryString);
-        } catch (RuntimeException e) {
-            throw new InternalServerException(e);
-        }
-
-        QueryResultDto dto = new QueryResultDto();
-        dto.setExecutedAQL((String) result.get("executedAQL"));
-        dto.setResultSet((List<ResultHolder>) result.get("resultSet"));
-        dto.setExplain((List<List<String>>) result.get("explain"));
-        return dto;
     }
 
     // === DEFINITION: manage stored queries

@@ -28,10 +28,9 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.util.StringUtils;
 
 public class AuthHelper {
 
@@ -47,34 +46,22 @@ public class AuthHelper {
      */
     public static String getCurrentAuthenticatedUsername(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
-        String username;
+        return getJwtSubject(principal).orElseGet(() -> Optional.of(request)
+                .map(AuthHelper::getBasicAuthUsername)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() ->
+                        Optional.ofNullable(principal).map(Principal::getName).orElse(null)));
+    }
 
-        // Check if the principal is null and get the principal from the SecurityContext if necessary
-        if (principal == null) {
-            principal = SecurityContextHolder.getContext().getAuthentication();
-        }
-
-        username = Optional.ofNullable(principal)
+    private static Optional<String> getJwtSubject(Principal principal) {
+        return Optional.ofNullable(principal)
                 .filter(AbstractAuthenticationToken.class::isInstance)
                 .map(AbstractAuthenticationToken.class::cast)
                 .map(AbstractAuthenticationToken::getPrincipal)
                 .filter(DecodedJWT.class::isInstance)
                 .map(DecodedJWT.class::cast)
                 .map(DecodedJWT::getSubject)
-                .orElse(EMPTY);
-
-        if (isBlank(username)
-                && request.getHeader(AUTHORIZATION) != null
-                && request.getHeader(AUTHORIZATION).startsWith("Basic")) {
-            username = getBasicAuthUsername(request);
-        }
-
-        // If the username is still blank, use the name from the Principal
-        if (isBlank(username) && principal != null) {
-            username = principal.getName();
-        }
-
-        return username;
+                .filter(StringUtils::isNotBlank);
     }
 
     /**
@@ -112,7 +99,7 @@ public class AuthHelper {
         }
 
         authorization = authorization.trim();
-        if (!StringUtils.startsWithIgnoreCase(authorization, AUTHENTICATION_SCHEME_BASIC)) {
+        if (!startsWithIgnoreCase(authorization, AUTHENTICATION_SCHEME_BASIC)) {
             return null;
         }
 
