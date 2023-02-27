@@ -76,9 +76,9 @@ see `\docker-compose.yml `
 
 ### Switch to new directory structure
 
-With release 0.24.0 a new Structure to store EHR directory was introduced. There is no automatic migration of old EHR
+With release 0.25.0 a new Structure to store EHR directory was introduced. There is no automatic migration of old EHR
 directory data into the new structure.
-If you used EHR directory and are fine with losing the old data you can run in postgres as admin
+If you used EHR directory and are fine with losing this data you can run in postgres as admin
 
 ```
 -- remove Ehr directory!!!
@@ -91,4 +91,3 @@ commit ;
 ```
 
 If you need to migrate old EHR directory data please contact us.
-The execution of the Flyway migration script `V71__merge_duplicate_users.sql` may take its time as the duplicates are being consolidated.

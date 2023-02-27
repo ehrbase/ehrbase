@@ -36,12 +36,12 @@ $$
 
         IF count_folder != 0 or count_folder_history != 0
         THEN
-            RAISE EXCEPTION 'Can not automatically migrate directory. See UPDATING.md';
+            RAISE EXCEPTION 'Systems with existing ehr directories cannot be migrated automatically; See UPDATING.md';
         END IF;
     END
 $$;
 
-create table ehr.ehr_folder
+create table ehr_folder
 (
     id                uuid             NOT NULL,
     ehr_id            uuid             NOT NULL,
@@ -231,8 +231,6 @@ DECLARE
     contribution_details           JSONB;
     composition_version_json_array JSONB[];
     composition_in_ehr_id          RECORD;
-    folder_version_json_array      JSONB[];
-    folder_in_ehr_id               RECORD;
 BEGIN
 
     FOR contribution_details IN (SELECT ehr.js_contribution(contribution.id, server_id)

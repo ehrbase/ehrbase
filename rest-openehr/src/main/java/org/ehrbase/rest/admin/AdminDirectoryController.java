@@ -49,12 +49,12 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminDirectoryController extends BaseController {
 
-    private final DirectoryService folderService;
+    private final DirectoryService directoryService;
 
     @Autowired
-    public AdminDirectoryController(DirectoryService folderService) {
+    public AdminDirectoryController(DirectoryService directoryService) {
 
-        this.folderService = folderService;
+        this.directoryService = directoryService;
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
@@ -89,7 +89,7 @@ public class AdminDirectoryController extends BaseController {
 
         UUID folderUid = UUID.fromString(directoryId);
 
-        folderService.adminDeleteFolder(ehrUuid, folderUid);
+        directoryService.adminDeleteFolder(ehrUuid, folderUid);
 
         return ResponseEntity.noContent().build();
     }
