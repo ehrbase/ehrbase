@@ -76,11 +76,16 @@ create table ehr.ehr_folder_history
 (
     id                uuid,
     ehr_id            uuid        NOT NULL,
+    ehr_folders_idx   int              NOT NULL,
+    row_num           int              NOT NULL,
     contribution_id   uuid        NOT NULL,
     audit_id          uuid        NOT NULL,
     archetype_node_id TEXT,
     path              TEXT[],
-    contains          uuid[],
+    hierarchy_idx     text collate "C" not null,
+    hierarchy_idx_cap text collate "C" not null,
+    hierarchy_idx_len int              not null,
+    items          uuid[],
     fields            jsonb,
     namespace         TEXT default '1f332a66-0e57-11ed-861d-0242ac120002',
     sys_version       INT         NOT NULL,
@@ -113,6 +118,8 @@ create or replace function admin_delete_ehr_full(ehr_id_param uuid)
                 deleted boolean
             )
     language plpgsql
+    security definer
+    SET search_path = ehr, pg_temp
 as
 $$
 BEGIN
