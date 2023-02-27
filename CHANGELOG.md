@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ - new Directory implementation ([#1059](https://github.com/ehrbase/ehrbase/pull/1059))
  ### Fixed 
 
 ## [0.24.0]

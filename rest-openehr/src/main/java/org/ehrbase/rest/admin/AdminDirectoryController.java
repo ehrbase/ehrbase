@@ -26,9 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.service.EhrService;
-import org.ehrbase.api.service.FolderService;
+import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +49,12 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminDirectoryController extends BaseController {
 
-    private final EhrService ehrService;
-    private final FolderService folderService;
+    private final DirectoryService directoryService;
 
     @Autowired
-    public AdminDirectoryController(EhrService ehrService, FolderService folderService) {
-        this.ehrService = ehrService;
-        this.folderService = folderService;
+    public AdminDirectoryController(DirectoryService directoryService) {
+
+        this.directoryService = directoryService;
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
@@ -90,13 +87,9 @@ public class AdminDirectoryController extends BaseController {
 
         UUID ehrUuid = UUID.fromString(ehrId);
 
-        // Check if EHR exists
-        if (!this.ehrService.hasEhr(ehrUuid)) {
-            throw new ObjectNotFoundException("Admin Directory", String.format("EHR with id %s does not exist", ehrId));
-        }
-
         UUID folderUid = UUID.fromString(directoryId);
-        folderService.adminDeleteFolder(folderUid);
+
+        directoryService.adminDeleteFolder(ehrUuid, folderUid);
 
         return ResponseEntity.noContent().build();
     }

@@ -17,43 +17,33 @@
  */
 package org.ehrbase.service;
 
-import com.nedap.archie.rm.datavalues.DvIdentifier;
-import com.nedap.archie.rm.generic.PartyIdentified;
-import com.nedap.archie.rm.support.identification.GenericId;
-import com.nedap.archie.rm.support.identification.PartyRef;
-import java.util.List;
+import com.nedap.archie.rm.generic.PartyProxy;
 import java.util.UUID;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.cache.CacheOptions;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified;
-import org.ehrbase.dao.access.support.ServiceDataAccess;
-import org.ehrbase.util.UuidGenerator;
-import org.jooq.DSLContext;
+import org.ehrbase.repository.PartyProxyRepository;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 @Service
-// This service is not @Transactional since we only want to get DB connections when we really need to and an already
-// running transaction is propagated anyway
-public class UserService implements IUserService {
+public class PartyServiceImp implements IUserService, PartyService {
     private final IAuthenticationFacade authenticationFacade;
     private final TenantService tenantService;
-    private final I_DomainAccess dataAccess;
+
     private final Cache userIdCache;
 
-    public UserService(
+    private final PartyProxyRepository partyProxyRepository;
+
+    public PartyServiceImp(
             IAuthenticationFacade authenticationFacade,
             TenantService tenantService,
-            KnowledgeCacheService knowledgeCacheService,
-            DSLContext context,
-            ServerConfig serverConfig,
-            CacheManager cacheManager) {
+            CacheManager cacheManager,
+            PartyProxyRepository partyProxyRepository) {
         this.authenticationFacade = authenticationFacade;
         this.tenantService = tenantService;
-        this.dataAccess = new ServiceDataAccess(context, knowledgeCacheService, knowledgeCacheService, serverConfig);
+        this.partyProxyRepository = partyProxyRepository;
+
         this.userIdCache = cacheManager.getCache(CacheOptions.USER_ID_CACHE);
     }
 
@@ -72,7 +62,9 @@ public class UserService implements IUserService {
     }
 
     private UUID getOrCreateCurrentUserIdSync(CacheKey<String> key) {
-        var existingUser = new PersistedPartyIdentified(dataAccess).findInternalUserId(key.getVal());
+
+        var existingUser = partyProxyRepository.findInternalUserId(key.getVal());
+
         return existingUser.orElseGet(() -> createUserInternal(key));
     }
 
@@ -83,19 +75,13 @@ public class UserService implements IUserService {
      * @return the id of the newly created user
      */
     private UUID createUserInternal(CacheKey<String> key) {
-        DvIdentifier identifier = new DvIdentifier();
-        identifier.setId(key.getVal());
-        identifier.setIssuer(PersistedPartyIdentified.EHRBASE);
-        identifier.setAssigner(PersistedPartyIdentified.EHRBASE);
-        identifier.setType(PersistedPartyIdentified.SECURITY_USER_TYPE);
 
-        PartyRef externalRef = new PartyRef(
-                new GenericId(UuidGenerator.randomUUID().toString(), BaseServiceImp.DEMOGRAPHIC),
-                "User",
-                BaseServiceImp.PARTY);
-        PartyIdentified user =
-                new PartyIdentified(externalRef, "EHRbase Internal " + key.getVal(), List.of(identifier));
+        return partyProxyRepository.createInternalUser(key.getVal());
+    }
 
-        return new PersistedPartyIdentified(dataAccess).store(user, key.getTenantId());
+    @Override
+    public UUID findOrCreateParty(PartyProxy partyProxy) {
+
+        return partyProxyRepository.findMatching(partyProxy).orElse(partyProxyRepository.create(partyProxy));
     }
 }

@@ -52,16 +52,15 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.api.service.FolderService;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
-import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
+import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
 import org.jooq.DSLContext;
@@ -84,8 +83,10 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
     private final CompositionService compositionService;
     private final EhrService ehrService;
-    private final FolderService folderService;
+    private final InternalDirectoryService folderService;
     private final TenantService tenantService;
+
+    private final ContributionRepository contributionRepository;
 
     enum SupportedClasses {
         COMPOSITION,
@@ -98,15 +99,17 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             KnowledgeCacheService knowledgeCacheService,
             CompositionService compositionService,
             EhrService ehrService,
-            FolderService folderService,
+            InternalDirectoryService folderService,
             DSLContext context,
             ServerConfig serverConfig,
-            TenantService tenantService) {
+            TenantService tenantService,
+            ContributionRepository contributionRepository) {
         super(knowledgeCacheService, context, serverConfig);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
         this.folderService = folderService;
         this.tenantService = tenantService;
+        this.contributionRepository = contributionRepository;
     }
 
     @Override
@@ -142,7 +145,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
         ContributionDto contribution = new ContributionDto(
                 contributionId,
-                retrieveUuidsOfContributionObjects(contributionId),
+                retrieveUuidsOfContributionObjects(ehrId, contributionId),
                 retrieveAuditDetails(contributionId));
 
         return Optional.of(contribution);
@@ -338,32 +341,26 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
+        UUID audit = contributionRepository.createAudit(version.getCommitAudit());
+
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
-                folderService.create(ehrId, versionRmObject, contributionId);
+                folderService.create(ehrId, versionRmObject, contributionId, audit);
                 break;
             case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use
                 // the type
                 // "AMENDMENT" for audit in access layer
             case MODIFICATION:
                 // preceding_version_uid check
-                Integer latestVersion = folderService.getLastVersionNumber(version.getPrecedingVersionUid());
-                String id = version.getPrecedingVersionUid().toString();
-                // remove version number after "::" and add queried version number to compare with given one
-                String actualPreceding =
-                        id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
-                if (!actualPreceding.equals(version.getPrecedingVersionUid().toString())) {
-                    throw new PreconditionFailedException(
-                            "Given preceding_version_uid for FOLDER object does not match latest existing version");
-                }
+
                 // call modification of the given folder
-                folderService.update(ehrId, version.getPrecedingVersionUid(), versionRmObject, contributionId);
+                folderService.update(ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId, audit);
                 break;
             case DELETED: // case of deletion change type, but request also has payload (TODO: should that be even
                 // allowed?
                 // specification-wise it's not forbidden)
-                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId);
+                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
                 break;
             case SYNTHESIS: // TODO
             case UNKNOWN: // TODO
@@ -505,11 +502,12 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     /**
      * retrieval of IDs of all objects that are saved as part of the given contribution
      *
+     * @param ehrId
      * @param contribution ID of source contribution
      * @return Map with ID of the object as key and type ("composition", "folder",...) as value
      * @throws IllegalArgumentException on error when retrieving compositions
      */
-    private Map<String, String> retrieveUuidsOfContributionObjects(UUID contribution) {
+    private Map<String, String> retrieveUuidsOfContributionObjects(UUID ehrId, UUID contribution) {
         Map<String, String> objRefs = new HashMap<>();
 
         // query for compositions   // TODO: refactor to use service layer only!?
@@ -524,9 +522,8 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 this.getDataAccess(), contribution, getServerConfig().getNodename());
         statuses.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_EHRSTATUS));
 
-        // query for folders        // TODO: refactor to use service layer only!?
-        Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(
-                getDataAccess(), contribution, getServerConfig().getNodename());
+        // query for folders
+        Set<ObjectVersionId> folders = new HashSet<>(folderService.findForContribution(ehrId, contribution));
         folders.forEach(f -> objRefs.put(f.toString(), TYPE_FOLDER));
 
         return objRefs;

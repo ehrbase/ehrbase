@@ -113,13 +113,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      * @throws InternalServerException if creating or retrieving system failed
      */
     public EhrAccess(
-            I_DomainAccess domain,
-            UUID partyId,
-            UUID systemId,
-            UUID directoryId,
-            UUID accessId,
-            UUID ehrId,
-            String tenantIdentifier) {
+            I_DomainAccess domain, UUID partyId, UUID systemId, UUID accessId, UUID ehrId, String tenantIdentifier) {
         super(domain);
 
         this.ehrRecord = domain.getContext().newRecord(EHR_);
@@ -135,7 +129,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         this.statusAccess.getStatusRecord().setEhrId(ehrRecord.getId());
 
         ehrRecord.setSystemId(systemId);
-        ehrRecord.setDirectory(directoryId);
         ehrRecord.setAccess(accessId);
         ehrRecord.setNamespace(tenantIdentifier);
 
@@ -461,19 +454,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         return ehrAccess.getStatusRecord().getParty();
     }
 
-    /**
-     * Removes the directory row value by setting it to 'NULL'. Usually his will be used after the
-     * deletion of a directories root folder.
-     *
-     * @param domainAccess - Database access
-     * @param ehrId        - Target EHR id
-     * @return Setting NULL value succeeded
-     */
-    public static boolean removeDirectory(I_DomainAccess domainAccess, UUID ehrId) {
-        DSLContext ctx = domainAccess.getContext();
-        return ctx.update(EHR_).setNull(EHR_.DIRECTORY).where(EHR_.ID.eq(ehrId)).execute() > 0;
-    }
-
     @Override
     public DataAccess getDataAccess() {
         return this;
@@ -482,11 +462,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public void setAccess(UUID access) {
         ehrRecord.setAccess(access);
-    }
-
-    @Override
-    public void setDirectory(UUID directory) {
-        ehrRecord.setDirectory(directory);
     }
 
     @Override
@@ -790,11 +765,6 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     @Override
     public UUID getStatusId() {
         return statusAccess.getId();
-    }
-
-    @Override
-    public UUID getDirectoryId() {
-        return ehrRecord.getDirectory();
     }
 
     @Override

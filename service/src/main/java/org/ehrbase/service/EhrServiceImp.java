@@ -67,6 +67,7 @@ import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
 import org.ehrbase.jooq.pg.Routines;
+import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -93,16 +94,20 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     private final ValidationService validationService;
     private final TenantService tenantService;
 
+    private final EhrFolderRepository ehrFolderRepository;
+
     @Autowired
     public EhrServiceImp(
             KnowledgeCacheService knowledgeCacheService,
             ValidationService validationService,
             DSLContext context,
             ServerConfig serverConfig,
-            TenantService tenantService) {
+            TenantService tenantService,
+            EhrFolderRepository ehrFolderRepository) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.tenantService = tenantService;
+        this.ehrFolderRepository = ehrFolderRepository;
     }
 
     @PostConstruct
@@ -148,13 +153,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
         try { // this try block sums up a bunch of operations that can throw errors in the following
             I_EhrAccess ehrAccess = I_EhrAccess.getInstance(
-                    getDataAccess(),
-                    subjectUuid,
-                    systemId,
-                    null,
-                    null,
-                    ehrId,
-                    tenantService.getCurrentTenantIdentifier());
+                    getDataAccess(), subjectUuid, systemId, null, ehrId, tenantService.getCurrentTenantIdentifier());
             ehrAccess.setStatus(status);
             return ehrAccess.commit(committerId, systemId, DESCRIPTION);
         } catch (Exception e) {
@@ -474,34 +473,11 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public UUID getDirectoryId(UUID ehrId) {
-        try {
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
-            return ehrAccess.getDirectoryId();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw new InternalServerException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean removeDirectory(UUID ehrId) {
-        try {
-            return I_EhrAccess.removeDirectory(getDataAccess(), ehrId);
-        } catch (Exception e) {
-            logger.error(String.format(
-                    "Could not remove directory from EHR with id %s.\nReason: %s", ehrId.toString(), e.getMessage()));
-            throw new InternalServerException(e.getMessage(), e);
-        }
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void adminDeleteEhr(UUID ehrId) {
+
+        ehrFolderRepository.adminDelete(ehrId);
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         ehrAccess.adminDeleteEhr();
     }

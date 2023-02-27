@@ -17,7 +17,6 @@
  */
 package org.ehrbase.dao.access.jooq.party;
 
-import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 import com.nedap.archie.rm.datavalues.DvIdentifier;
@@ -33,7 +32,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.enums.PartyType;
-import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
 import org.jdom2.IllegalAddException;
 import org.jooq.Record;
@@ -144,15 +142,5 @@ public class PersistedPartyIdentified extends PersistedParty {
         }
 
         return uuid;
-    }
-
-    public Optional<UUID> findInternalUserId(String username) {
-        var condition = IDENTIFIER
-                .ID_VALUE
-                .eq(username)
-                .and(IDENTIFIER.TYPE_NAME.eq(SECURITY_USER_TYPE))
-                .and(IDENTIFIER.ISSUER.eq(EHRBASE))
-                .and(IDENTIFIER.ASSIGNER.eq(EHRBASE));
-        return domainAccess.getContext().fetchOptional(IDENTIFIER, condition).map(IdentifierRecord::getParty);
     }
 }
