@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ - new Directory implementation ([#1059](https://github.com/ehrbase/ehrbase/pull/1059))
  ### Fixed 
 
 ## [0.24.0]
@@ -46,7 +47,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   header application/json([#1029](https://github.com/ehrbase/ehrbase/pull/1029))
 - Fixed abac default tenant claims validation([#1041](https://github.com/ehrbase/ehrbase/pull/1041))
 - Fixed incorrect path in Location http header([#1044](https://github.com/ehrbase/ehrbase/pull/1044))
-- Fixed get deleted composition returns 500([#1059](https://github.com/ehrbase/ehrbase/pull/1059))
+- Fixed get deleted composition returns 500([#1048](https://github.com/ehrbase/ehrbase/pull/1048))
 
 ## [0.23.0]
 
