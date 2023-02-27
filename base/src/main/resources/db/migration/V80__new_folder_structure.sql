@@ -41,7 +41,7 @@ $$
     END
 $$;
 
-create table ehr_folder
+create table ehr.ehr_folder
 (
     id                uuid             NOT NULL,
     ehr_id            uuid             NOT NULL,
@@ -112,7 +112,7 @@ drop function ehr.admin_delete_folder(folder_id_input uuid);
 drop function ehr.admin_delete_folder_history(folder_id_input uuid);
 drop function ehr.admin_delete_folder_obj_ref_history(contribution_id_input uuid);
 
-create or replace function admin_delete_ehr_full(ehr_id_param uuid)
+create or replace function ehr.admin_delete_ehr_full(ehr_id_param uuid)
     returns TABLE
             (
                 deleted boolean
@@ -217,10 +217,8 @@ BEGIN
 END
 $$;
 
-alter function admin_delete_ehr_full(uuid) owner to ehrbase;
 
-
-create or replace function js_ehr(uuid, text) returns json
+create or replace function ehr.js_ehr(uuid, text) returns json
     language plpgsql
 as
 $$
@@ -282,5 +280,4 @@ BEGIN
 END
 $$;
 
-alter function js_ehr(uuid, text) owner to ehrbase;
 
