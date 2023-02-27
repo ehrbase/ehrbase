@@ -58,3 +58,16 @@ spring:
     username: ehrbase_restricted
     password: ehrbase_restricted
 ```
+
+If you use the official Docker image you can also set this via
+
+```
+    environment:
+      DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
+      DB_USER_ADMIN: ehrbase
+      DB_PASS_ADMIN: ehrbase
+      DB_USER: ehrbase_restricted
+      DB_PASS: ehrbase_restricted
+```
+
+see `\docker-compose.yml `
