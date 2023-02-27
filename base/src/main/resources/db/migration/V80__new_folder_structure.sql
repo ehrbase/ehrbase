@@ -148,11 +148,9 @@ BEGIN
                      --   * ehr.attested_view
                      --   * ehr.entry
                      --   * ehr.event_context
-                     --   * ehr.folder_hierarchy
-                     --   * ehr.folder_items
                      --   * ehr.object_ref
                      --   * ehr.participation
-
+                     -- ehr_folder will be deleted by the ehrbase backend
                      delete_compo_xref
                          AS (DELETE FROM ehr.compo_xref cx USING select_composition_ids sci WHERE cx.master_uuid = sci.id OR cx.child_uuid = sci.id),
                      delete_composition
