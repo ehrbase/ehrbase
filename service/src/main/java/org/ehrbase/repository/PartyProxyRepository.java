@@ -80,7 +80,10 @@ public class PartyProxyRepository {
      */
     public Optional<UUID> findInternalUserId(String username) {
 
-        return context.fetchOptional(USERS, USERS.ID.eq(username)).map(UsersRecord::getPartyId);
+        return context.select(USERS.PARTY_ID)
+                .from(USERS)
+                .where(USERS.USERNAME.eq(username))
+                .fetchOptional(USERS.PARTY_ID);
     }
 
     /**
@@ -102,14 +105,15 @@ public class PartyProxyRepository {
                 new GenericId(UuidGenerator.randomUUID().toString(), BaseServiceImp.DEMOGRAPHIC),
                 "User",
                 BaseServiceImp.PARTY);
-        PartyIdentified user = new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
+        PartyIdentified partyIdentified =
+                new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
 
-        UUID uuid = create(user);
+        UUID uuid = create(partyIdentified);
 
         UsersRecord usersRecord = context.newRecord(USERS);
 
         usersRecord.setPartyId(uuid);
-        usersRecord.setId(username);
+        usersRecord.setUsername(username);
         usersRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
         usersRecord.store();
 

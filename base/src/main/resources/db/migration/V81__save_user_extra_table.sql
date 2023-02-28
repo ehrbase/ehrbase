@@ -19,10 +19,10 @@
 
 CREATE TABLE ehr.users
 (
-    id        text,
+    username        text,
     party_id  uuid not null REFERENCES ehr.party_identified (id),
     namespace TEXT default '1f332a66-0e57-11ed-861d-0242ac120002',
-    PRIMARY KEY (id, namespace)
+    PRIMARY KEY (username, namespace)
 );
 
 ALTER TABLE ehr.identifier

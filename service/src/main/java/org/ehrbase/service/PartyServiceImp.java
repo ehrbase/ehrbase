@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.generic.PartyProxy;
+import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.TenantService;
@@ -69,17 +70,17 @@ public class PartyServiceImp implements IUserService, PartyService {
 
     private UUID getOrCreateCurrentUserIdSync(CacheKey<String> key) {
 
-        var existingUser = partyProxyRepository.findInternalUserId(key.getVal());
-        if (existingUser.isEmpty()) {
-            try {
-
-                partyProxyRepository.createInternalUser(key.getVal());
-            } catch (DataIntegrityViolationException ex) {
-                logger.info(ex.getMessage(), ex.getMessage());
-            }
-            existingUser = partyProxyRepository.findInternalUserId(key.getVal());
-        }
-        return existingUser.orElseThrow(() -> new InternalServerException("Can not create User"));
+        return partyProxyRepository
+                .findInternalUserId(key.getVal())
+                .or(() -> {
+                    try {
+                        return Optional.of(partyProxyRepository.createInternalUser(key.getVal()));
+                    } catch (DataIntegrityViolationException ex) {
+                        logger.info(ex.getMessage(), ex.getMessage());
+                        return partyProxyRepository.findInternalUserId(key.getVal());
+                    }
+                })
+                .orElseThrow(() -> new InternalServerException("Cannot create User"));
     }
 
     @Override
