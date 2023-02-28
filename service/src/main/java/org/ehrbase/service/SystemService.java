@@ -25,6 +25,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.repository.SystemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -57,8 +58,8 @@ public class SystemService {
                 systemRepository.commit(
                         systemRepository.toRecord(serverConfig.getNodename(), "DEFAULT RUNNING SYSTEM"));
                 // Might fail do to concurrent inserts
-            } catch (RuntimeException ex) {
-                logger.info(ex.getMessage());
+            } catch (DataIntegrityViolationException ex) {
+                logger.info(ex.getMessage(), ex);
             }
             uuid = systemRepository.findSystemId(serverConfig.getNodename());
         }

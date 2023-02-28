@@ -17,10 +17,9 @@
  */
 package org.ehrbase.repository;
 
-import static org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified.EHRBASE;
-import static org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified.SECURITY_USER_TYPE;
 import static org.ehrbase.jooq.pg.Tables.IDENTIFIER;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+import static org.ehrbase.jooq.pg.Tables.USERS;
 
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvIdentifier;
@@ -46,6 +45,7 @@ import org.ehrbase.dao.access.jooq.party.PersistedPartyIdentified;
 import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.IdentifierRecord;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
+import org.ehrbase.jooq.pg.tables.records.UsersRecord;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.ehrbase.service.BaseServiceImp;
 import org.ehrbase.service.PersistentCodePhrase;
@@ -79,13 +79,8 @@ public class PartyProxyRepository {
      * @return
      */
     public Optional<UUID> findInternalUserId(String username) {
-        var condition = IDENTIFIER
-                .ID_VALUE
-                .eq(username)
-                .and(IDENTIFIER.TYPE_NAME.eq(SECURITY_USER_TYPE))
-                .and(IDENTIFIER.ISSUER.eq(EHRBASE))
-                .and(IDENTIFIER.ASSIGNER.eq(EHRBASE));
-        return context.fetchOptional(IDENTIFIER, condition).map(IdentifierRecord::getParty);
+
+        return context.fetchOptional(USERS, USERS.ID.eq(username)).map(UsersRecord::getPartyId);
     }
 
     /**
@@ -109,7 +104,16 @@ public class PartyProxyRepository {
                 BaseServiceImp.PARTY);
         PartyIdentified user = new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
 
-        return create(user);
+        UUID uuid = create(user);
+
+        UsersRecord usersRecord = context.newRecord(USERS);
+
+        usersRecord.setPartyId(uuid);
+        usersRecord.setId(username);
+        usersRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+        usersRecord.store();
+
+        return uuid;
     }
 
     /**

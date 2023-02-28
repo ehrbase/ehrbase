@@ -19,11 +19,15 @@ package org.ehrbase.service;
 
 import com.nedap.archie.rm.generic.PartyProxy;
 import java.util.UUID;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.repository.PartyProxyRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,6 +38,8 @@ public class PartyServiceImp implements IUserService, PartyService {
     private final Cache userIdCache;
 
     private final PartyProxyRepository partyProxyRepository;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public PartyServiceImp(
             IAuthenticationFacade authenticationFacade,
@@ -64,8 +70,16 @@ public class PartyServiceImp implements IUserService, PartyService {
     private UUID getOrCreateCurrentUserIdSync(CacheKey<String> key) {
 
         var existingUser = partyProxyRepository.findInternalUserId(key.getVal());
+        if (existingUser.isEmpty()) {
+            try {
 
-        return existingUser.orElseGet(() -> createUserInternal(key));
+                partyProxyRepository.createInternalUser(key.getVal());
+            } catch (DataIntegrityViolationException ex) {
+                logger.info(ex.getMessage(), ex.getMessage());
+            }
+            existingUser = partyProxyRepository.findInternalUserId(key.getVal());
+        }
+        return existingUser.orElseThrow(() -> new InternalServerException("Can not create User"));
     }
 
     /**
