@@ -18,12 +18,17 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.generic.PartyProxy;
+import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.repository.PartyProxyRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,6 +39,8 @@ public class PartyServiceImp implements IUserService, PartyService {
     private final Cache userIdCache;
 
     private final PartyProxyRepository partyProxyRepository;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public PartyServiceImp(
             IAuthenticationFacade authenticationFacade,
@@ -63,20 +70,17 @@ public class PartyServiceImp implements IUserService, PartyService {
 
     private UUID getOrCreateCurrentUserIdSync(CacheKey<String> key) {
 
-        var existingUser = partyProxyRepository.findInternalUserId(key.getVal());
-
-        return existingUser.orElseGet(() -> createUserInternal(key));
-    }
-
-    /**
-     * Creates a new PARTY_IDENTIFIED corresponding to an authenticated user.
-     *
-     * @param username username of the user
-     * @return the id of the newly created user
-     */
-    private UUID createUserInternal(CacheKey<String> key) {
-
-        return partyProxyRepository.createInternalUser(key.getVal());
+        return partyProxyRepository
+                .findInternalUserId(key.getVal())
+                .or(() -> {
+                    try {
+                        return Optional.of(partyProxyRepository.createInternalUser(key.getVal()));
+                    } catch (DataIntegrityViolationException ex) {
+                        logger.info(ex.getMessage(), ex.getMessage());
+                        return partyProxyRepository.findInternalUserId(key.getVal());
+                    }
+                })
+                .orElseThrow(() -> new InternalServerException("Cannot create User"));
     }
 
     @Override

@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  - new Directory implementation ([#1059](https://github.com/ehrbase/ehrbase/pull/1059))
  ### Fixed 
+- error on concurrent user creation ([#1067](https://github.com/ehrbase/ehrbase/pull/1067))
 
 ## [0.24.0]
 
