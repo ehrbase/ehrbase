@@ -82,17 +82,6 @@ public class PartyServiceImp implements IUserService, PartyService {
         return existingUser.orElseThrow(() -> new InternalServerException("Can not create User"));
     }
 
-    /**
-     * Creates a new PARTY_IDENTIFIED corresponding to an authenticated user.
-     *
-     * @param username username of the user
-     * @return the id of the newly created user
-     */
-    private UUID createUserInternal(CacheKey<String> key) {
-
-        return partyProxyRepository.createInternalUser(key.getVal());
-    }
-
     @Override
     public UUID findOrCreateParty(PartyProxy partyProxy) {
 
