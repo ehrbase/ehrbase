@@ -101,7 +101,7 @@ public class OpenEhrAuditDataset implements Serializable {
     }
 
     private static final String MISSING_PAT_ID = "<unknown>";
-    
+
     public String getUniquePatientParticipantObjectId() {
         Set<String> ids = getPatientParticipantObjectIds();
         if (ids.isEmpty()) {
