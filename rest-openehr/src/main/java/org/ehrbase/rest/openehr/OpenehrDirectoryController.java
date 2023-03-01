@@ -148,11 +148,11 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
-            @PathVariable(name = "version_uid") ObjectVersionId rawVersionUid,
+            @PathVariable(name = "version_uid") ObjectVersionId versionUid,
             @RequestParam(name = "path", required = false) String path,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
 
-        ObjectVersionId versionUid = parseAndValidateVersionUid(rawVersionUid.getValue());
+        validateVersionUid(versionUid.getValue());
 
         // Check if EHR for the folder exists
         ehrService.checkEhrExists(ehrId);
@@ -172,9 +172,9 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
 
-    private ObjectVersionId parseAndValidateVersionUid(String versionUidStr) {
+    private void validateVersionUid(String versionUidStr) {
         if (StringUtils.isEmpty(versionUidStr)) {
-            return null;
+            throw new InvalidApiParameterException("a valid  must be provided");
         }
 
         ObjectVersionId versionUid = new ObjectVersionId(versionUidStr);
@@ -186,7 +186,6 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         } catch (UnsupportedOperationException e) {
             throw new InvalidApiParameterException(e.getMessage(), e);
         }
-        return versionUid;
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
