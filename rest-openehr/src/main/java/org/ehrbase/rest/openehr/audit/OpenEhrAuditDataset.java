@@ -20,8 +20,8 @@ package org.ehrbase.rest.openehr.audit;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.ehrbase.api.exception.InternalServerException;
 import org.openehealth.ipf.commons.audit.codes.EventOutcomeIndicator;
 import org.springframework.http.HttpMethod;
@@ -85,7 +85,7 @@ public class OpenEhrAuditDataset implements Serializable {
     }
 
     public Set<String> getPatientParticipantObjectIds() {
-        return patientParticipantObjectIds;
+        return patientParticipantObjectIds.stream().filter(id -> id != null).collect(Collectors.toSet());
     }
 
     public void setPatientParticipantObjectIds(Set<String> patientParticipantObjectIds) {
@@ -107,7 +107,7 @@ public class OpenEhrAuditDataset implements Serializable {
         if (ids.isEmpty()) {
             return MISSING_PAT_ID;
         } else if (ids.size() == 1) {
-            return Optional.ofNullable(ids.iterator().next()).orElse(MISSING_PAT_ID);
+            return ids.iterator().next();
         } else {
             throw new InternalServerException("Non unique patient number result");
         }
