@@ -477,7 +477,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public void adminDeleteEhr(UUID ehrId) {
 
-        ehrFolderRepository.adminDelete(ehrId);
+        ehrFolderRepository.adminDelete(ehrId, null);
         I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
         ehrAccess.adminDeleteEhr();
     }

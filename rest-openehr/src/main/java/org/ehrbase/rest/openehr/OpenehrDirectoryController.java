@@ -156,6 +156,10 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         assertValidPath(path);
 
+        if (versionUid != null && versionUid.isBranch()) {
+            throw new InvalidApiParameterException("Version branching is not supported");
+        }
+
         // Get the folder entry from database
         Optional<Folder> foundFolder = directoryService.get(ehrId, versionUid, path);
         if (foundFolder.isEmpty()) {
@@ -185,7 +189,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         final Optional<Folder> foundFolder;
         // Get the folder entry from database
-        Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
+        Optional<OffsetDateTime> temporal = decodeVersionAtTime(versionAtTime);
 
         if (temporal.isPresent()) {
             foundFolder = directoryService.getByTime(ehrId, temporal.get(), path);

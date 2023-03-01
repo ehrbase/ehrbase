@@ -22,6 +22,7 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.UID;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
+import com.nedap.archie.rm.support.identification.VersionTreeId;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,7 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.dao.access.util.FolderUtils;
+import org.ehrbase.jooq.pg.tables.records.EhrFolderHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.util.UuidGenerator;
@@ -68,20 +70,24 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
 
     @Override
     public Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path) {
-
         List<EhrFolderRecord> ehrFolderRecords;
         if (folderId == null) {
-            ehrFolderRecords = ehrFolderRepository.getLatest(ehrId);
-        } else {
+            ehrFolderRecords = ehrFolderRepository.getFolderHead(ehrId, 1);
 
-            ehrFolderRecords = ehrFolderRepository.fromHistory(ehrFolderRepository.getByVersion(
-                    ehrId, Integer.parseInt(folderId.getVersionTreeId().getValue())));
+        } else {
+            VersionTreeId versionTreeId = folderId.getVersionTreeId();
+            if (versionTreeId.isBranch()) {
+                throw new UnsupportedOperationException(
+                        "Version branching is not supported: %s".formatted(versionTreeId.getValue()));
+            }
+            int version = Integer.parseInt(versionTreeId.getValue());
+            Result<EhrFolderHistoryRecord> byVersion = ehrFolderRepository.getByVersion(ehrId, version);
+            ehrFolderRecords = ehrFolderRepository.fromHistory(byVersion);
         }
 
         if (!ehrFolderRecords.isEmpty()) {
             return findByPath(ehrFolderRepository.from(ehrFolderRecords), StringUtils.split(path, '/'));
         } else {
-
             return Optional.empty();
         }
     }
@@ -160,7 +166,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasDirectory(ehrId)) {
             throw new PreconditionFailedException(
-                    String.format("EHR with id %s dos not contains a directory.", ehrId.toString()));
+                    String.format("EHR with id %s does not contain a directory.", ehrId.toString()));
         }
 
         FolderUtils.checkSiblingNameConflicts(folder);
@@ -184,14 +190,14 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasDirectory(ehrId)) {
-            throw new PreconditionFailedException(
-                    String.format("EHR with id %s dos not contains a directory.", ehrId.toString()));
+            throw new PreconditionFailedException("EHR with id %s does not contain a directory.".formatted(ehrId));
         }
 
         ehrFolderRepository.delete(
                 ehrId,
                 UUID.fromString(ifMatches.getObjectId().getValue()),
                 Integer.parseInt(ifMatches.getVersionTreeId().getValue()),
+                1,
                 contributionId,
                 auditId);
     }
@@ -219,10 +225,11 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
 
         // Check if EHR exists
         if (!this.ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException("Admin Directory", String.format("EHR with id %s does not exist", ehrId));
+            throw new ObjectNotFoundException("Admin Directory", "EHR with id %s does not exist".formatted(ehrId));
         }
 
-        Result<EhrFolderRecord> latest = ehrFolderRepository.getLatest(ehrId);
+        // For now only EHR.directory is supported
+        Result<EhrFolderRecord> latest = ehrFolderRepository.getFolderHead(ehrId, 1);
 
         if (latest.isNotEmpty()) {
             Folder from = ehrFolderRepository.from(latest);
@@ -231,7 +238,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
                 throw new IllegalArgumentException("FolderIds do not match");
             }
 
-            ehrFolderRepository.adminDelete(ehrId);
+            ehrFolderRepository.adminDelete(ehrId, 1);
         }
     }
 
