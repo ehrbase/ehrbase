@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.TemplateService;
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Admin API controller for Templates. Provides endpoints to update (replace) and delete templates.
  */
+@TenantAware
 @Tag(name = "Admin - Template")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
