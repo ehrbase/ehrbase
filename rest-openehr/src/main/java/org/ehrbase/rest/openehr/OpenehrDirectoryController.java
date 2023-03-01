@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
@@ -147,18 +148,16 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
-            @PathVariable(name = "version_uid") ObjectVersionId versionUid,
+            @PathVariable(name = "version_uid") ObjectVersionId rawVersionUid,
             @RequestParam(name = "path", required = false) String path,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
+
+        ObjectVersionId versionUid = parseAndValidateVersionUid(rawVersionUid.getValue());
 
         // Check if EHR for the folder exists
         ehrService.checkEhrExists(ehrId);
 
         assertValidPath(path);
-
-        if (versionUid != null && versionUid.isBranch()) {
-            throw new InvalidApiParameterException("Version branching is not supported");
-        }
 
         // Get the folder entry from database
         Optional<Folder> foundFolder = directoryService.get(ehrId, versionUid, path);
@@ -171,6 +170,23 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         }
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
+    }
+
+    private ObjectVersionId parseAndValidateVersionUid(String versionUidStr) {
+        if (StringUtils.isEmpty(versionUidStr)) {
+            return null;
+        }
+
+        ObjectVersionId versionUid = new ObjectVersionId(versionUidStr);
+        try {
+            versionUid.getCreatingSystemId();
+            if (versionUid.isBranch()) {
+                throw new InvalidApiParameterException("Version branching is not supported");
+            }
+        } catch (UnsupportedOperationException e) {
+            throw new InvalidApiParameterException(e.getMessage(), e);
+        }
+        return versionUid;
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)

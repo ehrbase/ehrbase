@@ -18,7 +18,6 @@
 package org.ehrbase.rest;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -308,15 +307,15 @@ public abstract class BaseController {
     protected static Optional<OffsetDateTime> decodeVersionAtTime(String versionAtTimeParam) {
         return Optional.ofNullable(versionAtTimeParam)
                 .filter(StringUtils::isNotBlank)
-                .map(s -> UriUtils.decode(s, StandardCharsets.UTF_8))
+                // revert application/x-www-form-urlencoded
+                .map(s -> s.replace(' ', '+'))
                 .map(s -> {
                     try {
                         return OffsetDateTime.parse(s);
                     } catch (DateTimeParseException e) {
                         throw new IllegalArgumentException(
-                                "Value '%s' is not valid for version_at_time parameter. "
-                                        + "Value must be in the extended ISO 8601 format."
-                                                .formatted(versionAtTimeParam),
+                                "Value '%s' is not valid for version_at_time parameter. Value must be in the extended ISO 8601 format."
+                                        .formatted(versionAtTimeParam),
                                 e);
                     }
                 });

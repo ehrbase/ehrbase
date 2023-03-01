@@ -94,17 +94,13 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
 
     @Override
     public Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, @Nullable String path) {
+        List<EhrFolderRecord> ehrFolderRecords =
+                ehrFolderRepository.fromHistory(ehrFolderRepository.getByTime(ehrId, time));
 
-        List<EhrFolderRecord> ehrFolderRecords;
-
-        ehrFolderRecords = ehrFolderRepository.fromHistory(ehrFolderRepository.getByTime(ehrId, time));
-
-        if (!ehrFolderRecords.isEmpty()) {
-            return findByPath(ehrFolderRepository.from(ehrFolderRecords), StringUtils.split(path, '/'));
-        } else {
-
+        if (ehrFolderRecords.isEmpty()) {
             return Optional.empty();
         }
+        return findByPath(ehrFolderRepository.from(ehrFolderRecords), StringUtils.split(path, '/'));
     }
 
     private Optional<Folder> findByPath(Folder root, String[] path) {
