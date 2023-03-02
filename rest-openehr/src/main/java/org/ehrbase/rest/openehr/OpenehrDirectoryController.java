@@ -26,13 +26,13 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.DirectoryService;
-import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DirectoryApiSpecification;
@@ -68,11 +68,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
     private final DirectoryService directoryService;
 
-    private final EhrService ehrService;
-
-    public OpenehrDirectoryController(DirectoryService directoryService, EhrService ehrService) {
+    public OpenehrDirectoryController(DirectoryService directoryService) {
         this.directoryService = directoryService;
-        this.ehrService = ehrService;
     }
 
     /**
@@ -151,8 +148,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestParam(name = "path", required = false) String path,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
 
-        // Check if EHR for the folder exists
-        ehrService.checkEhrExists(ehrId);
+        validateVersionUid(versionUid);
 
         assertValidPath(path);
 
@@ -162,11 +158,26 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             throw new ObjectNotFoundException(
                     "DIRECTORY",
                     String.format(
-                            "Folder with id %s and path %s does not exist.",
-                            versionUid.toString(), path != null ? path : "/"));
+                            "Folder with id %s and path %s does not exist.", versionUid, path != null ? path : "/"));
         }
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
+    }
+
+    private void validateVersionUid(ObjectVersionId versionUid) {
+        String versionUidStr = versionUid.getValue();
+        if (StringUtils.isEmpty(versionUidStr)) {
+            throw new InvalidApiParameterException("a valid  must be provided");
+        }
+
+        try {
+            versionUid.getCreatingSystemId();
+            if (versionUid.isBranch()) {
+                throw new InvalidApiParameterException("Version branching is not supported");
+            }
+        } catch (UnsupportedOperationException e) {
+            throw new InvalidApiParameterException(e.getMessage(), e);
+        }
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
@@ -185,7 +196,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         final Optional<Folder> foundFolder;
         // Get the folder entry from database
-        Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
+        Optional<OffsetDateTime> temporal = decodeVersionAtTime(versionAtTime);
 
         if (temporal.isPresent()) {
             foundFolder = directoryService.getByTime(ehrId, temporal.get(), path);
