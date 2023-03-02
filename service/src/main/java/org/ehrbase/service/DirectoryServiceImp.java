@@ -70,6 +70,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
 
     @Override
     public Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path) {
+
         List<EhrFolderRecord> ehrFolderRecords;
         if (folderId == null) {
             ehrFolderRecords = ehrFolderRepository.getFolderHead(ehrId, 1);
@@ -80,16 +81,30 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
                 throw new UnsupportedOperationException(
                         "Version branching is not supported: %s".formatted(versionTreeId.getValue()));
             }
+            // check creating system matches
+            if (!folderId.getCreatingSystemId().getValue().equals(serverConfig.getNodename())) {
+                return Optional.empty();
+            }
             int version = Integer.parseInt(versionTreeId.getValue());
+
             Result<EhrFolderHistoryRecord> byVersion = ehrFolderRepository.getByVersion(ehrId, version);
             ehrFolderRecords = ehrFolderRepository.fromHistory(byVersion);
         }
 
-        if (!ehrFolderRecords.isEmpty()) {
-            return findByPath(ehrFolderRepository.from(ehrFolderRecords), StringUtils.split(path, '/'));
-        } else {
+        if (ehrFolderRecords.isEmpty()) {
+            // Check if EHR for the folder exists
+            ehrService.checkEhrExists(ehrId);
             return Optional.empty();
         }
+
+        Folder root = ehrFolderRepository.from(ehrFolderRecords);
+
+        // check if id matches
+        if (folderId != null && !folderId.getRoot().equals(root.getUid().getRoot())) {
+            return Optional.empty();
+        }
+
+        return findByPath(root, StringUtils.split(path, '/'));
     }
 
     @Override

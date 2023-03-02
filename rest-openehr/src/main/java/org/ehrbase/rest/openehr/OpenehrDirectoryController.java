@@ -154,9 +154,6 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         validateVersionUid(versionUid.getValue());
 
-        // Check if EHR for the folder exists
-        ehrService.checkEhrExists(ehrId);
-
         assertValidPath(path);
 
         // Get the folder entry from database
