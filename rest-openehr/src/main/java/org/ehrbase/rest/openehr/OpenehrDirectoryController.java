@@ -33,7 +33,6 @@ import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.DirectoryService;
-import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DirectoryApiSpecification;
@@ -69,11 +68,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
     private final DirectoryService directoryService;
 
-    private final EhrService ehrService;
-
-    public OpenehrDirectoryController(DirectoryService directoryService, EhrService ehrService) {
+    public OpenehrDirectoryController(DirectoryService directoryService) {
         this.directoryService = directoryService;
-        this.ehrService = ehrService;
     }
 
     /**
