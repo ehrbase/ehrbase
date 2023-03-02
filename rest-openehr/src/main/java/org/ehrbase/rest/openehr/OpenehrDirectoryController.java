@@ -148,7 +148,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestParam(name = "path", required = false) String path,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
 
-        validateVersionUid(versionUid.getValue());
+        validateVersionUid(versionUid);
 
         assertValidPath(path);
 
@@ -158,19 +158,18 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             throw new ObjectNotFoundException(
                     "DIRECTORY",
                     String.format(
-                            "Folder with id %s and path %s does not exist.",
-                            versionUid.toString(), path != null ? path : "/"));
+                            "Folder with id %s and path %s does not exist.", versionUid, path != null ? path : "/"));
         }
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
 
-    private void validateVersionUid(String versionUidStr) {
+    private void validateVersionUid(ObjectVersionId versionUid) {
+        String versionUidStr = versionUid.getValue();
         if (StringUtils.isEmpty(versionUidStr)) {
             throw new InvalidApiParameterException("a valid  must be provided");
         }
 
-        ObjectVersionId versionUid = new ObjectVersionId(versionUidStr);
         try {
             versionUid.getCreatingSystemId();
             if (versionUid.isBranch()) {
