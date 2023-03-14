@@ -29,15 +29,15 @@ import org.jooq.Table;
 /**
  * @author Stefan Spiska
  */
-public class RepostoryHelper {
+public class RepositoryHelper {
 
-    private RepostoryHelper() {
+    private RepositoryHelper() {
 
-        // Helper Calss
+        // Helper Class
 
     }
 
-    static <T extends Record> void executeBulkInsert(DSLContext context, List<T> recordList, Table<?> table) {
+    public static <T extends Record> void executeBulkInsert(DSLContext context, List<T> recordList, Table<?> table) {
 
         try {
             Loader<?> execute = context.loadInto(table)
