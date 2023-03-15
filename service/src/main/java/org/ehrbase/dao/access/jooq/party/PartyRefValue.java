@@ -21,12 +21,13 @@ import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.GenericId;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.PartyRef;
+import java.util.Optional;
 import org.ehrbase.jooq.pg.enums.PartyRefIdType;
 
 /**
  * handles party_ref attribute of a party proxy
  */
-class PartyRefValue {
+public class PartyRefValue {
 
     private final PartyProxy partyProxy;
 
@@ -36,50 +37,51 @@ class PartyRefValue {
     private String type = null;
     private PartyRefIdType objectIdType = PartyRefIdType.undefined;
 
-    PartyRefValue(PartyProxy partyProxy) {
+    public PartyRefValue(PartyProxy partyProxy) {
         this.partyProxy = partyProxy;
     }
 
     /**
      * extract the attributes of party_ref
+     *
      * @return
      */
-    PartyRefValue attributes() {
+    public PartyRefValue attributes() {
 
-        if (partyProxy.getExternalRef() == null) // PartySelf f.e.
-        return this;
+        if (partyProxy.getExternalRef() != null) { // PartySelf f.e.
 
-        PartyRef partyRef = partyProxy.getExternalRef();
+            PartyRef partyRef = partyProxy.getExternalRef();
 
-        namespace = partyRef != null ? partyRef.getNamespace() : null;
-        ObjectId objectId = partyRef.getId();
-        value = objectId != null ? objectId.getValue() : null;
-        if (objectId != null && objectId instanceof GenericId) scheme = ((GenericId) objectId).getScheme();
-        type = partyRef != null ? partyRef.getType() : null;
-        objectIdType = partyRef != null
-                ? PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef))
-                : PartyRefIdType.undefined;
+            namespace = partyRef.getNamespace();
+            ObjectId objectId = partyRef.getId();
+            value = Optional.ofNullable(objectId).map(ObjectId::getValue).orElse(null);
+            if (objectId instanceof GenericId genericId) {
+                scheme = (genericId).getScheme();
+            }
+            type = partyRef.getType();
+            objectIdType = PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef));
+        }
 
         return this;
     }
 
-    String getNamespace() {
+    public String getNamespace() {
         return namespace;
     }
 
-    String getValue() {
+    public String getValue() {
         return value;
     }
 
-    String getScheme() {
+    public String getScheme() {
         return scheme;
     }
 
-    String getType() {
+    public String getType() {
         return type;
     }
 
-    PartyRefIdType getObjectIdType() {
+    public PartyRefIdType getObjectIdType() {
         return objectIdType;
     }
 }

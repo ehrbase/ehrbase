@@ -44,24 +44,17 @@ public interface I_EhrAccess extends I_SimpleCRUD {
     /**
      * get a new Ehr access layer instance
      *
-     * @param domain      SQL access
-     * @param partyId     owner UUID (patient)
-     * @param systemId    system on which the Ehr is initiated (UUID)
-     * @param directoryId optional directory structure Id
-     * @param accessId    optional access strategy Id
-     * @param ehrId       optional custom ehrID
+     * @param domain   SQL access
+     * @param partyId  owner UUID (patient)
+     * @param systemId system on which the Ehr is initiated (UUID)
+     * @param accessId optional access strategy Id
+     * @param ehrId    optional custom ehrID
      * @return I_EhrAccess
      * @throws InternalServerException if creating or retrieving system failed
      */
     static I_EhrAccess getInstance(
-            I_DomainAccess domain,
-            UUID partyId,
-            UUID systemId,
-            UUID directoryId,
-            UUID accessId,
-            UUID ehrId,
-            String tenantIdentifier) {
-        return new EhrAccess(domain, partyId, systemId, directoryId, accessId, ehrId, tenantIdentifier);
+            I_DomainAccess domain, UUID partyId, UUID systemId, UUID accessId, UUID ehrId, String tenantIdentifier) {
+        return new EhrAccess(domain, partyId, systemId, accessId, ehrId, tenantIdentifier);
     }
 
     /**
@@ -164,18 +157,6 @@ public interface I_EhrAccess extends I_SimpleCRUD {
         return EhrAccess.getCompositionList(domainAccess, ehrId);
     }
 
-    /**
-     * Removes the directory row value by setting it to 'NULL'. Usually his will be used after the deletion of a
-     * directories root folder.
-     *
-     * @param domainAccess - Database access
-     * @param ehrId - Target EHR id
-     * @return Setting NULL value succeeded
-     */
-    static boolean removeDirectory(I_DomainAccess domainAccess, UUID ehrId) {
-        return EhrAccess.removeDirectory(domainAccess, ehrId);
-    }
-
     void setModifiable(Boolean modifiable);
 
     void setArchetypeNodeId(String archetypeNodeId);
@@ -217,13 +198,6 @@ public interface I_EhrAccess extends I_SimpleCRUD {
     void setAccess(UUID access);
 
     /**
-     * set directory id
-     *
-     * @param directory UUID
-     */
-    void setDirectory(UUID directory);
-
-    /**
      * set system Id
      *
      * @param system UUID
@@ -258,8 +232,6 @@ public interface I_EhrAccess extends I_SimpleCRUD {
     UUID getSystemId();
 
     UUID getStatusId();
-
-    UUID getDirectoryId();
 
     UUID getAccessId();
 

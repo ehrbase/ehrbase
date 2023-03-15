@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
  * Admin API controller for Contribution related data. Provides endpoints to update and remove Contributions in
  * database physically.
  */
+@TenantAware
 @Tag(name = "Admin - Contribution")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController

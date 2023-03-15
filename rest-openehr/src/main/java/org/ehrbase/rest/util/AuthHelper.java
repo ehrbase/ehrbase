@@ -46,6 +46,14 @@ public class AuthHelper {
      */
     public static String getCurrentAuthenticatedUsername(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
+        return getJwtSubject(principal).orElseGet(() -> Optional.of(request)
+                .map(AuthHelper::getBasicAuthUsername)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() ->
+                        Optional.ofNullable(principal).map(Principal::getName).orElse(null)));
+    }
+
+    private static Optional<String> getJwtSubject(Principal principal) {
         return Optional.ofNullable(principal)
                 .filter(AbstractAuthenticationToken.class::isInstance)
                 .map(AbstractAuthenticationToken.class::cast)
@@ -53,13 +61,7 @@ public class AuthHelper {
                 .filter(DecodedJWT.class::isInstance)
                 .map(DecodedJWT.class::cast)
                 .map(DecodedJWT::getSubject)
-                .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> Optional.of(request)
-                        .map(AuthHelper::getBasicAuthUsername)
-                        .filter(StringUtils::isNotBlank)
-                        .orElseGet(() -> Optional.ofNullable(principal)
-                                .map(Principal::getName)
-                                .orElse(null)));
+                .filter(StringUtils::isNotBlank);
     }
 
     /**

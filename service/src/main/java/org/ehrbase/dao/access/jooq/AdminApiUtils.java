@@ -17,14 +17,11 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.AdminDeleteCompositionHistory;
-import org.ehrbase.jooq.pg.tables.AdminDeleteFolderHistory;
-import org.ehrbase.jooq.pg.tables.AdminDeleteFolderObjRefHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.DSLContext;
 import org.jooq.Result;
@@ -106,43 +103,5 @@ public class AdminApiUtils {
         } else if (audit != null) {
             deleteAudit(audit, "Contribution", resultCanBeEmpty);
         }
-    }
-
-    /**
-     * Admin deletion of the given Folder
-     * @param id Folder
-     * @param deleteContributions Option to en- or disable the deletion of all linked contributions. Disable when calling in context of cascading high level object like EHR.
-     */
-    public void deleteFolder(UUID id, Boolean deleteContributions) {
-        Result<AdminDeleteFolderRecord> records = Routines.adminDeleteFolder(ctx.configuration(), id);
-
-        // folders are used to clean folder history tables later
-        HashSet<UUID> folders = new HashSet<>();
-        // contributions are used to clean object_ref_history table later
-        HashSet<UUID> contribs = new HashSet<>();
-        // audits are used to clean audit table later
-        HashSet<UUID> audits = new HashSet<>();
-
-        // initially add this scope's root folder ID
-        folders.add(id);
-
-        // add all other IDs to their sets, if available
-        records.forEach(rec -> {
-            folders.add(rec.getChild());
-            contribs.add(rec.getContribution());
-            audits.add(rec.getAudit());
-        });
-
-        // invoke both *_HISTORY cleaning functions
-        folders.forEach(folder ->
-                ctx.selectQuery(new AdminDeleteFolderHistory().call(folder)).execute());
-        contribs.forEach(contrib -> ctx.selectQuery(new AdminDeleteFolderObjRefHistory().call(contrib))
-                .execute());
-
-        // invoke contribution deletion - if set to true
-        if (deleteContributions.equals(true)) contribs.forEach(contrib -> deleteContribution(contrib, null, false));
-
-        // invoke audit deletion
-        audits.forEach(audit -> deleteAudit(audit, "Folder", false));
     }
 }

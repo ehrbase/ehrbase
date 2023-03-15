@@ -374,14 +374,13 @@ public class OpenehrCompositionController extends BaseController implements Comp
         int version = extractVersionFromVersionUid(versionedObjectUid);
         if (version == 0) {
             // case GET {versioned_object_uid}{?version_at_time}
-            Optional<OffsetDateTime> temporal = getVersionAtTimeParam();
-            if (versionAtTime != null && temporal.isPresent()) {
+            Optional<OffsetDateTime> temporal = decodeVersionAtTime(versionAtTime);
+            if (temporal.isPresent()) {
                 // when optional request parameter was provided, retrieve version according to given time
-
-                Optional<Integer> versionFromTimestamp = Optional.ofNullable(compositionService.getVersionByTimestamp(
-                        compositionUid, temporal.get().toLocalDateTime()));
-                version = versionFromTimestamp.orElseThrow(() -> new ObjectNotFoundException(
-                        COMPOSITION, "No composition version matching the timestamp condition"));
+                version = temporal.map(OffsetDateTime::toLocalDateTime)
+                        .map(t -> compositionService.getVersionByTimestamp(compositionUid, t))
+                        .orElseThrow(() -> new ObjectNotFoundException(
+                                COMPOSITION, "No composition version matching the timestamp condition"));
             } // else continue with fallback: latest version
         }
 

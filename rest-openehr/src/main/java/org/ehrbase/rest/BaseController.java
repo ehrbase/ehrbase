@@ -18,10 +18,13 @@
 package org.ehrbase.rest;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -301,24 +304,20 @@ public abstract class BaseController {
         return contentType;
     }
 
-    protected Optional<OffsetDateTime> getVersionAtTimeParam() {
-        Map<String, String> queryParams = ServletUriComponentsBuilder.fromCurrentRequest()
-                .build()
-                .getQueryParams()
-                .toSingleValueMap();
-
-        String versionAtTime = queryParams.get("version_at_time");
-        if (StringUtils.isBlank(versionAtTime)) {
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(OffsetDateTime.parse(UriUtils.decode(versionAtTime, StandardCharsets.UTF_8)));
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException(
-                    "Value '" + versionAtTime + "' is not valid for version_at_time parameter. "
-                            + "Value must be in the extended ISO 8601 format.",
-                    e);
-        }
+    protected static Optional<OffsetDateTime> decodeVersionAtTime(String versionAtTimeParam) {
+        return Optional.ofNullable(versionAtTimeParam)
+                .filter(StringUtils::isNotBlank)
+                // revert application/x-www-form-urlencoded
+                .map(s -> s.replace(' ', '+'))
+                .map(s -> {
+                    try {
+                        return OffsetDateTime.parse(s);
+                    } catch (DateTimeParseException e) {
+                        throw new IllegalArgumentException(
+                                "Value '%s' is not valid for version_at_time parameter. Value must be in the extended ISO 8601 format."
+                                        .formatted(versionAtTimeParam),
+                                e);
+                    }
+                });
     }
 }

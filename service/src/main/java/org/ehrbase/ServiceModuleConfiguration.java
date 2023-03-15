@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @Configuration
-@ComponentScan(basePackages = {"org.ehrbase.service", "org.ehrbase.plugin"})
+@ComponentScan(basePackages = {"org.ehrbase.service", "org.ehrbase.plugin", "org.ehrbase.repository"})
 @EnableAspectJAutoProxy
 public class ServiceModuleConfiguration {
 

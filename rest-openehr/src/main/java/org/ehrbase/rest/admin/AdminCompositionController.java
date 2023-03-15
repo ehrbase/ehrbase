@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.UUID;
+import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -44,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Admin API controller for Composition related data. Provides endpoint to remove compositions physically from database.
  */
+@TenantAware
 @Tag(name = "Admin - Composition")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
