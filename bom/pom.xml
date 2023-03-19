@@ -98,8 +98,6 @@
 
 
     <properties>
-        <antlr4.version>4.9.3</antlr4.version>
-        <archie.version>2.0.1</archie.version>
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <ehrbase.sdk.version>1.26.0-SNAPSHOT</ehrbase.sdk.version>
@@ -278,7 +276,6 @@
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
-                <version>${antlr4.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>
@@ -288,7 +285,6 @@
             <dependency>
                 <groupId>com.nedap.healthcare.archie</groupId>
                 <artifactId>openehr-rm</artifactId>
-                <version>${archie.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -436,7 +432,6 @@
                 <plugin>
                     <groupId>org.antlr</groupId>
                     <artifactId>antlr4-maven-plugin</artifactId>
-                    <version>${antlr4.version}</version>
                     <configuration>
                         <listener>true</listener>
                         <visitor>true</visitor>
@@ -490,7 +485,6 @@
                             </goals>
                             <configuration>
                                 <additionalProperties>
-                                    <archie.version>${archie.version}</archie.version>
                                     <openEHR_SDK.version>${ehrbase.sdk.version}</openEHR_SDK.version>
                                 </additionalProperties>
                             </configuration>
