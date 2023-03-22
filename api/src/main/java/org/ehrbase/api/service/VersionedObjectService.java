@@ -44,12 +44,14 @@ public interface VersionedObjectService<T extends Locatable, U> {
 
     /**
      * Creation with a given contribution, and its audit meta-data.
-     * @param ehrId EHR ID of context
-     * @param objData Payload object data
+     *
+     * @param ehrId        EHR ID of context
+     * @param objData      Payload object data
      * @param contribution Contribution for operation
+     * @param audit
      * @return {@link T} typed response wrapped in {@link Optional}
      */
-    Optional<U> create(UUID ehrId, T objData, UUID contribution);
+    Optional<U> create(UUID ehrId, T objData, UUID contribution, UUID audit);
 
     /**
      * Creation with default audit meta-data. Will create a new ad-hoc contribution.
@@ -74,13 +76,15 @@ public interface VersionedObjectService<T extends Locatable, U> {
 
     /**
      * Update with a given contribution, and its audit meta-data.
-     * @param ehrId EHR ID of context
-     * @param targetObjId ID of target object
-     * @param objData Payload object data
+     *
+     * @param ehrId        EHR ID of context
+     * @param targetObjId  ID of target object
+     * @param objData      Payload object data
      * @param contribution Contribution for operation
+     * @param audit
      * @return {@link T} typed response wrapped in {@link Optional}
      */
-    Optional<U> update(UUID ehrId, ObjectVersionId targetObjId, T objData, UUID contribution);
+    Optional<U> update(UUID ehrId, ObjectVersionId targetObjId, T objData, UUID contribution, UUID audit);
 
     /**
      * Update with default audit meta-data. Will create a new ad-hoc contribution.
@@ -105,11 +109,12 @@ public interface VersionedObjectService<T extends Locatable, U> {
     /**
      * Deletion with a given contribution, and its audit meta-data.
      *
-     * @param ehrId EHR ID of context
-     * @param targetObjId ID of target object
+     * @param ehrId        EHR ID of context
+     * @param targetObjId  ID of target object
      * @param contribution Contribution for operation
+     * @param audit
      */
-    void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution);
+    void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution, UUID audit);
 
     /**
      * Deletion with default audit meta-data. Will create a new ad-hoc contribution.

@@ -173,12 +173,14 @@ public interface I_EhrAccess extends I_SimpleCRUD {
 
     /**
      * Updates the whole EHR access in the DB, e.g. to update the status. Embeds contribution and audit handling.
-     * @param committerId ID of committer
-     * @param systemId ID of committing system
-     * @param contributionId Optional custom contribution ID, can be null
-     * @param state State of contribution
+     *
+     * @param committerId            ID of committer
+     * @param systemId               ID of committing system
+     * @param contributionId         Optional custom contribution ID, can be null
+     * @param state                  State of contribution
      * @param contributionChangeType Change type of contribution
-     * @param description Description field
+     * @param description            Description field
+     * @param audit
      * @return True for success
      * @throws InvalidApiParameterException when marshalling of EHR_STATUS / OTHER_DETAILS failed
      */
@@ -188,7 +190,8 @@ public interface I_EhrAccess extends I_SimpleCRUD {
             UUID contributionId,
             ContributionDef.ContributionState state,
             I_ConceptAccess.ContributionChangeType contributionChangeType,
-            String description);
+            String description,
+            UUID audit);
 
     /**
      * set access id

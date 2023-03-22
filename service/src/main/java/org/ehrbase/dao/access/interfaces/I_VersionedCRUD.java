@@ -38,11 +38,13 @@ public interface I_VersionedCRUD {
 
     /**
      * Commit the object with the necessary metadata, which will be derived from the contribution.
-     * @param timestamp Time of operation
+     *
+     * @param timestamp    Time of operation
      * @param contribution Given contribution to use and derive audit data from
+     * @param audit
      * @return ID of object
      */
-    UUID commit(LocalDateTime timestamp, UUID contribution);
+    UUID commit(LocalDateTime timestamp, UUID contribution, UUID audit);
 
     /**
      * Update the object with the necessary metadata.
@@ -62,11 +64,13 @@ public interface I_VersionedCRUD {
 
     /**
      * Update the object with the necessary metadata, which will be derived from the contribution.
-     * @param timestamp Time of operation
+     *
+     * @param timestamp    Time of operation
      * @param contribution Given contribution to use and derive audit data from
+     * @param audit
      * @return Boolean representing success of update
      */
-    boolean update(LocalDateTime timestamp, UUID contribution);
+    boolean update(LocalDateTime timestamp, UUID contribution, UUID audit);
 
     /**
      * Delete the object with the necessary metadata.
@@ -80,9 +84,11 @@ public interface I_VersionedCRUD {
 
     /**
      * Delete the object with the necessary metadata, which will be derived from the contribution.
-     * @param timestamp Time of operation
+     *
+     * @param timestamp    Time of operation
      * @param contribution Given contribution to use and derive audit data from
+     * @param audit
      * @return Number of deleted objects
      */
-    int delete(LocalDateTime timestamp, UUID contribution);
+    int delete(LocalDateTime timestamp, UUID contribution, UUID audit);
 }
