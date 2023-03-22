@@ -143,6 +143,10 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         createAndSetContribution(committerId, systemId, description, ContributionChangeType.MODIFICATION);
 
+        // new audit ID
+        auditDetailsAccess.commit();
+        statusRecord.setHasAudit(auditDetailsAccess.getId());
+
         return internalUpdate(timestamp);
     }
 
@@ -152,13 +156,12 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
             throw new InternalServerException("Invalid null valued contribution.");
         }
         setContributionId(contribution);
+        statusRecord.setHasAudit(audit);
 
         return internalUpdate(timestamp);
     }
 
     private Boolean internalUpdate(LocalDateTime transactionTime) {
-        auditDetailsAccess.commit();
-        statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
 
         statusRecord.setSysTransaction(Timestamp.valueOf(transactionTime));
 

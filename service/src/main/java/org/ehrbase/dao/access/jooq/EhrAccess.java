@@ -583,10 +583,11 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             statusAccess.setContributionAccess(this.contributionAccess);
 
             statusAccess.setOtherDetails(otherDetails);
+            I_AuditDetailsAccess auditDetailsAccess = statusAccess.getAuditDetailsAccess();
             result = statusAccess.update(
                     LocalDateTime.ofInstant(transactionTime.toInstant(), ZoneId.systemDefault()),
                     this.contributionAccess.getId(),
-                    null);
+                    auditDetailsAccess.getId());
 
             // reset
             hasStatusChanged = false;
@@ -664,6 +665,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
                     ContributionChangeType.MODIFICATION,
                     this.contributionAccess.getAuditsDescription(),
                     ehrRecord.getNamespace()));
+            statusAccess.getAuditDetailsAccess().commit();
         }
 
         return update(timestamp);
