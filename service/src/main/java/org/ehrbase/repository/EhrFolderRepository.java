@@ -119,7 +119,7 @@ public class EhrFolderRepository {
             r.setAuditId(finalAuditId);
         });
 
-        RepostoryHelper.executeBulkInsert(context, folderRecordList, EHR_FOLDER);
+        RepositoryHelper.executeBulkInsert(context, folderRecordList, EHR_FOLDER);
     }
 
     /**
@@ -189,7 +189,7 @@ public class EhrFolderRepository {
             List<EhrFolderHistoryRecord> historyRecords =
                     oldHead.stream().map(r -> toHistory(r, now)).toList();
 
-            RepostoryHelper.executeBulkInsert(context, historyRecords, EHR_FOLDER_HISTORY);
+            RepositoryHelper.executeBulkInsert(context, historyRecords, EHR_FOLDER_HISTORY);
 
             int deleteCount = context.deleteFrom(EHR_FOLDER)
                     .where(EHR_FOLDER.EHR_ID.eq(ehrId))
@@ -308,7 +308,7 @@ public class EhrFolderRepository {
                 headFolders.stream().map(r -> toHistory(r, now)).toList();
 
         // copy head to history
-        RepostoryHelper.executeBulkInsert(context, historyRecords, EHR_FOLDER_HISTORY);
+        RepositoryHelper.executeBulkInsert(context, historyRecords, EHR_FOLDER_HISTORY);
 
         if (contributionId == null) {
             contributionId = contributionRepository.createDefault(

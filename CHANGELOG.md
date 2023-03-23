@@ -8,6 +8,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [0.25.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 1.25.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  - new Directory implementation ([#1059](https://github.com/ehrbase/ehrbase/pull/1059))
  ### Fixed 
 - error on concurrent user creation ([#1067](https://github.com/ehrbase/ehrbase/pull/1067))
@@ -601,4 +607,5 @@ the next release this file will provide a proper overview.
 [0.23.0]: https://github.com/ehrbase/ehrbase/compare/v0.22.0...v0.23.0
 
 [0.24.0]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...v0.24.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.24.0...HEAD
+[0.25.0]: https://github.com/ehrbase/ehrbase/compare/v0.24.0...v0.25.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.25.0...HEAD

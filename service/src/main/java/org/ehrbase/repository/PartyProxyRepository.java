@@ -162,7 +162,7 @@ public class PartyProxyRepository {
 
         partyIdentifiedRecord.store();
 
-        RepostoryHelper.executeBulkInsert(
+        RepositoryHelper.executeBulkInsert(
                 context,
                 identifierList.stream()
                         .map(i -> to(partyIdentifiedRecord.getId(), i))
