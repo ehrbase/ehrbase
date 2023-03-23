@@ -1,5 +1,5 @@
 ALTER TABLE ehr.entry
-  ADD COLUMN name ehr.dv_coded_text NOT NULL DEFAULT ('_DEFAULT_NAME',NULL,NULL,NULL,NULL)::ehr.dv_coded_text ;
+  ADD COLUMN name ehr.dv_coded_text NOT NULL DEFAULT ('_DEFAULT_NAME',NULL,NULL,NULL,NULL,NULL)::ehr.dv_coded_text ;
 
 
 CREATE OR REPLACE FUNCTION ehr.json_entry_migrate(jsonb_entry jsonb, OUT out_composition_name TEXT, OUT out_new_entry JSONB)
@@ -36,7 +36,7 @@ $$ LANGUAGE plpgsql;
 UPDATE ehr.entry
 SET
   entry = ((ehr.json_entry_migrate(entry.entry)).out_new_entry)::jsonb,
-  name = ((ehr.json_entry_migrate(entry.entry)).out_composition_name,NULL,NULL,NULL,NULL)::ehr.dv_coded_text;
+  name = ((ehr.json_entry_migrate(entry.entry)).out_composition_name,NULL,NULL,NULL,NULL,NULL)::ehr.dv_coded_text;
 
 -- fix to support composition name as a DvCodedText
 CREATE OR REPLACE FUNCTION ehr.js_composition(composition_uuid UUID, server_node_id TEXT)

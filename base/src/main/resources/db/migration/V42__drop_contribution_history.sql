@@ -21,9 +21,7 @@
 
 DROP TRIGGER versioning_trigger ON ehr.contribution;
 
-DROP INDEX ehr_contribution_history;
 
-DROP TABLE ehr.contribution_history;
 
 ALTER TABLE ehr.contribution
     DROP COLUMN sys_transaction,

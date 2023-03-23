@@ -19,6 +19,7 @@
  * limitations under the License.
  */
 
+SET check_function_bodies = false;
 -- archetyped.sql
 CREATE OR REPLACE FUNCTION ehr.js_archetyped(TEXT, TEXT)
   RETURNS JSON AS

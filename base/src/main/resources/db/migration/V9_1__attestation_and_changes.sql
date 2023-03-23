@@ -20,8 +20,6 @@
 -- like removal of "versioning" of audits
 
 -- removing "versioning" of audit_details
-DROP TRIGGER versioning_trigger ON ehr.audit_details;
-DROP TABLE ehr.audit_details_history;
 ALTER TABLE ehr.audit_details
     DROP COLUMN sys_period;
 

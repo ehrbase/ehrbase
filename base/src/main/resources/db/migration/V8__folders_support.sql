@@ -25,7 +25,7 @@
 
 CREATE TABLE ehr.folder
 (
-    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    id uuid NOT NULL DEFAULT ext.uuid_generate_v4(),
     in_contribution uuid NOT NULL,
     name text COLLATE pg_catalog."default" NOT NULL,
     archetype_node_id text COLLATE pg_catalog."default" NOT NULL,

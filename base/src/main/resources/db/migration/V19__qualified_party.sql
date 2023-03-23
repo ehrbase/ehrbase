@@ -16,7 +16,8 @@ create type ehr.dv_coded_text as (
   formatting text,
   -- mappings: has forward usage of type!
   language ehr.code_phrase,
-  encoding ehr.code_phrase
+  encoding ehr.code_phrase,
+  term_mapping TEXT[]
   );
 
 -- add support of qualification (type) and relationship for party_type == party_related

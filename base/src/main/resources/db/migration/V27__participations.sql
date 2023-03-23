@@ -51,12 +51,16 @@ $$
 
 
 ALTER TABLE ehr.participation
-  ALTER COLUMN mode TYPE ehr.dv_coded_text
-  USING ehr.migrate_participation_mode(mode);
+    DROP COLUMN mode;
+
+ALTER TABLE ehr.participation ADD COLUMN mode  ehr.dv_coded_text;
 
 ALTER TABLE ehr.participation_history
-  ALTER COLUMN mode TYPE ehr.dv_coded_text
-    USING ehr.migrate_participation_mode(mode);
+    DROP COLUMN mode;
+
+ALTER TABLE ehr.participation_history ADD COLUMN mode  ehr.dv_coded_text;
+
+
 
 --
 CREATE OR REPLACE FUNCTION ehr.js_code_phrase(codephrase ehr.code_phrase)

@@ -3,6 +3,8 @@
 -- {"units": "mg", "accuracy": 0.0, "magnitude": 636.3397240638733, "precision": 0, "accuracyPercent": false, "measurementService": {}}
 -- Canonical comes out with type
 
+
+
 CREATE OR REPLACE FUNCTION ehr.js_canonical_dv_quantity(magnitude FLOAT, units TEXT, _precision INT, accuracy_percent BOOLEAN)
   RETURNS JSON AS
 $$

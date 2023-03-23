@@ -140,7 +140,17 @@ create table ehr.status (
 );
 
 -- change history table
-create table ehr.status_history (like ehr.status);
+CREATE TABLE ehr.status_history
+(
+    id                uuid                                                                                                                                                         NOT NULL,
+    ehr_id            uuid,
+    is_queryable      boolean,
+    is_modifiable     boolean,
+    party             uuid                                                                                                                                                         NOT NULL,
+    other_details     jsonb,
+    sys_transaction   timestamp without time zone                                                                                                                                  NOT NULL,
+    sys_period        tstzrange                                                                                                                                                    NOT NULL
+);
 CREATE INDEX ehr_status_history ON ehr.status_history USING BTREE (id);
 
 CREATE TRIGGER versioning_trigger BEFORE INSERT OR UPDATE OR DELETE ON ehr.status
@@ -208,9 +218,7 @@ CREATE TABLE ehr.attested_view (
   uri TEXT
 );
 
--- change history table
-CREATE TABLE ehr.contribution_history (like ehr.contribution);
-CREATE INDEX ehr_contribution_history ON ehr.contribution_history USING BTREE (id);
+
 
 COMMENT ON TABLE ehr.contribution IS 'Contribution table, compositions reference this table';
 
@@ -233,7 +241,19 @@ create table ehr.composition (
 );
 
 -- change history table
-CREATE TABLE ehr.composition_history (like ehr.composition);
+CREATE TABLE ehr.composition_history
+(
+    id              uuid                        NOT NULL,
+    ehr_id          uuid,
+    in_contribution uuid,
+    active          boolean,
+    is_persistent   boolean,
+    language        character varying(5),
+    territory       integer,
+    composer        uuid                        NOT NULL,
+    sys_transaction timestamp without time zone NOT NULL,
+    sys_period      tstzrange                   NOT NULL
+);
 CREATE INDEX ehr_composition_history ON ehr.composition_history USING BTREE (id);
 
 COMMENT ON TABLE ehr.composition IS 'Composition table';
@@ -258,7 +278,21 @@ create table ehr.event_context (
 );
 
 -- change history table
-create table ehr.event_context_history (like ehr.event_context);
+CREATE TABLE ehr.event_context_history
+(
+    id              uuid                        NOT NULL,
+    composition_id  uuid,
+    start_time      timestamp without time zone NOT NULL,
+    start_time_tzid text,
+    end_time        timestamp without time zone,
+    end_time_tzid   text,
+    facility        uuid,
+    location        text,
+    other_context   jsonb,
+    setting UUID references ehr.concept(id),
+    sys_transaction timestamp without time zone NOT NULL,
+    sys_period      tstzrange                   NOT NULL
+);
 CREATE INDEX ehr_event_context_history ON ehr.event_context_history USING BTREE (id);
 
 CREATE TRIGGER versioning_trigger BEFORE INSERT OR UPDATE OR DELETE ON ehr.event_context
@@ -279,7 +313,18 @@ create table ehr.participation (
 );
 
 -- change history table
-create table ehr.participation_history (like ehr.participation);
+CREATE TABLE ehr.participation_history
+(
+    id              uuid                        NOT NULL,
+    event_context   uuid                        NOT NULL,
+    performer       uuid,
+    function        text,
+    mode            text,
+    start_time timestamp,
+    start_time_tzid TEXT, -- timezone id
+    sys_transaction timestamp without time zone NOT NULL,
+    sys_period      tstzrange                   NOT NULL
+);
 CREATE INDEX ehr_participation_history ON ehr.participation_history USING BTREE (id);
 
 CREATE TRIGGER versioning_trigger BEFORE INSERT OR UPDATE OR DELETE ON ehr.participation
@@ -304,7 +349,20 @@ create table ehr.entry (
 );
 
 -- change history table
-CREATE TABLE ehr.entry_history (like ehr.entry);
+CREATE TABLE ehr.entry_history
+(
+    id              uuid                        NOT NULL,
+    composition_id  uuid,
+    sequence        integer,
+    item_type       ehr.entry_type,
+    template_id     text,
+    template_uuid   uuid,
+    archetype_id    text,
+    category       UUID,
+    entry           jsonb,
+    sys_transaction timestamp without time zone NOT NULL,
+    sys_period      tstzrange                   NOT NULL
+);
 CREATE INDEX ehr_entry_history ON ehr.entry_history USING BTREE (id);
 
 COMMENT ON TABLE ehr.entry IS 'this table hold the actual archetyped data values (fromBinder a template)';
@@ -315,7 +373,7 @@ FOR EACH ROW EXECUTE PROCEDURE ext.versioning('sys_period', 'ehr.entry_history',
 -- CONTAINMENT "pseudo" index for CONTAINS clause resolution
 create TABLE ehr.containment (
   comp_id UUID,
-  label ltree,
+  label text,
   path text
 );
 
@@ -340,7 +398,7 @@ CREATE INDEX ehr_compo_xref ON ehr.compo_xref USING BTREE (master_uuid);
 
 -- log user sessions with logon id, session id and other parameters
 CREATE TABLE ehr.session_log (
-  id UUID primary key DEFAULT uuid_generate_v4(),
+  id UUID primary key DEFAULT ext.uuid_generate_v4(),
   subject_id TEXT NOT NULL,
   node_id TEXT,
   session_id TEXT,
@@ -405,9 +463,9 @@ CREATE OR REPLACE VIEW ehr.comp_expand AS
     LEFT JOIN ehr.party_identified fclty ON ctx.facility = fclty.id;
 
 --- CREATED INDEX
-CREATE INDEX label_idx ON ehr.containment USING GIST (label);
+--  CREATE INDEX label_idx ON ehr.containment USING GIST (label);
 CREATE INDEX comp_id_idx ON ehr.containment USING BTREE(comp_id);
-CREATE INDEX gin_entry_path_idx ON ehr.entry USING gin(entry jsonb_path_ops);
+-- CREATE INDEX gin_entry_path_idx ON ehr.entry USING gin(entry jsonb_path_ops);
 CREATE INDEX template_entry_idx ON ehr.entry (template_id);
 
 -- to optimize comp_expand, index FK's

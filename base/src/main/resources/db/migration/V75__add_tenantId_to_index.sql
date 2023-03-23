@@ -28,7 +28,7 @@ DROP INDEX ehr_event_context_history;
 DROP INDEX ehr_participation_history;  
 DROP INDEX ehr_entry_history;  
 DROP INDEX ehr_compo_xref;  
-DROP INDEX gin_entry_path_idx;  
+DROP INDEX IF EXISTS gin_entry_path_idx;
 DROP INDEX template_entry_idx;  
 DROP INDEX IF EXISTS entry_composition_id_idx;  
 DROP INDEX composition_composer_idx;  
@@ -37,7 +37,7 @@ DROP INDEX IF EXISTS status_ehr_idx;
 DROP INDEX status_party_idx;  
 DROP INDEX context_facility_idx;  
 DROP INDEX context_composition_id_idx;  
-DROP INDEX context_setting_idx;  
+DROP INDEX IF EXISTS context_setting_idx;
 
 -- V8
 DROP INDEX folder_in_contribution_idx;  
@@ -104,7 +104,7 @@ CREATE INDEX composition_composer_idx ON ehr.composition (composer, namespace);
 CREATE INDEX composition_ehr_idx ON ehr.composition (ehr_id, namespace);
 CREATE INDEX status_party_idx ON ehr.status (party, namespace);
 CREATE INDEX context_facility_idx ON ehr.event_context (facility, namespace);
-CREATE INDEX context_setting_idx ON ehr.event_context (setting, namespace);
+--  CREATE INDEX context_setting_idx ON ehr.event_context (setting, namespace);
 
 -- V8
 CREATE INDEX folder_in_contribution_idx ON ehr.folder USING btree (in_contribution, namespace) TABLESPACE pg_default;
