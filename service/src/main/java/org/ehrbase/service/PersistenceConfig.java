@@ -101,7 +101,7 @@ public class PersistenceConfig {
         jooqConfiguration.set(provider);
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
 
-        SQLDialect dialect = SQLDialect.POSTGRES;
+        SQLDialect dialect = SQLDialect.YUGABYTEDB;
         jooqConfiguration.set(dialect);
 
         return jooqConfiguration;

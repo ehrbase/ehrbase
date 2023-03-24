@@ -78,6 +78,13 @@
                         <schema>ehr</schema>
                     </schemas>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.jooq</groupId>
@@ -94,9 +101,9 @@
                 <!-- Manage the plugin's dependency. In this example, we'll use a PostgreSQL database -->
                 <dependencies>
                     <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${postgresql.version}</version>
+                        <groupId>com.yugabyte</groupId>
+                        <artifactId>jdbc-yugabytedb</artifactId>
+                        <version>42.3.4</version>
                     </dependency>
                 </dependencies>
                 <!-- Specify the plugin configuration.
@@ -104,8 +111,8 @@
                 <configuration>
                     <!-- Configure the database connection here -->
                     <jdbc>
-                        <driver>org.postgresql.Driver</driver>
-                        <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+                        <driver>com.yugabyte.Driver</driver>
+                        <url>jdbc:yugabytedb://${database.host}:${database.port}/${database.name}</url>
                         <user>${database.user}</user>
                         <password>${database.pass}</password>
                     </jdbc>

@@ -271,6 +271,11 @@
                 <version>${log4j.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.yugabyte</groupId>
+                <artifactId>jdbc-yugabytedb</artifactId>
+                <version>42.3.4</version>
+            </dependency>
+            <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
@@ -461,9 +466,9 @@
                     <version>${flyway.version}</version>
                     <dependencies>
                         <dependency>
-                            <groupId>org.postgresql</groupId>
-                            <artifactId>postgresql</artifactId>
-                            <version>${postgresql.version}</version>
+                            <groupId>com.yugabyte</groupId>
+                            <artifactId>jdbc-yugabytedb</artifactId>
+                            <version>42.3.4</version>
                         </dependency>
                     </dependencies>
                     <executions>
