@@ -21,8 +21,6 @@ jobs:
         with:
           fetch-depth: 0
 
-
-
       - name: Run Create DB script
         run: |
           docker run -d --name yugabyte  -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:2.16.2.0-b41 bin/yugabyted start --daemon=false
@@ -45,6 +43,37 @@ jobs:
 
       - name: Run ehrbase
         run: |
-          java -jar application/target/application-0.26.0-SNAPSHOT.jar --spring.profiles.active=yugabytedb >log.txt &
+          java -jar application/target/application-0.26.0-SNAPSHOT.jar --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
           sleep 30
-          cat log.txt
+          cat /var/tmp/log.txt
+
+      - name: Checkout robot
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ehrbase/integration-tests
+          ref: feature/new
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Dependencies
+        run: pip install -r tests/requirements.txt
+
+      - name: Run robot
+        run: |
+          cd tests
+          robot -v nodocker  -d results --noncritical not-ready -L TRACE robot/
+      - name: Archive code coverage results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: robot-result
+          path: /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/tests/results/
+      - name: Archive logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: log
+          path: /var/tmp/log.txt
