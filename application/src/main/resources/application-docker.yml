@@ -24,6 +24,8 @@ spring:
       max-lifetime: 1800000
       minimum-idle: 10
   flyway:
+    url: ${DB_URL_FLYWAY}
+    driver-class-name: org.postgresql.Driver
     schemas: ehr
     user: ${DB_USER_ADMIN}
     password: ${DB_PASS_ADMIN}
