@@ -13,14 +13,6 @@ jobs:
       matrix:
         java: [ '17' ]
 
-    services:
-      ehrbase-db:
-        image: yugabytedb/yugabyte:2.16.2.0-b41
-        ports:
-          - 5433:5433
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
 
 
     steps:
@@ -32,7 +24,11 @@ jobs:
 
 
       - name: Run Create DB script
-        run: psql -h localhost -p 5433 -f base/db-setup/createdb.sql
+        run: |
+          docker run -d --name yugabyte  -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:2.17.1.0-b439 bin/yugabyted start --daemon=false
+          sleep 30
+          docker ps
+          psql -h localhost -p 5433 -f base/db-setup/createdb.sql
         env:
           PGUSER: postgres
           PGPASSWORD: postgres
