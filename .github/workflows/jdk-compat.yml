@@ -15,22 +15,27 @@ jobs:
 
     services:
       ehrbase-db:
-        image: ehrbase/ehrbase-postgres:13.4.v2
+        image: yugabytedb/yugabyte:2.16.2.0-b41
         ports:
-          - 5432:5432
+          - 5433:5433
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          EHRBASE_USER_ADMIN: ehrbase
-          EHRBASE_PASSWORD_ADMIN: ehrbase
-          EHRBASE_USER: ehrbase_restricted
-          EHRBASE_PASSWORD: ehrbase_restricted
+
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+
+
+      - name: Run Create DB script
+        run: psql -h localhost -p 5433 -f base/db-setup/createdb.sql
+        env:
+          PGUSER: postgres
+          PGPASSWORD: postgres
 
       - name: Setup Java
         uses: actions/setup-java@v2
