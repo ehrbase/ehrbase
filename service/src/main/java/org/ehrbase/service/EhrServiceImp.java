@@ -271,7 +271,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     }
 
     @Override
-    public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
+    public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId, UUID audit) {
 
         check(status);
         checkEhrExistForParty(ehrId, status);
@@ -298,7 +298,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                         contributionId,
                         null,
                         I_ConceptAccess.ContributionChangeType.MODIFICATION,
-                        DESCRIPTION)
+                        DESCRIPTION,
+                        audit)
                 .equals(false))
             throw new InternalServerException(
                     "Problem updating EHR_STATUS"); // unexpected problem. expected ones are thrown inside of update()

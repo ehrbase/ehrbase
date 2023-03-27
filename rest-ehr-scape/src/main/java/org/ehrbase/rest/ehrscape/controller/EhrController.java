@@ -147,7 +147,7 @@ public class EhrController extends BaseController {
             @RequestBody String ehrStatus,
             @RequestHeader(value = "Content-Type", required = false) String contentType) {
 
-        ehrService.updateStatus(ehrId, extractEhrStatus(ehrStatus), null);
+        ehrService.updateStatus(ehrId, extractEhrStatus(ehrStatus), null, null);
         return Optional.ofNullable(ehrId)
                 .flatMap(i -> buildEhrResponseData(i, Action.UPDATE, contentType))
                 .map(ResponseEntity::ok)
