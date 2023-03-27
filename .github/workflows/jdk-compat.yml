@@ -78,7 +78,7 @@ jobs:
       - name: Run robot
         run: |
           cd tests
-          robot -v nodocker  -d results --noncritical not-ready -L TRACE robot/
+          robot -v nodocker -d results --noncritical not-ready -L TRACE robot/
       - name: Archive code coverage results
         if: always()
         uses: actions/upload-artifact@v3
