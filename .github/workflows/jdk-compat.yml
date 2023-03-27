@@ -56,8 +56,6 @@ jobs:
 
       - name: Run ehrbase
         run: |
-          #java -jar application/target/application-0.26.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
-          #sleep 30
           java -jar application/target/application-0.26.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org --spring.profiles.active=yugabytedb >/var/tmp/log.txt
           timeout=60
           while [ ! -f ./var/tmp/log.txt ];
