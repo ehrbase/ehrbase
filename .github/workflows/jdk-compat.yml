@@ -57,8 +57,30 @@ jobs:
 
       - name: Run ehrbase
         run: |
-          java -jar application/target/application-0.26.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
-          sleep 30
+          #java -jar application/target/application-0.26.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
+          #sleep 30
+          timeout=60
+          while [ ! -f ./var/tmp/log.txt ];
+            do
+                echo "Waiting for file ./var/tmp/log.txt ..."
+                if [ "$timeout" == 0 ]; then
+                    echo "ERROR: timed out while waiting for file ./var/tmp/log.txt"
+                    exit 1
+                fi
+                sleep 1
+            ((timeout--))
+          done
+          while ! (cat ./var/tmp/log.txt | grep -m 1 "Started EhrBase in");
+            do
+                echo "waiting for EHRbase to be ready ...";
+                if [ "$timeout" == 0 ]; then
+                    echo "WARNING: Did not see a startup message even after waiting 60s"
+                    exit 1
+                fi
+                sleep 1;
+            ((timeout--))
+          done
+          echo "REMAINING TIMEOUT: $timeout"
           cat /var/tmp/log.txt
 
       - name: Checkout robot
@@ -78,7 +100,11 @@ jobs:
       - name: Run robot
         run: |
           cd tests
-          robot -v nodocker -d results -v NODENAME:local.ehrbase.org --noncritical not-ready -L TRACE robot/
+          robot -v nodocker \
+                -v NODENAME:local.ehrbase.org \
+                -d results \
+                --noncritical not-ready -L TRACE \
+                robot/
       - name: Archive code coverage results
         if: always()
         uses: actions/upload-artifact@v3
