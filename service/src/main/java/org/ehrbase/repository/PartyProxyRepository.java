@@ -134,7 +134,7 @@ public class PartyProxyRepository {
 
         partyIdentifiedRecord.setId(UuidGenerator.randomUUID());
 
-        partyIdentifiedRecord.setNamespace(partyRefValue.getNamespace());
+        partyIdentifiedRecord.setPartyRefNamespace(partyRefValue.getNamespace());
         partyIdentifiedRecord.setPartyRefValue(partyRefValue.getValue());
         partyIdentifiedRecord.setPartyRefScheme(partyRefValue.getScheme());
         partyIdentifiedRecord.setPartyRefType(partyRefValue.getType());
