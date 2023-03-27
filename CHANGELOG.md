@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
-- update archie to 3.0.0 ([#1078](https://github.com/ehrbase/ehrbase/pull/1078))
+- use from sdk archie version 3.0.0 and antlr4 version 4.11.1 ([#1078](https://github.com/ehrbase/ehrbase/pull/1078))
  ### Changed 
  ### Fixed 
 
