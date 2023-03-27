@@ -95,29 +95,36 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     @Override
-    public UUID commit(LocalDateTime timestamp, UUID contribution) {
+    public UUID commit(LocalDateTime timestamp, UUID contribution, UUID audit) {
         if (contribution == null) {
             throw new InternalServerException("Invalid null valued contribution.");
         }
         setContributionId(contribution);
 
+        if (audit != null) {
+            statusRecord.setHasAudit(audit);
+        }
+
         return internalCommit(timestamp);
     }
 
     private UUID internalCommit(LocalDateTime transactionTime) {
-        auditDetailsAccess.setChangeType(
-                I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-        if (auditDetailsAccess.getChangeType() == null
-                || auditDetailsAccess.getSystemId() == null
-                || auditDetailsAccess.getCommitter() == null) {
-            throw new InternalServerException("Illegal to commit AuditDetailsAccess without setting mandatory fields.");
+
+        // generate if not externally set
+        if (statusRecord.getHasAudit() == null) {
+            auditDetailsAccess.setChangeType(
+                    I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
+            if (auditDetailsAccess.getChangeType() == null
+                    || auditDetailsAccess.getSystemId() == null
+                    || auditDetailsAccess.getCommitter() == null) {
+                throw new InternalServerException(
+                        "Illegal to commit AuditDetailsAccess without setting mandatory fields.");
+            }
+            UUID auditId = auditDetailsAccess.commit();
+            statusRecord.setHasAudit(auditId);
         }
-        UUID auditId = auditDetailsAccess.commit();
-        statusRecord.setHasAudit(auditId);
 
         statusRecord.setSysTransaction(Timestamp.valueOf(transactionTime));
-
-        statusRecord.setHasAudit(auditId);
 
         if (statusRecord.store() == 0) {
             throw new InvalidApiParameterException("Input EHR couldn't be stored; Storing EHR_STATUS failed");
@@ -136,22 +143,25 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         createAndSetContribution(committerId, systemId, description, ContributionChangeType.MODIFICATION);
 
+        // new audit ID
+        auditDetailsAccess.commit();
+        statusRecord.setHasAudit(auditDetailsAccess.getId());
+
         return internalUpdate(timestamp);
     }
 
     @Override
-    public boolean update(LocalDateTime timestamp, UUID contribution) {
+    public boolean update(LocalDateTime timestamp, UUID contribution, UUID audit) {
         if (contribution == null) {
             throw new InternalServerException("Invalid null valued contribution.");
         }
         setContributionId(contribution);
+        statusRecord.setHasAudit(audit);
 
         return internalUpdate(timestamp);
     }
 
     private Boolean internalUpdate(LocalDateTime transactionTime) {
-        auditDetailsAccess.commit();
-        statusRecord.setHasAudit(auditDetailsAccess.getId()); // new audit ID
 
         statusRecord.setSysTransaction(Timestamp.valueOf(transactionTime));
 
@@ -172,7 +182,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     @Override
-    public int delete(LocalDateTime timestamp, UUID contribution) {
+    public int delete(LocalDateTime timestamp, UUID contribution, UUID audit) {
         if (contribution == null) {
             throw new InternalServerException("Invalid null valued contribution.");
         }
