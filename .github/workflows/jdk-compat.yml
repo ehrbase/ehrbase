@@ -57,7 +57,7 @@ jobs:
 
       - name: Run ehrbase
         run: |
-          java -jar application/target/application-0.26.0-SNAPSHOT.jar --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
+          java -jar application/target/application-0.26.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
           sleep 30
           cat /var/tmp/log.txt
 
@@ -78,7 +78,7 @@ jobs:
       - name: Run robot
         run: |
           cd tests
-          robot -v nodocker -d results --noncritical not-ready -L TRACE robot/
+          robot -v nodocker -d results -v NODENAME:local.ehrbase.org --noncritical not-ready -L TRACE robot/
       - name: Archive code coverage results
         if: always()
         uses: actions/upload-artifact@v3
