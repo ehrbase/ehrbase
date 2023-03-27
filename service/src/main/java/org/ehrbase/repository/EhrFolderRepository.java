@@ -548,12 +548,14 @@ public class EhrFolderRepository {
                 .from(EHR_FOLDER)
                 .where(
                         EHR_FOLDER.EHR_ID.eq(ehrId),
+                        EHR_FOLDER.ROW_NUM.eq(0),
                         EHR_FOLDER.EHR_FOLDERS_IDX.eq(1),
                         EHR_FOLDER.CONTRIBUTION_ID.eq(contributionId));
         var historyQuery = context.select(EHR_FOLDER_HISTORY.ID, EHR_FOLDER_HISTORY.SYS_VERSION)
                 .from(EHR_FOLDER_HISTORY)
                 .where(
                         EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId),
+                        EHR_FOLDER_HISTORY.ROW_NUM.eq(0),
                         EHR_FOLDER_HISTORY.EHR_FOLDERS_IDX.eq(1),
                         EHR_FOLDER_HISTORY.CONTRIBUTION_ID.eq(contributionId));
         return headQuery.unionAll(historyQuery).stream()
