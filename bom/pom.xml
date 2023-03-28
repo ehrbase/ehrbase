@@ -104,7 +104,7 @@
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <ehrbase.sdk.version>1.26.0-SNAPSHOT</ehrbase.sdk.version>
-        <flyway.version>8.4.4</flyway.version>
+        <flyway.version>8.5.13</flyway.version>
         <jackson-bom.version>2.13.5</jackson-bom.version>
         <javamelody.version>1.90.0</javamelody.version>
         <joda.version>2.10.13</joda.version>
