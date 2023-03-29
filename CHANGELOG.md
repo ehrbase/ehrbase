@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
 - use from sdk archie version 3.0.0 and antlr4 version 4.11.1 ([#1078](https://github.com/ehrbase/ehrbase/pull/1078))
  ### Changed 
+- Respect the predefined value of the composition UID when creating new composition ([#1089](https://github.com/ehrbase/ehrbase/pull/1089))
  ### Fixed 
 
 ## [0.25.0]
