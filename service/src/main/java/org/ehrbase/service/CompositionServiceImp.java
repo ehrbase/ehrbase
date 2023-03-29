@@ -185,6 +185,11 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
                                 getDataAccess().getServerConfig().getNodename()));
             }
 
+           if( I_CompositionAccess.exists(getDataAccess(), UUID.fromString(objectVersionId.getObjectId().getValue()))){
+               throw new PreconditionFailedException(
+                   "Provided Id %s already exists".formatted(composition.getUid()));
+           }
+
         } else if (composition.getUid() != null) {
             throw new PreconditionFailedException(
                     "Provided Id %s is not a ObjectVersionId".formatted(composition.getUid()));
