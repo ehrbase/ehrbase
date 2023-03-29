@@ -43,6 +43,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
@@ -162,6 +163,31 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             throw new ValidationException(e);
         } catch (Exception e) {
             throw new InternalServerException(e);
+        }
+
+        if (composition.getUid() instanceof ObjectVersionId objectVersionId) {
+
+            if (objectVersionId.isBranch()) {
+                throw new PreconditionFailedException(
+                        "Version branching is not supported: %s".formatted(objectVersionId.getValue()));
+            }
+            if (Integer.parseInt(objectVersionId.getVersionTreeId().getValue()) != 1) {
+                throw new PreconditionFailedException(
+                        "Provided Id %s has not Version 1".formatted(composition.getUid()));
+            }
+
+            if (!Objects.equals(
+                    getDataAccess().getServerConfig().getNodename(),
+                    objectVersionId.getCreatingSystemId().getValue())) {
+                throw new PreconditionFailedException("Multiple systems are not supported: %s !=: %s"
+                        .formatted(
+                                objectVersionId.getCreatingSystemId().getValue(),
+                                getDataAccess().getServerConfig().getNodename()));
+            }
+
+        } else if (composition.getUid() != null) {
+            throw new PreconditionFailedException(
+                    "Provided Id %s is not a ObjectVersionId".formatted(composition.getUid()));
         }
 
         // actual creation

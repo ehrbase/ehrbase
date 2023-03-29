@@ -170,7 +170,13 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         this.compositionRecord = compositionRecord;
         this.composition = composition;
 
-        compositionRecord.setId(UuidGenerator.randomUUID());
+        if (composition.getUid() != null) {
+
+            compositionRecord.setId(
+                    UUID.fromString(composition.getUid().getRoot().getValue()));
+        } else {
+            compositionRecord.setId(UuidGenerator.randomUUID());
+        }
         compositionRecord.setTerritory(seekTerritoryCode(territoryCode));
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
