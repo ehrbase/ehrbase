@@ -43,6 +43,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
@@ -162,6 +163,33 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             throw new ValidationException(e);
         } catch (Exception e) {
             throw new InternalServerException(e);
+        }
+
+        if (composition.getUid() instanceof ObjectVersionId objectVersionId) {
+
+            if (!"1".equals(objectVersionId.getVersionTreeId().getValue())) {
+                throw new PreconditionFailedException(
+                        "Provided Id %s has a invalid Version. Expect Version 1".formatted(composition.getUid()));
+            }
+
+            if (!Objects.equals(
+                    getDataAccess().getServerConfig().getNodename(),
+                    objectVersionId.getCreatingSystemId().getValue())) {
+                throw new PreconditionFailedException("Mismatch of creating_system_id: %s !=: %s"
+                        .formatted(
+                                objectVersionId.getCreatingSystemId().getValue(),
+                                getDataAccess().getServerConfig().getNodename()));
+            }
+
+            if (I_CompositionAccess.exists(
+                    getDataAccess(),
+                    UUID.fromString(objectVersionId.getObjectId().getValue()))) {
+                throw new PreconditionFailedException("Provided Id %s already exists".formatted(composition.getUid()));
+            }
+
+        } else if (composition.getUid() != null) {
+            throw new PreconditionFailedException(
+                    "Provided Id %s is not a ObjectVersionId".formatted(composition.getUid()));
         }
 
         // actual creation
