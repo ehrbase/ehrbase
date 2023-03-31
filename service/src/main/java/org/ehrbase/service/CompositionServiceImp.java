@@ -167,19 +167,15 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
         if (composition.getUid() instanceof ObjectVersionId objectVersionId) {
 
-            if (objectVersionId.isBranch()) {
+            if (!"1".equals(objectVersionId.getVersionTreeId().getValue())) {
                 throw new PreconditionFailedException(
-                        "Version branching is not supported: %s".formatted(objectVersionId.getValue()));
-            }
-            if (Integer.parseInt(objectVersionId.getVersionTreeId().getValue()) != 1) {
-                throw new PreconditionFailedException(
-                        "Provided Id %s has not Version 1".formatted(composition.getUid()));
+                        "Provided Id %s has a invalid Version. Expect Version 1".formatted(composition.getUid()));
             }
 
             if (!Objects.equals(
                     getDataAccess().getServerConfig().getNodename(),
                     objectVersionId.getCreatingSystemId().getValue())) {
-                throw new PreconditionFailedException("Multiple systems are not supported: %s !=: %s"
+                throw new PreconditionFailedException("Mismatch of creating_system_id: %s !=: %s"
                         .formatted(
                                 objectVersionId.getCreatingSystemId().getValue(),
                                 getDataAccess().getServerConfig().getNodename()));
