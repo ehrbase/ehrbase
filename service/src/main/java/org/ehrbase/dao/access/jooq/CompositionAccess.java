@@ -170,7 +170,13 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         this.compositionRecord = compositionRecord;
         this.composition = composition;
 
-        compositionRecord.setId(UuidGenerator.randomUUID());
+        if (composition.getUid() != null) {
+
+            compositionRecord.setId(
+                    UUID.fromString(composition.getUid().getRoot().getValue()));
+        } else {
+            compositionRecord.setId(UuidGenerator.randomUUID());
+        }
         compositionRecord.setTerritory(seekTerritoryCode(territoryCode));
         compositionRecord.setLanguage(seekLanguageCode(languageCode));
         compositionRecord.setActive(true);
@@ -218,19 +224,24 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      */
     @Override
     public UUID commit(LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
-        return internalCreate(timestamp, committerId, systemId, description, null);
+        return internalCreate(timestamp, committerId, systemId, description, null, null);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public UUID commit(LocalDateTime timestamp, UUID contribution) {
-        return internalCreate(timestamp, null, null, null, contribution);
+    public UUID commit(LocalDateTime timestamp, UUID contribution, UUID audit) {
+        return internalCreate(timestamp, null, null, null, contribution, audit);
     }
 
     private UUID internalCreate(
-            LocalDateTime timestamp, UUID committerId, UUID systemId, String description, UUID contribution) {
+            LocalDateTime timestamp,
+            UUID committerId,
+            UUID systemId,
+            String description,
+            UUID contribution,
+            UUID audit) {
 
         // check if custom contribution is already set, because changing it would yield
         // updating in DB which is not
@@ -254,16 +265,20 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             setContributionId(contributionId);
         }
 
-        // create DB entry of prepared auditDetails so it can get referenced in this
-        // composition
-        auditDetailsAccess.setChangeType(
-                I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
-        // prepare composition audit with given values
-        auditDetailsAccess.setSystemId(systemId);
-        auditDetailsAccess.setCommitter(committerId);
-        auditDetailsAccess.setDescription(description);
-        UUID auditId = this.auditDetailsAccess.commit();
-        compositionRecord.setHasAudit(auditId);
+        if (audit == null) {
+            // create DB entry of prepared auditDetails so it can get referenced in this
+            // composition
+            auditDetailsAccess.setChangeType(
+                    I_ConceptAccess.fetchContributionChangeType(this, I_ConceptAccess.ContributionChangeType.CREATION));
+            // prepare composition audit with given values
+            auditDetailsAccess.setSystemId(systemId);
+            auditDetailsAccess.setCommitter(committerId);
+            auditDetailsAccess.setDescription(description);
+            UUID auditId = this.auditDetailsAccess.commit();
+            compositionRecord.setHasAudit(auditId);
+        } else {
+            compositionRecord.setHasAudit(audit);
+        }
 
         compositionRecord.setSysTransaction(Timestamp.valueOf(timestamp));
         compositionRecord.store();
@@ -323,18 +338,23 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * {@inheritDoc}
      */
     @Override
-    public boolean update(LocalDateTime timestamp, UUID contribution) {
-        // Retrieve audit metadata from given contribution
-        var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
-        UUID systemId = newContributionAccess.getAuditsSystemId();
-        UUID committerId = newContributionAccess.getAuditsCommitter();
-        String description = newContributionAccess.getAuditsDescription();
-        I_ConceptAccess.ContributionChangeType changeType = newContributionAccess.getAuditsChangeType();
+    public boolean update(LocalDateTime timestamp, UUID contribution, UUID audit) {
 
-        // update only the audit (i.e. commit new one), so it shows the modification
-        // change type. a new custom
-        // contribution is set beforehand.
-        auditDetailsAccess.update(systemId, committerId, changeType, description);
+        if (audit == null) {
+            // Retrieve audit metadata from given contribution
+            var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
+            UUID systemId = newContributionAccess.getAuditsSystemId();
+            UUID committerId = newContributionAccess.getAuditsCommitter();
+            String description = newContributionAccess.getAuditsDescription();
+            I_ConceptAccess.ContributionChangeType changeType = newContributionAccess.getAuditsChangeType();
+
+            // update only the audit (i.e. commit new one), so it shows the modification
+            // change type. a new custom
+            // contribution is set beforehand.
+            auditDetailsAccess.update(systemId, committerId, changeType, description);
+        } else {
+            compositionRecord.setHasAudit(audit);
+        }
         return internalUpdate(Timestamp.valueOf(timestamp));
     }
 
@@ -427,7 +447,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * {@inheritDoc}
      */
     @Override
-    public int delete(LocalDateTime timestamp, UUID contribution) {
+    public int delete(LocalDateTime timestamp, UUID contribution, UUID audit) {
         // Retrieve audit metadata from given contribution
         var newContributionAccess = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contribution);
         UUID systemId = newContributionAccess.getAuditsSystemId();
@@ -437,18 +457,20 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         // .delete() moves the old version to _history table.
         int delRows = compositionRecord.delete();
 
-        // create new deletion audit
-        var delAudit = I_AuditDetailsAccess.getInstance(
-                this,
-                systemId,
-                committerId,
-                I_ConceptAccess.ContributionChangeType.DELETED,
-                description,
-                this.compositionRecord.getNamespace());
-        UUID delAuditId = delAudit.commit();
+        if (audit == null) {
+            // create new deletion audit
+            var delAudit = I_AuditDetailsAccess.getInstance(
+                    this,
+                    systemId,
+                    committerId,
+                    I_ConceptAccess.ContributionChangeType.DELETED,
+                    description,
+                    this.compositionRecord.getNamespace());
+            audit = delAudit.commit();
+        }
 
         // create new, BUT already moved to _history, version documenting the deletion
-        createAndCommitNewDeletedVersionAsHistory(delAuditId, compositionRecord.getInContribution());
+        createAndCommitNewDeletedVersionAsHistory(audit, compositionRecord.getInContribution());
 
         return delRows;
     }
@@ -476,7 +498,9 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
                 new CompositionHistoryAccess(getDataAccess(), compositionRecord.getNamespace());
         newDeletedVersionAsHistoryAccess.setRecord(newRecord);
         if (newDeletedVersionAsHistoryAccess.commit() == null) // commit and throw error if nothing was inserted into DB
-        throw new InternalServerException("DB inconsistency");
+        {
+            throw new InternalServerException("DB inconsistency");
+        }
     }
 
     private static final String VERSION_QUERY =
@@ -781,7 +805,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     /**
      * Decode composer ID
      *
-     * @param composer given {@link PartyProxy}
+     * @param composer         given {@link PartyProxy}
      * @param tenantIdentifier
      * @return ID of composer as {@link UUID}
      * @throws IllegalArgumentException when composer in composition is not

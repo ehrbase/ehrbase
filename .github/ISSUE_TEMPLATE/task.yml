@@ -1,0 +1,28 @@
+name: Task Request
+description: A general task, e.g. research or other common work to be done
+labels: ["task"]
+body:
+  - type: textarea
+    attributes:
+      label: Background
+      description: Describe the goal of this task, and the expectations or impacts on EHRbase after this task has been completed.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Task specification
+      description: Add specific steps or work descriptions with the expected results.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Discussion
+      description: |
+        If there has been a discussion around the task, provide a link to the discussion.
+        Please also check for ongoing discussions on the [openEHR discourse](https://discourse.openehr.org/tag/ehrbase).
+  - type: textarea
+    attributes:
+      label: Further information
+      description: Add additional information, if needed.
+    validations:
+      required: false

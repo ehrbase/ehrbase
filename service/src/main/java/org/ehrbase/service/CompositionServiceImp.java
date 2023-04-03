@@ -17,6 +17,9 @@
  */
 package org.ehrbase.service;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION_HISTORY;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -43,6 +46,7 @@ import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
@@ -53,6 +57,7 @@ import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -110,13 +115,13 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     @Override
     public Optional<UUID> create(UUID ehrId, Composition objData, UUID systemId, UUID committerId, String description) {
 
-        UUID compositionId = createInternal(ehrId, objData, systemId, committerId, description, null);
+        UUID compositionId = createInternal(ehrId, objData, systemId, committerId, description, null, null);
         return Optional.of(compositionId);
     }
 
     @Override
-    public Optional<UUID> create(UUID ehrId, Composition objData, UUID contribution) {
-        UUID compositionId = createInternal(ehrId, objData, null, null, null, contribution);
+    public Optional<UUID> create(UUID ehrId, Composition objData, UUID contribution, UUID audit) {
+        UUID compositionId = createInternal(ehrId, objData, null, null, null, contribution, audit);
         return Optional.of(compositionId);
     }
 
@@ -134,6 +139,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
      * @param committerId    Audit committer; or NULL if contribution is given
      * @param description    (Optional) Audit description; or NULL if contribution is given
      * @param contributionId NULL if is not needed, or ID of given custom contribution
+     * @param audit
      * @return ID of created composition
      * @throws InternalServerException when creation failed
      */
@@ -143,7 +149,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             UUID systemId,
             UUID committerId,
             String description,
-            UUID contributionId) {
+            UUID contributionId,
+            UUID audit) {
 
         // pre-step: check for existing and modifiable ehr
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
@@ -160,6 +167,39 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             throw new ValidationException(e);
         } catch (Exception e) {
             throw new InternalServerException(e);
+        }
+
+        if (composition.getUid() instanceof ObjectVersionId objectVersionId) {
+
+            if (!"1".equals(objectVersionId.getVersionTreeId().getValue())) {
+                throw new PreconditionFailedException(
+                        "Provided Id %s has a invalid Version. Expect Version 1".formatted(composition.getUid()));
+            }
+
+            if (!Objects.equals(
+                    getDataAccess().getServerConfig().getNodename(),
+                    objectVersionId.getCreatingSystemId().getValue())) {
+                throw new PreconditionFailedException("Mismatch of creating_system_id: %s !=: %s"
+                        .formatted(
+                                objectVersionId.getCreatingSystemId().getValue(),
+                                getDataAccess().getServerConfig().getNodename()));
+            }
+
+            I_DomainAccess domainAccess = getDataAccess();
+            UUID versionedObjectId =
+                    UUID.fromString(objectVersionId.getObjectId().getValue());
+
+            if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(versionedObjectId))
+                    || domainAccess
+                            .getContext()
+                            .fetchExists(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(versionedObjectId))) {
+
+                throw new PreconditionFailedException("Provided Id %s already exists".formatted(composition.getUid()));
+            }
+
+        } else if (composition.getUid() != null) {
+            throw new PreconditionFailedException(
+                    "Provided Id %s is not a ObjectVersionId".formatted(composition.getUid()));
         }
 
         // actual creation
@@ -180,7 +220,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             if (contributionId != null) { // in case of custom contribution, set it and invoke commit that allows custom
                 // contributions
                 compositionAccess.setContributionId(contributionId);
-                compositionId = compositionAccess.commit(LocalDateTime.now(), contributionId);
+                compositionId = compositionAccess.commit(LocalDateTime.now(), contributionId, audit);
             } else { // else, invoke commit that ad hoc creates a new contribution for the composition
                 if (committerId == null || systemId == null) { // mandatory fields
                     throw new InternalServerException(
@@ -215,16 +255,25 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
                 systemId,
                 committerId,
                 description,
+                null,
                 null);
 
         return Optional.of(compoId);
     }
 
     @Override
-    public Optional<UUID> update(UUID ehrId, ObjectVersionId targetObjId, Composition objData, UUID contribution) {
+    public Optional<UUID> update(
+            UUID ehrId, ObjectVersionId targetObjId, Composition objData, UUID contribution, UUID audit) {
 
         var compoId = internalUpdate(
-                ehrId, UUID.fromString(targetObjId.getObjectId().getValue()), objData, null, null, null, contribution);
+                ehrId,
+                UUID.fromString(targetObjId.getObjectId().getValue()),
+                objData,
+                null,
+                null,
+                null,
+                contribution,
+                audit);
         return Optional.of(compoId);
     }
 
@@ -237,12 +286,13 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
      * Update of an existing composition. With optional custom contribution, or existing one will be
      * updated.
      *
-     * @param compositionId ID of existing composition
-     * @param composition RMObject instance of the given Composition which represents the new version
-     * @param systemId Audit system; or NULL if contribution is given
-     * @param committerId Audit committer; or NULL if contribution is given
-     * @param description (Optional) Audit description; or NULL if contribution is given
+     * @param compositionId  ID of existing composition
+     * @param composition    RMObject instance of the given Composition which represents the new version
+     * @param systemId       Audit system; or NULL if contribution is given
+     * @param committerId    Audit committer; or NULL if contribution is given
+     * @param description    (Optional) Audit description; or NULL if contribution is given
      * @param contributionId NULL if new one should be created; or ID of given custom contribution
+     * @param audit
      * @return UUID pointing to updated composition
      */
     private UUID internalUpdate(
@@ -252,7 +302,8 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             UUID systemId,
             UUID committerId,
             String description,
-            UUID contributionId) {
+            UUID contributionId,
+            UUID audit) {
 
         // pre-step: check ehr exists and is modifiable
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
@@ -298,7 +349,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
             compositionAccess.setComposition(composition);
             if (contributionId != null) { // if custom contribution should be set
                 compositionAccess.setContributionId(contributionId);
-                result = compositionAccess.update(LocalDateTime.now(), contributionId);
+                result = compositionAccess.update(LocalDateTime.now(), contributionId, audit);
             } else { // else existing one will be updated
                 if (committerId == null || systemId == null) {
                     throw new InternalServerException(
@@ -335,12 +386,19 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
     @Override
     public void delete(UUID ehrId, ObjectVersionId targetObjId, UUID systemId, UUID committerId, String description) {
         internalDelete(
-                ehrId, UUID.fromString(targetObjId.getObjectId().getValue()), systemId, committerId, description, null);
+                ehrId,
+                UUID.fromString(targetObjId.getObjectId().getValue()),
+                systemId,
+                committerId,
+                description,
+                null,
+                null);
     }
 
     @Override
-    public void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution) {
-        internalDelete(ehrId, UUID.fromString(targetObjId.getObjectId().getValue()), null, null, null, contribution);
+    public void delete(UUID ehrId, ObjectVersionId targetObjId, UUID contribution, UUID audit) {
+        internalDelete(
+                ehrId, UUID.fromString(targetObjId.getObjectId().getValue()), null, null, null, contribution, audit);
     }
 
     @Override
@@ -352,14 +410,21 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
      * Deletion of an existing composition. With optional custom contribution, or existing one will be
      * updated.
      *
-     * @param compositionId ID of existing composition
-     * @param systemId Audit system; or NULL if contribution is given
-     * @param committerId Audit committer; or NULL if contribution is given
-     * @param description (Optional) Audit description; or NULL if contribution is given
+     * @param compositionId  ID of existing composition
+     * @param systemId       Audit system; or NULL if contribution is given
+     * @param committerId    Audit committer; or NULL if contribution is given
+     * @param description    (Optional) Audit description; or NULL if contribution is given
      * @param contributionId NULL if is not needed, or ID of given custom contribution
+     * @param audit
      */
     private void internalDelete(
-            UUID ehrId, UUID compositionId, UUID systemId, UUID committerId, String description, UUID contributionId) {
+            UUID ehrId,
+            UUID compositionId,
+            UUID systemId,
+            UUID committerId,
+            String description,
+            UUID contributionId,
+            UUID audit) {
 
         // pre-step: check if ehr exists and is modifiable
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
@@ -382,7 +447,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         if (contributionId != null) { // if custom contribution should be set
             compositionAccess.setContributionId(contributionId);
             try {
-                result = compositionAccess.delete(LocalDateTime.now(), contributionId);
+                result = compositionAccess.delete(LocalDateTime.now(), contributionId, audit);
             } catch (Exception e) {
                 throw new InternalServerException(e);
             }

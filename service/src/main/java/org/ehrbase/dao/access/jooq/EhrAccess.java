@@ -44,6 +44,7 @@ import java.util.UUID;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
@@ -520,7 +521,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             statusAccess.setContributionId(contributionId);
             statusAccess.setEhrId(ehrRecord.getId());
             statusAccess.setOtherDetails(otherDetails);
-            statusAccess.commit(transactionTime.toLocalDateTime(), contributionId);
+            statusAccess.commit(transactionTime.toLocalDateTime(), contributionId, null);
 
             // reset
             hasStatusChanged = false;
@@ -581,19 +582,12 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         if (hasStatusChanged) {
             statusAccess.setContributionAccess(this.contributionAccess);
 
-            // create new audit for this update
-            statusAccess.setAuditDetailsAccess(new AuditDetailsAccess(
-                    this,
-                    this.contributionAccess.getAuditsSystemId(),
-                    this.contributionAccess.getAuditsCommitter(),
-                    ContributionChangeType.MODIFICATION,
-                    this.contributionAccess.getAuditsDescription(),
-                    ehrRecord.getNamespace()));
-
             statusAccess.setOtherDetails(otherDetails);
+            I_AuditDetailsAccess auditDetailsAccess = statusAccess.getAuditDetailsAccess();
             result = statusAccess.update(
                     LocalDateTime.ofInstant(transactionTime.toInstant(), ZoneId.systemDefault()),
-                    this.contributionAccess.getId());
+                    this.contributionAccess.getId(),
+                    auditDetailsAccess.getId());
 
             // reset
             hasStatusChanged = false;
@@ -636,15 +630,20 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             UUID committerId,
             UUID systemId,
             UUID contributionId,
-            ContributionDef.ContributionState state,
-            I_ConceptAccess.ContributionChangeType contributionChangeType,
-            String description) {
+            ContributionState state,
+            ContributionChangeType contributionChangeType,
+            String description,
+            UUID audit) {
         Timestamp timestamp = TransactionTime.millis();
         // If custom contribution ID is provided use it, otherwise reuse already linked one
         if (contributionId != null) {
             I_ContributionAccess access = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId);
-            if (access != null) {
+            I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(
+                            this.getDataAccess(), ehrRecord.getNamespace())
+                    .retrieveInstance(this.getDataAccess(), audit);
+            if (access != null && auditDetailsAccess != null) {
                 this.contributionAccess = access;
+                this.statusAccess.setAuditDetailsAccess(auditDetailsAccess);
             } else {
                 throw new InternalServerException("Can't update status with invalid contribution ID.");
             }
@@ -657,7 +656,18 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             provisionContributionAccess(
                     contributionAccess, committerId, systemId, description, state, contributionChangeType);
             this.contributionAccess.commit();
+
+            // create new audit for this update
+            statusAccess.setAuditDetailsAccess(new AuditDetailsAccess(
+                    this,
+                    this.contributionAccess.getAuditsSystemId(),
+                    this.contributionAccess.getAuditsCommitter(),
+                    ContributionChangeType.MODIFICATION,
+                    this.contributionAccess.getAuditsDescription(),
+                    ehrRecord.getNamespace()));
+            statusAccess.getAuditDetailsAccess().commit();
         }
+
         return update(timestamp);
     }
 
