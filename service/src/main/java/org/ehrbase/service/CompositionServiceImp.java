@@ -17,6 +17,9 @@
  */
 package org.ehrbase.service;
 
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
+import static org.ehrbase.jooq.pg.Tables.COMPOSITION_HISTORY;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -54,6 +57,7 @@ import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.response.ehrscape.CompositionDto;
@@ -181,9 +185,15 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
                                 getDataAccess().getServerConfig().getNodename()));
             }
 
-            if (I_CompositionAccess.exists(
-                    getDataAccess(),
-                    UUID.fromString(objectVersionId.getObjectId().getValue()))) {
+            I_DomainAccess domainAccess = getDataAccess();
+            UUID versionedObjectId =
+                    UUID.fromString(objectVersionId.getObjectId().getValue());
+
+            if (domainAccess.getContext().fetchExists(COMPOSITION, COMPOSITION.ID.eq(versionedObjectId))
+                    || domainAccess
+                            .getContext()
+                            .fetchExists(COMPOSITION_HISTORY, COMPOSITION_HISTORY.ID.eq(versionedObjectId))) {
+
                 throw new PreconditionFailedException("Provided Id %s already exists".formatted(composition.getUid()));
             }
 
