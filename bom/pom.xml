@@ -105,7 +105,6 @@
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <ehrbase.sdk.version>1.26.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.5.13</flyway.version>
-        <jackson-bom.version>2.13.5</jackson-bom.version>
         <javamelody.version>1.90.0</javamelody.version>
         <joda.version>2.10.13</joda.version>
         <jooq.version>3.16.5</jooq.version>
@@ -161,12 +160,13 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson-bom.version}</version>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${ehrbase.sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -174,13 +174,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${ehrbase.sdk.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
