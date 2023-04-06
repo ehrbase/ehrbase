@@ -95,7 +95,7 @@ public class StoredQueryAccessTest {
                         qualifiedName,
                         SemVer.NO_VERSION,
                         queryText,
-                        TenantAuthentication.DEFAULT_TENANT_ID)
+                        TenantAuthentication.DEFAULT_SYS_TENANT)
                 .commit();
 
         assertNotNull(storedQueryAccess);

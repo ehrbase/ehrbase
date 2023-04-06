@@ -183,7 +183,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                     var templateId = TemplateUtils.getTemplateId(template);
                     templateIds.add(templateId);
                     try {
-                        putIntoCache(template, tenantService.getCurrentTenantIdentifier());
+                        putIntoCache(template, tenantService.getCurrentSysTenant());
                     } catch (RuntimeException e) {
                         log.error(ERR_CACHE_ERROR, templateId, e);
                     }
@@ -236,9 +236,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     @Override
-    public String addOperationalTemplate(InputStream inputStream, String tenantIdentifier) {
+    public String addOperationalTemplate(InputStream inputStream, Short sysTenant) {
         OPERATIONALTEMPLATE template = buildOperationalTemplate(inputStream);
-        return addOperationalTemplateIntern(template, false, tenantIdentifier);
+        return addOperationalTemplateIntern(template, false, sysTenant);
     }
 
     private OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
@@ -251,13 +251,13 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     @Override
-    public String addOperationalTemplate(OPERATIONALTEMPLATE template, String tenantIdentifier) {
-        return addOperationalTemplateIntern(template, false, tenantIdentifier);
+    public String addOperationalTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
+        return addOperationalTemplateIntern(template, false, sysTenant);
     }
 
     public String addOperationalTemplateIntern(
-            OPERATIONALTEMPLATE template, boolean overwrite, String tenantIdentifier) {
-        TenantSupport.isValidTenantId(tenantIdentifier, () -> tenantService.getCurrentTenantIdentifier())
+            OPERATIONALTEMPLATE template, boolean overwrite, Short sysTenant) {
+        TenantSupport.isValidTenantId(sysTenant, () -> tenantService.getCurrentSysTenant())
                 .getOrThrow();
         validateTemplate(template);
 
@@ -278,8 +278,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             invalidateCache(template);
         }
 
-        templateStorage.storeTemplate(template, tenantIdentifier);
-        putIntoCache(template, tenantIdentifier);
+        templateStorage.storeTemplate(template, sysTenant);
+        putIntoCache(template, sysTenant);
 
         preBuildQueries(templateId, cacheOptions.isPreBuildQueries());
 
@@ -302,13 +302,13 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                 });
     }
 
-    private void putIntoCache(OPERATIONALTEMPLATE template, String tenantIdentifier) {
+    private void putIntoCache(OPERATIONALTEMPLATE template, Short sysTenant) {
         var templateId = TemplateUtils.getTemplateId(template);
         var uid = TemplateUtils.getUid(template);
 
         try {
-            idxCacheUuidToTemplateId.put(CacheKey.of(uid, tenantIdentifier), templateId);
-            idxCacheTemplateIdToUuid.put(templateId, CacheKey.of(uid, tenantIdentifier));
+            idxCacheUuidToTemplateId.put(CacheKey.of(uid, sysTenant), templateId);
+            idxCacheTemplateIdToUuid.put(templateId, CacheKey.of(uid, sysTenant));
 
             getQueryOptMetaData(templateId);
         } catch (RuntimeException e) {
@@ -320,13 +320,13 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     public String adminUpdateOperationalTemplate(InputStream content) {
         OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
-        return addOperationalTemplateIntern(template, true, tenantService.getCurrentTenantIdentifier());
+        return addOperationalTemplateIntern(template, true, tenantService.getCurrentSysTenant());
     }
 
     // invalidates some derived caches like the queryOptMetaDataCache which depend on the template
     private void invalidateCache(OPERATIONALTEMPLATE template) {
         // invalidate the cache for this template
-        webTemplateCache.evict(CacheKey.of(TemplateUtils.getUid(template), tenantService.getCurrentTenantIdentifier()));
+        webTemplateCache.evict(CacheKey.of(TemplateUtils.getUid(template), tenantService.getCurrentSysTenant()));
 
         jsonPathQueryResultCache.invalidate();
         fieldCache.invalidate();
@@ -368,7 +368,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private String findTemplateIdByUuid(UUID uuid) {
         return idxCacheUuidToTemplateId.computeIfAbsent(
-                CacheKey.of(uuid, tenantService.getCurrentTenantIdentifier()),
+                CacheKey.of(uuid, tenantService.getCurrentSysTenant()),
                 ck -> listAllOperationalTemplates().stream()
                         .filter(t -> t.getErrorList().isEmpty())
                         .filter(t -> t.getOperationaltemplate()
@@ -387,14 +387,14 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                             .orElseThrow(() ->
                                     new IllegalArgumentException(String.format("Unknown template %s", templateId)));
                     return CacheKey.of(
-                            UUID.fromString(templ.getUid().getValue()), tenantService.getCurrentTenantIdentifier());
+                            UUID.fromString(templ.getUid().getValue()), tenantService.getCurrentSysTenant());
                 })
                 .getVal();
     }
 
     @Override
     public WebTemplate getQueryOptMetaData(UUID uuid) {
-        CacheKey<UUID> ck = CacheKey.of(uuid, tenantService.getCurrentTenantIdentifier());
+        CacheKey<UUID> ck = CacheKey.of(uuid, tenantService.getCurrentSysTenant());
         return webTemplateCache.get(ck, () -> buildQueryOptMetaData(uuid));
     }
 
@@ -440,7 +440,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private OPERATIONALTEMPLATE getOperationaltemplateFromFileStorage(String filename) {
         var template = templateStorage.readOperationaltemplate(filename);
         template.ifPresent(existingTemplate -> idxCacheUuidToTemplateId.put(
-                CacheKey.of(TemplateUtils.getUid(existingTemplate), tenantService.getCurrentTenantIdentifier()),
+                CacheKey.of(TemplateUtils.getUid(existingTemplate), tenantService.getCurrentSysTenant()),
                 filename));
         return template.orElse(null);
     }
@@ -464,15 +464,15 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public JsonPathQueryResult resolveForTemplate(String templateId, Collection<NodeId> nodeIds) {
-        Triple<String, String, Collection<NodeId>> key =
-                Triple.of(templateId, tenantService.getCurrentTenantIdentifier(), nodeIds);
+        Triple<String, Short, Collection<NodeId>> key =
+                Triple.of(templateId, tenantService.getCurrentSysTenant(), nodeIds);
         JsonPathQueryResult jsonPathQueryResult =
                 jsonPathQueryResultCache.get(key, () -> createJsonPathQueryResult(key));
 
         return jsonPathQueryResult.getTemplateId() != null ? jsonPathQueryResult : null;
     }
 
-    private JsonPathQueryResult createJsonPathQueryResult(Triple<String, String, Collection<NodeId>> key) {
+    private JsonPathQueryResult createJsonPathQueryResult(Triple<String, Short, Collection<NodeId>> key) {
         JsonPathQueryResult jsonPathQueryResult;
         WebTemplate webTemplate = getQueryOptMetaData(key.getLeft());
         List<WebTemplateNode> webTemplateNodeList = new ArrayList<>();
@@ -505,7 +505,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Override
     public ItemInfo getInfo(String templateId, String aql) {
-        TemplateIdAqlTuple key = new TemplateIdAqlTuple(templateId, aql, tenantService.getCurrentTenantIdentifier());
+        TemplateIdAqlTuple key = new TemplateIdAqlTuple(templateId, aql, tenantService.getCurrentSysTenant());
         return fieldCache.get(key, () -> createItemInfo(key));
     }
 
@@ -544,7 +544,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @SuppressWarnings("unchecked")
     public List<String> multiValued(String templateId) {
         return multivaluedCache.get(
-                CacheKey.of(templateId, tenantService.getCurrentTenantIdentifier()),
+                CacheKey.of(templateId, tenantService.getCurrentSysTenant()),
                 () -> getQueryOptMetaData(templateId).multiValued().stream()
                         .map(webTemplateNode -> webTemplateNode.getAqlPath(false))
                         .collect(Collectors.toList()));

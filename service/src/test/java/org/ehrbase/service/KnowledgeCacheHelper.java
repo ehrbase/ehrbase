@@ -40,12 +40,12 @@ public class KnowledgeCacheHelper {
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
         TenantService tenantService = Mockito.mock(TenantService.class);
-        Mockito.when(tenantService.getCurrentTenantIdentifier()).thenReturn(TenantAuthentication.DEFAULT_TENANT_ID);
+        Mockito.when(tenantService.getCurrentSysTenant()).thenReturn(TenantAuthentication.DEFAULT_SYS_TENANT);
 
         KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(
                 templateFileStorageService, cacheRule.cacheManager, new CacheOptions(), tenantService);
         knowledgeCacheService.addOperationalTemplate(
-                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_SYS_TENANT);
         return knowledgeCacheService;
     }
 

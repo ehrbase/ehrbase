@@ -67,7 +67,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
      * @param knowledgeManager Knowledge cache object of current server context
      * @param introspectCache Introspect cache object of current server context
      * @param serverConfig Server config object of current server context
-     * @param tenantIdentifier the tenant identifier to which the ContributionAccess object belongs to
+     * @param sysTenant the tenant identifier to which the ContributionAccess object belongs to
      * @param ehrId Given ID of EHR this contribution will be created for
      */
     public ContributionAccess(
@@ -76,31 +76,31 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             IntrospectService introspectCache,
             ServerConfig serverConfig,
             UUID ehrId,
-            String tenantIdentifier) {
+            Short sysTenant) {
 
         super(context, knowledgeManager, introspectCache, serverConfig);
 
         contributionRecord = context.newRecord(CONTRIBUTION);
         contributionRecord.setEhrId(ehrId);
-        contributionRecord.setNamespace(tenantIdentifier);
+        contributionRecord.setSysTenant(sysTenant);
 
-        auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess(), tenantIdentifier);
+        auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess(), sysTenant);
     }
 
     /**
      * Constructor with convenient {@link I_DomainAccess} parameter, for better readability.
      * @param domainAccess Current domain access object
      * @param ehrId Given ID of EHR this contribution will be created for
-     * @param tenantIdentifier the tenant identifier to which the ContributionAccess object belongs to
+     * @param sysTenant the tenant identifier to which the ContributionAccess object belongs to
      */
-    public ContributionAccess(I_DomainAccess domainAccess, UUID ehrId, String tenantIdentifier) {
+    public ContributionAccess(I_DomainAccess domainAccess, UUID ehrId, Short sysTenant) {
         this(
                 domainAccess.getContext(),
                 domainAccess.getKnowledgeManager(),
                 domainAccess.getIntrospectService(),
                 domainAccess.getServerConfig(),
                 ehrId,
-                tenantIdentifier);
+                sysTenant);
     }
 
     // internal minimal constructor - needs proper initialization before following usage
@@ -120,7 +120,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
                     .map(rec -> new ContributionAccess(
                             domainAccess,
                             rec,
-                            new AuditDetailsAccess(domainAccess.getDataAccess(), rec.getNamespace())
+                            new AuditDetailsAccess(domainAccess.getDataAccess(), rec.getSysTenant())
                                     .retrieveInstance(domainAccess.getDataAccess(), rec.getHasAudit())))
                     .orElse(null);
         } catch (Exception e) {
@@ -183,7 +183,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
             I_ConceptAccess.ContributionChangeType contributionChangeType,
             String description) {
         // create new audit_details instance for this contribution
-        this.auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess(), contributionRecord.getNamespace());
+        this.auditDetails = I_AuditDetailsAccess.getInstance(this.getDataAccess(), contributionRecord.getSysTenant());
 
         if (transactionTime == null) {
             transactionTime = TransactionTime.millis();
@@ -260,7 +260,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
         // embedded audit handling
         this.auditDetails = I_AuditDetailsAccess.getInstance(
-                getDataAccess(), contributionRecord.getNamespace()); // new audit for new action
+                getDataAccess(), contributionRecord.getSysTenant()); // new audit for new action
         if (committerId != null) this.auditDetails.setCommitter(committerId);
         if (systemId != null) this.auditDetails.setSystemId(systemId);
         if (description != null) this.auditDetails.setDescription(description);
@@ -401,7 +401,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     public void setAuditDetailsValues(AuditDetails auditObject) {
         // parse
         UUID committer =
-                new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter(), auditDetails.getNamespace());
+                new PersistedPartyProxy(this).getOrCreate(auditObject.getCommitter(), auditDetails.getSysTenant());
         UUID system = I_SystemAccess.createOrRetrieveInstanceId(this, null, auditObject.getSystemId());
         UUID changeType = I_ConceptAccess.fetchContributionChangeType(
                 this, auditObject.getChangeType().getValue());
@@ -543,7 +543,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
     }
 
     @Override
-    public String getNamespace() {
-        return contributionRecord.getNamespace();
+    public Short getSysTenant() {
+        return contributionRecord.getSysTenant();
     }
 }

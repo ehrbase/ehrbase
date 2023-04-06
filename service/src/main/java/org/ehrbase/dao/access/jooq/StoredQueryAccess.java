@@ -50,10 +50,10 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
     static final Logger log = LoggerFactory.getLogger(StoredQueryAccess.class);
     private StoredQueryRecord storedQueryRecord;
 
-    public StoredQueryAccess(I_DomainAccess domainAccess, StoredQueryRecord queryRecord, String tenantIdentifier) {
+    public StoredQueryAccess(I_DomainAccess domainAccess, StoredQueryRecord queryRecord, Short sysTenant) {
         super(domainAccess);
         this.storedQueryRecord = queryRecord;
-        this.storedQueryRecord.setNamespace(tenantIdentifier);
+        this.storedQueryRecord.setSysTenant(sysTenant);
     }
 
     public StoredQueryAccess(
@@ -61,11 +61,11 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             String qualifiedQueryName,
             SemVer version,
             String sourceAqlText,
-            String tenantIdentifier) {
+            Short sysTenant) {
         super(domainAccess);
 
         storedQueryRecord = domainAccess.getContext().newRecord(STORED_QUERY);
-        storedQueryRecord.setNamespace(tenantIdentifier);
+        storedQueryRecord.setSysTenant(sysTenant);
 
         StoredQueryQualifiedName qn = new StoredQueryQualifiedName(qualifiedQueryName, version);
 
@@ -100,7 +100,7 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
             queryRecord = ordered.limit(1).fetchOptional();
         }
 
-        return queryRecord.map(r -> new StoredQueryAccess(domainAccess, r, r.getNamespace()));
+        return queryRecord.map(r -> new StoredQueryAccess(domainAccess, r, r.getSysTenant()));
     }
 
     private static @NonNull Condition versionConstraint(SemVer semVer) {
@@ -175,7 +175,7 @@ public class StoredQueryAccess extends DataAccess implements I_StoredQueryAccess
                 .toList();
 
         try (Stream<StoredQueryRecord> stream = unordered.orderBy(sortOrder).stream()) {
-            return stream.map(r -> new StoredQueryAccess(domainAccess, r, r.getNamespace()))
+            return stream.map(r -> new StoredQueryAccess(domainAccess, r, r.getSysTenant()))
                     .toList();
         }
     }

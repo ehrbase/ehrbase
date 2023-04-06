@@ -33,8 +33,8 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
      * @param dataAccess      general data access
      * @return new access instance
      */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, String tenantIdentifier) {
-        return new AuditDetailsAccess(dataAccess, tenantIdentifier);
+    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, Short sysTenant) {
+        return new AuditDetailsAccess(dataAccess, sysTenant);
     }
 
     /**
@@ -54,8 +54,8 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
             UUID committer,
             I_ConceptAccess.ContributionChangeType changeType,
             String description,
-            String tenantIdentifier) {
-        return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description, tenantIdentifier);
+            Short sysTenant) {
+        return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description, sysTenant);
     }
 
     /**
@@ -119,5 +119,5 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
     AuditDetails getAsAuditDetails();
 
-    String getNamespace();
+    Short getSysTenant();
 }

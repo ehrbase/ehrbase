@@ -92,7 +92,7 @@ class PersistedPartyRelated extends PersistedParty {
     }
 
     @Override
-    public UUID store(PartyProxy partyProxy, String tenantIdentifier) {
+    public UUID store(PartyProxy partyProxy, Short sysTenant) {
         PartyRefValue partyRefValue = new PartyRefValue(partyProxy).attributes();
 
         // store a new party identified
@@ -108,7 +108,7 @@ class PersistedPartyRelated extends PersistedParty {
                         PARTY_IDENTIFIED.PARTY_TYPE,
                         PARTY_IDENTIFIED.OBJECT_ID_TYPE,
                         PARTY_IDENTIFIED.RELATIONSHIP,
-                        PARTY_IDENTIFIED.NAMESPACE)
+                        PARTY_IDENTIFIED.SYS_TENANT)
                 .values(
                         ((PartyIdentified) partyProxy).getName(),
                         partyRefValue.getNamespace(),
@@ -118,12 +118,12 @@ class PersistedPartyRelated extends PersistedParty {
                         PartyType.party_related,
                         partyRefValue.getObjectIdType(),
                         relationshipAsRecord(partyProxy),
-                        tenantIdentifier)
+                        sysTenant)
                 .returning(PARTY_IDENTIFIED.ID)
                 .fetchOne()
                 .getId();
         // store identifiers
-        new PartyIdentifiers(domainAccess).store((PartyIdentified) partyProxy, partyIdentifiedUuid, tenantIdentifier);
+        new PartyIdentifiers(domainAccess).store((PartyIdentified) partyProxy, partyIdentifiedUuid, sysTenant);
 
         return partyIdentifiedUuid;
     }

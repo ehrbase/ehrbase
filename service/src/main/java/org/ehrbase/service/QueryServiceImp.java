@@ -220,9 +220,9 @@ public class QueryServiceImp extends BaseServiceImp implements QueryService {
 
         SemVer newVersion = SemVerUtil.determineVersion(requestedVersion, dbSemVer);
 
-        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+        Short sysTenant = tenantService.getCurrentSysTenant();
         I_StoredQueryAccess storedQueryAccess =
-                new StoredQueryAccess(getDataAccess(), qualifiedName, newVersion, queryString, tenantIdentifier);
+                new StoredQueryAccess(getDataAccess(), qualifiedName, newVersion, queryString, sysTenant);
 
         // if not final version and already existing: update
         boolean isUpdate = dbSemVer.isPreRelease();

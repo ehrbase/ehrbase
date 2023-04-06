@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -35,9 +34,19 @@ import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.jooq.pg.tables.records.TenantRecord;
 import org.jooq.DSLContext;
 import org.jooq.JSON;
+import org.jooq.Record;
 import org.jooq.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.ehrbase.jooq.pg.Tables.TENANT;
 
 public class TenantAccess implements I_TenantAccess {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TenantAccess.class);
+
+    private static final String COULD_NOT_RETRIEVE_SYS_TENANT = "Could not retrieve sys tenant by tenant id: {}";
+
     private final TenantRecord record;
 
     public TenantAccess(DSLContext ctx, Tenant tenant) {
@@ -58,7 +67,7 @@ public class TenantAccess implements I_TenantAccess {
     }
 
     @Override
-    public UUID commit() {
+    public Short commit() {
         record.store();
         return record.getId();
     }
@@ -120,5 +129,27 @@ public class TenantAccess implements I_TenantAccess {
         record.setTenantProperties(JSON.json(json));
         record.update();
         return convert();
+    }
+
+    public static Short retrieveSysTenantByTenantId(DSLContext dslContext, String tenantId) {
+
+        Record tenant;
+
+        try {
+            tenant = dslContext.select(TENANT.ID)
+                    .from(TENANT)
+                    .where(TENANT.TENANT_ID.eq(tenantId))
+                    .fetchOne();
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Could not retrieve sys tenant.", e);
+        }
+
+        if (tenant == null || tenant.size() == 0) {
+            LOG.warn(COULD_NOT_RETRIEVE_SYS_TENANT, tenantId);
+            return null;
+        }
+
+        return (Short) tenant.getValue(0);
     }
 }

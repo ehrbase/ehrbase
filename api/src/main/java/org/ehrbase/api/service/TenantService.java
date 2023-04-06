@@ -19,13 +19,15 @@ package org.ehrbase.api.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 import org.ehrbase.api.tenant.Tenant;
 
 public interface TenantService extends BaseService {
+    Short getCurrentSysTenant();
+
     String getCurrentTenantIdentifier();
 
-    UUID create(Tenant tenant);
+    Short create(Tenant tenant);
 
     Tenant update(Tenant tenant);
 

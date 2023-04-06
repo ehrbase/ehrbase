@@ -68,7 +68,7 @@ public class PersistenceConfig {
     public DataSourceConnectionProvider connectionProvider() {
         return new DataSourceConnectionProvider(transactionAwareDataSource()) {
             public static final String DB_SET_TENANT_ID =
-                    "SET ehrbase.current_tenant = " + "'" + TenantAuthentication.DEFAULT_TENANT_ID + "'";
+                    "SET ehrbase.current_tenant = " + "'" + TenantAuthentication.DEFAULT_SYS_TENANT + "'";
 
             public Connection acquire() {
                 try {

@@ -57,16 +57,16 @@ public class StoredQueryAccessTestMockDataProvider implements MockDataProvider {
             return mock;
 
         } else if (sql2.startsWith(
-                "select \"ehr\".\"stored_query\".\"reverse_domain_name\", \"ehr\".\"stored_query\".\"semantic_id\", \"ehr\".\"stored_query\".\"semver\", \"ehr\".\"stored_query\".\"query_text\", \"ehr\".\"stored_query\".\"creation_date\", \"ehr\".\"stored_query\".\"type\", \"ehr\".\"stored_query\".\"namespace\" from \"ehr\".\"stored_query\"")) {
+                "select \"ehr\".\"stored_query\".\"reverse_domain_name\", \"ehr\".\"stored_query\".\"semantic_id\", \"ehr\".\"stored_query\".\"semver\", \"ehr\".\"stored_query\".\"query_text\", \"ehr\".\"stored_query\".\"creation_date\", \"ehr\".\"stored_query\".\"type\", \"ehr\".\"stored_query\".\"sys_tenant\" from \"ehr\".\"stored_query\"")) {
             MockResult[] mock2 = new MockResult[1];
-            Result<Record7<String, String, String, String, Timestamp, String, String>> result = create.newResult(
+            Result<Record7<String, String, String, String, Timestamp, String, Short>> result = create.newResult(
                     STORED_QUERY.REVERSE_DOMAIN_NAME,
                     STORED_QUERY.SEMANTIC_ID,
                     STORED_QUERY.SEMVER,
                     STORED_QUERY.QUERY_TEXT,
                     STORED_QUERY.CREATION_DATE,
                     STORED_QUERY.TYPE,
-                    STORED_QUERY.NAMESPACE);
+                    STORED_QUERY.SYS_TENANT);
             result.add(create.newRecord(
                             STORED_QUERY.REVERSE_DOMAIN_NAME,
                             STORED_QUERY.SEMANTIC_ID,
@@ -74,7 +74,7 @@ public class StoredQueryAccessTestMockDataProvider implements MockDataProvider {
                             STORED_QUERY.QUERY_TEXT,
                             STORED_QUERY.CREATION_DATE,
                             STORED_QUERY.TYPE,
-                            STORED_QUERY.NAMESPACE)
+                            STORED_QUERY.SYS_TENANT)
                     .values(
                             "org.example.departmentx.test",
                             "diabetes-patient-overview",
@@ -84,7 +84,7 @@ public class StoredQueryAccessTestMockDataProvider implements MockDataProvider {
                                     .parseDateTime("2019-08-22 13:41:50.478")
                                     .getMillis()),
                             "AQL",
-                            TenantAuthentication.DEFAULT_TENANT_ID));
+                            TenantAuthentication.DEFAULT_SYS_TENANT));
             mock2[0] = new MockResult(1, result);
             return mock2;
 

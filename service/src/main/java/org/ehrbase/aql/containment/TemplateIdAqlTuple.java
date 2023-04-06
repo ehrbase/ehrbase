@@ -25,12 +25,12 @@ public class TemplateIdAqlTuple implements Serializable {
 
     private final String templateId;
     private final String aql;
-    private final String tenantIdentifier;
+    private final Short sysTenant;
 
-    public TemplateIdAqlTuple(String templateId, String aql, String tenantIdentifier) {
+    public TemplateIdAqlTuple(String templateId, String aql, Short sysTenant) {
         this.templateId = templateId;
         this.aql = aql;
-        this.tenantIdentifier = tenantIdentifier;
+        this.sysTenant = sysTenant;
     }
 
     public String getTemplateId() {
@@ -41,8 +41,8 @@ public class TemplateIdAqlTuple implements Serializable {
         return aql;
     }
 
-    public String getTenantIdentifier() {
-        return tenantIdentifier;
+    public Short getTenantIdentifier() {
+        return sysTenant;
     }
 
     @Override
@@ -51,12 +51,12 @@ public class TemplateIdAqlTuple implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         TemplateIdAqlTuple that = (TemplateIdAqlTuple) o;
         return templateId.equals(that.templateId)
-                && tenantIdentifier.equals(that.tenantIdentifier)
+                && sysTenant.equals(that.sysTenant)
                 && aql.equals(that.aql);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(templateId, aql, tenantIdentifier);
+        return Objects.hash(templateId, aql, sysTenant);
     }
 }

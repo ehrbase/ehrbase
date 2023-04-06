@@ -39,7 +39,7 @@ public class MultiFieldJsonbEntryQueryTest extends TestAqlBase {
 
         // add test template with non unique paths to identified node
         knowledge.addOperationalTemplate(
-                TemplateTestData.NON_UNIQUE_AQL_PATH.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+                TemplateTestData.NON_UNIQUE_AQL_PATH.getStream(), TenantAuthentication.DEFAULT_SYS_TENANT);
 
         String query = "select\n" + "a/description[at0001]/items[at0002]/name/value\n"
                 + "from EHR e\n"

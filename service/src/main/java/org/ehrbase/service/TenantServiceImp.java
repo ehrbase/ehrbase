@@ -19,13 +19,17 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.Tenant;
+import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.jooq.DSLContext;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,9 +41,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TenantServiceImp extends BaseServiceImp implements TenantService {
 
+    private final Cache sysTenant;
+
     public TenantServiceImp(
-            @Lazy KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig) {
+            @Lazy KnowledgeCacheService knowledgeCacheService, CacheManager cacheManager, DSLContext context, ServerConfig serverConfig) {
         super(knowledgeCacheService, context, serverConfig);
+        this.sysTenant = cacheManager.getCache(CacheOptions.SYS_TENANT);
+    }
+
+    @Override
+    public Short getCurrentSysTenant() {
+        String tenantId = I_TenantAccess.currentTenantIdentifier();
+        return getTenantByTenantId(tenantId, tenant ->
+                        I_TenantAccess.retrieveSysTenantByTenantId(super.getDataAccess().getContext(), tenantId));
+    }
+
+    private Short getTenantByTenantId(String tenantId, Function<String, Short> provider) {
+        return sysTenant.get(tenantId, () -> provider.apply(tenantId));
     }
 
     @Override
@@ -48,10 +66,13 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     }
 
     @Override
-    public UUID create(Tenant tenant) {
+    public Short create(Tenant tenant) {
         I_TenantAccess tenantAccess =
                 I_TenantAccess.getNewInstance(getDataAccess().getContext(), tenant);
-        return tenantAccess.commit();
+        Short savedSysTenant = tenantAccess.commit();
+        sysTenant.put(tenant.getTenantId(), savedSysTenant);
+
+        return savedSysTenant;
     }
 
     @Override
