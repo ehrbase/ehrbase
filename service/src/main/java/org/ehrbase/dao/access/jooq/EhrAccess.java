@@ -113,8 +113,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
     /**
      * @throws InternalServerException if creating or retrieving system failed
      */
-    public EhrAccess(
-            I_DomainAccess domain, UUID partyId, UUID systemId, UUID accessId, UUID ehrId, Short sysTenant) {
+    public EhrAccess(I_DomainAccess domain, UUID partyId, UUID systemId, UUID accessId, UUID ehrId, Short sysTenant) {
         super(domain);
 
         this.ehrRecord = domain.getContext().newRecord(EHR_);
@@ -261,8 +260,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         EhrAccess ehrAccess = new EhrAccess(
                 domainAccess,
                 ehrId,
-                I_TenantAccess
-                        .currentSysTenant(domainAccess.getContext())); // minimal access, needs attributes to be set before returning
+                I_TenantAccess.currentSysTenant(
+                        domainAccess.getContext())); // minimal access, needs attributes to be set before returning
         EhrRecord record;
 
         // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten
@@ -348,7 +347,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     public static I_EhrAccess retrieveInstance(I_DomainAccess domainAccess, UUID ehrId) {
         DSLContext context = domainAccess.getContext();
-        EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId, I_TenantAccess.currentSysTenant(domainAccess.getContext()));
+        EhrAccess ehrAccess =
+                new EhrAccess(domainAccess, ehrId, I_TenantAccess.currentSysTenant(domainAccess.getContext()));
 
         EhrRecord record;
 

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.Tenant;
@@ -44,7 +43,10 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     private final Cache sysTenant;
 
     public TenantServiceImp(
-            @Lazy KnowledgeCacheService knowledgeCacheService, CacheManager cacheManager, DSLContext context, ServerConfig serverConfig) {
+            @Lazy KnowledgeCacheService knowledgeCacheService,
+            CacheManager cacheManager,
+            DSLContext context,
+            ServerConfig serverConfig) {
         super(knowledgeCacheService, context, serverConfig);
         this.sysTenant = cacheManager.getCache(CacheOptions.SYS_TENANT);
     }
@@ -52,8 +54,10 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     @Override
     public Short getCurrentSysTenant() {
         String tenantId = I_TenantAccess.currentTenantIdentifier();
-        return getTenantByTenantId(tenantId, tenant ->
-                        I_TenantAccess.retrieveSysTenantByTenantId(super.getDataAccess().getContext(), tenantId));
+        return getTenantByTenantId(
+                tenantId,
+                tenant -> I_TenantAccess.retrieveSysTenantByTenantId(
+                        super.getDataAccess().getContext(), tenantId));
     }
 
     private Short getTenantByTenantId(String tenantId, Function<String, Short> provider) {

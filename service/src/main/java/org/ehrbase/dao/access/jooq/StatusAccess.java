@@ -204,17 +204,11 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
 
         // create new deletion audit
         var delAudit = I_AuditDetailsAccess.getInstance(
-                this,
-                systemId,
-                committerId,
-                I_ConceptAccess.ContributionChangeType.DELETED,
-                description,
-                sysTenant);
+                this, systemId, committerId, I_ConceptAccess.ContributionChangeType.DELETED, description, sysTenant);
         UUID delAuditId = delAudit.commit();
 
         // create new, BUT already moved to _history, version documenting the deletion
-        return createAndCommitNewDeletedVersionAsHistory(
-                delAuditId, statusRecord.getInContribution(), sysTenant);
+        return createAndCommitNewDeletedVersionAsHistory(delAuditId, statusRecord.getInContribution(), sysTenant);
     }
 
     private int createAndCommitNewDeletedVersionAsHistory(UUID delAuditId, UUID contrib, Short sysTenant) {
@@ -435,10 +429,7 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
      * @return Resulting access object
      */
     private static I_StatusAccess createStatusAccessForRetrieval(
-            I_DomainAccess domainAccess,
-            StatusRecord record,
-            StatusHistoryRecord historyRecord,
-            Short sysTenant) {
+            I_DomainAccess domainAccess, StatusRecord record, StatusHistoryRecord historyRecord, Short sysTenant) {
         StatusAccess statusAccess;
         if (record != null) {
             statusAccess = new StatusAccess(domainAccess, record.getEhrId(), sysTenant);

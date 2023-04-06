@@ -19,7 +19,6 @@ package org.ehrbase.api.service;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.ehrbase.api.tenant.Tenant;
 
 public interface TenantService extends BaseService {

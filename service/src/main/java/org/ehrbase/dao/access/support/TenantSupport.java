@@ -46,8 +46,7 @@ public final class TenantSupport {
 
     private static final String WARN_NOT_TENANT_ID =
             "No tenant identifier provided, falling back to default tenant identifier {}";
-    private static final String COULD_NOT_FOUND_TENANT =
-            "Could not found tenant by tenant identifier provided %s";
+    private static final String COULD_NOT_FOUND_TENANT = "Could not found tenant by tenant identifier provided %s";
     private static final String WARN_NOT_SYS_TENANT =
             "Could not found sys tenant by tenant identifier provided, falling back to default sys tenant {}";
 
@@ -67,14 +66,13 @@ public final class TenantSupport {
 
     private static final String ERR_TENANT_ID_MISSMATCH = "Provided tenant id[%s] does not match session tenant id[%s]";
 
-    public static Try<Short, InternalServerException> isValidTenantId(
-            Short tenantId, Supplier<Short> currentTenant) {
+    public static Try<Short, InternalServerException> isValidTenantId(Short tenantId, Supplier<Short> currentTenant) {
         Short currentTenantIdentifier = currentTenant.get();
 
         return currentTenantIdentifier.equals(tenantId)
                 ? Try.success(tenantId)
                 : Try.failure(new InternalServerException(
-                String.format(ERR_TENANT_ID_MISSMATCH, tenantId, currentTenantIdentifier)));
+                        String.format(ERR_TENANT_ID_MISSMATCH, tenantId, currentTenantIdentifier)));
     }
 
     public static Short currentSysTenant(DSLContext ctx) {
@@ -87,12 +85,15 @@ public final class TenantSupport {
 
         if (tenantCache.isPresent()) {
             try {
-                sysTenant = tenantCache.get().get(tenantId, () -> I_TenantAccess.retrieveSysTenantByTenantId(ctx, tenantId));
+                sysTenant = tenantCache
+                        .get()
+                        .get(tenantId, () -> I_TenantAccess.retrieveSysTenantByTenantId(ctx, tenantId));
             } catch (Exception e) {
                 throw new IllegalArgumentException(String.format(COULD_NOT_FOUND_TENANT, tenantId));
             }
         } else {
-            // TODO:: clarify.....this is reproducible if run this method from the tenant service...during the cache initialization post processors still not initialized so  getApplicationContext will return null
+            // TODO:: clarify.....this is reproducible if run this method from the tenant service...during the cache
+            // initialization post processors still not initialized so  getApplicationContext will return null
             try {
                 sysTenant = I_TenantAccess.retrieveSysTenantByTenantId(ctx, tenantId);
             } catch (Exception e) {

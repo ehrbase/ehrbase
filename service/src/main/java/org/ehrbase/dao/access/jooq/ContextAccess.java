@@ -82,8 +82,7 @@ public class ContextAccess extends DataAccess implements I_ContextAccess {
     private final List<ParticipationRecord> participations = new ArrayList<>();
     private EventContextRecord eventContextRecord;
 
-    public ContextAccess(
-            DSLContext context, ServerConfig serverConfig, EventContext eventContext, Short sysTenant) {
+    public ContextAccess(DSLContext context, ServerConfig serverConfig, EventContext eventContext, Short sysTenant) {
         super(context, null, null, serverConfig);
         if (eventContext == null) return;
         eventContextRecord = context.newRecord(EVENT_CONTEXT);

@@ -17,12 +17,11 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
+import java.util.List;
 import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.dao.access.jooq.TenantAccess;
 import org.ehrbase.dao.access.support.TenantSupport;
 import org.jooq.DSLContext;
-
-import java.util.List;
 
 public interface I_TenantAccess {
 

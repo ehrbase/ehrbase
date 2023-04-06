@@ -255,8 +255,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return addOperationalTemplateIntern(template, false, sysTenant);
     }
 
-    public String addOperationalTemplateIntern(
-            OPERATIONALTEMPLATE template, boolean overwrite, Short sysTenant) {
+    public String addOperationalTemplateIntern(OPERATIONALTEMPLATE template, boolean overwrite, Short sysTenant) {
         TenantSupport.isValidTenantId(sysTenant, () -> tenantService.getCurrentSysTenant())
                 .getOrThrow();
         validateTemplate(template);
@@ -368,8 +367,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private String findTemplateIdByUuid(UUID uuid) {
         return idxCacheUuidToTemplateId.computeIfAbsent(
-                CacheKey.of(uuid, tenantService.getCurrentSysTenant()),
-                ck -> listAllOperationalTemplates().stream()
+                CacheKey.of(uuid, tenantService.getCurrentSysTenant()), ck -> listAllOperationalTemplates().stream()
                         .filter(t -> t.getErrorList().isEmpty())
                         .filter(t -> t.getOperationaltemplate()
                                 .getUid()
@@ -386,8 +384,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
                     OPERATIONALTEMPLATE templ = retrieveOperationalTemplate(id)
                             .orElseThrow(() ->
                                     new IllegalArgumentException(String.format("Unknown template %s", templateId)));
-                    return CacheKey.of(
-                            UUID.fromString(templ.getUid().getValue()), tenantService.getCurrentSysTenant());
+                    return CacheKey.of(UUID.fromString(templ.getUid().getValue()), tenantService.getCurrentSysTenant());
                 })
                 .getVal();
     }
@@ -440,8 +437,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private OPERATIONALTEMPLATE getOperationaltemplateFromFileStorage(String filename) {
         var template = templateStorage.readOperationaltemplate(filename);
         template.ifPresent(existingTemplate -> idxCacheUuidToTemplateId.put(
-                CacheKey.of(TemplateUtils.getUid(existingTemplate), tenantService.getCurrentSysTenant()),
-                filename));
+                CacheKey.of(TemplateUtils.getUid(existingTemplate), tenantService.getCurrentSysTenant()), filename));
         return template.orElse(null);
     }
 

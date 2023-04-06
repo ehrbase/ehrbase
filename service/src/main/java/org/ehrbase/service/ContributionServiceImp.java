@@ -548,8 +548,8 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
         Short sysTenant = tenantService.getCurrentSysTenant();
 
-        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess(), sysTenant)
-                .retrieveInstance(this.getDataAccess(), auditId);
+        I_AuditDetailsAccess auditDetailsAccess =
+                new AuditDetailsAccess(this.getDataAccess(), sysTenant).retrieveInstance(this.getDataAccess(), auditId);
 
         String systemId = auditDetailsAccess.getSystemId().toString();
         PartyProxy committer =

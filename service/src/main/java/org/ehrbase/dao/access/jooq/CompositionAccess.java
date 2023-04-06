@@ -147,8 +147,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
      * @throws IllegalArgumentException when seeking language code, territory code
      *                                  or composer ID failed
      */
-    public CompositionAccess(
-            I_DomainAccess domainAccess, Composition composition, UUID ehrId, Short sysTenant) {
+    public CompositionAccess(I_DomainAccess domainAccess, Composition composition, UUID ehrId, Short sysTenant) {
         super(domainAccess);
 
         initRecord(

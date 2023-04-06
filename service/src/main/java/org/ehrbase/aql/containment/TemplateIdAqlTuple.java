@@ -50,9 +50,7 @@ public class TemplateIdAqlTuple implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TemplateIdAqlTuple that = (TemplateIdAqlTuple) o;
-        return templateId.equals(that.templateId)
-                && sysTenant.equals(that.sysTenant)
-                && aql.equals(that.aql);
+        return templateId.equals(that.templateId) && sysTenant.equals(that.sysTenant) && aql.equals(that.aql);
     }
 
     @Override

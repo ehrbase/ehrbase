@@ -512,8 +512,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
                     return Pair.of(
                             p.getLeft(),
                             new PersistedPartyProxy(getDataAccess())
-                                    .getOrCreate(
-                                            p.getRight().getSubject(), tenantService.getCurrentSysTenant()));
+                                    .getOrCreate(p.getRight().getSubject(), tenantService.getCurrentSysTenant()));
                 })
                 .collect(Collectors.toList());
     }

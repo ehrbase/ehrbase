@@ -17,6 +17,8 @@
  */
 package org.ehrbase.dao.access.jooq;
 
+import static org.ehrbase.jooq.pg.Tables.TENANT;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
@@ -38,8 +40,6 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.ehrbase.jooq.pg.Tables.TENANT;
 
 public class TenantAccess implements I_TenantAccess {
 
@@ -136,7 +136,8 @@ public class TenantAccess implements I_TenantAccess {
         Record tenant;
 
         try {
-            tenant = dslContext.select(TENANT.ID)
+            tenant = dslContext
+                    .select(TENANT.ID)
                     .from(TENANT)
                     .where(TENANT.TENANT_ID.eq(tenantId))
                     .fetchOne();
