@@ -110,11 +110,11 @@ public class EhrFolderRepository {
         UUID finalAuditId = Optional.ofNullable(auditId)
                 .orElseGet(() -> contributionRepository.createDefaultAudit(ContributionChangeType.creation));
 
-        Short namespace = tenantService.getCurrentSysTenant();
+        Short sysTenant = tenantService.getCurrentSysTenant();
 
         folderRecordList.forEach(r -> {
             r.setSysPeriodLower(sysPeriodLower);
-            r.setSysTenant(namespace);
+            r.setSysTenant(sysTenant);
             r.setContributionId(finalContributionId);
             r.setAuditId(finalAuditId);
         });

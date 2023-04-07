@@ -204,7 +204,7 @@ public interface I_ContributionAccess extends I_SimpleCRUD {
     void setEhrId(UUID ehrId);
 
     /**
-     * get the contribution namespace
+     * get the contribution system tenant
      */
     Short getSysTenant();
 

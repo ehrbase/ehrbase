@@ -503,7 +503,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
     }
 
     private static final String VERSION_QUERY =
-            "SELECT row_id, in_contribution, ehr_id, language, territory, composer, sys_transaction, has_audit, attestation_ref, feeder_audit, links, namespace from \n"
+            "SELECT row_id, in_contribution, ehr_id, language, territory, composer, sys_transaction, has_audit, attestation_ref, feeder_audit, links, sys_tenant from \n"
                     + "(SELECT ROW_NUMBER() OVER (ORDER BY sys_transaction ASC ) AS row_id, * FROM ehr.composition_history  WHERE id = ?) AS Version WHERE row_id = ?;";
 
     /**
