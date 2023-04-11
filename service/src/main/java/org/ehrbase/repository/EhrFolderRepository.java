@@ -348,9 +348,10 @@ public class EhrFolderRepository {
         SelectConditionStep<Record> headQuery =
                 headQuery(context).where(EHR_FOLDER.EHR_ID.eq(ehrId), EHR_FOLDER.SYS_VERSION.eq(version));
 
-        Field<?>[] fields = EHR_FOLDER.fields();
-        SelectConditionStep<Record> historyQuery = context.select(
-                        Arrays.stream(fields).map(EHR_FOLDER_HISTORY::field).toArray(Field[]::new))
+        Field<?>[] fields =
+                Arrays.stream(headQuery.fields()).map(EHR_FOLDER_HISTORY::field).toArray(Field[]::new);
+
+        SelectConditionStep<Record> historyQuery = context.select(fields)
                 .from(EHR_FOLDER_HISTORY)
                 .where(
                         EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId),
@@ -373,7 +374,11 @@ public class EhrFolderRepository {
         SelectConditionStep<Record> headQuery =
                 headQuery(context).where(EHR_FOLDER.EHR_ID.eq(ehrId), EHR_FOLDER.SYS_PERIOD_LOWER.lessOrEqual(time));
 
-        SelectConditionStep<EhrFolderHistoryRecord> historyQuery = context.selectFrom(EHR_FOLDER_HISTORY)
+        Field<?>[] fields =
+                Arrays.stream(headQuery.fields()).map(EHR_FOLDER_HISTORY::field).toArray(Field[]::new);
+
+        SelectConditionStep<Record> historyQuery = context.select(fields)
+                .from(EHR_FOLDER_HISTORY)
                 .where(
                         EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId),
                         EHR_FOLDER_HISTORY.SYS_PERIOD_LOWER.lessOrEqual(time),
