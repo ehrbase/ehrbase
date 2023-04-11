@@ -53,15 +53,7 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
 
     @Override
     public Short getCurrentSysTenant() {
-        String tenantId = I_TenantAccess.currentTenantIdentifier();
-        return getTenantByTenantId(
-                tenantId,
-                tenant -> I_TenantAccess.retrieveSysTenantByTenantId(
-                        super.getDataAccess().getContext(), tenantId));
-    }
-
-    private Short getTenantByTenantId(String tenantId, Function<String, Short> provider) {
-        return sysTenant.get(tenantId, () -> provider.apply(tenantId));
+        return I_TenantAccess.currentSysTenant(super.getDataAccess().getContext());
     }
 
     @Override

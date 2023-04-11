@@ -89,7 +89,7 @@ CREATE POLICY ehr_policy_ehrbase_migration ON ehr.ehr_folder FOR ALL TO ehrbase 
 ALTER TABLE ehr.ehr_folder ADD COLUMN sys_tenant SMALLINT default 1;
 ALTER TABLE ehr.ehr_folder ADD COLUMN sys_version_new INT;
 ALTER TABLE ehr.ehr_folder ADD COLUMN sys_period_lower_new timestamptz;
-update ehr.ehr_folder set sys_version_new = efh.sys_version, sys_period_lower_new = efh.sys_period_lower from ehr.ehr_folder efh;
+update ehr.ehr_folder set sys_version_new = sys_version, sys_period_lower_new = sys_period_lower;
 ALTER TABLE ehr.ehr_folder ALTER COLUMN sys_version_new SET NOT NULL;
 ALTER TABLE ehr.ehr_folder ALTER COLUMN sys_period_lower_new SET NOT NULL;
 ALTER TABLE ehr.ehr_folder DROP COLUMN sys_version;
@@ -103,19 +103,21 @@ ALTER TABLE ehr.ehr_folder_history ADD COLUMN sys_version_new INT;
 ALTER TABLE ehr.ehr_folder_history ADD COLUMN sys_period_lower_new timestamptz;
 ALTER TABLE ehr.ehr_folder_history ADD COLUMN sys_period_upper_new timestamptz;
 ALTER TABLE ehr.ehr_folder_history ADD COLUMN sys_deleted_new boolean;
-update ehr.ehr_folder_history set sys_version_new = efh.sys_version, sys_period_lower_new = efh.sys_period_lower, sys_period_upper_new = efh.sys_period_upper, sys_deleted_new = efh.sys_deleted from ehr.ehr_folder_history efh;
+update ehr.ehr_folder_history set sys_version_new = sys_version, sys_period_lower_new = sys_period_lower, sys_period_upper_new = sys_period_upper, sys_deleted_new = sys_deleted;
 ALTER TABLE ehr.ehr_folder_history ALTER COLUMN sys_version_new SET NOT NULL;
 ALTER TABLE ehr.ehr_folder_history ALTER COLUMN sys_period_lower_new SET NOT NULL;
-ALTER TABLE ehr.ehr_folder_history ALTER COLUMN sys_deleted SET NOT NULL;
+ALTER TABLE ehr.ehr_folder_history ALTER COLUMN sys_deleted_new SET NOT NULL;
 ALTER TABLE ehr.ehr_folder_history DROP CONSTRAINT ehr_folder_history_pkey;
+DROP INDEX IF EXISTS ehr.ehr_folder_history_pkey;
 ALTER TABLE ehr.ehr_folder_history DROP COLUMN sys_version;
 ALTER TABLE ehr.ehr_folder_history DROP COLUMN sys_period_lower;
 ALTER TABLE ehr.ehr_folder_history DROP COLUMN sys_period_upper;
 ALTER TABLE ehr.ehr_folder_history DROP COLUMN sys_deleted;
-ALTER TABLE ehr.ehr_folder_history RENAME sys_version_new TO sys_version;
-ALTER TABLE ehr.ehr_folder_history RENAME sys_period_lower_new TO sys_period_lower;
-ALTER TABLE ehr.ehr_folder_history RENAME sys_period_upper_new TO sys_period_upper;
-ALTER TABLE ehr.ehr_folder_history RENAME sys_deleted_new TO sys_deleted;
+ALTER TABLE ehr.ehr_folder_history RENAME COLUMN sys_version_new TO sys_version;
+ALTER TABLE ehr.ehr_folder_history RENAME COLUMN sys_period_lower_new TO sys_period_lower;
+ALTER TABLE ehr.ehr_folder_history RENAME COLUMN sys_period_upper_new TO sys_period_upper;
+ALTER TABLE ehr.ehr_folder_history RENAME COLUMN sys_deleted_new TO sys_deleted;
+CREATE UNIQUE INDEX ehr_folder_history_pkey ON ehr.ehr_folder_history (ehr_id, id, sys_version);
 ALTER TABLE ehr.ehr_folder_history ADD PRIMARY KEY (ehr_id, id, sys_version);
 
 -- updates the sys_tenant column in all tables in the ehr schema with the corresponding id value from the tenant table
