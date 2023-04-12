@@ -256,7 +256,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     public String addOperationalTemplateIntern(OPERATIONALTEMPLATE template, boolean overwrite, Short sysTenant) {
-        TenantSupport.isValidTenantId(sysTenant, () -> tenantService.getCurrentSysTenant())
+        TenantSupport.isValidTenantId(sysTenant, tenantService::getCurrentSysTenant)
                 .getOrThrow();
         validateTemplate(template);
 

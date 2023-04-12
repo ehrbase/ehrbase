@@ -419,21 +419,24 @@ public class StatusAccess extends DataAccess implements I_StatusAccess {
     }
 
     /**
-     * Helper to create a new {@link StatusAccess} instance from a queried record (either as {@link
+     * Helper to create a new {@link StatusAccess} instance from a queried statusRecord (either as {@link
      * StatusRecord} or {@link StatusHistoryRecord}), to return to service layer.
      *
      * @param domainAccess  General access
-     * @param record        Queried {@link StatusRecord} which contains ID of linked EHR, audit and
+     * @param statusRecord        Queried {@link StatusRecord} which contains ID of linked EHR, audit and
      *                      contribution. Give null if not used
-     * @param historyRecord Option: Same as record but as history input type. Give null if not used
+     * @param historyRecord Option: Same as statusRecord but as history input type. Give null if not used
      * @return Resulting access object
      */
     private static I_StatusAccess createStatusAccessForRetrieval(
-            I_DomainAccess domainAccess, StatusRecord record, StatusHistoryRecord historyRecord, Short sysTenant) {
+            I_DomainAccess domainAccess,
+            StatusRecord statusRecord,
+            StatusHistoryRecord historyRecord,
+            Short sysTenant) {
         StatusAccess statusAccess;
-        if (record != null) {
-            statusAccess = new StatusAccess(domainAccess, record.getEhrId(), sysTenant);
-            statusAccess.setStatusRecord(record);
+        if (statusRecord != null) {
+            statusAccess = new StatusAccess(domainAccess, statusRecord.getEhrId(), sysTenant);
+            statusAccess.setStatusRecord(statusRecord);
         } else if (historyRecord != null) {
             statusAccess = new StatusAccess(domainAccess, historyRecord.getEhrId(), sysTenant);
             statusAccess.setStatusRecord(historyRecord);

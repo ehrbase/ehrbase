@@ -49,6 +49,7 @@ public final class TenantSupport {
     private static final String COULD_NOT_FOUND_TENANT = "Could not found tenant by tenant identifier provided %s";
     private static final String WARN_NOT_SYS_TENANT =
             "Could not found sys tenant by tenant identifier provided, falling back to default sys tenant {}";
+    private static final String ERR_TENANT_ID_MISMATCH = "Provided tenant id[%s] does not match session tenant id[%s]";
 
     public static String currentTenantIdentifier() {
         return Optional.ofNullable(SecurityContextHolder.getContext())
@@ -64,19 +65,16 @@ public final class TenantSupport {
                 });
     }
 
-    private static final String ERR_TENANT_ID_MISSMATCH = "Provided tenant id[%s] does not match session tenant id[%s]";
-
     public static Try<Short, InternalServerException> isValidTenantId(Short tenantId, Supplier<Short> currentTenant) {
         Short currentTenantIdentifier = currentTenant.get();
 
         return currentTenantIdentifier.equals(tenantId)
                 ? Try.success(tenantId)
                 : Try.failure(new InternalServerException(
-                        String.format(ERR_TENANT_ID_MISSMATCH, tenantId, currentTenantIdentifier)));
+                        String.format(ERR_TENANT_ID_MISMATCH, tenantId, currentTenantIdentifier)));
     }
 
     public static Short currentSysTenant(DSLContext ctx) {
-
         String tenantId = currentTenantIdentifier();
         Short sysTenant;
         Optional<Cache> tenantCache = Optional.ofNullable(ApplicationContextProvider.getApplicationContext())
@@ -92,8 +90,7 @@ public final class TenantSupport {
                 throw new IllegalArgumentException(String.format(COULD_NOT_FOUND_TENANT, tenantId));
             }
         } else {
-            // TODO:: clarify.....this is reproducible if run this method from the tenant service...during the cache
-            // initialization post processors still not initialized so  getApplicationContext will return null
+            LOGGER.warn("Could not retrieve system tenant cache.");
             try {
                 sysTenant = I_TenantAccess.retrieveSysTenantByTenantId(ctx, tenantId);
             } catch (Exception e) {
