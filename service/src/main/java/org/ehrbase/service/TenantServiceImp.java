@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
@@ -52,7 +53,15 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
 
     @Override
     public Short getCurrentSysTenant() {
-        return I_TenantAccess.currentSysTenant(super.getDataAccess().getContext());
+        String tenantId = I_TenantAccess.currentTenantIdentifier();
+        return getTenantByTenantId(
+                tenantId,
+                tenant -> I_TenantAccess.retrieveSysTenantByTenantId(
+                        super.getDataAccess().getContext(), tenantId));
+    }
+
+    private Short getTenantByTenantId(String tenantId, Function<String, Short> provider) {
+        return sysTenant.get(tenantId, () -> provider.apply(tenantId));
     }
 
     @Override
