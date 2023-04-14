@@ -211,7 +211,18 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     private void initializeCaches(boolean init) throws InterruptedException {
+
         if (!init) return;
+
+        // fill concept cache.
+        I_DomainAccess domainAccess = new DataAccess(dslContext, this, null, null) {
+            @Override
+            public DataAccess getDataAccess() {
+                return this;
+            }
+        };
+        List.of(I_ConceptAccess.ContributionChangeType.values())
+                .forEach(c -> I_ConceptAccess.fetchContributionChangeType(domainAccess, c));
 
         List<Future<?>> collect = tenantService.getAll().stream()
                 .map(Tenant::getTenantId)
@@ -228,14 +239,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         collect.forEach(f -> {
             if (!f.isDone()) f.cancel(false);
         });
-        I_DomainAccess domainAccess = new DataAccess(dslContext, this, null, null) {
-            @Override
-            public DataAccess getDataAccess() {
-                return this;
-            }
-        };
-        List.of(I_ConceptAccess.ContributionChangeType.values())
-                .forEach(c -> I_ConceptAccess.fetchContributionChangeType(domainAccess, c));
     }
 
     @Override
