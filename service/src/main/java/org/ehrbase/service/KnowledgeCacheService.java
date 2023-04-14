@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.xmlbeans.XmlException;
@@ -131,8 +132,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             TemplateStorage templateStorage,
             CacheManager cacheManager,
             CacheOptions cacheOptions,
-            TenantService tenantService)
-            throws InterruptedException {
+            TenantService tenantService) {
 
         this.templateStorage = templateStorage;
         this.cacheOptions = cacheOptions;
@@ -148,7 +148,15 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         territoryCache = cacheManager.getCache(CacheOptions.TERRITORY_CACHE);
         languageCache = cacheManager.getCache(CacheOptions.LANGUAGE_CACHE);
-        initializeCaches(cacheOptions.isPreInitialize());
+    }
+
+    @PostConstruct
+    void init() {
+        try {
+            initializeCaches(cacheOptions.isPreInitialize());
+        } catch (InterruptedException e) {
+            // NOP
+        }
     }
 
     // fetch all tenants and initialize the caches for each tenant seperatly
