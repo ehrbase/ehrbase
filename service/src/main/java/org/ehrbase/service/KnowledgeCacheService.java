@@ -49,9 +49,6 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.cache.CacheOptions;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -212,6 +209,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         if (!init) return;
 
         // fill concept cache.
+
+        /*
         I_DomainAccess domainAccess = new DataAccess(dslContext, this, null, null) {
             @Override
             public DataAccess getDataAccess() {
@@ -220,6 +219,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         };
         List.of(I_ConceptAccess.ContributionChangeType.values())
                 .forEach(c -> I_ConceptAccess.fetchContributionChangeType(domainAccess, c));
+
+         */
 
         List<Future<?>> collect = tenantService.getAll().stream()
                 .map(Tenant::getTenantId)
