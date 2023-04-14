@@ -151,12 +151,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     @PostConstruct
-    void init() {
-        try {
-            initializeCaches(cacheOptions.isPreInitialize());
-        } catch (InterruptedException e) {
-            // NOP
-        }
+    void init() throws InterruptedException {
+
+        initializeCaches(cacheOptions.isPreInitialize());
     }
 
     // fetch all tenants and initialize the caches for each tenant seperatly
