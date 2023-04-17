@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.xmlbeans.XmlException;
@@ -48,9 +49,6 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.cache.CacheOptions;
-import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
@@ -60,12 +58,10 @@ import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 import org.ehrbase.webtemplate.parser.NodeId;
 import org.ehrbase.webtemplate.parser.OPTParser;
-import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -124,15 +120,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
 
-    @Autowired
-    private DSLContext dslContext;
-
     public KnowledgeCacheService(
             TemplateStorage templateStorage,
             CacheManager cacheManager,
             CacheOptions cacheOptions,
-            TenantService tenantService)
-            throws InterruptedException {
+            TenantService tenantService) {
 
         this.templateStorage = templateStorage;
         this.cacheOptions = cacheOptions;
@@ -148,6 +140,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         territoryCache = cacheManager.getCache(CacheOptions.TERRITORY_CACHE);
         languageCache = cacheManager.getCache(CacheOptions.LANGUAGE_CACHE);
+    }
+
+    @PostConstruct
+    void init() throws InterruptedException {
+
         initializeCaches(cacheOptions.isPreInitialize());
     }
 
@@ -203,6 +200,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     private void initializeCaches(boolean init) throws InterruptedException {
+
         if (!init) return;
 
         List<Future<?>> collect = tenantService.getAll().stream()
@@ -220,14 +218,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         collect.forEach(f -> {
             if (!f.isDone()) f.cancel(false);
         });
-        I_DomainAccess domainAccess = new DataAccess(dslContext, this, null, null) {
-            @Override
-            public DataAccess getDataAccess() {
-                return this;
-            }
-        };
-        List.of(I_ConceptAccess.ContributionChangeType.values())
-                .forEach(c -> I_ConceptAccess.fetchContributionChangeType(domainAccess, c));
     }
 
     @Override
