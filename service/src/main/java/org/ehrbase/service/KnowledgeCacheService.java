@@ -58,12 +58,10 @@ import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 import org.ehrbase.webtemplate.parser.NodeId;
 import org.ehrbase.webtemplate.parser.OPTParser;
-import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -121,9 +119,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
-
-    @Autowired
-    private DSLContext dslContext;
 
     public KnowledgeCacheService(
             TemplateStorage templateStorage,
@@ -207,20 +202,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private void initializeCaches(boolean init) throws InterruptedException {
 
         if (!init) return;
-
-        // fill concept cache.
-
-        /*
-        I_DomainAccess domainAccess = new DataAccess(dslContext, this, null, null) {
-            @Override
-            public DataAccess getDataAccess() {
-                return this;
-            }
-        };
-        List.of(I_ConceptAccess.ContributionChangeType.values())
-                .forEach(c -> I_ConceptAccess.fetchContributionChangeType(domainAccess, c));
-
-         */
 
         List<Future<?>> collect = tenantService.getAll().stream()
                 .map(Tenant::getTenantId)
