@@ -45,14 +45,11 @@ jobs:
       - name: Run Create DB script
         run: |
           docker run  -d --name ehrdb \
-                      -e POSTGRES_USER=${POSTGRES_USER} \ 
-                      -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+                      -e POSTGRES_USER=postgres \ 
+                      -e POSTGRES_PASSWORD=postgres \
                       -e DISABLE_SECURITY=true \
                       -p 5432:5432 ehrbase/ehrbase-postgres:13.4.v2
           sleep 30
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
 
       - name: Setup Java
         uses: actions/setup-java@v2
