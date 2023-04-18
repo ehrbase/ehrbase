@@ -42,6 +42,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Run Create DB script
+        run: |
+          docker run -d --name yugabyte  -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:2.16.2.0-b41 bin/yugabyted start --daemon=false
+          sleep 30
+          docker ps
+          psql -h localhost -p 5433 -f base/db-setup/createdb.sql
+        env:
+          PGUSER: postgres
+          PGPASSWORD: postgres
+
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
