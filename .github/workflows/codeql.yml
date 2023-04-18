@@ -44,13 +44,15 @@ jobs:
 
       - name: Run Create DB script
         run: |
-          docker run -d --name yugabyte  -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:2.16.2.0-b41 bin/yugabyted start --daemon=false
+          docker run -d --name postgres \
+                      -e POSTGRES_USER=$POSTGRES_USER \ 
+                      -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                      -e DISABLE_SECURITY=true \
+                      - p5432:5432 ehrbase/ehrbase-postgres:13.4.v2
           sleep 30
-          docker ps
-          psql -h localhost -p 5433 -f base/db-setup/createdb.sql
         env:
-          PGUSER: postgres
-          PGPASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
 
       - name: Setup Java
         uses: actions/setup-java@v2
