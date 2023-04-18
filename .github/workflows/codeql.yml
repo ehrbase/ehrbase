@@ -44,11 +44,11 @@ jobs:
 
       - name: Run Create DB script
         run: |
-          docker run -d --name postgres \
-                      -e POSTGRES_USER=$POSTGRES_USER \ 
-                      -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+          docker run  -d --name ehrdb \
+                      -e POSTGRES_USER=${POSTGRES_USER} \ 
+                      -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
                       -e DISABLE_SECURITY=true \
-                      - p5432:5432 ehrbase/ehrbase-postgres:13.4.v2
+                      -p 5432:5432 ehrbase/ehrbase-postgres:13.4.v2
           sleep 30
         env:
           POSTGRES_USER: postgres
