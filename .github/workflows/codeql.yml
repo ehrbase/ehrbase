@@ -38,18 +38,22 @@ jobs:
         # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
 
+    services:
+      ehrbase-db:
+        image: ehrbase/ehrbase-postgres:13.4.v2
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          EHRBASE_USER_ADMIN: ehrbase
+          EHRBASE_PASSWORD_ADMIN: ehrbase
+          EHRBASE_USER: ehrbase_restricted
+          EHRBASE_PASSWORD: ehrbase_restricted
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Run Create DB script
-        run: |
-          docker run  -d --name ehrdb \
-                      -e POSTGRES_USER=postgres \ 
-                      -e POSTGRES_PASSWORD=postgres \
-                      -e DISABLE_SECURITY=true \
-                      -p 5432:5432 ehrbase/ehrbase-postgres:13.4.v2
-          sleep 30
 
       - name: Setup Java
         uses: actions/setup-java@v2
