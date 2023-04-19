@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+- Sub-folders are retained in the response upon updating Folders. ([#1108](https://github.com/ehrbase/ehrbase/pull/1108))
  ### Changed 
  ### Fixed 
 - Fixes NPE if during start up with many templates in the system.  ([#1101](https://github.com/ehrbase/ehrbase/pull/1101))
