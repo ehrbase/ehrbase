@@ -472,9 +472,11 @@ public class EhrFolderRepository {
         folder2Record.setHierarchyIdxCap(encodeIndex(indexList, true));
         folder2Record.setHierarchyIdxLen(indexList.size());
 
-        // do not save hierarchy
+        // Exclude folders from JSON record, though, keep it for returning to client later
+        List<Folder> folders = folder.getFolders();
         folder.setFolders(null);
         folder2Record.setFields(JSONB.valueOf(new CanonicalJson().marshal(folder)));
+        folder.setFolders(folders);
 
         return folder2Record;
     }

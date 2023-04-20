@@ -106,9 +106,9 @@
         <ehrbase.sdk.version>1.27.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.5.13</flyway.version>
         <jackson-bom.version>2.13.5</jackson-bom.version>
-        <javamelody.version>1.92.0</javamelody.version>
+        <javamelody.version>1.94.0</javamelody.version>
         <joda.version>2.12.5</joda.version>
-        <jooq.version>3.16.5</jooq.version>
+        <jooq.version>3.18.3</jooq.version>
         <json-path.version>2.7.0</json-path.version>
         <junit.version>5.7.2</junit.version>
         <maven-dependency-plugin.version>3.5.0</maven-dependency-plugin.version>
@@ -118,7 +118,7 @@
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <postgresql.version>42.5.3</postgresql.version>
-        <prometheus.version>1.10.5</prometheus.version>
+        <prometheus.version>1.10.6</prometheus.version>
         <spring-boot.version>2.7.10</spring-boot.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->

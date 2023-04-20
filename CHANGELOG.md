@@ -7,9 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+- Sub-folders are retained in the response upon updating Folders. ([#1108](https://github.com/ehrbase/ehrbase/pull/1108))
  ### Changed 
  ### Fixed 
-
+- Fixes NPE if during start up with many templates in the system.  ([#1101](https://github.com/ehrbase/ehrbase/pull/1101))
 ## [0.26.0]
  ### Added
 - use from sdk archie version 3.0.0 and antlr4 version 4.11.1 ([#1078](https://github.com/ehrbase/ehrbase/pull/1078))
