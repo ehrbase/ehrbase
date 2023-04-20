@@ -17,6 +17,14 @@
  */
 package org.ehrbase.application.config.web;
 
+import static org.ehrbase.rest.BaseController.ADMIN_API_CONTEXT_PATH;
+import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
+import static org.ehrbase.rest.BaseController.COMPOSITION;
+import static org.ehrbase.rest.BaseController.EHR;
+import static org.ehrbase.rest.BaseController.EHR_STATUS;
+import static org.ehrbase.rest.BaseController.QUERY;
+import static org.ehrbase.rest.BaseController.VERSIONED_EHR_STATUS;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,14 +47,6 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static org.ehrbase.rest.BaseController.COMPOSITION;
-import static org.ehrbase.rest.BaseController.QUERY;
-import static org.ehrbase.rest.BaseController.EHR;
-import static org.ehrbase.rest.BaseController.EHR_STATUS;
-import static org.ehrbase.rest.BaseController.VERSIONED_EHR_STATUS;
-import static org.ehrbase.rest.BaseController.ADMIN_API_CONTEXT_PATH;
-import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
-
 /**
  * {@link Configuration} from Spring Web MVC.
  */
@@ -59,6 +59,7 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Value(API_CONTEXT_PATH_WITH_VERSION)
     protected String apiContextPath;
+
     @Value(ADMIN_API_CONTEXT_PATH)
     protected String adminApiContextPath;
 
@@ -112,8 +113,12 @@ public class WebConfiguration implements WebMvcConfigurer {
                     .addPathPatterns(contextPathPattern(QUERY, ANY_TRAILING_SEGMENTS));
             // Ehr Status endpoint.
             registry.addInterceptor(new EhrStatusAuditInterceptor(auditContext, ehrService, tenantService))
-                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS), contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS, ANY_TRAILING_SEGMENTS))
-                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS), contextPathPattern(EHR, ANY_SEGMENT, VERSIONED_EHR_STATUS, ANY_TRAILING_SEGMENTS));
+                    .addPathPatterns(
+                            contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS),
+                            contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS, ANY_TRAILING_SEGMENTS))
+                    .addPathPatterns(
+                            contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS),
+                            contextPathPattern(EHR, ANY_SEGMENT, VERSIONED_EHR_STATUS, ANY_TRAILING_SEGMENTS));
         }
     }
 

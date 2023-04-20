@@ -322,7 +322,10 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
             // Enriches request attributes with current compositionId for later audit processing
             addEhrIdAuditAttribute(request, ehrId);
-            addAuditAttribute(request, CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+            addAuditAttribute(
+                    request,
+                    CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE,
+                    extractVersionedObjectUidFromVersionUid(precedingVersionUid));
 
             return ResponseEntity.noContent().headers(headers).build();
         } catch (ObjectNotFoundException e) {

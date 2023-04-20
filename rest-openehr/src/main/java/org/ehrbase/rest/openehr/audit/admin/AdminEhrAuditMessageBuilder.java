@@ -56,7 +56,7 @@ public class AdminEhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<Admi
     protected ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {
         return switch (method) {
             case PUT -> ParticipantObjectDataLifeCycle.Amendment;
-            case DELETE ->  ParticipantObjectDataLifeCycle.PermanentErasure;
+            case DELETE -> ParticipantObjectDataLifeCycle.PermanentErasure;
             default -> throw new IllegalArgumentException(
                     "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
         };

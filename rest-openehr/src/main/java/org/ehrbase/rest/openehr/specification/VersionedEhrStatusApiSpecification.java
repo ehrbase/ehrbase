@@ -22,12 +22,11 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDateTime;
+import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.response.openehr.OriginalVersionResponseData;
 import org.ehrbase.response.openehr.RevisionHistoryResponseData;
 import org.ehrbase.response.openehr.VersionedObjectResponseData;
 import org.springframework.http.ResponseEntity;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Tag(name = "VERSIONED_EHR_STATUS")
 @SuppressWarnings("java:S107")

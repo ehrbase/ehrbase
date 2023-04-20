@@ -17,6 +17,10 @@
  */
 package org.ehrbase.rest.openehr.audit;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.TenantService;
@@ -25,11 +29,6 @@ import org.ehrbase.rest.openehr.audit.support.EhrStatusAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.model.AuditMessage;
 import org.springframework.beans.factory.annotation.Value;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Concrete implementation of {@link OpenEhrAuditInterceptor} for EHR API.
@@ -56,7 +55,10 @@ public class EhrStatusAuditInterceptor extends OpenEhrAuditInterceptor<EhrStatus
         super.enrichDataset(auditDataset, request, response);
 
         String location = response.getHeader("Location");
-        auditDataset.setEhrStatusUri(!isBlank(location) ? location : StringUtils.remove(request.getRequestURI(), "/ehrbase/rest/openehr/v1/"));
+        auditDataset.setEhrStatusUri(
+                !isBlank(location)
+                        ? location
+                        : StringUtils.remove(request.getRequestURI(), "/ehrbase/rest/openehr/v1/"));
     }
 
     @Override

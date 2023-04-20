@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
@@ -53,8 +54,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
@@ -79,7 +78,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
     @Override
     public ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept, HttpServletRequest request) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            HttpServletRequest request) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -105,7 +105,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @PathVariable(value = "ehr_id") String ehrIdString, HttpServletRequest request) {
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            HttpServletRequest request) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -137,7 +138,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
             @PathVariable(value = "ehr_id") String ehrIdString,
             @RequestParam(value = "version_at_time", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    LocalDateTime versionAtTime, HttpServletRequest request) {
+                    LocalDateTime versionAtTime,
+            HttpServletRequest request) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -187,7 +189,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
     public ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByVersionUid(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "version_uid") String versionUid, HttpServletRequest request) {
+            @PathVariable(value = "version_uid") String versionUid,
+            HttpServletRequest request) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 

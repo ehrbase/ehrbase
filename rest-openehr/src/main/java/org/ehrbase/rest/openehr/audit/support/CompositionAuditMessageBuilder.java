@@ -89,7 +89,7 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<C
             case POST -> ParticipantObjectDataLifeCycle.Origination;
             case PUT -> ParticipantObjectDataLifeCycle.Amendment;
             case GET -> ParticipantObjectDataLifeCycle.Disclosure;
-            case DELETE -> null;// todo::CLARIFY WHY BLANK
+            case DELETE -> null; // todo::CLARIFY WHY BLANK
             default -> throw new IllegalArgumentException(
                     "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
         };

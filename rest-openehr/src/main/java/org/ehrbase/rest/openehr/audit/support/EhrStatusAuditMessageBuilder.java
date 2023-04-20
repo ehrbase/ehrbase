@@ -53,10 +53,17 @@ public class EhrStatusAuditMessageBuilder extends OpenEhrAuditMessageBuilder<Ehr
                 resolveLifeCycle(auditDataset.getMethod()));
     }
 
-    public void addEhrStatusParticipantObjectIdentification(
-            EhrStatusAuditDataset auditDataset) {
+    public void addEhrStatusParticipantObjectIdentification(EhrStatusAuditDataset auditDataset) {
         delegate.addParticipantObjectIdentification(
-                ParticipantObjectIdTypeCode.URI,                null,                null,                null,                auditDataset.getEhrStatusUri(),                ParticipantObjectTypeCode.System,                null,                resolveLifeCycle(auditDataset.getMethod()),                null);
+                ParticipantObjectIdTypeCode.URI,
+                null,
+                null,
+                null,
+                auditDataset.getEhrStatusUri(),
+                ParticipantObjectTypeCode.System,
+                null,
+                resolveLifeCycle(auditDataset.getMethod()),
+                null);
     }
 
     private ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {

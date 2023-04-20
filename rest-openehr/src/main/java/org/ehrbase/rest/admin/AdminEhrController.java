@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
@@ -38,8 +39,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
@@ -90,7 +89,8 @@ public class AdminEhrController extends BaseController {
                     @RequestHeader(value = HttpHeaders.ACCEPT, required = false)
                     String accept,
             @Parameter(description = "Target EHR id to update", required = true) @PathVariable(value = "ehr_id")
-                    String ehrId, HttpServletRequest request) {
+                    String ehrId,
+            HttpServletRequest request) {
 
         // Check if EHR with id exists
         UUID ehrUuid = UUID.fromString(ehrId);
@@ -121,7 +121,8 @@ public class AdminEhrController extends BaseController {
             })
     public ResponseEntity<AdminDeleteResponseData> deleteEhr(
             @Parameter(description = "Target EHR id to delete", required = true) @PathVariable(value = "ehr_id")
-                    String ehrId, HttpServletRequest request) {
+                    String ehrId,
+            HttpServletRequest request) {
 
         UUID ehrUuid = UUID.fromString(ehrId);
         // Check if EHR with id exists
