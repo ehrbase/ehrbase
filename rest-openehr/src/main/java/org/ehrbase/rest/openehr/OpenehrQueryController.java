@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
@@ -37,6 +40,11 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
+import org.ehrbase.security.annotation.Action;
+import org.ehrbase.security.annotation.ResourceId;
+import org.ehrbase.security.annotation.TenantPolicyLookup;
+import org.ehrbase.security.annotation.XacmlAuthorization;
+import org.ehrbase.security.annotation.XacmlParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +70,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 1.0
  */
 @TenantAware
+@TenantPolicyLookup
 @RestController
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/query")
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
@@ -84,12 +93,15 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @XacmlAuthorization
+    @ResourceId(resourceId = "OpenehrQueryController")
+    @Action(action = "query_aql")
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @GetMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @RequestParam(name = "q") String query,
+            @XacmlParam @RequestParam(name = "q") String query,
             @RequestParam(name = "offset", required = false) Integer offset,
             @RequestParam(name = "fetch", required = false) Integer fetch,
             @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameters,
@@ -119,13 +131,16 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
+    @XacmlAuthorization
+    @ResourceId(resourceId = "OpenehrQueryController")
+    @Action(action = "query_aql")
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @PostMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     @SuppressWarnings("unchecked")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @RequestBody Map<String, Object> queryRequest,
+            @XacmlParam @RequestBody Map<String, Object> queryRequest,
             @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestHeader(name = CONTENT_TYPE) String contentType) {
 

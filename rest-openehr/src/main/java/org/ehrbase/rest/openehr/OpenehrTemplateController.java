@@ -50,6 +50,9 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
+import org.ehrbase.security.annotation.Action;
+import org.ehrbase.security.annotation.ResourceId;
+import org.ehrbase.security.annotation.XacmlAuthorization;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -156,6 +159,9 @@ public class OpenehrTemplateController extends BaseController implements Templat
     // significantly
     @Override
     @GetMapping("/adl1.4")
+    @XacmlAuthorization
+    @Action(action = "method:call:getTemplatesClassic")
+    @ResourceId(resourceId = "OpenehrTemplateController")
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity getTemplatesClassic(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267

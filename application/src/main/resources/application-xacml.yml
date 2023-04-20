@@ -1,0 +1,8 @@
+xacml.persistence:
+  hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  hibernate.hbm2ddl.auto: update
+  hibernate.default_schema: ehr
+  javax.persistence.jdbc.driver: org.postgresql.Driver
+  javax.persistence.jdbc.url: jdbc:postgresql://localhost:5432/ehrbase
+  javax.persistence.jdbc.user: ehrbase_restricted
+  javax.persistence.jdbc.password: ehrbase_restricted
