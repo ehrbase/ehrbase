@@ -158,7 +158,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         }
 
         // Enriches request attributes with current EhrId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(resultEhrId));
+        addEhrIdAuditAttribute(request, resultEhrId);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -224,7 +224,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                 buildEhrResponseData(EhrResponseData::new, ehrId, accept, headerList);
 
         // Enriches request attributes with current EhrId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
+        addEhrIdAuditAttribute(request, ehrId);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());

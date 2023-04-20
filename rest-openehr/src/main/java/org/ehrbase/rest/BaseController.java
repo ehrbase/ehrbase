@@ -25,12 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Collections;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,6 +41,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * This base controller implements the basic functionality for all specific controllers. This
@@ -96,6 +100,7 @@ public abstract class BaseController {
     // constants of all API resources
     public static final String EHR = "ehr";
     public static final String EHR_STATUS = "ehr_status";
+    public static final String VERSIONED_EHR_STATUS = "versioned_ehr_status";
     public static final String COMPOSITION = "composition";
     public static final String DIRECTORY = "directory";
     public static final String CONTRIBUTION = "contribution";
@@ -103,6 +108,7 @@ public abstract class BaseController {
     public static final String DEFINITION = "definition";
     public static final String TEMPLATE = "template";
     public static final String API_CONTEXT_PATH_WITH_VERSION = "${openehr-api.context-path:/rest/openehr}/v1";
+    public static final String ADMIN_API_CONTEXT_PATH = "${admin-api.context-path:/rest/admin}";
 
     public Map<String, Map<String, String>> add2MetaMap(
             Map<String, Map<String, String>> metaMap, String key, String value) {
@@ -319,5 +325,13 @@ public abstract class BaseController {
                                 e);
                     }
                 });
+    }
+
+    protected void addAuditAttribute(HttpServletRequest request, String attributeName, Object value) {
+        request.setAttribute(attributeName, value);
+    }
+
+    protected void addEhrIdAuditAttribute(HttpServletRequest request, UUID ehrId) {
+        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
     }
 }

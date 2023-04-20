@@ -26,6 +26,8 @@ import java.util.UUID;
 import org.ehrbase.response.openehr.EhrStatusResponseData;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * OpenAPI specification for openEHR REST API EHR_STATUS resource.
  *
@@ -47,7 +49,7 @@ public interface EhrStatusApiSpecification {
                 @ApiResponse(responseCode = "400"),
                 @ApiResponse(responseCode = "404")
             })
-    ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(UUID ehrId, String versionAtTime, String accept);
+    ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(UUID ehrId, String versionAtTime, String accept, HttpServletRequest request);
 
     @Operation(
             summary = "Get EHR_STATUS by version id",
@@ -56,7 +58,7 @@ public interface EhrStatusApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get-1"),
             responses = {@ApiResponse(responseCode = "200"), @ApiResponse(responseCode = "404")})
-    ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(UUID ehrId, String versionUid, String accept);
+    ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(UUID ehrId, String versionUid, String accept, HttpServletRequest request);
 
     @Operation(
             summary = "Update EHR_STATUS",
@@ -72,5 +74,5 @@ public interface EhrStatusApiSpecification {
                 @ApiResponse(responseCode = "412")
             })
     ResponseEntity<EhrStatusResponseData> updateEhrStatus(
-            UUID ehrId, String versionUid, String prefer, String accept, String contentType, EhrStatus ehrStatus);
+            UUID ehrId, String versionUid, String prefer, String accept, String contentType, EhrStatus ehrStatus, HttpServletRequest request);
 }

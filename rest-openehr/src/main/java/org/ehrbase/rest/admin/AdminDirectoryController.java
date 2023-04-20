@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
-        path = "${admin-api.context-path:/rest/admin}/ehr",
+        path = BaseController.ADMIN_API_CONTEXT_PATH + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminDirectoryController extends BaseController {
 

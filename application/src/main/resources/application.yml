@@ -202,7 +202,7 @@ management:
 # Audit Properties
 ipf:
   atna:
-    audit-enabled: false
+    audit-enabled: true
 
 # External Terminology Validation Properties
 validation:

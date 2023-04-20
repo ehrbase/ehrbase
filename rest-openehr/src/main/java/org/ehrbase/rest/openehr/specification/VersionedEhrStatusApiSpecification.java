@@ -27,6 +27,8 @@ import org.ehrbase.response.openehr.RevisionHistoryResponseData;
 import org.ehrbase.response.openehr.VersionedObjectResponseData;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Tag(name = "VERSIONED_EHR_STATUS")
 @SuppressWarnings("java:S107")
 public interface VersionedEhrStatusApiSpecification {
@@ -38,7 +40,7 @@ public interface VersionedEhrStatusApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get"))
     ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
-            String ehrIdString, String accept);
+            String ehrIdString, String accept, HttpServletRequest request);
 
     @Operation(
             summary = "Get versioned EHR_STATUS revision history",
@@ -47,7 +49,7 @@ public interface VersionedEhrStatusApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-1"))
     ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
-            String accept, String ehrIdString);
+            String accept, String ehrIdString, HttpServletRequest request);
 
     @Operation(
             summary = "Get versioned EHR_STATUS version by time",
@@ -56,7 +58,7 @@ public interface VersionedEhrStatusApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-2"))
     ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByTime(
-            String accept, String ehrIdString, LocalDateTime versionAtTime);
+            String accept, String ehrIdString, LocalDateTime versionAtTime, HttpServletRequest request);
 
     @Operation(
             summary = "Get versioned EHR_STATUS version by id",
@@ -65,5 +67,5 @@ public interface VersionedEhrStatusApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-3"))
     ResponseEntity<OriginalVersionResponseData<EhrStatus>> retrieveVersionOfEhrStatusByVersionUid(
-            String accept, String ehrIdString, String versionUid);
+            String accept, String ehrIdString, String versionUid, HttpServletRequest request);
 }

@@ -44,33 +44,23 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<C
     }
 
     private static EventActionCode resolveEventActionCode(HttpMethod method) {
-        switch (method) {
-            case POST:
-                return EventActionCode.Create;
-            case GET:
-                return EventActionCode.Read;
-            case PUT:
-                return EventActionCode.Update;
-            case DELETE:
-                return EventActionCode.Delete;
-            default:
-                throw new IllegalArgumentException("Cannot resolve EventActionCode, method not supported");
-        }
+        return switch (method) {
+            case POST -> EventActionCode.Create;
+            case GET -> EventActionCode.Read;
+            case PUT -> EventActionCode.Update;
+            case DELETE -> EventActionCode.Delete;
+            default -> throw new IllegalArgumentException("Cannot resolve EventActionCode, method not supported");
+        };
     }
 
     private static EventType resolveEventType(HttpMethod method) {
-        switch (method) {
-            case POST:
-                return OpenEhrEventTypeCode.CREATE;
-            case GET:
-                return null;
-            case PUT:
-                return OpenEhrEventTypeCode.UPDATE;
-            case DELETE:
-                return OpenEhrEventTypeCode.DELETE;
-            default:
-                throw new IllegalArgumentException("Cannot resolve EventType, method not supported");
-        }
+        return switch (method) {
+            case POST -> OpenEhrEventTypeCode.CREATE;
+            case GET -> null;
+            case PUT -> OpenEhrEventTypeCode.UPDATE;
+            case DELETE -> OpenEhrEventTypeCode.DELETE;
+            default -> throw new IllegalArgumentException("Cannot resolve EventType, method not supported");
+        };
     }
 
     public CompositionAuditMessageBuilder addCompositionParticipantObjectIdentification(
@@ -95,18 +85,13 @@ public class CompositionAuditMessageBuilder extends OpenEhrAuditMessageBuilder<C
     }
 
     private ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {
-        switch (method) {
-            case POST:
-                return ParticipantObjectDataLifeCycle.Origination;
-            case PUT:
-                return ParticipantObjectDataLifeCycle.Amendment;
-            case GET:
-                return ParticipantObjectDataLifeCycle.Disclosure;
-            case DELETE:
-                return null;
-            default:
-                throw new IllegalArgumentException(
-                        "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
-        }
+        return switch (method) {
+            case POST -> ParticipantObjectDataLifeCycle.Origination;
+            case PUT -> ParticipantObjectDataLifeCycle.Amendment;
+            case GET -> ParticipantObjectDataLifeCycle.Disclosure;
+            case DELETE -> null;// todo::CLARIFY WHY BLANK
+            default -> throw new IllegalArgumentException(
+                    "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
+        };
     }
 }

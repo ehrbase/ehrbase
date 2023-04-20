@@ -108,7 +108,10 @@ public abstract class OpenEhrAuditInterceptor<T extends OpenEhrAuditDataset> imp
         }
 
         // Patient ParticipantObjectIdentification
-        auditDataset.addPatientParticipantObjectIds(getPatientNumbers(request));
+        // Ehr has no longer exists in case of DELETE
+        if(!HttpMethod.DELETE.matches(request.getMethod())){
+            auditDataset.addPatientParticipantObjectIds(getPatientNumbers(request));
+        }
         auditDataset.setAuditEnterpriseSiteId(tenantService.getCurrentTenantIdentifier());
     }
 

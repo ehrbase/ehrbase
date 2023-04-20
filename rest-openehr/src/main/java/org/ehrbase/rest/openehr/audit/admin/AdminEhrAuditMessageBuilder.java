@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,21 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.audit.support;
+package org.ehrbase.rest.openehr.audit.admin;
 
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditDataset;
+import org.ehrbase.rest.openehr.audit.support.OpenEhrAuditMessageBuilder;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.openehealth.ipf.commons.audit.codes.EventActionCode;
 import org.openehealth.ipf.commons.audit.codes.EventIdCode;
 import org.openehealth.ipf.commons.audit.codes.ParticipantObjectDataLifeCycle;
 import org.springframework.http.HttpMethod;
 
-/**
- * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for EHR AuditMessages.
- */
-public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditMessageBuilder> {
+public class AdminEhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<AdminEhrAuditMessageBuilder> {
 
-    public EhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
+    public AdminEhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
         super(
                 auditContext,
                 auditDataset,
@@ -40,13 +38,13 @@ public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditM
 
     protected static EventActionCode resolveEventActionCode(HttpMethod method) {
         return switch (method) {
-            case POST, PUT -> EventActionCode.Create;
-            case GET -> EventActionCode.Read;
+            case PUT -> EventActionCode.Update;
+            case DELETE -> EventActionCode.Delete;
             default -> throw new IllegalArgumentException("Cannot resolve EventActionCode, method not supported");
         };
     }
 
-    public EhrAuditMessageBuilder addPatientParticipantObjectIdentification(OpenEhrAuditDataset auditDataset) {
+    public AdminEhrAuditMessageBuilder addPatientParticipantObjectIdentification(OpenEhrAuditDataset auditDataset) {
         delegate.addPatientParticipantObject(
                 auditDataset.getUniquePatientParticipantObjectId(),
                 null,
@@ -57,8 +55,8 @@ public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditM
 
     protected ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {
         return switch (method) {
-            case POST, PUT -> ParticipantObjectDataLifeCycle.Origination;
-            case GET -> ParticipantObjectDataLifeCycle.Disclosure;
+            case PUT -> ParticipantObjectDataLifeCycle.Amendment;
+            case DELETE ->  ParticipantObjectDataLifeCycle.PermanentErasure;
             default -> throw new IllegalArgumentException(
                     "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");
         };

@@ -17,8 +17,6 @@
  */
 package org.ehrbase.application.config.web;
 
-import static org.ehrbase.rest.BaseController.*;
-
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,7 +26,9 @@ import org.ehrbase.api.service.TenantService;
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.EhrAuditInterceptor;
+import org.ehrbase.rest.openehr.audit.EhrStatusAuditInterceptor;
 import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
+import org.ehrbase.rest.openehr.audit.admin.AdminEhrAuditInterceptor;
 import org.openehealth.ipf.commons.audit.AuditContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -38,6 +38,14 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import static org.ehrbase.rest.BaseController.COMPOSITION;
+import static org.ehrbase.rest.BaseController.QUERY;
+import static org.ehrbase.rest.BaseController.EHR;
+import static org.ehrbase.rest.BaseController.EHR_STATUS;
+import static org.ehrbase.rest.BaseController.VERSIONED_EHR_STATUS;
+import static org.ehrbase.rest.BaseController.ADMIN_API_CONTEXT_PATH;
+import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
 
 /**
  * {@link Configuration} from Spring Web MVC.
@@ -51,6 +59,8 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Value(API_CONTEXT_PATH_WITH_VERSION)
     protected String apiContextPath;
+    @Value(ADMIN_API_CONTEXT_PATH)
+    protected String adminApiContextPath;
 
     private final CorsProperties properties;
 
@@ -94,13 +104,28 @@ public class WebConfiguration implements WebMvcConfigurer {
             // Ehr endpoint
             registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns(contextPathPattern(EHR), contextPathPattern(EHR, ANY_SEGMENT));
+            // Delete ehr admin endpoint
+            registry.addInterceptor(new AdminEhrAuditInterceptor(auditContext, ehrService, tenantService))
+                    .addPathPatterns(contextAdminPathPattern(EHR), contextAdminPathPattern(EHR, ANY_SEGMENT));
             // Query endpoint
             registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns(contextPathPattern(QUERY, ANY_TRAILING_SEGMENTS));
+            // Ehr Status endpoint.
+            registry.addInterceptor(new EhrStatusAuditInterceptor(auditContext, ehrService, tenantService))
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS), contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS, ANY_TRAILING_SEGMENTS))
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS), contextPathPattern(EHR, ANY_SEGMENT, VERSIONED_EHR_STATUS, ANY_TRAILING_SEGMENTS));
         }
     }
 
     private String contextPathPattern(String... segments) {
+        return getPathPattern(apiContextPath, segments);
+    }
+
+    private String contextAdminPathPattern(String... segments) {
+        return getPathPattern(adminApiContextPath, segments);
+    }
+
+    private String getPathPattern(String apiContextPath, String[] segments) {
         return Stream.concat(Stream.of(apiContextPath), Arrays.stream(segments)).collect(Collectors.joining("/"));
     }
 }

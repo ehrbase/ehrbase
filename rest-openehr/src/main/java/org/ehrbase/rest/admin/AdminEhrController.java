@@ -39,6 +39,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
  */
@@ -47,7 +49,7 @@ import org.springframework.web.bind.annotation.*;
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
-        path = "${admin-api.context-path:/rest/admin}/ehr",
+        path = BaseController.ADMIN_API_CONTEXT_PATH + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminEhrController extends BaseController {
 
@@ -88,13 +90,14 @@ public class AdminEhrController extends BaseController {
                     @RequestHeader(value = HttpHeaders.ACCEPT, required = false)
                     String accept,
             @Parameter(description = "Target EHR id to update", required = true) @PathVariable(value = "ehr_id")
-                    String ehrId) {
+                    String ehrId, HttpServletRequest request) {
 
         // Check if EHR with id exists
         UUID ehrUuid = UUID.fromString(ehrId);
         if (!ehrService.hasEhr(ehrUuid)) {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
+        addEhrIdAuditAttribute(request, ehrUuid);
 
         // TODO: Implement endpoint functionality
 
@@ -118,7 +121,7 @@ public class AdminEhrController extends BaseController {
             })
     public ResponseEntity<AdminDeleteResponseData> deleteEhr(
             @Parameter(description = "Target EHR id to delete", required = true) @PathVariable(value = "ehr_id")
-                    String ehrId) {
+                    String ehrId, HttpServletRequest request) {
 
         UUID ehrUuid = UUID.fromString(ehrId);
         // Check if EHR with id exists
@@ -127,6 +130,7 @@ public class AdminEhrController extends BaseController {
         }
 
         ehrService.adminDeleteEhr(ehrUuid);
+        addEhrIdAuditAttribute(request, ehrUuid);
 
         return ResponseEntity.noContent().build();
     }

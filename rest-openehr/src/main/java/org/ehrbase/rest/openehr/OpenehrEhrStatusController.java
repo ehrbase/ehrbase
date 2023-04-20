@@ -39,6 +39,7 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrStatusResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.audit.EhrStatusAuditInterceptor;
 import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.http.HttpHeaders;
@@ -54,6 +55,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Controller for /ehr/{ehrId}/ehr_status resource of openEHR REST API
@@ -83,7 +86,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     public ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestParam(name = "version_at_time", required = false) String versionAtTime,
-            @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept) {
+            @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept,
+            HttpServletRequest request) {
 
         assertEhrExists(ehrId);
 
@@ -100,7 +104,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         UUID statusUid = ehrService.getEhrStatusVersionedObjectUidByEhr(ehrId);
 
-        return internalGetEhrStatusProcessing(accept, ehrId, statusUid, version);
+        return internalGetEhrStatusProcessing(accept, ehrId, statusUid, version, request);
     }
 
     /**
@@ -113,7 +117,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     public ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @PathVariable(name = "version_uid") String versionUid,
-            @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept) {
+            @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept,
+            HttpServletRequest request) {
 
         assertEhrExists(ehrId);
 
@@ -128,7 +133,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 .getUid()
                 .toString());
 
-        return internalGetEhrStatusProcessing(accept, ehrId, ehrStatusId, version);
+        return internalGetEhrStatusProcessing(accept, ehrId, ehrStatusId, version, request);
     }
 
     /**
@@ -144,7 +149,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
             @RequestHeader(name = PREFER, required = false) String prefer,
             @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
-            @RequestBody EhrStatus ehrStatus) {
+            @RequestBody EhrStatus ehrStatus,
+            HttpServletRequest request) {
 
         assertEhrExists(ehrId);
 
@@ -174,6 +180,9 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
+        addEhrIdAuditAttribute(request, ehrId);
+        addAuditAttribute(request, EhrStatusAuditInterceptor.VERSION_ATTRIBUTE, version);
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
@@ -191,12 +200,15 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     }
 
     private ResponseEntity<EhrStatusResponseData> internalGetEhrStatusProcessing(
-            String accept, UUID ehrId, UUID ehrStatusId, int version) {
+            String accept, UUID ehrId, UUID ehrStatusId, int version, HttpServletRequest request) {
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
 
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
+
+        addEhrIdAuditAttribute(request, ehrId);
+        addAuditAttribute(request, EhrStatusAuditInterceptor.VERSION_ATTRIBUTE, version);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());

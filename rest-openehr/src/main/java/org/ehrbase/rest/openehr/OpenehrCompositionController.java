@@ -27,7 +27,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,7 +47,6 @@ import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
-import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.ehrbase.rest.openehr.specification.CompositionApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,8 +140,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 buildCompositionResponseData(ehrId, compositionUuid, 1, accept, uri, headerList, responseDataSupplier);
 
         // Enriches request attributes with current compositionId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-        request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUuid);
+        addEhrIdAuditAttribute(request, ehrId);
+        addAuditAttribute(request, CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUuid);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -246,8 +244,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             }
 
             // Enriches request attributes with current compositionId for later audit processing
-            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-            request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionId);
+            addEhrIdAuditAttribute(request, ehrId);
+            addAuditAttribute(request, CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionId);
 
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
@@ -323,10 +321,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .toEpochMilli());
 
             // Enriches request attributes with current compositionId for later audit processing
-            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-            request.setAttribute(
-                    CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE,
-                    extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+            addEhrIdAuditAttribute(request, ehrId);
+            addAuditAttribute(request, CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, extractVersionedObjectUidFromVersionUid(precedingVersionUid));
 
             return ResponseEntity.noContent().headers(headers).build();
         } catch (ObjectNotFoundException e) {
@@ -396,9 +392,9 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 ehrId, compositionUid, version, accept, uri, headerList, () -> new CompositionResponseData(null, null));
 
         // Enriches request attributes with ehrId, compositionId and version for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-        request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUid);
-        request.setAttribute(CompositionAuditInterceptor.VERSION_ATTRIBUTE, version);
+        addEhrIdAuditAttribute(request, ehrId);
+        addAuditAttribute(request, CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUid);
+        addAuditAttribute(request, CompositionAuditInterceptor.VERSION_ATTRIBUTE, version);
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())

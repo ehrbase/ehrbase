@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -17,19 +17,18 @@
  */
 package org.ehrbase.rest.openehr.audit.support;
 
+import org.ehrbase.rest.openehr.audit.EhrStatusAuditDataset;
 import org.ehrbase.rest.openehr.audit.OpenEhrAuditDataset;
 import org.openehealth.ipf.commons.audit.AuditContext;
-import org.openehealth.ipf.commons.audit.codes.EventActionCode;
-import org.openehealth.ipf.commons.audit.codes.EventIdCode;
-import org.openehealth.ipf.commons.audit.codes.ParticipantObjectDataLifeCycle;
+import org.openehealth.ipf.commons.audit.codes.*;
 import org.springframework.http.HttpMethod;
 
 /**
- * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for EHR AuditMessages.
+ * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for EHR status AuditMessages.
  */
-public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditMessageBuilder> {
+public class EhrStatusAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrStatusAuditMessageBuilder> {
 
-    public EhrAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
+    public EhrStatusAuditMessageBuilder(AuditContext auditContext, OpenEhrAuditDataset auditDataset) {
         super(
                 auditContext,
                 auditDataset,
@@ -40,24 +39,29 @@ public class EhrAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrAuditM
 
     protected static EventActionCode resolveEventActionCode(HttpMethod method) {
         return switch (method) {
-            case POST, PUT -> EventActionCode.Create;
+            case PUT -> EventActionCode.Update;
             case GET -> EventActionCode.Read;
             default -> throw new IllegalArgumentException("Cannot resolve EventActionCode, method not supported");
         };
     }
 
-    public EhrAuditMessageBuilder addPatientParticipantObjectIdentification(OpenEhrAuditDataset auditDataset) {
+    public void addPatientParticipantObjectIdentification(EhrStatusAuditDataset auditDataset) {
         delegate.addPatientParticipantObject(
                 auditDataset.getUniquePatientParticipantObjectId(),
                 null,
                 null,
                 resolveLifeCycle(auditDataset.getMethod()));
-        return this;
     }
 
-    protected ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {
+    public void addEhrStatusParticipantObjectIdentification(
+            EhrStatusAuditDataset auditDataset) {
+        delegate.addParticipantObjectIdentification(
+                ParticipantObjectIdTypeCode.URI,                null,                null,                null,                auditDataset.getEhrStatusUri(),                ParticipantObjectTypeCode.System,                null,                resolveLifeCycle(auditDataset.getMethod()),                null);
+    }
+
+    private ParticipantObjectDataLifeCycle resolveLifeCycle(HttpMethod method) {
         return switch (method) {
-            case POST, PUT -> ParticipantObjectDataLifeCycle.Origination;
+            case PUT -> ParticipantObjectDataLifeCycle.Amendment;
             case GET -> ParticipantObjectDataLifeCycle.Disclosure;
             default -> throw new IllegalArgumentException(
                     "Cannot resolve ParticipantObjectDataLifeCycle, method not supported");

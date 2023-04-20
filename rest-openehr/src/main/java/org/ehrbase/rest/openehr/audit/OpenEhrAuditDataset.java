@@ -20,6 +20,7 @@ package org.ehrbase.rest.openehr.audit;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.ehrbase.api.exception.InternalServerException;
@@ -85,7 +86,7 @@ public class OpenEhrAuditDataset implements Serializable {
     }
 
     public Set<String> getPatientParticipantObjectIds() {
-        return patientParticipantObjectIds.stream().filter(id -> id != null).collect(Collectors.toSet());
+        return patientParticipantObjectIds.stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     public void setPatientParticipantObjectIds(Set<String> patientParticipantObjectIds) {
