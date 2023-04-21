@@ -17,13 +17,7 @@
  */
 package org.ehrbase.application.config.web;
 
-import static org.ehrbase.rest.BaseController.ADMIN_API_CONTEXT_PATH;
-import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
-import static org.ehrbase.rest.BaseController.COMPOSITION;
-import static org.ehrbase.rest.BaseController.EHR;
-import static org.ehrbase.rest.BaseController.EHR_STATUS;
-import static org.ehrbase.rest.BaseController.QUERY;
-import static org.ehrbase.rest.BaseController.VERSIONED_EHR_STATUS;
+import static org.ehrbase.rest.BaseController.*;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -105,13 +99,13 @@ public class WebConfiguration implements WebMvcConfigurer {
             // Ehr endpoint
             registry.addInterceptor(new EhrAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns(contextPathPattern(EHR), contextPathPattern(EHR, ANY_SEGMENT));
-            // Delete ehr admin endpoint
+            // Ehr admin endpoint
             registry.addInterceptor(new AdminEhrAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns(contextAdminPathPattern(EHR), contextAdminPathPattern(EHR, ANY_SEGMENT));
             // Query endpoint
             registry.addInterceptor(new QueryAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns(contextPathPattern(QUERY, ANY_TRAILING_SEGMENTS));
-            // Ehr Status endpoint.
+            // Ehr Status and Versioned Ehr Status endpoints
             registry.addInterceptor(new EhrStatusAuditInterceptor(auditContext, ehrService, tenantService))
                     .addPathPatterns(
                             contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS),

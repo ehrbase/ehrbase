@@ -24,7 +24,7 @@ import org.openehealth.ipf.commons.audit.codes.*;
 import org.springframework.http.HttpMethod;
 
 /**
- * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for EHR status AuditMessages.
+ * Concrete implementation of {@link OpenEhrAuditMessageBuilder} for EHR Status AuditMessages.
  */
 public class EhrStatusAuditMessageBuilder extends OpenEhrAuditMessageBuilder<EhrStatusAuditMessageBuilder> {
 

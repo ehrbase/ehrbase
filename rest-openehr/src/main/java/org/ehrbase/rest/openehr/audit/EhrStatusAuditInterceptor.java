@@ -31,14 +31,14 @@ import org.openehealth.ipf.commons.audit.model.AuditMessage;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
- * Concrete implementation of {@link OpenEhrAuditInterceptor} for EHR API.
+ * Concrete implementation of {@link OpenEhrAuditInterceptor} for EHR Status API.
  */
 public class EhrStatusAuditInterceptor extends OpenEhrAuditInterceptor<EhrStatusAuditDataset> {
 
+    public static final String VERSION_ATTRIBUTE = EhrStatusAuditInterceptor.class.getName() + ".VERSION";
+
     @Value(BaseController.API_CONTEXT_PATH_WITH_VERSION)
     protected String apiContextPathWithVersion;
-
-    public static final String VERSION_ATTRIBUTE = CompositionAuditInterceptor.class.getName() + ".VERSION";
 
     public EhrStatusAuditInterceptor(AuditContext auditContext, EhrService ehrService, TenantService tenantService) {
         super(auditContext, ehrService, tenantService);

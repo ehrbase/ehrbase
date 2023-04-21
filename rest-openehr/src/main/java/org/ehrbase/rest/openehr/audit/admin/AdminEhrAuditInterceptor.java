@@ -41,9 +41,11 @@ public class AdminEhrAuditInterceptor extends OpenEhrAuditInterceptor<OpenEhrAud
     @Override
     protected AuditMessage[] getAuditMessages(OpenEhrAuditDataset auditDataset) {
         AdminEhrAuditMessageBuilder builder = new AdminEhrAuditMessageBuilder(auditContext, auditDataset);
+
         if (auditDataset.hasPatientParticipantObjectIds()) {
             builder.addPatientParticipantObjectIdentification(auditDataset);
         }
+
         return builder.getMessages();
     }
 }
