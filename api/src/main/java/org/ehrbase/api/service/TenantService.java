@@ -18,17 +18,28 @@
 package org.ehrbase.api.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.api.tenant.Tenant;
 
 public interface TenantService extends BaseService {
     Short getCurrentSysTenant();
 
+    Short getSysTenantByTenantId(String tenantId);
+
     String getCurrentTenantIdentifier();
 
-    Short create(Tenant tenant);
+    String create(Tenant tenant);
 
     Tenant update(Tenant tenant);
+
+    /**
+     * Retrieves a map containing the tenant id and corresponding system tenant value
+     * for all tenants in the system.
+     *
+     *  @return a {@code Map} containing the tenant id as the key and system tenant as the value
+     */
+    Map<String, Short> getSysTenants();
 
     Optional<Tenant> findBy(String tenantId);
 

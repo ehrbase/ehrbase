@@ -49,7 +49,6 @@ import org.ehrbase.aql.containment.JsonPathQueryResult;
 import org.ehrbase.aql.containment.TemplateIdAqlTuple;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.cache.CacheOptions;
-import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.tenant.DefaultTenantAuthentication;
@@ -116,6 +115,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache /*<Pair<String, String>, ConceptValue>*/ conceptByDescription;
     private final Cache /*<String, TerritoryValue>*/ territoryCache;
     private final Cache /*<String, LanguageValue>*/ languageCache;
+    private final Cache sysTenantCache;
 
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
@@ -140,6 +140,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         territoryCache = cacheManager.getCache(CacheOptions.TERRITORY_CACHE);
         languageCache = cacheManager.getCache(CacheOptions.LANGUAGE_CACHE);
+        sysTenantCache = cacheManager.getCache(CacheOptions.SYS_TENANT);
     }
 
     @PostConstruct
@@ -200,10 +201,12 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     private void initializeCaches(boolean init) throws InterruptedException {
-
         if (!init) return;
 
-        List<Future<?>> collect = tenantService.getAll().stream()
+        tenantService.getSysTenants().forEach(sysTenantCache::put);
+
+        List<Tenant> tenants = tenantService.getAll();
+        List<Future<?>> collect = tenants.stream()
                 .map(Tenant::getTenantId)
                 .map(this::initCachePerTenant)
                 .collect(Collectors.toList());
@@ -226,9 +229,9 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     @Override
-    public String addOperationalTemplate(InputStream inputStream, Short sysTenant) {
+    public String addOperationalTemplate(InputStream inputStream) {
         OPERATIONALTEMPLATE template = buildOperationalTemplate(inputStream);
-        return addOperationalTemplateIntern(template, false, sysTenant);
+        return addOperationalTemplateIntern(template, false);
     }
 
     private OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
@@ -241,13 +244,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     }
 
     @Override
-    public String addOperationalTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
-        return addOperationalTemplateIntern(template, false, sysTenant);
+    public String addOperationalTemplate(OPERATIONALTEMPLATE template) {
+        return addOperationalTemplateIntern(template, false);
     }
 
-    public String addOperationalTemplateIntern(OPERATIONALTEMPLATE template, boolean overwrite, Short sysTenant) {
-        TenantSupport.isValidTenantId(sysTenant, tenantService::getCurrentSysTenant)
-                .getOrThrow();
+    private String addOperationalTemplateIntern(OPERATIONALTEMPLATE template, boolean overwrite) {
         validateTemplate(template);
 
         String templateId;
@@ -267,8 +268,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
             invalidateCache(template);
         }
 
-        templateStorage.storeTemplate(template, sysTenant);
-        putIntoCache(template, sysTenant);
+        templateStorage.storeTemplate(template, tenantService.getCurrentSysTenant());
+        putIntoCache(template, tenantService.getCurrentSysTenant());
 
         preBuildQueries(templateId, cacheOptions.isPreBuildQueries());
 
@@ -280,15 +281,13 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         getQueryOptMetaData(templateId).findAllContainmentCombinations().stream()
                 .filter(nodeIds -> !nodeIds.isEmpty() && nodeIds.size() <= cacheOptions.getPreBuildQueriesDepth())
-                .forEach(nodeIds -> {
-                    execService.submit(
-                            new SecCtxAwareRunnable(
-                                    SecurityContextHolder.getContext().getAuthentication()) {
-                                void doRun() {
-                                    resolveForTemplate(templateId, nodeIds);
-                                }
-                            });
-                });
+                .forEach(nodeIds -> execService.submit(
+                        new SecCtxAwareRunnable(
+                                SecurityContextHolder.getContext().getAuthentication()) {
+                            void doRun() {
+                                resolveForTemplate(templateId, nodeIds);
+                            }
+                        }));
     }
 
     private void putIntoCache(OPERATIONALTEMPLATE template, Short sysTenant) {
@@ -309,7 +308,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     public String adminUpdateOperationalTemplate(InputStream content) {
         OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
-        return addOperationalTemplateIntern(template, true, tenantService.getCurrentSysTenant());
+        return addOperationalTemplateIntern(template, true);
     }
 
     // invalidates some derived caches like the queryOptMetaDataCache which depend on the template

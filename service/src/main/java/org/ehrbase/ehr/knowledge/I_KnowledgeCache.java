@@ -46,12 +46,12 @@ public interface I_KnowledgeCache {
      * @param content operational template input
      * @return resulting template ID, when successful
      * @throws InvalidApiParameterException when input can't be pared to OPT instance
-     * @throws StateConflictException when template with same template ID is already in the system
-     * @throws InternalServerException when an unspecified problem occurs
+     * @throws StateConflictException       when template with same template ID is already in the system
+     * @throws InternalServerException      when an unspecified problem occurs
      */
-    String addOperationalTemplate(InputStream content, Short sysTenant);
+    String addOperationalTemplate(InputStream content);
 
-    String addOperationalTemplate(OPERATIONALTEMPLATE template, Short sysTenant);
+    String addOperationalTemplate(OPERATIONALTEMPLATE template);
 
     List<TemplateMetaData> listAllOperationalTemplates() throws IOException;
 

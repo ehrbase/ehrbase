@@ -45,8 +45,14 @@ import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.DeleteConditionStep;
+import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.SelectConditionStep;
+import org.jooq.SelectJoinStep;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -348,8 +354,7 @@ public class EhrFolderRepository {
         SelectConditionStep<Record> headQuery =
                 headQuery(context).where(EHR_FOLDER.EHR_ID.eq(ehrId), EHR_FOLDER.SYS_VERSION.eq(version));
 
-        Field<?>[] fields =
-                Arrays.stream(headQuery.fields()).map(EHR_FOLDER_HISTORY::field).toArray(Field[]::new);
+        Field<?>[] fields = convertToEhrFolderHistoryFields(headQuery.fields());
 
         SelectConditionStep<Record> historyQuery = context.select(fields)
                 .from(EHR_FOLDER_HISTORY)
@@ -359,6 +364,17 @@ public class EhrFolderRepository {
                         EHR_FOLDER_HISTORY.SYS_DELETED.isFalse());
 
         return headQuery.unionAll(historyQuery).fetch().into(EHR_FOLDER_HISTORY);
+    }
+
+    /**
+     * Converts an array of JOOQ {@link Field}s to an array of JOOQ {@link Field}s of type {@code EHR_FOLDER_HISTORY},
+     * applying a given {@link Function} to each field.
+     *
+     * @param fields the array of JOOQ {@link Field}s to be converted
+     * @return an array of JOOQ {@link Field}s of type {@code EHR_FOLDER_HISTORY}
+     * */
+    public Field<?>[] convertToEhrFolderHistoryFields(Field<?>[] fields) {
+        return Arrays.stream(fields).map(EHR_FOLDER_HISTORY::field).toArray(Field[]::new);
     }
 
     private static SelectJoinStep<Record> headQuery(DSLContext context) {
@@ -374,8 +390,7 @@ public class EhrFolderRepository {
         SelectConditionStep<Record> headQuery =
                 headQuery(context).where(EHR_FOLDER.EHR_ID.eq(ehrId), EHR_FOLDER.SYS_PERIOD_LOWER.lessOrEqual(time));
 
-        Field<?>[] fields =
-                Arrays.stream(headQuery.fields()).map(EHR_FOLDER_HISTORY::field).toArray(Field[]::new);
+        Field<?>[] fields = convertToEhrFolderHistoryFields(headQuery.fields());
 
         SelectConditionStep<Record> historyQuery = context.select(fields)
                 .from(EHR_FOLDER_HISTORY)

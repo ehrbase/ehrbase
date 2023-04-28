@@ -52,9 +52,9 @@ import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
-import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.ContributionDef.ContributionState;
 import org.ehrbase.dao.access.util.TransactionTime;
@@ -244,7 +244,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
         }
 
         if (record == null || record.size() == 0) {
-            logger.warn("Could not retrieve ehr for party:" + subjectId);
+            logger.warn("Could not retrieve ehr for party: {}", subjectId);
             return null;
         }
 
@@ -257,11 +257,8 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
             throw new IllegalArgumentException("Version number must be > 0");
         }
 
-        EhrAccess ehrAccess = new EhrAccess(
-                domainAccess,
-                ehrId,
-                I_TenantAccess.currentSysTenant(
-                        domainAccess.getContext())); // minimal access, needs attributes to be set before returning
+        // minimal access, needs attributes to be set before returning
+        EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId, TenantSupport.currentSysTenant());
         EhrRecord record;
 
         // necessary anyway, but if no version is provided assume latest version (otherwise this one will be overwritten
@@ -347,8 +344,7 @@ public class EhrAccess extends DataAccess implements I_EhrAccess {
      */
     public static I_EhrAccess retrieveInstance(I_DomainAccess domainAccess, UUID ehrId) {
         DSLContext context = domainAccess.getContext();
-        EhrAccess ehrAccess =
-                new EhrAccess(domainAccess, ehrId, I_TenantAccess.currentSysTenant(domainAccess.getContext()));
+        EhrAccess ehrAccess = new EhrAccess(domainAccess, ehrId, TenantSupport.currentSysTenant());
 
         EhrRecord record;
 

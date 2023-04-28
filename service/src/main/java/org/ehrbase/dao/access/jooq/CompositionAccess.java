@@ -54,9 +54,9 @@ import org.ehrbase.dao.access.interfaces.I_ContextAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
-import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
+import org.ehrbase.dao.access.support.TenantSupport;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
@@ -566,7 +566,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
             compositionHistoryAccess.setContributionAccess(contributionAccess);
 
             I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(
-                            domainAccess.getDataAccess(), I_TenantAccess.currentSysTenant(domainAccess.getContext()))
+                            domainAccess.getDataAccess(), TenantSupport.currentSysTenant())
                     .retrieveInstance(domainAccess.getDataAccess(), compositionHistoryAccess.getAuditDetailsId());
             compositionHistoryAccess.setAuditDetailsAccess(auditDetailsAccess);
 
@@ -630,7 +630,7 @@ public class CompositionAccess extends DataAccess implements I_CompositionAccess
         compositionAccess.setContributionAccess(contributionAccess);
         // retrieve corresponding audit
         I_AuditDetailsAccess auditAccess = new AuditDetailsAccess(
-                        domainAccess.getDataAccess(), I_TenantAccess.currentSysTenant(domainAccess.getContext()))
+                        domainAccess.getDataAccess(), TenantSupport.currentSysTenant())
                 .retrieveInstance(domainAccess.getDataAccess(), compositionAccess.getAuditDetailsId());
         compositionAccess.setAuditDetailsAccess(auditAccess);
 

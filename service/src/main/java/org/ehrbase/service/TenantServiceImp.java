@@ -19,17 +19,24 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.Tenant;
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.dao.access.interfaces.I_TenantAccess;
+import org.ehrbase.tenant.DefaultTenantAuthentication;
 import org.jooq.DSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +47,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TenantServiceImp extends BaseServiceImp implements TenantService {
 
-    private final Cache sysTenant;
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private static final String ERR_GETTING_TENANT = "Could not retrieve system tenant cache for tenant id: %s";
+    private static final String WARN_NOT_TENANT_ID =
+            "No tenant identifier provided, falling back to default tenant identifier {}";
+
+    private final Cache sysTenantCache;
 
     public TenantServiceImp(
             @Lazy KnowledgeCacheService knowledgeCacheService,
@@ -48,41 +61,54 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
             DSLContext context,
             ServerConfig serverConfig) {
         super(knowledgeCacheService, context, serverConfig);
-        this.sysTenant = cacheManager.getCache(CacheOptions.SYS_TENANT);
+        this.sysTenantCache = cacheManager.getCache(CacheOptions.SYS_TENANT);
     }
 
     @Override
     public Short getCurrentSysTenant() {
-        String tenantId = I_TenantAccess.currentTenantIdentifier();
-        return getTenantByTenantId(
-                tenantId,
-                tenant -> I_TenantAccess.retrieveSysTenantByTenantId(
-                        super.getDataAccess().getContext(), tenantId));
+        return retrieveFromCache(getCurrentTenantIdentifier());
     }
 
-    private Short getTenantByTenantId(String tenantId, Function<String, Short> provider) {
-        return sysTenant.get(tenantId, () -> provider.apply(tenantId));
+    @Override
+    public Short getSysTenantByTenantId(String tenantId) {
+        return retrieveFromCache(tenantId);
+    }
+
+    private Short retrieveFromCache(String tenantId) {
+        return Optional.ofNullable(sysTenantCache.get(tenantId))
+                .map(Cache.ValueWrapper::get)
+                .map(Short.class::cast)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(ERR_GETTING_TENANT, tenantId)));
     }
 
     @Override
     public String getCurrentTenantIdentifier() {
-        return I_TenantAccess.currentTenantIdentifier();
+        return Optional.ofNullable(SecurityContextHolder.getContext())
+                .map(SecurityContext::getAuthentication)
+                .filter(DefaultTenantAuthentication.class::isInstance)
+                .map(DefaultTenantAuthentication.class::cast)
+                .map(DefaultTenantAuthentication::getTenantId)
+                .filter(StringUtils::isNotEmpty)
+                .orElseGet(() -> {
+                    log.warn(WARN_NOT_TENANT_ID, TenantAuthentication.getDefaultTenantId());
+                    return TenantAuthentication.getDefaultTenantId();
+                });
     }
 
     @Override
-    public Short create(Tenant tenant) {
+    public String create(Tenant tenant) {
         I_TenantAccess tenantAccess =
                 I_TenantAccess.getNewInstance(getDataAccess().getContext(), tenant);
-        Short savedSysTenant = tenantAccess.commit();
-        sysTenant.put(tenant.getTenantId(), savedSysTenant);
+        Short sysTenant = tenantAccess.commit();
+        sysTenantCache.put(tenant.getTenantId(), sysTenant);
 
-        return savedSysTenant;
+        return tenant.getTenantId();
     }
 
     @Override
     public List<Tenant> getAll() {
         return I_TenantAccess.getAll(getDataAccess().getContext()).stream()
-                .map(ta -> ta.convert())
+                .map(I_TenantAccess::convert)
                 .collect(Collectors.toList());
     }
 
@@ -90,12 +116,17 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     public Optional<Tenant> findBy(String tenantId) {
         return Optional.ofNullable(
                         I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenantId))
-                .map(acc -> acc.convert());
+                .map(I_TenantAccess::convert);
     }
 
     @Override
     public Tenant update(Tenant tenant) {
         return I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenant.getTenantId())
                 .update(tenant);
+    }
+
+    @Override
+    public Map<String, Short> getSysTenants() {
+        return I_TenantAccess.getSysTenants(getDataAccess().getContext());
     }
 }

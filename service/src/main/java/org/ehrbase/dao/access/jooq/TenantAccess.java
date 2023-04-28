@@ -17,7 +17,7 @@
  */
 package org.ehrbase.dao.access.jooq;
 
-import static org.ehrbase.jooq.pg.Tables.TENANT;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
@@ -36,16 +36,9 @@ import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.jooq.pg.tables.records.TenantRecord;
 import org.jooq.DSLContext;
 import org.jooq.JSON;
-import org.jooq.Record;
 import org.jooq.Result;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TenantAccess implements I_TenantAccess {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TenantAccess.class);
-
-    private static final String COULD_NOT_RETRIEVE_SYS_TENANT = "Could not retrieve sys tenant by tenant id: {}";
 
     private final TenantRecord record;
 
@@ -62,7 +55,7 @@ public class TenantAccess implements I_TenantAccess {
         rec.setTenantId(tenant.getTenantId());
         rec.setTenantName(tenant.getTenantName());
         String json = mapToJson.apply(tenant.getTenantProperties());
-        rec.setTenantProperties(JSON.json(json));
+        rec.setTenantProperties(isNotBlank(json) ? JSON.json(json) : null);
         return rec;
     }
 
@@ -83,6 +76,11 @@ public class TenantAccess implements I_TenantAccess {
         return Optional.ofNullable(ctx.fetchOne(Tables.TENANT, Tables.TENANT.TENANT_ID.eq(tenantId)))
                 .map(rec -> new TenantAccess(ctx, rec))
                 .orElse(null);
+    }
+
+    public static Map<String, Short> getSysTenants(DSLContext ctx) {
+        return ctx.fetch(Tables.TENANT).stream()
+                .collect(Collectors.toMap(TenantRecord::getTenantId, TenantRecord::getId));
     }
 
     private static Function<Map<String, Object>, String> mapToJson = map -> {
@@ -118,39 +116,18 @@ public class TenantAccess implements I_TenantAccess {
         };
     }
 
-    private static final String ERR_TENANT_ID = "Updateing tenant id[%s] is not allowed";
+    private static final String ERR_TENANT_ID = "Updating tenant id[%s] is not allowed";
 
+    @Override
     public Tenant update(Tenant tenant) {
         if (!record.getTenantId().equals(tenant.getTenantId()))
-            new InternalServerException(String.format(ERR_TENANT_ID, tenant.getTenantId()));
+            throw new InternalServerException(String.format(ERR_TENANT_ID, tenant.getTenantId()));
 
         record.setTenantName(tenant.getTenantName());
         String json = mapToJson.apply(tenant.getTenantProperties());
-        record.setTenantProperties(JSON.json(json));
+        record.setTenantProperties(isNotBlank(json) ? JSON.json(json) : null);
         record.update();
+
         return convert();
-    }
-
-    public static Short retrieveSysTenantByTenantId(DSLContext dslContext, String tenantId) {
-
-        Record tenant;
-
-        try {
-            tenant = dslContext
-                    .select(TENANT.ID)
-                    .from(TENANT)
-                    .where(TENANT.TENANT_ID.eq(tenantId))
-                    .fetchOne();
-
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Could not retrieve sys tenant.", e);
-        }
-
-        if (tenant == null || tenant.size() == 0) {
-            LOG.warn(COULD_NOT_RETRIEVE_SYS_TENANT, tenantId);
-            return null;
-        }
-
-        return (Short) tenant.getValue(0);
     }
 }
