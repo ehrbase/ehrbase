@@ -177,7 +177,7 @@ $$
 
                         EXECUTE (query);
 
-                    ELSE -- TODO:: no need to do that
+                    ELSE
                         query := 'Omitted query: ALTER TABLE ' || FK_records.table_name || ' DROP CONSTRAINT ' ||
                                  FK_records.conname;
                         RAISE NOTICE '%', query;
@@ -316,7 +316,7 @@ $$
                                  REPLACE(FK_records.constraintdef, ')', ', sys_tenant)');
                         RAISE NOTICE '%', query;
                         EXECUTE (query);
-                    ELSE -- TODO:: no need to do that
+                    ELSE
                         query := 'Omitted query: ALTER TABLE ' || FK_records.table_name || ' ADD CONSTRAINT ' ||
                                  FK_records.conname ||
                                  ' ' ||
