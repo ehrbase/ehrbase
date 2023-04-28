@@ -91,79 +91,6 @@ $$
     END
 $$;
 
--- Recreate the indexes for the tables that contain namespace
-DO
-$$
-    DECLARE
-        indexdef    text;
-        index_table text;
-        query       TEXT;
-    BEGIN
-        RAISE NOTICE '----Start recreating indexes where namespace participate----';
-        FOR indexdef, index_table IN
-            SELECT pg_get_indexdef(c.oid) AS indexdef,
-                   c.relname              AS index_table
-            FROM pg_class c
-                     LEFT JOIN pg_attribute a ON a.attrelid = c.oid
-            WHERE a.attname = 'namespace'
-              and c.relname not in
-                  ('template_store_pkey', 'entry_composition_id_key', 'status_ehr_id_key', 'users_pkey')
-              and c.reltype = 0
-            LOOP
-                IF indexdef IS NOT NULL THEN
-                    EXECUTE format('DROP INDEX ehr.%I', index_table);
-                    query := (
-                        REPLACE(REPLACE(indexdef, '(namespace', '(sys_tenant'), ', namespace', ', sys_tenant'));
-                    RAISE NOTICE '%', query;
-
-                    EXECUTE (query);
-                END IF;
-            END LOOP;
-        RAISE NOTICE '----Stop recreating indexes where namespace participate----';
-    END
-$$;
-
--- Recreate unique indexes
-ALTER TABLE ehr.status
-    DROP CONSTRAINT status_ehr_id_key;
-DROP INDEX IF EXISTS status_ehr_idx;
-ALTER TABLE ehr.status
-    ADD CONSTRAINT status_ehr_id_key UNIQUE (ehr_id, sys_tenant);
-
-ALTER TABLE ehr.entry
-    DROP CONSTRAINT entry_composition_id_key;
-DROP INDEX IF EXISTS ehr.entry_composition_id_idx;
-ALTER TABLE ehr.entry
-    ADD CONSTRAINT entry_composition_id_key UNIQUE (composition_id, sys_tenant);
-
--- Create foreign keys for sys_tenant
-DO
-$$
-    DECLARE
-        table_name  TEXT;
-        column_name TEXT;
-        query       TEXT;
-    BEGIN
-        RAISE NOTICE '----Start creating tenant id foreign keys----';
-        FOR table_name, column_name IN
-            SELECT c.table_name, c.column_name
-            FROM information_schema.columns c
-                     INNER JOIN information_schema.tables t
-                                ON c.table_schema = t.table_schema AND c.table_name = t.table_name
-            WHERE t.table_schema = 'ehr'
-              AND c.column_name = 'sys_tenant'
-              AND t.table_type = 'BASE TABLE'
-            LOOP
-                query := format(
-                        'ALTER TABLE ehr.%I ADD CONSTRAINT %I_fkey FOREIGN KEY (sys_tenant) REFERENCES ehr.tenant (id)',
-                        table_name, table_name);
-                RAISE NOTICE '%', query;
-
-                EXECUTE (query);
-            END LOOP;
-        RAISE NOTICE '----Stop creating tenant id foreign keys----';
-    END
-$$;
 
 -- Create temporary tables before dropping constraints
 CREATE TEMP TABLE filtered_tables_foreign_keys AS
@@ -198,8 +125,17 @@ CREATE TEMP TABLE key_column_usage_ AS (select *
                                         from information_schema.key_column_usage);
 CREATE TEMP TABLE constraint_column_usage_ AS (select *
                                                from information_schema.constraint_column_usage);
+CREATE TEMP TABLE table_indexdef AS (SELECT pg_get_indexdef(c.oid) AS indexdef,
+                                            c.relname              AS index_table
+                                     FROM pg_class c
+                                              LEFT JOIN pg_attribute a ON a.attrelid = c.oid
+                                     WHERE a.attname = 'namespace'
+                                       and c.relname not in
+                                           ('template_store_pkey', 'entry_composition_id_key', 'status_ehr_id_key',
+                                            'users_pkey')
+                                       and c.reltype = 0);
 
--- Dropping all constraints
+-- Dropping all foreign keys
 DO
 $$
     DECLARE
@@ -221,7 +157,7 @@ $$
                                                 ON ccu.constraint_name = tc.constraint_name
                                                     AND ccu.table_schema = tc.table_schema
                                   WHERE tc.constraint_type = 'FOREIGN KEY'
-                                    AND tc.table_name = REPLACE(FK_records.table_name, 'ehr.', '')
+                                    AND tc.constraint_schema = 'ehr'
                                     AND tc.constraint_name = FK_records.conname
                                   limit 1);
                 IF length(foreign_table) > 0 THEN
@@ -235,14 +171,14 @@ $$
                             AND t.table_type = 'BASE TABLE');
 
                     IF s > 0 THEN
-                        query := 'ALTER TABLE ehr.' || FK_records.table_name || ' DROP CONSTRAINT ' ||
+                        query := 'ALTER TABLE ' || FK_records.table_name || ' DROP CONSTRAINT ' ||
                                  FK_records.conname;
                         RAISE NOTICE '%', query;
 
                         EXECUTE (query);
 
                     ELSE -- TODO:: no need to do that
-                        query := 'Omitted query: ALTER TABLE ehr.' || FK_records.table_name || ' DROP CONSTRAINT ' ||
+                        query := 'Omitted query: ALTER TABLE ' || FK_records.table_name || ' DROP CONSTRAINT ' ||
                                  FK_records.conname;
                         RAISE NOTICE '%', query;
                     end if;
@@ -251,6 +187,43 @@ $$
         RAISE NOTICE '----Stop dropping constraints-----';
     END
 $$;
+
+
+-- Drop the indexes for the tables that contain namespace
+DO
+$$
+    DECLARE
+        indexdef    text;
+        index_table text;
+        query       TEXT;
+    BEGIN
+        RAISE NOTICE '----Start dropping indexes where namespace participate----';
+        FOR indexdef, index_table IN
+            SELECT pg_get_indexdef(c.oid) AS indexdef,
+                   c.relname              AS index_table
+            FROM pg_class c
+                     LEFT JOIN pg_attribute a ON a.attrelid = c.oid
+            WHERE a.attname = 'namespace'
+              and c.relname not in
+                  ('template_store_pkey', 'entry_composition_id_key', 'status_ehr_id_key', 'users_pkey')
+              and c.reltype = 0
+            LOOP
+                IF indexdef IS NOT NULL THEN
+                    query := format('DROP INDEX ehr.%I', index_table);
+                    RAISE NOTICE '%', query;
+
+                    EXECUTE (query);
+                END IF;
+            END LOOP;
+        RAISE NOTICE '----Stop dropping indexes where namespace participate----';
+    END
+$$;
+ALTER TABLE ehr.status
+    DROP CONSTRAINT status_ehr_id_key;
+DROP INDEX IF EXISTS status_ehr_idx;
+ALTER TABLE ehr.entry
+    DROP CONSTRAINT entry_composition_id_key;
+DROP INDEX IF EXISTS ehr.entry_composition_id_idx;
 
 -- Creating primary keys
 DO
@@ -276,6 +249,32 @@ $$
     END
 $$;
 
+-- Create the indexes for the tables that contain namespace
+DO
+$$
+    DECLARE
+        indexdef    TEXT;
+        index_table TEXT;
+        query       TEXT;
+    BEGIN
+        RAISE NOTICE '----Start creating indexes where namespace participate----';
+        FOR indexdef, index_table IN (select * from table_indexdef)
+            LOOP
+                query := (
+                    REPLACE(REPLACE(indexdef, '(namespace', '(sys_tenant'), ', namespace', ', sys_tenant'));
+                RAISE NOTICE '%', query;
+
+                EXECUTE (query);
+            END LOOP;
+        RAISE NOTICE '----Stop creating indexes where namespace participate----';
+    END
+$$;
+
+ALTER TABLE ehr.status
+    ADD CONSTRAINT status_ehr_id_key UNIQUE (ehr_id, sys_tenant);
+ALTER TABLE ehr.entry
+    ADD CONSTRAINT entry_composition_id_key UNIQUE (composition_id, sys_tenant);
+
 -- Recreating all foreign keys including sys_tenant
 DO
 $$
@@ -298,7 +297,7 @@ $$
                                                 ON ccu.constraint_name = tc.constraint_name
                                                     AND ccu.table_schema = tc.table_schema
                                   WHERE tc.constraint_type = 'FOREIGN KEY'
-                                    AND tc.table_name = REPLACE(FK_records.table_name, 'ehr.', '')
+                                    AND tc.constraint_schema = 'ehr'
                                     AND tc.constraint_name = FK_records.conname
                                   limit 1);
                 IF length(foreign_table) > 0 THEN
@@ -312,13 +311,13 @@ $$
                             AND t.table_type = 'BASE TABLE');
 
                     IF s > 0 THEN
-                        query := 'ALTER TABLE ehr.' || FK_records.table_name || ' ADD CONSTRAINT ' ||
+                        query := 'ALTER TABLE ' || FK_records.table_name || ' ADD CONSTRAINT ' ||
                                  FK_records.conname || ' ' ||
                                  REPLACE(FK_records.constraintdef, ')', ', sys_tenant)');
                         RAISE NOTICE '%', query;
                         EXECUTE (query);
                     ELSE -- TODO:: no need to do that
-                        query := 'Omitted query: ALTER TABLE ehr.' || FK_records.table_name || ' ADD CONSTRAINT ' ||
+                        query := 'Omitted query: ALTER TABLE ' || FK_records.table_name || ' ADD CONSTRAINT ' ||
                                  FK_records.conname ||
                                  ' ' ||
                                  FK_records.constraintdef;
@@ -330,6 +329,33 @@ $$
     END
 $$;
 
+-- Create foreign keys for sys_tenant
+DO
+$$
+    DECLARE
+        table_name  TEXT;
+        column_name TEXT;
+        query       TEXT;
+    BEGIN
+        RAISE NOTICE '----Start creating tenant id foreign keys----';
+        FOR table_name, column_name IN
+            SELECT c.table_name, c.column_name
+            FROM information_schema.columns c
+                     INNER JOIN information_schema.tables t
+                                ON c.table_schema = t.table_schema AND c.table_name = t.table_name
+            WHERE t.table_schema = 'ehr'
+              AND c.column_name = 'sys_tenant'
+              AND t.table_type = 'BASE TABLE'
+            LOOP
+                query := format(
+                        'ALTER TABLE ehr.%I ADD FOREIGN KEY (sys_tenant) REFERENCES ehr.tenant (id)', table_name);
+                RAISE NOTICE '%', query;
+
+                EXECUTE (query);
+            END LOOP;
+        RAISE NOTICE '----Stop creating tenant id foreign keys----';
+    END
+$$;
 
 -- Clean up and recreate policies
 DO
@@ -358,3 +384,4 @@ DROP TABLE IF EXISTS key_column_usage_;
 DROP TABLE IF EXISTS constraint_column_usage_;
 DROP TABLE IF EXISTS tables_;
 DROP TABLE IF EXISTS columns_;
+DROP TABLE IF EXISTS table_indexdef;
