@@ -40,6 +40,7 @@ import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
+import org.ehrbase.security.annotation.XacmlAuthorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -75,6 +76,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
+    @XacmlAuthorization
     @PostMapping // (consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
@@ -98,6 +100,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
+    @XacmlAuthorization
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
