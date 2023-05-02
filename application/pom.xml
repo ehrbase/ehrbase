@@ -30,6 +30,7 @@
     </parent>
 
     <artifactId>application</artifactId>
+    <packaging>jar</packaging>
 
     <properties>
         <docker.image.prefix>vitasystems/hip-openehr</docker.image.prefix>
