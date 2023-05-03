@@ -42,6 +42,7 @@ import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.ehrbase.security.annotation.Action;
 import org.ehrbase.security.annotation.ResourceId;
+import org.ehrbase.security.annotation.TenantPolicyLookup;
 import org.ehrbase.security.annotation.XacmlAuthorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -64,6 +65,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Controller for /ehr resource of openEHR REST API
  */
 @TenantAware
+@TenantPolicyLookup
 @RestController
 @RequestMapping(
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
