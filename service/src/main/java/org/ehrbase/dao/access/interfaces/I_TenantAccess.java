@@ -18,7 +18,6 @@
 package org.ehrbase.dao.access.interfaces;
 
 import java.util.List;
-import java.util.Map;
 import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.dao.access.jooq.TenantAccess;
 import org.jooq.DSLContext;
@@ -35,10 +34,6 @@ public interface I_TenantAccess {
 
     static I_TenantAccess retrieveInstanceBy(DSLContext ctx, String tenantId) {
         return TenantAccess.retrieveInstanceBy(ctx, tenantId);
-    }
-
-    static Map<String, Short> getSysTenants(DSLContext ctx) {
-        return TenantAccess.getSysTenants(ctx);
     }
 
     Tenant update(Tenant tenant);

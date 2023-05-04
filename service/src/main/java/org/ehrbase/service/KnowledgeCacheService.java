@@ -115,7 +115,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private final Cache /*<Pair<String, String>, ConceptValue>*/ conceptByDescription;
     private final Cache /*<String, TerritoryValue>*/ territoryCache;
     private final Cache /*<String, LanguageValue>*/ languageCache;
-    private final Cache sysTenantCache;
 
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
@@ -140,7 +139,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
         territoryCache = cacheManager.getCache(CacheOptions.TERRITORY_CACHE);
         languageCache = cacheManager.getCache(CacheOptions.LANGUAGE_CACHE);
-        sysTenantCache = cacheManager.getCache(CacheOptions.SYS_TENANT);
     }
 
     @PostConstruct
@@ -202,8 +200,6 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private void initializeCaches(boolean init) throws InterruptedException {
         if (!init) return;
-
-        tenantService.getSysTenants().forEach(sysTenantCache::put);
 
         List<Tenant> tenants = tenantService.getAll();
         List<Future<?>> collect = tenants.stream()

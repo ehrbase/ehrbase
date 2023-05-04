@@ -31,6 +31,6 @@ public final class TenantSupport {
         return Optional.ofNullable(ApplicationContextProvider.getApplicationContext())
                 .map(applicationContext -> applicationContext.getBean(TenantService.class))
                 .map(TenantService::getCurrentSysTenant)
-                .orElseThrow(() -> new IllegalArgumentException("Could not retrieve system tenant."));
+                .orElseThrow(() -> new IllegalArgumentException("Could not retrieve tenant"));
     }
 }
