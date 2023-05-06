@@ -91,3 +91,11 @@ commit ;
 ```
 
 If you need to migrate old EHR directory data please contact us.
+
+## EHRbase 0.27.0
+
+With release 0.27.0 the multi-tenancy implementation has been updated to allow two EHRs, compositions, 
+or directories with the same ID to exist in different tenants. This was achieved by replacing the tenant UUID 
+with an internal number-based ID and adding it to the primary key.
+
+Please note that executing the Flyway migration script `V83__change_sys_tenant_to_short.sql` may take some time.
