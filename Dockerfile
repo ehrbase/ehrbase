@@ -31,6 +31,7 @@ ENV JAVA_HOME /usr/lib/jvm/java-17-temurin
 ENV PATH $JAVA_HOME/bin:$PATH
 RUN wget -O /etc/apk/keys/adoptium.rsa.pub https://packages.adoptium.net/artifactory/api/security/keypair/public/repositories/apk && \
     echo 'https://packages.adoptium.net/artifactory/apk/alpine/main' >> /etc/apk/repositories && \
+    su -c "apk update" && \
     su -c "apk add temurin-17" && \
     java --version
 
