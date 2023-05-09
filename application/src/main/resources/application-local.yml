@@ -55,7 +55,7 @@ server:
     iterationScanDepth: 20
 
 security:
-  authType: NONE
+  authType: oauth
 
 #use admin for cleaning up the db during tests
 admin-api:

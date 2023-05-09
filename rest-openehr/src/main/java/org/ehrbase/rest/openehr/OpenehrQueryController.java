@@ -41,6 +41,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
 import org.ehrbase.security.annotation.Action;
+import org.ehrbase.security.annotation.ConstrainAql;
 import org.ehrbase.security.annotation.ResourceId;
 import org.ehrbase.security.annotation.TenantPolicyLookup;
 import org.ehrbase.security.annotation.XacmlAuthorization;
@@ -96,6 +97,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @XacmlAuthorization
     @ResourceId(resourceId = "OpenehrQueryController")
     @Action(action = "query_aql")
+    @ConstrainAql(constraint = "constraint")
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @GetMapping(path = "/aql")
@@ -134,6 +136,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @XacmlAuthorization
     @ResourceId(resourceId = "OpenehrQueryController")
     @Action(action = "query_aql")
+    @ConstrainAql(constraint = "constraint")
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @PostMapping(path = "/aql")
