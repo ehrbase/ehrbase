@@ -30,6 +30,11 @@ import org.ehrbase.tenant.DefaultTenantAuthentication;
 
 public class DefaultExtractionStrategy implements TenantIdExtractionStrategy<String> {
 
+    private static final Optional<TenantAuthentication<String>> DEFAULT_TENANT_AUTH =
+            Optional.of(DefaultTenantAuthentication.ofToken(JWT.create()
+                    .withClaim("tnt", TenantAuthentication.getDefaultTenantId())
+                    .sign(new NoneAlgorithm())));
+
     @Override
     public boolean accept(Object... args) {
         return true;
@@ -37,10 +42,7 @@ public class DefaultExtractionStrategy implements TenantIdExtractionStrategy<Str
 
     @Override
     public Optional<TenantAuthentication<String>> extract(Object... args) {
-        String token = JWT.create()
-                .withClaim("tnt", TenantAuthentication.getDefaultTenantId())
-                .sign(new NoneAlgorithm());
-        return Optional.of(DefaultTenantAuthentication.ofToken(token));
+        return DEFAULT_TENANT_AUTH;
     }
 
     @Override

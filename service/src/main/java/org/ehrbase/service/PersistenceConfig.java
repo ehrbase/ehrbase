@@ -17,12 +17,11 @@
  */
 package org.ehrbase.service;
 
-import static java.lang.String.format;
 import static org.ehrbase.api.tenant.TenantAuthentication.DEFAULT_SYS_TENANT;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import javax.sql.DataSource;
 import org.jooq.ExecuteContext;
 import org.jooq.SQLDialect;
@@ -69,12 +68,13 @@ public class PersistenceConfig {
     @Bean
     public DataSourceConnectionProvider connectionProvider() {
         return new DataSourceConnectionProvider(transactionAwareDataSource()) {
-            public static final String DB_SET_TENANT_ID = "SET ehrbase.current_tenant = %s";
+            public static final String DB_SET_TENANT_ID = "select  set_config('ehrbase.current_tenant', ?, false)";
 
             public Connection acquire() {
                 Connection connection = super.acquire();
-                try (Statement sql = connection.createStatement()) {
-                    sql.execute(format(DB_SET_TENANT_ID, DEFAULT_SYS_TENANT));
+                try (PreparedStatement sql = connection.prepareStatement(DB_SET_TENANT_ID)) {
+                    sql.setString(1, Short.toString(DEFAULT_SYS_TENANT));
+                    sql.execute();
                     return connection;
                 } catch (SQLException e) {
                     try {
