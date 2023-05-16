@@ -20,7 +20,7 @@ package org.ehrbase.api.tenant;
 import java.util.Map;
 
 public interface Tenant {
-    public enum StdProperties {
+    enum StdProperties {
         HOST("host"),
         REALM("realm"),
         CLIENT_ID("client-id");
@@ -36,9 +36,9 @@ public interface Tenant {
         }
     }
 
-    public String getTenantId();
+    String getTenantId();
 
-    public String getTenantName();
+    String getTenantName();
 
-    public Map<String, Object> getTenantProperties();
+    Map<String, Object> getTenantProperties();
 }

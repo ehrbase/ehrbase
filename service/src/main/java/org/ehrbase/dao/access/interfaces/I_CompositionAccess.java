@@ -137,8 +137,8 @@ public interface I_CompositionAccess extends I_VersionedCRUD, I_Compensatable {
      * @throws IllegalArgumentException when retrieval failed because of wrong input
      */
     static I_CompositionAccess getNewInstance(
-            I_DomainAccess domain, Composition composition, UUID ehrId, String tenantIdentifier) {
-        return new CompositionAccess(domain, composition, ehrId, tenantIdentifier);
+            I_DomainAccess domain, Composition composition, UUID ehrId, Short sysTenant) {
+        return new CompositionAccess(domain, composition, ehrId, sysTenant);
     }
 
     /**

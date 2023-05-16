@@ -53,11 +53,10 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     private TemplateStoreRecord templateStoreRecord;
 
-    public TemplateStoreAccess(
-            I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate, String tenantIdentifier) {
+    public TemplateStoreAccess(I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate, Short sysTenant) {
         super(domainAccess);
         templateStoreRecord = domainAccess.getContext().newRecord(TEMPLATE_STORE);
-        templateStoreRecord.setNamespace(tenantIdentifier);
+        templateStoreRecord.setSysTenant(sysTenant);
         setTemplate(operationaltemplate);
     }
 

@@ -39,12 +39,12 @@ public abstract class PersistedParty implements I_PersistedParty {
     }
 
     @Override
-    public UUID store(PartyProxy partyProxy, String tenantIdentifier) {
+    public UUID store(PartyProxy partyProxy, Short sysTenant) {
         return null;
     }
 
     @Override
-    public UUID getOrCreate(PartyProxy partyProxy, String tenantIdentifier) {
-        return Optional.ofNullable(findInDB(partyProxy)).orElseGet(() -> store(partyProxy, tenantIdentifier));
+    public UUID getOrCreate(PartyProxy partyProxy, Short sysTenant) {
+        return Optional.ofNullable(findInDB(partyProxy)).orElseGet(() -> store(partyProxy, sysTenant));
     }
 }

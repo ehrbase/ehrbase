@@ -47,8 +47,8 @@ public interface I_EntryAccess extends I_SimpleCRUD {
             Integer sequence,
             UUID compositionId,
             Composition composition,
-            String tenantIdentifier) {
-        return new EntryAccess(domain, templateId, sequence, compositionId, composition, tenantIdentifier);
+            Short sysTenant) {
+        return new EntryAccess(domain, templateId, sequence, compositionId, composition, sysTenant);
     }
 
     /**

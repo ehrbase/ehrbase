@@ -163,7 +163,7 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
 
     @Override
     public String create(OPERATIONALTEMPLATE content) {
-        return this.knowledgeCacheService.addOperationalTemplate(content, tenantService.getCurrentTenantIdentifier());
+        return this.knowledgeCacheService.addOperationalTemplate(content);
     }
 
     /**

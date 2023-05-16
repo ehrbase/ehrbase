@@ -20,6 +20,7 @@ package org.ehrbase.api.tenant;
 public interface TenantAuthentication<T> {
 
     public static final String DEFAULT_TENANT_ID = "1f332a66-0e57-11ed-861d-0242ac120002";
+    public static final Short DEFAULT_SYS_TENANT = 1;
 
     /**
      * Returns the tenant ID associated with this authentication object.
@@ -35,6 +36,14 @@ public interface TenantAuthentication<T> {
      */
     public static String getDefaultTenantId() {
         return DEFAULT_TENANT_ID;
+    }
+    /**
+     * Returns the default sys tenant.
+     *
+     * @return The default sys tenant.
+     */
+    public static Short getDefaultSysTenant() {
+        return DEFAULT_SYS_TENANT;
     }
 
     /**

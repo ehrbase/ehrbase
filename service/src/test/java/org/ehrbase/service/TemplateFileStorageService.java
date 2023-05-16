@@ -43,13 +43,13 @@ import org.apache.commons.io.input.BOMInputStream;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.dao.access.support.TenantSupport;
+import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public class TemplateFileStorageService implements TemplateStorage {
-    private final Supplier<String> ct = () -> TenantSupport.currentTenantIdentifier();
+    private final Supplier<Short> systemTenant = () -> TenantAuthentication.DEFAULT_SYS_TENANT;
     private Map<CacheKey<String>, File> optFileMap = new ConcurrentHashMap<>();
     private Map<String, String> errorMap = new ConcurrentHashMap<>();
     private String optPath;
@@ -77,10 +77,10 @@ public class TemplateFileStorageService implements TemplateStorage {
     public List<TemplateMetaData> listAllOperationalTemplates() {
         ZoneId zoneId = ZoneId.systemDefault();
 
-        String currentTenantIdentifier = ct.get();
+        Short currentTenantIdentifier = systemTenant.get();
 
         return optFileMap.keySet().stream()
-                .filter(e -> e.getTenantId().equals(currentTenantIdentifier))
+                .filter(e -> e.getSysTenant().equals(currentTenantIdentifier))
                 .map(e -> e.getVal())
                 .map(filename -> {
                     TemplateMetaData template = new TemplateMetaData();
@@ -121,20 +121,20 @@ public class TemplateFileStorageService implements TemplateStorage {
     }
 
     @Override
-    public void storeTemplate(OPERATIONALTEMPLATE template, String tenantIdentifier) {
+    public void storeTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
         saveTemplateFile(
                 template.getTemplateId().getValue(),
                 template.xmlText(opts).getBytes(StandardCharsets.UTF_8),
-                tenantIdentifier);
+                sysTenant);
     }
 
     @Override
     public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
         OPERATIONALTEMPLATE operationaltemplate = null;
 
-        File file = optFileMap.get(CacheKey.of(templateId, ct.get()));
+        File file = optFileMap.get(CacheKey.of(templateId, systemTenant.get()));
 
         try (InputStream in = (file != null ? new BOMInputStream(new FileInputStream(file), true) : null)) {
             org.openehr.schemas.v1.TemplateDocument document =
@@ -153,7 +153,7 @@ public class TemplateFileStorageService implements TemplateStorage {
     public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
 
         try {
-            File file = optFileMap.get(CacheKey.of(template.getTemplateId().getValue(), ct.get()));
+            File file = optFileMap.get(CacheKey.of(template.getTemplateId().getValue(), systemTenant.get()));
             if (!file.exists()) {
                 throw new ObjectNotFoundException(
                         "ADMIN TEMPLATE STORE FILESYSTEM",
@@ -162,7 +162,7 @@ public class TemplateFileStorageService implements TemplateStorage {
 
             // Remove old content
             Files.delete(file.toPath());
-            optFileMap.remove(CacheKey.of(template.getTemplateId().getValue(), ct.get()));
+            optFileMap.remove(CacheKey.of(template.getTemplateId().getValue(), systemTenant.get()));
 
             // Save new content
             XmlOptions opts = new XmlOptions();
@@ -170,7 +170,7 @@ public class TemplateFileStorageService implements TemplateStorage {
             saveTemplateFile(
                     template.getTemplateId().getValue(),
                     template.xmlText(opts).getBytes(StandardCharsets.UTF_8),
-                    ct.get());
+                    systemTenant.get());
 
             return template.xmlText(opts);
         } catch (IOException e) {
@@ -185,12 +185,12 @@ public class TemplateFileStorageService implements TemplateStorage {
     public boolean deleteTemplate(String templateId) {
         boolean deleted;
         try {
-            File file = optFileMap.get(CacheKey.of(templateId, ct.get()));
+            File file = optFileMap.get(CacheKey.of(templateId, systemTenant.get()));
             if (!file.exists())
                 throw new ObjectNotFoundException(
                         "ADMIN TEMPLATE", String.format("File with name %s does not exist.", templateId));
             deleted = Files.deleteIfExists(file.toPath());
-            if (deleted) optFileMap.remove(CacheKey.of(templateId, ct.get()));
+            if (deleted) optFileMap.remove(CacheKey.of(templateId, systemTenant.get()));
             return deleted;
         } catch (IOException e) {
             throw new InternalServerException(e.getMessage());
@@ -229,7 +229,7 @@ public class TemplateFileStorageService implements TemplateStorage {
                 if (f.isHidden()) continue;
                 if (f.isFile()) {
                     String key = f.getName().replaceAll("([^\\\\\\/]+)\\." + "opt", "$1");
-                    optFileMap.put(CacheKey.of(key, ct.get()), f);
+                    optFileMap.put(CacheKey.of(key, systemTenant.get()), f);
                 } else if (f.isDirectory()) {
                     tr.add(f);
                 }
@@ -240,13 +240,13 @@ public class TemplateFileStorageService implements TemplateStorage {
 
     private static final String TEMPL_TENANT_PATH = "%s/%s";
 
-    private Path convertToTenantPath(String fileName, String tenantIdentifier) {
-        return Paths.get(String.format(TEMPL_TENANT_PATH, getOptPath(), tenantIdentifier), fileName + ".opt");
+    private Path convertToTenantPath(String fileName, Short sysTenant) {
+        return Paths.get(String.format(TEMPL_TENANT_PATH, getOptPath(), sysTenant), fileName + ".opt");
     }
 
-    private synchronized void saveTemplateFile(String filename, byte[] content, String tenantIdentifier) {
-        Path dirPath = Paths.get(String.format(TEMPL_TENANT_PATH, getOptPath(), tenantIdentifier));
-        Path filePath = convertToTenantPath(filename, tenantIdentifier);
+    private synchronized void saveTemplateFile(String filename, byte[] content, Short sysTenant) {
+        Path dirPath = Paths.get(String.format(TEMPL_TENANT_PATH, getOptPath(), sysTenant));
+        Path filePath = convertToTenantPath(filename, sysTenant);
 
         try {
             if (!Files.exists(dirPath)) Files.createDirectory(dirPath);
@@ -257,6 +257,6 @@ public class TemplateFileStorageService implements TemplateStorage {
         }
 
         // load it in the cache
-        optFileMap.put(CacheKey.of(filename, tenantIdentifier), filePath.toFile());
+        optFileMap.put(CacheKey.of(filename, sysTenant), filePath.toFile());
     }
 }

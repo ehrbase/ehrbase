@@ -7,16 +7,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
-- Sub-folders are retained in the response upon updating Folders. ([#1108](https://github.com/ehrbase/ehrbase/pull/1108))
+ - Sub-folders are retained in the response upon updating Folders. ([#1108](https://github.com/ehrbase/ehrbase/pull/1108))
  ### Changed 
+ - Changed namespace UUID to number-based ID and added to the primary key in each entity. ([#1100](https://github.com/ehrbase/ehrbase/pull/1100))
  ### Fixed 
-- Fixes NPE if during start up with many templates in the system.  ([#1101](https://github.com/ehrbase/ehrbase/pull/1101))
+ - Fixes NPE if during start up with many templates in the system.  ([#1101](https://github.com/ehrbase/ehrbase/pull/1101))
+
 ## [0.26.0]
  ### Added
-- use from sdk archie version 3.0.0 and antlr4 version 4.11.1 ([#1078](https://github.com/ehrbase/ehrbase/pull/1078))
+ - use from sdk archie version 3.0.0 and antlr4 version 4.11.1 ([#1078](https://github.com/ehrbase/ehrbase/pull/1078))
  ### Changed 
  - Upgrade openEHR_SDK to version 1.26.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
-- Respect the predefined value of the composition UID when creating new composition ([#1090](https://github.com/ehrbase/ehrbase/pull/1090))
+ - Respect the predefined value of the composition UID when creating new composition ([#1090](https://github.com/ehrbase/ehrbase/pull/1090))
  ### Fixed 
 
 ## [0.25.0]
@@ -25,7 +27,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  - Upgrade openEHR_SDK to version 1.25.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  - new Directory implementation ([#1059](https://github.com/ehrbase/ehrbase/pull/1059))
  ### Fixed 
-- error on concurrent user creation ([#1067](https://github.com/ehrbase/ehrbase/pull/1067))
+ - error on concurrent user creation ([#1067](https://github.com/ehrbase/ehrbase/pull/1067))
 
 ## [0.24.0]
 

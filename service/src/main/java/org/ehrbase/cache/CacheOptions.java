@@ -39,6 +39,7 @@ public class CacheOptions {
     public static final String LANGUAGE_CACHE = "languageCache";
 
     public static final String USER_ID_CACHE = "userIdCache";
+    public static final String SYS_TENANT = "sysTenant";
 
     private boolean preBuildQueries;
 
