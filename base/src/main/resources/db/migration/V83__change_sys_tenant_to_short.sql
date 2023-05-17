@@ -21,14 +21,14 @@
 
 
 
-create sequence ehr.tenant_id_seq;
+create sequence ehr.sys_tenant_seq;
 
-CREATE OR REPLACE FUNCTION ehr.next_tenant_id() RETURNS SMALLINT
+CREATE OR REPLACE FUNCTION ehr.next_sys_tenant() RETURNS SMALLINT
     LANGUAGE plpgsql
     SECURITY DEFINER SET search_path = ehr, pg_temp AS
 $$
 BEGIN
-    RETURN nextval('ehr.tenant_id_seq');
+    RETURN nextval('ehr.sys_tenant_seq');
 END;
 $$;
 ALTER TABLE ehr.tenant
@@ -36,7 +36,7 @@ ALTER TABLE ehr.tenant
         COLUMN id;
 
 ALTER TABLE ehr.tenant
-    ADD COLUMN id smallint default ehr.next_tenant_id();
+    ADD COLUMN id smallint default ehr.next_sys_tenant();
 
 -- Make sure the default tenant is 1
 DO
