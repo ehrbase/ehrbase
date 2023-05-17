@@ -17,14 +17,26 @@
  */
 
 -- prepare id column
+
+
+
+
+create sequence ehr.sys_tenant_seq;
+
+CREATE OR REPLACE FUNCTION ehr.next_sys_tenant() RETURNS SMALLINT
+    LANGUAGE plpgsql
+    SECURITY DEFINER SET search_path = ehr, pg_temp AS
+$$
+BEGIN
+    RETURN nextval('ehr.sys_tenant_seq');
+END;
+$$;
 ALTER TABLE ehr.tenant
     DROP
         COLUMN id;
 
 ALTER TABLE ehr.tenant
-    ADD COLUMN id SMALLSERIAL;
-
-GRANT USAGE, SELECT ON SEQUENCE ehr.tenant_id_seq TO ehrbase_restricted;
+    ADD COLUMN id smallint default ehr.next_sys_tenant();
 
 -- Make sure the default tenant is 1
 DO
