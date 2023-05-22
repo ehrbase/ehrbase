@@ -75,6 +75,8 @@ public class CacheConfiguration {
             cm.registerCustomCache(
                     CacheOptions.USER_ID_CACHE,
                     Caffeine.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build());
+            cm.registerCustomCache(
+                    CacheOptions.SYS_TENANT, Caffeine.newBuilder().build());
         };
     }
 }

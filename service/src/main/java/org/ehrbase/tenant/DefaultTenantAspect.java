@@ -37,14 +37,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @Aspect
 public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect {
-    private List<TenantIdExtractionStrategy<?>> extractionStrategies;
+    private static final List<Class<? extends Annotation>> MATCHED_ANNOTATIONS = List.of(TenantAware.class);
+    private final List<TenantIdExtractionStrategy<?>> extractionStrategies;
 
     public DefaultTenantAspect() {
         this(new ArrayList<>());
     }
 
     private static final Comparator<TenantIdExtractionStrategy<?>> PRIORITY_SORT =
-            (s1, s2) -> s1.priority() - s2.priority();
+            Comparator.comparingInt(TenantIdExtractionStrategy::priority);
 
     public DefaultTenantAspect(List<TenantIdExtractionStrategy<?>> extractionStrategies) {
         extractionStrategies.sort(PRIORITY_SORT);
@@ -59,7 +60,7 @@ public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect 
     @Pointcut(value = "@within(tenantAnnotation)")
     public void matchTenantAnnotation(org.ehrbase.api.annotations.TenantAware tenantAnnotation) {}
 
-    private static final String ERR_NON_TENANT_ID = "Fatal error, no tenant id avaliable";
+    private static final String ERR_NON_TENANT_ID = "Fatal error, no tenant id available";
 
     /*
      * currently we support only TenantAuthentication<String>. when more
@@ -73,25 +74,24 @@ public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect 
     @Override
     public Object action(ProceedingJoinPoint pjp, List<Annotation> annotations) throws Throwable {
         annotations.stream()
-                .filter(a -> a instanceof TenantAware)
-                .map(a -> (TenantAware) a)
+                .filter(TenantAware.class::isInstance)
+                .map(TenantAware.class::cast)
                 .findFirst()
                 .ifPresent(tenantAnnotation -> {
                     if (isMethodTenantAware(pjp, tenantAnnotation)) {
                         Object[] args = pjp.getArgs();
                         TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
                         SecurityContext ctx = SecurityContextHolder.getContext();
-                        ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, a -> a.toString()));
+                        ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, Object::toString));
                     }
                 });
         return pjp.proceed();
     }
 
     private boolean isMethodTenantAware(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) {
-        if (pjp instanceof MethodInvocationProceedingJoinPoint
-                && ((MethodInvocationProceedingJoinPoint) pjp).getSignature() instanceof MethodSignature) {
-            MethodInvocationProceedingJoinPoint mijp = (MethodInvocationProceedingJoinPoint) pjp;
-            MethodSignature signature = (MethodSignature) mijp.getSignature();
+        if (tenantAnnotation.exclude().length != 0
+                && pjp instanceof MethodInvocationProceedingJoinPoint mijp
+                && mijp.getSignature() instanceof MethodSignature signature) {
 
             List<String> allVariants = List.of(
                     signature.getMethod().getName(),
@@ -99,7 +99,11 @@ public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect 
                     signature.toLongString(),
                     signature.toString());
 
-            for (String exclude : tenantAnnotation.exclude()) if (allVariants.contains(exclude)) return false;
+            for (String exclude : tenantAnnotation.exclude()) {
+                if (allVariants.contains(exclude)) {
+                    return false;
+                }
+            }
         }
 
         return true;
@@ -120,7 +124,8 @@ public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect 
         return priorAuth.get();
     }
 
+    @Override
     public List<Class<? extends Annotation>> matchAnnotations() {
-        return List.of(TenantAware.class);
+        return MATCHED_ANNOTATIONS;
     }
 }

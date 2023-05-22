@@ -63,8 +63,8 @@ public class PartyServiceImp implements IUserService, PartyService {
      */
     @Override
     public UUID getCurrentUserId() {
-        CacheKey<String> key = CacheKey.of(
-                authenticationFacade.getAuthentication().getName(), tenantService.getCurrentTenantIdentifier());
+        CacheKey<String> key =
+                CacheKey.of(authenticationFacade.getAuthentication().getName(), tenantService.getCurrentSysTenant());
         return userIdCache.get(key, () -> getOrCreateCurrentUserIdSync(key));
     }
 

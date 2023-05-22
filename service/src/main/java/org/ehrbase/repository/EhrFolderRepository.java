@@ -47,6 +47,7 @@ import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -110,11 +111,11 @@ public class EhrFolderRepository {
         UUID finalAuditId = Optional.ofNullable(auditId)
                 .orElseGet(() -> contributionRepository.createDefaultAudit(ContributionChangeType.creation));
 
-        String namespace = tenantService.getCurrentTenantIdentifier();
+        Short sysTenant = tenantService.getCurrentSysTenant();
 
         folderRecordList.forEach(r -> {
             r.setSysPeriodLower(sysPeriodLower);
-            r.setNamespace(namespace);
+            r.setSysTenant(sysTenant);
             r.setContributionId(finalContributionId);
             r.setAuditId(finalAuditId);
         });
@@ -353,13 +354,27 @@ public class EhrFolderRepository {
         SelectConditionStep<Record> headQuery =
                 headQuery(context).where(EHR_FOLDER.EHR_ID.eq(ehrId), EHR_FOLDER.SYS_VERSION.eq(version));
 
-        SelectConditionStep<EhrFolderHistoryRecord> historyQuery = context.selectFrom(EHR_FOLDER_HISTORY)
+        Field<?>[] fields = convertToEhrFolderHistoryFields(headQuery.fields());
+
+        SelectConditionStep<Record> historyQuery = context.select(fields)
+                .from(EHR_FOLDER_HISTORY)
                 .where(
                         EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId),
                         EHR_FOLDER_HISTORY.SYS_VERSION.eq(version),
                         EHR_FOLDER_HISTORY.SYS_DELETED.isFalse());
 
         return headQuery.unionAll(historyQuery).fetch().into(EHR_FOLDER_HISTORY);
+    }
+
+    /**
+     * Converts an array of JOOQ {@link Field}s to an array of JOOQ {@link Field}s of type {@code EHR_FOLDER_HISTORY},
+     * applying a given {@link Function} to each field.
+     *
+     * @param fields the array of JOOQ {@link Field}s to be converted
+     * @return an array of JOOQ {@link Field}s of type {@code EHR_FOLDER_HISTORY}
+     * */
+    public Field<?>[] convertToEhrFolderHistoryFields(Field<?>[] fields) {
+        return Arrays.stream(fields).map(EHR_FOLDER_HISTORY::field).toArray(Field[]::new);
     }
 
     private static SelectJoinStep<Record> headQuery(DSLContext context) {
@@ -375,7 +390,10 @@ public class EhrFolderRepository {
         SelectConditionStep<Record> headQuery =
                 headQuery(context).where(EHR_FOLDER.EHR_ID.eq(ehrId), EHR_FOLDER.SYS_PERIOD_LOWER.lessOrEqual(time));
 
-        SelectConditionStep<EhrFolderHistoryRecord> historyQuery = context.selectFrom(EHR_FOLDER_HISTORY)
+        Field<?>[] fields = convertToEhrFolderHistoryFields(headQuery.fields());
+
+        SelectConditionStep<Record> historyQuery = context.select(fields)
+                .from(EHR_FOLDER_HISTORY)
                 .where(
                         EHR_FOLDER_HISTORY.EHR_ID.eq(ehrId),
                         EHR_FOLDER_HISTORY.SYS_PERIOD_LOWER.lessOrEqual(time),
@@ -469,9 +487,11 @@ public class EhrFolderRepository {
         folder2Record.setHierarchyIdxCap(encodeIndex(indexList, true));
         folder2Record.setHierarchyIdxLen(indexList.size());
 
-        // do not save hierarchy
+        // Exclude folders from JSON record, though, keep it for returning to client later
+        List<Folder> folders = folder.getFolders();
         folder.setFolders(null);
         folder2Record.setFields(JSONB.valueOf(new CanonicalJson().marshal(folder)));
+        folder.setFolders(folders);
 
         return folder2Record;
     }

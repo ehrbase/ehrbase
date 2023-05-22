@@ -162,11 +162,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
 
-        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+        Short sysTenant = tenantService.getCurrentSysTenant();
 
         // create new empty/standard-value contribution - will be updated later with full details
         I_ContributionAccess contributionAccess =
-                I_ContributionAccess.getInstance(this.getDataAccess(), ehrId, tenantIdentifier);
+                I_ContributionAccess.getInstance(this.getDataAccess(), ehrId, sysTenant);
         // parse and set audit information from input
         AuditDetails audit = ContributionServiceHelper.parseAuditDetails(content, format);
         contributionAccess.setAuditDetailsValues(audit);
@@ -546,10 +546,10 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         UUID auditId = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId)
                 .getHasAuditDetails();
 
-        String tenantIdentifier = tenantService.getCurrentTenantIdentifier();
+        Short sysTenant = tenantService.getCurrentSysTenant();
 
-        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess(), tenantIdentifier)
-                .retrieveInstance(this.getDataAccess(), auditId);
+        I_AuditDetailsAccess auditDetailsAccess =
+                new AuditDetailsAccess(this.getDataAccess(), sysTenant).retrieveInstance(this.getDataAccess(), auditId);
 
         String systemId = auditDetailsAccess.getSystemId().toString();
         PartyProxy committer =

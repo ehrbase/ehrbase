@@ -27,11 +27,12 @@ RUN su - postgres -c "pg_ctl -D ${PGDATA} -w start" && \
     su - postgres -c "pg_ctl -D ${PGDATA} -w stop"
 
 # INSTALL JAVA 17 JDK
+#FIXME version is fixed to 17.0.6_p10-r0 because 17.0.7 is currently broken (https://packages.adoptium.net/ui/native/apk/alpine/main/x86_64/)
 ENV JAVA_HOME /usr/lib/jvm/java-17-temurin
 ENV PATH $JAVA_HOME/bin:$PATH
 RUN wget -O /etc/apk/keys/adoptium.rsa.pub https://packages.adoptium.net/artifactory/api/security/keypair/public/repositories/apk && \
     echo 'https://packages.adoptium.net/artifactory/apk/alpine/main' >> /etc/apk/repositories && \
-    su -c "apk add temurin-17" && \
+    su -c "apk add temurin-17=17.0.6_p10-r0" && \
     java --version
 
 # INSTALL MAVEN

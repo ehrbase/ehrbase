@@ -17,11 +17,12 @@
  */
 package org.ehrbase.service;
 
+import static org.ehrbase.api.tenant.TenantAuthentication.DEFAULT_SYS_TENANT;
+
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import javax.sql.DataSource;
-import org.ehrbase.api.tenant.TenantAuthentication;
 import org.jooq.ExecuteContext;
 import org.jooq.SQLDialect;
 import org.jooq.exception.DataAccessException;
@@ -67,18 +68,20 @@ public class PersistenceConfig {
     @Bean
     public DataSourceConnectionProvider connectionProvider() {
         return new DataSourceConnectionProvider(transactionAwareDataSource()) {
-            public static final String DB_SET_TENANT_ID =
-                    "SET ehrbase.current_tenant = " + "'" + TenantAuthentication.DEFAULT_TENANT_ID + "'";
+            public static final String DB_SET_TENANT_ID = "select  set_config('ehrbase.current_tenant', ?, false)";
 
             public Connection acquire() {
-                try {
-                    Connection connection = super.acquire();
-                    try (Statement sql = connection.createStatement()) {
-                        sql.execute(DB_SET_TENANT_ID);
-                    }
+                Connection connection = super.acquire();
+                try (PreparedStatement sql = connection.prepareStatement(DB_SET_TENANT_ID)) {
+                    sql.setString(1, Short.toString(DEFAULT_SYS_TENANT));
+                    sql.execute();
                     return connection;
                 } catch (SQLException e) {
-                    throw new DataAccessException("Failed to set default tenant", e);
+                    try {
+                        super.release(connection);
+                    } finally {
+                        throw new DataAccessException("Failed to set default tenant", e);
+                    }
                 }
             }
         };

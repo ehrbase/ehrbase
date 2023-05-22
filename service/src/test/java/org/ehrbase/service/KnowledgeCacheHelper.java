@@ -34,18 +34,17 @@ public class KnowledgeCacheHelper {
     public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule)
             throws Exception {
 
-        File operationalTemplatesemplates = folder.newFolder("operational_templates");
+        File operationalTemplates = folder.newFolder("operational_templates");
 
         TemplateFileStorageService templateFileStorageService = new TemplateFileStorageService();
-        templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
+        templateFileStorageService.setOptPath(operationalTemplates.getPath());
 
         TenantService tenantService = Mockito.mock(TenantService.class);
-        Mockito.when(tenantService.getCurrentTenantIdentifier()).thenReturn(TenantAuthentication.DEFAULT_TENANT_ID);
+        Mockito.when(tenantService.getCurrentSysTenant()).thenReturn(TenantAuthentication.DEFAULT_SYS_TENANT);
 
         KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(
                 templateFileStorageService, cacheRule.cacheManager, new CacheOptions(), tenantService);
-        knowledgeCacheService.addOperationalTemplate(
-                TemplateTestData.IMMUNISATION_SUMMARY.getStream(), TenantAuthentication.DEFAULT_TENANT_ID);
+        knowledgeCacheService.addOperationalTemplate(TemplateTestData.IMMUNISATION_SUMMARY.getStream());
         return knowledgeCacheService;
     }
 

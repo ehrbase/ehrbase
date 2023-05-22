@@ -114,7 +114,7 @@ public class PartyProxyRepository {
 
         usersRecord.setPartyId(uuid);
         usersRecord.setUsername(username);
-        usersRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+        usersRecord.setSysTenant(tenantService.getCurrentSysTenant());
         usersRecord.store();
 
         return uuid;
@@ -139,7 +139,7 @@ public class PartyProxyRepository {
         partyIdentifiedRecord.setPartyRefScheme(partyRefValue.getScheme());
         partyIdentifiedRecord.setPartyRefType(partyRefValue.getType());
         partyIdentifiedRecord.setObjectIdType(partyRefValue.getObjectIdType());
-        partyIdentifiedRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+        partyIdentifiedRecord.setSysTenant(tenantService.getCurrentSysTenant());
 
         List<DvIdentifier> identifierList = Collections.emptyList();
 
@@ -217,7 +217,7 @@ public class PartyProxyRepository {
         identifierRecord.setIssuer(identifier.getIssuer());
         identifierRecord.setAssigner(identifier.getAssigner());
         identifierRecord.setTypeName(identifier.getType());
-        identifierRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+        identifierRecord.setSysTenant(tenantService.getCurrentSysTenant());
 
         return identifierRecord;
     }

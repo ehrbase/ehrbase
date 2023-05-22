@@ -23,28 +23,28 @@ import java.util.Objects;
 public class CacheKey<T extends Serializable> implements Serializable {
     private static final long serialVersionUID = -5926035933645900703L;
 
-    static <T0 extends Serializable> CacheKey<T0> of(T0 val, String tenantId) {
+    static <T0 extends Serializable> CacheKey<T0> of(T0 val, Short tenantId) {
         return new CacheKey<>(val, tenantId);
     }
 
     private final T val;
-    private final String tenantId;
+    private final Short sysTenant;
 
     public T getVal() {
         return val;
     }
 
-    public String getTenantId() {
-        return tenantId;
+    public Short getSysTenant() {
+        return sysTenant;
     }
 
-    private CacheKey(T val, String tenantId) {
+    private CacheKey(T val, Short sysTenant) {
         this.val = val;
-        this.tenantId = tenantId;
+        this.sysTenant = sysTenant;
     }
 
     public int hashCode() {
-        return Objects.hash(val, tenantId);
+        return Objects.hash(val, sysTenant);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -52,6 +52,6 @@ public class CacheKey<T extends Serializable> implements Serializable {
         if (obj == null || !(obj instanceof CacheKey) || ((CacheKey) obj).val.getClass() != val.getClass())
             return false;
         CacheKey<T> ck = (CacheKey<T>) obj;
-        return val.equals(ck.val) && tenantId.equals(ck.tenantId);
+        return val.equals(ck.val) && sysTenant.equals(ck.sysTenant);
     }
 }

@@ -89,7 +89,7 @@ public class ContributionRepository {
         contributionRecord.setContributionType(contributionType);
         contributionRecord.setState(ContributionState.complete);
         contributionRecord.setHasAudit(auditDetailsRecordId);
-        contributionRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+        contributionRecord.setSysTenant(tenantService.getCurrentSysTenant());
 
         contributionRecord.store();
 
@@ -111,7 +111,7 @@ public class ContributionRepository {
         auditDetailsRecord.setSystemId(systemService.getSystemUuid());
         auditDetailsRecord.setCommitter(userService.getCurrentUserId());
         auditDetailsRecord.setChangeType(contributionChangeType);
-        auditDetailsRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+        auditDetailsRecord.setSysTenant(tenantService.getCurrentSysTenant());
 
         auditDetailsRecord.store();
         return auditDetailsRecord.getId();
@@ -139,7 +139,7 @@ public class ContributionRepository {
         auditDetailsRecord.setDescription(Optional.ofNullable(auditDetails.getDescription())
                 .map(DvText::getValue)
                 .orElse(null));
-        auditDetailsRecord.setNamespace(tenantService.getCurrentTenantIdentifier());
+        auditDetailsRecord.setSysTenant(tenantService.getCurrentSysTenant());
 
         auditDetailsRecord.store();
         return auditDetailsRecord.getId();
