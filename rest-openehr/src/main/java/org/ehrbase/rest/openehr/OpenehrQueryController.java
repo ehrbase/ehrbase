@@ -97,7 +97,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @XacmlAuthorization
     @ResourceId(resourceId = "OpenehrQueryController")
     @Action(action = "query_aql")
-    @ConstrainAql(constraint = "constraint")
+    @ConstrainAql(constraint = "LimitByFacilityName")
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @GetMapping(path = "/aql")
@@ -136,7 +136,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @XacmlAuthorization
     @ResourceId(resourceId = "OpenehrQueryController")
     @Action(action = "query_aql")
-    @ConstrainAql(constraint = "constraint")
+    @ConstrainAql(constraint = "LimitByFacilityName")
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
     @Override
     @PostMapping(path = "/aql")
