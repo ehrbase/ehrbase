@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [0.27.0]
  ### Added
  - Sub-folders are retained in the response upon updating Folders. ([#1108](https://github.com/ehrbase/ehrbase/pull/1108))
  ### Changed 
+ - Upgrade openEHR_SDK to version 1.27.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  - Changed namespace UUID to number-based ID and added to the primary key in each entity. ([#1100](https://github.com/ehrbase/ehrbase/pull/1100))
  ### Fixed 
  - Fixes NPE if during start up with many templates in the system.  ([#1101](https://github.com/ehrbase/ehrbase/pull/1101))
@@ -620,4 +621,4 @@ the next release this file will provide a proper overview.
 [0.24.0]: https://github.com/ehrbase/ehrbase/compare/v0.23.0...v0.24.0
 [0.25.0]: https://github.com/ehrbase/ehrbase/compare/v0.24.0...v0.25.0
 [0.26.0]: https://github.com/ehrbase/ehrbase/compare/v0.25.0...v0.26.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.26.0...HEAD
+[0.27.0]: https://github.com/ehrbase/ehrbase/compare/v0.26.0...v0.27.0
