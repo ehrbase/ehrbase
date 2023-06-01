@@ -21,8 +21,8 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          EHRBASE_USER_ADMIN: ehrbase_admin_username
-          EHRBASE_PASSWORD_ADMIN: ehrbase_admin_password
+          EHRBASE_USER_ADMIN: ehrbase
+          EHRBASE_PASSWORD_ADMIN: ehrbase
           EHRBASE_USER: ehrbase_user_username
           EHRBASE_PASSWORD: ehrbase_user_password
 
