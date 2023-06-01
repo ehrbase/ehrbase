@@ -86,8 +86,6 @@ jobs:
         run: |
           cd tests
           robot \
-                -t "Main flow Sanity Tests for Canonical JSON Compositions" \
-                -t "Main flow Sanity Tests for Canonical XML Compositions" \
                 -v nodocker \
                 -v NODENAME:local.ehrbase.org \
                 --console dotted \
