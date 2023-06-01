@@ -15,16 +15,16 @@ jobs:
 
     services:
       ehrbase:
-          image: ehrbase/ehrbase:next
-          ports:
-            - 8080:8080
-          environment:
-            DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
-            DB_USER_ADMIN: ehrbase_admin_username
-            DB_PASS_ADMIN: ehrbase_admin_password
-            DB_USER: ehrbase_restricted_username
-            DB_PASS: ehrbase_restricted_password
-          restart: on-failure
+        image: ehrbase/ehrbase:next
+        ports:
+          - 8080:8080
+        env:
+          DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
+          DB_USER_ADMIN: ehrbase_admin_username
+          DB_PASS_ADMIN: ehrbase_admin_password
+          DB_USER: ehrbase_restricted_username
+          DB_PASS: ehrbase_restricted_password
+        restart: on-failure
           
       ehrbase-db:
         image: ehrbase/ehrbase-postgres:13.4.v2
