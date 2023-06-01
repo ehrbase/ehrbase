@@ -75,6 +75,7 @@ jobs:
                 -d results \
                 --noncritical not-ready -L TRACE \
                 robot/SANITY_TESTS
+          ls
                 
       - name: Cleanup Robot results folder
         if: always()
