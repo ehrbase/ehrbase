@@ -85,7 +85,7 @@ jobs:
       - name: Run robot
         run: |
           cd tests
-          robot 
+          robot \
                 -t "Main flow Sanity Tests for Canonical JSON Compositions" \
                 -t "Main flow Sanity Tests for Canonical XML Compositions" \
                 -v nodocker \
