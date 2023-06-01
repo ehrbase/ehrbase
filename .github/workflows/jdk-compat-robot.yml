@@ -24,7 +24,6 @@ jobs:
           DB_PASS_ADMIN: ehrbase_admin_password
           DB_USER: ehrbase_restricted_username
           DB_PASS: ehrbase_restricted_password
-        restart: on-failure
           
       ehrbase-db:
         image: ehrbase/ehrbase-postgres:13.4.v2
