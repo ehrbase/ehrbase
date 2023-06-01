@@ -18,8 +18,6 @@ jobs:
         image: ehrbase/ehrbase:next
         ports:
           - 8080:8080
-        networks:
-          - ehrbase-net
         env:
           DB_URL: jdbc:postgresql://localhost:5432/ehrbase
           DB_USER_ADMIN: ehrbase_admin_username
@@ -31,8 +29,6 @@ jobs:
         image: ehrbase/ehrbase-postgres:13.4.v2
         ports:
           - 5432:5432
-        networks:
-          - ehrbase-net
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -40,8 +36,6 @@ jobs:
           EHRBASE_PASSWORD_ADMIN: ehrbase_admin_password
           EHRBASE_USER: ehrbase_restricted_username
           EHRBASE_PASSWORD: ehrbase_restricted_password
-      networks:
-        ehrbase-net: {}
 
     steps:
       - name: Checkout
