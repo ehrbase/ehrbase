@@ -62,3 +62,33 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r tests/requirements.txt
+        
+      - name: Run robot
+        run: |
+          cd tests
+          robot -v nodocker \
+                -v NODENAME:local.ehrbase.org \
+                --console dotted \
+                --flattenkeywords for \
+                --flattenkeywords foritem \
+                --flattenkeywords name:_resources.* \
+                -d results \
+                --noncritical not-ready -L TRACE \
+                robot/SANITY_TESTS
+                
+      - name: Cleanup Robot results folder
+        if: always()
+        run: |
+          rm -vf /home/runner/work/ehrbase/ehrbase/tests/results/*.xml
+          
+      - name: Archive code coverage results
+        if: always()
+        with:
+          name: robot-result
+          path: /home/runner/work/ehrbase/ehrbase/tests/results/
+
+      - name: Archive logs
+        if: always()
+        with:
+          name: log
+          path: /var/tmp/log.txt
