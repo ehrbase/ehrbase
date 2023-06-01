@@ -72,11 +72,12 @@ DO
 $$
     DECLARE
         table_name TEXT;
+        migration_executing_user TEXT := current_user;
     BEGIN
         FOR table_name IN SELECT namespace_table_name FROM filtered_namespace_tables
             LOOP
                 EXECUTE format('CREATE POLICY ehr_policy_ehrbase_migration ON ehr.%I FOR ALL TO %I USING (TRUE)',
-                               table_name, current_user);
+                               table_name, migration_executing_user);
                 EXECUTE format('ALTER TABLE ehr.%I ADD COLUMN sys_tenant SMALLINT default 1', table_name);
             END LOOP;
     END
