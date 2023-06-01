@@ -74,7 +74,7 @@ jobs:
                 --flattenkeywords name:_resources.* \
                 -d results \
                 --noncritical not-ready -L TRACE \
-                robot/SANITY_TESTS >/var/tmp/log.txt
+                robot/SANITY_TESTS
                 
       - name: Cleanup Robot results folder
         if: always()
