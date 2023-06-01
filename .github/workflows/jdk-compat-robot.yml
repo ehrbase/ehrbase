@@ -23,8 +23,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
           EHRBASE_USER_ADMIN: ehrbase
           EHRBASE_PASSWORD_ADMIN: ehrbase
-          EHRBASE_USER: ehrbase_user_username
-          EHRBASE_PASSWORD: ehrbase_user_password
+          EHRBASE_USER: ehrbase_restricted
+          EHRBASE_PASSWORD: ehrbase_restricted
 
     steps:
       - name: Checkout
