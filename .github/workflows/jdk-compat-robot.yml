@@ -63,8 +63,8 @@ jobs:
 
       - name: Run ehrbase
         run: |
-          sudo apt-get install -y libxml2-utils
-          value=$(xmllint --xpath '//project/parent/version/text()' application/pom.xml)
+          xml_content=$(cat application/pom.xml)
+          value=$(echo "$xml_content" | grep -oP '(?<=<version>).*?(?=</version>)' | awk 'NR==1{print}')
           echo "Value from XML: $value"
           java -jar application/target/application-0.28.0-SNAPSHOT.jar \
           --spring.profiles.active=docker \
