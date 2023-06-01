@@ -55,7 +55,7 @@ jobs:
 
       - name: Run ehrbase
         run: |
-          java -jar -Dspring.profiles.active=docker application/target/application-0.28.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org >/var/tmp/log.txt &
+          java -jar -Dspring.profiles.active=docker -DDB_URL=jdbc:postgresql://localhost:5432/ehrbase -DDB_USER=ehrbase_restricted_username -DDB_PASS=ehrbase_restricted_password -DDB_USER_ADMIN=ehrbase_admin_username -DDB_PASS_ADMIN=ehrbase_admin_password application/target/application-0.28.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org >/var/tmp/log.txt &
           sleep 30
           cat /var/tmp/log.txt
           
