@@ -75,7 +75,8 @@ $$
     BEGIN
         FOR table_name IN SELECT namespace_table_name FROM filtered_namespace_tables
             LOOP
-                EXECUTE format('DROP POLICY ehr_policy_all ON ehr.%I', table_name);
+                EXECUTE format('CREATE POLICY ehr_policy_ehrbase_migration ON ehr.%I FOR ALL TO %I USING (TRUE)',
+                               table_name, current_user);
                 EXECUTE format('ALTER TABLE ehr.%I ADD COLUMN sys_tenant SMALLINT default 1', table_name);
             END LOOP;
     END
@@ -376,10 +377,12 @@ $$
     BEGIN
         FOR table_name IN SELECT namespace_table_name FROM filtered_namespace_tables
             LOOP
+                EXECUTE format('DROP POLICY ehr_policy_all ON ehr.%I', table_name);
                 EXECUTE format(
                         'CREATE POLICY ehr_policy_all ON ehr.%I FOR ALL USING (sys_tenant = current_setting(''ehrbase.current_tenant'')::smallint)',
                         table_name);
                 EXECUTE format('ALTER TABLE ehr.%I DROP COLUMN namespace', table_name);
+                EXECUTE format('DROP POLICY ehr_policy_ehrbase_migration ON ehr.%I', table_name);
             END LOOP;
     END
 $$;
