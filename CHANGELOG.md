@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+ - Fix DB Migration scripts. Allow user different then ehrbase ([#1127](https://github.com/ehrbase/ehrbase/pull/1127)).
 
 ## [0.27.0]
  ### Added

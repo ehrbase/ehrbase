@@ -380,7 +380,6 @@ $$
                         'CREATE POLICY ehr_policy_all ON ehr.%I FOR ALL USING (sys_tenant = current_setting(''ehrbase.current_tenant'')::smallint)',
                         table_name);
                 EXECUTE format('ALTER TABLE ehr.%I DROP COLUMN namespace', table_name);
-                EXECUTE format('DROP POLICY ehr_policy_ehrbase_migration ON ehr.%I', table_name);
             END LOOP;
     END
 $$;
