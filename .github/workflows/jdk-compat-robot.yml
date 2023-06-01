@@ -83,12 +83,14 @@ jobs:
           
       - name: Archive code coverage results
         if: always()
+        uses: actions/upload-artifact@v3
         with:
           name: robot-result
           path: /home/runner/work/ehrbase/ehrbase/tests/results/
 
       - name: Archive logs
         if: always()
+        uses: actions/upload-artifact@v3
         with:
           name: log
           path: /var/tmp/log.txt
