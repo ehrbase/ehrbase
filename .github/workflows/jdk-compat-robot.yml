@@ -64,7 +64,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: ehrbase/integration-tests
-          ref: main
+          ref: feature/903_different_creds
           
       - name: Install Python
         uses: actions/setup-python@v4
