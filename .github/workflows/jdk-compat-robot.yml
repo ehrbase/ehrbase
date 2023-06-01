@@ -41,3 +41,24 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B verify
+        
+      - name: Run ehrbase
+        run: |
+          java -jar application/target/application-0.28.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
+          sleep 30
+          cat /var/tmp/log.txt
+          
+      - name: Checkout robot
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ehrbase/integration-tests
+          ref: main
+          
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install -r tests/requirements.txt
