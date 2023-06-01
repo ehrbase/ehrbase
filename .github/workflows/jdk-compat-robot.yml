@@ -44,7 +44,7 @@ jobs:
         
       - name: Run ehrbase
         run: |
-          java -jar application/target/application-0.28.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org --spring.profiles.active=yugabytedb >/var/tmp/log.txt &
+          java -jar application/target/application-0.28.0-SNAPSHOT.jar --server.nodename=local.ehrbase.org >/var/tmp/log.txt &
           sleep 30
           cat /var/tmp/log.txt
           
