@@ -57,7 +57,7 @@ jobs:
         run: |
           java -jar application/target/application-0.28.0-SNAPSHOT.jar \
           --spring.profiles.active=docker \
-          --admin-api=true \
+          --admin-api.active=true \
           --DB_URL=jdbc:postgresql://localhost:5432/ehrbase \
           --DB_USER=ehrbase_restricted_username \
           --DB_PASS=ehrbase_restricted_password \
