@@ -18,8 +18,6 @@ jobs:
           image: ehrbase/ehrbase:next
           ports:
             - 8080:8080
-          env_file:
-            - .env.ehrbase
           environment:
             DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
             DB_USER_ADMIN: ehrbase_admin_username
