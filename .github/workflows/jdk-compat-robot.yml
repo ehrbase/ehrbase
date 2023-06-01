@@ -63,7 +63,7 @@ jobs:
           --DB_USER_ADMIN=ehrbase_admin_username \
           --DB_PASS_ADMIN=ehrbase_admin_password \
           --server.nodename=local.ehrbase.org \
-          application/target/application-0.28.0-SNAPSHOT.jar >/var/tmp/log.txt &
+          >/var/tmp/log.txt &
           sleep 30
           cat /var/tmp/log.txt
           
