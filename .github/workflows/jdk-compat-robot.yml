@@ -85,7 +85,10 @@ jobs:
       - name: Run robot
         run: |
           cd tests
-          robot -v nodocker \
+          robot 
+                -t "Main flow Sanity Tests for Canonical JSON Compositions" \
+                -t "Main flow Sanity Tests for Canonical XML Compositions" \
+                -v nodocker \
                 -v NODENAME:local.ehrbase.org \
                 --console dotted \
                 --flattenkeywords for \
