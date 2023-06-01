@@ -44,3 +44,8 @@ server:
     ignoreIterativeNodeList: 'events,activities,content'
     # how many embedded jsonb_array_elements(..) are acceptable? Recommended == 1
     iterationScanDepth: 1
+    
+admin-api:
+  active: false
+  allowDeleteAll: false
+  context-path: /rest/admin
