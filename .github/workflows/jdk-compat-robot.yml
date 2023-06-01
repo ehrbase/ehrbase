@@ -9,6 +9,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/ehrbase
+      DB_USER_ADMIN: ehrbase_admin_username
+      DB_PASS_ADMIN: ehrbase_admin_password
+      DB_USER: ehrbase_restricted_username
+      DB_PASS: ehrbase_restricted_password
+    
     strategy:
       matrix:
         java: [ '17' ]
@@ -19,11 +27,11 @@ jobs:
         ports:
           - 8080:8080
         env:
-          DB_URL: jdbc:postgresql://localhost:5432/ehrbase
-          DB_USER_ADMIN: ehrbase_admin_username
-          DB_PASS_ADMIN: ehrbase_admin_password
-          DB_USER: ehrbase_restricted_username
-          DB_PASS: ehrbase_restricted_password
+          DB_URL: $DB_URL
+          DB_USER_ADMIN: $DB_USER_ADMIN
+          DB_PASS_ADMIN: $DB_PASS_ADMIN
+          DB_USER: $DB_USER
+          DB_PASS: $DB_PASS
           
       ehrbase-db:
         image: ehrbase/ehrbase-postgres:13.4.v2
@@ -32,10 +40,10 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          EHRBASE_USER_ADMIN: ehrbase_admin_username
-          EHRBASE_PASSWORD_ADMIN: ehrbase_admin_password
-          EHRBASE_USER: ehrbase_restricted_username
-          EHRBASE_PASSWORD: ehrbase_restricted_password
+          EHRBASE_USER_ADMIN: $DB_USER_ADMIN
+          EHRBASE_PASSWORD_ADMIN: $DB_PASS_ADMIN
+          EHRBASE_USER: $DB_USER
+          EHRBASE_PASSWORD: $DB_USER
 
     steps:
       - name: Checkout
@@ -51,7 +59,7 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven
-        run: mvn -B verify -Ddatabase.user=ehrbase_admin_username -Ddatabase.pass=ehrbase_admin_password
+        run: mvn -B verify -Ddatabase.user=$DB_USER_ADMIN -Ddatabase.pass=$DB_PASS_ADMIN
 
       - name: Run ehrbase
         run: |
@@ -59,10 +67,10 @@ jobs:
           --spring.profiles.active=docker \
           --admin-api.active=true \
           --DB_URL=jdbc:postgresql://localhost:5432/ehrbase \
-          --DB_USER=ehrbase_restricted_username \
-          --DB_PASS=ehrbase_restricted_password \
-          --DB_USER_ADMIN=ehrbase_admin_username \
-          --DB_PASS_ADMIN=ehrbase_admin_password \
+          --DB_USER=$DB_USER \
+          --DB_PASS=$DB_PASS \
+          --DB_USER_ADMIN=$DB_USER_ADMIN \
+          --DB_PASS_ADMIN=$DB_PASS_ADMIN \
           --server.nodename=local.ehrbase.org \
           >/var/tmp/log.txt &
           sleep 30
