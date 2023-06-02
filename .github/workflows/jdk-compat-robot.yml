@@ -1,4 +1,4 @@
-name: test_other_db_user_credentials
+name: test_other_db_user
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 #    branches: [ develop ]
 
 jobs:
-  test_other_db_user_credentials:
+  build:
     runs-on: ubuntu-latest
     
     env:
