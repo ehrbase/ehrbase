@@ -1,4 +1,4 @@
-name: test_other_db_user
+name: Test other DB user credentials
 
 on:
   push:
