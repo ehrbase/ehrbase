@@ -1,4 +1,4 @@
-name: build
+name: test_other_db_user_credentials
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 #    branches: [ develop ]
 
 jobs:
-  build:
+  test_other_db_user_credentials:
     runs-on: ubuntu-latest
     
     env:
@@ -22,17 +22,6 @@ jobs:
         java: [ '17' ]
 
     services:
-      ehrbase:
-        image: ehrbase/ehrbase:next
-        ports:
-          - 8080:8080
-        env:
-          DB_URL: ${{ env.DB_URL }}
-          DB_USER_ADMIN: ${{ env.DB_USER_ADMIN }}
-          DB_PASS_ADMIN: ${{ env.DB_PASS_ADMIN }}
-          DB_USER: ${{ env.DB_USER }}
-          DB_PASS: ${{ env.DB_PASS }}
-          
       ehrbase-db:
         image: ehrbase/ehrbase-postgres:13.4.v2
         ports:
