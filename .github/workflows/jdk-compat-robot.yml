@@ -2,7 +2,7 @@ name: Test other DB user credentials
 
 on:
   push:
-    branches: [ feature/CDR-903_pipeline_different_ehrbase_creds ]
+    branches: [ develop ]
 #  pull_request:
 #    branches: [ develop ]
 
