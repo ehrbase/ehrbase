@@ -87,7 +87,6 @@ jobs:
         run: |
           cd tests
           robot \
-                -v nodocker \
                 -v NODENAME:local.ehrbase.org \
                 --console dotted \
                 --flattenkeywords for \
