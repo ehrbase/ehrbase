@@ -8,6 +8,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [0.27.2]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 1.28.0-SNAPSHOT see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  - fix flyway_checksum for script 83  ([#1130](https://github.com/ehrbase/ehrbase/pull/1130))
  ### Fixed 
 
@@ -636,4 +642,5 @@ the next release this file will provide a proper overview.
 [0.26.0]: https://github.com/ehrbase/ehrbase/compare/v0.25.0...v0.26.0
 [0.27.0]: https://github.com/ehrbase/ehrbase/compare/v0.26.0...v0.27.0
 [0.27.1]: https://github.com/ehrbase/ehrbase/compare/v0.27.0...v0.27.1
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.27.1...HEAD
+[0.27.2]: https://github.com/ehrbase/ehrbase/compare/v0.27.1...v0.27.2
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.27.2...HEAD
