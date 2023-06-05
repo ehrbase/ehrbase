@@ -5,9 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [0.27.1]
  ### Added
  ### Changed 
+ - Upgrade openEHR_SDK to version 1.28.0-SNAPSHOT see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  ### Fixed 
  - Fix DB Migration scripts. Remove the tenant RLS policy during script execution ([#1127](https://github.com/ehrbase/ehrbase/pull/1127)).
 
@@ -628,4 +629,4 @@ the next release this file will provide a proper overview.
 [0.25.0]: https://github.com/ehrbase/ehrbase/compare/v0.24.0...v0.25.0
 [0.26.0]: https://github.com/ehrbase/ehrbase/compare/v0.25.0...v0.26.0
 [0.27.0]: https://github.com/ehrbase/ehrbase/compare/v0.26.0...v0.27.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.27.0...HEAD
+[0.27.1]: https://github.com/ehrbase/ehrbase/compare/v0.27.0...v0.27.1
