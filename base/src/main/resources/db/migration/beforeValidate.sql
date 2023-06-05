@@ -27,6 +27,10 @@ $$
             SET checksum = 1953744080
             WHERE (version, checksum) = ('71', -1047639409);
 
+            UPDATE ehr.flyway_schema_history
+            SET checksum = 1051439940
+            WHERE (version, checksum) = ('83', -1840801783);
+
         END IF;
     END
 $$;
