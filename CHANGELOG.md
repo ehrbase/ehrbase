@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ - fix flyway_checksum for script 83  ([#1130](https://github.com/ehrbase/ehrbase/pull/1130))
  ### Fixed 
 
 ## [0.27.1]
