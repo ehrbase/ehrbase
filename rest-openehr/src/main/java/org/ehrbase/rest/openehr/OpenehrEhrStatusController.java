@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -174,6 +176,11 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
+        I_AuditMsgBuilder.getInstance()
+                .setEhrId(ehrId.toString())
+                .setVersion(version)
+                .setLocation(getLocationUrl(statusUid, ehrId, version));
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
@@ -197,6 +204,11 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
+
+        I_AuditMsgBuilder.getInstance()
+                .setEhrId(ehrId.toString())
+                .setVersion(version)
+                .setLocation(getLocationUrl(ehrStatusId, ehrId, version));
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -282,5 +294,22 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         }
 
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
+    }
+
+    private String getLocationUrl(UUID ehrStatusId, UUID ehrId, int version) {
+        if (version <= 0) {
+            version = Integer.parseInt(
+                    ehrService.getLatestVersionUidOfStatus(ehrId).split("::")[2]);
+        }
+
+        return fromPath("{ehrSegment}/{ehrId}/{compositionSegment}/{statusId}::{nodeName}::{version}")
+                .build(
+                        EHR,
+                        ehrId.toString(),
+                        EHR_STATUS,
+                        ehrStatusId,
+                        ehrService.getServerConfig().getNodename(),
+                        version)
+                .toString();
     }
 }

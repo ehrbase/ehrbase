@@ -18,8 +18,10 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -27,14 +29,13 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -47,8 +48,6 @@ import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
 import org.ehrbase.response.openehr.CompositionResponseData;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.openehr.audit.CompositionAuditInterceptor;
-import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.ehrbase.rest.openehr.specification.CompositionApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +83,7 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrCompositionController extends BaseController implements CompositionApiSpecification {
 
-    final CompositionService compositionService;
+    private final CompositionService compositionService;
 
     @Autowired
     public OpenehrCompositionController(CompositionService compositionService) {
@@ -107,8 +106,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @RequestBody String composition,
-            HttpServletRequest request) {
+            @RequestBody String composition) {
 
         var ehrId = getEhrUuid(ehrIdString);
 
@@ -142,8 +140,11 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 buildCompositionResponseData(ehrId, compositionUuid, 1, accept, uri, headerList, responseDataSupplier);
 
         // Enriches request attributes with current compositionId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-        request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUuid);
+        I_AuditMsgBuilder.getInstance()
+                .setEhrId(ehrId.toString())
+                .setCompositionId(compositionUuid.toString())
+                .setTemplateId(compositionService.retrieveTemplateId(compositionUuid))
+                .setLocation(getLocationUrl(compositionUuid, ehrId, 0));
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -174,8 +175,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             @RequestHeader(value = IF_MATCH) String ifMatch,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
-            @RequestBody String composition,
-            HttpServletRequest request) {
+            @RequestBody String composition) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedObjectUid = getCompositionVersionedObjectUidString(versionedObjectUidString);
@@ -223,12 +223,13 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
             UUID compositionId = extractVersionedObjectUidFromVersionUid(compositionVersionUid);
 
+            int version = extractVersionFromVersionUid(compositionVersionUid);
             if (RETURN_REPRESENTATION.equals(prefer)) {
                 // both options extract needed info from versionUid
                 respData = buildCompositionResponseData(
                         ehrId,
                         compositionId,
-                        extractVersionFromVersionUid(compositionVersionUid),
+                        version,
                         accept,
                         uri,
                         headerList,
@@ -236,18 +237,14 @@ public class OpenehrCompositionController extends BaseController implements Comp
             } else {
                 // "minimal" is default fallback
                 respData = buildCompositionResponseData(
-                        ehrId,
-                        compositionId,
-                        extractVersionFromVersionUid(compositionVersionUid),
-                        accept,
-                        uri,
-                        headerList,
-                        () -> null);
+                        ehrId, compositionId, version, accept, uri, headerList, () -> null);
             }
 
-            // Enriches request attributes with current compositionId for later audit processing
-            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-            request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionId);
+            I_AuditMsgBuilder.getInstance()
+                    .setEhrId(ehrId.toString())
+                    .setCompositionId(compositionId.toString())
+                    .setTemplateId(compositionService.retrieveTemplateId(compositionId))
+                    .setLocation(getLocationUrl(compositionId, ehrId, version));
 
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
@@ -274,15 +271,15 @@ public class OpenehrCompositionController extends BaseController implements Comp
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "preceding_version_uid") String precedingVersionUid,
-            HttpServletRequest request) {
+            @PathVariable(value = "preceding_version_uid") String precedingVersionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         HttpHeaders headers = new HttpHeaders();
 
+        UUID uidFromVersionUid = extractVersionedObjectUidFromVersionUid(precedingVersionUid);
         // check if this composition in given preceding version is available
         compositionService
-                .retrieve(ehrId, extractVersionedObjectUidFromVersionUid(precedingVersionUid), 1)
+                .retrieve(ehrId, uidFromVersionUid, 1)
                 .orElseThrow(
                         () -> new ObjectNotFoundException(
                                 "composition",
@@ -294,16 +291,15 @@ public class OpenehrCompositionController extends BaseController implements Comp
         }*/
 
         // prepare header data
-        String latestVersionId = extractVersionedObjectUidFromVersionUid(precedingVersionUid) + "::"
+        Integer lastVersionNumber = compositionService.getLastVersionNumber(uidFromVersionUid);
+        String latestVersionId = uidFromVersionUid + "::"
                 + compositionService.getServerConfig().getNodename() + "::"
-                + compositionService.getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+                + lastVersionNumber;
         // TODO change to dynamic linking --> postponed, see EHR-230
         URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, latestVersionId);
 
         // If precedingVersionUid parameter doesn't match latest version
-        if (!compositionService
-                .getLastVersionNumber(extractVersionedObjectUidFromVersionUid(precedingVersionUid))
-                .equals(extractVersionFromVersionUid(precedingVersionUid))) {
+        if (!lastVersionNumber.equals(extractVersionFromVersionUid(precedingVersionUid))) {
             // 409 is returned when supplied preceding_version_uid doesn’t match the latest version. Returns latest
             // version in the Location and ETag headers.
             headers.setLocation(uri);
@@ -322,11 +318,11 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .toInstant()
                     .toEpochMilli());
 
-            // Enriches request attributes with current compositionId for later audit processing
-            request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-            request.setAttribute(
-                    CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE,
-                    extractVersionedObjectUidFromVersionUid(precedingVersionUid));
+            I_AuditMsgBuilder.getInstance()
+                    .setEhrId(ehrId.toString())
+                    .setCompositionId(uidFromVersionUid.toString())
+                    .setTemplateId(compositionService.retrieveTemplateId(uidFromVersionUid))
+                    .setLocation(getLocationUrl(uidFromVersionUid, ehrId, lastVersionNumber));
 
             return ResponseEntity.noContent().headers(headers).build();
         } catch (ObjectNotFoundException e) {
@@ -357,8 +353,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-            @RequestParam(value = "version_at_time", required = false) String versionAtTime,
-            HttpServletRequest request) {
+            @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
         // Note: Since this method can be called by another mapping as "almost overloaded" function some parameters
@@ -395,10 +390,12 @@ public class OpenehrCompositionController extends BaseController implements Comp
         Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(
                 ehrId, compositionUid, version, accept, uri, headerList, () -> new CompositionResponseData(null, null));
 
-        // Enriches request attributes with ehrId, compositionId and version for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
-        request.setAttribute(CompositionAuditInterceptor.COMPOSITION_ID_ATTRIBUTE, compositionUid);
-        request.setAttribute(CompositionAuditInterceptor.VERSION_ATTRIBUTE, version);
+        I_AuditMsgBuilder.getInstance()
+                .setEhrId(ehrId.toString())
+                .setCompositionId(compositionUid.toString())
+                .setVersion(version)
+                .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
+                .setLocation(getLocationUrl(compositionUid, ehrId, version));
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())
@@ -411,18 +408,34 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version) {
+        if (version == 0) {
+            version = compositionService.getLastVersionNumber(versionedObjectUid);
+        }
+
+        return fromPath("{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
+                .build(
+                        EHR,
+                        ehrId.toString(),
+                        COMPOSITION,
+                        versionedObjectUid,
+                        compositionService.getServerConfig().getNodename(),
+                        version)
+                .toString();
+    }
+
     /**
      * Builder method to prepare appropriate HTTP response. Flexible to either allow minimal or full
      * representation of resource.
      *
-     * @param <T> Type of the response body
+     * @param <T>           Type of the response body
      * @param ehrId
      * @param compositionId ID of the composition
-     * @param version 0 if latest, otherwise integer of specific version.
-     * @param accept Format the response should be delivered in, as given by request
-     * @param uri Location of resource
-     * @param headerList List of headers to be set for response
-     * @param factory Lambda function to constructor of desired object
+     * @param version       0 if latest, otherwise integer of specific version.
+     * @param accept        Format the response should be delivered in, as given by request
+     * @param uri           Location of resource
+     * @param headerList    List of headers to be set for response
+     * @param factory       Lambda function to constructor of desired object
      * @return
      */
     private <T extends CompositionResponseData> Optional<InternalResponse<T>> buildCompositionResponseData(
@@ -506,6 +519,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
     }
 
     private Optional<String> getUidFrom(Composition composition) {
-        return Optional.ofNullable(composition.getUid()).map(uid -> uid.toString());
+        return Optional.ofNullable(composition.getUid()).map(ObjectId::toString);
     }
 }

@@ -150,6 +150,10 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+        </dependency>
         
         <dependency>
             <groupId>org.ehrbase.openehr</groupId>

@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -47,7 +48,7 @@ import org.springframework.web.bind.annotation.*;
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
-        path = "${admin-api.context-path:/rest/admin}/ehr",
+        path = BaseController.ADMIN_API_CONTEXT_PATH + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminEhrController extends BaseController {
 
@@ -96,6 +97,8 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
+        I_AuditMsgBuilder.getInstance().setEhrId(ehrUuid.toString());
+
         // TODO: Implement endpoint functionality
 
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
@@ -127,6 +130,8 @@ public class AdminEhrController extends BaseController {
         }
 
         ehrService.adminDeleteEhr(ehrUuid);
+
+        I_AuditMsgBuilder.getInstance().setEhrId(ehrUuid.toString());
 
         return ResponseEntity.noContent().build();
     }
