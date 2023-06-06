@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+  -  Run directory operation in one transaction ([#1133](https://github.com/ehrbase/ehrbase/pull/1133))
 
 ## [0.27.3]
  ### Added
