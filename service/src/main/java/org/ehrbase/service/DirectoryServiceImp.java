@@ -44,11 +44,13 @@ import org.jooq.DSLContext;
 import org.jooq.Result;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Stefan Spiska
  */
 @Service
+@Transactional
 public class DirectoryServiceImp extends BaseServiceImp implements InternalDirectoryService {
 
     private final ServerConfig serverConfig;
