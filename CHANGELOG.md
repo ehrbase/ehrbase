@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [0.27.4]
  ### Added
  ### Changed 
@@ -653,3 +658,4 @@ the next release this file will provide a proper overview.
 [0.27.2]: https://github.com/ehrbase/ehrbase/compare/v0.27.1...v0.27.2
 [0.27.3]: https://github.com/ehrbase/ehrbase/compare/v0.27.2...v0.27.3
 [0.27.4]: https://github.com/ehrbase/ehrbase/compare/v0.27.3...v0.27.4
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.27.4...HEAD
