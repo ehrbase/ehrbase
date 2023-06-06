@@ -162,7 +162,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
 
         ehrFolderRepository.commit(ehrFolderRepository.toRecord(ehrId, folder), contributionId, auditId);
 
-        return folder;
+        return get(ehrId, null, null).get();
     }
 
     @Override
@@ -186,7 +186,7 @@ public class DirectoryServiceImp extends BaseServiceImp implements InternalDirec
         updateUuid(folder, true, UUID.fromString(ifMatches.getObjectId().getValue()), version + 1);
         ehrFolderRepository.update(ehrFolderRepository.toRecord(ehrId, folder), contributionId, auditId);
 
-        return folder;
+        return get(ehrId, null, null).get();
     }
 
     @Override
