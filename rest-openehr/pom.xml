@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.27.3</version>
+        <version>0.27.4</version>
     </parent>
 
     <artifactId>rest-openehr</artifactId>
