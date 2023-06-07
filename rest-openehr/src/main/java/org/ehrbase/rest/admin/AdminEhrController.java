@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Collections;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
@@ -97,7 +98,7 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
-        I_AuditMsgBuilder.getInstance().setEhrId(ehrUuid.toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrUuid));
 
         // TODO: Implement endpoint functionality
 
@@ -131,7 +132,7 @@ public class AdminEhrController extends BaseController {
 
         ehrService.adminDeleteEhr(ehrUuid);
 
-        I_AuditMsgBuilder.getInstance().setEhrId(ehrUuid.toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrUuid));
 
         return ResponseEntity.noContent().build();
     }

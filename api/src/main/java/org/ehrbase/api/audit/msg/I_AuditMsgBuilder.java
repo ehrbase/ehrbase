@@ -17,6 +17,8 @@
  */
 package org.ehrbase.api.audit.msg;
 
+import java.util.Set;
+
 public interface I_AuditMsgBuilder {
 
     static I_AuditMsgBuilder getInstance() {
@@ -25,7 +27,7 @@ public interface I_AuditMsgBuilder {
 
     I_AuditMsgBuilder setLocation(String location);
 
-    I_AuditMsgBuilder setEhrId(String ehrId);
+    I_AuditMsgBuilder setEhrIds(Set<Object> ehrId);
 
     I_AuditMsgBuilder setVersion(int version);
 

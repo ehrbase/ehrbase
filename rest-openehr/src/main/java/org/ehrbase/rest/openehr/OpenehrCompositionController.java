@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Collections;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
@@ -141,7 +142,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
         // Enriches request attributes with current compositionId for later audit processing
         I_AuditMsgBuilder.getInstance()
-                .setEhrId(ehrId.toString())
+                .setEhrIds(Collections.singleton(ehrId))
                 .setCompositionId(compositionUuid.toString())
                 .setTemplateId(compositionService.retrieveTemplateId(compositionUuid))
                 .setLocation(getLocationUrl(compositionUuid, ehrId, 0));
@@ -241,7 +242,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             }
 
             I_AuditMsgBuilder.getInstance()
-                    .setEhrId(ehrId.toString())
+                    .setEhrIds(Collections.singleton(ehrId))
                     .setCompositionId(compositionId.toString())
                     .setTemplateId(compositionService.retrieveTemplateId(compositionId))
                     .setLocation(getLocationUrl(compositionId, ehrId, version));
@@ -319,7 +320,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .toEpochMilli());
 
             I_AuditMsgBuilder.getInstance()
-                    .setEhrId(ehrId.toString())
+                    .setEhrIds(Collections.singleton(ehrId))
                     .setCompositionId(uidFromVersionUid.toString())
                     .setTemplateId(compositionService.retrieveTemplateId(uidFromVersionUid))
                     .setLocation(getLocationUrl(uidFromVersionUid, ehrId, lastVersionNumber));
@@ -391,7 +392,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 ehrId, compositionUid, version, accept, uri, headerList, () -> new CompositionResponseData(null, null));
 
         I_AuditMsgBuilder.getInstance()
-                .setEhrId(ehrId.toString())
+                .setEhrIds(Collections.singleton(ehrId))
                 .setCompositionId(compositionUid.toString())
                 .setVersion(version)
                 .setTemplateId(compositionService.retrieveTemplateId(compositionUid))

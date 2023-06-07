@@ -17,14 +17,16 @@
  */
 package org.ehrbase.api.audit.msg;
 
+import java.util.Set;
+
 public class AuditCompositionMsg extends AuditBaseMsg {
 
     private final String compositionId;
     private final String templateId;
 
     public AuditCompositionMsg(
-            String location, String ehrId, Integer version, String compositionId, String templateId) {
-        super(location, ehrId, version);
+            String location, Set<Object> ehrIds, Integer version, String compositionId, String templateId) {
+        super(location, ehrIds, version);
         this.compositionId = compositionId;
         this.templateId = templateId;
     }

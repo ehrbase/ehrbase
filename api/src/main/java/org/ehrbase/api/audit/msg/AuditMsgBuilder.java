@@ -17,8 +17,10 @@
  */
 package org.ehrbase.api.audit.msg;
 
+import java.util.Set;
+
 final class AuditMsgBuilder implements I_AuditMsgBuilder {
-    private String ehrId;
+    private Set<Object> ehrs;
     private String query;
     private String queryId;
     private Integer version;
@@ -34,8 +36,8 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
     }
 
     @Override
-    public I_AuditMsgBuilder setEhrId(String ehrId) {
-        this.ehrId = ehrId;
+    public I_AuditMsgBuilder setEhrIds(Set<Object> ehrs) {
+        this.ehrs = ehrs;
         return this;
     }
 
@@ -77,22 +79,27 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
 
     @Override
     public void clean() {
-        this.setEhrId(null);
+        this.setEhrIds(null);
+        this.setCompositionId(null);
+        this.setLocation(null);
+        this.setQuery(null);
+        this.setQueryId(null);
+        this.setTemplateId(null);
         this.setVersion(0);
     }
 
     @Override
     public AuditEhrMsg buildEhr() {
-        return new AuditEhrMsg(location, ehrId, version);
+        return new AuditEhrMsg(location, ehrs, version);
     }
 
     @Override
     public AuditQueryMsg buildQuery() {
-        return new AuditQueryMsg(location, ehrId, version, query, queryId);
+        return new AuditQueryMsg(location, ehrs, version, query, queryId);
     }
 
     @Override
     public AuditCompositionMsg buildComposition() {
-        return new AuditCompositionMsg(location, ehrId, version, compositionId, templateId);
+        return new AuditCompositionMsg(location, ehrs, version, compositionId, templateId);
     }
 }

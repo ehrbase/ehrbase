@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Collections;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
@@ -136,7 +137,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private ResponseEntity<EhrResponseData> internalPostEhrProcessing(String accept, String prefer, UUID resultEhrId) {
-        I_AuditMsgBuilder.getInstance().setEhrId(resultEhrId.toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(resultEhrId));
         URI url = createLocationUri(EHR, resultEhrId.toString());
 
         List<String> headerList =
@@ -206,7 +207,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId) {
-        I_AuditMsgBuilder.getInstance().setEhrId(ehrId.toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
 

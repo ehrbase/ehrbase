@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Collections;
 import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
@@ -257,8 +258,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         queryResponseData = new QueryResponseData(queryService.query(aql, parameters, false, auditResultMap));
 
         // Enriches request attributes with EhrId(s) for later audit processing
-        I_AuditMsgBuilder.getInstance()
-                .setEhrId(auditResultMap.get(EHR_ID_VALUE).toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
 
         return queryResponseData;
     }
@@ -316,8 +316,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResultDto resultDto = queryService.query(query, parameters, false, auditResultMap);
 
         // Enriches request attributes with EhrId(s) for later audit processing
-        I_AuditMsgBuilder.getInstance()
-                .setEhrId(auditResultMap.get(EHR_ID_VALUE).toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
 
         return new QueryResponseData(resultDto);
     }

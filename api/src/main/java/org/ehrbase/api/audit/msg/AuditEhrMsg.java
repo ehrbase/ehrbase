@@ -17,9 +17,11 @@
  */
 package org.ehrbase.api.audit.msg;
 
+import java.util.Set;
+
 public class AuditEhrMsg extends AuditBaseMsg {
 
-    public AuditEhrMsg(String location, String ehrId, Integer version) {
-        super(location, ehrId, version);
+    public AuditEhrMsg(String location, Set<Object> ehrIds, Integer version) {
+        super(location, ehrIds, version);
     }
 }

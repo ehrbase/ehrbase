@@ -17,15 +17,17 @@
  */
 package org.ehrbase.api.audit.msg;
 
-abstract class AuditBaseMsg {
+import java.util.Set;
+
+public abstract class AuditBaseMsg {
 
     private final String location;
-    private final String ehrId;
+    private final Set<Object> ehrIds;
     private final Integer version;
 
-    protected AuditBaseMsg(String location, String ehrId, Integer version) {
+    protected AuditBaseMsg(String location, Set<Object> ehrIds, Integer version) {
         this.location = location;
-        this.ehrId = ehrId;
+        this.ehrIds = ehrIds;
         this.version = version;
     }
 
@@ -33,8 +35,8 @@ abstract class AuditBaseMsg {
         return location;
     }
 
-    public String getEhrId() {
-        return ehrId;
+    public Set<Object> getEhrIds() {
+        return ehrIds;
     }
 
     public int getVersion() {

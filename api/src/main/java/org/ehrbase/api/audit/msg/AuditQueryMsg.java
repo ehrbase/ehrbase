@@ -17,13 +17,15 @@
  */
 package org.ehrbase.api.audit.msg;
 
+import java.util.Set;
+
 public class AuditQueryMsg extends AuditBaseMsg {
 
     private final String query;
     private final String queryId;
 
-    public AuditQueryMsg(String location, String ehrId, Integer version, String query, String queryId) {
-        super(location, ehrId, version);
+    public AuditQueryMsg(String location, Set<Object> ehrIds, Integer version, String query, String queryId) {
+        super(location, ehrIds, version);
         this.query = query;
         this.queryId = queryId;
     }

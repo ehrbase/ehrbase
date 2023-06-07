@@ -23,6 +23,7 @@ import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -93,7 +94,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrId(ehrId.toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -119,7 +120,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrId(ehrId.toString());
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -170,7 +171,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrId(ehrId.toString()).setVersion(version);
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId)).setVersion(version);
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
@@ -222,7 +223,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrId(ehrId.toString()).setVersion(version);
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId)).setVersion(version);
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }

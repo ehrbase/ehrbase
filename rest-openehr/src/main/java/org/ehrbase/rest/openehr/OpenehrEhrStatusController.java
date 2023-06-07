@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Collections;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
@@ -177,7 +178,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
         I_AuditMsgBuilder.getInstance()
-                .setEhrId(ehrId.toString())
+                .setEhrIds(Collections.singleton(ehrId))
                 .setVersion(version)
                 .setLocation(getLocationUrl(statusUid, ehrId, version));
 
@@ -206,7 +207,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
         I_AuditMsgBuilder.getInstance()
-                .setEhrId(ehrId.toString())
+                .setEhrIds(Collections.singleton(ehrId))
                 .setVersion(version)
                 .setLocation(getLocationUrl(ehrStatusId, ehrId, version));
 
