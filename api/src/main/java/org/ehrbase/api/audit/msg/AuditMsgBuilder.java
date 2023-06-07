@@ -35,6 +35,10 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
         return auditMsgBuilderThreadLocal.get();
     }
 
+    static void removeBuilderInstance() {
+        auditMsgBuilderThreadLocal.remove();
+    }
+
     @Override
     public I_AuditMsgBuilder setEhrIds(Set<Object> ehrs) {
         this.ehrs = ehrs;
