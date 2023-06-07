@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Collections;
 import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
