@@ -41,7 +41,7 @@ public class AuditInterceptorHandler {
     protected String adminApiContextPath;
 
     @Autowired(required = false)
-    AuditCompositionHandlerInterceptor сompositionInterceptor;
+    AuditCompositionHandlerInterceptor compositionInterceptor;
 
     @Autowired(required = false)
     AuditEhrHandlerInterceptor ehrInterceptor;
@@ -58,7 +58,7 @@ public class AuditInterceptorHandler {
     public void registerAuditInterceptors(InterceptorRegistry registry) {
         if (shouldRegisterInterceptors()) {
             // Composition endpoint
-            registry.addInterceptor(сompositionInterceptor)
+            registry.addInterceptor(compositionInterceptor)
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_TRAILING_SEGMENTS));
             // Ehr endpoint
             registry.addInterceptor(ehrInterceptor)
@@ -80,7 +80,7 @@ public class AuditInterceptorHandler {
     }
 
     private boolean shouldRegisterInterceptors() {
-        return сompositionInterceptor != null
+        return compositionInterceptor != null
                 || ehrInterceptor != null
                 || ehrAdminInterceptor != null
                 || queryInterceptor != null
