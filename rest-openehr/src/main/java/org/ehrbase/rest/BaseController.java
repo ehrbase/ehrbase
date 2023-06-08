@@ -97,6 +97,7 @@ public abstract class BaseController {
     public static final String EHR = "ehr";
     public static final String EHR_STATUS = "ehr_status";
     public static final String VERSIONED_EHR_STATUS = "versioned_ehr_status";
+    public static final String VERSIONED_COMPOSITION = "versioned_composition";
     public static final String COMPOSITION = "composition";
     public static final String DIRECTORY = "directory";
     public static final String CONTRIBUTION = "contribution";

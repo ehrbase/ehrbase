@@ -59,7 +59,9 @@ public class AuditInterceptorHandler {
         if (shouldRegisterInterceptors()) {
             // Composition endpoint
             registry.addInterceptor(compositionInterceptor)
-                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_TRAILING_SEGMENTS));
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_TRAILING_SEGMENTS))
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, VERSIONED_COMPOSITION, ANY_TRAILING_SEGMENTS))
+                    .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_SEGMENT));
             // Ehr endpoint
             registry.addInterceptor(ehrInterceptor)
                     .addPathPatterns(contextPathPattern(EHR), contextPathPattern(EHR, ANY_SEGMENT));
