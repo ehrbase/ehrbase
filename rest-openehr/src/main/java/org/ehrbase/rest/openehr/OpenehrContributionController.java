@@ -21,14 +21,10 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.NotAcceptableException;
@@ -53,6 +49,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 @TenantAware
 @RestController
@@ -114,6 +114,8 @@ public class OpenehrContributionController extends BaseController implements Con
             respData = buildContributionResponseData(contributionId, ehrId, accept, uri, headerList, () -> null);
         }
 
+        createAuditMessage(ehrId, contributionId);
+
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
                         .map(j -> ResponseEntity.created(uri)
@@ -151,6 +153,8 @@ public class OpenehrContributionController extends BaseController implements Con
         // building full / representation response
         respData = buildContributionResponseData(
                 contributionUid, ehrId, accept, uri, headerList, () -> new ContributionResponseData(null, null, null));
+
+        createAuditMessage(ehrId, contributionUid);
 
         // returns 200 with body + headers or 500 in case of unexpected error
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -224,5 +228,12 @@ public class OpenehrContributionController extends BaseController implements Con
         } // else continue with returning but without additional data from above, e.g. body
 
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
+    }
+
+    private void createAuditMessage(UUID ehrId, UUID contributionId) {
+        I_AuditMsgBuilder.getInstance()
+                .setEhrIds(Collections.singleton(ehrId))
+                .setContributionId(contributionId.toString())
+                .setLocation(fromPath(EMPTY).pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString()).build().toString());
     }
 }

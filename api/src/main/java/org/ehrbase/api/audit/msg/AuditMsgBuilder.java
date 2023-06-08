@@ -27,6 +27,7 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
     private String location;
     private String templateId;
     private String compositionId;
+    private String contributionId;
 
     private static final ThreadLocal<I_AuditMsgBuilder> auditMsgBuilderThreadLocal =
             ThreadLocal.withInitial(AuditMsgBuilder::new);
@@ -82,6 +83,12 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
     }
 
     @Override
+    public I_AuditMsgBuilder setContributionId(String contributionId) {
+        this.contributionId = contributionId;
+        return this;
+    }
+
+    @Override
     public void clean() {
         this.setEhrIds(null);
         this.setCompositionId(null);
@@ -89,6 +96,7 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
         this.setQuery(null);
         this.setQueryId(null);
         this.setTemplateId(null);
+        this.setContributionId(null);
         this.setVersion(0);
     }
 
@@ -105,5 +113,10 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
     @Override
     public AuditCompositionMsg buildComposition() {
         return new AuditCompositionMsg(location, ehrs, version, compositionId, templateId);
+    }
+
+    @Override
+    public AuditContributionMsg buildContribution() {
+        return new AuditContributionMsg(location, ehrs, version, contributionId);
     }
 }

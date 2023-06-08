@@ -44,6 +44,9 @@ public class AuditInterceptorHandler {
     AuditCompositionHandlerInterceptor compositionInterceptor;
 
     @Autowired(required = false)
+    AuditContributionHandlerInterceptor contributionInterceptor;
+
+    @Autowired(required = false)
     AuditEhrHandlerInterceptor ehrInterceptor;
 
     @Autowired(required = false)
@@ -62,6 +65,10 @@ public class AuditInterceptorHandler {
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_TRAILING_SEGMENTS))
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, VERSIONED_COMPOSITION, ANY_TRAILING_SEGMENTS))
                     .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_SEGMENT));
+            // Contribution endpoint
+            registry.addInterceptor(contributionInterceptor)
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, CONTRIBUTION, ANY_TRAILING_SEGMENTS))
+                    .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, CONTRIBUTION, ANY_SEGMENT));
             // Ehr endpoint
             registry.addInterceptor(ehrInterceptor)
                     .addPathPatterns(contextPathPattern(EHR), contextPathPattern(EHR, ANY_SEGMENT));
@@ -86,6 +93,7 @@ public class AuditInterceptorHandler {
                 || ehrInterceptor != null
                 || ehrAdminInterceptor != null
                 || queryInterceptor != null
+                || contributionInterceptor != null
                 || ehrStatusInterceptor != null;
     }
 

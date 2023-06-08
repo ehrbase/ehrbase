@@ -39,6 +39,8 @@ public interface I_AuditMsgBuilder {
 
     I_AuditMsgBuilder setQueryId(String queryId);
 
+    I_AuditMsgBuilder setContributionId(String contributionId);
+
     void clean();
 
     AuditEhrMsg buildEhr();
@@ -46,4 +48,6 @@ public interface I_AuditMsgBuilder {
     AuditCompositionMsg buildComposition();
 
     AuditQueryMsg buildQuery();
+
+    AuditContributionMsg buildContribution();
 }
