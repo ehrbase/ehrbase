@@ -23,7 +23,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
@@ -45,8 +44,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 /**
  * Admin API controller for Composition related data. Provides endpoint to remove compositions physically from database.
@@ -114,7 +111,9 @@ public class AdminCompositionController extends BaseController {
                 .setEhrIds(Collections.singleton(ehrId))
                 .setCompositionId(compositionId)
                 .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
-                .setLocation(UriComponentsBuilder.fromPath("/{ehr_id}/composition/{composition_id}").build(ehrId, compositionId).toString());
+                .setLocation(UriComponentsBuilder.fromPath("/{ehr_id}/composition/{composition_id}")
+                        .build(ehrId, compositionId)
+                        .toString());
 
         return ResponseEntity.noContent().build();
     }

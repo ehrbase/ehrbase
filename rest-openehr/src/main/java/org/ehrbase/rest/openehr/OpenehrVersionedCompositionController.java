@@ -17,18 +17,20 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
+import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
@@ -58,12 +60,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.annotation.Nullable;
-
-import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
-import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
-import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
@@ -114,7 +110,6 @@ public class OpenehrVersionedCompositionController extends BaseController
                 .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
                 .setLocation(auditLocation);
 
-
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
@@ -146,7 +141,6 @@ public class OpenehrVersionedCompositionController extends BaseController
                 .setCompositionId(versionedCompoUid.toString())
                 .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
                 .setLocation(auditLocation);
-
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
@@ -196,7 +190,6 @@ public class OpenehrVersionedCompositionController extends BaseController
                 .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
                 .setLocation(auditLocation);
 
-
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
     }
 
@@ -211,8 +204,8 @@ public class OpenehrVersionedCompositionController extends BaseController
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestParam(value = "version_at_time", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime versionAtTime) {
+                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    LocalDateTime versionAtTime) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -279,9 +272,12 @@ public class OpenehrVersionedCompositionController extends BaseController
             version = compositionService.getLastVersionNumber(versionedObjectUid);
         }
 
-        String versionedComposition = String.format("%s::%s::%s", versionedObjectUid, compositionService.getServerConfig().getNodename(), version);
+        String versionedComposition = String.format(
+                "%s::%s::%s",
+                versionedObjectUid, compositionService.getServerConfig().getNodename(), version);
 
-        UriComponentsBuilder uriComponentsBuilder = fromPath("").pathSegment(EHR, ehrId.toString(), VERSIONED_COMPOSITION, versionedComposition);
+        UriComponentsBuilder uriComponentsBuilder =
+                fromPath("").pathSegment(EHR, ehrId.toString(), VERSIONED_COMPOSITION, versionedComposition);
 
         if (pathSegments.length > 0) {
             uriComponentsBuilder.pathSegment(pathSegments);
