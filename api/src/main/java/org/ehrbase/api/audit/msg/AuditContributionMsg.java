@@ -23,8 +23,7 @@ public class AuditContributionMsg extends AuditBaseMsg {
 
     private final String contributionId;
 
-    public AuditContributionMsg(
-            String location, Set<Object> ehrIds, Integer version, String contributionId) {
+    public AuditContributionMsg(String location, Set<Object> ehrIds, Integer version, String contributionId) {
         super(location, ehrIds, version);
         this.contributionId = contributionId;
     }

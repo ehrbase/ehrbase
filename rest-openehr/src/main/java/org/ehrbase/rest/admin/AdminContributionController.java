@@ -17,13 +17,15 @@
  */
 package org.ehrbase.rest.admin;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import java.util.Collections;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
@@ -41,9 +43,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 /**
  * Admin API controller for Contribution related data. Provides endpoints to update and remove Contributions in
@@ -105,7 +104,6 @@ public class AdminContributionController extends BaseController {
         }
         UUID contributionUUID = UUID.fromString(contributionId);
 
-
         // TODO: Implement endpoint functionality
 
         // Contribution existence check will be done in services
@@ -163,6 +161,9 @@ public class AdminContributionController extends BaseController {
         I_AuditMsgBuilder.getInstance()
                 .setEhrIds(Collections.singleton(ehrId))
                 .setContributionId(contributionId.toString())
-                .setLocation(fromPath(EMPTY).pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString()).build().toString());
+                .setLocation(fromPath(EMPTY)
+                        .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
+                        .build()
+                        .toString());
     }
 }

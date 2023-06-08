@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -49,10 +52,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 @TenantAware
 @RestController
@@ -234,6 +233,9 @@ public class OpenehrContributionController extends BaseController implements Con
         I_AuditMsgBuilder.getInstance()
                 .setEhrIds(Collections.singleton(ehrId))
                 .setContributionId(contributionId.toString())
-                .setLocation(fromPath(EMPTY).pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString()).build().toString());
+                .setLocation(fromPath(EMPTY)
+                        .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
+                        .build()
+                        .toString());
     }
 }
