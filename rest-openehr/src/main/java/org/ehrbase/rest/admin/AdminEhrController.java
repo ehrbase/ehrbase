@@ -24,7 +24,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
@@ -130,10 +132,17 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
+        Set<Object> ehrs = Collections.singleton(ehrUuid);
+        I_AuditMsgBuilder.getInstance().setEhrIds(ehrs).setRemovedPatients(getPatientNumbers(ehrs));
+
         ehrService.adminDeleteEhr(ehrUuid);
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrUuid));
-
         return ResponseEntity.noContent().build();
+    }
+
+    private Set<String> getPatientNumbers(Set<Object> ehrs) {
+        return ehrs.stream()
+                .map(ehrId -> ehrService.getSubjectExtRef(ehrId.toString()))
+                .collect(Collectors.toSet());
     }
 }

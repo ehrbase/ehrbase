@@ -18,10 +18,17 @@
 package org.ehrbase.api.audit.msg;
 
 import java.util.Set;
+import org.springframework.lang.Nullable;
 
 public class AuditEhrMsg extends AuditBaseMsg {
+    private final Set<String> removedPatients;
 
-    public AuditEhrMsg(String location, Set<Object> ehrIds, Integer version) {
+    public Set<String> getRemovedPatients() {
+        return removedPatients;
+    }
+
+    public AuditEhrMsg(String location, Set<Object> ehrIds, Integer version, @Nullable Set<String> removedPatients) {
         super(location, ehrIds, version);
+        this.removedPatients = removedPatients;
     }
 }

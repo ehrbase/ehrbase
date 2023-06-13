@@ -20,14 +20,15 @@ package org.ehrbase.api.audit.msg;
 import java.util.Set;
 
 final class AuditMsgBuilder implements I_AuditMsgBuilder {
-    private Set<Object> ehrs;
     private String query;
     private String queryId;
     private Integer version;
     private String location;
+    private Set<Object> ehrs;
     private String templateId;
     private String compositionId;
     private String contributionId;
+    private Set<String> removedPatients;
 
     private static final ThreadLocal<I_AuditMsgBuilder> auditMsgBuilderThreadLocal =
             ThreadLocal.withInitial(AuditMsgBuilder::new);
@@ -44,6 +45,11 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
     public I_AuditMsgBuilder setEhrIds(Set<Object> ehrs) {
         this.ehrs = ehrs;
         return this;
+    }
+
+    @Override
+    public void setRemovedPatients(Set<String> removedPatients) {
+        this.removedPatients = removedPatients;
     }
 
     @Override
@@ -98,11 +104,12 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
         this.setTemplateId(null);
         this.setContributionId(null);
         this.setVersion(0);
+        this.setRemovedPatients(null);
     }
 
     @Override
     public AuditEhrMsg buildEhr() {
-        return new AuditEhrMsg(location, ehrs, version);
+        return new AuditEhrMsg(location, ehrs, version, removedPatients);
     }
 
     @Override
