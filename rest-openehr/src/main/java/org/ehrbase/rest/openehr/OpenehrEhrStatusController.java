@@ -18,7 +18,6 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
-import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -177,8 +176,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId));
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -204,8 +202,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId));
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
