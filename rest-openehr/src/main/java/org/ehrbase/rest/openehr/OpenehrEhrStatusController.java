@@ -178,9 +178,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
         I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setVersion(version)
-                .setLocation(getLocationUrl(statusUid, ehrId, version));
+                .setEhrIds(Collections.singleton(ehrId));
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -207,9 +205,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
         I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setVersion(version)
-                .setLocation(getLocationUrl(ehrStatusId, ehrId, version));
+                .setEhrIds(Collections.singleton(ehrId));
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -295,22 +291,5 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         }
 
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
-    }
-
-    private String getLocationUrl(UUID ehrStatusId, UUID ehrId, int version) {
-        if (version <= 0) {
-            version = Integer.parseInt(
-                    ehrService.getLatestVersionUidOfStatus(ehrId).split("::")[2]);
-        }
-
-        return fromPath("{ehrSegment}/{ehrId}/{compositionSegment}/{statusId}::{nodeName}::{version}")
-                .build(
-                        EHR,
-                        ehrId.toString(),
-                        EHR_STATUS,
-                        ehrStatusId,
-                        ehrService.getServerConfig().getNodename(),
-                        version)
-                .toString();
     }
 }
