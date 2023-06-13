@@ -19,7 +19,7 @@ package org.ehrbase.application.config.web;
 
 import org.ehrbase.application.util.IsoDateTimeConverter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
