@@ -176,7 +176,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
+        createAuditLogsMsgBuilder(ehrId);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -202,10 +202,14 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
+        createAuditLogsMsgBuilder(ehrId);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+    private void createAuditLogsMsgBuilder(UUID ehrId) {
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
     }
 
     /**

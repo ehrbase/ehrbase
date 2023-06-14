@@ -94,7 +94,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
+        createAuditLogsMsgBuilder(ehrId);
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -120,7 +120,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
+        createAuditLogsMsgBuilder(ehrId);
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -171,7 +171,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId)).setVersion(version);
+        createAuditLogsMsgBuilder(ehrId).setVersion(version);
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
@@ -223,8 +223,12 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId)).setVersion(version);
+        createAuditLogsMsgBuilder(ehrId).setVersion(version);
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
+    }
+
+    private I_AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId) {
+        return I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
     }
 }

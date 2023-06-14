@@ -137,7 +137,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private ResponseEntity<EhrResponseData> internalPostEhrProcessing(String accept, String prefer, UUID resultEhrId) {
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(resultEhrId));
+        createAuditLogsMsgBuilder(resultEhrId);
         URI url = createLocationUri(EHR, resultEhrId.toString());
 
         List<String> headerList =
@@ -164,6 +164,10 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                                 .build()))
                 // when no response could be created at all
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+    private void createAuditLogsMsgBuilder(UUID resultEhrId) {
+        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(resultEhrId));
     }
 
     /**
@@ -207,7 +211,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId) {
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
+        createAuditLogsMsgBuilder(ehrId);
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
 

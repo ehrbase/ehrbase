@@ -141,11 +141,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 buildCompositionResponseData(ehrId, compositionUuid, 1, accept, uri, headerList, responseDataSupplier);
 
         // Enriches request attributes with current compositionId for later audit processing
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setCompositionId(compositionUuid.toString())
-                .setTemplateId(compositionService.retrieveTemplateId(compositionUuid))
-                .setLocation(getLocationUrl(compositionUuid, ehrId, 0));
+        createAuditLogsMsgBuilder(ehrId, compositionUuid, 0);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -241,11 +237,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                         ehrId, compositionId, version, accept, uri, headerList, () -> null);
             }
 
-            I_AuditMsgBuilder.getInstance()
-                    .setEhrIds(Collections.singleton(ehrId))
-                    .setCompositionId(compositionId.toString())
-                    .setTemplateId(compositionService.retrieveTemplateId(compositionId))
-                    .setLocation(getLocationUrl(compositionId, ehrId, version));
+            createAuditLogsMsgBuilder(ehrId, compositionId, version);
 
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
@@ -319,11 +311,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .toInstant()
                     .toEpochMilli());
 
-            I_AuditMsgBuilder.getInstance()
-                    .setEhrIds(Collections.singleton(ehrId))
-                    .setCompositionId(uidFromVersionUid.toString())
-                    .setTemplateId(compositionService.retrieveTemplateId(uidFromVersionUid))
-                    .setLocation(getLocationUrl(uidFromVersionUid, ehrId, lastVersionNumber));
+            createAuditLogsMsgBuilder(ehrId, uidFromVersionUid, lastVersionNumber);
 
             return ResponseEntity.noContent().headers(headers).build();
         } catch (ObjectNotFoundException e) {
@@ -391,12 +379,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(
                 ehrId, compositionUid, version, accept, uri, headerList, () -> new CompositionResponseData(null, null));
 
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setCompositionId(compositionUid.toString())
-                .setVersion(version)
-                .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
-                .setLocation(getLocationUrl(compositionUid, ehrId, version));
+        createAuditLogsMsgBuilder(ehrId, compositionUid, version).setVersion(version);
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())
@@ -407,6 +390,14 @@ public class OpenehrCompositionController extends BaseController implements Comp
                                 .build()))
                 // when no response could be created at all
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+    private I_AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId, UUID compositionUid, int version) {
+        return I_AuditMsgBuilder.getInstance()
+                .setEhrIds(Collections.singleton(ehrId))
+                .setCompositionId(compositionUid.toString())
+                .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
+                .setLocation(getLocationUrl(compositionUid, ehrId, version));
     }
 
     private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version) {

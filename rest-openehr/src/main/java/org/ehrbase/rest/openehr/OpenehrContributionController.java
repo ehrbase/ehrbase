@@ -119,7 +119,7 @@ public class OpenehrContributionController extends BaseController implements Con
             respData = buildContributionResponseData(contributionId, ehrId, accept, uri, headerList, () -> null);
         }
 
-        createAuditMessage(ehrId, contributionId);
+        createAuditLogsMsgBuilder(ehrId, contributionId);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -159,7 +159,7 @@ public class OpenehrContributionController extends BaseController implements Con
         respData = buildContributionResponseData(
                 contributionUid, ehrId, accept, uri, headerList, () -> new ContributionResponseData(null, null, null));
 
-        createAuditMessage(ehrId, contributionUid);
+        createAuditLogsMsgBuilder(ehrId, contributionUid);
 
         // returns 200 with body + headers or 500 in case of unexpected error
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -235,7 +235,7 @@ public class OpenehrContributionController extends BaseController implements Con
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
     }
 
-    private void createAuditMessage(UUID ehrId, UUID contributionId) {
+    private void createAuditLogsMsgBuilder(UUID ehrId, UUID contributionId) {
         I_AuditMsgBuilder.getInstance()
                 .setEhrIds(Collections.singleton(ehrId))
                 .setContributionId(contributionId.toString())

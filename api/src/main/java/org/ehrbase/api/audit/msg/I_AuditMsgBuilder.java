@@ -35,7 +35,7 @@ public interface I_AuditMsgBuilder {
 
     I_AuditMsgBuilder setCompositionId(String compositionId);
 
-    void setRemovedPatients(Set<String> removedPatients);
+    I_AuditMsgBuilder setRemovedPatients(Set<String> removedPatients);
 
     I_AuditMsgBuilder setQuery(String query);
 

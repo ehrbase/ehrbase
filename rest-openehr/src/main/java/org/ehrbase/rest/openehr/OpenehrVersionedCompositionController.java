@@ -104,11 +104,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         VersionedObjectResponseData<Composition> response = new VersionedObjectResponseData<>(versionedComposition);
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0);
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setCompositionId(versionedCompoUid.toString())
-                .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
-                .setLocation(auditLocation);
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
@@ -136,11 +132,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0, "revision_history");
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setCompositionId(versionedCompoUid.toString())
-                .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
-                .setLocation(auditLocation);
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
@@ -184,11 +176,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         // -----------------
 
         String auditLocation = getLocationUrl(versionedObjectId, ehrId, version, "version", versionUid);
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setCompositionId(versionedCompoUid.toString())
-                .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
-                .setLocation(auditLocation);
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
 
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
     }
@@ -221,11 +209,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         }
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, version, "version");
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
-                .setCompositionId(versionedCompoUid.toString())
-                .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
-                .setLocation(auditLocation);
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
 
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedCompoUid, version);
     }
@@ -265,6 +249,14 @@ public class OpenehrVersionedCompositionController extends BaseController
         respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
+    }
+
+    private void createAuditLogsMsgBuilder(UUID ehrId, UUID versionedCompoUid, String auditLocation) {
+        I_AuditMsgBuilder.getInstance()
+                .setEhrIds(Collections.singleton(ehrId))
+                .setCompositionId(versionedCompoUid.toString())
+                .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
+                .setLocation(auditLocation);
     }
 
     private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version, String... pathSegments) {

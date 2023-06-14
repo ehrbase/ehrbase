@@ -48,8 +48,9 @@ final class AuditMsgBuilder implements I_AuditMsgBuilder {
     }
 
     @Override
-    public void setRemovedPatients(Set<String> removedPatients) {
+    public I_AuditMsgBuilder setRemovedPatients(Set<String> removedPatients) {
         this.removedPatients = removedPatients;
+        return this;
     }
 
     @Override
