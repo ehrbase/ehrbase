@@ -17,7 +17,7 @@
  */
 package org.ehrbase.util;
 
-import org.ehrbase.openehr.sdk.aql.dto.path.AqlPath;
+import org.ehrbase.aql.dto.path.AqlPath;
 import org.ehrbase.webtemplate.model.WebTemplate;
 import org.ehrbase.webtemplate.model.WebTemplateNode;
 

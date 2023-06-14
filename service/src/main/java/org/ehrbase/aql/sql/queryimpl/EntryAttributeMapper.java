@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.serialisation.attributes.EntryAttributes;
-import org.ehrbase.serialisation.attributes.LocatableAttributes;
+import org.ehrbase.serialisation.dbencoding.attributes.EntryAttributes;
+import org.ehrbase.serialisation.dbencoding.attributes.LocatableAttributes;
 
 /**
  * Map a datavalue UML expression from an ARCHETYPED structure into its RM/JSON representation

@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.client.HttpClient;
-import org.ehrbase.functional.Try;
+import org.ehrbase.util.functional.Try;
 import org.ehrbase.validation.ConstraintViolation;
 import org.ehrbase.validation.ConstraintViolationException;
 import org.ehrbase.validation.terminology.ExternalTerminologyValidation;

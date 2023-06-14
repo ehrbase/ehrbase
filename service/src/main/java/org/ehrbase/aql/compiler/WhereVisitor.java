@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
-import org.ehrbase.functional.Try;
+import org.ehrbase.util.functional.Try;
 import org.ehrbase.validation.ConstraintViolationException;
 import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.validation.terminology.TerminologyParam;
