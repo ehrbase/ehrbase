@@ -60,6 +60,8 @@
         <database.pass>ehrbase</database.pass>
         <database.name>ehrbase</database.name>
         <test.profile>unit</test.profile>
+        <sonar.organization>baabgai</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <build>
