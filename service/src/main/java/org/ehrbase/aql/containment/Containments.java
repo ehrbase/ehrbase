@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.webtemplate.parser.NodeId;
+import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 
 /**
  * Convenience class to perform specific Containment operations related to containment path resolution

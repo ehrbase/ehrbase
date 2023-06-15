@@ -33,7 +33,7 @@ import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.jooq.pg.tables.records.TenantRecord;
-import org.ehrbase.util.functional.ExceptionalSupplier;
+import org.ehrbase.openehr.sdk.util.functional.ExceptionalSupplier;
 import org.jooq.DSLContext;
 import org.jooq.JSON;
 import org.jooq.Result;

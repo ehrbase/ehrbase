@@ -20,7 +20,7 @@ package org.ehrbase.api.service;
 import com.nedap.archie.rm.composition.Composition;
 import java.util.List;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface TemplateService extends BaseService {
@@ -28,7 +28,7 @@ public interface TemplateService extends BaseService {
 
     Composition buildExample(String templateId);
 
-    org.ehrbase.webtemplate.model.WebTemplate findTemplate(String templateId);
+    org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate findTemplate(String templateId);
 
     /**
      * Finds and returns the given operational template as string represented in requested format.

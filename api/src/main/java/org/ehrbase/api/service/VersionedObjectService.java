@@ -21,13 +21,14 @@ import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.FolderDto;
 
 /**
  * Service layer interface for versioned openEHR objects.<br>
  * Helps to always handle the necessary metadata and streamlines C(R)UD operations.<br>
  * Retrieval is
  * @param <T> Class of target versioned object, e.g. {@link com.nedap.archie.rm.directory.Folder}.
- * @param <U> Class of return value of create and update methods. For instance, {@link org.ehrbase.response.ehrscape.FolderDto}. Will be wrapped in an {@link Optional}.
+ * @param <U> Class of return value of create and update methods. For instance, {@link FolderDto}. Will be wrapped in an {@link Optional}.
  */
 public interface VersionedObjectService<T extends Locatable, U> {
 

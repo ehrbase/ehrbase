@@ -23,7 +23,7 @@ import java.util.List;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.DefaultColumnId;
 import org.ehrbase.ehr.util.LocatableHelper;
-import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
+import org.ehrbase.openehr.sdk.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 

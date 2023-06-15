@@ -26,10 +26,10 @@ import java.util.Collection;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.util.rmconstants.RmConstants;
-import org.ehrbase.webtemplate.model.WebTemplate;
-import org.ehrbase.webtemplate.model.WebTemplateInput;
-import org.ehrbase.webtemplate.model.WebTemplateNode;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplateInput;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplateNode;
 
 public final class WebTemplateAqlPath {
 

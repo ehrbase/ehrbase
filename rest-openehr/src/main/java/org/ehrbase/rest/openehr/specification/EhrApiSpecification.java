@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.servlet.http.HttpServletRequest;
-import org.ehrbase.response.openehr.EhrResponseData;
+import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "EHR")

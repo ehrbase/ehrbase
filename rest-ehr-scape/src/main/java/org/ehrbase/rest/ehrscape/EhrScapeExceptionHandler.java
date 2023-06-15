@@ -30,7 +30,7 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.exception.ValidationException;
-import org.ehrbase.serialisation.exception.UnmarshalException;
+import org.ehrbase.openehr.sdk.serialisation.exception.UnmarshalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;

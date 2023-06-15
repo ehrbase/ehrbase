@@ -29,7 +29,7 @@ import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.ehr.knowledge.TemplateTestData;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
-import org.ehrbase.webtemplate.parser.NodeId;
+import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;

@@ -21,8 +21,8 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Optional;
-import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
-import org.ehrbase.response.openehr.QueryDefinitionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
+import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "STORED_QUERY")

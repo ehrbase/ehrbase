@@ -30,7 +30,7 @@ import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.service.IntrospectService;
-import org.ehrbase.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.collections.iterators.ReverseListIterator;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.webtemplate.parser.NodeId;
+import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 
 /**
  * Build jsonpath expression matching containments

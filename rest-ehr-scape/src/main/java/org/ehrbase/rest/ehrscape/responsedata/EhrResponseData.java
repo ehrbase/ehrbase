@@ -19,7 +19,7 @@ package org.ehrbase.rest.ehrscape.responsedata;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.util.UUID;
-import org.ehrbase.response.ehrscape.EhrStatusDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.EhrStatusDto;
 
 @JacksonXmlRootElement
 public class EhrResponseData extends ActionRestResponseData {

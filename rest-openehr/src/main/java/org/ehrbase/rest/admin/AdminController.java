@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
-import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
+import org.ehrbase.openehr.sdk.response.dto.admin.AdminStatusResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;

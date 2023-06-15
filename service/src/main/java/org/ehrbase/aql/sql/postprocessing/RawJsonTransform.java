@@ -22,7 +22,7 @@ import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonReader;
-import org.ehrbase.serialisation.dbencoding.rawjson.LightRawJsonEncoder;
+import org.ehrbase.openehr.sdk.serialisation.dbencoding.rawjson.LightRawJsonEncoder;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
