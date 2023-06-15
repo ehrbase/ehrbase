@@ -19,14 +19,14 @@ package org.ehrbase.aql.sql.queryimpl;
 
 import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_CONTEXT;
 import static org.ehrbase.aql.sql.queryimpl.attribute.GenericJsonPath.OTHER_DETAILS;
-import static org.ehrbase.openehr.sdk.serialisation.dbencoding.CompositionSerializer.TAG_UID;
+import static org.ehrbase.jooq.dbencoding.CompositionSerializer.TAG_UID;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.openehr.sdk.serialisation.dbencoding.attributes.EntryAttributes;
-import org.ehrbase.openehr.sdk.serialisation.dbencoding.attributes.LocatableAttributes;
+import org.ehrbase.jooq.dbencoding.attributes.EntryAttributes;
+import org.ehrbase.jooq.dbencoding.attributes.LocatableAttributes;
 
 /**
  * Map a datavalue UML expression from an ARCHETYPED structure into its RM/JSON representation

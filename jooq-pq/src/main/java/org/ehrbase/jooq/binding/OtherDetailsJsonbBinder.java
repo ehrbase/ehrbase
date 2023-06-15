@@ -23,7 +23,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
 import java.util.Objects;
 import java.util.Optional;
-import org.ehrbase.openehr.sdk.serialisation.dbencoding.RawJson;
+import org.ehrbase.jooq.dbencoding.RawJson;
 import org.jooq.Binding;
 import org.jooq.BindingGetResultSetContext;
 import org.jooq.BindingGetSQLInputContext;
