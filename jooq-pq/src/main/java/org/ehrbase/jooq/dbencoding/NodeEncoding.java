@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,8 @@ public class NodeEncoding {
                 if (prefix.equals(CompositionSerializer.TAG_ORIGIN)
                         || prefix.equals(CompositionSerializer.TAG_TIME)
                         || prefix.equals(CompositionSerializer.TAG_TIMING)
-                        || (prefix.equals(CompositionSerializer.TAG_EVENTS) && node == null)) return "[" + prefix.substring(1) + "]";
+                        || (prefix.equals(CompositionSerializer.TAG_EVENTS) && node == null))
+                    return "[" + prefix.substring(1) + "]";
                 else if (node == null)
                     return "!!!INVALID NAMED for " + prefix + " !!!"; // comes from encodeNodeAttribute...
                 else {

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,8 +69,7 @@ public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
         if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB) {
             writer.beginObject();
             writer.name(VALUE).value(dvalue.getValue());
-            writer.name(TAG_CLASS_RAW_JSON)
-                    .value(new SnakeCase(DvCodedText.class.getSimpleName()).camelToUpperSnake());
+            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(DvCodedText.class.getSimpleName()).camelToUpperSnake());
             writer.name("definingCode");
             writer.beginObject();
             writer.name("codeString").value(dvalue.getDefiningCode().getCodeString());
@@ -80,8 +79,7 @@ public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
             writer.name(TAG_CLASS_RAW_JSON)
                     .value(new SnakeCase(TerminologyId.class.getSimpleName()).camelToUpperSnake());
             writer.endObject();
-            writer.name(TAG_CLASS_RAW_JSON)
-                    .value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
+            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
             writer.endObject();
             termMappingAdapter.write(writer, dvalue.getMappings());
             writer.endObject();
@@ -91,8 +89,7 @@ public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
             writer.name(VALUE).value(dvalue.getValue());
             CodePhrase codePhrase = dvalue.getDefiningCode();
             writer.name("defining_code").value(gson.toJson(codePhrase));
-            writer.name(TAG_CLASS_RAW_JSON)
-                    .value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
+            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
             writer.endObject();
         }
     }

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
-import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.CompositionRoot;
 import org.ehrbase.jooq.dbencoding.EncodeUtilArchie;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.ArchieCompositionProlog;
+import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.CompositionRoot;
 
 /**
  * Created by christian on 6/21/2017.

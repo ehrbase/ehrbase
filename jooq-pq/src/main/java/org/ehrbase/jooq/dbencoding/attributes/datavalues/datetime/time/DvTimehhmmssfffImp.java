@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,6 @@ public class DvTimehhmmssfffImp extends DvTimeAttributesImp {
 
     @Override
     public Integer getSupportedChronoFields() {
-        return supportedChronoFields(TemporalAttributes.HOUR
-                | MINUTE_OF_HOUR
-                | SECOND_OF_MINUTE
-                | MILLI_OF_SECOND);
+        return supportedChronoFields(TemporalAttributes.HOUR | MINUTE_OF_HOUR | SECOND_OF_MINUTE | MILLI_OF_SECOND);
     }
 }

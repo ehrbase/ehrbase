@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import com.nedap.archie.rm.composition.InstructionDetails;
 import com.nedap.archie.rm.composition.IsmTransition;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import java.util.Map;
-import org.ehrbase.jooq.dbencoding.RmObjectEncoding;
 import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 import org.ehrbase.jooq.dbencoding.ItemStack;
+import org.ehrbase.jooq.dbencoding.RmObjectEncoding;
 
 /**
  * populate the attributes for RM Action

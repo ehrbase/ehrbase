@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import java.util.ArrayList;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter.AdapterType;
-import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.ArrayListAdapter;
-import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.LinkedTreeMapAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.CodePhraseAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.DvCodedTextAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.DvDateAdapter;
@@ -43,6 +41,8 @@ import org.ehrbase.jooq.dbencoding.wrappers.json.writer.DvTimeAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.ParticipationAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.PartyIdentifiedAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.PartyRefAdapter;
+import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.ArrayListAdapter;
+import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.LinkedTreeMapAdapter;
 
 /** Created by christian on 9/9/2016. */
 public class EncodeUtilArchie {

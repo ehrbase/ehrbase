@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw;
 
 import com.google.gson.internal.LinkedTreeMap;
 import java.util.ArrayList;
-import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.jooq.dbencoding.CompositionSerializer;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 public class Siblings {
 

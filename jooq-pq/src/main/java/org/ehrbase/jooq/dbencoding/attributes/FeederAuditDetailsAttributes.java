@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package org.ehrbase.jooq.dbencoding.attributes;
 
 import com.nedap.archie.rm.archetyped.FeederAuditDetails;
 import java.util.Map;
-import org.ehrbase.jooq.dbencoding.rawjson.LightRawJsonEncoder;
-import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 import org.ehrbase.jooq.dbencoding.PathMap;
 import org.ehrbase.jooq.dbencoding.RmObjectEncoding;
+import org.ehrbase.jooq.dbencoding.rawjson.LightRawJsonEncoder;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 public class FeederAuditDetailsAttributes {

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import com.google.gson.JsonElement;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import java.util.Map;
-import org.ehrbase.jooq.dbencoding.rawjson.LightRawJsonEncoder;
 import org.ehrbase.jooq.dbencoding.EncodeUtilArchie;
+import org.ehrbase.jooq.dbencoding.rawjson.LightRawJsonEncoder;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 
 /** utility class to deal with specific RM object DB encode/decode (f.e. FeederAudit) */

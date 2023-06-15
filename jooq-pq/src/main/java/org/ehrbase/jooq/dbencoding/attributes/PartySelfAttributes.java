@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import static org.ehrbase.jooq.dbencoding.CompositionSerializer.TAG_CLASS;
 
 import com.nedap.archie.rm.generic.PartySelf;
 import java.util.Map;
-import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 import org.ehrbase.jooq.dbencoding.PathMap;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /** populate the attributes for RM PartySelf */

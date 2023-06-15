@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,9 @@ public class EntrySerialTree extends SerialTree {
         switch (attribute) {
             case CompositionSerializer.TAG_COMPOSITION:
                 retMap = super.insert(
-                        composition, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_COMPOSITION, composition, map), addStructure);
+                        composition,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_COMPOSITION, composition, map),
+                        addStructure);
                 break;
             default:
                 retMap = map;
@@ -57,7 +59,9 @@ public class EntrySerialTree extends SerialTree {
                                     new NameAsDvText(contentItem.getName())
                                             .toMap()); // this fixes the issue with SECTION name
                 retMap = super.insert(
-                        contentItem, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_CONTENT, contentItem, map), addStructure);
+                        contentItem,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_CONTENT, contentItem, map),
+                        addStructure);
                 break;
             default:
                 retMap = map;
@@ -72,12 +76,15 @@ public class EntrySerialTree extends SerialTree {
             case CompositionSerializer.TAG_PROTOCOL:
                 retMap = super.insert(
                         observation,
-                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_PROTOCOL, observation.getProtocol(), map),
+                        new NodeEncoding(tagMode)
+                                .tag(CompositionSerializer.TAG_PROTOCOL, observation.getProtocol(), map),
                         addStructure);
                 break;
             case CompositionSerializer.TAG_DATA:
                 retMap = super.insert(
-                        observation, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DATA, observation.getData(), map), addStructure);
+                        observation,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DATA, observation.getData(), map),
+                        addStructure);
                 break;
             case CompositionSerializer.TAG_STATE:
                 retMap = super.insert(
@@ -98,12 +105,15 @@ public class EntrySerialTree extends SerialTree {
             case CompositionSerializer.TAG_PROTOCOL:
                 retMap = super.insert(
                         evaluation,
-                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_PROTOCOL, evaluation.getProtocol(), map),
+                        new NodeEncoding(tagMode)
+                                .tag(CompositionSerializer.TAG_PROTOCOL, evaluation.getProtocol(), map),
                         addStructure);
                 break;
             case CompositionSerializer.TAG_DATA:
                 retMap = super.insert(
-                        evaluation, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DATA, evaluation.getData(), map), addStructure);
+                        evaluation,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DATA, evaluation.getData(), map),
+                        addStructure);
                 break;
             default:
                 retMap = map;
@@ -118,7 +128,8 @@ public class EntrySerialTree extends SerialTree {
             case CompositionSerializer.TAG_PROTOCOL:
                 retMap = super.insert(
                         instruction,
-                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_PROTOCOL, instruction.getProtocol(), map),
+                        new NodeEncoding(tagMode)
+                                .tag(CompositionSerializer.TAG_PROTOCOL, instruction.getProtocol(), map),
                         addStructure);
                 break;
             case CompositionSerializer.TAG_ACTIVITIES:
@@ -136,12 +147,15 @@ public class EntrySerialTree extends SerialTree {
         switch (attribute) {
             case CompositionSerializer.TAG_ACTIVITIES:
                 retMap = super.insert(
-                        activity, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_ACTIVITIES, activity, map), addStructure);
+                        activity,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_ACTIVITIES, activity, map),
+                        addStructure);
                 break;
             case CompositionSerializer.TAG_DESCRIPTION:
                 retMap = super.insert(
                         activity,
-                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DESCRIPTION, activity.getDescription(), map),
+                        new NodeEncoding(tagMode)
+                                .tag(CompositionSerializer.TAG_DESCRIPTION, activity.getDescription(), map),
                         addStructure);
                 break;
 
@@ -157,12 +171,15 @@ public class EntrySerialTree extends SerialTree {
         switch (attribute) {
             case CompositionSerializer.TAG_PROTOCOL:
                 retMap = super.insert(
-                        action, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_PROTOCOL, action.getProtocol(), map), addStructure);
+                        action,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_PROTOCOL, action.getProtocol(), map),
+                        addStructure);
                 break;
             case CompositionSerializer.TAG_DESCRIPTION:
                 retMap = super.insert(
                         action,
-                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DESCRIPTION, action.getDescription(), map),
+                        new NodeEncoding(tagMode)
+                                .tag(CompositionSerializer.TAG_DESCRIPTION, action.getDescription(), map),
                         addStructure);
                 break;
             default:
@@ -176,10 +193,16 @@ public class EntrySerialTree extends SerialTree {
         Map<String, Object> retMap;
         switch (attribute) {
             case CompositionSerializer.TAG_SUMMARY:
-                retMap = super.insert(history, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_SUMMARY, history, map), addStructure);
+                retMap = super.insert(
+                        history,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_SUMMARY, history, map),
+                        addStructure);
                 break;
             case CompositionSerializer.TAG_EVENTS:
-                retMap = super.insert(history, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_EVENTS, null, map), addStructure);
+                retMap = super.insert(
+                        history,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_EVENTS, null, map),
+                        addStructure);
                 break;
             default:
                 retMap = map;
@@ -193,11 +216,15 @@ public class EntrySerialTree extends SerialTree {
         switch (attribute) {
             case CompositionSerializer.TAG_DATA:
                 retMap = super.insert(
-                        event, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DATA, event.getData(), map), addStructure);
+                        event,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_DATA, event.getData(), map),
+                        addStructure);
                 break;
             case CompositionSerializer.TAG_STATE:
                 retMap = super.insert(
-                        event, new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_STATE, event.getState(), map), addStructure);
+                        event,
+                        new NodeEncoding(tagMode).tag(CompositionSerializer.TAG_STATE, event.getState(), map),
+                        addStructure);
                 break;
             default:
                 retMap = map;

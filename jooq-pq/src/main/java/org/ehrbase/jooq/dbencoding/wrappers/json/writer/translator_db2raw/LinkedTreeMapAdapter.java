@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import java.io.IOException;
 import java.util.*;
+import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlPath;
-import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /**
@@ -94,10 +94,12 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap<String, Obje
             }
             if (map.containsKey(CompositionSerializer.TAG_CLASS)) {
                 if (map.get(CompositionSerializer.TAG_CLASS) instanceof ArrayList)
-                    parentItemsType =
-                            new SnakeCase((String) ((ArrayList) map.get(CompositionSerializer.TAG_CLASS)).get(0)).camelToUpperSnake();
+                    parentItemsType = new SnakeCase(
+                                    (String) ((ArrayList) map.get(CompositionSerializer.TAG_CLASS)).get(0))
+                            .camelToUpperSnake();
                 else if (map.get(CompositionSerializer.TAG_CLASS) instanceof String)
-                    parentItemsType = new SnakeCase((String) map.get(CompositionSerializer.TAG_CLASS)).camelToUpperSnake();
+                    parentItemsType =
+                            new SnakeCase((String) map.get(CompositionSerializer.TAG_CLASS)).camelToUpperSnake();
 
                 map.remove(CompositionSerializer.TAG_CLASS);
             }
@@ -195,14 +197,18 @@ public class LinkedTreeMapAdapter extends TypeAdapter<LinkedTreeMap<String, Obje
      * @param map
      */
     private void fixWrongDbEncoding(LinkedTreeMap<String, Object> map) {
-        if (map.containsKey(CompositionSerializer.TAG_UID) && map.get(CompositionSerializer.TAG_UID) instanceof List && !((List<?>) map.get(CompositionSerializer.TAG_UID)).isEmpty()) {
+        if (map.containsKey(CompositionSerializer.TAG_UID)
+                && map.get(CompositionSerializer.TAG_UID) instanceof List
+                && !((List<?>) map.get(CompositionSerializer.TAG_UID)).isEmpty()) {
             map.put(CompositionSerializer.TAG_UID, ((List<?>) map.get(CompositionSerializer.TAG_UID)).get(0));
         }
 
         if (map.containsKey(CompositionSerializer.TAG_FEEDER_AUDIT)
                 && map.get(CompositionSerializer.TAG_FEEDER_AUDIT) instanceof List
                 && !((List<?>) map.get(CompositionSerializer.TAG_FEEDER_AUDIT)).isEmpty()) {
-            map.put(CompositionSerializer.TAG_FEEDER_AUDIT, ((List<?>) map.get(CompositionSerializer.TAG_FEEDER_AUDIT)).get(0));
+            map.put(
+                    CompositionSerializer.TAG_FEEDER_AUDIT,
+                    ((List<?>) map.get(CompositionSerializer.TAG_FEEDER_AUDIT)).get(0));
         }
 
         if (map.containsKey(CompositionSerializer.TAG_LINKS)

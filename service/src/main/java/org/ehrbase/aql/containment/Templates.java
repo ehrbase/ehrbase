@@ -19,8 +19,8 @@ package org.ehrbase.aql.containment;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.ehrbase.service.KnowledgeCacheService;
 import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
+import org.ehrbase.service.KnowledgeCacheService;
 
 /**
  * Process jsonpath queries on WebTemplates

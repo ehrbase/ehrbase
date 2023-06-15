@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.jooq.dbencoding.CompositionSerializer;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 /** Created by christian on 3/13/2018. */
 public class Children {
@@ -55,7 +55,9 @@ public class Children {
     }
 
     private static boolean isTrivialLocatableAttribute(String key) {
-        return (key.equals(CompositionSerializer.TAG_ARCHETYPE_NODE_ID) || key.equals(CompositionSerializer.TAG_ARCHETYPE_DETAILS) || key.equals(CompositionSerializer.TAG_NAME));
+        return (key.equals(CompositionSerializer.TAG_ARCHETYPE_NODE_ID)
+                || key.equals(CompositionSerializer.TAG_ARCHETYPE_DETAILS)
+                || key.equals(CompositionSerializer.TAG_NAME));
     }
 
     public int itemsCount() {

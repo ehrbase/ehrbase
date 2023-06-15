@@ -26,8 +26,8 @@ import org.ehrbase.aql.sql.AqlResult;
 import org.ehrbase.aql.sql.QueryProcessor;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.support.DataAccess;
-import org.ehrbase.service.KnowledgeCacheService;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
+import org.ehrbase.service.KnowledgeCacheService;
 import org.jooq.Record;
 import org.jooq.Result;
 

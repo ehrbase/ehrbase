@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.jooq.dbencoding.CompositionSerializer;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 /**
  * deals with values passed as an array. This is a tweak since we use MultiValueMap which is backed by an ArrayList

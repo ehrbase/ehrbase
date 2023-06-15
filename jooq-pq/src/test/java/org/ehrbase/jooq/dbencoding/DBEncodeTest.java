@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
- * This file is part of project openEHR_SDK
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -916,7 +916,8 @@ public class DBEncodeTest {
         Assertions.assertNotNull(composition);
         Assertions.assertNotNull(composition.getFeederAudit().getFeederSystemAudit());
         // other details
-        Assertions.assertNotNull(composition.getFeederAudit().getFeederSystemAudit().getOtherDetails());
+        Assertions.assertNotNull(
+                composition.getFeederAudit().getFeederSystemAudit().getOtherDetails());
         Assertions.assertEquals(
                 "family group",
                 composition
@@ -925,7 +926,8 @@ public class DBEncodeTest {
                         .getOtherDetails()
                         .getName()
                         .getValue());
-        Assertions.assertTrue(composition.getFeederAudit().getFeederSystemAudit().getOtherDetails() instanceof ItemTree);
+        Assertions.assertTrue(
+                composition.getFeederAudit().getFeederSystemAudit().getOtherDetails() instanceof ItemTree);
         Assertions.assertEquals(
                 1,
                 composition
@@ -952,7 +954,8 @@ public class DBEncodeTest {
                                 .getValue()
                         instanceof DvIdentifier);
         // version id
-        Assertions.assertNotNull(composition.getFeederAudit().getFeederSystemAudit().getVersionId());
+        Assertions.assertNotNull(
+                composition.getFeederAudit().getFeederSystemAudit().getVersionId());
         Assertions.assertEquals(
                 "final", composition.getFeederAudit().getFeederSystemAudit().getVersionId());
 
