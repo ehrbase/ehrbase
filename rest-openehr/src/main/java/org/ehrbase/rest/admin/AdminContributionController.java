@@ -26,10 +26,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.Collections;
+
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -158,8 +158,8 @@ public class AdminContributionController extends BaseController {
     }
 
     private void createAuditMessage(UUID ehrId, UUID contributionId) {
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
                 .setContributionId(contributionId.toString())
                 .setLocation(fromPath(EMPTY)
                         .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())

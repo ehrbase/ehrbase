@@ -25,13 +25,12 @@ import java.net.URI;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -209,7 +208,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     }
 
     private void createAuditLogsMsgBuilder(UUID ehrId) {
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
+        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
     }
 
     /**

@@ -25,7 +25,6 @@ import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.NotAcceptableException;
@@ -236,8 +235,8 @@ public class OpenehrContributionController extends BaseController implements Con
     }
 
     private void createAuditLogsMsgBuilder(UUID ehrId, UUID contributionId) {
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
                 .setContributionId(contributionId.toString())
                 .setLocation(fromPath(EMPTY)
                         .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())

@@ -18,5 +18,5 @@
 package org.ehrbase.api.audit.interceptor;
 
 import org.springframework.web.servlet.HandlerInterceptor;
-
+// Try to load only what I need not whole library
 public interface AuditCompositionHandlerInterceptor extends HandlerInterceptor {}

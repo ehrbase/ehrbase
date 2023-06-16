@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -102,7 +102,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
 
         // Enriches request attributes with aql for later audit processing
-        I_AuditMsgBuilder.getInstance().setQuery(query);
+        AuditMsgBuilder.getInstance().setQuery(query);
 
         var body = executeQuery(query, queryParameters);
 
@@ -135,7 +135,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         aql = withOffsetLimit(aql, queryRequest);
         // Enriches request attributes with aql for later audit processing
-        I_AuditMsgBuilder.getInstance().setQuery(aql);
+        AuditMsgBuilder.getInstance().setQuery(aql);
 
         Map<String, Object> parameters = (Map<String, Object>) queryRequest.get(QUERY_PARAMETERS);
 
@@ -166,7 +166,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 fetch,
                 queryParameter);
         // Enriches request attributes with query name for later audit processing
-        I_AuditMsgBuilder auditMsgBuilder = I_AuditMsgBuilder.getInstance();
+        AuditMsgBuilder auditMsgBuilder = AuditMsgBuilder.getInstance();
         auditMsgBuilder.setQueryId(qualifiedQueryName);
 
         // retrieve the stored query for execution
@@ -211,7 +211,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
 
         // retrieve the stored query for execution
-        I_AuditMsgBuilder msgBuilder = I_AuditMsgBuilder.getInstance();
+        AuditMsgBuilder msgBuilder = AuditMsgBuilder.getInstance();
         msgBuilder.setQueryId(qualifiedQueryName);
 
         QueryDefinitionResultDto queryDefinitionResultDto =
@@ -257,7 +257,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         queryResponseData = new QueryResponseData(queryService.query(aql, parameters, false, auditResultMap));
 
         // Enriches request attributes with EhrId(s) for later audit processing
-        I_AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
+        AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
 
         return queryResponseData;
     }
@@ -315,7 +315,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResultDto resultDto = queryService.query(query, parameters, false, auditResultMap);
 
         // Enriches request attributes with EhrId(s) for later audit processing
-        I_AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
+        AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
 
         return new QueryResponseData(resultDto);
     }

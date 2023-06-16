@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -167,7 +167,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private void createAuditLogsMsgBuilder(UUID resultEhrId) {
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(resultEhrId));
+        AuditMsgBuilder.getInstance().setEhrIds(resultEhrId);
     }
 
     /**

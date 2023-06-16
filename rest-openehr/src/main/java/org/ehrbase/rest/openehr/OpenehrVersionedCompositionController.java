@@ -27,12 +27,11 @@ import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -252,8 +251,8 @@ public class OpenehrVersionedCompositionController extends BaseController
     }
 
     private void createAuditLogsMsgBuilder(UUID ehrId, UUID versionedCompoUid, String auditLocation) {
-        I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
                 .setCompositionId(versionedCompoUid.toString())
                 .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
                 .setLocation(auditLocation);

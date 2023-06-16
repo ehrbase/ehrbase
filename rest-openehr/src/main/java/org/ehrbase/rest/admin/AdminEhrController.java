@@ -23,12 +23,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.Collections;
+
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -100,7 +101,7 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
-        I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrUuid));
+        AuditMsgBuilder.getInstance().setEhrIds(ehrUuid);
 
         // TODO: Implement endpoint functionality
 
@@ -132,16 +133,17 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
-        Set<Object> ehrs = Collections.singleton(ehrUuid);
-        I_AuditMsgBuilder.getInstance().setEhrIds(ehrs).setRemovedPatients(getPatientNumbers(ehrs));
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrUuid)
+                .setRemovedPatients(getPatientNumbers(ehrUuid));
 
         ehrService.adminDeleteEhr(ehrUuid);
 
         return ResponseEntity.noContent().build();
     }
 
-    private Set<String> getPatientNumbers(Set<Object> ehrs) {
-        return ehrs.stream()
+    private Set<String> getPatientNumbers(Object... ehrs) {
+        return Arrays.stream(ehrs)
                 .map(ehrId -> ehrService.getSubjectExtRef(ehrId.toString()))
                 .collect(Collectors.toSet());
     }

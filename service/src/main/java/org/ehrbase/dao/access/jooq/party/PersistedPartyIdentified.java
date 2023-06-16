@@ -56,6 +56,7 @@ public class PersistedPartyIdentified extends PersistedParty {
         return renderMultiple(List.of(partyIdentifiedRecord)).stream()
                 .findFirst()
                 .orElseThrow(
+//                        TODO:: check this maybe Illlega;ArgumentException
                         () -> new IllegalAddException(String.format(ERR_MISSING_PROXY, partyIdentifiedRecord.getId())));
     }
 

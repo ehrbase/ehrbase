@@ -23,12 +23,11 @@ import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -228,7 +227,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
-    private I_AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId) {
-        return I_AuditMsgBuilder.getInstance().setEhrIds(Collections.singleton(ehrId));
+    private AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId) {
+        return AuditMsgBuilder.getInstance().setEhrIds(ehrId);
     }
 }

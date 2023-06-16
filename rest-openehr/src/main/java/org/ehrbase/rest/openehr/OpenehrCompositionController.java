@@ -29,14 +29,13 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.I_AuditMsgBuilder;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -379,7 +378,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
         Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(
                 ehrId, compositionUid, version, accept, uri, headerList, () -> new CompositionResponseData(null, null));
 
-        createAuditLogsMsgBuilder(ehrId, compositionUid, version).setVersion(version);
+        createAuditLogsMsgBuilder(ehrId, compositionUid, version)
+                .setVersion(version);
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())
@@ -392,9 +392,9 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    private I_AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId, UUID compositionUid, int version) {
-        return I_AuditMsgBuilder.getInstance()
-                .setEhrIds(Collections.singleton(ehrId))
+    private AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId, UUID compositionUid, int version) {
+        return AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
                 .setCompositionId(compositionUid.toString())
                 .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
                 .setLocation(getLocationUrl(compositionUid, ehrId, version));
