@@ -378,8 +378,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(
                 ehrId, compositionUid, version, accept, uri, headerList, () -> new CompositionResponseData(null, null));
 
-        createAuditLogsMsgBuilder(ehrId, compositionUid, version)
-                .setVersion(version);
+        createAuditLogsMsgBuilder(ehrId, compositionUid, version).setVersion(version);
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())

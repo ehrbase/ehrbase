@@ -17,6 +17,4 @@
  */
 package org.ehrbase.api.audit.interceptor;
 
-import org.springframework.web.servlet.HandlerInterceptor;
-
-public interface AuditEhrStatusHandlerInterceptor extends HandlerInterceptor {}
+public interface AuditEhrStatusHandlerInterceptor extends AuditHandlerInterceptor {}

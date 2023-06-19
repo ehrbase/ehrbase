@@ -23,7 +23,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
@@ -133,9 +132,7 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrUuid)
-                .setRemovedPatients(getPatientNumbers(ehrUuid));
+        AuditMsgBuilder.getInstance().setEhrIds(ehrUuid).setRemovedPatients(getPatientNumbers(ehrUuid));
 
         ehrService.adminDeleteEhr(ehrUuid);
 

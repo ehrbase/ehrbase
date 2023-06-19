@@ -17,4 +17,8 @@
  */
 package org.ehrbase.api.audit.interceptor;
 
-public interface AuditQueryHandlerInterceptor extends AuditHandlerInterceptor {}
+public interface AuditHandlerInterceptor {
+    boolean preHandle(Object request, Object response, Object handler) throws Exception;
+
+    void afterCompletion(Object request, Object response, Object handler, Exception ex) throws Exception;
+}

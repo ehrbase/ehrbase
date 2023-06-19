@@ -22,7 +22,6 @@ import static org.ehrbase.rest.BaseController.*;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.ehrbase.api.audit.interceptor.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,7 @@ public class AuditInterceptorHandler {
     private void registerEhrStatusInterceptor(InterceptorRegistry registry) {
         if (ehrStatusInterceptor != null) {
             // Ehr Status and Versioned Ehr Status endpoints
-            registry.addInterceptor(ehrStatusInterceptor)
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(ehrStatusInterceptor))
                     .addPathPatterns(
                             contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS),
                             contextPathPattern(EHR, ANY_SEGMENT, EHR_STATUS, ANY_TRAILING_SEGMENTS))
@@ -92,7 +91,7 @@ public class AuditInterceptorHandler {
     private void registerQueryInterceptor(InterceptorRegistry registry) {
         if (queryInterceptor != null) {
             // Query endpoint
-            registry.addInterceptor(queryInterceptor)
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(queryInterceptor))
                     .addPathPatterns(contextPathPattern(QUERY, ANY_TRAILING_SEGMENTS));
         } else {
             log.info("Query interceptor bean is not available.");
@@ -102,7 +101,7 @@ public class AuditInterceptorHandler {
     private void registerEhrAdminInterceptor(InterceptorRegistry registry) {
         if (ehrAdminInterceptor != null) {
             // Ehr admin endpoint
-            registry.addInterceptor(ehrAdminInterceptor)
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(ehrAdminInterceptor))
                     .addPathPatterns(contextAdminPathPattern(EHR), contextAdminPathPattern(EHR, ANY_SEGMENT));
         } else {
             log.info("Ehr admin interceptor bean is not available.");
@@ -112,7 +111,7 @@ public class AuditInterceptorHandler {
     private void registerEhrInterceptor(InterceptorRegistry registry) {
         if (ehrInterceptor != null) {
             // Ehr endpoint
-            registry.addInterceptor(ehrInterceptor)
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(ehrInterceptor))
                     .addPathPatterns(contextPathPattern(EHR), contextPathPattern(EHR, ANY_SEGMENT));
         } else {
             log.info("Ehr interceptor bean is not available.");
@@ -122,7 +121,7 @@ public class AuditInterceptorHandler {
     private void registerContributionInterceptor(InterceptorRegistry registry) {
         if (contributionInterceptor != null) {
             // Contribution endpoint
-            registry.addInterceptor(contributionInterceptor)
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(contributionInterceptor))
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, CONTRIBUTION, ANY_TRAILING_SEGMENTS))
                     .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, CONTRIBUTION, ANY_SEGMENT));
         } else {
@@ -133,7 +132,7 @@ public class AuditInterceptorHandler {
     private void registerCompositionInterceptor(InterceptorRegistry registry) {
         if (compositionInterceptor != null) {
             // Composition endpoint
-            registry.addInterceptor(compositionInterceptor)
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(compositionInterceptor))
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_TRAILING_SEGMENTS))
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, VERSIONED_COMPOSITION, ANY_TRAILING_SEGMENTS))
                     .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, COMPOSITION, ANY_SEGMENT));
