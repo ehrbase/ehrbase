@@ -1995,8 +1995,8 @@ commands:
           name: Save unit test results
           command: |
             mkdir -p ~/ehrbase-test-results/unit-tests/
-            find ~/projects -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/ehrbase-test-results/unit-tests/ \;
-            find ~/projects -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/ehrbase-test-results/unit-tests/ \;
+            find ~/projects -type f -regex ".*/target/surefire-reports/.*xml" -not -path "~/projects/openEHR_SDK/*" -exec cp {} ~/ehrbase-test-results/unit-tests/ \;
+            find ~/projects -type f -regex ".*/target/surefire-reports/.*txt" -not -path "~/projects/openEHR_SDK/*" -exec cp {} ~/ehrbase-test-results/unit-tests/ \;
           when: always
 
 
