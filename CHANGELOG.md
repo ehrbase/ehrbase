@@ -7,11 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
+ ### Changed
+
  - Audit log functionality has been integrated as a plugin ([#1131](https://github.com/ehrbase/ehrbase/pull/1131))
  - update to SDK 2.0.0-SNAPSHOT ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
  - move dbencoding from SDK to ehrbase ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
  - adjust to new SDK package paths ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
+
  ### Fixed 
 
 ## [0.27.4]
