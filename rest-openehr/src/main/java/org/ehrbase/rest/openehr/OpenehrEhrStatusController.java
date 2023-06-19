@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -174,6 +175,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
@@ -198,8 +201,14 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+    private void createAuditLogsMsgBuilder(UUID ehrId) {
+        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
     }
 
     /**

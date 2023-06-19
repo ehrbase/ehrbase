@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.admin;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -97,10 +101,13 @@ public class AdminContributionController extends BaseController {
             throw new ObjectNotFoundException(
                     "Admin Contribution", String.format("EHR with id %s does not exist", ehrId));
         }
+        UUID contributionUUID = UUID.fromString(contributionId);
 
         // TODO: Implement endpoint functionality
 
         // Contribution existence check will be done in services
+
+        createAuditMessage(ehrUuid, contributionUUID);
 
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
@@ -144,6 +151,18 @@ public class AdminContributionController extends BaseController {
 
         contributionService.adminDelete(contributionUUID);
 
+        createAuditMessage(ehrUuid, contributionUUID);
+
         return ResponseEntity.noContent().build();
+    }
+
+    private void createAuditMessage(UUID ehrId, UUID contributionId) {
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
+                .setContributionId(contributionId.toString())
+                .setLocation(fromPath(EMPTY)
+                        .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
+                        .build()
+                        .toString());
     }
 }

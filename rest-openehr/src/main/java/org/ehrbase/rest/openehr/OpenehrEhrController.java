@@ -22,14 +22,13 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -39,7 +38,6 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.response.openehr.EhrResponseData;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +71,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
     @Autowired
     public OpenehrEhrController(EhrService ehrService) {
-
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
@@ -89,8 +86,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                     String contentType, // TODO when working on EHR_STATUS
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-            @RequestBody(required = false) EhrStatus ehrStatus,
-            HttpServletRequest request) {
+            @RequestBody(required = false) EhrStatus ehrStatus) {
         final UUID ehrId;
         if (ehrStatus != null) {
             ehrId = ehrService.create(null, ehrStatus);
@@ -98,7 +94,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             ehrId = ehrService.create(null, null);
         }
 
-        return internalPostEhrProcessing(accept, prefer, ehrId, request);
+        return internalPostEhrProcessing(accept, prefer, ehrId);
     }
 
     @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
@@ -111,8 +107,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @RequestBody(required = false) EhrStatus ehrStatus,
-            HttpServletRequest request) {
+            @RequestBody(required = false) EhrStatus ehrStatus) {
 
         UUID ehrId; // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in
         // response)
@@ -137,11 +132,11 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             throw new InternalServerException("Error creating EHR with custom ID and/or status");
         }
 
-        return internalPostEhrProcessing(accept, prefer, resultEhrId, request);
+        return internalPostEhrProcessing(accept, prefer, resultEhrId);
     }
 
-    private ResponseEntity<EhrResponseData> internalPostEhrProcessing(
-            String accept, String prefer, UUID resultEhrId, HttpServletRequest request) {
+    private ResponseEntity<EhrResponseData> internalPostEhrProcessing(String accept, String prefer, UUID resultEhrId) {
+        createAuditLogsMsgBuilder(resultEhrId);
         URI url = createLocationUri(EHR, resultEhrId.toString());
 
         List<String> headerList =
@@ -157,9 +152,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             respData = buildEhrResponseData(() -> null, resultEhrId, accept, headerList);
         }
 
-        // Enriches request attributes with current EhrId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(resultEhrId));
-
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
                         .map(j -> ResponseEntity.created(url)
@@ -173,6 +165,10 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    private void createAuditLogsMsgBuilder(UUID resultEhrId) {
+        AuditMsgBuilder.getInstance().setEhrIds(resultEhrId);
+    }
+
     /**
      * Returns EHR by ID
      */
@@ -182,8 +178,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     @Override
     public ResponseEntity<EhrResponseData> retrieveEhrById(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @PathVariable(value = "ehr_id") String ehrIdString,
-            HttpServletRequest request) {
+            @PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -191,7 +186,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
         }
 
-        return internalGetEhrProcessing(accept, ehrId, request);
+        return internalGetEhrProcessing(accept, ehrId);
     }
 
     /**
@@ -204,27 +199,23 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestParam(value = "subject_id") String subjectId,
-            @RequestParam(value = "subject_namespace") String subjectNamespace,
-            HttpServletRequest request) {
+            @RequestParam(value = "subject_namespace") String subjectNamespace) {
 
         Optional<UUID> ehrIdOpt = ehrService.findBySubject(subjectId, subjectNamespace);
 
         UUID ehrId = ehrIdOpt.orElseThrow(
                 () -> new ObjectNotFoundException("ehr", "No EHR with supplied subject parameters found"));
 
-        return internalGetEhrProcessing(accept, ehrId, request);
+        return internalGetEhrProcessing(accept, ehrId);
     }
 
-    private ResponseEntity<EhrResponseData> internalGetEhrProcessing(
-            String accept, UUID ehrId, HttpServletRequest request) {
+    private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId) {
+        createAuditLogsMsgBuilder(ehrId);
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
 
         Optional<InternalResponse<EhrResponseData>> respData =
                 buildEhrResponseData(EhrResponseData::new, ehrId, accept, headerList);
-
-        // Enriches request attributes with current EhrId for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, Collections.singleton(ehrId));
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());

@@ -23,8 +23,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -47,7 +51,7 @@ import org.springframework.web.bind.annotation.*;
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
-        path = "${admin-api.context-path:/rest/admin}/ehr",
+        path = BaseController.ADMIN_API_CONTEXT_PATH + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminEhrController extends BaseController {
 
@@ -96,6 +100,8 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
+        AuditMsgBuilder.getInstance().setEhrIds(ehrUuid);
+
         // TODO: Implement endpoint functionality
 
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
@@ -126,8 +132,16 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
+        AuditMsgBuilder.getInstance().setEhrIds(ehrUuid).setRemovedPatients(getPatientNumbers(ehrUuid));
+
         ehrService.adminDeleteEhr(ehrUuid);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private Set<String> getPatientNumbers(Object... ehrs) {
+        return Arrays.stream(ehrs)
+                .map(ehrId -> ehrService.getSubjectExtRef(ehrId.toString()))
+                .collect(Collectors.toSet());
     }
 }

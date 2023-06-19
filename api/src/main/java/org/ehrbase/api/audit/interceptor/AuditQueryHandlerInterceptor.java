@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,30 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.audit;
+package org.ehrbase.api.audit.interceptor;
 
-/**
- * {@link OpenEhrAuditDataset} used for Query audit messages
- */
-public class QueryAuditDataset extends OpenEhrAuditDataset {
-
-    private String query;
-
-    private String queryId;
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    public String getQueryId() {
-        return queryId;
-    }
-
-    public void setQueryId(String queryId) {
-        this.queryId = queryId;
-    }
-}
+public interface AuditQueryHandlerInterceptor extends AuditHandlerInterceptor {}

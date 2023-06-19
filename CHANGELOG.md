@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ - Audit log functionality has been integrated as a plugin ([#1131](https://github.com/ehrbase/ehrbase/pull/1131))
  ### Fixed 
 
 ## [0.27.4]
@@ -15,7 +16,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  - Upgrade openEHR_SDK to version 1.29.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  ### Fixed 
-  -  Run directory operation in one transaction ([#1133](https://github.com/ehrbase/ehrbase/pull/1133))
+ - Run directory operation in one transaction ([#1133](https://github.com/ehrbase/ehrbase/pull/1133))
 
 ## [0.27.3]
  ### Added

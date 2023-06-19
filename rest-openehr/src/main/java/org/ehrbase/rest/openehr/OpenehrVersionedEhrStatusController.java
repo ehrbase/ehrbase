@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -92,6 +93,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
@@ -115,6 +118,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
+
+        createAuditLogsMsgBuilder(ehrId);
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -164,6 +169,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
+
+        createAuditLogsMsgBuilder(ehrId).setVersion(version);
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
@@ -215,6 +222,12 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        createAuditLogsMsgBuilder(ehrId).setVersion(version);
+
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
+    }
+
+    private AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId) {
+        return AuditMsgBuilder.getInstance().setEhrIds(ehrId);
     }
 }
