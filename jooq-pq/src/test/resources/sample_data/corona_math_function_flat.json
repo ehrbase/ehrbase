@@ -1,0 +1,6 @@
+{
+  "bericht/risikogebiet/reisefall:0/beliebiges_intervallereignis:0/width": "P0D",
+  "bericht/risikogebiet/reisefall:0/beliebiges_intervallereignis:0/math_function|code": "146",
+  "bericht/risikogebiet/reisefall:0/beliebiges_intervallereignis:0/math_function|value": "mean",
+  "bericht/risikogebiet/reisefall:0/beliebiges_intervallereignis:0/math_function|terminology": "openehr"
+}

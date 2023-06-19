@@ -17,9 +17,10 @@
  */
 package org.ehrbase.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import org.ehrbase.terminology.openehr.TerminologyService;
+import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
 import org.junit.Before;
 import org.junit.Test;
 

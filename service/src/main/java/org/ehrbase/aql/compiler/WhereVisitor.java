@@ -26,10 +26,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.parser.AqlBaseVisitor;
 import org.ehrbase.aql.parser.AqlParser;
-import org.ehrbase.functional.Try;
-import org.ehrbase.validation.ConstraintViolationException;
-import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
-import org.ehrbase.validation.terminology.TerminologyParam;
+import org.ehrbase.openehr.sdk.util.functional.Try;
+import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
+import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
+import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 
 /**
  * Interpret an AQL WHERE clause and set the result into a list of WHERE parts

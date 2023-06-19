@@ -21,8 +21,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.ContributionDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 
 /**
  * Interface for contribution service roughly based on openEHR SM "I_EHR_CONTRIBUTION Interface",

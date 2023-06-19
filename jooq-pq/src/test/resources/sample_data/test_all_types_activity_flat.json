@@ -1,0 +1,6 @@
+{
+  "test_all_types/test_all_types3:0/section_2/section_3/test_all_types:0/current_activity/partial_date": "2019-01-14",
+  "test_all_types/test_all_types3:0/section_2/section_3/test_all_types:0/current_activity/partial_datetime": "2019-01-28T21:22:49.426Z",
+  "test_all_types/test_all_types3:0/section_2/section_3/test_all_types:0/current_activity/timing": "P1D",
+  "test_all_types/test_all_types3:0/section_2/section_3/test_all_types:0/current_activity/timing|formalism": "ISO8601"
+}

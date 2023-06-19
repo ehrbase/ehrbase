@@ -1,0 +1,334 @@
+{
+  "/$CLASS$": "Composition",
+  "/composition[openEHR-EHR-COMPOSITION.conformance_composition_.v0]": {
+    "/content[openEHR-EHR-SECTION.conformance_section.v0]": [
+      {
+        "/archetype_node_id": [
+          "openEHR-EHR-SECTION.conformance_section.v0"
+        ],
+        "/name": [
+          {
+            "_type": "DV_TEXT",
+            "value": "conformance section"
+          }
+        ],
+        "/uid": [
+          {
+            "/$CLASS$": "HierObjectId",
+            "/value": {
+              "_type": "HIER_OBJECT_ID",
+              "value": "9fcc1c70-9349-444d-b9cb-8fa817697f5e"
+            }
+          }
+        ],
+        "/items[openEHR-EHR-OBSERVATION.conformance_observation.v0]": [
+          {
+            "/$CLASS$": "Observation",
+            "/archetype_details": {
+              "archetype_id": {
+                "value": "openEHR-EHR-OBSERVATION.conformance_observation.v0"
+              },
+              "template_id": {
+                "value": "conformance-ehrbase.de.v0"
+              },
+              "rm_version": "1.0.4"
+            },
+            "/archetype_node_id": "openEHR-EHR-OBSERVATION.conformance_observation.v0",
+            "/data[at0001]": {
+              "/$CLASS$": "History",
+              "/archetype_node_id": "at0001",
+              "/events": {
+                "/events[at0002]": [
+                  {
+                    "/$CLASS$": "PointEvent",
+                    "/archetype_node_id": "at0002",
+                    "/data[at0003]": {
+                      "/archetype_node_id": [
+                        "at0003"
+                      ],
+                      "/name": [
+                        {
+                          "_type": "DV_TEXT",
+                          "value": "Tree"
+                        }
+                      ],
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ],
+                      "/items[at0008]": [
+                        {
+                          "/$CLASS$": "DvQuantity",
+                          "/$PATH$": "/items[at0008]/data[at0003]/events[at0002 and name/value\u003d\u0027Any event\u0027]/data[at0001]/items[openEHR-EHR-OBSERVATION.conformance_observation.v0 and name/value\u003d\u0027Conformance Observation\u0027]/content[openEHR-EHR-SECTION.conformance_section.v0 and name/value\u003d\u0027conformance section\u0027]",
+                          "/archetype_node_id": "at0008",
+                          "/name": [
+                            {
+                              "_type": "DV_TEXT",
+                              "value": "DV_QUANTITY"
+                            }
+                          ],
+                          "/value": {
+                            "_type": "DV_QUANTITY",
+                            "units": "unit",
+                            "magnitude": 65.9
+                          }
+                        }
+                      ]
+                    },
+                    "/name": [
+                      {
+                        "_type": "DV_TEXT",
+                        "value": "Any event"
+                      }
+                    ],
+                    "/state[at0029]": {
+                      "/archetype_node_id": [
+                        "at0029"
+                      ],
+                      "/name": [
+                        {
+                          "_type": "DV_TEXT",
+                          "value": "Item tree"
+                        }
+                      ],
+                      "/items[at0031]": [
+                        {
+                          "/$CLASS$": "DvText",
+                          "/$PATH$": "/items[at0031]/state[at0029]/events[at0002 and name/value\u003d\u0027Any event\u0027]/data[at0001]/items[openEHR-EHR-OBSERVATION.conformance_observation.v0 and name/value\u003d\u0027Conformance Observation\u0027]/content[openEHR-EHR-SECTION.conformance_section.v0 and name/value\u003d\u0027conformance section\u0027]",
+                          "/archetype_node_id": "at0031",
+                          "/name": [
+                            {
+                              "_type": "DV_TEXT",
+                              "value": "DV_TEXT_State"
+                            }
+                          ],
+                          "/value": {
+                            "_type": "DV_TEXT",
+                            "value": "DV_TEXT in State"
+                          }
+                        }
+                      ],
+                      "/$CLASS$": [
+                        "ItemTree"
+                      ]
+                    },
+                    "/time": {
+                      "/$CLASS$": "DvDateTime",
+                      "/value": {
+                        "_type": "DV_DATE_TIME",
+                        "value": "2021-12-21T16:02:58.0094262+01:00"
+                      }
+                    }
+                  }
+                ]
+              },
+              "/name": [
+                {
+                  "_type": "DV_TEXT",
+                  "value": "History"
+                }
+              ],
+              "/origin": {
+                "/$CLASS$": "DvDateTime",
+                "/value": {
+                  "_type": "DV_DATE_TIME",
+                  "value": "2021-12-21T16:02:58.0094262+01:00"
+                }
+              }
+            },
+            "/encoding": {
+              "_type": "CODE_PHRASE",
+              "terminology_id": {
+                "_type": "TERMINOLOGY_ID",
+                "value": "IANA_character-sets"
+              },
+              "code_string": "UTF-8"
+            },
+            "/language": {
+              "_type": "CODE_PHRASE",
+              "terminology_id": {
+                "_type": "TERMINOLOGY_ID",
+                "value": "ISO_639-1"
+              },
+              "code_string": "en"
+            },
+            "/name": [
+              {
+                "_type": "DV_TEXT",
+                "value": "Conformance Observation"
+              }
+            ],
+            "/protocol[at0020]": {
+              "/archetype_node_id": [
+                "at0020"
+              ],
+              "/name": [
+                {
+                  "_type": "DV_TEXT",
+                  "value": "Item tree"
+                }
+              ],
+              "/items[at0021]": [
+                {
+                  "/$CLASS$": "DvText",
+                  "/$PATH$": "/items[at0021]/protocol[at0020]/items[openEHR-EHR-OBSERVATION.conformance_observation.v0 and name/value\u003d\u0027Conformance Observation\u0027]/content[openEHR-EHR-SECTION.conformance_section.v0 and name/value\u003d\u0027conformance section\u0027]",
+                  "/archetype_node_id": "at0021",
+                  "/name": [
+                    {
+                      "_type": "DV_TEXT",
+                      "value": "DV_TEXT"
+                    }
+                  ],
+                  "/value": {
+                    "_type": "DV_TEXT",
+                    "value": "dv_text in protocol"
+                  }
+                }
+              ],
+              "/$CLASS$": [
+                "ItemTree"
+              ]
+            },
+            "/subject": {
+              "/$CLASS$": "PartySelf",
+              "_type": "PARTY_SELF"
+            }
+          }
+        ],
+        "/feeder_audit": [
+          {
+            "/$CLASS$": "FeederAudit",
+            "feeder_system_item_ids": [
+              {
+                "_type": "DV_IDENTIFIER",
+                "issuer": "issuer1",
+                "assigner": "assigner1",
+                "id": "id1",
+                "type": "PERSON"
+              },
+              {
+                "_type": "DV_IDENTIFIER",
+                "issuer": "issuer2",
+                "assigner": "assigner2",
+                "id": "id2",
+                "type": "PERSON"
+              }
+            ],
+            "original_content": {
+              "_type": "DV_PARSABLE",
+              "value": "Hello world!",
+              "formalism": "text/plain"
+            },
+            "originating_system_audit": {
+              "_type": "FEEDER_AUDIT_DETAILS",
+              "location": {
+                "_type": "PARTY_IDENTIFIED",
+                "external_ref": {
+                  "_type": "PARTY_REF",
+                  "namespace": "uk.org.nmc",
+                  "type": "PARTY",
+                  "id": {
+                    "_type": "GENERIC_ID",
+                    "value": "12342341",
+                    "scheme": "NMC"
+                  }
+                },
+                "name": "Org 1"
+              },
+              "provider": {
+                "_type": "PARTY_IDENTIFIED",
+                "external_ref": {
+                  "_type": "PARTY_REF",
+                  "namespace": "uk.org.nmc",
+                  "type": "PARTY",
+                  "id": {
+                    "_type": "GENERIC_ID",
+                    "value": "456",
+                    "scheme": "NMC"
+                  }
+                },
+                "name": "Per 1"
+              },
+              "subject": {
+                "_type": "PARTY_IDENTIFIED",
+                "external_ref": {
+                  "_type": "PARTY_REF",
+                  "namespace": "uk.org.nmc",
+                  "type": "PARTY",
+                  "id": {
+                    "_type": "GENERIC_ID",
+                    "value": "456",
+                    "scheme": "NMC"
+                  }
+                },
+                "name": "Per 1"
+              },
+              "system_id": "orig",
+              "time": {
+                "_type": "DV_DATE_TIME",
+                "value": "2021-12-21T16:02:58.0094262+01:00"
+              },
+              "version_id": "final"
+            },
+            "originating_system_item_ids": [
+              {
+                "_type": "DV_IDENTIFIER",
+                "issuer": "issuer1",
+                "assigner": "assigner1",
+                "id": "id1",
+                "type": "PERSON"
+              },
+              {
+                "_type": "DV_IDENTIFIER",
+                "issuer": "issuer2",
+                "assigner": "assigner2",
+                "id": "id2",
+                "type": "PERSON"
+              }
+            ]
+          }
+        ],
+        "/$CLASS$": [
+          "Section"
+        ],
+        "/archetype_details": [
+          {
+            "archetype_id": {
+              "value": "openEHR-EHR-SECTION.conformance_section.v0"
+            },
+            "template_id": {
+              "value": "conformance-ehrbase.de.v0"
+            },
+            "rm_version": "1.0.4"
+          }
+        ],
+        "/links": [
+          [
+            {
+              "/$CLASS$": "Link",
+              "meaning": {
+                "value": "problem related note",
+                "_type": "DV_TEXT"
+              },
+              "target": {
+                "value": "ehr://ehr.network/347a5490-55ee-4da9-b91a-9bba710f730e"
+              },
+              "type": {
+                "value": "problem",
+                "_type": "DV_TEXT"
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "/$CLASS$": [
+      "Composition"
+    ]
+  },
+  "/name": [
+    {
+      "_type": "DV_TEXT",
+      "value": "conformance-ehrbase.de.v0"
+    }
+  ]
+}

@@ -31,7 +31,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.aql.containment.JsonPathQueryResult;
-import org.ehrbase.webtemplate.parser.NodeId;
+import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface I_KnowledgeCache {

@@ -18,11 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+import static org.springframework.http.MediaType.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,10 +32,10 @@ import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.service.QueryService;
-import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
-import org.ehrbase.response.openehr.ErrorBodyPayload;
-import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
-import org.ehrbase.response.openehr.QueryDefinitionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ErrorBodyPayload;
+import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
+import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
 import org.slf4j.Logger;

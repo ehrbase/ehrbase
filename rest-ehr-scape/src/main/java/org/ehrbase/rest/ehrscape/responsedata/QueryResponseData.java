@@ -18,8 +18,8 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import java.util.List;
-import org.ehrbase.response.ehrscape.QueryResultDto;
-import org.ehrbase.response.ehrscape.query.ResultHolder;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.query.ResultHolder;
 
 public class QueryResponseData extends ActionRestResponseData {
     private String executedAQL;

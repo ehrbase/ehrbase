@@ -19,7 +19,7 @@ package org.ehrbase.dao.access.jooq.party;
 
 import com.nedap.archie.rm.support.identification.*;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
-import org.ehrbase.serialisation.util.SnakeCase;
+import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /**
  * handles id (of type OBJECT_ID) in  PartyRef

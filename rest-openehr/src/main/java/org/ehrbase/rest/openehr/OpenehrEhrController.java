@@ -36,7 +36,7 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.openehr.EhrResponseData;
+import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
