@@ -21,7 +21,6 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.springframework.http.ResponseEntity;
 
@@ -40,8 +39,7 @@ public interface EhrApiSpecification {
             String contentType,
             String accept,
             String prefer,
-            EhrStatus ehrStatus,
-            HttpServletRequest request);
+            EhrStatus ehrStatus);
 
     @Operation(
             summary = "Create EHR with id",
@@ -54,21 +52,19 @@ public interface EhrApiSpecification {
             String accept,
             String prefer,
             String ehrIdString,
-            EhrStatus ehrStatus,
-            HttpServletRequest request);
+            EhrStatus ehrStatus);
 
     @Operation(
             summary = "Get EHR summary by id",
             externalDocs =
                     @ExternalDocumentation(
                             url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr-ehr-get"))
-    ResponseEntity<EhrResponseData> retrieveEhrById(String accept, String ehrIdString, HttpServletRequest request);
+    ResponseEntity<EhrResponseData> retrieveEhrById(String accept, String ehrIdString);
 
     @Operation(
             summary = "Get EHR summary by subject id",
             externalDocs =
                     @ExternalDocumentation(
                             url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr-ehr-get-1"))
-    ResponseEntity<EhrResponseData> retrieveEhrBySubject(
-            String accept, String subjectId, String subjectNamespace, HttpServletRequest request);
+    ResponseEntity<EhrResponseData> retrieveEhrBySubject(String accept, String subjectId, String subjectNamespace);
 }

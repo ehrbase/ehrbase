@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -29,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.NotAcceptableException;
@@ -114,6 +118,8 @@ public class OpenehrContributionController extends BaseController implements Con
             respData = buildContributionResponseData(contributionId, ehrId, accept, uri, headerList, () -> null);
         }
 
+        createAuditLogsMsgBuilder(ehrId, contributionId);
+
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
                         .map(j -> ResponseEntity.created(uri)
@@ -151,6 +157,8 @@ public class OpenehrContributionController extends BaseController implements Con
         // building full / representation response
         respData = buildContributionResponseData(
                 contributionUid, ehrId, accept, uri, headerList, () -> new ContributionResponseData(null, null, null));
+
+        createAuditLogsMsgBuilder(ehrId, contributionUid);
 
         // returns 200 with body + headers or 500 in case of unexpected error
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -224,5 +232,15 @@ public class OpenehrContributionController extends BaseController implements Con
         } // else continue with returning but without additional data from above, e.g. body
 
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
+    }
+
+    private void createAuditLogsMsgBuilder(UUID ehrId, UUID contributionId) {
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
+                .setContributionId(contributionId.toString())
+                .setLocation(fromPath(EMPTY)
+                        .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
+                        .build()
+                        .toString());
     }
 }

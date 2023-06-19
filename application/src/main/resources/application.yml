@@ -199,11 +199,6 @@ management:
       prometheus:
         enabled: true
 
-# Audit Properties
-ipf:
-  atna:
-    audit-enabled: false
-
 # External Terminology Validation Properties
 validation:
   external-terminology:

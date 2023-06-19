@@ -96,6 +96,8 @@ public abstract class BaseController {
     // constants of all API resources
     public static final String EHR = "ehr";
     public static final String EHR_STATUS = "ehr_status";
+    public static final String VERSIONED_EHR_STATUS = "versioned_ehr_status";
+    public static final String VERSIONED_COMPOSITION = "versioned_composition";
     public static final String COMPOSITION = "composition";
     public static final String DIRECTORY = "directory";
     public static final String CONTRIBUTION = "contribution";
@@ -103,6 +105,7 @@ public abstract class BaseController {
     public static final String DEFINITION = "definition";
     public static final String TEMPLATE = "template";
     public static final String API_CONTEXT_PATH_WITH_VERSION = "${openehr-api.context-path:/rest/openehr}/v1";
+    public static final String ADMIN_API_CONTEXT_PATH = "${admin-api.context-path:/rest/admin}";
 
     public Map<String, Map<String, String>> add2MetaMap(
             Map<String, Map<String, String>> metaMap, String key, String value) {

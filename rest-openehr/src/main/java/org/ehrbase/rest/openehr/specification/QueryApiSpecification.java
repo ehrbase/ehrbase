@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
 import org.springframework.http.ResponseEntity;
 
@@ -50,8 +49,7 @@ public interface QueryApiSpecification {
             Integer offset,
             Integer fetch,
             Map<String, Object> queryParameters,
-            String accept,
-            HttpServletRequest request);
+            String accept);
 
     /**
      * Execute ad-hoc (non-stored) AQL query.
@@ -65,8 +63,7 @@ public interface QueryApiSpecification {
     ResponseEntity<QueryResponseData> executeAdHocQuery(
             Map<String, Object> queryRequest, // FIXME: Create DTO
             String accept,
-            String contentType,
-            HttpServletRequest request);
+            String contentType);
 
     /**
      * Execute stored query.
@@ -84,8 +81,7 @@ public interface QueryApiSpecification {
             Integer offset,
             Integer fetch,
             Map<String, Object> queryParameter,
-            String accept,
-            HttpServletRequest request);
+            String accept);
 
     /**
      * Execute stored query.
@@ -101,6 +97,5 @@ public interface QueryApiSpecification {
             String version,
             String accept,
             String contentType,
-            Map<String, Object> queryRequest,
-            HttpServletRequest request);
+            Map<String, Object> queryRequest);
 }
