@@ -39,9 +39,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.ehrbase</groupId>
-            <artifactId>xacml-authorization-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <groupId>ag.vitagroup.hip.cdr.authorization</groupId>
+            <artifactId>cdr-xacml-authorization-lib</artifactId>
+            <version>1.1.1-SNAPSHOT</version>
         </dependency>
         
         <dependency>

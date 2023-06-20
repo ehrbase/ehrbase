@@ -17,9 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.support.identification.HierObjectId;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -27,9 +24,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -40,10 +38,6 @@ import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
-import org.ehrbase.security.annotation.Action;
-import org.ehrbase.security.annotation.ResourceId;
-import org.ehrbase.security.annotation.TenantPolicyLookup;
-import org.ehrbase.security.annotation.XacmlAuthorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -60,6 +54,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Action;
+import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import ag.vitagroup.hip.cdr.authorization.annotation.TenantPolicyLookup;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
 
 /**
  * Controller for /ehr resource of openEHR REST API
@@ -79,14 +83,13 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
+    @Scope(scope = EhrbasePermission.EHRBASE_EHR_CREATE)
     @XacmlAuthorization
     @Action(action = "method:call:createEhr")
     @ResourceId(resourceId = "OpenehrEhrController")
     @PostMapping // (consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
-    @Override
     public ResponseEntity createEhr(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
@@ -105,13 +108,12 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         return internalPostEhrProcessing(accept, prefer, ehrId);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
+    @Scope(scope = EhrbasePermission.EHRBASE_EHR_CREATE)
     @XacmlAuthorization
     @Action(action = "method:call:createEhrWithId")
     @ResourceId(resourceId = "OpenehrEhrController")
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @Override
     public ResponseEntity<EhrResponseData> createEhrWithId(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
@@ -183,10 +185,9 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by ID
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
+    @Scope(scope = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(path = "/{ehr_id}")
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
-    @Override
     public ResponseEntity<EhrResponseData> retrieveEhrById(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString) {
@@ -203,10 +204,9 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by subject (id and namespace)
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
+    @Scope(scope = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(params = {"subject_id", "subject_namespace"})
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
-    @Override
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestParam(value = "subject_id") String subjectId,

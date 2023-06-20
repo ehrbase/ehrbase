@@ -27,6 +27,8 @@ import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
+import ag.vitagroup.hip.cdr.authorization.EnableXacmlAuthorization;
+
 /**
  * @author Stefan Spiska
  * @since 1.0
@@ -37,6 +39,7 @@ import org.springframework.context.annotation.Import;
             R2dbcAutoConfiguration.class,
             SecurityAutoConfiguration.class
         })
+@EnableXacmlAuthorization
 @Import({ServiceModuleConfiguration.class, RestEHRScapeModuleConfiguration.class, RestModuleConfiguration.class})
 public class EhrBase {
 
