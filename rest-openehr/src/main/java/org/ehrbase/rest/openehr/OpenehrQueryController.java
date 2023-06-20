@@ -17,18 +17,20 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.springframework.web.util.UriComponentsBuilder.fromPath;
-
+import ag.vitagroup.hip.cdr.authorization.annotation.Action;
+import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import ag.vitagroup.hip.cdr.authorization.annotation.TenantPolicyLookup;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlUrlRequestParameter;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -54,13 +56,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import ag.vitagroup.hip.cdr.authorization.annotation.Action;
-import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
-import ag.vitagroup.hip.cdr.authorization.annotation.TenantPolicyLookup;
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlUrlRequestParameter;
 
 /**
  * Controller for openEHR REST API QUERY resource.

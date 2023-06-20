@@ -20,6 +20,11 @@ package org.ehrbase.rest.openehr;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_XML;
 
+import ag.vitagroup.hip.cdr.authorization.annotation.Action;
+import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
+import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +35,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.authorization.EhrbasePermission;
@@ -64,13 +68,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.nedap.archie.rm.composition.Composition;
-
-import ag.vitagroup.hip.cdr.authorization.annotation.Action;
-import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
 
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
