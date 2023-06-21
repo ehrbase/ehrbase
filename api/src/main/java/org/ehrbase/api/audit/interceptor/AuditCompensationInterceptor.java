@@ -17,4 +17,4 @@
  */
 package org.ehrbase.api.audit.interceptor;
 
-public interface AuditEhrHandlerInterceptor extends AuditHandlerInterceptor {}
+public interface AuditCompensationInterceptor extends AuditInterceptor {}

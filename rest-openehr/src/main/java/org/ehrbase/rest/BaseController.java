@@ -104,7 +104,8 @@ public abstract class BaseController {
     public static final String QUERY = "query";
     public static final String DEFINITION = "definition";
     public static final String TEMPLATE = "template";
-    public static final String API_CONTEXT_PATH_WITH_VERSION = "${openehr-api.context-path:/rest/openehr}/v1";
+    public static final String API_CONTEXT_PATH = "${openehr-api.context-path:/rest/openehr}";
+    public static final String API_CONTEXT_PATH_WITH_VERSION = API_CONTEXT_PATH + "/v1";
     public static final String ADMIN_API_CONTEXT_PATH = "${admin-api.context-path:/rest/admin}";
 
     public Map<String, Map<String, String>> add2MetaMap(

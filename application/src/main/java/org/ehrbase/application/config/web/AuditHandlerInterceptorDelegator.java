@@ -19,14 +19,14 @@ package org.ehrbase.application.config.web;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.ehrbase.api.audit.interceptor.AuditHandlerInterceptor;
+import org.ehrbase.api.audit.interceptor.AuditInterceptor;
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 public class AuditHandlerInterceptorDelegator implements HandlerInterceptor {
-    private final AuditHandlerInterceptor interceptor;
+    private final AuditInterceptor interceptor;
 
-    public AuditHandlerInterceptorDelegator(AuditHandlerInterceptor interceptor) {
+    public AuditHandlerInterceptorDelegator(AuditInterceptor interceptor) {
         this.interceptor = interceptor;
     }
 
