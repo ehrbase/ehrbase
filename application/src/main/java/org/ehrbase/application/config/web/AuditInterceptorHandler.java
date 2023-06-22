@@ -36,6 +36,7 @@ public class AuditInterceptorHandler {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private static final String ANY_SEGMENT = "*";
+    private static final String ROLLBACK = "rollback";
     private static final String ANY_TRAILING_SEGMENTS = "**";
 
     @Value(API_CONTEXT_PATH_WITH_VERSION)
@@ -45,31 +46,35 @@ public class AuditInterceptorHandler {
     protected String adminApiContextPath;
 
     @Autowired(required = false)
-    AuditCompositionHandlerInterceptor compositionInterceptor;
+    AuditEhrInterceptor ehrInterceptor;
 
     @Autowired(required = false)
-    AuditContributionHandlerInterceptor contributionInterceptor;
+    AuditQueryInterceptor queryInterceptor;
 
     @Autowired(required = false)
-    AuditEhrHandlerInterceptor ehrInterceptor;
+    AuditEhrAdminInterceptor ehrAdminInterceptor;
 
     @Autowired(required = false)
-    AuditEhrStatusHandlerInterceptor ehrStatusInterceptor;
+    AuditEhrStatusInterceptor ehrStatusInterceptor;
 
     @Autowired(required = false)
-    AuditQueryHandlerInterceptor queryInterceptor;
+    AuditCompositionInterceptor compositionInterceptor;
 
     @Autowired(required = false)
-    AuditEhrAdminHandlerInterceptor ehrAdminInterceptor;
+    AuditContributionInterceptor contributionInterceptor;
+
+    @Autowired(required = false)
+    AuditCompensationInterceptor compensationInterceptor;
 
     public void registerAuditInterceptors(InterceptorRegistry registry) {
         if (shouldRegisterInterceptors()) {
+            registerEhrInterceptor(registry);
+            registerQueryInterceptor(registry);
+            registerEhrAdminInterceptor(registry);
+            registerEhrStatusInterceptor(registry);
             registerCompositionInterceptor(registry);
             registerContributionInterceptor(registry);
-            registerEhrInterceptor(registry);
-            registerEhrAdminInterceptor(registry);
-            registerQueryInterceptor(registry);
-            registerEhrStatusInterceptor(registry);
+            registerCompensationInterceptor(registry);
         }
     }
 
@@ -123,7 +128,7 @@ public class AuditInterceptorHandler {
             // Contribution endpoint
             registry.addInterceptor(new AuditHandlerInterceptorDelegator(contributionInterceptor))
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, CONTRIBUTION, ANY_TRAILING_SEGMENTS))
-                    .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, CONTRIBUTION, ANY_SEGMENT));
+                    .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, CONTRIBUTION, ANY_TRAILING_SEGMENTS));
         } else {
             log.info("Contribution interceptor bean is not available.");
         }
@@ -141,13 +146,24 @@ public class AuditInterceptorHandler {
         }
     }
 
+    private void registerCompensationInterceptor(InterceptorRegistry registry) {
+        if (compensationInterceptor != null) {
+            // Compensation plugin endpoint
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(compensationInterceptor))
+                    .addPathPatterns(getPathPattern("", EHR, ANY_SEGMENT, CONTRIBUTION, ANY_SEGMENT, ROLLBACK));
+        } else {
+            log.info("Compensation interceptor bean is not available.");
+        }
+    }
+
     private boolean shouldRegisterInterceptors() {
         return compositionInterceptor != null
                 || ehrInterceptor != null
                 || ehrAdminInterceptor != null
                 || queryInterceptor != null
                 || contributionInterceptor != null
-                || ehrStatusInterceptor != null;
+                || ehrStatusInterceptor != null
+                || compensationInterceptor != null;
     }
 
     private String contextPathPattern(String... segments) {
@@ -158,7 +174,7 @@ public class AuditInterceptorHandler {
         return getPathPattern(adminApiContextPath, segments);
     }
 
-    private String getPathPattern(String apiContextPath, String[] segments) {
+    private String getPathPattern(String apiContextPath, String... segments) {
         return Stream.concat(Stream.of(apiContextPath), Arrays.stream(segments)).collect(Collectors.joining("/"));
     }
 }
