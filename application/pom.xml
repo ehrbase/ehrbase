@@ -38,19 +38,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>ag.vitagroup.hip.cdr.authorization</groupId>
-            <artifactId>cdr-xacml-authorization-lib</artifactId>
-            <version>1.1.1-SNAPSHOT</version>
-<!--            
-            <exclusions>
-                <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
-                    <artifactId>pax-logging-api</artifactId>
-                </exclusion>
-            </exclusions>
--->            
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
