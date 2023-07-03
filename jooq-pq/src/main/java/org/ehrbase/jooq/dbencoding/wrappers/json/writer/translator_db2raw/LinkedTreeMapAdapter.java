@@ -25,10 +25,13 @@ import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
-import org.ehrbase.openehr.sdk.aql.dto.path.AqlPath;
+import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
 import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /**
