@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
