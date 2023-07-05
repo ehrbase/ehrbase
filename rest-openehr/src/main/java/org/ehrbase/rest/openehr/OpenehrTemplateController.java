@@ -210,7 +210,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
     }
 
     @GetMapping(path = "/adl1.4/{template_id}/example")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_EXAMPLE)
     public ResponseEntity<String> getTemplateExample(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
