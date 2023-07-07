@@ -15,9 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
--- START TRANSACTION;
--- ROLLBACK TRANSACTION;
-
 -- Create temporary tables before dropping constraints
 CREATE TEMP TABLE filtered_tables_foreign_keys AS
     (SELECT conrelid::regclass::text AS table_name, conname, pg_get_constraintdef(oid) as constraintdef
@@ -164,7 +161,6 @@ BEGIN
                      --   * ehr.identifier
                      --   * ehr.access
 
-                     -- Delete _history
                      delete_tenant
                          AS (DELETE FROM ehr.tenant WHERE id = tenant_id_param)
 
