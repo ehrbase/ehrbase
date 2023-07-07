@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -113,6 +114,15 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
         return tenant.getTenantId();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void deleteTenant(String tenantId) {
+        I_TenantAccess tenantAccess =
+                I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenantId);
+        tenantAccess.deleteTenant(getDataAccess().getContext(), tenantId);
+        sysTenantCache.evict(tenantId);
+    }
+
     @Override
     public List<Tenant> getAll() {
         return I_TenantAccess.getAll(getDataAccess().getContext()).stream()
@@ -131,5 +141,10 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     public Tenant update(Tenant tenant) {
         return I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenant.getTenantId())
                 .update(tenant);
+    }
+
+    @Override
+    public boolean hasTenant(String tenantId) {
+        return I_TenantAccess.hasTenant(getDataAccess(), tenantId);
     }
 }

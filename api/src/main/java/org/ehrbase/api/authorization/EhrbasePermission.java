@@ -55,6 +55,7 @@ public enum EhrbasePermission {
     EHRBASE_TENANT_CREATE("ehrbase:tenant:create"),
     EHRBASE_TENANT_READ("ehrbase:tenant:read"),
     EHRBASE_TENANT_UPDATE("ehrbase:tenant:update"),
+    EHRBASE_TENANT_DELETE("ehrbase:tenant:delete"),
     EHRBASE_TRIGGER_CREATE("ehrbase:trigger:create"),
     EHRBASE_TRIGGER_DELETE("ehrbase:trigger:delete"),
     EHRBASE_TRIGGER_READ("ehrbase:trigger:read"),
