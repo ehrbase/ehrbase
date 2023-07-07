@@ -145,7 +145,7 @@ public class TenantAccess implements I_TenantAccess {
             throw new InternalServerException(String.format(ERR_DELETE_TENANT_ID, tenantId));
 
         if (result.isEmpty() || !Boolean.TRUE.equals(result.get(0).getDeleted())) {
-            throw new InternalServerException("Admin deletion of tenant failed!");
+            throw new InternalServerException("Deletion of tenant failed!");
         }
     }
 
