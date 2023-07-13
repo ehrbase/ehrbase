@@ -85,7 +85,7 @@ public class DefaultExceptionHandler {
             AccessDeniedException.class,
             AccessCtrlException.class
     })
-    public ResponseEntity<Object> handleObjectNotFoundException(AccessDeniedException ex) {
+    public ResponseEntity<Object> handleObjectNotFoundException(Exception ex) {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 
