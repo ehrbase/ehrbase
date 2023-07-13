@@ -96,7 +96,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @GetMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @XacmlUrlRequestParameter("q") @RequestParam(name = "q") String query,
+            @XacmlUrlRequestParameter("aql_query") @RequestParam(name = "q") String query,
             @RequestParam(name = "offset", required = false) Integer offset,
             @RequestParam(name = "fetch", required = false) Integer fetch,
             @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameters,
@@ -135,7 +135,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     @SuppressWarnings("unchecked")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @XacmlUrlRequestParameter("q") @RequestBody Map<String, Object> queryRequest,
+            @XacmlUrlRequestParameter("aql_query") @RequestBody Map<String, Object> queryRequest,
             @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestHeader(name = CONTENT_TYPE) String contentType) {
 
