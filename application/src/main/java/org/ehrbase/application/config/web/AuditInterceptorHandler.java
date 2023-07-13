@@ -97,7 +97,8 @@ public class AuditInterceptorHandler {
         if (queryInterceptor != null) {
             // Query endpoint
             registry.addInterceptor(new AuditHandlerInterceptorDelegator(queryInterceptor))
-                    .addPathPatterns(contextPathPattern(QUERY, ANY_TRAILING_SEGMENTS));
+                    .addPathPatterns(contextPathPattern(QUERY, ANY_TRAILING_SEGMENTS))
+                    .addPathPatterns(contextPathPattern(DEFINITION, QUERY, ANY_TRAILING_SEGMENTS));
         } else {
             log.info("Query interceptor bean is not available.");
         }
