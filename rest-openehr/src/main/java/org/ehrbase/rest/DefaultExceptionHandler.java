@@ -20,6 +20,8 @@ package org.ehrbase.rest;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
+import ag.vitagroup.hip.cdr.authorization.xacml.eval.AccessCtrlException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
@@ -79,7 +81,10 @@ public class DefaultExceptionHandler {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({
+            AccessDeniedException.class,
+            AccessCtrlException.class
+    })
     public ResponseEntity<Object> handleObjectNotFoundException(AccessDeniedException ex) {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
