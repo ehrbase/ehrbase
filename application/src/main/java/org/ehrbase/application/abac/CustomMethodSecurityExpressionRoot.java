@@ -188,7 +188,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
         }
 
         // Check and extract JWT
-        var jwt = getJwtAuthenticationToken(this.authentication);
+        var jwt = getJwtAuthenticationToken(this.getAuthentication());
 
         // Request body map. will result in simple JSON like {"patient_id":"...", ...}
         // but requires "Object" for template handling, which can have a Set<String> for multiple IDs

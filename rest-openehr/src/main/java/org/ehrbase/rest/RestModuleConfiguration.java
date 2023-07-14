@@ -17,9 +17,9 @@
  */
 package org.ehrbase.rest;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.ThreadLocalSupplier;
 import org.springframework.beans.factory.annotation.Value;

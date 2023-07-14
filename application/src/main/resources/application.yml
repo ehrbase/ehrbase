@@ -37,7 +37,8 @@ spring:
     type: CAFFEINE # change to type redis if usage of redis distributed cache is intended
 
   # the following redis properties are only used if the cache.type=redis
-  redis:
+  data:
+   redis:
     host: localhost
     port: 6379
 
@@ -190,15 +191,10 @@ management:
       # Enable / disable metrics endpoint
       enabled: false
     # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
-    prometheus:
-      # Enable / disable prometheus endpoint
-      enabled: false
-  # Metrics settings
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
-
 # External Terminology Validation Properties
 validation:
   external-terminology:
