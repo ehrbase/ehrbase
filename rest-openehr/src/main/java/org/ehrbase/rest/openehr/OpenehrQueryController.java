@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -102,7 +105,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
 
         // Enriches request attributes with aql for later audit processing
-        AuditMsgBuilder.getInstance().setQuery(query);
+        createAdHocAuditLogsMsgBuilder();
 
         var body = executeQuery(query, queryParameters);
 
@@ -135,7 +138,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         aql = withOffsetLimit(aql, queryRequest);
         // Enriches request attributes with aql for later audit processing
-        AuditMsgBuilder.getInstance().setQuery(aql);
+        createAdHocAuditLogsMsgBuilder();
 
         Map<String, Object> parameters = (Map<String, Object>) queryRequest.get(QUERY_PARAMETERS);
 
@@ -165,18 +168,14 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 offset,
                 fetch,
                 queryParameter);
-        // Enriches request attributes with query name for later audit processing
-        AuditMsgBuilder auditMsgBuilder = AuditMsgBuilder.getInstance();
-        auditMsgBuilder.setQueryId(qualifiedQueryName);
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, version);
         // retrieve the stored query for execution
-        QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version);
+        QueryDefinitionResultDto queryResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
-        String query = queryDefinitionResultDto.getQueryText();
+        String query = queryResultDto.getQueryText();
 
-        // Enriches request attributes with aql for later audit processing
-        auditMsgBuilder.setQuery(query);
+        // Enriches request attributes with query name for later audit processing
 
         if (fetch != null) {
             // append LIMIT clause to aql
@@ -189,7 +188,9 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
 
         QueryResponseData queryResponseData = invoke(query, queryParameter);
-        setQueryName(queryDefinitionResultDto, queryResponseData);
+        setQueryName(queryResultDto, queryResponseData);
+        AuditMsgBuilder.getInstance().setQueryId(queryResultDto.getQualifiedName());
+
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -210,23 +211,18 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
 
+        // Enriches request attributes with aql for later audit processing
+        createAuditLogsMsgBuilder(qualifiedQueryName, version);
+
         // retrieve the stored query for execution
-        AuditMsgBuilder msgBuilder = AuditMsgBuilder.getInstance();
-        msgBuilder.setQueryId(qualifiedQueryName);
+        QueryDefinitionResultDto queryResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
-        QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version);
-
-        String query = queryDefinitionResultDto.getQueryText();
+        String query = queryResultDto.getQueryText();
 
         if (query == null) {
             var message = MessageFormat.format("Could not retrieve AQL {0}/{1}", qualifiedQueryName, version);
             throw new ObjectNotFoundException("AQL", message);
         }
-
-        // Enriches request attributes with aql for later audit processing
-        msgBuilder.setQuery(query);
-
         // retrieve the parameter from body
         // get the query and parameters if any
         Map<String, Object> queryParameter = null;
@@ -238,8 +234,23 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
         QueryResponseData queryResponseData = invoke(query, queryParameter);
 
-        setQueryName(queryDefinitionResultDto, queryResponseData);
+        setQueryName(queryResultDto, queryResponseData);
+        AuditMsgBuilder.getInstance().setQueryId(queryResultDto.getQualifiedName());
+
         return ResponseEntity.ok(queryResponseData);
+    }
+
+    private void createAuditLogsMsgBuilder(String qualifiedName, @Nullable String version) {
+        AuditMsgBuilder.getInstance()
+                .setIsQueryExecuteEndpoint(true)
+                .setLocation(fromPath("")
+                        .pathSegment(QUERY, qualifiedName, version)
+                        .build()
+                        .toString());
+    }
+
+    private void createAdHocAuditLogsMsgBuilder() {
+        AuditMsgBuilder.getInstance().setIsQueryExecuteEndpoint(true);
     }
 
     private static void setQueryName(
