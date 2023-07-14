@@ -95,9 +95,10 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         logger.debug("getStoredQueryList invoked with the following input: {}", qualifiedQueryName);
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, null);
         QueryDefinitionListResponseData responseData =
                 new QueryDefinitionListResponseData(queryService.retrieveStoredQueries(qualifiedQueryName));
-        createAuditLogsMsgBuilder(qualifiedQueryName, null);
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return ResponseEntity.ok(responseData);
     }
@@ -117,6 +118,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(
                 queryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
@@ -181,6 +183,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         QueryDefinitionResultDto storedQuery =
                 queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return getPutDefenitionResponseEntity(mediaType, storedQuery);
     }
@@ -199,6 +202,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         QueryDefinitionResponseData queryDefinitionResponseData =
                 new QueryDefinitionResponseData(queryService.deleteStoredQuery(qualifiedQueryName, version));
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
@@ -221,7 +225,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     private void createAuditLogsMsgBuilder(String queryName, @Nullable String version) {
         AuditMsgBuilder.getInstance()
-                .setQueryId(queryName)
                 .setLocation(fromPath("")
                         .pathSegment(DEFINITION, QUERY, queryName, version)
                         .build()

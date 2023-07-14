@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -168,13 +169,13 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 fetch,
                 queryParameter);
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, version);
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
         String query = queryResultDto.getQueryText();
 
         // Enriches request attributes with query name for later audit processing
-        createAuditLogsMsgBuilder(queryResultDto);
 
         if (fetch != null) {
             // append LIMIT clause to aql
@@ -188,6 +189,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         QueryResponseData queryResponseData = invoke(query, queryParameter);
         setQueryName(queryResultDto, queryResponseData);
+        AuditMsgBuilder.getInstance().setQueryId(queryResultDto.getQualifiedName());
+
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -208,11 +211,11 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
 
+        // Enriches request attributes with aql for later audit processing
+        createAuditLogsMsgBuilder(qualifiedQueryName, version);
+
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version);
-
-        // Enriches request attributes with aql for later audit processing
-        createAuditLogsMsgBuilder(queryResultDto);
 
         String query = queryResultDto.getQueryText();
 
@@ -232,16 +235,16 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResponseData queryResponseData = invoke(query, queryParameter);
 
         setQueryName(queryResultDto, queryResponseData);
+        AuditMsgBuilder.getInstance().setQueryId(queryResultDto.getQualifiedName());
 
         return ResponseEntity.ok(queryResponseData);
     }
 
-    private void createAuditLogsMsgBuilder(QueryDefinitionResultDto queryResultDto) {
+    private void createAuditLogsMsgBuilder(String qualifiedName, @Nullable String version) {
         AuditMsgBuilder.getInstance()
-                .setQueryId(queryResultDto.getQualifiedName())
                 .setIsQueryExecuteEndpoint(true)
                 .setLocation(fromPath("")
-                        .pathSegment(QUERY, queryResultDto.getQualifiedName(), queryResultDto.getVersion())
+                        .pathSegment(QUERY, qualifiedName, version)
                         .build()
                         .toString());
     }
