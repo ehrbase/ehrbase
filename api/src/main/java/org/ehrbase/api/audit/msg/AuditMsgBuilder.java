@@ -20,15 +20,16 @@ package org.ehrbase.api.audit.msg;
 import java.util.Set;
 
 public class AuditMsgBuilder {
-    private String location;
-    private Object[] ehrIds;
-    private Integer version;
     private String query;
     private String queryId;
-    private String compositionId;
+    private String location;
+    private Integer version;
+    private Object[] ehrIds;
     private String templateId;
+    private String compositionId;
     private String contributionId;
     private Set<String> removedPatients;
+    private Boolean isQueryExecuteEndpoint;
     private static final ThreadLocal<AuditMsgBuilder> auditMsgTL = ThreadLocal.withInitial(AuditMsgBuilder::new);
 
     public static AuditMsgBuilder getInstance() {
@@ -84,29 +85,36 @@ public class AuditMsgBuilder {
         return this;
     }
 
+    public AuditMsgBuilder setIsQueryExecuteEndpoint(Boolean isQueryExecuteEndpoint) {
+        this.isQueryExecuteEndpoint = isQueryExecuteEndpoint;
+        return this;
+    }
+
     public void clean() {
         this.setEhrIds();
-        this.setCompositionId(null);
-        this.setLocation(null);
+        this.setVersion(0);
         this.setQuery(null);
         this.setQueryId(null);
+        this.setLocation(null);
         this.setTemplateId(null);
+        this.setCompositionId(null);
         this.setContributionId(null);
-        this.setVersion(0);
         this.setRemovedPatients(null);
+        this.setIsQueryExecuteEndpoint(false);
     }
 
     public AuditMsg build() {
         return new AuditMsg.Builder()
-                .location(this.location)
-                .ehrIds(this.ehrIds)
-                .version(this.version)
                 .query(this.query)
+                .ehrIds(this.ehrIds)
                 .queryId(this.queryId)
-                .compositionId(this.compositionId)
+                .version(this.version)
+                .location(this.location)
                 .templateId(this.templateId)
+                .compositionId(this.compositionId)
                 .contributionId(this.contributionId)
                 .removedPatients(this.removedPatients)
+                .isQueryExecuteEndpoint(this.isQueryExecuteEndpoint)
                 .build();
     }
 }
