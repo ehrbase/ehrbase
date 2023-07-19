@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+
+ - Added support tenant deletion ([#1146](https://github.com/ehrbase/ehrbase/pull/1146))
+
  ### Changed
 
  - Audit log functionality has been integrated as a plugin ([#1131](https://github.com/ehrbase/ehrbase/pull/1131))

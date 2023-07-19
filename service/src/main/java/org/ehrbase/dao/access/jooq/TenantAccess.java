@@ -18,6 +18,7 @@
 package org.ehrbase.dao.access.jooq;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.ehrbase.jooq.pg.Tables.TENANT;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
@@ -30,8 +31,11 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.tenant.Tenant;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TenantAccess;
+import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.Tables;
+import org.ehrbase.jooq.pg.tables.records.AdminDeleteTenantFullRecord;
 import org.ehrbase.jooq.pg.tables.records.TenantRecord;
 import org.ehrbase.openehr.sdk.util.functional.ExceptionalSupplier;
 import org.jooq.DSLContext;
@@ -129,5 +133,25 @@ public class TenantAccess implements I_TenantAccess {
         record.update();
 
         return convert();
+    }
+
+    public static void deleteTenant(DSLContext ctx, String tenantId) {
+        Result<AdminDeleteTenantFullRecord> result =
+                Routines.adminDeleteTenantFull(ctx.configuration(), getSysTenant(ctx, tenantId));
+
+        if (result.isEmpty() || !Boolean.TRUE.equals(result.get(0).getDeleted())) {
+            throw new InternalServerException("Deletion of tenant failed!");
+        }
+    }
+
+    private static Short getSysTenant(DSLContext ctx, String tenantId) {
+        TenantRecord tenantRecord = ctx.fetchOne(TENANT, TENANT.TENANT_ID.eq(tenantId));
+        return Optional.ofNullable(tenantRecord)
+                .map(TenantRecord::getId)
+                .orElseThrow(() -> new InternalServerException("Tenant System ID cannot be empty/null"));
+    }
+
+    public static boolean hasTenant(I_DomainAccess domainAccess, String tenantId) {
+        return domainAccess.getContext().fetchExists(TENANT, TENANT.TENANT_ID.eq(tenantId));
     }
 }
