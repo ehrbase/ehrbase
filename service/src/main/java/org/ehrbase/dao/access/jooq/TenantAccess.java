@@ -148,7 +148,7 @@ public class TenantAccess implements I_TenantAccess {
         TenantRecord tenantRecord = ctx.fetchOne(TENANT, TENANT.TENANT_ID.eq(tenantId));
         return Optional.ofNullable(tenantRecord)
                 .map(TenantRecord::getId)
-                .orElseThrow(() -> new InternalServerException("Deletion of tenant failed!"));
+                .orElseThrow(() -> new InternalServerException("Tenant System ID cannot be empty/null"));
     }
 
     public static boolean hasTenant(I_DomainAccess domainAccess, String tenantId) {
