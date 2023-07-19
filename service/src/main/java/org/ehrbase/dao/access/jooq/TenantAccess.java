@@ -121,7 +121,6 @@ public class TenantAccess implements I_TenantAccess {
     }
 
     private static final String ERR_TENANT_ID = "Updating tenant id[%s] is not allowed";
-    private static final String ERR_DELETE_TENANT_ID = "Deleting tenant id[%s] is not allowed";
 
     @Override
     public Tenant update(Tenant tenant) {
@@ -136,17 +135,20 @@ public class TenantAccess implements I_TenantAccess {
         return convert();
     }
 
-    @Override
-    public void deleteTenant(DSLContext ctx, String tenantId) {
+    public static void deleteTenant(DSLContext ctx, String tenantId) {
         Result<AdminDeleteTenantFullRecord> result =
-                Routines.adminDeleteTenantFull(ctx.configuration(), record.getId());
-
-        if (!tenantId.equals(record.getTenantId()))
-            throw new InternalServerException(String.format(ERR_DELETE_TENANT_ID, tenantId));
+                Routines.adminDeleteTenantFull(ctx.configuration(), getSysTenant(ctx, tenantId));
 
         if (result.isEmpty() || !Boolean.TRUE.equals(result.get(0).getDeleted())) {
             throw new InternalServerException("Deletion of tenant failed!");
         }
+    }
+
+    private static Short getSysTenant(DSLContext ctx, String tenantId) {
+        TenantRecord tenantRecord = ctx.fetchOne(TENANT, TENANT.TENANT_ID.eq(tenantId));
+        return Optional.ofNullable(tenantRecord)
+                .map(TenantRecord::getId)
+                .orElseThrow(() -> new InternalServerException("Deletion of tenant failed!"));
     }
 
     public static boolean hasTenant(I_DomainAccess domainAccess, String tenantId) {

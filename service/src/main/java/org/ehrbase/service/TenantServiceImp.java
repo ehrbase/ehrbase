@@ -17,6 +17,7 @@
  */
 package org.ehrbase.service;
 
+import static org.ehrbase.api.tenant.TenantAuthentication.DEFAULT_TENANT_ID;
 import static org.ehrbase.dao.access.jooq.TenantAccess.getSysTenants;
 
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.api.tenant.TenantAuthentication;
@@ -55,6 +57,7 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     private static final String ERR_GETTING_TENANT = "Could not find tenant %s in cache";
     private static final String WARN_NOT_TENANT_ID =
             "No tenant identifier provided, falling back to default tenant identifier {}";
+    private static final String ERR_DELETE_TENANT_ID = "Deleting tenant id[%s] is not allowed";
 
     private final Cache sysTenantCache;
 
@@ -117,9 +120,16 @@ public class TenantServiceImp extends BaseServiceImp implements TenantService {
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void deleteTenant(String tenantId) {
-        I_TenantAccess tenantAccess =
-                I_TenantAccess.retrieveInstanceBy(getDataAccess().getContext(), tenantId);
-        tenantAccess.deleteTenant(getDataAccess().getContext(), tenantId);
+        if (DEFAULT_TENANT_ID.equals(tenantId)) {
+            throw new IllegalArgumentException(
+                    String.format("Not allowed to delete default tenant with id %s.", tenantId));
+        }
+
+        if (!hasTenant(tenantId)) {
+            throw new ObjectNotFoundException("Tenant", String.format("Tenant with id %s does not exist.", tenantId));
+        }
+
+        I_TenantAccess.deleteTenant(getDataAccess().getContext(), tenantId);
         sysTenantCache.evict(tenantId);
     }
 
