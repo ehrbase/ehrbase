@@ -27,6 +27,7 @@ public class AuditMsgBuilder {
     private Object[] ehrIds;
     private String templateId;
     private String compositionId;
+    private String directoryId;
     private String contributionId;
     private Set<String> removedPatients;
     private Boolean isQueryExecuteEndpoint;
@@ -85,6 +86,11 @@ public class AuditMsgBuilder {
         return this;
     }
 
+    public AuditMsgBuilder setDirectoryId(String directoryId) {
+        this.directoryId = directoryId;
+        return this;
+    }
+
     public AuditMsgBuilder setIsQueryExecuteEndpoint(Boolean isQueryExecuteEndpoint) {
         this.isQueryExecuteEndpoint = isQueryExecuteEndpoint;
         return this;
@@ -101,6 +107,7 @@ public class AuditMsgBuilder {
         this.setContributionId(null);
         this.setRemovedPatients(null);
         this.setIsQueryExecuteEndpoint(false);
+        this.setDirectoryId(null);
     }
 
     public AuditMsg build() {
@@ -115,6 +122,7 @@ public class AuditMsgBuilder {
                 .contributionId(this.contributionId)
                 .removedPatients(this.removedPatients)
                 .isQueryExecuteEndpoint(this.isQueryExecuteEndpoint)
+                .directoryId(this.directoryId)
                 .build();
     }
 }

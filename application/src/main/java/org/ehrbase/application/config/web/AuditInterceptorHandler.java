@@ -66,6 +66,9 @@ public class AuditInterceptorHandler {
     @Autowired(required = false)
     AuditCompensationInterceptor compensationInterceptor;
 
+    @Autowired(required = false)
+    AuditDirectoryInterceptor directoryInterceptor;
+
     public void registerAuditInterceptors(InterceptorRegistry registry) {
         if (shouldRegisterInterceptors()) {
             registerEhrInterceptor(registry);
@@ -75,6 +78,7 @@ public class AuditInterceptorHandler {
             registerCompositionInterceptor(registry);
             registerContributionInterceptor(registry);
             registerCompensationInterceptor(registry);
+            registerDirectoryInterceptor(registry);
         }
     }
 
@@ -157,6 +161,17 @@ public class AuditInterceptorHandler {
         }
     }
 
+    private void registerDirectoryInterceptor(InterceptorRegistry registry) {
+        if (directoryInterceptor != null) {
+            // Directory plugin endpoint
+            registry.addInterceptor(new AuditHandlerInterceptorDelegator(directoryInterceptor))
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, DIRECTORY))
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, DIRECTORY, ANY_SEGMENT));
+        } else {
+            log.info("Directory interceptor bean is not available.");
+        }
+    }
+
     private boolean shouldRegisterInterceptors() {
         return compositionInterceptor != null
                 || ehrInterceptor != null
@@ -164,6 +179,7 @@ public class AuditInterceptorHandler {
                 || queryInterceptor != null
                 || contributionInterceptor != null
                 || ehrStatusInterceptor != null
+                || directoryInterceptor != null
                 || compensationInterceptor != null;
     }
 
