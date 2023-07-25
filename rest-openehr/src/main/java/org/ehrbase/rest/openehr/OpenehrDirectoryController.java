@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -132,6 +134,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         directoryService.delete(ehrId, folderId);
+        createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
@@ -246,6 +249,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             headers.setLocation(createLocationUri(EHR, ehrId.toString(), DIRECTORY, versionUid));
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());
+            createAuditLogsMsgBuilder(ehrId.toString(), versionUid);
         }
 
         return new ResponseEntity<>(body, headers, successStatus);
@@ -281,5 +285,15 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         } catch (InvalidPathException e) {
             throw new InvalidApiParameterException("The value of path parameter is invalid", e);
         }
+    }
+
+    private void createAuditLogsMsgBuilder(String ehrId, String versionedObjectUid) {
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
+                .setDirectoryId(versionedObjectUid)
+                .setLocation(fromPath("")
+                        .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)
+                        .build()
+                        .toString());
     }
 }

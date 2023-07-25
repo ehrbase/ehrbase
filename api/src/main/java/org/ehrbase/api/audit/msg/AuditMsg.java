@@ -26,6 +26,7 @@ public class AuditMsg {
     private final Object[] ehrIds;
     private final Integer version;
     private final String templateId;
+    private final String directoryId;
     private final String compositionId;
     private final String contributionId;
     private final Set<String> removedPatients;
@@ -42,6 +43,7 @@ public class AuditMsg {
         this.contributionId = builder.contributionId;
         this.removedPatients = builder.removedPatients;
         this.isQueryExecuteEndpoint = builder.isQueryExecuteEndpoint;
+        this.directoryId = builder.directoryId;
     }
 
     public String getLocation() {
@@ -76,6 +78,10 @@ public class AuditMsg {
         return contributionId;
     }
 
+    public String getDirectoryId() {
+        return directoryId;
+    }
+
     public Set<String> getRemovedPatients() {
         return removedPatients;
     }
@@ -91,6 +97,7 @@ public class AuditMsg {
         private String query;
         private String queryId;
         private String compositionId;
+        private String directoryId;
         private String templateId;
         private String contributionId;
         private Set<String> removedPatients;
@@ -133,6 +140,11 @@ public class AuditMsg {
 
         public Builder contributionId(String contributionId) {
             this.contributionId = contributionId;
+            return this;
+        }
+
+        public Builder directoryId(String directoryId) {
+            this.directoryId = directoryId;
             return this;
         }
 
