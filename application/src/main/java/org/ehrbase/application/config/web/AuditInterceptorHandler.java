@@ -166,7 +166,8 @@ public class AuditInterceptorHandler {
             // Directory plugin endpoint
             registry.addInterceptor(new AuditHandlerInterceptorDelegator(directoryInterceptor))
                     .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, DIRECTORY))
-                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, DIRECTORY, ANY_SEGMENT));
+                    .addPathPatterns(contextPathPattern(EHR, ANY_SEGMENT, DIRECTORY, ANY_SEGMENT))
+                    .addPathPatterns(contextAdminPathPattern(EHR, ANY_SEGMENT, DIRECTORY, ANY_SEGMENT));
         } else {
             log.info("Directory interceptor bean is not available.");
         }
