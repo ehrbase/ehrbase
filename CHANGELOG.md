@@ -7,10 +7,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+ ### Changed 
+ ### Fixed 
+
+## [0.28.0]
+ ### Added
 
  - Added support tenant deletion ([#1146](https://github.com/ehrbase/ehrbase/pull/1146))
 
- ### Changed
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.0.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 
  - Audit log functionality has been integrated as a plugin ([#1131](https://github.com/ehrbase/ehrbase/pull/1131))
  - update to SDK 2.0.0-SNAPSHOT ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
@@ -667,4 +673,5 @@ the next release this file will provide a proper overview.
 [0.27.2]: https://github.com/ehrbase/ehrbase/compare/v0.27.1...v0.27.2
 [0.27.3]: https://github.com/ehrbase/ehrbase/compare/v0.27.2...v0.27.3
 [0.27.4]: https://github.com/ehrbase/ehrbase/compare/v0.27.3...v0.27.4
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.27.4...HEAD
+[0.28.0]: https://github.com/ehrbase/ehrbase/compare/v0.27.4...v0.28.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.28.0...HEAD
