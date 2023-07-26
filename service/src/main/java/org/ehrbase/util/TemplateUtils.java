@@ -20,8 +20,8 @@ package org.ehrbase.util;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.webtemplate.model.WebTemplate;
-import org.ehrbase.webtemplate.parser.OPTParser;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 

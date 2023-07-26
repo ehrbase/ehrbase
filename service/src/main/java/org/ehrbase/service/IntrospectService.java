@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
-import org.ehrbase.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 
 public interface IntrospectService {
     WebTemplate getQueryOptMetaData(UUID uuid);

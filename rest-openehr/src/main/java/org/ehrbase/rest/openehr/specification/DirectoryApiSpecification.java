@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
-import org.ehrbase.response.openehr.DirectoryResponseData;
+import org.ehrbase.openehr.sdk.response.dto.DirectoryResponseData;
 import org.springframework.http.ResponseEntity;
 
 /**

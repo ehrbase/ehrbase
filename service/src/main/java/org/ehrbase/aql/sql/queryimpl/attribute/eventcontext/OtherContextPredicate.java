@@ -17,7 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
-import org.ehrbase.aql.dto.path.AqlPath;
+import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
 
 /**
  * @author Christian Chevalley

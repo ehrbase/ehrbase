@@ -33,7 +33,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.jooq.pg.enums.PartyType;
 import org.ehrbase.jooq.pg.tables.records.PartyIdentifiedRecord;
-import org.jdom2.IllegalAddException;
 import org.jooq.Record;
 
 /**
@@ -55,8 +54,8 @@ public class PersistedPartyIdentified extends PersistedParty {
     public PartyProxy render(PartyIdentifiedRecord partyIdentifiedRecord) {
         return renderMultiple(List.of(partyIdentifiedRecord)).stream()
                 .findFirst()
-                .orElseThrow(
-                        () -> new IllegalAddException(String.format(ERR_MISSING_PROXY, partyIdentifiedRecord.getId())));
+                .orElseThrow(() ->
+                        new IllegalArgumentException(String.format(ERR_MISSING_PROXY, partyIdentifiedRecord.getId())));
     }
 
     @Override

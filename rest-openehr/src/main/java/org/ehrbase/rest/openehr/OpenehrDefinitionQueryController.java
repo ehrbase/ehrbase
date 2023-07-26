@@ -18,11 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+import static org.springframework.http.MediaType.*;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,16 +27,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
 import java.util.Optional;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.service.QueryService;
-import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
-import org.ehrbase.response.openehr.ErrorBodyPayload;
-import org.ehrbase.response.openehr.QueryDefinitionListResponseData;
-import org.ehrbase.response.openehr.QueryDefinitionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ErrorBodyPayload;
+import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
+import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
 import org.slf4j.Logger;
@@ -49,6 +47,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -96,8 +95,11 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         logger.debug("getStoredQueryList invoked with the following input: {}", qualifiedQueryName);
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, null);
         QueryDefinitionListResponseData responseData =
                 new QueryDefinitionListResponseData(queryService.retrieveStoredQueries(qualifiedQueryName));
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
+
         return ResponseEntity.ok(responseData);
     }
 
@@ -112,8 +114,11 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         logger.debug(
                 "getStoredQueryVersion invoked with the following input: {}, version:{}", qualifiedQueryName, version);
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, version.orElse(null));
+
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(
                 queryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
@@ -174,8 +179,11 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                     new ErrorBodyPayload("Invalid query", "no aql query provided").toString(), HttpStatus.BAD_REQUEST);
         }
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, version.orElse(null));
+
         QueryDefinitionResultDto storedQuery =
                 queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return getPutDefenitionResponseEntity(mediaType, storedQuery);
     }
@@ -190,8 +198,11 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         logger.debug("deleteStoredQuery for the following input: {} , version: {}", qualifiedQueryName, version);
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, version);
+
         QueryDefinitionResponseData queryDefinitionResponseData =
                 new QueryDefinitionResponseData(queryService.deleteStoredQuery(qualifiedQueryName, version));
+        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
@@ -210,5 +221,13 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         } else {
             throw new UnexpectedSwitchCaseException(mediaType.getType());
         }
+    }
+
+    private void createAuditLogsMsgBuilder(String queryName, @Nullable String version) {
+        AuditMsgBuilder.getInstance()
+                .setLocation(fromPath("")
+                        .pathSegment(DEFINITION, QUERY, queryName, version)
+                        .build()
+                        .toString());
     }
 }

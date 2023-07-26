@@ -17,31 +17,32 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.QueryService;
-import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
-import org.ehrbase.response.ehrscape.QueryResultDto;
-import org.ehrbase.response.openehr.QueryResponseData;
+import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.openehr.audit.OpenEhrAuditInterceptor;
-import org.ehrbase.rest.openehr.audit.QueryAuditInterceptor;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -92,8 +93,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             @RequestParam(name = "offset", required = false) Integer offset,
             @RequestParam(name = "fetch", required = false) Integer fetch,
             @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameters,
-            @RequestHeader(name = ACCEPT, required = false) String accept,
-            HttpServletRequest request) {
+            @RequestHeader(name = ACCEPT, required = false) String accept) {
 
         // deal with offset and fetch
         if (fetch != null) {
@@ -105,9 +105,9 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
 
         // Enriches request attributes with aql for later audit processing
-        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
+        createAdHocAuditLogsMsgBuilder();
 
-        var body = executeQuery(query, queryParameters, request);
+        var body = executeQuery(query, queryParameters);
 
         if (!CollectionUtils.isEmpty(body.getRows())) {
             return ResponseEntity.ok(body);
@@ -127,8 +127,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
             @RequestBody Map<String, Object> queryRequest,
             @RequestHeader(name = ACCEPT, required = false) String accept,
-            @RequestHeader(name = CONTENT_TYPE) String contentType,
-            HttpServletRequest request) {
+            @RequestHeader(name = CONTENT_TYPE) String contentType) {
 
         logger.debug("Got following input: {}", queryRequest);
 
@@ -139,11 +138,11 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         aql = withOffsetLimit(aql, queryRequest);
         // Enriches request attributes with aql for later audit processing
-        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, aql);
+        createAdHocAuditLogsMsgBuilder();
 
         Map<String, Object> parameters = (Map<String, Object>) queryRequest.get(QUERY_PARAMETERS);
 
-        var body = executeQuery(aql, parameters, request);
+        var body = executeQuery(aql, parameters);
         return ResponseEntity.ok(body);
     }
 
@@ -160,8 +159,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             @RequestParam(name = "offset", required = false) Integer offset,
             @RequestParam(name = "fetch", required = false) Integer fetch,
             @RequestParam(name = "query_parameters", required = false) Map<String, Object> queryParameter,
-            @RequestHeader(name = ACCEPT, required = false) String accept,
-            HttpServletRequest request) {
+            @RequestHeader(name = ACCEPT, required = false) String accept) {
 
         logger.trace(
                 "getStoredQuery not implemented but got following input: {} - {} - {} - {} - {}",
@@ -170,17 +168,14 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 offset,
                 fetch,
                 queryParameter);
-        // Enriches request attributes with query name for later audit processing
-        request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
 
+        createAuditLogsMsgBuilder(qualifiedQueryName, version);
         // retrieve the stored query for execution
-        QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version);
+        QueryDefinitionResultDto queryResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
-        String query = queryDefinitionResultDto.getQueryText();
+        String query = queryResultDto.getQueryText();
 
-        // Enriches request attributes with aql for later audit processing
-        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
+        // Enriches request attributes with query name for later audit processing
 
         if (fetch != null) {
             // append LIMIT clause to aql
@@ -192,8 +187,10 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             query = withOffset(query, offset);
         }
 
-        QueryResponseData queryResponseData = invoke(query, queryParameter, request);
-        setQueryName(queryDefinitionResultDto, queryResponseData);
+        QueryResponseData queryResponseData = invoke(query, queryParameter);
+        setQueryName(queryResultDto, queryResponseData);
+        AuditMsgBuilder.getInstance().setQueryId(queryResultDto.getQualifiedName());
+
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -210,27 +207,22 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             @PathVariable(name = "version", required = false) String version,
             @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestHeader(name = CONTENT_TYPE) String contentType,
-            @RequestBody(required = false) Map<String, Object> queryRequest,
-            HttpServletRequest request) {
+            @RequestBody(required = false) Map<String, Object> queryRequest) {
 
         logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
 
+        // Enriches request attributes with aql for later audit processing
+        createAuditLogsMsgBuilder(qualifiedQueryName, version);
+
         // retrieve the stored query for execution
-        request.setAttribute(QueryAuditInterceptor.QUERY_ID_ATTRIBUTE, qualifiedQueryName);
+        QueryDefinitionResultDto queryResultDto = queryService.retrieveStoredQuery(qualifiedQueryName, version);
 
-        QueryDefinitionResultDto queryDefinitionResultDto =
-                queryService.retrieveStoredQuery(qualifiedQueryName, version);
-
-        String query = queryDefinitionResultDto.getQueryText();
+        String query = queryResultDto.getQueryText();
 
         if (query == null) {
             var message = MessageFormat.format("Could not retrieve AQL {0}/{1}", qualifiedQueryName, version);
             throw new ObjectNotFoundException("AQL", message);
         }
-
-        // Enriches request attributes with aql for later audit processing
-        request.setAttribute(QueryAuditInterceptor.QUERY_ATTRIBUTE, query);
-
         // retrieve the parameter from body
         // get the query and parameters if any
         Map<String, Object> queryParameter = null;
@@ -240,10 +232,25 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
             query = withOffsetLimit(query, queryRequest);
         }
-        QueryResponseData queryResponseData = invoke(query, queryParameter, request);
+        QueryResponseData queryResponseData = invoke(query, queryParameter);
 
-        setQueryName(queryDefinitionResultDto, queryResponseData);
+        setQueryName(queryResultDto, queryResponseData);
+        AuditMsgBuilder.getInstance().setQueryId(queryResultDto.getQualifiedName());
+
         return ResponseEntity.ok(queryResponseData);
+    }
+
+    private void createAuditLogsMsgBuilder(String qualifiedName, @Nullable String version) {
+        AuditMsgBuilder.getInstance()
+                .setIsQueryExecuteEndpoint(true)
+                .setLocation(fromPath("")
+                        .pathSegment(QUERY, qualifiedName, version)
+                        .build()
+                        .toString());
+    }
+
+    private void createAdHocAuditLogsMsgBuilder() {
+        AuditMsgBuilder.getInstance().setIsQueryExecuteEndpoint(true);
     }
 
     private static void setQueryName(
@@ -252,7 +259,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
     }
 
-    private QueryResponseData executeQuery(String aql, Map<String, Object> parameters, HttpServletRequest request) {
+    private QueryResponseData executeQuery(String aql, Map<String, Object> parameters) {
         QueryResponseData queryResponseData;
 
         Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
@@ -261,7 +268,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         queryResponseData = new QueryResponseData(queryService.query(aql, parameters, false, auditResultMap));
 
         // Enriches request attributes with EhrId(s) for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
+        AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
 
         return queryResponseData;
     }
@@ -308,7 +315,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         return (Double.valueOf(value)).intValue();
     }
 
-    private QueryResponseData invoke(String query, Map<String, Object> queryParameter, HttpServletRequest request) {
+    private QueryResponseData invoke(String query, Map<String, Object> queryParameter) {
         Map<String, Set<Object>> auditResultMap = auditResultMapHolder.getAuditResultMap();
 
         Map<String, Object> parameters = Optional.ofNullable(queryParameter)
@@ -319,7 +326,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResultDto resultDto = queryService.query(query, parameters, false, auditResultMap);
 
         // Enriches request attributes with EhrId(s) for later audit processing
-        request.setAttribute(OpenEhrAuditInterceptor.EHR_ID_ATTRIBUTE, auditResultMap.get(EHR_ID_VALUE));
+        AuditMsgBuilder.getInstance().setEhrIds(auditResultMap.get(EHR_ID_VALUE));
 
         return new QueryResponseData(resultDto);
     }

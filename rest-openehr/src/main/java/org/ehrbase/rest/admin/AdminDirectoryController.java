@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.admin;
 
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,10 +27,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.DirectoryService;
-import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
+import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -91,8 +94,20 @@ public class AdminDirectoryController extends BaseController {
 
         UUID folderUid = UUID.fromString(directoryId);
 
+        createAuditLogsMsgBuilder(ehrUuid.toString(), folderUid.toString());
+
         directoryService.adminDeleteFolder(ehrUuid, folderUid);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private void createAuditLogsMsgBuilder(String ehrId, String versionedObjectUid) {
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
+                .setDirectoryId(versionedObjectUid)
+                .setLocation(fromPath("")
+                        .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)
+                        .build()
+                        .toString());
     }
 }

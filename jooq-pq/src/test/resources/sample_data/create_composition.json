@@ -1,0 +1,1342 @@
+{
+  "_type": "COMPOSITION",
+  "name": {
+    "_type": "DV_TEXT",
+    "value": "NDS RESPECT Form"
+  },
+  "archetype_node_id": "openEHR-EHR-COMPOSITION.report.v1",
+  "content": [
+    {
+      "_type": "SECTION",
+      "name": {
+        "_type": "DV_TEXT",
+        "value": "ReSPECT headings"
+      },
+      "archetype_details": {
+        "_type": "ARCHETYPED",
+        "archetype_id": {
+          "_type": "ARCHETYPE_ID",
+          "value": "openEHR-EHR-SECTION.respect_headings.v0"
+        },
+        "rm_version": "1.0.4"
+      },
+      "archetype_node_id": "openEHR-EHR-SECTION.respect_headings.v0",
+      "items": [
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "2. Summary of relevant information"
+          },
+          "archetype_node_id": "at0001",
+          "items": [
+            {
+              "_type": "SECTION",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "2.0 Relevant information"
+              },
+              "archetype_node_id": "at0013",
+              "items": [
+                {
+                  "_type": "EVALUATION",
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "ReSPECT summary"
+                  },
+                  "archetype_details": {
+                    "_type": "ARCHETYPED",
+                    "archetype_id": {
+                      "_type": "ARCHETYPE_ID",
+                      "value": "openEHR-EHR-EVALUATION.clinical_synopsis.v1"
+                    },
+                    "rm_version": "1.0.4"
+                  },
+                  "archetype_node_id": "openEHR-EHR-EVALUATION.clinical_synopsis.v1",
+                  "language": {
+                    "_type": "CODE_PHRASE",
+                    "terminology_id": {
+                      "_type": "TERMINOLOGY_ID",
+                      "value": "ISO_639-1"
+                    },
+                    "code_string": "en"
+                  },
+                  "encoding": {
+                    "_type": "CODE_PHRASE",
+                    "terminology_id": {
+                      "_type": "TERMINOLOGY_ID",
+                      "value": "IANA_character-sets"
+                    },
+                    "code_string": "UTF-8"
+                  },
+                  "subject": {
+                    "_type": "PARTY_SELF"
+                  },
+                  "data": {
+                    "_type": "ITEM_TREE",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "List"
+                    },
+                    "archetype_node_id": "at0001",
+                    "items": [
+                      {
+                        "_type": "ELEMENT",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Narrative summary"
+                        },
+                        "archetype_node_id": "at0002",
+                        "value": {
+                          "_type": "DV_TEXT",
+                          "value": "summary1"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "_type": "SECTION",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "2.3 Other relevant planning documents"
+              },
+              "archetype_node_id": "at0005",
+              "items": [
+                {
+                  "_type": "EVALUATION",
+                  "name": {
+                    "_type": "DV_TEXT",
+                    "value": "Advance planning documentation"
+                  },
+                  "archetype_details": {
+                    "_type": "ARCHETYPED",
+                    "archetype_id": {
+                      "_type": "ARCHETYPE_ID",
+                      "value": "openEHR-EHR-EVALUATION.advance_planning_documentation.v0"
+                    },
+                    "rm_version": "1.0.4"
+                  },
+                  "archetype_node_id": "openEHR-EHR-EVALUATION.advance_planning_documentation.v0",
+                  "language": {
+                    "_type": "CODE_PHRASE",
+                    "terminology_id": {
+                      "_type": "TERMINOLOGY_ID",
+                      "value": "ISO_639-1"
+                    },
+                    "code_string": "en"
+                  },
+                  "encoding": {
+                    "_type": "CODE_PHRASE",
+                    "terminology_id": {
+                      "_type": "TERMINOLOGY_ID",
+                      "value": "IANA_character-sets"
+                    },
+                    "code_string": "UTF-8"
+                  },
+                  "subject": {
+                    "_type": "PARTY_SELF"
+                  },
+                  "data": {
+                    "_type": "ITEM_TREE",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Tree"
+                    },
+                    "archetype_node_id": "at0001",
+                    "items": [
+                      {
+                        "_type": "ELEMENT",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Summary"
+                        },
+                        "archetype_node_id": "at0008",
+                        "value": {
+                          "_type": "DV_TEXT",
+                          "value": "planning1"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "3. Personal preferences"
+          },
+          "archetype_node_id": "at0006",
+          "items": [
+            {
+              "_type": "EVALUATION",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Preferred priorities of care"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-EVALUATION.care_preference_uk.v0"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-EVALUATION.care_preference_uk.v0",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "data": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Care priority scale"
+                    },
+                    "archetype_node_id": "at0039",
+                    "value": {
+                      "_type": "DV_COUNT",
+                      "magnitude": 16
+                    }
+                  },
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Patient care priority"
+                    },
+                    "archetype_node_id": "at0038",
+                    "value": {
+                      "_type": "DV_TEXT",
+                      "value": "priorities1"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "4. Clinical recommendations"
+          },
+          "archetype_node_id": "at0007",
+          "items": [
+            {
+              "_type": "EVALUATION",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Recommendation"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-EVALUATION.recommendation.v1"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-EVALUATION.recommendation.v1",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "data": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Clinical focus"
+                    },
+                    "archetype_node_id": "at0002",
+                    "value": {
+                      "_type": "DV_TEXT",
+                      "value": "Life-sustaining treatment"
+                    }
+                  },
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Clinical guidance on interventions"
+                    },
+                    "archetype_node_id": "at0003",
+                    "value": {
+                      "_type": "DV_TEXT",
+                      "value": "guidance1"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "EVALUATION",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "CPR decision"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-EVALUATION.cpr_decision_uk.v0"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-EVALUATION.cpr_decision_uk.v0",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "provider": {
+                "_type": "PARTY_IDENTIFIED",
+                "external_ref": {
+                  "_type": "PARTY_REF",
+                  "id": {
+                    "_type": "GENERIC_ID",
+                    "value": "0000",
+                    "scheme": "gmcnumber"
+                  },
+                  "namespace": "NHSScotland",
+                  "type": "ANY"
+                },
+                "name": "clin sig 1"
+              },
+              "data": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "CPR decision"
+                    },
+                    "archetype_node_id": "at0003",
+                    "value": {
+                      "_type": "DV_CODED_TEXT",
+                      "value": "CPR attempts recommended adult or child",
+                      "defining_code": {
+                        "_type": "CODE_PHRASE",
+                        "terminology_id": {
+                          "_type": "TERMINOLOGY_ID",
+                          "value": "local"
+                        },
+                        "code_string": "at0004"
+                      }
+                    }
+                  },
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Date of CPR decision"
+                    },
+                    "archetype_node_id": "at0002",
+                    "value": {
+                      "_type": "DV_DATE_TIME",
+                      "value": "2020-01-01T00:00:00Z"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "5. Capacity and representation"
+          },
+          "archetype_node_id": "at0008",
+          "items": [
+            {
+              "_type": "ADMIN_ENTRY",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Capacity ReSPECT"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-ADMIN_ENTRY.capacity_respect.v0"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-ADMIN_ENTRY.capacity_respect.v0",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "data": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Sufficient capacity"
+                    },
+                    "archetype_node_id": "at0002",
+                    "value": {
+                      "_type": "DV_BOOLEAN",
+                      "value": true
+                    }
+                  },
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Legal proxy"
+                    },
+                    "archetype_node_id": "at0003",
+                    "value": {
+                      "_type": "DV_CODED_TEXT",
+                      "value": "Yes",
+                      "defining_code": {
+                        "_type": "CODE_PHRASE",
+                        "terminology_id": {
+                          "_type": "TERMINOLOGY_ID",
+                          "value": "local"
+                        },
+                        "code_string": "at0004"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "6. Involvement in making plan"
+          },
+          "archetype_node_id": "at0009",
+          "items": [
+            {
+              "_type": "ADMIN_ENTRY",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Involvement ReSPECT"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-ADMIN_ENTRY.involvement_respect.v0"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-ADMIN_ENTRY.involvement_respect.v0",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "data": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "CLUSTER",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Involvement in recommendations"
+                    },
+                    "archetype_node_id": "at0012",
+                    "items": [
+                      {
+                        "_type": "ELEMENT",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Involvement"
+                        },
+                        "archetype_node_id": "at0002",
+                        "value": {
+                          "_type": "DV_CODED_TEXT",
+                          "value": "A Person has mental capacity",
+                          "defining_code": {
+                            "_type": "CODE_PHRASE",
+                            "terminology_id": {
+                              "_type": "TERMINOLOGY_ID",
+                              "value": "local"
+                            },
+                            "code_string": "at0003"
+                          }
+                        }
+                      },
+                      {
+                        "_type": "ELEMENT",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Reason for not selecting Options A or B or C"
+                        },
+                        "archetype_node_id": "at0007",
+                        "value": {
+                          "_type": "DV_TEXT",
+                          "value": "reasoning1"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Name and role of those involved in decision making"
+                    },
+                    "archetype_node_id": "at0017",
+                    "value": {
+                      "_type": "DV_TEXT",
+                      "value": "decisionDetails1"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "7. Clinician signatures"
+          },
+          "archetype_node_id": "at0010",
+          "items": [
+            {
+              "_type": "ACTION",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Service"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-ACTION.service.v0"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-ACTION.service.v0",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "protocol": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0015",
+                "items": [
+                  {
+                    "_type": "CLUSTER",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Signing clinician"
+                    },
+                    "archetype_details": {
+                      "_type": "ARCHETYPED",
+                      "archetype_id": {
+                        "_type": "ARCHETYPE_ID",
+                        "value": "openEHR-EHR-CLUSTER.practitioner_cc.v0"
+                      },
+                      "rm_version": "1.0.4"
+                    },
+                    "archetype_node_id": "openEHR-EHR-CLUSTER.practitioner_cc.v0",
+                    "items": [
+                      {
+                        "_type": "CLUSTER",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Practitioner role"
+                        },
+                        "archetype_details": {
+                          "_type": "ARCHETYPED",
+                          "archetype_id": {
+                            "_type": "ARCHETYPE_ID",
+                            "value": "openEHR-EHR-CLUSTER.practitioner_role_cc.v0"
+                          },
+                          "rm_version": "1.0.4"
+                        },
+                        "archetype_node_id": "openEHR-EHR-CLUSTER.practitioner_role_cc.v0",
+                        "items": [
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Designation"
+                            },
+                            "archetype_node_id": "at0007",
+                            "value": {
+                              "_type": "DV_TEXT",
+                              "value": "designation1"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "CLUSTER",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Name"
+                        },
+                        "archetype_details": {
+                          "_type": "ARCHETYPED",
+                          "archetype_id": {
+                            "_type": "ARCHETYPE_ID",
+                            "value": "openEHR-EHR-CLUSTER.name_cc.v0"
+                          },
+                          "rm_version": "1.0.4"
+                        },
+                        "archetype_node_id": "openEHR-EHR-CLUSTER.name_cc.v0",
+                        "items": [
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Use"
+                            },
+                            "archetype_node_id": "at0001",
+                            "value": {
+                              "_type": "DV_CODED_TEXT",
+                              "value": "Usual",
+                              "defining_code": {
+                                "_type": "CODE_PHRASE",
+                                "terminology_id": {
+                                  "_type": "TERMINOLOGY_ID",
+                                  "value": "local"
+                                },
+                                "code_string": "at0003"
+                              }
+                            }
+                          },
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Text"
+                            },
+                            "archetype_node_id": "at0009",
+                            "value": {
+                              "_type": "DV_TEXT",
+                              "value": "clinname1"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "CLUSTER",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Identifier"
+                        },
+                        "archetype_details": {
+                          "_type": "ARCHETYPED",
+                          "archetype_id": {
+                            "_type": "ARCHETYPE_ID",
+                            "value": "openEHR-EHR-CLUSTER.identifier_cc.v0"
+                          },
+                          "rm_version": "1.0.4"
+                        },
+                        "archetype_node_id": "openEHR-EHR-CLUSTER.identifier_cc.v0",
+                        "items": [
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Value"
+                            },
+                            "archetype_node_id": "at0001",
+                            "value": {
+                              "_type": "DV_IDENTIFIER",
+                              "issuer": "ProfessionalID",
+                              "assigner": "ProfessionalID",
+                              "id": "111111",
+                              "type": "ProfessionalID"
+                            }
+                          },
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Use"
+                            },
+                            "archetype_node_id": "at0002",
+                            "value": {
+                              "_type": "DV_CODED_TEXT",
+                              "value": "Official",
+                              "defining_code": {
+                                "_type": "CODE_PHRASE",
+                                "terminology_id": {
+                                  "_type": "TERMINOLOGY_ID",
+                                  "value": "local"
+                                },
+                                "code_string": "at0004"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "time": {
+                "_type": "DV_DATE_TIME",
+                "value": "2020-01-01T10:10:00Z"
+              },
+              "description": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Service name"
+                    },
+                    "archetype_node_id": "at0011",
+                    "value": {
+                      "_type": "DV_TEXT",
+                      "value": "ReSPECT clinician signature"
+                    }
+                  }
+                ]
+              },
+              "ism_transition": {
+                "_type": "ISM_TRANSITION",
+                "current_state": {
+                  "_type": "DV_CODED_TEXT",
+                  "value": "completed",
+                  "defining_code": {
+                    "_type": "CODE_PHRASE",
+                    "terminology_id": {
+                      "_type": "TERMINOLOGY_ID",
+                      "value": "openehr"
+                    },
+                    "code_string": "532"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "8. Emergency contacts"
+          },
+          "archetype_node_id": "at0011",
+          "items": [
+            {
+              "_type": "ADMIN_ENTRY",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Emergency contacts"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-ADMIN_ENTRY.careteam_cc.v0"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-ADMIN_ENTRY.careteam_cc.v0",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "data": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Name"
+                    },
+                    "archetype_node_id": "at0018",
+                    "value": {
+                      "_type": "DV_TEXT",
+                      "value": "ReSPECT emergency contacts"
+                    }
+                  },
+                  {
+                    "_type": "CLUSTER",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Participant"
+                    },
+                    "archetype_node_id": "at0021",
+                    "items": [
+                      {
+                        "_type": "ELEMENT",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Role"
+                        },
+                        "archetype_node_id": "at0022",
+                        "value": {
+                          "_type": "DV_TEXT",
+                          "value": "Parent"
+                        }
+                      },
+                      {
+                        "_type": "ELEMENT",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Other Details"
+                        },
+                        "archetype_node_id": "at0030",
+                        "value": {
+                          "_type": "DV_TEXT",
+                          "value": "otherDetails1"
+                        }
+                      },
+                      {
+                        "_type": "CLUSTER",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Contact"
+                        },
+                        "archetype_details": {
+                          "_type": "ARCHETYPED",
+                          "archetype_id": {
+                            "_type": "ARCHETYPE_ID",
+                            "value": "openEHR-EHR-CLUSTER.contact_cc.v0"
+                          },
+                          "rm_version": "1.0.4"
+                        },
+                        "archetype_node_id": "openEHR-EHR-CLUSTER.contact_cc.v0",
+                        "items": [
+                          {
+                            "_type": "CLUSTER",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Name"
+                            },
+                            "archetype_details": {
+                              "_type": "ARCHETYPED",
+                              "archetype_id": {
+                                "_type": "ARCHETYPE_ID",
+                                "value": "openEHR-EHR-CLUSTER.name_cc.v0"
+                              },
+                              "rm_version": "1.0.4"
+                            },
+                            "archetype_node_id": "openEHR-EHR-CLUSTER.name_cc.v0",
+                            "items": [
+                              {
+                                "_type": "ELEMENT",
+                                "name": {
+                                  "_type": "DV_TEXT",
+                                  "value": "Use"
+                                },
+                                "archetype_node_id": "at0001",
+                                "value": {
+                                  "_type": "DV_CODED_TEXT",
+                                  "value": "Usual",
+                                  "defining_code": {
+                                    "_type": "CODE_PHRASE",
+                                    "terminology_id": {
+                                      "_type": "TERMINOLOGY_ID",
+                                      "value": "local"
+                                    },
+                                    "code_string": "at0002"
+                                  }
+                                }
+                              },
+                              {
+                                "_type": "ELEMENT",
+                                "name": {
+                                  "_type": "DV_TEXT",
+                                  "value": "Text"
+                                },
+                                "archetype_node_id": "at0009",
+                                "value": {
+                                  "_type": "DV_TEXT",
+                                  "value": "parent1"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "_type": "CLUSTER",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Telephone"
+                            },
+                            "archetype_details": {
+                              "_type": "ARCHETYPED",
+                              "archetype_id": {
+                                "_type": "ARCHETYPE_ID",
+                                "value": "openEHR-EHR-CLUSTER.telecom_cc.v0"
+                              },
+                              "rm_version": "1.0.4"
+                            },
+                            "archetype_node_id": "openEHR-EHR-CLUSTER.telecom_cc.v0",
+                            "items": [
+                              {
+                                "_type": "ELEMENT",
+                                "name": {
+                                  "_type": "DV_TEXT",
+                                  "value": "System"
+                                },
+                                "archetype_node_id": "at0001",
+                                "value": {
+                                  "_type": "DV_CODED_TEXT",
+                                  "value": "Phone",
+                                  "defining_code": {
+                                    "_type": "CODE_PHRASE",
+                                    "terminology_id": {
+                                      "_type": "TERMINOLOGY_ID",
+                                      "value": "local"
+                                    },
+                                    "code_string": "at0012"
+                                  }
+                                }
+                              },
+                              {
+                                "_type": "ELEMENT",
+                                "name": {
+                                  "_type": "DV_TEXT",
+                                  "value": "Telephone number"
+                                },
+                                "archetype_node_id": "at0002",
+                                "value": {
+                                  "_type": "DV_TEXT",
+                                  "value": "222222"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "_type": "SECTION",
+          "name": {
+            "_type": "DV_TEXT",
+            "value": "9. Confirmation of validity"
+          },
+          "archetype_node_id": "at0012",
+          "items": [
+            {
+              "_type": "ACTION",
+              "name": {
+                "_type": "DV_TEXT",
+                "value": "Service"
+              },
+              "archetype_details": {
+                "_type": "ARCHETYPED",
+                "archetype_id": {
+                  "_type": "ARCHETYPE_ID",
+                  "value": "openEHR-EHR-ACTION.service.v0"
+                },
+                "rm_version": "1.0.4"
+              },
+              "archetype_node_id": "openEHR-EHR-ACTION.service.v0",
+              "language": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "ISO_639-1"
+                },
+                "code_string": "en"
+              },
+              "encoding": {
+                "_type": "CODE_PHRASE",
+                "terminology_id": {
+                  "_type": "TERMINOLOGY_ID",
+                  "value": "IANA_character-sets"
+                },
+                "code_string": "UTF-8"
+              },
+              "subject": {
+                "_type": "PARTY_SELF"
+              },
+              "protocol": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0015",
+                "items": [
+                  {
+                    "_type": "CLUSTER",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Responsible clinician"
+                    },
+                    "archetype_details": {
+                      "_type": "ARCHETYPED",
+                      "archetype_id": {
+                        "_type": "ARCHETYPE_ID",
+                        "value": "openEHR-EHR-CLUSTER.practitioner_cc.v0"
+                      },
+                      "rm_version": "1.0.4"
+                    },
+                    "archetype_node_id": "openEHR-EHR-CLUSTER.practitioner_cc.v0",
+                    "items": [
+                      {
+                        "_type": "CLUSTER",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Practitioner role"
+                        },
+                        "archetype_details": {
+                          "_type": "ARCHETYPED",
+                          "archetype_id": {
+                            "_type": "ARCHETYPE_ID",
+                            "value": "openEHR-EHR-CLUSTER.practitioner_role_cc.v0"
+                          },
+                          "rm_version": "1.0.4"
+                        },
+                        "archetype_node_id": "openEHR-EHR-CLUSTER.practitioner_role_cc.v0",
+                        "items": [
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Designation"
+                            },
+                            "archetype_node_id": "at0007",
+                            "value": {
+                              "_type": "DV_TEXT",
+                              "value": "confirmationb1"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "CLUSTER",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Name"
+                        },
+                        "archetype_details": {
+                          "_type": "ARCHETYPED",
+                          "archetype_id": {
+                            "_type": "ARCHETYPE_ID",
+                            "value": "openEHR-EHR-CLUSTER.name_cc.v0"
+                          },
+                          "rm_version": "1.0.4"
+                        },
+                        "archetype_node_id": "openEHR-EHR-CLUSTER.name_cc.v0",
+                        "items": [
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Use"
+                            },
+                            "archetype_node_id": "at0001",
+                            "value": {
+                              "_type": "DV_CODED_TEXT",
+                              "value": "Usual",
+                              "defining_code": {
+                                "_type": "CODE_PHRASE",
+                                "terminology_id": {
+                                  "_type": "TERMINOLOGY_ID",
+                                  "value": "local"
+                                },
+                                "code_string": "at0003"
+                              }
+                            }
+                          },
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Text"
+                            },
+                            "archetype_node_id": "at0009",
+                            "value": {
+                              "_type": "DV_TEXT",
+                              "value": "clinnameb1"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "CLUSTER",
+                        "name": {
+                          "_type": "DV_TEXT",
+                          "value": "Identifier"
+                        },
+                        "archetype_details": {
+                          "_type": "ARCHETYPED",
+                          "archetype_id": {
+                            "_type": "ARCHETYPE_ID",
+                            "value": "openEHR-EHR-CLUSTER.identifier_cc.v0"
+                          },
+                          "rm_version": "1.0.4"
+                        },
+                        "archetype_node_id": "openEHR-EHR-CLUSTER.identifier_cc.v0",
+                        "items": [
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Value"
+                            },
+                            "archetype_node_id": "at0001",
+                            "value": {
+                              "_type": "DV_IDENTIFIER",
+                              "issuer": "ProfessionalID",
+                              "assigner": "ProfessionalID",
+                              "id": "333333",
+                              "type": "ProfessionalID"
+                            }
+                          },
+                          {
+                            "_type": "ELEMENT",
+                            "name": {
+                              "_type": "DV_TEXT",
+                              "value": "Use"
+                            },
+                            "archetype_node_id": "at0002",
+                            "value": {
+                              "_type": "DV_CODED_TEXT",
+                              "value": "Official",
+                              "defining_code": {
+                                "_type": "CODE_PHRASE",
+                                "terminology_id": {
+                                  "_type": "TERMINOLOGY_ID",
+                                  "value": "local"
+                                },
+                                "code_string": "at0004"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "time": {
+                "_type": "DV_DATE_TIME",
+                "value": "2020-10-16T08:17:53.431Z"
+              },
+              "description": {
+                "_type": "ITEM_TREE",
+                "name": {
+                  "_type": "DV_TEXT",
+                  "value": "Tree"
+                },
+                "archetype_node_id": "at0001",
+                "items": [
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Service name"
+                    },
+                    "archetype_node_id": "at0011",
+                    "value": {
+                      "_type": "DV_TEXT",
+                      "value": "Respect form - confirmation of validity"
+                    }
+                  },
+                  {
+                    "_type": "ELEMENT",
+                    "name": {
+                      "_type": "DV_TEXT",
+                      "value": "Review date"
+                    },
+                    "archetype_node_id": "at0025",
+                    "value": {
+                      "_type": "DV_DATE_TIME",
+                      "value": "2020-01-01T00:00:00Z"
+                    }
+                  }
+                ]
+              },
+              "ism_transition": {
+                "_type": "ISM_TRANSITION",
+                "current_state": {
+                  "_type": "DV_CODED_TEXT",
+                  "value": "completed",
+                  "defining_code": {
+                    "_type": "CODE_PHRASE",
+                    "terminology_id": {
+                      "_type": "TERMINOLOGY_ID",
+                      "value": "openehr"
+                    },
+                    "code_string": "532"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

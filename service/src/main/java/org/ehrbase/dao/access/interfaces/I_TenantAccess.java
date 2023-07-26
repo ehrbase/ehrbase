@@ -41,4 +41,12 @@ public interface I_TenantAccess {
     Short commit();
 
     Tenant convert();
+
+    static void deleteTenant(DSLContext ctx, String tenantId) {
+        TenantAccess.deleteTenant(ctx, tenantId);
+    }
+
+    static boolean hasTenant(I_DomainAccess domainAccess, String tenantId) {
+        return TenantAccess.hasTenant(domainAccess, tenantId);
+    }
 }

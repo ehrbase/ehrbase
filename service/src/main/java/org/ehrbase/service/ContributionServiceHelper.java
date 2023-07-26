@@ -22,10 +22,14 @@ import com.nedap.archie.json.JacksonUtil;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.generic.AuditDetails;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 
 /**
  * Helper class to collect helper methods for contribution processing.

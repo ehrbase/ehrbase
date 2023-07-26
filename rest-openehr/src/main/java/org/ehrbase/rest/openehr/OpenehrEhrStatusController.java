@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
@@ -37,7 +38,7 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.openehr.EhrStatusResponseData;
+import org.ehrbase.openehr.sdk.response.dto.EhrStatusResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
@@ -174,6 +175,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
@@ -198,8 +201,14 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+    private void createAuditLogsMsgBuilder(UUID ehrId) {
+        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
     }
 
     /**

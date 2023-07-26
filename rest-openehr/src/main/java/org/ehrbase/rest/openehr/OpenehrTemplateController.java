@@ -41,12 +41,12 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.response.ehrscape.CompositionDto;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.TemplateMetaDataDto;
-import org.ehrbase.response.openehr.ResponseData;
-import org.ehrbase.response.openehr.TemplateResponseData;
-import org.ehrbase.response.openehr.TemplatesResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ResponseData;
+import org.ehrbase.openehr.sdk.response.dto.TemplateResponseData;
+import org.ehrbase.openehr.sdk.response.dto.TemplatesResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
@@ -210,7 +210,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
     }
 
     @GetMapping(path = "/adl1.4/{template_id}/example")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_EXAMPLE)
     public ResponseEntity<String> getTemplateExample(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {

@@ -20,8 +20,8 @@ package org.ehrbase.api.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.ehrbase.response.ehrscape.QueryDefinitionResultDto;
-import org.ehrbase.response.ehrscape.QueryResultDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 
 public interface QueryService extends BaseService {
     /**

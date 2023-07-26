@@ -18,7 +18,7 @@
 package org.ehrbase.rest.ehrscape.responsedata;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 
 @JacksonXmlRootElement
 public class TemplateExampleResponseData extends ActionRestResponseData {

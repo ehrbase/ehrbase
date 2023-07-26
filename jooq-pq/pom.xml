@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.27.4</version>
+        <version>0.28.0</version>
     </parent>
 
     <artifactId>jooq-pg</artifactId>
@@ -57,6 +57,31 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>test-data</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>validation</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

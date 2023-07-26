@@ -26,12 +26,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
+import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Admin API controller for Composition related data. Provides endpoint to remove compositions physically from database.
@@ -50,7 +52,7 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
-        path = "${admin-api.context-path:/rest/admin}/ehr",
+        path = BaseController.ADMIN_API_CONTEXT_PATH + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminCompositionController extends BaseController {
 
@@ -103,6 +105,14 @@ public class AdminCompositionController extends BaseController {
         UUID compositionUid = UUID.fromString(compositionId);
 
         compositionService.adminDelete(compositionUid);
+
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
+                .setCompositionId(compositionId)
+                .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
+                .setLocation(UriComponentsBuilder.fromPath("/{ehr_id}/composition/{composition_id}")
+                        .build(ehrId, compositionId)
+                        .toString());
 
         return ResponseEntity.noContent().build();
     }
