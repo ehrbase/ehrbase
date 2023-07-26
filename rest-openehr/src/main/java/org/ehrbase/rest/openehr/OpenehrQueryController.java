@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
