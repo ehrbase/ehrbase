@@ -24,11 +24,10 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'maven'
 
       - name: install sdk main
         run: mvn install -Dmaven.test.skip=true
@@ -42,6 +41,11 @@ jobs:
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: install sdk dev
         run: mvn install -Dmaven.test.skip=true
