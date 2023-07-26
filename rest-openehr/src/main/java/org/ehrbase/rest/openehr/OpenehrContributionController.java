@@ -20,9 +20,6 @@ package org.ehrbase.rest.openehr;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -31,9 +28,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.ContributionService;
@@ -58,6 +55,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 @TenantAware
 @RestController
 @RequestMapping(
@@ -72,7 +75,7 @@ public class OpenehrContributionController extends BaseController implements Con
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_CREATE)
+    @Scope(scope = "ehrbase:contribution:create")
     @PostMapping(
             value = "/{ehr_id}/contribution",
             consumes = {"application/xml", "application/json"})
@@ -133,7 +136,7 @@ public class OpenehrContributionController extends BaseController implements Con
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_CONTRIBUTION_READ)
+    @Scope(scope = "ehrbase:contribution:read")
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
     @Override
     public ResponseEntity getContribution(

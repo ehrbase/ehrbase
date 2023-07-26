@@ -19,8 +19,6 @@ package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.ehr.EhrStatus;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
@@ -29,9 +27,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -56,6 +54,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.ehr.EhrStatus;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 /**
  * Controller for /ehr/{ehrId}/ehr_status resource of openEHR REST API
  *
@@ -79,7 +82,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @GetMapping
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @Scope(scope = "ehrbase:ehr:read_status")
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
@@ -109,7 +112,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @GetMapping(path = "/{version_uid}")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @Scope(scope = "ehrbase:ehr:read_status")
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(
             @PathVariable(name = "ehr_id") UUID ehrId,
@@ -137,7 +140,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @PutMapping
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
+    @Scope(scope = "ehrbase:ehr:update_status")
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
             @PathVariable("ehr_id") UUID ehrId,

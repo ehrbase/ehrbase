@@ -21,18 +21,13 @@ import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.ehr.VersionedComposition;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -60,6 +55,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
@@ -83,7 +86,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}")
     @Override
     public ResponseEntity<VersionedObjectResponseData<Composition>> retrieveVersionedCompositionByVersionedObjectUid(
@@ -111,7 +114,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
@@ -139,7 +142,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
@@ -180,7 +183,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "

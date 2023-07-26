@@ -20,13 +20,12 @@ package org.ehrbase.rest.openehr;
 import static org.apache.commons.lang3.StringUtils.unwrap;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
@@ -55,6 +54,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 /**
  * Controller for openEHR /directory endpoints
  *
@@ -77,7 +81,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_CREATE)
+    @Scope(scope = "ehrbase:directory:create")
     @Override
     @PostMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> createDirectory(
@@ -97,7 +101,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_UPDATE)
+    @Scope(scope = "ehrbase:directory:update")
     @Override
     @PutMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> updateDirectory(
@@ -121,7 +125,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_DELETE)
+    @Scope(scope = "ehrbase:directory:delete")
     @Override
     @DeleteMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> deleteDirectory(
@@ -142,7 +146,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     /**
      * {@inheritDoc}
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
+    @Scope(scope = "ehrbase:directory:read")
     @Override
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
@@ -183,7 +187,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         }
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_READ)
+    @Scope(scope = "ehrbase:directory:read")
     @Override
     @GetMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(

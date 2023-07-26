@@ -79,7 +79,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @Scope(scope = EhrbasePermission.EHRBASE_EHR_CREATE)
+    @Scope(scope = "ehrbase:ehr:create")
     @XacmlAuthorization
     @Action(action = "method:call:createEhr")
     @ResourceId(resourceId = "OpenehrEhrController")
@@ -104,7 +104,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         return internalPostEhrProcessing(accept, prefer, ehrId);
     }
 
-    @Scope(scope = EhrbasePermission.EHRBASE_EHR_CREATE)
+    @Scope(scope = "ehrbase:ehr:create")
     @XacmlAuthorization
     @Action(action = "method:call:createEhrWithId")
     @ResourceId(resourceId = "OpenehrEhrController")
@@ -181,7 +181,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by ID
      */
-    @Scope(scope = EhrbasePermission.EHRBASE_EHR_READ)
+    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping(path = "/{ehr_id}")
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     public ResponseEntity<EhrResponseData> retrieveEhrById(
@@ -200,7 +200,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by subject (id and namespace)
      */
-    @Scope(scope = EhrbasePermission.EHRBASE_EHR_READ)
+    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping(params = {"subject_id", "subject_namespace"})
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(

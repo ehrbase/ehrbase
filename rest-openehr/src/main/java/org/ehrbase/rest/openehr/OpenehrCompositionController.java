@@ -20,9 +20,6 @@ package org.ehrbase.rest.openehr;
 import static org.apache.commons.lang3.StringUtils.unwrap;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -34,9 +31,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -69,6 +66,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 /**
  * Controller for /composition resource as part of the EHR sub-API of the openEHR REST API
  *
@@ -90,7 +93,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_CREATE)
+    @Scope(scope = "ehrbase:composition:create")
     @PostMapping(
             value = "/{ehr_id}/composition",
             consumes = {"application/xml", "application/json"})
@@ -156,7 +159,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_UPDATE)
+    @Scope(scope = "ehrbase:composition:create")
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -252,7 +255,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
+    @Scope(scope = "ehrbase:composition:delete")
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -331,7 +334,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
      * because of the overlapping paths. Both mappings are specified to behave almost the same, so
      * this solution works in this case.
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @Scope(scope = "ehrbase:composition:read")
     @GetMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "

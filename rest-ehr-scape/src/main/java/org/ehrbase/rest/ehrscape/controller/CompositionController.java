@@ -19,15 +19,13 @@ package org.ehrbase.rest.ehrscape.controller;
 
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
@@ -52,6 +50,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 @TenantAware
 @RestController
 @RequestMapping(
@@ -65,7 +67,7 @@ public class CompositionController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_CREATE)
+    @Scope(scope = "ehrbase:composition:create")
     @PostMapping
     public ResponseEntity<CompositionWriteRestResponseData> createComposition(
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
@@ -97,7 +99,7 @@ public class CompositionController extends BaseController {
                 .body(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
+    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{uid}")
     public ResponseEntity<CompositionResponseData> getComposition(
             @PathVariable("uid") String compositionUid,
@@ -136,7 +138,7 @@ public class CompositionController extends BaseController {
         }
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_UPDATE)
+    @Scope(scope = "ehrbase:composition:update")
     @PutMapping(path = "/{uid}")
     public ResponseEntity<ActionRestResponseData> update(
             @PathVariable("uid") String compositionUid,
@@ -170,7 +172,7 @@ public class CompositionController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
+    @Scope(scope = "ehrbase:composition:delete")
     @DeleteMapping(path = "/{uid}")
     public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
 

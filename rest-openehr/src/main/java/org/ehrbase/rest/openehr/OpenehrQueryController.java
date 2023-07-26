@@ -17,21 +17,15 @@
  */
 package org.ehrbase.rest.openehr;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Action;
-import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
-import ag.vitagroup.hip.cdr.authorization.annotation.TenantPolicyLookup;
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlUrlRequestParameter;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
 import org.apache.commons.collections4.MapUtils;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.QueryService;
@@ -56,6 +50,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Action;
+import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import ag.vitagroup.hip.cdr.authorization.annotation.TenantPolicyLookup;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization.Version;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlUrlRequestParameter;
 
 /**
  * Controller for openEHR REST API QUERY resource.
@@ -88,11 +90,11 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
-    @XacmlAuthorization
+    @XacmlAuthorization(version = Version.V2)
     @Action(action = "query_aql")
     @ResourceId(resourceId = "OpenehrQueryController")
     /*@ConstrainAql(constraint = "LimitByFacilityName")*/
-    @Scope(scope = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
+    @Scope(scope = "ehrbase:query:search_ad_hoc")
     @GetMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
@@ -126,11 +128,11 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
-    @XacmlAuthorization
+    @XacmlAuthorization(version = Version.V2)
     @Action(action = "query_aql")
     @ResourceId(resourceId = "OpenehrQueryController")
     /*@ConstrainAql(constraint = "LimitByFacilityName")*/
-    @Scope(scope = EhrbasePermission.EHRBASE_QUERY_SEARCH_AD_HOC)
+    @Scope(scope = "ehrbase:query:search_ad_hoc")
     @PostMapping(path = "/aql")
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     @SuppressWarnings("unchecked")
@@ -159,7 +161,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
-    @Scope(scope = EhrbasePermission.EHRBASE_QUERY_SEARCH)
+    @Scope(scope = "ehrbase:query:search")
     @GetMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     public ResponseEntity<QueryResponseData> executeStoredQuery(
@@ -206,7 +208,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     /**
      * {@inheritDoc}
      */
-    @Scope(scope = EhrbasePermission.EHRBASE_QUERY_SEARCH)
+    @Scope(scope = "ehrbase:query:search")
     @PostMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
     @PostAuthorize("checkAbacPostQuery(@requestAwareAuditResultMapHolder.getAuditResultMap())")
     @SuppressWarnings("unchecked")

@@ -17,9 +17,11 @@
  */
 package org.ehrbase.plugin.security;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -30,7 +32,7 @@ import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.aspect.AnnotationAspect;
 import org.ehrbase.api.aspect.AuthorizationAspect;
 import org.ehrbase.api.aspect.TenantAspect;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.plugin.security.AuthorizationInfo.AuthorizationEnabled;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
@@ -42,6 +44,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
 
 public class PluginSecurityConfiguration implements ApplicationContextAware {
     // @format:off
@@ -124,15 +128,18 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
     }
 
     @Bean
-    @ConditionalOnBean(value = {AuthorizationAspect.class, AuthorizationInfo.AuthorizationEnabled.class})
+    @ConditionalOnBean(value = {AuthorizationAspect.class, AuthorizationEnabled.class})
     public Advisor authorizationAspect() {
         ApplicationContext parentCtx = applicationContext.getParent();
         AuthorizationAspect theAspect = parentCtx.getBean(AuthorizationAspect.class);
 
         return new DefaultPointcutAdvisor(
-                new AnnotationMatchingPointcut(null, EhrbaseAuthorization.class, true), new AspectAdapter(theAspect) {
+                new AnnotationMatchingPointcut(null, XacmlAuthorization.class, true), new AspectAdapter(theAspect) {
                     public Object invoke(MethodInvocation invocation) throws Throwable {
-                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), null);
+                        Method method = invocation.getMethod();
+                        XacmlAuthorization annotation = method.getAnnotation(XacmlAuthorization.class);                      
+                      
+                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotation));
                     }
                 });
     }

@@ -37,6 +37,20 @@
     </properties>
 
     <dependencies>
+        
+        <dependency>
+            <groupId>org.ehrbase</groupId>
+            <artifactId>ehrbase-custom-xacml-authorization</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>ag.vitagroup.hip.cdr.authorization</groupId>
+            <artifactId>cdr-xacml-authorization-lib</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+        </dependency>
+        -->
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

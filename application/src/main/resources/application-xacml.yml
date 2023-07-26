@@ -1,3 +1,27 @@
+#spring:
+#  rabbitmq:
+#    virtual-host: authorization
+
+
+
+
+#hip.pdp.rabbitmq.virtual-host:/
+hip.pdp.rabbitmq.host: localhost
+hip.pdp.rabbitmq.username: guest
+hip.pdp.rabbitmq.password: guest
+
+
+
+
+
+
+    
+    
+    
+    
+
+policyChangeQueueName: policy.changes
+
 xacml.persistence:
   hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   hibernate.hbm2ddl.auto: update

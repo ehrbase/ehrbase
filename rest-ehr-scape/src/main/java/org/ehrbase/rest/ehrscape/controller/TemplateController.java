@@ -20,15 +20,13 @@ package org.ehrbase.rest.ehrscape.controller;
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.ehrscape.controller.BaseController.TEMPLATE;
 
-import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
@@ -53,6 +51,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.composition.Composition;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 @TenantAware
 @RestController
 @RequestMapping(
@@ -69,7 +71,7 @@ public class TemplateController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
+    @Scope(scope = "ehrbase:template:read")
     @GetMapping()
     public ResponseEntity<TemplatesResponseData> getTemplate() {
         TemplatesResponseData responseData = new TemplatesResponseData();
@@ -78,7 +80,7 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
+    @Scope(scope = "ehrbase:template:create")
     @PostMapping()
     public ResponseEntity<TemplatesResponseData> createTemplate(@RequestBody() String content) {
 
@@ -97,7 +99,7 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_EXAMPLE)
+    @Scope(scope = "ehrbase:template:example")
     @GetMapping(path = "/{templateId}/example")
     public ResponseEntity<String> getTemplateExample(
             @PathVariable(value = "templateId") String templateId,
@@ -118,7 +120,7 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
+    @Scope(scope = "ehrbase:template:read")
     @GetMapping(path = "/{templateId}")
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();

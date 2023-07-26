@@ -17,18 +17,14 @@
  */
 package org.ehrbase.rest.openehr;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.RevisionHistory;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -53,6 +49,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.RevisionHistory;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
@@ -72,7 +75,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping
     @Override
     public ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
@@ -98,7 +101,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping(path = "/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
@@ -124,7 +127,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping(path = "/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
@@ -175,7 +178,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
+    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping(path = "/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "

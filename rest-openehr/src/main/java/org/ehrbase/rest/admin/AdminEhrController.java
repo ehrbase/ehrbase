@@ -17,20 +17,13 @@
  */
 package org.ehrbase.rest.admin;
 
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
@@ -47,6 +40,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
@@ -67,8 +68,8 @@ public class AdminEhrController extends BaseController {
         this.ehrService = ehrService;
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE)
+    @Scope(scope = "ehrbase:admin:access")
+    @Scope(scope = "ehrbase:ehr:update")
     @PutMapping(
             path = "/{ehr_id}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -112,8 +113,8 @@ public class AdminEhrController extends BaseController {
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_DELETE)
+    @Scope(scope = "ehrbase:admin:access")
+    @Scope(scope = "ehrbase:ehr:delete")
     @DeleteMapping(path = "/{ehr_id}")
     @ApiResponses(
             value = {

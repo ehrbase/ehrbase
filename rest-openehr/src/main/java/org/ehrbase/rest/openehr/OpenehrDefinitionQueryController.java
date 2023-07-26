@@ -21,11 +21,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
 import java.util.Optional;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.authorization.EhrbaseAuthorization;
@@ -58,6 +56,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 @TenantAware
 @RestController
 @RequestMapping(
@@ -88,7 +92,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
      */
     @Override
     @GetMapping(value = {"/{qualified_query_name}", ""})
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_READ)
+    @Scope(scope = "ehrbase:query:read")
     public ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
@@ -105,7 +109,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     @Override
     @GetMapping(value = {"/{qualified_query_name}/{version}"})
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_READ)
+    @Scope(scope = "ehrbase:query:read")
     public ResponseEntity<QueryDefinitionResponseData> getStoredQueryVersion(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
@@ -124,7 +128,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     }
 
     @Override
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_CREATE)
+    @Scope(scope = "ehrbase:query:create")
     @PutMapping(
             value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
             consumes = {TEXT_PLAIN_VALUE, APPLICATION_JSON_VALUE},
@@ -190,7 +194,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     @Override
     @DeleteMapping(value = {"/{qualified_query_name}/{version}"})
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_DELETE)
+    @Scope(scope = "ehrbase:query:delete")
     public ResponseEntity<QueryDefinitionResponseData> deleteStoredQuery(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,

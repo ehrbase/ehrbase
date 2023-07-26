@@ -17,18 +17,11 @@
  */
 package org.ehrbase.rest.admin;
 
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.UUID;
+
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
@@ -43,6 +36,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Admin API controller for Composition related data. Provides endpoint to remove compositions physically from database.
@@ -65,8 +66,8 @@ public class AdminCompositionController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
+    @Scope(scope = "ehrbase:admin:access")
+    @Scope(scope = "ehrbase:composition:delete")
     @DeleteMapping(path = "/{ehr_id}/composition/{composition_id}")
     @ApiResponses(
             value = {

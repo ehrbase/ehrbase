@@ -17,15 +17,7 @@
  */
 package org.ehrbase.rest.admin;
 
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminStatusResponseData;
@@ -43,6 +35,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Admin API controller for Templates. Provides endpoints to update (replace) and delete templates.
@@ -66,8 +66,8 @@ public class AdminTemplateController extends BaseController {
     @Autowired
     AdminApiConfiguration adminApiConfiguration;
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_UPDATE)
+    @Scope(scope = "ehrbase:admin:access")
+    @Scope(scope = "ehrbase:template:update")
     @PutMapping(
             path = "/{template_id}",
             consumes = {MediaType.APPLICATION_XML_VALUE},
@@ -111,8 +111,8 @@ public class AdminTemplateController extends BaseController {
         return ResponseEntity.ok().headers(headers).body(updatedTemplate);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_DELETE)
+    @Scope(scope = "ehrbase:admin:access")
+    @Scope(scope = "ehrbase:template:delete")
     @DeleteMapping(path = "/{template_id}")
     @ApiResponses(
             value = {
@@ -136,8 +136,8 @@ public class AdminTemplateController extends BaseController {
         return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_DELETE)
+    @Scope(scope = "ehrbase:admin:access")
+    @Scope(scope = "ehrbase:template:delete")
     @DeleteMapping(path = "/all")
     @ApiResponses(
             value = {

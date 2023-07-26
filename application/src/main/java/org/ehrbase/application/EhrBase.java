@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Import;
             R2dbcAutoConfiguration.class,
             SecurityAutoConfiguration.class
         })
-@EnableXacmlAuthorization
+//@EnableXacmlAuthorization
 @Import({ServiceModuleConfiguration.class, RestEHRScapeModuleConfiguration.class, RestModuleConfiguration.class})
 public class EhrBase {
 

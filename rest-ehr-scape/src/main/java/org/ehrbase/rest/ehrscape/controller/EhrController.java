@@ -19,21 +19,14 @@ package org.ehrbase.rest.ehrscape.controller;
 
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
 import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -58,6 +51,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.PartyRef;
+
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+
 /**
  * Controller for /ehr resource of EhrScape REST API
  *
@@ -79,7 +82,7 @@ public class EhrController extends BaseController {
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
+    @Scope(scope = "ehrbase:ehr:create")
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
@@ -115,7 +118,7 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
+    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping
     public ResponseEntity<EhrResponseData> getEhr(
             @RequestParam(value = "subjectId") String subjectId,
@@ -128,7 +131,7 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
+    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping(path = "/{uuid}")
     public ResponseEntity<EhrResponseData> getEhr(
             @PathVariable("uuid") UUID ehrId,
@@ -140,7 +143,7 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
+    @Scope(scope = "ehrbase:ehr:update_status")
     @PutMapping(path = "/{uuid}/status")
     public ResponseEntity<EhrResponseData> updateStatus(
             @PathVariable("uuid") UUID ehrId,
