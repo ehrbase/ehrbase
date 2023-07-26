@@ -22,6 +22,14 @@ jobs:
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
       - name: install sdk main
         run: mvn install -Dmaven.test.skip=true
       # Install the sdk dev in the local repo so maven version plugin can find them
@@ -34,6 +42,7 @@ jobs:
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
       - name: install sdk dev
         run: mvn install -Dmaven.test.skip=true
 
@@ -45,7 +54,7 @@ jobs:
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Calculate realise version
+      - name: Calculate Release Version
         run: |
           if [ -z "${{ github.event.inputs.version }}" ]
           then
