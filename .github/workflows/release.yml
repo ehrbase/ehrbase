@@ -43,7 +43,7 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: install sdk dev
-        run: mvn install -Dmaven.test.skip=true
+        run: mvn install
 
       - name: Checkout
         uses: actions/checkout@v3
