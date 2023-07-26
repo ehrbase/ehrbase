@@ -21,14 +21,18 @@ import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -54,14 +58,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.ehr.VersionedComposition;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API

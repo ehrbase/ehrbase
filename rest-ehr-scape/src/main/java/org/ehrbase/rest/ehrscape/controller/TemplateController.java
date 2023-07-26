@@ -20,11 +20,12 @@ package org.ehrbase.rest.ehrscape.controller;
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.ehrscape.controller.BaseController.TEMPLATE;
 
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -50,10 +51,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.nedap.archie.rm.composition.Composition;
-
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 
 @TenantAware
 @RestController

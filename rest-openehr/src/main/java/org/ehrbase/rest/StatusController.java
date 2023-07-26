@@ -17,9 +17,16 @@
  */
 package org.ehrbase.rest;
 
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
-
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.openehr.sdk.response.dto.StatusResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,16 +39,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * API endpoint to get status of EHRbase and version information on used dependencies as archie or openEHR_sdk as well

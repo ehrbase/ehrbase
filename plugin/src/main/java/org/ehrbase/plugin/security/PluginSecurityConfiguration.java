@@ -17,11 +17,10 @@
  */
 package org.ehrbase.plugin.security;
 
-import java.lang.annotation.Annotation;
+import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -44,8 +43,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
-
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
 
 public class PluginSecurityConfiguration implements ApplicationContextAware {
     // @format:off
@@ -137,8 +134,8 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
                 new AnnotationMatchingPointcut(null, XacmlAuthorization.class, true), new AspectAdapter(theAspect) {
                     public Object invoke(MethodInvocation invocation) throws Throwable {
                         Method method = invocation.getMethod();
-                        XacmlAuthorization annotation = method.getAnnotation(XacmlAuthorization.class);                      
-                      
+                        XacmlAuthorization annotation = method.getAnnotation(XacmlAuthorization.class);
+
                         return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotation));
                     }
                 });

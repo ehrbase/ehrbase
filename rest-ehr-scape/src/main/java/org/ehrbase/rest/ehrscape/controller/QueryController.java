@@ -17,13 +17,12 @@
  */
 package org.ehrbase.rest.ehrscape.controller;
 
+import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.QueryService;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
@@ -36,8 +35,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 
 @TenantAware
 @RestController

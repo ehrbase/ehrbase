@@ -17,7 +17,6 @@
  */
 package org.ehrbase.application;
 
-import ag.vitagroup.hip.cdr.authorization.EnableXacmlAuthorization;
 import org.ehrbase.ServiceModuleConfiguration;
 import org.ehrbase.rest.RestModuleConfiguration;
 import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
@@ -38,7 +37,7 @@ import org.springframework.context.annotation.Import;
             R2dbcAutoConfiguration.class,
             SecurityAutoConfiguration.class
         })
-//@EnableXacmlAuthorization
+// @EnableXacmlAuthorization
 @Import({ServiceModuleConfiguration.class, RestEHRScapeModuleConfiguration.class, RestModuleConfiguration.class})
 public class EhrBase {
 
