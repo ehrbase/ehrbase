@@ -18,7 +18,9 @@
 package org.ehrbase.dao.access.interfaces;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.ehrbase.dao.access.jooq.TemplateStoreAccess;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -27,11 +29,18 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD {
 
     OPERATIONALTEMPLATE getTemplate();
 
+    Optional<UUID> getId();
+
     void setTemplate(OPERATIONALTEMPLATE template);
 
     static I_TemplateStoreAccess getInstance(
             I_DomainAccess access, OPERATIONALTEMPLATE operationaltemplate, Short sysTenant) {
         return new TemplateStoreAccess(access, operationaltemplate, sysTenant);
+    }
+
+    static I_TemplateStoreAccess getInstance(
+            I_DomainAccess access, OPERATIONALTEMPLATE operationaltemplate, Short sysTenant, UUID id) {
+        return new TemplateStoreAccess(access, operationaltemplate, sysTenant, id);
     }
 
     static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess, String templateId) {

@@ -288,9 +288,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
 
     private void putIntoCache(OPERATIONALTEMPLATE template, Short sysTenant) {
         var templateId = TemplateUtils.getTemplateId(template);
-        var uid = TemplateUtils.getUid(template);
+        var uid = findUuidByTemplateId(templateId);
 
         try {
+            // TODO:: the problem is there will be not unique because of
+            // what is the problem to find all duplicates and to do all of them unique for existing
             idxCacheUuidToTemplateId.put(CacheKey.of(uid, sysTenant), templateId);
             idxCacheTemplateIdToUuid.put(templateId, CacheKey.of(uid, sysTenant));
 
@@ -310,7 +312,15 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     // invalidates some derived caches like the queryOptMetaDataCache which depend on the template
     private void invalidateCache(OPERATIONALTEMPLATE template) {
         // invalidate the cache for this template
-        webTemplateCache.evict(CacheKey.of(TemplateUtils.getUid(template), tenantService.getCurrentSysTenant()));
+        UUID uuid = null;
+        try {
+            uuid = findUuidByTemplateId(TemplateUtils.getTemplateId(template));
+        } catch (Exception e) {
+        }
+
+        if (uuid != null) {
+            webTemplateCache.evict(CacheKey.of(uuid, tenantService.getCurrentSysTenant()));
+        }
 
         jsonPathQueryResultCache.invalidate();
         fieldCache.invalidate();
@@ -325,7 +335,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
-        return Optional.ofNullable(getOperationaltemplateFromFileStorage(key));
+        return Optional.ofNullable(getOperationalTemplateFromFileStorage(key));
     }
 
     @Override
@@ -354,10 +364,8 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         return idxCacheUuidToTemplateId.computeIfAbsent(
                 CacheKey.of(uuid, tenantService.getCurrentSysTenant()), ck -> listAllOperationalTemplates().stream()
                         .filter(t -> t.getErrorList().isEmpty())
-                        .filter(t -> t.getOperationaltemplate()
-                                .getUid()
-                                .getValue()
-                                .equals(ck.getVal().toString()))
+                        .filter(t ->
+                                t.getInternalId().toString().equals(ck.getVal().toString()))
                         .map(t -> t.getOperationaltemplate().getTemplateId().getValue())
                         .findFirst()
                         .orElse(null));
@@ -366,10 +374,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     private UUID findUuidByTemplateId(String templateId) {
         return idxCacheTemplateIdToUuid
                 .computeIfAbsent(templateId, id -> {
-                    OPERATIONALTEMPLATE templ = retrieveOperationalTemplate(id)
+                    UUID uuid = getTemplateUuidFromFileStorage(id)
                             .orElseThrow(() ->
                                     new IllegalArgumentException(String.format("Unknown template %s", templateId)));
-                    return CacheKey.of(UUID.fromString(templ.getUid().getValue()), tenantService.getCurrentSysTenant());
+
+                    return CacheKey.of(uuid, tenantService.getCurrentSysTenant());
                 })
                 .getVal();
     }
@@ -419,11 +428,21 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
      * @param filename of the OPT file in storage
      * @return The operational template or null.
      */
-    private OPERATIONALTEMPLATE getOperationaltemplateFromFileStorage(String filename) {
-        var template = templateStorage.readOperationaltemplate(filename);
+    private OPERATIONALTEMPLATE getOperationalTemplateFromFileStorage(String filename) {
+        var template = templateStorage.readOperationalTemplate(filename);
         template.ifPresent(existingTemplate -> idxCacheUuidToTemplateId.put(
-                CacheKey.of(TemplateUtils.getUid(existingTemplate), tenantService.getCurrentSysTenant()), filename));
+                CacheKey.of(findUuidByTemplateId(filename), tenantService.getCurrentSysTenant()), filename));
+
         return template.orElse(null);
+    }
+
+    private Optional<UUID> getTemplateUuidFromFileStorage(String filename) {
+        Optional<UUID> uuid = templateStorage.findUuidByTemplateId(filename);
+
+        uuid.ifPresent(value ->
+                idxCacheUuidToTemplateId.put(CacheKey.of(value, tenantService.getCurrentSysTenant()), filename));
+
+        return uuid;
     }
 
     public int deleteAllOperationalTemplates() {
