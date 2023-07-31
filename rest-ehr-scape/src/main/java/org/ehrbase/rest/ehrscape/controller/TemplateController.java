@@ -20,7 +20,6 @@ package org.ehrbase.rest.ehrscape.controller;
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.ehrscape.controller.BaseController.TEMPLATE;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,6 +41,7 @@ import org.ehrbase.rest.ehrscape.responsedata.TemplateResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.TemplatesResponseData;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(value = {TemplateController.class})
 @TenantAware
 @RestController
 @RequestMapping(
@@ -68,7 +69,6 @@ public class TemplateController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @Scope(scope = "ehrbase:template:read")
     @GetMapping()
     public ResponseEntity<TemplatesResponseData> getTemplate() {
         TemplatesResponseData responseData = new TemplatesResponseData();
@@ -77,7 +77,6 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @Scope(scope = "ehrbase:template:create")
     @PostMapping()
     public ResponseEntity<TemplatesResponseData> createTemplate(@RequestBody() String content) {
 
@@ -96,7 +95,6 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @Scope(scope = "ehrbase:template:example")
     @GetMapping(path = "/{templateId}/example")
     public ResponseEntity<String> getTemplateExample(
             @PathVariable(value = "templateId") String templateId,
@@ -117,7 +115,6 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
     }
 
-    @Scope(scope = "ehrbase:template:read")
     @GetMapping(path = "/{templateId}")
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();

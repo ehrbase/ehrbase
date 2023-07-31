@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
@@ -40,6 +39,7 @@ import org.ehrbase.openehr.sdk.response.dto.VersionedObjectResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedEhrStatusApiSpecification;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -55,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
+@ConditionalOnMissingBean(value = {OpenehrVersionedEhrStatusController.class, VersionedEhrStatusApiSpecification.class})
 @TenantAware
 @RestController
 @RequestMapping(
@@ -71,7 +72,6 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping
     @Override
     public ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
@@ -97,7 +97,6 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping(path = "/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
@@ -123,7 +122,6 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping(path = "/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
@@ -174,7 +172,6 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
-    @Scope(scope = "ehrbase:ehr:read_status")
     @GetMapping(path = "/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "

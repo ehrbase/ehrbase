@@ -21,7 +21,6 @@ import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
@@ -46,6 +45,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedCompositionApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -62,6 +62,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
+@ConditionalOnMissingBean(
+        value = {OpenehrVersionedCompositionController.class, VersionedCompositionApiSpecification.class})
 @TenantAware
 @RestController
 @RequestMapping(
@@ -82,7 +84,6 @@ public class OpenehrVersionedCompositionController extends BaseController
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}")
     @Override
     public ResponseEntity<VersionedObjectResponseData<Composition>> retrieveVersionedCompositionByVersionedObjectUid(
@@ -110,7 +111,6 @@ public class OpenehrVersionedCompositionController extends BaseController
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
@@ -138,7 +138,6 @@ public class OpenehrVersionedCompositionController extends BaseController
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
@@ -179,7 +178,6 @@ public class OpenehrVersionedCompositionController extends BaseController
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
     }
 
-    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{versioned_object_uid}/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "

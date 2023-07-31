@@ -20,7 +20,6 @@ package org.ehrbase.rest.openehr;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -43,6 +42,7 @@ import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.ContributionApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -57,6 +57,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(value = {OpenehrContributionController.class, ContributionApiSpecification.class})
 @TenantAware
 @RestController
 @RequestMapping(
@@ -71,7 +72,6 @@ public class OpenehrContributionController extends BaseController implements Con
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @Scope(scope = "ehrbase:contribution:create")
     @PostMapping(
             value = "/{ehr_id}/contribution",
             consumes = {"application/xml", "application/json"})
@@ -132,7 +132,6 @@ public class OpenehrContributionController extends BaseController implements Con
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @Scope(scope = "ehrbase:contribution:read")
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
     @Override
     public ResponseEntity getContribution(

@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.admin;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,6 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminStatusResponseData;
 import org.ehrbase.rest.BaseController;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,17 +33,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(value = {AdminController.class})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Heartbeat")
-@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
         path = "${admin-api.context-path:/rest/admin}",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminController extends BaseController {
 
-    @Scope(scope = "ehrbase:admin:access")
-    @Scope(scope = "ehrbase:system:read")
     @GetMapping(path = "/status")
     @ApiResponses(
             value = {

@@ -17,11 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Action;
-import ag.vitagroup.hip.cdr.authorization.annotation.ResourceId;
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
-import ag.vitagroup.hip.cdr.authorization.annotation.TenantPolicyLookup;
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -44,6 +39,7 @@ import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -63,8 +59,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr resource of openEHR REST API
  */
+@ConditionalOnMissingBean(value = {OpenehrEhrController.class, EhrApiSpecification.class})
 @TenantAware
-@TenantPolicyLookup
 @RestController
 @RequestMapping(
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
@@ -78,10 +74,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @Scope(scope = "ehrbase:ehr:create")
-    @XacmlAuthorization
-    @Action(action = "method:call:createEhr")
-    @ResourceId(resourceId = "OpenehrEhrController")
     @PostMapping // (consumes = {"application/xml", "application/json"})
     @ResponseStatus(value = HttpStatus.CREATED)
     // TODO auditing headers (openehr*) ignored until auditing is implemented
@@ -103,10 +95,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         return internalPostEhrProcessing(accept, prefer, ehrId);
     }
 
-    @Scope(scope = "ehrbase:ehr:create")
-    @XacmlAuthorization
-    @Action(action = "method:call:createEhrWithId")
-    @ResourceId(resourceId = "OpenehrEhrController")
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<EhrResponseData> createEhrWithId(
@@ -180,7 +168,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by ID
      */
-    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping(path = "/{ehr_id}")
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     public ResponseEntity<EhrResponseData> retrieveEhrById(
@@ -199,7 +186,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     /**
      * Returns EHR by subject (id and namespace)
      */
-    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping(params = {"subject_id", "subject_namespace"})
     @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(

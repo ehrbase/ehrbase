@@ -20,7 +20,6 @@ package org.ehrbase.rest.admin;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,6 +36,7 @@ import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminUpdateResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,9 +50,10 @@ import org.springframework.web.bind.annotation.RestController;
  * Admin API controller for Contribution related data. Provides endpoints to update and remove Contributions in
  * database physically.
  */
+@ConditionalOnMissingBean(value = {AdminContributionController.class})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Contribution")
-@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
         path = "${admin-api.context-path:/rest/admin}/ehr",
@@ -68,8 +69,6 @@ public class AdminContributionController extends BaseController {
         this.contributionService = contributionService;
     }
 
-    @Scope(scope = "ehrbase:admin:access")
-    @Scope(scope = "ehrbase:contribution:update")
     @PutMapping(
             path = "/{ehr_id}/contribution/{contribution_id}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -115,8 +114,6 @@ public class AdminContributionController extends BaseController {
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
-    @Scope(scope = "ehrbase:admin:access")
-    @Scope(scope = "ehrbase:contribution:delete")
     @DeleteMapping(path = "/{ehr_id}/contribution/{contribution_id}")
     @ApiResponses(
             value = {

@@ -19,7 +19,6 @@ package org.ehrbase.rest.ehrscape.controller;
 
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nedap.archie.rm.datavalues.DvText;
@@ -43,6 +42,7 @@ import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.EhrResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +63,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Stefan Spiska
  * @author Jake Smolka
  */
+@ConditionalOnMissingBean(value = {EhrController.class})
 @TenantAware
 @RestController
 @RequestMapping(path = API_ECIS_CONTEXT_PATH_WITH_VERSION + "/ehr")
@@ -78,7 +79,6 @@ public class EhrController extends BaseController {
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @Scope(scope = "ehrbase:ehr:create")
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
@@ -114,7 +114,6 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping
     public ResponseEntity<EhrResponseData> getEhr(
             @RequestParam(value = "subjectId") String subjectId,
@@ -127,7 +126,6 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
-    @Scope(scope = "ehrbase:ehr:read")
     @GetMapping(path = "/{uuid}")
     public ResponseEntity<EhrResponseData> getEhr(
             @PathVariable("uuid") UUID ehrId,
@@ -139,7 +137,6 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Scope(scope = "ehrbase:ehr:update_status")
     @PutMapping(path = "/{uuid}/status")
     public ResponseEntity<EhrResponseData> updateStatus(
             @PathVariable("uuid") UUID ehrId,

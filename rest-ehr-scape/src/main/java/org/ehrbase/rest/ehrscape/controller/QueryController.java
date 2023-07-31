@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.ehrscape.controller;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -28,6 +27,7 @@ import org.ehrbase.api.service.QueryService;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.QueryResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(value = {QueryController.class})
 @TenantAware
 @RestController
 @RequestMapping(
@@ -50,7 +51,6 @@ public class QueryController extends BaseController {
         this.queryService = Objects.requireNonNull(queryService);
     }
 
-    @Scope(scope = "ehrbase:query:search_ad_hoc")
     @PostMapping
     public ResponseEntity<QueryResponseData> query(
             @RequestParam(value = "explain", defaultValue = "false") Boolean explain, @RequestBody String content) {

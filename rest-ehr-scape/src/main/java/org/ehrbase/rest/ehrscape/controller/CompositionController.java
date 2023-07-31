@@ -19,7 +19,6 @@ package org.ehrbase.rest.ehrscape.controller;
 
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.Objects;
@@ -39,6 +38,7 @@ import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.CompositionWriteRestResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(value = {CompositionController.class})
 @TenantAware
 @RestController
 @RequestMapping(
@@ -64,7 +65,6 @@ public class CompositionController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @Scope(scope = "ehrbase:composition:create")
     @PostMapping
     public ResponseEntity<CompositionWriteRestResponseData> createComposition(
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
@@ -96,7 +96,6 @@ public class CompositionController extends BaseController {
                 .body(responseData);
     }
 
-    @Scope(scope = "ehrbase:composition:read")
     @GetMapping(path = "/{uid}")
     public ResponseEntity<CompositionResponseData> getComposition(
             @PathVariable("uid") String compositionUid,
@@ -135,7 +134,6 @@ public class CompositionController extends BaseController {
         }
     }
 
-    @Scope(scope = "ehrbase:composition:update")
     @PutMapping(path = "/{uid}")
     public ResponseEntity<ActionRestResponseData> update(
             @PathVariable("uid") String compositionUid,
@@ -169,7 +167,6 @@ public class CompositionController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @Scope(scope = "ehrbase:composition:delete")
     @DeleteMapping(path = "/{uid}")
     public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
 

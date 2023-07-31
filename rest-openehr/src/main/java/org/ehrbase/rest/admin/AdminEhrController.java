@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.admin;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,6 +35,7 @@ import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminUpdateResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -50,9 +50,10 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
  */
+@ConditionalOnMissingBean(value = {AdminEhrController.class})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - EHR")
-@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
         path = BaseController.ADMIN_API_CONTEXT_PATH + "/ehr",
@@ -66,8 +67,6 @@ public class AdminEhrController extends BaseController {
         this.ehrService = ehrService;
     }
 
-    @Scope(scope = "ehrbase:admin:access")
-    @Scope(scope = "ehrbase:ehr:update")
     @PutMapping(
             path = "/{ehr_id}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -111,8 +110,6 @@ public class AdminEhrController extends BaseController {
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
     }
 
-    @Scope(scope = "ehrbase:admin:access")
-    @Scope(scope = "ehrbase:ehr:delete")
     @DeleteMapping(path = "/{ehr_id}")
     @ApiResponses(
             value = {

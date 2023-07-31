@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest;
 
-import ag.vitagroup.hip.cdr.authorization.xacml.eval.AccessCtrlException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +36,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -80,10 +78,10 @@ public class DefaultExceptionHandler {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({AccessDeniedException.class, AccessCtrlException.class})
-    public ResponseEntity<Object> handleObjectNotFoundException(Exception ex) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
-    }
+    //    @ExceptionHandler({AccessDeniedException.class, AccessCtrlException.class})
+    //    public ResponseEntity<Object> handleObjectNotFoundException(Exception ex) {
+    //        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
+    //    }
 
     // 404
     @ExceptionHandler(ObjectNotFoundException.class)

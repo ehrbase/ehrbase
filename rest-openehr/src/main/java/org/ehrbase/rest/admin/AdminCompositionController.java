@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.admin;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,6 +33,7 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,9 +46,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * Admin API controller for Composition related data. Provides endpoint to remove compositions physically from database.
  */
+@ConditionalOnMissingBean(value = {AdminCompositionController.class})
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Composition")
-@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
         path = BaseController.ADMIN_API_CONTEXT_PATH + "/ehr",
@@ -64,8 +65,6 @@ public class AdminCompositionController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @Scope(scope = "ehrbase:admin:access")
-    @Scope(scope = "ehrbase:composition:delete")
     @DeleteMapping(path = "/{ehr_id}/composition/{composition_id}")
     @ApiResponses(
             value = {

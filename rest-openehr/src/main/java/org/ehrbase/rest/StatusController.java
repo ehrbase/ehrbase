@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.Scope;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -30,6 +29,7 @@ import java.util.Objects;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.openehr.sdk.response.dto.StatusResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
  * API endpoint to get status of EHRbase and version information on used dependencies as archie or openEHR_sdk as well
  * as the current used JVM version or target PostgreSQL server version.
  */
+@ConditionalOnMissingBean(value = {StatusController.class})
 @Tag(name = "Status", description = "Heartbeat, Version info, Status")
 @RestController
 @RequestMapping(
@@ -58,7 +59,6 @@ public class StatusController extends BaseController {
         this.statusService = Objects.requireNonNull(statusService);
     }
 
-    @Scope(scope = "ehrbase:system:read")
     @GetMapping(path = "/status")
     @Operation(summary = "Get status information on running EHRbase server instance")
     @ApiResponses(
