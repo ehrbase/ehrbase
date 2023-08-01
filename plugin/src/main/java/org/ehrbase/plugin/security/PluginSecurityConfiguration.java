@@ -17,7 +17,7 @@
  */
 package org.ehrbase.plugin.security;
 
-import ag.vitagroup.hip.cdr.authorization.annotation.XacmlAuthorization;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +27,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.SourceLocation;
 import org.aspectj.runtime.internal.AroundClosure;
+import org.ehrbase.api.annotations.EhrbaseSecurity;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.aspect.AnnotationAspect;
 import org.ehrbase.api.aspect.AuthorizationAspect;
@@ -131,12 +132,12 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
         AuthorizationAspect theAspect = parentCtx.getBean(AuthorizationAspect.class);
 
         return new DefaultPointcutAdvisor(
-                new AnnotationMatchingPointcut(null, XacmlAuthorization.class, true), new AspectAdapter(theAspect) {
+                new AnnotationMatchingPointcut(null, EhrbaseSecurity.class, true), new AspectAdapter(theAspect) {
                     public Object invoke(MethodInvocation invocation) throws Throwable {
                         Method method = invocation.getMethod();
-                        XacmlAuthorization annotation = method.getAnnotation(XacmlAuthorization.class);
 
-                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotation));
+                        Annotation[] annotations = method.getDeclaredAnnotations();
+                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotations));
                     }
                 });
     }

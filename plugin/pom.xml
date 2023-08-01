@@ -19,19 +19,6 @@
   <dependencies>
 
     <dependency>
-        <artifactId>cdr-xacml-authorization-lib</artifactId>
-        <groupId>ag.vitagroup.hip.cdr.authorization</groupId>
-        <version>${cdr-xacml-authorization-lib}</version>
-    </dependency>
-<!--
-    <dependency>
-        <groupId>org.ehrbase</groupId>
-        <artifactId>ehrbase-custom-xacml-authorization</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
-        <scope>provided</scope>
-    </dependency>
--->
-    <dependency>
       <groupId>com.nedap.healthcare.archie</groupId>
       <artifactId>openehr-rm</artifactId>
     </dependency>
