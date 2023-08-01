@@ -99,3 +99,14 @@ or directories with the same ID to exist in different tenants. This was achieved
 with an internal number-based ID and adding it to the primary key.
 
 Please note that executing the Flyway migration script `V83__change_sys_tenant_to_short.sql` may take some time.
+
+## EHRbase 0.29.0
+
+### Fix Duplicated UUIDs and template IDs
+Prior to release 0.29.0, EHRbase contained a bug that may have resulted in duplicated UUIDs and template IDs
+If exception occurs during the migration script execution (`V85__enforce_unique_template_id.sql`) manual interventions are required. 
+
+Action Required:
+Ensure that the **ehr.template_store.id** and **ehr.template_store.template_id** columns have unique values.
+
+Please note that the execution of the Flyway migration script `V85__enforce_unique_template_id.sql` may take some time.

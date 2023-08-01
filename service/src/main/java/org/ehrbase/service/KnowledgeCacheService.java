@@ -312,14 +312,11 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
     // invalidates some derived caches like the queryOptMetaDataCache which depend on the template
     private void invalidateCache(OPERATIONALTEMPLATE template) {
         // invalidate the cache for this template
-        UUID uuid = null;
-        try {
-            uuid = findUuidByTemplateId(TemplateUtils.getTemplateId(template));
-        } catch (Exception e) {
-        }
-
-        if (uuid != null) {
-            webTemplateCache.evict(CacheKey.of(uuid, tenantService.getCurrentSysTenant()));
+        String templateId = TemplateUtils.getTemplateId(template);
+        CacheKey<UUID> uuidCacheKey = idxCacheTemplateIdToUuid.get(templateId);
+        if (uuidCacheKey != null && (uuidCacheKey.getVal() != null)) {
+            // Evict if uuid in the cache
+            webTemplateCache.evict(CacheKey.of(uuidCacheKey.getVal(), tenantService.getCurrentSysTenant()));
         }
 
         jsonPathQueryResultCache.invalidate();

@@ -95,6 +95,11 @@ public class TemplateFileStorageService implements TemplateStorage {
                         template.setOperationalTemplate(operationaltemplate);
                         if (operationaltemplate.getTemplateId() == null)
                             template.addError("Could not get template id for template in file:" + filename);
+                        if (operationaltemplate.getUid() == null)
+                            template.addError("Could not get uid for template in file:" + filename);
+                        else
+                            template.setInternalId(
+                                    UUID.fromString(operationaltemplate.getUid().getValue()));
                     }
 
                     Path path = convertToTenantPath(filename, currentTenantIdentifier);
@@ -123,7 +128,11 @@ public class TemplateFileStorageService implements TemplateStorage {
 
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
-        return Optional.of(UUID.randomUUID());
+        return listAllOperationalTemplates().stream()
+                .filter(metadata -> TemplateUtils.getTemplateId(metadata.getOperationaltemplate())
+                        .equals(templateId))
+                .map(TemplateMetaData::getInternalId)
+                .findFirst();
     }
 
     @Override
