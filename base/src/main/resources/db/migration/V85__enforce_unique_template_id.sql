@@ -23,8 +23,8 @@ $$
     BEGIN
         ALTER TABLE ehr.template_store
             DISABLE ROW LEVEL SECURITY;
-        SELECT count(*) INTO count_id FROM ehr.template_store GROUP BY id HAVING COUNT(*) > 1;
-        SELECT count(*) INTO count_template_id FROM ehr.template_store GROUP BY template_id HAVING COUNT(*) > 1;
+        SELECT count(*) INTO count_id FROM ehr.template_store GROUP BY id, sys_tenant HAVING COUNT(*) > 1;
+        SELECT count(*) INTO count_template_id FROM ehr.template_store GROUP BY template_id, sys_tenant HAVING COUNT(*) > 1;
         ALTER TABLE ehr.template_store
             ENABLE ROW LEVEL SECURITY;
         IF count_id > 0 THEN
