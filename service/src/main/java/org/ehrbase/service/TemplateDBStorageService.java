@@ -76,16 +76,6 @@ public class TemplateDBStorageService implements TemplateStorage {
                 .getTemplate());
     }
 
-    //    @Override
-    //    public Optional<OPERATIONALTEMPLATE> readOperationalTemplate(String templateId) {
-    //        I_TemplateStoreAccess templateStoreAccess = getTemplateStoreAccessByTemplateId(templateId);
-    //        if(templateStoreAccess == null){
-    //            return Optional.empty();
-    //        }
-    //
-    //        return Optional.ofNullable(templateStoreAccess.getTemplate());
-    //    }
-
     private I_TemplateStoreAccess getTemplateStoreAccessByTemplateId(String templateId) {
         return I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId);
     }

@@ -185,28 +185,6 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         return templateStoreAccess;
     }
 
-    //    public static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess, String
-    // templateId) {
-    //        TemplateStoreAccess templateStoreAccess = new TemplateStoreAccess(domainAccess);
-    //
-    //        TemplateStoreRecord record;
-    //        try {
-    //            record = domainAccess.getContext().fetchOne(TEMPLATE_STORE,
-    // TEMPLATE_STORE.TEMPLATE_ID.eq(templateId));
-    //        } catch (Exception e) {
-    //            throw new IllegalArgumentException(COULD_NOT_RETRIEVE_TEMPLATE_FOR_TEMPLATE_ID + templateId +
-    // EXCEPTION + e);
-    //        }
-    //
-    //        if (record == null || record.size() == 0) {
-    //            logger.warn(COULD_NOT_RETRIEVE_TEMPLATE_FOR_TEMPLATE_ID + templateId);
-    //            return null;
-    //        }
-    //        templateStoreAccess.templateStoreRecord = record;
-    //
-    //        return templateStoreAccess;
-    //    }
-
     public static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
         Result<Record3<UUID, String, Timestamp>> records = domainAccess
                 .getContext()
