@@ -268,7 +268,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     private static TemplateMetaData buildMetadata(TemplateStoreRecord record) {
         TemplateMetaData templateMetaData = new TemplateMetaData();
         templateMetaData.setInternalId(record.getId());
-        templateMetaData.setOperationalTemplate(TemplateStoreAccess.buildOperationaltemplate(record.getTemplateId()));
+        templateMetaData.setOperationalTemplate(TemplateStoreAccess.buildOperationaltemplate(record.getContent()));
         // @TODO read from DB
         templateMetaData.setCreatedOn(
                 OffsetDateTime.ofInstant(record.getSysTransaction().toInstant(), ZoneId.systemDefault()));
