@@ -172,8 +172,13 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     public static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess, String templateId) {
         TemplateStoreAccess templateStoreAccess = new TemplateStoreAccess(domainAccess);
-        templateStoreAccess.templateStoreRecord =
+        TemplateStoreRecord templateRecord =
                 domainAccess.getContext().fetchOne(TEMPLATE_STORE, TEMPLATE_STORE.TEMPLATE_ID.eq(templateId));
+        Optional.ofNullable(templateRecord)
+                .ifPresentOrElse(
+                        r -> templateStoreAccess.templateStoreRecord = r,
+                        () -> domainAccess.getContext().newRecord(TEMPLATE_STORE));
+
         return templateStoreAccess;
     }
 

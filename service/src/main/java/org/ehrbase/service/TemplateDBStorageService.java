@@ -61,17 +61,12 @@ public class TemplateDBStorageService implements TemplateStorage {
 
     @Override
     public void storeTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
-        if (readOperationalTemplate(template.getTemplateId().getValue()).isPresent()) {
-            findUuidByTemplateId(TemplateUtils.getTemplateId(template))
-                    .ifPresentOrElse(
-                            uuid -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant, uuid)
-                                    .update(),
-                            () -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
-                                    .commit());
-        } else {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
-                    .commit();
-        }
+        findUuidByTemplateId(TemplateUtils.getTemplateId(template))
+                .ifPresentOrElse(
+                        uuid -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant, uuid)
+                                .update(),
+                        () -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
+                                .commit());
     }
 
     @Override
