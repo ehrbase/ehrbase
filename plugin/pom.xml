@@ -13,7 +13,6 @@
 
   <properties>
     <license-header.dir>../</license-header.dir>
-    <cdr-xacml-authorization-lib>1.1.0-SNAPSHOT</cdr-xacml-authorization-lib>
   </properties>
 
   <dependencies>
