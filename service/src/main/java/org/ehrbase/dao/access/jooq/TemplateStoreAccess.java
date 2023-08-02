@@ -46,18 +46,10 @@ import org.ehrbase.jooq.pg.tables.records.AdminGetTemplateUsageRecord;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.Record1;
-import org.jooq.Record3;
 import org.jooq.Result;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAccess {
-    public static final String COULD_NOT_RETRIEVE_TEMPLATE_FOR_TEMPLATE_ID =
-            "Could not retrieve template for template id:";
-    public static final String EXCEPTION = " exception:";
-
-    private static final Logger logger = LoggerFactory.getLogger(TemplateStoreAccess.class);
 
     private TemplateStoreRecord templateStoreRecord;
 
@@ -148,8 +140,8 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     }
 
     @Override
-    public Optional<UUID> getId() {
-        return Optional.ofNullable(templateStoreRecord).map(TemplateStoreRecord::getId);
+    public UUID getId() {
+        return templateStoreRecord.getId();
     }
 
     private static OPERATIONALTEMPLATE buildOperationaltemplate(String content) {
@@ -171,7 +163,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     }
 
     private void setTemplate(OPERATIONALTEMPLATE template, UUID id) {
-        templateStoreRecord.setId(id);
+        templateStoreRecord.setId(id != null ? id : UuidGenerator.randomUUID());
         templateStoreRecord.setTemplateId(template.getTemplateId().getValue());
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
@@ -186,11 +178,8 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
     }
 
     public static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
-        Result<Record3<UUID, String, Timestamp>> records = domainAccess
-                .getContext()
-                .select(TEMPLATE_STORE.ID, TEMPLATE_STORE.CONTENT, TEMPLATE_STORE.SYS_TRANSACTION)
-                .from(TEMPLATE_STORE)
-                .fetch();
+        Result<TemplateStoreRecord> records =
+                domainAccess.getContext().selectFrom(TEMPLATE_STORE).fetch();
         return records.parallelStream().map(TemplateStoreAccess::buildMetadata).collect(Collectors.toList());
     }
 
@@ -268,12 +257,13 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         return Routines.adminDeleteAllTemplates(domainAccess.getContext().configuration());
     }
 
-    private static TemplateMetaData buildMetadata(Record3<UUID, String, Timestamp> r) {
+    private static TemplateMetaData buildMetadata(TemplateStoreRecord record) {
         TemplateMetaData templateMetaData = new TemplateMetaData();
-        templateMetaData.setInternalId(r.component1());
-        templateMetaData.setOperationalTemplate(TemplateStoreAccess.buildOperationaltemplate(r.component2()));
+        templateMetaData.setInternalId(record.getId());
+        templateMetaData.setOperationalTemplate(TemplateStoreAccess.buildOperationaltemplate(record.getTemplateId()));
         // @TODO read from DB
-        templateMetaData.setCreatedOn(OffsetDateTime.ofInstant(r.component3().toInstant(), ZoneId.systemDefault()));
+        templateMetaData.setCreatedOn(
+                OffsetDateTime.ofInstant(record.getSysTransaction().toInstant(), ZoneId.systemDefault()));
         return templateMetaData;
     }
 }

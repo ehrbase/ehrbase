@@ -38,7 +38,7 @@ $$;
 
 ALTER TABLE ehr.template_store
     DROP CONSTRAINT template_store_pkey,
-    ADD PRIMARY KEY (template_id, sys_tenant);
+    ADD PRIMARY KEY (id, sys_tenant);
 
 create unique index template_store_template_id
     on ehr.template_store (template_id, sys_tenant);

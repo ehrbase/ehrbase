@@ -108,5 +108,3 @@ If exception occurs during the migration script execution (`V85__enforce_unique_
 
 Action Required:
 Ensure that the **ehr.template_store.id** and **ehr.template_store.template_id** columns have unique values within the tenant.
-
-Please note that the execution of the Flyway migration script `V85__enforce_unique_template_id.sql` may take some time.

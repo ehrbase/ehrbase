@@ -55,15 +55,19 @@ public class TemplateDBStorageService implements TemplateStorage {
 
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
-        return getTemplateStoreAccessByTemplateId(templateId).getId();
+        return Optional.ofNullable(
+                getTemplateStoreAccessByTemplateId(templateId).getId());
     }
 
     @Override
     public void storeTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
         if (readOperationalTemplate(template.getTemplateId().getValue()).isPresent()) {
             findUuidByTemplateId(TemplateUtils.getTemplateId(template))
-                    .ifPresent(uuid -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant, uuid)
-                            .update());
+                    .ifPresentOrElse(
+                            uuid -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant, uuid)
+                                    .update(),
+                            () -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
+                                    .commit());
         } else {
             I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
                     .commit();

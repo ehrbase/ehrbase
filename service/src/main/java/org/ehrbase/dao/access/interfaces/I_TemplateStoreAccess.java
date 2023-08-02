@@ -18,7 +18,6 @@
 package org.ehrbase.dao.access.interfaces;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.ehrbase.dao.access.jooq.TemplateStoreAccess;
@@ -29,7 +28,7 @@ public interface I_TemplateStoreAccess extends I_SimpleCRUD {
 
     OPERATIONALTEMPLATE getTemplate();
 
-    Optional<UUID> getId();
+    UUID getId();
 
     void setTemplate(OPERATIONALTEMPLATE template);
 
