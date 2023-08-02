@@ -176,7 +176,7 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         TemplateStoreAccess templateStoreAccess = new TemplateStoreAccess(domainAccess);
         TemplateStoreRecord templateRecord =
                 domainAccess.getContext().fetchOne(TEMPLATE_STORE, TEMPLATE_STORE.TEMPLATE_ID.eq(templateId));
-        if(templateRecord == null){
+        if (templateRecord == null) {
             return null;
         }
 
