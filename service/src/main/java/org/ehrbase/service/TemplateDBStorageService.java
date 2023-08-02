@@ -55,8 +55,7 @@ public class TemplateDBStorageService implements TemplateStorage {
 
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
-        return Optional.ofNullable(
-                getTemplateStoreAccessByTemplateId(templateId).getId());
+        return Optional.ofNullable(getTemplateStoreAccessByTemplateId(templateId)).map(I_TemplateStoreAccess::getId);
     }
 
     @Override
@@ -71,8 +70,8 @@ public class TemplateDBStorageService implements TemplateStorage {
 
     @Override
     public Optional<OPERATIONALTEMPLATE> readOperationalTemplate(String templateId) {
-        return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId)
-                .getTemplate());
+        return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId))
+                .map(I_TemplateStoreAccess::getTemplate);
     }
 
     private I_TemplateStoreAccess getTemplateStoreAccessByTemplateId(String templateId) {
