@@ -291,8 +291,7 @@ public class KnowledgeCacheService implements I_KnowledgeCache, IntrospectServic
         var uid = findUuidByTemplateId(templateId);
 
         try {
-            // TODO:: the problem is there will be not unique because of
-            // what is the problem to find all duplicates and to do all of them unique for existing
+            // TODO:: templateId also should be CacheKey.of(templateId, sysTenant) ?
             idxCacheUuidToTemplateId.put(CacheKey.of(uid, sysTenant), templateId);
             idxCacheTemplateIdToUuid.put(templateId, CacheKey.of(uid, sysTenant));
 
