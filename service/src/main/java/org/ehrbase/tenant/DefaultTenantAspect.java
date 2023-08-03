@@ -32,6 +32,7 @@ import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.TenantIdExtractionStrategy;
 import org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -80,12 +81,21 @@ public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect 
                 .ifPresent(tenantAnnotation -> {
                     if (isMethodTenantAware(pjp, tenantAnnotation)) {
                         Object[] args = pjp.getArgs();
+                        cleanTenantSecurityContext();
                         TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
                         SecurityContext ctx = SecurityContextHolder.getContext();
                         ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, Object::toString));
                     }
                 });
         return pjp.proceed();
+    }
+
+    private void cleanTenantSecurityContext() {
+        Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .filter(DefaultTenantAuthentication.class::isInstance)
+                .map(Authentication.class::cast)
+                .filter(authentication -> !authentication.isAuthenticated())
+                .ifPresent(authentication -> SecurityContextHolder.clearContext());
     }
 
     private boolean isMethodTenantAware(ProceedingJoinPoint pjp, TenantAware tenantAnnotation) {
