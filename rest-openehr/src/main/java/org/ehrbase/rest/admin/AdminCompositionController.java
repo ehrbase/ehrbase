@@ -46,7 +46,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * Admin API controller for Composition related data. Provides endpoint to remove compositions physically from database.
  */
-@ConditionalOnMissingBean(value = {AdminCompositionController.class})
+@ConditionalOnMissingBean(name = "primaryadmincompositioncontroller")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Composition")

@@ -55,7 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
-@ConditionalOnMissingBean(value = {OpenehrVersionedEhrStatusController.class, VersionedEhrStatusApiSpecification.class})
+@ConditionalOnMissingBean(name = "primaryopenehrversionedehrstatuscontroller")
 @TenantAware
 @RestController
 @RequestMapping(

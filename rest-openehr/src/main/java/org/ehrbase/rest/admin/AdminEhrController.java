@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Admin API controller for EHR related endpoints. Provides methods to update and delete EHRs physically in the DB.
  */
-@ConditionalOnMissingBean(value = {AdminEhrController.class})
+@ConditionalOnMissingBean(name = "primaryadminehrcontroller")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - EHR")

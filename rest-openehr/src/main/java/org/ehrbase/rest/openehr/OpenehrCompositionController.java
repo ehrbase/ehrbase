@@ -75,7 +75,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jake Smolka
  * @since 1.0.0
  */
-@ConditionalOnMissingBean(value = {OpenehrCompositionController.class, CompositionApiSpecification.class})
+@ConditionalOnMissingBean(name = "primaryopenehrcompositioncontroller")
 @TenantAware
 @RestController
 @RequestMapping(

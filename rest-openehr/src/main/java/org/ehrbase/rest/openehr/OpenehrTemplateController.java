@@ -68,7 +68,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
-@ConditionalOnMissingBean(value = {OpenehrTemplateController.class, TemplateApiSpecification.class})
+@ConditionalOnMissingBean(name = "primaryopenehrtemplatecontroller")
 @TenantAware
 @RestController
 @RequestMapping(

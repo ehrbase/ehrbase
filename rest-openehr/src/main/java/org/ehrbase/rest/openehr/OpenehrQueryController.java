@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
-@ConditionalOnMissingBean(value = {OpenehrQueryController.class, QueryApiSpecification.class})
+@ConditionalOnMissingBean(name = "primaryopenehrquerycontroller")
 @TenantAware
 @RestController
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/query")

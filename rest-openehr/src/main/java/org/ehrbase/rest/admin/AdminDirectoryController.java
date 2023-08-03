@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Admin API controller for directories. Provides endpoint to remove complete directory trees from database physically.
  */
-@ConditionalOnMissingBean(value = {AdminDirectoryController.class})
+@ConditionalOnMissingBean(name = "primaryadmindirectorycontroller")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Directory")

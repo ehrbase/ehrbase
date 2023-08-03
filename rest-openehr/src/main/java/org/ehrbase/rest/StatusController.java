@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
  * API endpoint to get status of EHRbase and version information on used dependencies as archie or openEHR_sdk as well
  * as the current used JVM version or target PostgreSQL server version.
  */
-@ConditionalOnMissingBean(value = {StatusController.class})
+@ConditionalOnMissingBean(name = "primarystatuscontroller")
 @Tag(name = "Status", description = "Heartbeat, Version info, Status")
 @RestController
 @RequestMapping(

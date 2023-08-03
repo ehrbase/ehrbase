@@ -62,7 +62,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
-@ConditionalOnMissingBean(value = {OpenehrDirectoryController.class, DirectoryApiSpecification.class})
+@ConditionalOnMissingBean(name = "primaryopenehrdirectorycontroller")
 @TenantAware
 @RestController
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr")

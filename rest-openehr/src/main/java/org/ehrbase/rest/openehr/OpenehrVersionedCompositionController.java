@@ -62,8 +62,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
-@ConditionalOnMissingBean(
-        value = {OpenehrVersionedCompositionController.class, VersionedCompositionApiSpecification.class})
+@ConditionalOnMissingBean(name = "primaryopenehrversionedcompositioncontroller")
 @TenantAware
 @RestController
 @RequestMapping(

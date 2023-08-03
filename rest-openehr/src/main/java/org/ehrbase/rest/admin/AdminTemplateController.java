@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Admin API controller for Templates. Provides endpoints to update (replace) and delete templates.
  */
-@ConditionalOnMissingBean(value = {AdminTemplateController.class})
+@ConditionalOnMissingBean(name = "primaryadmintemplatecontroller")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Template")

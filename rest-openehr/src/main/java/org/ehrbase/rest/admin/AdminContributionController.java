@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Admin API controller for Contribution related data. Provides endpoints to update and remove Contributions in
  * database physically.
  */
-@ConditionalOnMissingBean(value = {AdminContributionController.class})
+@ConditionalOnMissingBean(name = "primaryadmincontributioncontroller")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Contribution")

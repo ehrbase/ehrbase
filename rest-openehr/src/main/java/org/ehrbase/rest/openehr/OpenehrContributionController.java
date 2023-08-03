@@ -57,7 +57,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@ConditionalOnMissingBean(value = {OpenehrContributionController.class, ContributionApiSpecification.class})
+@ConditionalOnMissingBean(name = "primaryopenehrcontributioncontroller")
 @TenantAware
 @RestController
 @RequestMapping(
