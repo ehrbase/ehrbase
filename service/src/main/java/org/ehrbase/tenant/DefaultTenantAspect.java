@@ -80,6 +80,7 @@ public class DefaultTenantAspect implements org.ehrbase.api.aspect.TenantAspect 
                 .ifPresent(tenantAnnotation -> {
                     if (isMethodTenantAware(pjp, tenantAnnotation)) {
                         Object[] args = pjp.getArgs();
+                        SecurityContextHolder.clearContext();
                         TenantAuthentication<?> tenant = Objects.requireNonNull(extract(args), ERR_NON_TENANT_ID);
                         SecurityContext ctx = SecurityContextHolder.getContext();
                         ctx.setAuthentication(DefaultTenantAuthentication.of(tenant, Object::toString));
