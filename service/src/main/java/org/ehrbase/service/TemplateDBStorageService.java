@@ -20,11 +20,13 @@ package org.ehrbase.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
 import org.ehrbase.dao.access.support.ServiceDataAccess;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
+import org.ehrbase.util.TemplateUtils;
 import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Service;
@@ -52,20 +54,29 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     @Override
-    public void storeTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
-        if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
-                    .update();
-        } else {
-            I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
-                    .commit();
-        }
+    public Optional<UUID> findUuidByTemplateId(String templateId) {
+        return Optional.ofNullable(
+                getTemplateStoreAccessByTemplateId(templateId).getId());
     }
 
     @Override
-    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
+    public void storeTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
+        findUuidByTemplateId(TemplateUtils.getTemplateId(template))
+                .ifPresentOrElse(
+                        uuid -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant, uuid)
+                                .update(),
+                        () -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
+                                .commit());
+    }
+
+    @Override
+    public Optional<OPERATIONALTEMPLATE> readOperationalTemplate(String templateId) {
         return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId)
                 .getTemplate());
+    }
+
+    private I_TemplateStoreAccess getTemplateStoreAccessByTemplateId(String templateId) {
+        return I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId);
     }
 
     /**
