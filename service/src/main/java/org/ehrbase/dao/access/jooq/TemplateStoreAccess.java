@@ -48,7 +48,6 @@ import org.ehrbase.util.UuidGenerator;
 import org.jooq.Record1;
 import org.jooq.Result;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.springframework.lang.Nullable;
 
 public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAccess {
 
@@ -142,7 +141,9 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     @Override
     public UUID getId() {
-        return templateStoreRecord.getId();
+        return Optional.ofNullable(templateStoreRecord)
+                .map(TemplateStoreRecord::getId)
+                .orElse(null);
     }
 
     private static OPERATIONALTEMPLATE buildOperationaltemplate(String content) {
@@ -171,16 +172,10 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         templateStoreRecord.setContent(template.xmlText(opts));
     }
 
-    @Nullable
     public static I_TemplateStoreAccess retrieveInstanceByTemplateId(I_DomainAccess domainAccess, String templateId) {
         TemplateStoreAccess templateStoreAccess = new TemplateStoreAccess(domainAccess);
-        TemplateStoreRecord templateRecord =
+        templateStoreAccess.templateStoreRecord =
                 domainAccess.getContext().fetchOne(TEMPLATE_STORE, TEMPLATE_STORE.TEMPLATE_ID.eq(templateId));
-        if (templateRecord == null) {
-            return null;
-        }
-
-        templateStoreAccess.templateStoreRecord = templateRecord;
 
         return templateStoreAccess;
     }
