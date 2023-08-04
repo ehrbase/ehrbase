@@ -39,6 +39,7 @@ public class RestModuleConfiguration implements WebMvcConfigurer {
 
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HttpRequestSupplierInterceptor());
+        registry.addInterceptor(new SecurityContextCleanupInterceptor());
     }
 
     public static class HttpRequestSupplierInterceptor implements HandlerInterceptor {
@@ -68,6 +69,15 @@ public class RestModuleConfiguration implements WebMvcConfigurer {
                     .filter(TenantAuthentication.class::isInstance)
                     .map(auth -> (TenantAuthentication<?>) auth)
                     .map(TenantAuthentication::getTenantId);
+        }
+    }
+
+    public static class SecurityContextCleanupInterceptor implements HandlerInterceptor {
+
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+                throws Exception {
+            SecurityContextHolder.clearContext();
+            return true;
         }
     }
 }
