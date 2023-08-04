@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.ehrbase.api.tenant.TenantAuthentication;
 import org.ehrbase.api.tenant.ThreadLocalSupplier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -36,10 +37,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableAspectJAutoProxy
 public class RestModuleConfiguration implements WebMvcConfigurer {
     public static final String HTTP_HEADER_TENANT_ID = "Tenant-Id";
+    public static final String NONE = "none";
+
+    @Value("${security.auth-type}")
+    private String authType;
 
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HttpRequestSupplierInterceptor());
-        registry.addInterceptor(new SecurityContextCleanupInterceptor());
+        if (NONE.equalsIgnoreCase(authType)) {
+            registry.addInterceptor(new SecurityContextCleanupInterceptor());
+        }
     }
 
     public static class HttpRequestSupplierInterceptor implements HandlerInterceptor {
@@ -74,6 +81,7 @@ public class RestModuleConfiguration implements WebMvcConfigurer {
 
     public static class SecurityContextCleanupInterceptor implements HandlerInterceptor {
 
+        @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
                 throws Exception {
             SecurityContextHolder.clearContext();

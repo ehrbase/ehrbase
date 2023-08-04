@@ -40,6 +40,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter;
 
 /**
  * {@link Configuration} for OAuth2 authentication.
@@ -90,6 +91,8 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         String userRole = securityProperties.getOauth2UserRole();
         String adminRole = securityProperties.getOauth2AdminRole();
+
+        http.addFilterBefore(new SecurityFilter(), BearerTokenAuthenticationFilter.class);
 
         // @formatter:off
         var registry = http.cors()
