@@ -30,6 +30,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 /**
  * {@link Configuration} for Basic authentication.
@@ -72,6 +73,8 @@ public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.addFilterBefore(new SecurityFilter(), BasicAuthenticationFilter.class);
+
         // @formatter:off
         http.cors()
                 .and()

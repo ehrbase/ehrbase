@@ -8,7 +8,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
- ### Fixed 
+ ### Fixed
+- cleanup security context ([#1159](https://github.com/ehrbase/ehrbase/pull/1159))
+- enforce unique template id ([#1158](https://github.com/ehrbase/ehrbase/pull/1158))
 
 ## [0.28.0]
  ### Added
@@ -17,7 +19,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
  ### Changed 
  - Upgrade openEHR_SDK to version 2.0.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
-
  - Audit log functionality has been integrated as a plugin ([#1131](https://github.com/ehrbase/ehrbase/pull/1131))
  - update to SDK 2.0.0-SNAPSHOT ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
  - move dbencoding from SDK to ehrbase ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
