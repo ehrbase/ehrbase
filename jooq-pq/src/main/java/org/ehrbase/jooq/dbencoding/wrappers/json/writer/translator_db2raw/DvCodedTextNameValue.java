@@ -45,7 +45,12 @@ public class DvCodedTextNameValue implements I_NameValueHandler {
             this.terminologyId = ((Map) ((Map) value.get("defining_code")).get("terminologyId"))
                     .get("value")
                     .toString();
-            this.preferredTerm = Optional.of(value).map(v -> v.get("defining_code")).map(Map.class::cast).map(m -> m.get("preferredTerm")).map(Object::toString).orElse(null);
+            this.preferredTerm = Optional.of(value)
+                    .map(v -> v.get("defining_code"))
+                    .map(Map.class::cast)
+                    .map(m -> m.get("preferredTerm"))
+                    .map(Object::toString)
+                    .orElse(null);
         }
     }
 
@@ -64,7 +69,7 @@ public class DvCodedTextNameValue implements I_NameValueHandler {
         writer.name(I_DvTypeAdapter.NAME);
         writer.beginObject();
         writer.name(I_DvTypeAdapter.VALUE).value(value);
-        if(mappings != null){
+        if (mappings != null) {
             DvTextNameValue.writeTermMappingList(writer, mappings);
         }
 
@@ -80,7 +85,7 @@ public class DvCodedTextNameValue implements I_NameValueHandler {
                     .name("value")
                     .value(terminologyId)
                     .endObject();
-            if(preferredTerm != null) {
+            if (preferredTerm != null) {
                 writer.name("preferred_term").value(preferredTerm);
             }
             writer.endObject();

@@ -42,7 +42,7 @@ public class NameAsDvText {
         }
         if (aName != null) {
             nameMap.put("value", aName.getValue());
-            if(aName.getMappings() != null){
+            if (aName.getMappings() != null) {
                 nameMap.put("mappings", aName.getMappings());
             }
         }

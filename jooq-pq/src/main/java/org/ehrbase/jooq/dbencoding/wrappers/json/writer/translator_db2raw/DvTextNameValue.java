@@ -59,7 +59,7 @@ public class DvTextNameValue implements I_NameValueHandler {
         writer.name(I_DvTypeAdapter.NAME);
         writer.beginObject();
         writer.name(I_DvTypeAdapter.VALUE).value(value);
-        if(mappings != null) {
+        if (mappings != null) {
             writeTermMappingList(writer, mappings);
         }
         writer.name(I_DvTypeAdapter.AT_TYPE).value(RmConstants.DV_TEXT);
@@ -86,7 +86,7 @@ public class DvTextNameValue implements I_NameValueHandler {
     }
 
     private static void writeValue(JsonWriter w, Object value) throws IOException {
-        if(value instanceof List l){
+        if (value instanceof List l) {
             w.beginArray();
             for (Object o : l) {
                 writeValue(w, o);
@@ -98,6 +98,4 @@ public class DvTextNameValue implements I_NameValueHandler {
             w.value(Optional.ofNullable(value).map(Object::toString).orElse(null));
         }
     }
-
-
 }

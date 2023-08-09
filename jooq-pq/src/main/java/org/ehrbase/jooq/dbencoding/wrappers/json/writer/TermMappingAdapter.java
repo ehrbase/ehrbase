@@ -17,14 +17,11 @@
  */
 package org.ehrbase.jooq.dbencoding.wrappers.json.writer;
 
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
-import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.TermMapping;
 import java.io.IOException;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 
 /**
  * Created by christian on 4/3/2017.
@@ -42,7 +39,7 @@ public class TermMappingAdapter extends DvTypeAdapter<TermMapping> {
 
     public void write(JsonWriter writer, List<TermMapping> termMappings) throws IOException {
 
-        if(CollectionUtils.isNotEmpty(termMappings)){
+        if (CollectionUtils.isNotEmpty(termMappings)) {
             writer.name("mappings");
             writer.beginArray(); // [
             for (TermMapping termMapping : termMappings) {

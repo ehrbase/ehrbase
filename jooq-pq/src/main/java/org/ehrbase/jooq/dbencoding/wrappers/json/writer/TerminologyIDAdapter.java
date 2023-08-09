@@ -17,7 +17,6 @@
  */
 package org.ehrbase.jooq.dbencoding.wrappers.json.writer;
 
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.nedap.archie.rm.support.identification.TerminologyId;

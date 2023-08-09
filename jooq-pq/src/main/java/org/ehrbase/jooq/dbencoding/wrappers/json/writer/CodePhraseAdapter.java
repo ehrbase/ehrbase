@@ -17,13 +17,9 @@
  */
 package org.ehrbase.jooq.dbencoding.wrappers.json.writer;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.io.IOException;
 import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
@@ -66,8 +62,8 @@ public class CodePhraseAdapter extends DvTypeAdapter<CodePhrase> {
             writer.name("codeString").value(codePhrase.getCodeString());
             writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
             writer.name("terminologyId");
-            terminologyIDAdapter.write(writer,codePhrase.getTerminologyId());
-            if(preferredTerm.isPresent()){
+            terminologyIDAdapter.write(writer, codePhrase.getTerminologyId());
+            if (preferredTerm.isPresent()) {
                 writer.name("preferredTerm").value(preferredTerm.get());
             }
             writer.endObject();
@@ -76,8 +72,8 @@ public class CodePhraseAdapter extends DvTypeAdapter<CodePhrase> {
             writer.name(TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(codePhrase).camelToUpperSnake());
             writer.name("code_string").value(codePhrase.getCodeString());
             writer.name("terminology_id");
-            terminologyIDAdapter.write(writer,codePhrase.getTerminologyId());
-            if(preferredTerm.isPresent()){
+            terminologyIDAdapter.write(writer, codePhrase.getTerminologyId());
+            if (preferredTerm.isPresent()) {
                 writer.name("preferred_term").value(preferredTerm.get());
             }
             writer.endObject();
