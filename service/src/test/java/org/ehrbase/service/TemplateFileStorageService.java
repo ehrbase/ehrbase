@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -85,15 +86,20 @@ public class TemplateFileStorageService implements TemplateStorage {
                 .map(filename -> {
                     TemplateMetaData template = new TemplateMetaData();
                     OPERATIONALTEMPLATE operationaltemplate =
-                            readOperationaltemplate(filename).orElse(null);
+                            readOperationalTemplate(filename).orElse(null);
 
                     // null if the file couldn't be fetched from cache or read from file storage
                     if (operationaltemplate == null) {
                         template.addError("Reported error for file:" + filename + ", error:" + errorMap.get(filename));
                     } else {
-                        template.setOperationaltemplate(operationaltemplate);
+                        template.setOperationalTemplate(operationaltemplate);
                         if (operationaltemplate.getTemplateId() == null)
                             template.addError("Could not get template id for template in file:" + filename);
+                        if (operationaltemplate.getUid() == null)
+                            template.addError("Could not get uid for template in file:" + filename);
+                        else
+                            template.setInternalId(
+                                    UUID.fromString(operationaltemplate.getUid().getValue()));
                     }
 
                     Path path = convertToTenantPath(filename, currentTenantIdentifier);
@@ -121,6 +127,15 @@ public class TemplateFileStorageService implements TemplateStorage {
     }
 
     @Override
+    public Optional<UUID> findUuidByTemplateId(String templateId) {
+        return listAllOperationalTemplates().stream()
+                .filter(metadata -> TemplateUtils.getTemplateId(metadata.getOperationaltemplate())
+                        .equals(templateId))
+                .map(TemplateMetaData::getInternalId)
+                .findFirst();
+    }
+
+    @Override
     public void storeTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
@@ -131,7 +146,7 @@ public class TemplateFileStorageService implements TemplateStorage {
     }
 
     @Override
-    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
+    public Optional<OPERATIONALTEMPLATE> readOperationalTemplate(String templateId) {
         OPERATIONALTEMPLATE operationaltemplate = null;
 
         File file = optFileMap.get(CacheKey.of(templateId, systemTenant.get()));

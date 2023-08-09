@@ -20,6 +20,7 @@ package org.ehrbase.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -39,6 +40,8 @@ public interface TemplateStorage {
      */
     Set<String> findAllTemplateIds();
 
+    Optional<UUID> findUuidByTemplateId(String templateId);
+
     /**
      * Save a template in the store
      * @param template @see {@link OPERATIONALTEMPLATE}
@@ -51,7 +54,7 @@ public interface TemplateStorage {
      * @param templateId
      * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
      */
-    Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId);
+    Optional<OPERATIONALTEMPLATE> readOperationalTemplate(String templateId);
 
     /**
      * Replaces the content of an existing template with the same id as in the provided template with the new

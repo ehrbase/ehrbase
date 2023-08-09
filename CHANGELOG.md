@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.1.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed
+- cleanup security context ([#1159](https://github.com/ehrbase/ehrbase/pull/1159))
+- enforce unique template id ([#1158](https://github.com/ehrbase/ehrbase/pull/1158))
+
 ## [0.28.0]
  ### Added
 
@@ -12,7 +20,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
  ### Changed 
  - Upgrade openEHR_SDK to version 2.0.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
-
  - Audit log functionality has been integrated as a plugin ([#1131](https://github.com/ehrbase/ehrbase/pull/1131))
  - update to SDK 2.0.0-SNAPSHOT ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
  - move dbencoding from SDK to ehrbase ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
@@ -669,3 +676,4 @@ the next release this file will provide a proper overview.
 [0.27.3]: https://github.com/ehrbase/ehrbase/compare/v0.27.2...v0.27.3
 [0.27.4]: https://github.com/ehrbase/ehrbase/compare/v0.27.3...v0.27.4
 [0.28.0]: https://github.com/ehrbase/ehrbase/compare/v0.27.4...v0.28.0
+[0.29.0]: https://github.com/ehrbase/ehrbase/compare/v0.28.0...v0.29.0

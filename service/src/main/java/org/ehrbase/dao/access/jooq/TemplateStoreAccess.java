@@ -44,8 +44,8 @@ import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.records.AdminGetTemplateUsageRecord;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.Record1;
-import org.jooq.Record2;
 import org.jooq.Result;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -58,6 +58,14 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         templateStoreRecord = domainAccess.getContext().newRecord(TEMPLATE_STORE);
         templateStoreRecord.setSysTenant(sysTenant);
         setTemplate(operationaltemplate);
+    }
+
+    public TemplateStoreAccess(
+            I_DomainAccess domainAccess, OPERATIONALTEMPLATE operationaltemplate, Short sysTenant, UUID id) {
+        super(domainAccess);
+        templateStoreRecord = domainAccess.getContext().newRecord(TEMPLATE_STORE);
+        templateStoreRecord.setSysTenant(sysTenant);
+        setTemplate(operationaltemplate, id);
     }
 
     // internal minimal constructor - needs proper initialization before following usage
@@ -131,6 +139,13 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
                 .orElse(null);
     }
 
+    @Override
+    public UUID getId() {
+        return Optional.ofNullable(templateStoreRecord)
+                .map(TemplateStoreRecord::getId)
+                .orElse(null);
+    }
+
     private static OPERATIONALTEMPLATE buildOperationaltemplate(String content) {
         InputStream inputStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
 
@@ -146,7 +161,11 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
 
     @Override
     public void setTemplate(OPERATIONALTEMPLATE template) {
-        templateStoreRecord.setId(UUID.fromString(template.getUid().getValue()));
+        setTemplate(template, UuidGenerator.randomUUID());
+    }
+
+    private void setTemplate(OPERATIONALTEMPLATE template, UUID id) {
+        templateStoreRecord.setId(id != null ? id : UuidGenerator.randomUUID());
         templateStoreRecord.setTemplateId(template.getTemplateId().getValue());
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
@@ -157,15 +176,13 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         TemplateStoreAccess templateStoreAccess = new TemplateStoreAccess(domainAccess);
         templateStoreAccess.templateStoreRecord =
                 domainAccess.getContext().fetchOne(TEMPLATE_STORE, TEMPLATE_STORE.TEMPLATE_ID.eq(templateId));
+
         return templateStoreAccess;
     }
 
     public static List<TemplateMetaData> fetchAll(I_DomainAccess domainAccess) {
-        Result<Record2<String, Timestamp>> records = domainAccess
-                .getContext()
-                .select(TEMPLATE_STORE.CONTENT, TEMPLATE_STORE.SYS_TRANSACTION)
-                .from(TEMPLATE_STORE)
-                .fetch();
+        Result<TemplateStoreRecord> records =
+                domainAccess.getContext().selectFrom(TEMPLATE_STORE).fetch();
         return records.parallelStream().map(TemplateStoreAccess::buildMetadata).collect(Collectors.toList());
     }
 
@@ -243,11 +260,13 @@ public class TemplateStoreAccess extends DataAccess implements I_TemplateStoreAc
         return Routines.adminDeleteAllTemplates(domainAccess.getContext().configuration());
     }
 
-    private static TemplateMetaData buildMetadata(Record2<String, Timestamp> r) {
+    private static TemplateMetaData buildMetadata(TemplateStoreRecord record) {
         TemplateMetaData templateMetaData = new TemplateMetaData();
-        templateMetaData.setOperationaltemplate(TemplateStoreAccess.buildOperationaltemplate(r.component1()));
+        templateMetaData.setInternalId(record.getId());
+        templateMetaData.setOperationalTemplate(TemplateStoreAccess.buildOperationaltemplate(record.getContent()));
         // @TODO read from DB
-        templateMetaData.setCreatedOn(OffsetDateTime.ofInstant(r.component2().toInstant(), ZoneId.systemDefault()));
+        templateMetaData.setCreatedOn(
+                OffsetDateTime.ofInstant(record.getSysTransaction().toInstant(), ZoneId.systemDefault()));
         return templateMetaData;
     }
 }
