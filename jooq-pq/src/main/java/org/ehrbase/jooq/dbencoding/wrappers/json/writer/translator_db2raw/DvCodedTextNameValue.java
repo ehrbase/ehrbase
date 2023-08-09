@@ -41,14 +41,14 @@ public class DvCodedTextNameValue implements I_NameValueHandler {
         this.mappings = (List) value.get("mappings");
         if (value.get("defining_code") != null) {
             this.codeString =
-                    ((Map) value.get("defining_code")).get("codeString").toString();
-            this.terminologyId = ((Map) ((Map) value.get("defining_code")).get("terminologyId"))
+                    ((Map) value.get("defining_code")).get("code_string").toString();
+            this.terminologyId = ((Map) ((Map) value.get("defining_code")).get("terminology_id"))
                     .get("value")
                     .toString();
             this.preferredTerm = Optional.of(value)
                     .map(v -> v.get("defining_code"))
                     .map(Map.class::cast)
-                    .map(m -> m.get("preferredTerm"))
+                    .map(m -> m.get("preferred_term"))
                     .map(Object::toString)
                     .orElse(null);
         }

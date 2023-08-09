@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
-import org.ehrbase.openehr.sdk.util.SnakeCase;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 
 public class DvTextNameValue implements I_NameValueHandler {
@@ -75,11 +74,11 @@ public class DvTextNameValue implements I_NameValueHandler {
         w.endArray();
     }
 
-    private static void writeWithKeysAsSnakeCase(JsonWriter w, Map map) throws IOException {
+    private static void writeMap(JsonWriter w, Map map) throws IOException {
         w.beginObject();
         for (Object e : map.keySet()) {
             Object value = map.get(e);
-            w.name(new SnakeCase((String) e).camelToSnake());
+            w.name((String) e);
             writeValue(w, value);
         }
         w.endObject();
@@ -93,7 +92,7 @@ public class DvTextNameValue implements I_NameValueHandler {
             }
             w.endArray();
         } else if (value instanceof Map m) {
-            writeWithKeysAsSnakeCase(w, m);
+            writeMap(w, m);
         } else {
             w.value(Optional.ofNullable(value).map(Object::toString).orElse(null));
         }

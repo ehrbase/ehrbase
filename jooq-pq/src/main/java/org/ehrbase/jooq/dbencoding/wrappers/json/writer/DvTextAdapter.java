@@ -23,7 +23,6 @@ import com.nedap.archie.rm.datavalues.DvText;
 import java.io.IOException;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.ObjectSnakeCase;
-import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /**
  * GSON adapter for DvDateTime
@@ -50,17 +49,11 @@ public class DvTextAdapter extends DvTypeAdapter<DvText> {
         }
 
         TermMappingAdapter termMappingAdapter = new TermMappingAdapter(adapterType);
-        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB) {
+        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB
+                || adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
             writer.beginObject();
             writer.name("value").value(dvalue.getValue());
-            writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON)
-                    .value(new SnakeCase(DvText.class.getSimpleName()).camelToUpperSnake());
-            termMappingAdapter.write(writer, dvalue.getMappings());
-            writer.endObject();
-        } else if (adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
-            writer.beginObject();
             writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(dvalue).camelToUpperSnake());
-            writer.name("value").value(dvalue.getValue());
             termMappingAdapter.write(writer, dvalue.getMappings());
             writer.endObject();
         }

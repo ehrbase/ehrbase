@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.ObjectSnakeCase;
-import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /**
  * GSON adapter for DvDateTime
@@ -61,23 +60,20 @@ public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
         }
 
         TermMappingAdapter termMappingAdapter = new TermMappingAdapter(adapterType);
-        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB) {
-            writer.beginObject();
-            writer.name(VALUE).value(dvalue.getValue());
-            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(DvCodedText.class.getSimpleName()).camelToUpperSnake());
-            writer.name("definingCode");
-            codePhraseAdapter.write(writer, dvalue.getDefiningCode());
-            termMappingAdapter.write(writer, dvalue.getMappings());
-            writer.endObject();
-        } else if (adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
-            writer.beginObject();
-            writer.name(TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(dvalue).camelToUpperSnake());
-            writer.name(VALUE).value(dvalue.getValue());
-            termMappingAdapter.write(writer, dvalue.getMappings());
-            writer.name("defining_code");
-            codePhraseAdapter.write(writer, dvalue.getDefiningCode());
-            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
-            writer.endObject();
+        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB
+                || adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
+            writeDvCodedText(writer, dvalue, termMappingAdapter);
         }
+    }
+
+    private void writeDvCodedText(JsonWriter writer, DvCodedText dvalue, TermMappingAdapter termMappingAdapter)
+            throws IOException {
+        writer.beginObject();
+        writer.name(TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(dvalue).camelToUpperSnake());
+        writer.name(VALUE).value(dvalue.getValue());
+        writer.name("defining_code");
+        codePhraseAdapter.write(writer, dvalue.getDefiningCode());
+        termMappingAdapter.write(writer, dvalue.getMappings());
+        writer.endObject();
     }
 }

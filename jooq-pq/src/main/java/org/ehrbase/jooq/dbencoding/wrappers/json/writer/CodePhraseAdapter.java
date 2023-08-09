@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.ObjectSnakeCase;
-import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /**
  * GSON adapter for DvDateTime
@@ -57,17 +56,8 @@ public class CodePhraseAdapter extends DvTypeAdapter<CodePhrase> {
             return;
         }
         Optional<String> preferredTerm = Optional.of(codePhrase).map(CodePhrase::getPreferredTerm);
-        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB) {
-            writer.beginObject();
-            writer.name("codeString").value(codePhrase.getCodeString());
-            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
-            writer.name("terminologyId");
-            terminologyIDAdapter.write(writer, codePhrase.getTerminologyId());
-            if (preferredTerm.isPresent()) {
-                writer.name("preferredTerm").value(preferredTerm.get());
-            }
-            writer.endObject();
-        } else if (adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
+        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB
+                || adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
             writer.beginObject();
             writer.name(TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(codePhrase).camelToUpperSnake());
             writer.name("code_string").value(codePhrase.getCodeString());

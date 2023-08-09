@@ -48,16 +48,11 @@ public class TerminologyIDAdapter extends DvTypeAdapter<TerminologyId> {
             return;
         }
 
-        if (adapterType == AdapterType.PG_JSONB) {
+        if (adapterType == AdapterType.PG_JSONB || adapterType == AdapterType.RAW_JSON) {
             writer.beginObject();
             writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value("TERMINOLOGY_ID");
             writer.name("value").value(terminologyID.getValue());
             writer.endObject();
-        } else if (adapterType == AdapterType.RAW_JSON) {
-            writer.beginObject(); // {
-            writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value("TERMINOLOGY_ID");
-            writer.name("value").value(terminologyID.getValue());
-            writer.endObject(); // }
         }
     }
 }
