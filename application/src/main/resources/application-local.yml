@@ -56,7 +56,7 @@ server:
 
 security:
   #authType: oauth
-  authType: none
+  authType: NONE
 
 #use admin for cleaning up the db during tests
 admin-api:
