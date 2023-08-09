@@ -404,7 +404,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             version = compositionService.getLastVersionNumber(versionedObjectUid);
         }
 
-        return fromPath("{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
+        return fromPath("/{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
                 .build(
                         EHR,
                         ehrId.toString(),

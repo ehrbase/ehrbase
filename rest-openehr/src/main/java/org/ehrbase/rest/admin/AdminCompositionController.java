@@ -110,7 +110,7 @@ public class AdminCompositionController extends BaseController {
                 .setEhrIds(ehrId)
                 .setCompositionId(compositionId)
                 .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
-                .setLocation(UriComponentsBuilder.fromPath("/{ehr_id}/composition/{composition_id}")
+                .setLocation(UriComponentsBuilder.fromPath("/ehr/{ehr_id}/composition/{composition_id}")
                         .build(ehrId, compositionId)
                         .toString());
 
