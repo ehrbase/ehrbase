@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+ - Fix storing attributes of Locatable.name ([#1161](https://github.com/ehrbase/ehrbase/pull/1161))
 
 ## [0.29.0]
  ### Added
