@@ -8,7 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
- ### Fixed 
+ ### Fixed
+ - fix atna location ([#1160](https://github.com/ehrbase/ehrbase/pull/1160))
 
 ## [0.29.0]
  ### Added
