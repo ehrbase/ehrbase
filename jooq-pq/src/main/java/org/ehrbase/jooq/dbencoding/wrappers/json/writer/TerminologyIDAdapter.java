@@ -30,8 +30,6 @@ import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
  */
 public class TerminologyIDAdapter extends DvTypeAdapter<TerminologyId> {
 
-    private Gson gson = null;
-
     public TerminologyIDAdapter(AdapterType adapterType) {
         super(adapterType);
     }
@@ -53,7 +51,8 @@ public class TerminologyIDAdapter extends DvTypeAdapter<TerminologyId> {
 
         if (adapterType == AdapterType.PG_JSONB) {
             writer.beginObject();
-            writer.name("terminology_id").value(terminologyID.getValue());
+            writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value("TERMINOLOGY_ID");
+            writer.name("value").value(terminologyID.getValue());
             writer.endObject();
         } else if (adapterType == AdapterType.RAW_JSON) {
             writer.beginObject(); // {

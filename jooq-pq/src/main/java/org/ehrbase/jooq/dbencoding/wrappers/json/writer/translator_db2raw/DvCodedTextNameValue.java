@@ -20,7 +20,9 @@ package org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 
@@ -28,18 +30,22 @@ public class DvCodedTextNameValue implements I_NameValueHandler {
 
     private final JsonWriter writer;
     private final String value;
+    private final List mappings;
     private String codeString;
     private String terminologyId;
+    private String preferredTerm;
 
     DvCodedTextNameValue(JsonWriter writer, LinkedTreeMap value) {
         this.writer = writer;
         this.value = value.get("value").toString();
+        this.mappings = (List) value.get("mappings");
         if (value.get("defining_code") != null) {
             this.codeString =
                     ((Map) value.get("defining_code")).get("codeString").toString();
             this.terminologyId = ((Map) ((Map) value.get("defining_code")).get("terminologyId"))
                     .get("value")
                     .toString();
+            this.preferredTerm = Optional.of(value).map(v -> v.get("defining_code")).map(Map.class::cast).map(m -> m.get("preferredTerm")).map(Object::toString).orElse(null);
         }
     }
 
@@ -58,6 +64,9 @@ public class DvCodedTextNameValue implements I_NameValueHandler {
         writer.name(I_DvTypeAdapter.NAME);
         writer.beginObject();
         writer.name(I_DvTypeAdapter.VALUE).value(value);
+        if(mappings != null){
+            DvTextNameValue.writeTermMappingList(writer, mappings);
+        }
 
         if (codeString != null) {
             writer.name(I_DvTypeAdapter.AT_TYPE).value(RmConstants.DV_CODED_TEXT);
@@ -65,12 +74,15 @@ public class DvCodedTextNameValue implements I_NameValueHandler {
 
             writer.beginObject();
             writer.name("code_string").value(codeString);
-            writer.name("terminology_id");
 
-            writer.beginObject();
-            writer.name("value").value(terminologyId);
-            writer.endObject();
-
+            writer.name("terminology_id")
+                    .beginObject()
+                    .name("value")
+                    .value(terminologyId)
+                    .endObject();
+            if(preferredTerm != null) {
+                writer.name("preferred_term").value(preferredTerm);
+            }
             writer.endObject();
         } else writer.name(I_DvTypeAdapter.AT_TYPE).value(RmConstants.DV_TEXT);
 

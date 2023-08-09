@@ -22,8 +22,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.io.IOException;
+import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.ObjectSnakeCase;
 import org.ehrbase.openehr.sdk.util.SnakeCase;
@@ -34,17 +36,17 @@ import org.ehrbase.openehr.sdk.util.SnakeCase;
  */
 public class CodePhraseAdapter extends DvTypeAdapter<CodePhrase> {
 
-    private Gson gson;
+    private TerminologyIDAdapter terminologyIDAdapter;
 
     public CodePhraseAdapter(AdapterType adapterType) {
         super(adapterType);
-        gson = new GsonBuilder()
-                .registerTypeAdapter(TerminologyId.class, new TerminologyIDAdapter(adapterType))
-                .setPrettyPrinting()
-                .create();
+        terminologyIDAdapter = new TerminologyIDAdapter(adapterType);
     }
 
-    public CodePhraseAdapter() {}
+    public CodePhraseAdapter() {
+        super();
+        terminologyIDAdapter = new TerminologyIDAdapter(adapterType);
+    }
 
     @Override
     public CodePhrase read(JsonReader arg0) throws IOException {
@@ -58,23 +60,26 @@ public class CodePhraseAdapter extends DvTypeAdapter<CodePhrase> {
             writer.nullValue();
             return;
         }
-
+        Optional<String> preferredTerm = Optional.of(codePhrase).map(CodePhrase::getPreferredTerm);
         if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB) {
             writer.beginObject();
             writer.name("codeString").value(codePhrase.getCodeString());
             writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
             writer.name("terminologyId");
-            writer.beginObject();
-            writer.name("value").value(codePhrase.getTerminologyId().getValue());
-            writer.name(TAG_CLASS_RAW_JSON)
-                    .value(new SnakeCase(TerminologyId.class.getSimpleName()).camelToUpperSnake());
-            writer.endObject();
+            terminologyIDAdapter.write(writer,codePhrase.getTerminologyId());
+            if(preferredTerm.isPresent()){
+                writer.name("preferredTerm").value(preferredTerm.get());
+            }
             writer.endObject();
         } else if (adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
             writer.beginObject();
             writer.name(TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(codePhrase).camelToUpperSnake());
             writer.name("code_string").value(codePhrase.getCodeString());
-            writer.name("terminology_id").value(gson.toJson(codePhrase.getTerminologyId()));
+            writer.name("terminology_id");
+            terminologyIDAdapter.write(writer,codePhrase.getTerminologyId());
+            if(preferredTerm.isPresent()){
+                writer.name("preferred_term").value(preferredTerm.get());
+            }
             writer.endObject();
         }
     }

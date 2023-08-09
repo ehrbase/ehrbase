@@ -49,8 +49,8 @@ public class DvTextAdapter extends DvTypeAdapter<DvText> {
             return;
         }
 
+        TermMappingAdapter termMappingAdapter = new TermMappingAdapter(adapterType);
         if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB) {
-            TermMappingAdapter termMappingAdapter = new TermMappingAdapter();
             writer.beginObject();
             writer.name("value").value(dvalue.getValue());
             writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON)
@@ -61,6 +61,7 @@ public class DvTextAdapter extends DvTypeAdapter<DvText> {
             writer.beginObject();
             writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(dvalue).camelToUpperSnake());
             writer.name("value").value(dvalue.getValue());
+            termMappingAdapter.write(writer, dvalue.getMappings());
             writer.endObject();
         }
     }

@@ -23,38 +23,44 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.TermMapping;
 import java.io.IOException;
 import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.jooq.dbencoding.CompositionSerializer;
 
 /**
  * Created by christian on 4/3/2017.
  */
-public class TermMappingAdapter extends DvTypeAdapter<DvCodedText> {
+public class TermMappingAdapter extends DvTypeAdapter<TermMapping> {
 
-    private Gson gson;
+    private final DvCodedTextAdapter codedTextAdapter;
+    private final CodePhraseAdapter codePhraseAdapter;
 
-    public TermMappingAdapter() {}
+    public TermMappingAdapter(AdapterType adapterType) {
+        super(adapterType);
+        codedTextAdapter = new DvCodedTextAdapter(adapterType);
+        codePhraseAdapter = new CodePhraseAdapter(adapterType);
+    }
 
     public void write(JsonWriter writer, List<TermMapping> termMappings) throws IOException {
-        if (termMappings == null) {
-            //            writer.nullValue();
-            return;
-        }
 
-        if (termMappings.size() > 0) {
-            DvCodedTextAdapter dvCodedTextAdapter =
-                    new DvCodedTextAdapter(); // used to encode DV_CODED_TEXT in mappings
-            CodePhraseAdapter codePhraseAdapter = new CodePhraseAdapter();
+        if(CollectionUtils.isNotEmpty(termMappings)){
             writer.name("mappings");
             writer.beginArray(); // [
             for (TermMapping termMapping : termMappings) {
-                writer.beginObject(); // {
-                writer.name("match").value("" + new Character(termMapping.getMatch()));
-                writer.name("purpose");
-                new DvCodedTextAdapter(AdapterType.PG_JSONB).write(writer, termMapping.getPurpose());
-                writer.name("target");
-                new CodePhraseAdapter(AdapterType.PG_JSONB).write(writer, termMapping.getTarget());
-                writer.endObject(); // }
+                write(writer, termMapping);
             }
-            writer.endArray(); // ]
+            writer.endArray(); //
         }
+    }
+
+    @Override
+    public void write(JsonWriter writer, TermMapping termMapping) throws IOException {
+        writer.beginObject(); // {
+        writer.name("_type").value("TERM_MAPPING");
+        writer.name("match").value(Character.toString(termMapping.getMatch()));
+        writer.name("purpose");
+        codedTextAdapter.write(writer, termMapping.getPurpose());
+        writer.name("target");
+        codePhraseAdapter.write(writer, termMapping.getTarget());
+        writer.endObject(); // }
     }
 }

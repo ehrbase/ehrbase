@@ -20,13 +20,18 @@ package org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
+import org.ehrbase.openehr.sdk.util.SnakeCase;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 
 public class DvTextNameValue implements I_NameValueHandler {
 
     private final JsonWriter writer;
     private final String value;
+    private List mappings;
 
     DvTextNameValue(JsonWriter writer, String value) {
         this.writer = writer;
@@ -36,6 +41,7 @@ public class DvTextNameValue implements I_NameValueHandler {
     DvTextNameValue(JsonWriter writer, LinkedTreeMap value) {
         this.writer = writer;
         this.value = value.get("value").toString();
+        this.mappings = (List) value.get("mappings");
     }
 
     /**
@@ -53,7 +59,45 @@ public class DvTextNameValue implements I_NameValueHandler {
         writer.name(I_DvTypeAdapter.NAME);
         writer.beginObject();
         writer.name(I_DvTypeAdapter.VALUE).value(value);
+        if(mappings != null) {
+            writeTermMappingList(writer, mappings);
+        }
         writer.name(I_DvTypeAdapter.AT_TYPE).value(RmConstants.DV_TEXT);
         writer.endObject();
     }
+
+    public static void writeTermMappingList(JsonWriter w, List list) throws IOException {
+        w.name("mappings");
+        w.beginArray();
+        for (Object o : list) {
+            writeValue(w, o);
+        }
+        w.endArray();
+    }
+
+    private static void writeWithKeysAsSnakeCase(JsonWriter w, Map map) throws IOException {
+        w.beginObject();
+        for (Object e : map.keySet()) {
+            Object value = map.get(e);
+            w.name(new SnakeCase((String) e).camelToSnake());
+            writeValue(w, value);
+        }
+        w.endObject();
+    }
+
+    private static void writeValue(JsonWriter w, Object value) throws IOException {
+        if(value instanceof List l){
+            w.beginArray();
+            for (Object o : l) {
+                writeValue(w, o);
+            }
+            w.endArray();
+        } else if (value instanceof Map m) {
+            writeWithKeysAsSnakeCase(w, m);
+        } else {
+            w.value(Optional.ofNullable(value).map(Object::toString).orElse(null));
+        }
+    }
+
+
 }

@@ -42,6 +42,9 @@ public class NameAsDvText {
         }
         if (aName != null) {
             nameMap.put("value", aName.getValue());
+            if(aName.getMappings() != null){
+                nameMap.put("mappings", aName.getMappings());
+            }
         }
         nameMap.put(I_DvTypeAdapter.AT_TYPE, new SnakeCase(DvText.class.getSimpleName()).camelToUpperSnake());
         return nameMap;
