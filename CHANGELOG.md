@@ -8,6 +8,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [0.29.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.1.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  ### Fixed
 - cleanup security context ([#1159](https://github.com/ehrbase/ehrbase/pull/1159))
 - enforce unique template id ([#1158](https://github.com/ehrbase/ehrbase/pull/1158))
@@ -675,4 +681,5 @@ the next release this file will provide a proper overview.
 [0.27.3]: https://github.com/ehrbase/ehrbase/compare/v0.27.2...v0.27.3
 [0.27.4]: https://github.com/ehrbase/ehrbase/compare/v0.27.3...v0.27.4
 [0.28.0]: https://github.com/ehrbase/ehrbase/compare/v0.27.4...v0.28.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.28.0...HEAD
+[0.29.0]: https://github.com/ehrbase/ehrbase/compare/v0.28.0...v0.29.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.29.0...HEAD
