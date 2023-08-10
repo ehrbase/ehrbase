@@ -108,3 +108,11 @@ If exception occurs during the migration script execution (`V85__enforce_unique_
 
 Action Required:
 Ensure that the **ehr.template_store.id** and **ehr.template_store.template_id** columns have unique values within the tenant.
+
+## EHRbase 0.30.0
+
+### Fix storage of Locatable.name
+An error in the encoding for Locatable.name was fixed. There is an automatic migration which will fix the existing compositions.
+Be aware that this migration might take a while, as it will rewrite every composition in the database. 
+It will replace the Strings `"codeString":` and `"terminologyId":` with `"code_string":` and `"terminology_id":`. 
+This replacement is done over the whole JSON stored in the database, so there is a small chance that not only the broken JSON keys are affected.
