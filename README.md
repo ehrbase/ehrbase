@@ -141,7 +141,7 @@ For integration tests please refer to the [integration-test](https://github.com/
  1. `java -jar application/target/application-*.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
  2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
 
-## Updating
+## Update
 
 Before updating to a new version of EHRBase check [UPDATING.md](UPDATING.md) for any backwards-incompatible changes and additional
 steps needed in EHRBase. New Releases may introduce DB changes. It is thus recommend to make a DB backup before
