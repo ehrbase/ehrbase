@@ -57,8 +57,6 @@ public class PartyIdentifiedAdapter extends DvTypeAdapter<PartyIdentified> {
             return;
         }
 
-        TermMappingAdapter termMappingAdapter = new TermMappingAdapter();
-
         if (adapterType == AdapterType.PG_JSONB) {
             writer.beginObject();
             writer.name("name").value(partyIdentified.getName());

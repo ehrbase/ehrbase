@@ -107,7 +107,7 @@ public class DBEncodeTest {
     @Test
     public void testDBDecodeFullComposition() throws Exception {
 
-        String db_encoded = IOUtils.resourceToString("/composition/canonical_json/full_composition.json", UTF_8);
+        String db_encoded = IOUtils.resourceToString("/sample_data/full_composition.json", UTF_8);
         Assertions.assertNotNull(db_encoded);
 
         JsonElement converted = new LightRawJsonEncoder(db_encoded).encodeContentAsJson(null);

@@ -48,8 +48,6 @@ public class ParticipationAdapter extends DvTypeAdapter<Participation> {
             return;
         }
 
-        TermMappingAdapter termMappingAdapter = new TermMappingAdapter();
-
         if (adapterType == AdapterType.PG_JSONB) {
             writer.beginObject();
             writer.name("function");

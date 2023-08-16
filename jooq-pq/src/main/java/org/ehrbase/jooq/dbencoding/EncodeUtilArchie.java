@@ -22,6 +22,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.TermMapping;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDate;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDuration;
@@ -41,6 +42,7 @@ import org.ehrbase.jooq.dbencoding.wrappers.json.writer.DvTimeAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.ParticipationAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.PartyIdentifiedAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.PartyRefAdapter;
+import org.ehrbase.jooq.dbencoding.wrappers.json.writer.TermMappingAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.ArrayListAdapter;
 import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.LinkedTreeMapAdapter;
 
@@ -67,7 +69,8 @@ public class EncodeUtilArchie {
                 .registerTypeAdapter(CodePhrase.class, new CodePhraseAdapter())
                 .registerTypeAdapter(Participation.class, new ParticipationAdapter())
                 .registerTypeAdapter(PartyIdentified.class, new PartyIdentifiedAdapter())
-                .registerTypeAdapter(PartyRef.class, new PartyRefAdapter());
+                .registerTypeAdapter(PartyRef.class, new PartyRefAdapter())
+                .registerTypeAdapter(TermMapping.class, new TermMappingAdapter(AdapterType.PG_JSONB));
     }
 
     public static GsonBuilder getGsonBuilderInstance(AdapterType dbjson2rawjson) {
