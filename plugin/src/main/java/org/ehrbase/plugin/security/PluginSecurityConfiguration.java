@@ -17,6 +17,7 @@
  */
 package org.ehrbase.plugin.security;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
@@ -26,11 +27,12 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.SourceLocation;
 import org.aspectj.runtime.internal.AroundClosure;
+import org.ehrbase.api.annotations.EhrbaseSecurity;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.aspect.AnnotationAspect;
 import org.ehrbase.api.aspect.AuthorizationAspect;
 import org.ehrbase.api.aspect.TenantAspect;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.plugin.security.AuthorizationInfo.AuthorizationEnabled;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
@@ -124,15 +126,18 @@ public class PluginSecurityConfiguration implements ApplicationContextAware {
     }
 
     @Bean
-    @ConditionalOnBean(value = {AuthorizationAspect.class, AuthorizationInfo.AuthorizationEnabled.class})
+    @ConditionalOnBean(value = {AuthorizationAspect.class, AuthorizationEnabled.class})
     public Advisor authorizationAspect() {
         ApplicationContext parentCtx = applicationContext.getParent();
         AuthorizationAspect theAspect = parentCtx.getBean(AuthorizationAspect.class);
 
         return new DefaultPointcutAdvisor(
-                new AnnotationMatchingPointcut(null, EhrbaseAuthorization.class, true), new AspectAdapter(theAspect) {
+                new AnnotationMatchingPointcut(null, EhrbaseSecurity.class, true), new AspectAdapter(theAspect) {
                     public Object invoke(MethodInvocation invocation) throws Throwable {
-                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), null);
+                        Method method = invocation.getMethod();
+
+                        Annotation[] annotations = method.getDeclaredAnnotations();
+                        return getAspect().action(new ProceedingJoinPointAdapter(invocation), List.of(annotations));
                     }
                 });
     }

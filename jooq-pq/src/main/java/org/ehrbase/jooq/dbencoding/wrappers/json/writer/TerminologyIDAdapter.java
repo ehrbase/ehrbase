@@ -17,7 +17,6 @@
  */
 package org.ehrbase.jooq.dbencoding.wrappers.json.writer;
 
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.nedap.archie.rm.support.identification.TerminologyId;
@@ -29,8 +28,6 @@ import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
  * Required since JSON does not support natively a DateTime data type
  */
 public class TerminologyIDAdapter extends DvTypeAdapter<TerminologyId> {
-
-    private Gson gson = null;
 
     public TerminologyIDAdapter(AdapterType adapterType) {
         super(adapterType);
@@ -51,15 +48,11 @@ public class TerminologyIDAdapter extends DvTypeAdapter<TerminologyId> {
             return;
         }
 
-        if (adapterType == AdapterType.PG_JSONB) {
+        if (adapterType == AdapterType.PG_JSONB || adapterType == AdapterType.RAW_JSON) {
             writer.beginObject();
-            writer.name("terminology_id").value(terminologyID.getValue());
-            writer.endObject();
-        } else if (adapterType == AdapterType.RAW_JSON) {
-            writer.beginObject(); // {
             writer.name(I_DvTypeAdapter.TAG_CLASS_RAW_JSON).value("TERMINOLOGY_ID");
             writer.name("value").value(terminologyID.getValue());
-            writer.endObject(); // }
+            writer.endObject();
         }
     }
 }

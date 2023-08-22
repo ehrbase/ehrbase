@@ -2516,7 +2516,7 @@ commands:
 orbs:
   maven: circleci/maven@1.0.1
   openjdk-install: cloudesire/openjdk-install@1.2.3
-  sonarcloud: sonarsource/sonarcloud@1.0.2
+  sonarcloud: sonarsource/sonarcloud@2.0.0
 
 executors:
   # https://hub.docker.com/u/cimg (circleci next-gen docker images)

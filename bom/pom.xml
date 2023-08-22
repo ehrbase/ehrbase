@@ -24,7 +24,7 @@
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>bom</artifactId>
-    <version>0.30.0-SNAPSHOT</version>
+    <version>0.31.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>EHRbase</name>
@@ -102,13 +102,13 @@
         <antlr4.version>4.11.1</antlr4.version>
         <archie.version>3.3.0</archie.version>
         <commons-io.version>2.13.0</commons-io.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
-        <ehrbase.sdk.version>2.2.0-SNAPSHOT</ehrbase.sdk.version>
+        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <ehrbase.sdk.version>2.3.0-SNAPSHOT</ehrbase.sdk.version>
         <flyway.version>8.5.13</flyway.version>
         <jackson-bom.version>2.15.0</jackson-bom.version>
-        <javamelody.version>1.94.0</javamelody.version>
+        <javamelody.version>1.95.0</javamelody.version>
         <joda.version>2.12.5</joda.version>
-        <jooq.version>3.18.5</jooq.version>
+        <jooq.version>3.18.6</jooq.version>
         <json-path.version>2.8.0</json-path.version>
         <junit.version>5.7.2</junit.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
@@ -118,7 +118,7 @@
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <postgresql.version>42.5.3</postgresql.version>
-        <prometheus.version>1.11.2</prometheus.version>
+        <prometheus.version>1.11.3</prometheus.version>
         <spring-boot.version>2.7.14</spring-boot.version>
         <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->

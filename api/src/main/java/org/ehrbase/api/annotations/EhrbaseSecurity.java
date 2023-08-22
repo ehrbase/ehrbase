@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -15,20 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.authorization;
+package org.ehrbase.api.annotations;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-@Inherited
 @Retention(RUNTIME)
-@Repeatable(EhrbaseAuthorizations.class)
 @Target(ElementType.METHOD)
-public @interface EhrbaseAuthorization {
-    EhrbasePermission permission();
-}
+public @interface EhrbaseSecurity {}

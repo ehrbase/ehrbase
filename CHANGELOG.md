@@ -8,8 +8,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ - Removed authorization scopes from endpoints and added support for overwriting controllers ([#1157](https://github.com/ehrbase/ehrbase/pull/1157))
  ### Fixed
- - fix atna location ([#1160](https://github.com/ehrbase/ehrbase/pull/1160))
+ - Fix atna location ([#1160](https://github.com/ehrbase/ehrbase/pull/1160))
+
+## [0.30.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.2.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed 
+ - Fix storing attributes of Locatable.name ([#1161](https://github.com/ehrbase/ehrbase/pull/1161))
 
 ## [0.29.0]
  ### Added

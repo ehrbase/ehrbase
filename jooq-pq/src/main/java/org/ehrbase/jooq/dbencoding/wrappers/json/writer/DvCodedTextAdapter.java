@@ -17,36 +17,31 @@
  */
 package org.ehrbase.jooq.dbencoding.wrappers.json.writer;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.io.IOException;
 import java.util.Optional;
 import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.ehrbase.openehr.sdk.util.ObjectSnakeCase;
-import org.ehrbase.openehr.sdk.util.SnakeCase;
 
 /**
  * GSON adapter for DvDateTime
  * Required since JSON does not support natively a DateTime data type
  */
 public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
-
-    private Gson gson;
+    private final CodePhraseAdapter codePhraseAdapter;
 
     public DvCodedTextAdapter(AdapterType adapterType) {
         super(adapterType);
-        gson = new GsonBuilder()
-                .registerTypeAdapter(CodePhrase.class, new CodePhraseAdapter(adapterType))
-                .setPrettyPrinting()
-                .create();
+        codePhraseAdapter = new CodePhraseAdapter(adapterType);
     }
 
-    public DvCodedTextAdapter() {}
+    public DvCodedTextAdapter() {
+        super();
+        codePhraseAdapter = new CodePhraseAdapter(adapterType);
+    }
 
     @Override
     public DvCodedText read(JsonReader arg0) {
@@ -64,33 +59,21 @@ public class DvCodedTextAdapter extends DvTypeAdapter<DvCodedText> {
             return;
         }
 
-        TermMappingAdapter termMappingAdapter = new TermMappingAdapter();
-
-        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB) {
-            writer.beginObject();
-            writer.name(VALUE).value(dvalue.getValue());
-            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(DvCodedText.class.getSimpleName()).camelToUpperSnake());
-            writer.name("definingCode");
-            writer.beginObject();
-            writer.name("codeString").value(dvalue.getDefiningCode().getCodeString());
-            writer.name("terminologyId");
-            writer.beginObject();
-            writer.name(VALUE).value(dvalue.getDefiningCode().getTerminologyId().getValue());
-            writer.name(TAG_CLASS_RAW_JSON)
-                    .value(new SnakeCase(TerminologyId.class.getSimpleName()).camelToUpperSnake());
-            writer.endObject();
-            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
-            writer.endObject();
-            termMappingAdapter.write(writer, dvalue.getMappings());
-            writer.endObject();
-        } else if (adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
-            writer.beginObject();
-            writer.name(TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(dvalue).camelToUpperSnake());
-            writer.name(VALUE).value(dvalue.getValue());
-            CodePhrase codePhrase = dvalue.getDefiningCode();
-            writer.name("defining_code").value(gson.toJson(codePhrase));
-            writer.name(TAG_CLASS_RAW_JSON).value(new SnakeCase(CodePhrase.class.getSimpleName()).camelToUpperSnake());
-            writer.endObject();
+        TermMappingAdapter termMappingAdapter = new TermMappingAdapter(adapterType);
+        if (adapterType == I_DvTypeAdapter.AdapterType.PG_JSONB
+                || adapterType == I_DvTypeAdapter.AdapterType.RAW_JSON) {
+            writeDvCodedText(writer, dvalue, termMappingAdapter);
         }
+    }
+
+    private void writeDvCodedText(JsonWriter writer, DvCodedText dvalue, TermMappingAdapter termMappingAdapter)
+            throws IOException {
+        writer.beginObject();
+        writer.name(TAG_CLASS_RAW_JSON).value(new ObjectSnakeCase(dvalue).camelToUpperSnake());
+        writer.name(VALUE).value(dvalue.getValue());
+        writer.name("defining_code");
+        codePhraseAdapter.write(writer, dvalue.getDefiningCode());
+        termMappingAdapter.write(writer, dvalue.getMappings());
+        writer.endObject();
     }
 }

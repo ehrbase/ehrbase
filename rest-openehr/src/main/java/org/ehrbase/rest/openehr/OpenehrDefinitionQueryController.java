@@ -18,7 +18,11 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.http.MediaType.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,8 +32,6 @@ import java.util.Objects;
 import java.util.Optional;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
@@ -43,6 +45,7 @@ import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -58,6 +61,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(name = "primaryopenehrdefinitionquerycontroller")
 @TenantAware
 @RestController
 @RequestMapping(
@@ -88,7 +92,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
      */
     @Override
     @GetMapping(value = {"/{qualified_query_name}", ""})
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_READ)
     public ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
@@ -105,7 +108,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     @Override
     @GetMapping(value = {"/{qualified_query_name}/{version}"})
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_READ)
     public ResponseEntity<QueryDefinitionResponseData> getStoredQueryVersion(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
@@ -124,7 +126,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     }
 
     @Override
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_CREATE)
     @PutMapping(
             value = {"/{qualified_query_name}/{version}", "/{qualified_query_name}"},
             consumes = {TEXT_PLAIN_VALUE, APPLICATION_JSON_VALUE},
@@ -190,7 +191,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     @Override
     @DeleteMapping(value = {"/{qualified_query_name}/{version}"})
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_QUERY_DELETE)
     public ResponseEntity<QueryDefinitionResponseData> deleteStoredQuery(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
