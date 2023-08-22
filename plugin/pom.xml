@@ -16,6 +16,7 @@
   </properties>
 
   <dependencies>
+
     <dependency>
       <groupId>com.nedap.healthcare.archie</groupId>
       <artifactId>openehr-rm</artifactId>

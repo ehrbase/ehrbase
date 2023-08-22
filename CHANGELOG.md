@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ - Removed authorization scopes from endpoints and added support for overwriting controllers ([#1157](https://github.com/ehrbase/ehrbase/pull/1157))
  ### Fixed 
 
 ## [0.30.0]

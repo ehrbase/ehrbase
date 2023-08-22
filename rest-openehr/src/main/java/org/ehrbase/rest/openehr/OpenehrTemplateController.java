@@ -33,8 +33,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -52,6 +50,7 @@ import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -69,6 +68,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
+@ConditionalOnMissingBean(name = "primaryopenehrtemplatecontroller")
 @TenantAware
 @RestController
 @RequestMapping(
@@ -89,12 +89,10 @@ public class OpenehrTemplateController extends BaseController implements Templat
     /*
        ADL 1.4
     */
-    @Override
     @PostMapping(
             path = "/adl1.4",
             produces = {MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     public ResponseEntity createTemplateClassic(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
@@ -154,9 +152,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
-    @Override
     @GetMapping("/adl1.4")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity getTemplatesClassic(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
@@ -182,9 +178,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
-    @Override
     @GetMapping("/adl1.4/{template_id}")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity getTemplateClassic(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
@@ -210,7 +204,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
     }
 
     @GetMapping(path = "/adl1.4/{template_id}/example")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_EXAMPLE)
     public ResponseEntity<String> getTemplateExample(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
@@ -236,10 +229,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
        ADL 2
        TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
     */
-    @Override
     @PostMapping("/adl2")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     public ResponseEntity<TemplateResponseData> createTemplateNew(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
@@ -273,9 +264,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
     // significantly
     // also, this endpoint combines what is listed as two endpoints:
     // https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-adl-2-template-get
-    @Override
     @GetMapping("/adl2/{template_id}/{version_pattern}")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     public ResponseEntity<TemplateResponseData> getTemplateNew(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
