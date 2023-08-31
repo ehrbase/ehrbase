@@ -180,6 +180,29 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
+                <artifactId>serialisation</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+           <exclusions>
+               <exclusion>
+                   <groupId>commons-logging</groupId>
+                   <artifactId>commons-logging</artifactId>
+               </exclusion>
+           </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
+                <artifactId>validation</artifactId>
+                <version>${ehrbase.sdk.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
