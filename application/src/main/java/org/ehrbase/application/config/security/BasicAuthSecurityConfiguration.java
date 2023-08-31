@@ -17,20 +17,12 @@
  */
 package org.ehrbase.application.config.security;
 
-import static org.ehrbase.application.config.security.SecurityProperties.ADMIN;
-import static org.ehrbase.application.config.security.SecurityProperties.USER;
-
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 /**
  * {@link Configuration} for Basic authentication.
@@ -42,7 +34,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Configuration
 @ConditionalOnProperty(prefix = "security", name = "authType", havingValue = "basic")
 @EnableWebSecurity
-public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class BasicAuthSecurityConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -57,40 +49,44 @@ public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter
         logger.info("Using basic authentication");
     }
 
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // @formatter:off
-        auth.inMemoryAuthentication()
-                .withUser(properties.getAuthUser())
-                .password("{noop}" + properties.getAuthPassword())
-                .roles(USER)
-                .and()
-                .withUser(properties.getAuthAdminUser())
-                .password("{noop}" + properties.getAuthAdminPassword())
-                .roles(ADMIN);
-        // @formatter:on
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.addFilterBefore(new SecurityFilter(), BasicAuthenticationFilter.class);
-
-        // @formatter:off
-        http.cors()
-                .and()
-                .csrf()
-                .ignoringAntMatchers("/rest/**")
-                .and()
-                .authorizeRequests()
-                .antMatchers("/rest/admin/**", "/management/**")
-                .hasRole(ADMIN)
-                .anyRequest()
-                .hasAnyRole(ADMIN, USER)
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .httpBasic();
-        // @formatter:on
-    }
+    /**
+     *
+     * @Override
+     * public void configure(AuthenticationManagerBuilder auth) throws Exception {
+     * // @formatter:off
+     * auth.inMemoryAuthentication()
+     * .withUser(properties.getAuthUser())
+     * .password("{noop}" + properties.getAuthPassword())
+     * .roles(USER)
+     * .and()
+     * .withUser(properties.getAuthAdminUser())
+     * .password("{noop}" + properties.getAuthAdminPassword())
+     * .roles(ADMIN);
+     * // @formatter:on
+     * }
+     *
+     * @Override
+     * protected void configure(HttpSecurity http) throws Exception {
+     * http.addFilterBefore(new SecurityFilter(), BasicAuthenticationFilter.class);
+     *
+     * // @formatter:off
+     * http.cors()
+     * .and()
+     * .csrf()
+     * .ignoringAntMatchers("/rest/**")
+     * .and()
+     * .authorizeRequests()
+     * .antMatchers("/rest/admin/**", "/management/**")
+     * .hasRole(ADMIN)
+     * .anyRequest()
+     * .hasAnyRole(ADMIN, USER)
+     * .and()
+     * .sessionManagement()
+     * .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+     * .and()
+     * .httpBasic();
+     * // @formatter:on
+     * }
+     *
+     */
 }

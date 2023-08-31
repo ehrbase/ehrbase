@@ -18,6 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.directory.Folder;
@@ -90,7 +92,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         var createdFolder = directoryService.create(ehrId, folder);
 
-        return createDirectoryResponse(HttpMethod.POST, prefer, accept, createdFolder, ehrId);
+        return createDirectoryResponse(POST, prefer, accept, createdFolder, ehrId);
     }
 
     /**
@@ -133,7 +135,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         directoryService.delete(ehrId, folderId);
         createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
 
-        return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
+        return createDirectoryResponse(DELETE, null, accept, null, ehrId);
     }
 
     /**
@@ -251,17 +253,12 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     }
 
     private HttpStatus getSuccessStatus(HttpMethod method) {
-        switch (method) {
-            case POST: {
-                return HttpStatus.CREATED;
-            }
-            case DELETE: {
-                return HttpStatus.NO_CONTENT;
-            }
-            default: {
-                return HttpStatus.OK;
-            }
+        if (method.equals(POST)) {
+            return HttpStatus.CREATED;
+        } else if (method.equals(DELETE)) {
+            return HttpStatus.NO_CONTENT;
         }
+        return HttpStatus.OK;
     }
 
     /**
