@@ -23,14 +23,16 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -59,18 +61,19 @@ public class BasicAuthSecurityConfiguration {
         logger.info("Using basic authentication");
     }
 
-    @Autowired
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // @formatter:off
-        auth.inMemoryAuthentication()
-                .withUser(properties.getAuthUser())
-                .password("{noop}" + properties.getAuthPassword())
-                .roles(SecurityProperties.USER)
-                .and()
-                .withUser(properties.getAuthAdminUser())
-                .password("{noop}" + properties.getAuthAdminPassword())
-                .roles(ADMIN);
-        // @formatter:on
+    @Bean
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager(
+            SecurityProperties properties, ObjectProvider<PasswordEncoder> passwordEncoder) {
+
+        return new InMemoryUserDetailsManager(
+                User.withUsername(properties.getAuthUser())
+                        .password("{noop}" + properties.getAuthPassword())
+                        .roles(SecurityProperties.USER)
+                        .build(),
+                User.withUsername(properties.getAuthAdminUser())
+                        .password("{noop}" + properties.getAuthAdminPassword())
+                        .roles(SecurityProperties.ADMIN)
+                        .build());
     }
 
     @Bean
