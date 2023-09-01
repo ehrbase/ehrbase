@@ -145,7 +145,7 @@ For integration tests please refer to the [integration-test](https://github.com/
 
 Before updating to a new version of EHRBase check [UPDATING.md](UPDATING.md) for any backwards-incompatible changes and additional
 steps needed in EHRBase. New Releases may introduce DB changes. It is thus recommend to make a DB backup before
-updating.
+updating..
 
 ## Built With
 
