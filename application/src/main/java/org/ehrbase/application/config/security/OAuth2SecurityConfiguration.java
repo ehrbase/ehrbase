@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,7 +145,7 @@ public class OAuth2SecurityConfiguration {
                         .stream()
                                 .map(roleName -> "ROLE_" + roleName.toUpperCase())
                                 .map(SimpleGrantedAuthority::new)
-                                .collect(Collectors.toList()));
+                                .toList());
             }
 
             if (jwt.getClaims().containsKey("scope")) {
@@ -154,7 +153,7 @@ public class OAuth2SecurityConfiguration {
                         Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
                                 .map(roleName -> "ROLE_" + roleName.toUpperCase())
                                 .map(SimpleGrantedAuthority::new)
-                                .collect(Collectors.toList()));
+                                .toList());
             }
             return authority;
         });
