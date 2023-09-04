@@ -17,8 +17,8 @@
  */
 package org.ehrbase.application.config.security;
 
+import jakarta.servlet.*;
 import java.io.IOException;
-import javax.servlet.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityFilter implements Filter {

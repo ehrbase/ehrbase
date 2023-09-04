@@ -17,8 +17,8 @@
  */
 package org.ehrbase.application.config.web;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.ehrbase.api.audit.interceptor.AuditInterceptor;
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
