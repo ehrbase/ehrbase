@@ -50,12 +50,6 @@ public class BasicAuthSecurityConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final SecurityProperties properties;
-
-    public BasicAuthSecurityConfiguration(SecurityProperties securityProperties) {
-        this.properties = securityProperties;
-    }
-
     @PostConstruct
     public void initialize() {
         logger.info("Using basic authentication");
