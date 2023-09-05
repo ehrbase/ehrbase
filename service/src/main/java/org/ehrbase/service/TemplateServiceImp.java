@@ -134,7 +134,7 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
     public WebTemplate findTemplate(String templateId) {
         try {
             return knowledgeCacheService.getQueryOptMetaData(templateId);
-        } catch (NullPointerException e) {
+        } catch (NullPointerException | IllegalArgumentException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {
             throw new InternalServerException("Could not generate web template", e);
