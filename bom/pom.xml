@@ -120,7 +120,7 @@
         <postgresql.version>42.5.3</postgresql.version>
         <prometheus.version>1.11.3</prometheus.version>
         <spring-boot.version>3.1.1</spring-boot.version>
-        <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
+        <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->
         <log4j.version>2.20.0</log4j.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
@@ -325,7 +325,7 @@
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-ui</artifactId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc-openapi.version}</version>
             </dependency>
             <dependency>

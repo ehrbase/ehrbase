@@ -52,7 +52,6 @@ import org.springframework.security.web.SecurityFilterChain;
  * @author Jake Smolka
  * @since 1.0.0
  */
-@Deprecated
 @Configuration
 @EnableWebSecurity
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
