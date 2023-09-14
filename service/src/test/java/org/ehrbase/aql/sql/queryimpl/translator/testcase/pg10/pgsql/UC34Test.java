@@ -27,10 +27,10 @@ public class UC34Test extends UC34 {
     public UC34Test() {
         super();
         this.expectedSqlExpression =
-                "select min(DISTINCT \"_FCT_ARG_0\") as \"min\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n"
+                "select min(DISTINCT \"_FCT_ARG_0\") as \"min\" from (select \"ehr\".\"js_dv_date_time\"(\n"
                         + "  \"ehr_join\".\"date_created\", \n"
                         + "  \"ehr_join\".\"date_created_tzid\"\n"
-                        + ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
+                        + ") as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
     }
 
     @Test

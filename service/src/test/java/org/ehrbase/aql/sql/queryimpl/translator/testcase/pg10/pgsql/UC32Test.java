@@ -30,7 +30,7 @@ public class UC32Test extends UC32 {
     public UC32Test() {
         super();
         this.expectedSqlExpression = "select " + QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION
-                + "(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}' as \"/folders/name/value\""
+                + "(ehr.js_ehr(ehr_join.id,cast(? as text))::jsonb #>'{folders}') #>>'{name,value}' as \"/folders/name/value\""
                 + " from \"ehr\".\"ehr\" as \"ehr_join\""
                 + " where ("
                 + "   'case1' IN (SELECT regexp_split_to_array('case1,case2', ','))"

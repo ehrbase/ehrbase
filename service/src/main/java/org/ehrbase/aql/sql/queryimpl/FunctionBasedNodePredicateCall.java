@@ -91,12 +91,12 @@ public class FunctionBasedNodePredicateCall {
         markerPos = itemPathArray.size();
 
         expression.add(aqlNodeNamePredicate(
-                        DSL.field(jsonpathItemAsText(
+                        jsonpathItemAsText(
                                         configuration,
                                         nodeField,
                                         itemPathArray
                                                 .subList(startList, markerPos)
-                                                .toArray(new String[] {})))
+                                                .toArray(new String[] {}))
                                 .cast(JSONB.class),
                         DSL.val(itemPathArray.get(markerPos + 1).replace("'", "")),
                         DSL.val(""))
@@ -113,8 +113,8 @@ public class FunctionBasedNodePredicateCall {
         if (!expression.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)
                 && extractPathArguments.length > 0) {
             List<String> resultList = new ArrayList<>();
-            resultList.add(DSL.field(jsonpathItemAsText(
-                            configuration, DSL.field(expression.get(0)).cast(JSONB.class), extractPathArguments))
+            resultList.add(jsonpathItemAsText(
+                            configuration, DSL.field(expression.get(0)).cast(JSONB.class), extractPathArguments)
                     .toString());
             expression = resultList;
         }

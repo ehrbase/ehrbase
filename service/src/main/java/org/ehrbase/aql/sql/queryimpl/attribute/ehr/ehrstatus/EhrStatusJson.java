@@ -56,13 +56,13 @@ public class EhrStatusJson extends EhrStatusAttribute {
                         .ehrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
             else if (jsonPath.get().contains("uid")) {
                 // this is required since jOOQ doesn't allow (easily) to convert a Field to a TableField
-                jsonEhrStatusField = DSL.field(jsonpathItemAsText(
+                jsonEhrStatusField = jsonpathItemAsText(
                         fieldContext.getContext().configuration(),
                         jsEhrStatus2(
                                         JoinBinder.statusRecordTable.field(STATUS.EHR_ID),
                                         DSL.val(fieldContext.getServerNodeId()))
                                 .cast(JSONB.class),
-                        jsonpathParameters(jsonPath.get().replace("/", ","))));
+                        jsonpathParameters(jsonPath.get().replace("/", ",")));
             } else
                 jsonEhrStatusField = new GenericJsonField(fieldContext, joinSetup)
                         .forJsonPath(jsonPath.get())

@@ -75,22 +75,19 @@ public class FullEhrJson extends EhrAttribute {
             }
 
             if (prefix != null) {
-                jsonFullEhr = DSL.field(jsonpathItemAsText(
+                jsonFullEhr = jsonpathItemAsText(
                         configuration,
                         jsonArraySplitElements(
                                 configuration,
                                 jsonpathItem(
                                         configuration,
                                         jsEhr(
-                                                        DSL.field(JoinBinder.ehrRecordTable
-                                                                        .getName()
-                                                                        .concat(".")
-                                                                        .concat(tableField.getName()))
-                                                                .cast(UUID.class),
+                                                        JoinBinder.ehrRecordTable.field(
+                                                                tableField.getName(), UUID.class),
                                                         DSL.val(fieldContext.getServerNodeId()))
                                                 .cast(JSONB.class),
                                         prefix)),
-                        suffix));
+                        suffix);
 
                 if (fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
                     jsonFullEhr = DSL.field(DSL.select(jsonFullEhr));
@@ -99,24 +96,15 @@ public class FullEhrJson extends EhrAttribute {
                     jsonFullEhr = DSL.field(jsonpathItem(
                             configuration,
                             jsEhr(
-                                            DSL.field(JoinBinder.ehrRecordTable
-                                                            .getName()
-                                                            .concat(".")
-                                                            .concat(tableField.getName()))
-                                                    .cast(UUID.class),
+                                            JoinBinder.ehrRecordTable.field(tableField.getName(), UUID.class),
                                             DSL.val(fieldContext.getServerNodeId()))
                                     .cast(JSONB.class),
                             jsonpathParameters(jsonPath.get())));
             }
         } else
-            jsonFullEhr = DSL.field(jsEhr(
-                            DSL.field(JoinBinder.ehrRecordTable
-                                            .getName()
-                                            .concat(".")
-                                            .concat(tableField.getName()))
-                                    .cast(UUID.class),
-                            DSL.val(fieldContext.getServerNodeId()))
-                    .cast(String.class));
+            jsonFullEhr = jsEhr(
+                    JoinBinder.ehrRecordTable.field(tableField.getName(), UUID.class),
+                    DSL.val(fieldContext.getServerNodeId()));
 
         if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonFullEhr));
         else return defaultAliased(jsonFullEhr);

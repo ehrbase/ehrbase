@@ -27,10 +27,10 @@ public class UC23Test extends UC23 {
     public UC23Test() {
         super();
         this.expectedSqlExpression =
-                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n"
+                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select \"ehr\".\"js_dv_date_time\"(\n"
                         + "  \"ehr_join\".\"date_created\", \n"
                         + "  \"ehr_join\".\"date_created_tzid\"\n"
-                        + ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
+                        + ") as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
     }
 
     @Test

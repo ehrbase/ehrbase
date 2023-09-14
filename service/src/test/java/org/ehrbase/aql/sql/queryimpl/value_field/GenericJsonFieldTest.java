@@ -91,15 +91,11 @@ public class GenericJsonFieldTest extends TestAqlBase {
 
         assertThat(DSL.select(field).getQuery().toString())
                 .as(jsonPath)
-                .isEqualToIgnoringWhitespace("select" + " jsonb_extract_path_text("
-                        + "       cast("
-                        + QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION + "("
-                        + "           cast(cast(jsonb_extract_path("
-                        + "               cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"category\") as jsonb),'mappings')"
-                        + "            as jsonb)"
-                        + "        as jsonb))"
-                        + "    as jsonb),"
-                        + "   'match') \"/test\"");
+                .isEqualToIgnoringWhitespace(
+                        "select" + " jsonb_extract_path_text("
+                                + QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION + "("
+                                + "        cast(  jsonb_extract_path("
+                                + "               cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"category\") as jsonb),'mappings') as jsonb)), 'match') \"/test\"");
     }
 
     @Test
@@ -143,11 +139,11 @@ public class GenericJsonFieldTest extends TestAqlBase {
 
         assertThat(DSL.select(field).getQuery().toString())
                 .as("multiple arguments")
-                .isEqualToIgnoringWhitespace("select cast(\"ehr\".\"js_party_ref\"(\n"
+                .isEqualToIgnoringWhitespace("select \"ehr\".\"js_party_ref\"(\n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_namespace\", \n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_type\", \n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_scheme\", \n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_value\"\n"
-                        + ") as varchar) \"/test\"");
+                        + ") \"/test\"");
     }
 }

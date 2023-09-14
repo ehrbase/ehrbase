@@ -29,7 +29,7 @@ public class UC15Test extends UC15 {
         super();
         this.expectedSqlExpression =
                 "select distinct on (\"/ehr_status/other_details\") \"\".\"/ehr_status/other_details\""
-                        + " from (select jsonb_extract_path_text(cast(\"ehr\".\"js_ehr_status\"(\"status_join\".\"ehr_id\") as jsonb),'other_details') as \"/ehr_status/other_details\""
+                        + " from (select jsonb_extract_path_text(cast(\"ehr\".\"js_ehr_status\"(\"status_join\".\"ehr_id\") as jsonb),?) as \"/ehr_status/other_details\""
                         + " from \"ehr\".\"ehr\" as \"ehr_join\""
                         + " join \"ehr\".\"status\" as \"status_join\""
                         + " on \"status_join\".\"ehr_id\" = \"ehr_join\".\"id\""
