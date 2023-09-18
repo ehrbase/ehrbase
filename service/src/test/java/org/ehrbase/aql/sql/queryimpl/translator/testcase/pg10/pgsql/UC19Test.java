@@ -27,7 +27,7 @@ public class UC19Test extends UC19 {
     public UC19Test() {
         super();
         this.expectedSqlExpression =
-                "select  \"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"category\") as \"/category\""
+                "select cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"category\") as varchar) as \"/category\""
                         + " from \"ehr\".\"entry\""
                         + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
                         + " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\""

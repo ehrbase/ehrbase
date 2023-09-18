@@ -59,13 +59,13 @@ public class FullCompositionJson extends CompositionAttribute {
                     configuration,
                     jsComposition2(
                                     JoinBinder.compositionRecordTable.field(tableField.getName(), UUID.class),
-                                    DSL.val(fieldContext.getServerNodeId()))
+                                    DSL.inline(fieldContext.getServerNodeId()))
                             .cast(JSONB.class),
                     jsonpathParameters(jsonPath.get()));
         } else
             jsonFullComposition = DSL.field(jsComposition2(
                             JoinBinder.compositionRecordTable.field(tableField.getName(), UUID.class),
-                            DSL.val(fieldContext.getServerNodeId()))
+                            DSL.inline(fieldContext.getServerNodeId()))
                     .cast(String.class));
 
         if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonFullComposition));

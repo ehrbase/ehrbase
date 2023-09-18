@@ -27,7 +27,7 @@ public class UC8Test extends UC8 {
     public UC8Test() {
         super();
         this.expectedSqlExpression =
-                "select cast(\"ehr\".\"js_composition\"(cast(\"composition_join\".\"id\" as uuid), cast(? as text)) as varchar) as \"c\" from \"ehr\".\"entry\""
+                "select cast(\"ehr\".\"js_composition\"(cast(\"composition_join\".\"id\" as uuid), cast('local' as text)) as varchar) as \"c\" from \"ehr\".\"entry\""
                         + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
                         + " where \"ehr\".\"entry\".\"template_id\" = ?";
     }

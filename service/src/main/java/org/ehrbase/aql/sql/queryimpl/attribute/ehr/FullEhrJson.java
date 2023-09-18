@@ -84,7 +84,7 @@ public class FullEhrJson extends EhrAttribute {
                                         jsEhr(
                                                         JoinBinder.ehrRecordTable.field(
                                                                 tableField.getName(), UUID.class),
-                                                        DSL.val(fieldContext.getServerNodeId()))
+                                                        DSL.inline(fieldContext.getServerNodeId()))
                                                 .cast(JSONB.class),
                                         prefix)),
                         suffix);
@@ -97,14 +97,15 @@ public class FullEhrJson extends EhrAttribute {
                             configuration,
                             jsEhr(
                                             JoinBinder.ehrRecordTable.field(tableField.getName(), UUID.class),
-                                            DSL.val(fieldContext.getServerNodeId()))
+                                            DSL.inline(fieldContext.getServerNodeId()))
                                     .cast(JSONB.class),
                             jsonpathParameters(jsonPath.get())));
             }
         } else
             jsonFullEhr = jsEhr(
-                    JoinBinder.ehrRecordTable.field(tableField.getName(), UUID.class),
-                    DSL.val(fieldContext.getServerNodeId()));
+                            JoinBinder.ehrRecordTable.field(tableField.getName(), UUID.class),
+                            DSL.inline(fieldContext.getServerNodeId()))
+                    .cast(String.class);
 
         if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonFullEhr));
         else return defaultAliased(jsonFullEhr);

@@ -127,7 +127,7 @@ public class FunctionBasedNodePredicateCall {
                 .subList(
                         // test if the starting item is an index, then skip it as it is mutually exclusive with node
                         // name predicate node selection
-                        itemPathArray.get(from + 2).matches("'[0-9]*'|#") ? from + 3 : from + 2, to)
+                        itemPathArray.get(from + 2).matches("[0-9]*|#") ? from + 3 : from + 2, to)
                 .toArray(new String[] {});
     }
 

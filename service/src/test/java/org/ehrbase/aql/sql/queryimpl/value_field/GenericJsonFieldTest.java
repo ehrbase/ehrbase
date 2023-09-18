@@ -139,11 +139,11 @@ public class GenericJsonFieldTest extends TestAqlBase {
 
         assertThat(DSL.select(field).getQuery().toString())
                 .as("multiple arguments")
-                .isEqualToIgnoringWhitespace("select \"ehr\".\"js_party_ref\"(\n"
+                .isEqualToIgnoringWhitespace("select cast(\"ehr\".\"js_party_ref\"(\n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_namespace\", \n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_type\", \n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_scheme\", \n"
                         + "  \"ehr\".\"party_identified\".\"party_ref_value\"\n"
-                        + ") \"/test\"");
+                        + ") as varchar) \"/test\"");
     }
 }

@@ -26,9 +26,9 @@ public class UC36Test extends UC36 {
 
     public UC36Test() {
         super();
-        this.expectedSqlExpression = "select \"ehr\".\"js_ehr\"(\n" + "  \"ehr_join\".\"id\" , \n"
-                + "  ?\n"
-                + ") as \"e\"\n"
+        this.expectedSqlExpression = "select cast(\"ehr\".\"js_ehr\"(\n" + "  \"ehr_join\".\"id\", \n"
+                + "  'local'\n"
+                + ") as varchar) as \"e\"\n"
                 + "from \"ehr\".\"ehr\" as \"ehr_join\"";
     }
 

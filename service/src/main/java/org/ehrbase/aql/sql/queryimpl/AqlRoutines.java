@@ -67,7 +67,7 @@ public class AqlRoutines extends AqlDialects {
     }
 
     private static Field[] buildParameter(String[] elements) {
-        return Arrays.stream(elements).map(DSL::val).toArray(Field[]::new);
+        return Arrays.stream(elements).map(DSL::val).map(DSL::inline).toArray(Field[]::new);
     }
 
     public static String[] jsonpathParameters(String rawParameters) {

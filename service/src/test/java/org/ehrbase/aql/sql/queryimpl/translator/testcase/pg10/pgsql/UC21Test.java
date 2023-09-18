@@ -27,7 +27,7 @@ public class UC21Test extends UC21 {
     public UC21Test() {
         super();
         this.expectedSqlExpression =
-                "select jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"category\") as jsonb),?,?,?) as \"/category/defining_code/terminology_id/value\""
+                "select jsonb_extract_path_text(cast(\"ehr\".\"js_dv_coded_text_inner\"(\"ehr\".\"entry\".\"category\") as jsonb),'defining_code', 'terminology_id', 'value') as \"/category/defining_code/terminology_id/value\""
                         + " from \"ehr\".\"entry\""
                         + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
                         + " right outer join \"ehr\".\"ehr\" as \"ehr_join\" on \"ehr_join\".\"id\" = \"composition_join\".\"ehr_id\""
