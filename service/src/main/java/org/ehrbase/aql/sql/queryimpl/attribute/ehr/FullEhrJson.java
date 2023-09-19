@@ -90,16 +90,16 @@ public class FullEhrJson extends EhrAttribute {
                         suffix);
 
                 if (fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
-                    jsonFullEhr = DSL.field(DSL.select(jsonFullEhr));
+                    jsonFullEhr = DSL.select(jsonFullEhr).asField();
             } else {
                 if (jsonPath.isPresent())
-                    jsonFullEhr = DSL.field(jsonpathItem(
+                    jsonFullEhr = jsonpathItem(
                             configuration,
                             jsEhr(
                                             JoinBinder.ehrRecordTable.field(tableField.getName(), UUID.class),
                                             DSL.inline(fieldContext.getServerNodeId()))
                                     .cast(JSONB.class),
-                            jsonpathParameters(jsonPath.get())));
+                            jsonpathParameters(jsonPath.get()));
             }
         } else
             jsonFullEhr = jsEhr(
@@ -107,7 +107,7 @@ public class FullEhrJson extends EhrAttribute {
                             DSL.inline(fieldContext.getServerNodeId()))
                     .cast(String.class);
 
-        if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonFullEhr));
+        if (fieldContext.isWithAlias()) return aliased(jsonFullEhr);
         else return defaultAliased(jsonFullEhr);
     }
 

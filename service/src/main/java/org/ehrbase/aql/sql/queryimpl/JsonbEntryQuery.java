@@ -234,7 +234,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             } else if (clause.equals(Clause.WHERE)) {
                 fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, null);
                 if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
-                    fieldPathItem = DSL.field(DSL.select(fieldPathItem));
+                    fieldPathItem = DSL.select(fieldPathItem).asField();
             }
 
             if (setReturningFunctionInWhere)

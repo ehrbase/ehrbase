@@ -68,12 +68,12 @@ public class EhrStatusJson extends EhrStatusAttribute {
                         .forJsonPath(jsonPath.get())
                         .ehrStatus(JoinBinder.statusRecordTable.field(STATUS.EHR_ID));
         } else
-            jsonEhrStatusField = DSL.field(jsEhrStatus2(
+            jsonEhrStatusField = jsEhrStatus2(
                             JoinBinder.statusRecordTable.field(STATUS.EHR_ID),
                             DSL.inline(fieldContext.getServerNodeId()))
-                    .cast(String.class));
+                    .cast(String.class);
 
-        return as(DSL.field(jsonEhrStatusField));
+        return as(jsonEhrStatusField);
     }
 
     @Override

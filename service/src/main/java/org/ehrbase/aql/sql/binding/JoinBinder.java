@@ -28,7 +28,6 @@ import org.jooq.Field;
 import org.jooq.JoinType;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 /**
  * Created by christian on 10/31/2016.
@@ -152,7 +151,7 @@ public class JoinBinder implements IJoinBinder {
         selectQuery.addJoin(
                 compositionRecordTable,
                 JoinType.RIGHT_OUTER_JOIN,
-                DSL.field(compositionRecordTable.field(COMPOSITION.ID)).eq(ENTRY.COMPOSITION_ID));
+                compositionRecordTable.field(COMPOSITION.ID).eq(ENTRY.COMPOSITION_ID));
         compositionJoined = true;
     }
 
@@ -161,8 +160,7 @@ public class JoinBinder implements IJoinBinder {
         selectQuery.addJoin(
                 systemRecordTable,
                 JoinType.JOIN,
-                DSL.field(systemRecordTable.field(SYSTEM.ID))
-                        .eq(DSL.field(ehrRecordTable.field(EHR_.SYSTEM_ID.getName(), UUID.class))));
+                systemRecordTable.field(SYSTEM.ID).eq(ehrRecordTable.field(EHR_.SYSTEM_ID.getName(), UUID.class)));
         systemJoined = true;
     }
 
@@ -172,15 +170,17 @@ public class JoinBinder implements IJoinBinder {
             joinComposition(selectQuery);
             selectQuery.addJoin(
                     statusRecordTable,
-                    DSL.field(statusRecordTable.field(STATUS.EHR_ID.getName(), UUID.class))
-                            .eq(DSL.field(compositionRecordTable.field(COMPOSITION.EHR_ID.getName(), UUID.class))));
+                    statusRecordTable
+                            .field(STATUS.EHR_ID.getName(), UUID.class)
+                            .eq(compositionRecordTable.field(COMPOSITION.EHR_ID.getName(), UUID.class)));
             statusJoined = true;
         } else { // assume it is joined on EHR
             if (joinSetup.isJoinEhr()) joinEhr(selectQuery);
             selectQuery.addJoin(
                     statusRecordTable,
-                    DSL.field(statusRecordTable.field(STATUS.EHR_ID.getName(), UUID.class))
-                            .eq(DSL.field(ehrRecordTable.field(EHR_.ID.getName(), UUID.class))));
+                    statusRecordTable
+                            .field(STATUS.EHR_ID.getName(), UUID.class)
+                            .eq(ehrRecordTable.field(EHR_.ID.getName(), UUID.class)));
             statusJoined = true;
         }
     }
@@ -191,8 +191,9 @@ public class JoinBinder implements IJoinBinder {
         Table<PartyIdentifiedRecord> subjectTable = subjectRef;
         selectQuery.addJoin(
                 subjectTable,
-                DSL.field(subjectTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))
-                        .eq(DSL.field(statusRecordTable.field(STATUS.PARTY.getName(), UUID.class))));
+                subjectTable
+                        .field(PARTY_IDENTIFIED.ID.getName(), UUID.class)
+                        .eq(statusRecordTable.field(STATUS.PARTY.getName(), UUID.class)));
         subjectJoin = true;
     }
 
@@ -209,7 +210,7 @@ public class JoinBinder implements IJoinBinder {
         selectQuery.addJoin(
                 facilityTable,
                 JoinType.LEFT_OUTER_JOIN,
-                EVENT_CONTEXT.FACILITY.eq(DSL.field(facilityTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))));
+                EVENT_CONTEXT.FACILITY.eq(facilityTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class)));
         facilityJoined = true;
     }
 
@@ -219,8 +220,9 @@ public class JoinBinder implements IJoinBinder {
         Table<PartyIdentifiedRecord> composerTable = composerRef;
         selectQuery.addJoin(
                 composerTable,
-                DSL.field(compositionRecordTable.field(COMPOSITION.COMPOSER.getName(), UUID.class))
-                        .eq(DSL.field(composerTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class))));
+                compositionRecordTable
+                        .field(COMPOSITION.COMPOSER.getName(), UUID.class)
+                        .eq(composerTable.field(PARTY_IDENTIFIED.ID.getName(), UUID.class)));
         composerJoined = true;
     }
 
@@ -230,8 +232,9 @@ public class JoinBinder implements IJoinBinder {
         selectQuery.addJoin(
                 ehrRecordTable,
                 JoinType.RIGHT_OUTER_JOIN,
-                DSL.field(ehrRecordTable.field(EHR_.ID.getName(), UUID.class))
-                        .eq(DSL.field(compositionRecordTable.field(COMPOSITION.EHR_ID.getName(), UUID.class))));
+                ehrRecordTable
+                        .field(EHR_.ID.getName(), UUID.class)
+                        .eq(compositionRecordTable.field(COMPOSITION.EHR_ID.getName(), UUID.class)));
         ehrJoined = true;
     }
 }

@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
+import org.ehrbase.aql.sql.queryimpl.value_field.Functions;
 import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -77,7 +78,7 @@ public class FunctionBasedNodePredicateCall {
         Field nodeField;
 
         if (!itemPathArray.get(0).replace("\"", "").startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
-            nodeField = DSL.field(apply(function, tableFields).toString()).cast(JSONB.class);
+            nodeField = Functions.inline(apply(function, tableFields)).cast(JSONB.class);
             startList = 0;
         } else {
             nodeField = DSL.field(itemPathArray.get(0));

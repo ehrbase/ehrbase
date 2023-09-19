@@ -25,7 +25,6 @@ import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 @SuppressWarnings({"java:S3740", "java:S1452"})
 public class SimpleEhrStatusAttribute extends EhrStatusAttribute {
@@ -38,7 +37,7 @@ public class SimpleEhrStatusAttribute extends EhrStatusAttribute {
 
     @Override
     public Field<?> sqlField() {
-        return as(DSL.field(tableField));
+        return as(tableField);
     }
 
     @Override

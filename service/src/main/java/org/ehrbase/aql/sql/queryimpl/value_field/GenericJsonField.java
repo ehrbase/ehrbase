@@ -157,7 +157,7 @@ public class GenericJsonField extends RMObjectAttribute {
         // check if the SQL expression contains a set returned in a WHERE clause (implying a lateral join)
         if (jsonField.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION)
                 && fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
-            jsonField = DSL.field(DSL.select(jsonField));
+            jsonField = DSL.select(jsonField).asField();
 
         return as(jsonField);
     }

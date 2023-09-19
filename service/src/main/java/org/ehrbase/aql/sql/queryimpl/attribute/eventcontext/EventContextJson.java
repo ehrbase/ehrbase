@@ -26,7 +26,6 @@ import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 public class EventContextJson extends EventContextAttribute {
 
@@ -47,7 +46,7 @@ public class EventContextJson extends EventContextAttribute {
                     .eventContext(EVENT_CONTEXT.ID);
         else jsonEventContext = new GenericJsonField(fieldContext, joinSetup).eventContext(EVENT_CONTEXT.ID);
 
-        if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonEventContext));
+        if (fieldContext.isWithAlias()) return aliased(jsonEventContext);
         else return defaultAliased(jsonEventContext);
     }
 
