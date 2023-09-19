@@ -35,7 +35,7 @@ public class UC4Test extends UC4 {
                         + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
                         + " join \"ehr\".\"event_context\" on \"ehr\".\"event_context\".\"composition_id\" = \"ehr\".\"entry\".\"composition_id\""
                         + " join \"ehr\".\"party_identified\" as \"composer_ref\" on \"composition_join\".\"composer\" = \"composer_ref\".\"id\""
-                        + " where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"/context/start_time/value\" desc";
+                        + " where \"ehr\".\"entry\".\"template_id\" = ?) as \"\" order by \"\".\"/context/start_time/value\" desc";
     }
 
     @Test
