@@ -101,9 +101,6 @@
         "archetype_id": {
           "value": "openEHR-EHR-EVALUATION.minimal.v1"
         },
-        "template_id": {
-          "value": "minimal_evaluation.en.v1"
-        },
         "rm_version": "1.0.2"
       },
       "archetype_node_id": "openEHR-EHR-EVALUATION.minimal.v1",

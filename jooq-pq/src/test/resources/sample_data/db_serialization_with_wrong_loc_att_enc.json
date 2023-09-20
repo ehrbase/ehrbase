@@ -28,9 +28,6 @@
               "archetype_id": {
                 "value": "openEHR-EHR-OBSERVATION.conformance_observation.v0"
               },
-              "template_id": {
-                "value": "conformance-ehrbase.de.v0"
-              },
               "rm_version": "1.0.4"
             },
             "/archetype_node_id": "openEHR-EHR-OBSERVATION.conformance_observation.v0",
@@ -294,9 +291,6 @@
           {
             "archetype_id": {
               "value": "openEHR-EHR-SECTION.conformance_section.v0"
-            },
-            "template_id": {
-              "value": "conformance-ehrbase.de.v0"
             },
             "rm_version": "1.0.4"
           }
