@@ -22,10 +22,11 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 public abstract class UC40 extends QueryProcessorTestBase {
 
     protected UC40() {
-        this.aql = "select" + "  CAST (d/description[at0001]/items[at0004]/value/magnitude AS 'FLOAT') as max_magnitude"
-                + " from EHR e"
-                + "  contains COMPOSITION"
-                + "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+        this.aql =
+                "select" + "  CAST (d/description[at0001]/items[at0004]/value/magnitude AS 'NUMERIC') as max_magnitude"
+                        + " from EHR e"
+                        + "  contains COMPOSITION"
+                        + "  contains ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
         this.expectedOutputWithJson = false;
     }
 }
