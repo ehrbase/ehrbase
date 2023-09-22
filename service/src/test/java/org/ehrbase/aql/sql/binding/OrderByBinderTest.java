@@ -36,16 +36,16 @@ public class OrderByBinderTest {
     public void getOrderByFields() {
 
         // ascending
-        SelectQuery<Record> records = DSLContextHelper.buildContext().selectQuery();
-        records.addSelect(Ehr.EHR_.DATE_CREATED.as("date_created"));
-        records.addFrom(Ehr.EHR_);
+        SelectQuery<Record> query = DSLContextHelper.buildContext().selectQuery();
+        query.addSelect(Ehr.EHR_.DATE_CREATED.as("date_created"));
+        query.addFrom(Ehr.EHR_);
         {
             // represents a/context/start_time/value as date_created and order by date_created ASC
             OrderAttribute orderAttribute = new OrderAttribute(
                     I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
 
-            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), records);
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), query);
             List<SortField<?>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
@@ -60,7 +60,7 @@ public class OrderByBinderTest {
                     I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.DESC);
 
-            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), records);
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), query);
             List<SortField<?>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
@@ -74,7 +74,7 @@ public class OrderByBinderTest {
             OrderAttribute orderAttribute = new OrderAttribute(
                     I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
 
-            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), records);
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), query);
             List<SortField<?>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);

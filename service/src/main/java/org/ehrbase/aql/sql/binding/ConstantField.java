@@ -37,9 +37,9 @@ public class ConstantField {
 
         ConstantDefinition constantDefinition = (ConstantDefinition) variableDefinition;
         if (constantDefinition.getValue() == null) { // assume NULL
-            field = DSL.inline("NULL");
+            field = DSL.inline((Object) null);
         } else {
-            field = DSL.val(constantDefinition.getValue());
+            field = DSL.inline(constantDefinition.getValue());
         }
 
         if (constantDefinition.getAlias() != null) field = field.as(constantDefinition.getAlias());

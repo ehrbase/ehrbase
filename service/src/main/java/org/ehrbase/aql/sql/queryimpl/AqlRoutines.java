@@ -67,14 +67,13 @@ public class AqlRoutines extends AqlDialects {
     }
 
     private static Field[] buildParameter(String[] elements) {
-        return Arrays.stream(elements).map(DSL::val).map(DSL::inline).toArray(Field[]::new);
+        return Arrays.stream(elements).map(DSL::inline).toArray(Field[]::new);
     }
 
     public static String[] jsonpathParameters(String rawParameters) {
         String parametersFormatted = StringUtils.remove(StringUtils.remove(rawParameters, "'{"), "}'");
         return Arrays.stream(parametersFormatted.split(","))
                 .map(s -> (s.startsWith("'") ? s.replace("'", "") : s))
-                //      .map(s -> (!s.equals(AQL_NODE_NAME_PREDICATE_MARKER) ? "'" + s + "'" : s))
                 .toArray(String[]::new);
     }
 }

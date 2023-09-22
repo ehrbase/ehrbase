@@ -19,7 +19,7 @@ package org.ehrbase.aql.sql.binding;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.ehrbase.aql.definition.CalFunctionDefinition;
+import org.ehrbase.aql.definition.CastFunctionDefinition;
 import org.ehrbase.aql.definition.FuncParameter;
 import org.ehrbase.aql.definition.FuncParameterType;
 import org.ehrbase.aql.definition.I_VariableDefinition;
@@ -46,8 +46,8 @@ public class FunctionExpression {
 
     public Field<?> buildField() {
 
-        if (functionDefinition instanceof CalFunctionDefinition calFunctionDefinition) {
-            return to(calFunctionDefinition.getCast()).cast(getType(calFunctionDefinition.getAs()));
+        if (functionDefinition instanceof CastFunctionDefinition castFunctionDefinition) {
+            return to(castFunctionDefinition.getCastee()).cast(getType(castFunctionDefinition.getTargetType()));
         }
 
         if (isAggregateDistinct()) {

@@ -22,28 +22,23 @@ import java.util.List;
 /**
  * @author Stefan Spiska
  */
-public class CalFunctionDefinition extends FunctionDefinition {
+public class CastFunctionDefinition extends FunctionDefinition {
 
-    private final FuncParameter cast;
-    private final String as;
+    private final FuncParameter castee;
+    private final String targetType;
 
-    public CalFunctionDefinition(
-            String identifier,
-            String alias,
-            String path,
-            List<FuncParameter> parameters,
-            FuncParameter cast,
-            String as) {
-        super(identifier, alias, path, parameters);
-        this.cast = cast;
-        this.as = as;
+    public CastFunctionDefinition(
+            String alias, String path, List<FuncParameter> parameters, FuncParameter castee, String targetType) {
+        super("CAST", alias, path, parameters);
+        this.castee = castee;
+        this.targetType = targetType;
     }
 
-    public FuncParameter getCast() {
-        return cast;
+    public FuncParameter getCastee() {
+        return castee;
     }
 
-    public String getAs() {
-        return as;
+    public String getTargetType() {
+        return targetType;
     }
 }

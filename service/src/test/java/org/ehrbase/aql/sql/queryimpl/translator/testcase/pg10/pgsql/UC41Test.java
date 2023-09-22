@@ -26,7 +26,7 @@ public class UC41Test extends UC41 {
 
     public UC41Test() {
         super();
-        this.expectedSqlExpression = "select ? as \"constant\" from \"ehr\".\"entry\"";
+        this.expectedSqlExpression = "select true as \"constant\" from \"ehr\".\"entry\"";
     }
 
     @Test

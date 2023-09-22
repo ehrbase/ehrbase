@@ -29,7 +29,7 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.aql.definition.CalFunctionDefinition;
+import org.ehrbase.aql.definition.CastFunctionDefinition;
 import org.ehrbase.aql.definition.ConstantDefinition;
 import org.ehrbase.aql.definition.ExtensionDefinition;
 import org.ehrbase.aql.definition.FuncParameter;
@@ -310,8 +310,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
             alias = "CAST";
         }
         String path = castFunctionContext.getText();
-        FunctionDefinition definition = new CalFunctionDefinition(
-                "CAST",
+        FunctionDefinition definition = new CastFunctionDefinition(
                 alias,
                 path,
                 parameters,
@@ -343,9 +342,9 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         } else if (inStdExpressionContext.TRUE() != null) {
             value = true;
         } else if (inStdExpressionContext.FLOAT() != null) {
-            value = Float.valueOf(inStdExpressionContext.getText());
+            value = Double.valueOf(inStdExpressionContext.getText());
         } else if (inStdExpressionContext.INTEGER() != null) {
-            value = Integer.valueOf(inStdExpressionContext.getText());
+            value = Long.valueOf(inStdExpressionContext.getText());
         } else if (inStdExpressionContext.NULL() != null) {
             value = null;
         } else if (inStdExpressionContext.REAL() != null) {
