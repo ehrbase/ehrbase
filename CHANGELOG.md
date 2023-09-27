@@ -8,6 +8,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [0.31.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.3.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
  - Migrated to spring boot 3 ([#1174](https://github.com/ehrbase/ehrbase/pull/1174))
  - Removed authorization scopes from endpoints and added support for overwriting controllers ([#1157](https://github.com/ehrbase/ehrbase/pull/1157))
  ### Fixed
@@ -694,4 +700,5 @@ the next release this file will provide a proper overview.
 [0.28.0]: https://github.com/ehrbase/ehrbase/compare/v0.27.4...v0.28.0
 [0.29.0]: https://github.com/ehrbase/ehrbase/compare/v0.28.0...v0.29.0
 [0.30.0]: https://github.com/ehrbase/ehrbase/compare/v0.29.0...v0.30.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.30.0...HEAD
+[0.31.0]: https://github.com/ehrbase/ehrbase/compare/v0.30.0...v0.31.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.31.0...HEAD
