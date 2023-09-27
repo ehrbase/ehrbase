@@ -141,7 +141,6 @@
     </dependencies>
 
     <build>
-        <finalName>ehrbase</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
