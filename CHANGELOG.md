@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  - Removed authorization scopes from endpoints and added support for overwriting controllers ([#1157](https://github.com/ehrbase/ehrbase/pull/1157))
  ### Fixed
  - Fix audit logs location ([#1160](https://github.com/ehrbase/ehrbase/pull/1160))
+ - Address AQL query security vulnerabilities ([#1190](https://github.com/ehrbase/ehrbase/pull/1190))
 
 ## [0.30.0]
  ### Added
