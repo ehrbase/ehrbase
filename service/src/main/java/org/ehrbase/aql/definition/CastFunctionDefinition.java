@@ -15,18 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.application.config.security;
+package org.ehrbase.aql.definition;
 
-import jakarta.servlet.*;
-import java.io.IOException;
-import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.List;
 
-public class SecurityFilter implements Filter {
+/**
+ * @author Stefan Spiska
+ */
+public class CastFunctionDefinition extends FunctionDefinition {
 
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-        SecurityContextHolder.clearContext();
-        filterChain.doFilter(servletRequest, servletResponse);
+    private final FuncParameter castee;
+    private final String targetType;
+
+    public CastFunctionDefinition(
+            String alias, String path, List<FuncParameter> parameters, FuncParameter castee, String targetType) {
+        super("CAST", alias, path, parameters);
+        this.castee = castee;
+        this.targetType = targetType;
+    }
+
+    public FuncParameter getCastee() {
+        return castee;
+    }
+
+    public String getTargetType() {
+        return targetType;
     }
 }

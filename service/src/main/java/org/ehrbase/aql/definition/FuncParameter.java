@@ -23,9 +23,9 @@ package org.ehrbase.aql.definition;
 public class FuncParameter {
 
     private FuncParameterType type;
-    private String value;
+    private Object value;
 
-    public FuncParameter(FuncParameterType type, String value) {
+    public FuncParameter(FuncParameterType type, Object value) {
         this.type = type;
         this.value = value;
     }
@@ -34,7 +34,7 @@ public class FuncParameter {
         return type;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 

@@ -28,10 +28,10 @@ public class UC28Test extends UC28 {
         super();
         this.expectedSqlExpression =
                 "select (ARRAY.COLUMN)::TEXT as \"/folders/name/value\" from \"ehr\".\"ehr\" as \"ehr_join\" join lateral (\n"
-                        + "  select jsonb_extract_path_text(cast(ehr.xjsonb_array_elements(cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n"
-                        + "  cast(ehr_join.id as uuid),\n"
+                        + "  select jsonb_extract_path_text(ehr.xjsonb_array_elements(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n"
+                        + "  \"ehr_join\".\"id\",\n"
                         + "  'local'\n"
-                        + ") as jsonb),'folders') as jsonb)) as jsonb),'name','0','value')\n"
+                        + ") as jsonb),'folders')),'name','0','value')\n"
                         + " AS COLUMN) as \"ARRAY\" on true where (\"ehr_join\".\"id\" = 'c2561bab-4d2b-4ffd-a893-4382e9048f8c' and 'case1' = SOME ( (SELECT (ARRAY.COLUMN)::TEXT ) ) )";
     }
 

@@ -36,8 +36,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -51,6 +49,7 @@ import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.CompositionApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -76,6 +75,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jake Smolka
  * @since 1.0.0
  */
+@ConditionalOnMissingBean(name = "primaryopenehrcompositioncontroller")
 @TenantAware
 @RestController
 @RequestMapping(
@@ -90,7 +90,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_CREATE)
     @PostMapping(
             value = "/{ehr_id}/composition",
             consumes = {"application/xml", "application/json"})
@@ -156,7 +155,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_UPDATE)
     @PutMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -252,7 +250,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
     @DeleteMapping("/{ehr_id}/composition/{preceding_version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrCompositionController.COMPOSITION, "
@@ -331,7 +328,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
      * because of the overlapping paths. Both mappings are specified to behave almost the same, so
      * this solution works in this case.
      */
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping("/{ehr_id}/composition/{versioned_object_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrCompositionController.COMPOSITION, "
@@ -404,7 +400,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             version = compositionService.getLastVersionNumber(versionedObjectUid);
         }
 
-        return fromPath("{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
+        return fromPath("/{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
                 .build(
                         EHR,
                         ehrId.toString(),

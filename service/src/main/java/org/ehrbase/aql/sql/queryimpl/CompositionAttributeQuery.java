@@ -133,7 +133,9 @@ public class CompositionAttributeQuery extends ObjectQuery implements IQueryImpl
                             .getTable()
                             .getName() + "." + variableDefinition.getSubstituteFieldVariable();
             retField = DSL.field(sqlToLateralJoin).as(retField.getName());
-        } else if (fieldResolutionContext.isUsingSetReturningFunction()) retField = DSL.field(DSL.select(retField));
+        } else if (fieldResolutionContext.isUsingSetReturningFunction()) {
+            retField = DSL.select(retField).asField();
+        }
 
         QualifiedAqlField aqlField = new QualifiedAqlField(retField);
 

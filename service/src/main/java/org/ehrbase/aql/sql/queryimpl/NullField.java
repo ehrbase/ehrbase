@@ -34,15 +34,21 @@ public class NullField {
     }
 
     public Field<?> instance() {
+
         // return a null field
-        String cast = "";
+        Field<?> nullField = DSL.inline((Object) null);
+
         // force explicit type cast for DvQuantity
         if (variableDefinition != null
                 && variableDefinition.getPath() != null
-                && variableDefinition.getPath().endsWith(MAGNITUDE)) cast = "::numeric";
+                && variableDefinition.getPath().endsWith(MAGNITUDE)) {
+            nullField = nullField.cast(Double.class);
+        }
 
-        if (variableDefinition != null && alias != null)
-            return DSL.field(DSL.val((String) null) + cast).as(alias);
-        else return DSL.field(DSL.val((String) null) + cast);
+        if (variableDefinition != null && alias != null) {
+            return nullField.as(alias);
+        } else {
+            return nullField;
+        }
     }
 }

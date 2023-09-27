@@ -14,7 +14,7 @@ jobs:
     steps:
       # Install the sdk main in the local repo so maven version plugin can find them
       - name: Checkout SDK main
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           repository: ehrbase/openEHR_SDK
@@ -33,7 +33,7 @@ jobs:
         run: mvn install -Dmaven.test.skip=true
       # Install the sdk dev in the local repo so maven version plugin can find them
       - name: Checkout SDK dev
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           repository: ehrbase/openEHR_SDK
@@ -46,7 +46,7 @@ jobs:
         run: mvn install
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           # This will be used by git in all further steps

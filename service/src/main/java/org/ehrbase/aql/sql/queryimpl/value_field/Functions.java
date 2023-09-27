@@ -23,6 +23,7 @@ import org.jooq.Function2;
 import org.jooq.Function3;
 import org.jooq.Function4;
 import org.jooq.TableField;
+import org.jooq.impl.DSL;
 
 /**
  * @author Christian Chevalley
@@ -66,5 +67,9 @@ public class Functions {
 
     private static Field applyFunction4(Function4 function, TableField... tableField) {
         return (Field) function.apply(tableField[0], tableField[1], tableField[2], tableField[3]);
+    }
+
+    public static <T> Field<T> inline(Field<T> field) {
+        return DSL.field(field.toString(), field.getType());
     }
 }

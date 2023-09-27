@@ -28,12 +28,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,9 +44,10 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Admin API controller for directories. Provides endpoint to remove complete directory trees from database physically.
  */
+@ConditionalOnMissingBean(name = "primaryadmindirectorycontroller")
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Directory")
-@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
         path = "${admin-api.context-path:/rest/admin}/ehr",
@@ -62,8 +62,6 @@ public class AdminDirectoryController extends BaseController {
         this.directoryService = directoryService;
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_DIRECTORY_DELETE)
     @DeleteMapping(path = "/{ehr_id}/directory/{directory_id}")
     @ApiResponses(
             value = {

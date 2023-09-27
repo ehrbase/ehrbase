@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
+import org.ehrbase.aql.sql.queryimpl.value_field.Functions;
 import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -77,7 +78,7 @@ public class FunctionBasedNodePredicateCall {
         Field nodeField;
 
         if (!itemPathArray.get(0).replace("\"", "").startsWith(QueryImplConstants.AQL_NODE_NAME_PREDICATE_FUNCTION)) {
-            nodeField = DSL.field(apply(function, tableFields).toString()).cast(JSONB.class);
+            nodeField = Functions.inline(apply(function, tableFields)).cast(JSONB.class);
             startList = 0;
         } else {
             nodeField = DSL.field(itemPathArray.get(0));
@@ -91,12 +92,12 @@ public class FunctionBasedNodePredicateCall {
         markerPos = itemPathArray.size();
 
         expression.add(aqlNodeNamePredicate(
-                        DSL.field(jsonpathItemAsText(
+                        jsonpathItemAsText(
                                         configuration,
                                         nodeField,
                                         itemPathArray
                                                 .subList(startList, markerPos)
-                                                .toArray(new String[] {})))
+                                                .toArray(new String[] {}))
                                 .cast(JSONB.class),
                         DSL.val(itemPathArray.get(markerPos + 1).replace("'", "")),
                         DSL.val(""))
@@ -113,8 +114,8 @@ public class FunctionBasedNodePredicateCall {
         if (!expression.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)
                 && extractPathArguments.length > 0) {
             List<String> resultList = new ArrayList<>();
-            resultList.add(DSL.field(jsonpathItemAsText(
-                            configuration, DSL.field(expression.get(0)).cast(JSONB.class), extractPathArguments))
+            resultList.add(jsonpathItemAsText(
+                            configuration, DSL.field(expression.get(0)).cast(JSONB.class), extractPathArguments)
                     .toString());
             expression = resultList;
         }
@@ -127,7 +128,7 @@ public class FunctionBasedNodePredicateCall {
                 .subList(
                         // test if the starting item is an index, then skip it as it is mutually exclusive with node
                         // name predicate node selection
-                        itemPathArray.get(from + 2).matches("'[0-9]*'|#") ? from + 3 : from + 2, to)
+                        itemPathArray.get(from + 2).matches("[0-9]*|#") ? from + 3 : from + 2, to)
                 .toArray(new String[] {});
     }
 

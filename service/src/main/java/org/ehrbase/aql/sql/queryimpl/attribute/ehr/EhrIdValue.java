@@ -25,7 +25,6 @@ import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 public class EhrIdValue extends EhrAttribute {
 
@@ -40,19 +39,17 @@ public class EhrIdValue extends EhrAttribute {
         if (fieldContext.getPathResolver().hasPathExpression()) {
             joinSetup.setJoinEhr(true);
             if (fieldContext.isWithAlias()) {
-                return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-            } else
-                return defaultAliased(
-                        DSL.field(JoinBinder.ehrRecordTable.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName()))));
+                return aliased(JoinBinder.ehrRecordTable.field(EHR_.ID));
+            } else return defaultAliased(JoinBinder.ehrRecordTable.field(JoinBinder.ehrRecordTable.field(EHR_.ID)));
         } else if (!joinSetup.isContainsEhrStatus()) {
             joinSetup.setJoinEhr(true);
             if (fieldContext.isWithAlias()) {
-                return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-            } else return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return aliased(JoinBinder.ehrRecordTable.field(EHR_.ID));
+            } else return defaultAliased(JoinBinder.ehrRecordTable.field(EHR_.ID));
         } else {
             if (fieldContext.isWithAlias()) {
-                return aliased(DSL.field("{0}", JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
-            } else return defaultAliased(DSL.field(JoinBinder.ehrRecordTable.field(EHR_.ID.getName())));
+                return aliased(JoinBinder.ehrRecordTable.field(EHR_.ID));
+            } else return defaultAliased(JoinBinder.ehrRecordTable.field(EHR_.ID));
         }
     }
 

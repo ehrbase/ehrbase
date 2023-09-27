@@ -78,10 +78,12 @@ public class PersistenceConfig {
                     return connection;
                 } catch (SQLException e) {
                     try {
+
                         super.release(connection);
-                    } finally {
-                        throw new DataAccessException("Failed to set default tenant", e);
+                    } catch (Exception r) {
+
                     }
+                    throw new DataAccessException("Failed to set default tenant", e);
                 }
             }
         };

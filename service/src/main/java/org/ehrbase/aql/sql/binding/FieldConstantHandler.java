@@ -51,7 +51,7 @@ public class FieldConstantHandler {
         List<String> segments = LocatableHelper.dividePathIntoSegments(variableDefinition.getPath());
 
         if (segments.get(segments.size() - 1).equals(I_DvTypeAdapter.ARCHETYPE_NODE_ID))
-            return DSL.field(DSL.val(implicitArchetypeNodeId(segments.get(segments.size() - 2))))
+            return DSL.inline(implicitArchetypeNodeId(segments.get(segments.size() - 2)))
                     .as(alias());
         return null;
     }
