@@ -58,7 +58,7 @@ public class TemporalWithTimeZoneTest extends TestAqlBase {
                 .as("test formatting dvdatetime value")
                 .isEqualToIgnoringWhitespace("select jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n"
                         + "  \"ehr\".\"event_context\".\"start_time\", \n"
-                        + "  event_context.START_TIME_TZID\n"
+                        + "  \"ehr\".\"event_context\".\"start_time_tzid\"\n"
                         + ") as jsonb),'value') \"/test\"");
     }
 }

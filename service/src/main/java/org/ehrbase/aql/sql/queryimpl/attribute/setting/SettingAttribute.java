@@ -31,7 +31,6 @@ import org.ehrbase.jooq.pg.Routines;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 @SuppressWarnings({"java:S3740", "java:S1452"})
 public class SettingAttribute extends EventContextAttribute {
@@ -52,13 +51,13 @@ public class SettingAttribute extends EventContextAttribute {
                         .forJsonPath(jsonPath.get())
                         .eventContext(EVENT_CONTEXT.ID);
 
-            Field jsonContextField = DSL.field(jsonpathItem(
+            Field jsonContextField = jsonpathItem(
                             fieldContext.getContext().configuration(),
                             Routines.jsDvCodedText2(tableField).cast(JSONB.class),
-                            jsonpathParameters(new GenericJsonPath(jsonPath.get()).jqueryPath())))
+                            jsonpathParameters(new GenericJsonPath(jsonPath.get()).jqueryPath()))
                     .cast(String.class);
 
-            return as(DSL.field(jsonContextField));
+            return as(jsonContextField);
         }
         return null;
     }

@@ -256,7 +256,10 @@ public class PartyProxyRepository {
                             .and(PARTY_IDENTIFIED.PARTY_REF_SCHEME.isNull())
                             .and(PARTY_IDENTIFIED.PARTY_REF_TYPE.isNull())
                             .and(PARTY_IDENTIFIED.NAME.eq(partyProxy.getName()))
-                            .and(DSL.field("(" + PARTY_IDENTIFIED.RELATIONSHIP + ").value")
+                            .and(DSL.field(
+                                            "({0}).{1}",
+                                            PARTY_IDENTIFIED.RELATIONSHIP,
+                                            org.ehrbase.jooq.pg.udt.DvCodedText.VALUE.getUnqualifiedName())
                                     .eq(relationshipAsRecord(partyProxy).getValue()))
                             .and(PARTY_IDENTIFIED.PARTY_TYPE.eq(PartyType.party_related)));
 

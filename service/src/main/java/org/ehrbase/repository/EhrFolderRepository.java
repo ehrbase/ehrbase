@@ -380,8 +380,8 @@ public class EhrFolderRepository {
     private static SelectJoinStep<Record> headQuery(DSLContext context) {
         return context.select(EHR_FOLDER.fields())
                 .select(
-                        DSL.field("null").as(EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()),
-                        DSL.field("false").as(EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
+                        DSL.inline((OffsetDateTime) null).as(EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()),
+                        DSL.inline(false).as(EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
                 .from(EHR_FOLDER);
     }
 

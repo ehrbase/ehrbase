@@ -29,6 +29,7 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.aql.definition.CastFunctionDefinition;
 import org.ehrbase.aql.definition.ConstantDefinition;
 import org.ehrbase.aql.definition.ExtensionDefinition;
 import org.ehrbase.aql.definition.FuncParameter;
@@ -102,6 +103,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
     private final Deque<I_VariableDefinition> variableStack = new ArrayDeque<>();
     private final Map<AqlParser.SelectExprContext, PredicateDefinition> predicateDefinitionMap = new HashMap<>();
     private final Random random = new Random();
+    private int serial = 0;
 
     private Deque<OrderAttribute> orderAttributes = null;
     private Integer limitAttribute = null;
@@ -196,6 +198,12 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
     private void handleFunctionDefinition(
             AqlParser.FunctionContext functionContext, AqlParser.SelectExprContext inSelectExprContext) {
+        FunctionDefinition definition = handleFunctionDefinitionInner(functionContext, inSelectExprContext);
+        pushVariableDefinition(definition);
+    }
+
+    private FunctionDefinition handleFunctionDefinitionInner(
+            AqlParser.FunctionContext functionContext, AqlParser.SelectExprContext inSelectExprContext) {
         logger.debug("Found function");
         String name = functionContext.FUNCTION_IDENTIFIER().getText();
 
@@ -204,8 +212,6 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         }
 
         List<FuncParameter> parameters = new ArrayList<>();
-
-        int serial = 0;
 
         for (ParseTree pathTree : functionContext.children) {
             if (pathTree instanceof AqlParser.IdentifiedPathContext) {
@@ -224,8 +230,14 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                         variableDefinition.getAlias() == null
                                 ? variableDefinition.getPath()
                                 : variableDefinition.getAlias()));
-            } else if (pathTree instanceof AqlParser.OperandContext) {
-                parameters.add(new FuncParameter(FuncParameterType.OPERAND, pathTree.getText()));
+            } else if (pathTree instanceof AqlParser.OperandContext operandContext) {
+
+                parameters.add(new FuncParameter(FuncParameterType.OPERAND, handleOperator(operandContext)));
+            } else if (pathTree instanceof AqlParser.FunctionContext functionContextInner) {
+                parameters.add(new FuncParameter(
+                        FuncParameterType.FUNCTION,
+                        handleFunctionDefinitionInner(functionContextInner, inSelectExprContext)));
+
             } else if (pathTree instanceof TerminalNode) {
                 parameters.add(new FuncParameter(FuncParameterType.IDENTIFIER, pathTree.getText()));
             }
@@ -239,8 +251,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
             }
         }
         String path = functionContext.getText();
-        FunctionDefinition definition = new FunctionDefinition(name, alias, path, parameters);
-        pushVariableDefinition(definition);
+        return new FunctionDefinition(name, alias, path, parameters);
     }
 
     private void handleCastFunctionDefinition(
@@ -249,7 +260,7 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
         List<FuncParameter> parameters = new ArrayList<>();
 
-        int serial = 0;
+        FuncParameter cast = null;
 
         for (ParseTree pathTree : castFunctionContext.children) {
             if (pathTree instanceof AqlParser.IdentifiedPathContext) {
@@ -263,13 +274,26 @@ public class QueryCompilerPass2 extends AqlBaseListener {
                     variableDefinition.setAlias("_FCT_ARG_" + serial++);
                 }
                 pushVariableDefinition(variableDefinition);
-                parameters.add(new FuncParameter(
+                FuncParameter funcParameter = new FuncParameter(
                         FuncParameterType.VARIABLE,
                         variableDefinition.getAlias() == null
                                 ? variableDefinition.getPath()
-                                : variableDefinition.getAlias()));
-            } else if (pathTree instanceof AqlParser.OperandContext) {
-                parameters.add(new FuncParameter(FuncParameterType.OPERAND, pathTree.getText()));
+                                : variableDefinition.getAlias());
+                parameters.add(funcParameter);
+                cast = funcParameter;
+            } else if (pathTree instanceof AqlParser.OperandContext operandContext) {
+                FuncParameter funcParameter =
+                        new FuncParameter(FuncParameterType.OPERAND, handleOperator(operandContext));
+                cast = funcParameter;
+                parameters.add(funcParameter);
+            } else if (pathTree instanceof AqlParser.FunctionContext functionContextInner) {
+
+                FuncParameter funcParameter = new FuncParameter(
+                        FuncParameterType.FUNCTION,
+                        handleFunctionDefinitionInner(functionContextInner, inSelectExprContext));
+                cast = funcParameter;
+                parameters.add(funcParameter);
+
             } else if (pathTree instanceof TerminalNode) {
                 String text = pathTree.getText();
                 if (text.contains("'")) {
@@ -286,7 +310,12 @@ public class QueryCompilerPass2 extends AqlBaseListener {
             alias = "CAST";
         }
         String path = castFunctionContext.getText();
-        FunctionDefinition definition = new FunctionDefinition("CAST", alias, path, parameters);
+        FunctionDefinition definition = new CastFunctionDefinition(
+                alias,
+                path,
+                parameters,
+                cast,
+                StringUtils.strip(castFunctionContext.STRING().getText(), "'"));
         pushVariableDefinition(definition);
     }
 
@@ -313,9 +342,9 @@ public class QueryCompilerPass2 extends AqlBaseListener {
         } else if (inStdExpressionContext.TRUE() != null) {
             value = true;
         } else if (inStdExpressionContext.FLOAT() != null) {
-            value = Float.valueOf(inStdExpressionContext.getText());
+            value = Double.valueOf(inStdExpressionContext.getText());
         } else if (inStdExpressionContext.INTEGER() != null) {
-            value = Integer.valueOf(inStdExpressionContext.getText());
+            value = Long.valueOf(inStdExpressionContext.getText());
         } else if (inStdExpressionContext.NULL() != null) {
             value = null;
         } else if (inStdExpressionContext.REAL() != null) {
@@ -331,6 +360,34 @@ public class QueryCompilerPass2 extends AqlBaseListener {
 
         ConstantDefinition definition = new ConstantDefinition(value, extractAlias(inSelectExprContext));
         pushVariableDefinition(definition);
+    }
+
+    private Object handleOperator(AqlParser.OperandContext operandContext) {
+        Object value;
+        if (operandContext.BOOLEAN() != null) {
+            value = Boolean.valueOf(operandContext.getText());
+        } else if (operandContext.FALSE() != null) {
+            value = false;
+        } else if (operandContext.TRUE() != null) {
+            value = true;
+        } else if (operandContext.FLOAT() != null) {
+            value = Float.valueOf(operandContext.getText());
+        } else if (operandContext.INTEGER() != null) {
+            value = Integer.valueOf(operandContext.getText());
+        } else if (operandContext.NULL() != null) {
+            value = null;
+        } else if (operandContext.REAL() != null) {
+            value = Double.valueOf(operandContext.getText());
+        } else if (operandContext.UNKNOWN() != null) {
+            value = null;
+        } else if (operandContext.STRING() != null) {
+            value = StringUtils.strip(operandContext.getText(), "'");
+        } else // DATE()
+        {
+            value = operandContext.getText();
+        }
+
+        return value;
     }
 
     /**

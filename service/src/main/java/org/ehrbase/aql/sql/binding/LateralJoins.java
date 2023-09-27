@@ -87,7 +87,7 @@ public class LateralJoins {
         String variableAlias = "var_" + abs + "_" + inc();
 
         SelectSelectStep wrappedSelectSelectStep =
-                DSL.select(DSL.field(selectSelectStep).as(variableAlias));
+                DSL.select(selectSelectStep.asField().as(variableAlias));
 
         Table<Record> table = DSL.table(wrappedSelectSelectStep).as(tableAlias);
         item.setLateralJoinTable(

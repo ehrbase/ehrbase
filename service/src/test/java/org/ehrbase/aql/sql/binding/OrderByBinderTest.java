@@ -24,6 +24,9 @@ import java.util.List;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
+import org.ehrbase.jooq.pg.tables.Ehr;
+import org.jooq.Record;
+import org.jooq.SelectQuery;
 import org.jooq.SortField;
 import org.junit.Test;
 
@@ -33,17 +36,17 @@ public class OrderByBinderTest {
     public void getOrderByFields() {
 
         // ascending
+        SelectQuery<Record> query = DSLContextHelper.buildContext().selectQuery();
+        query.addSelect(Ehr.EHR_.DATE_CREATED.as("date_created"));
+        query.addFrom(Ehr.EHR_);
         {
             // represents a/context/start_time/value as date_created and order by date_created ASC
             OrderAttribute orderAttribute = new OrderAttribute(
                     I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
 
-            OrderByBinder cut = new OrderByBinder(
-                    null,
-                    Collections.singletonList(orderAttribute),
-                    DSLContextHelper.buildContext().selectQuery());
-            List<SortField<Object>> actual = cut.getOrderByFields();
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), query);
+            List<SortField<?>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
             SortField<?> sortField = actual.get(0);
@@ -57,11 +60,8 @@ public class OrderByBinderTest {
                     I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.DESC);
 
-            OrderByBinder cut = new OrderByBinder(
-                    null,
-                    Collections.singletonList(orderAttribute),
-                    DSLContextHelper.buildContext().selectQuery());
-            List<SortField<Object>> actual = cut.getOrderByFields();
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), query);
+            List<SortField<?>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
             SortField<?> sortField = actual.get(0);
@@ -74,11 +74,8 @@ public class OrderByBinderTest {
             OrderAttribute orderAttribute = new OrderAttribute(
                     I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
 
-            OrderByBinder cut = new OrderByBinder(
-                    null,
-                    Collections.singletonList(orderAttribute),
-                    DSLContextHelper.buildContext().selectQuery());
-            List<SortField<Object>> actual = cut.getOrderByFields();
+            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), query);
+            List<SortField<?>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
             SortField<?> sortField = actual.get(0);
