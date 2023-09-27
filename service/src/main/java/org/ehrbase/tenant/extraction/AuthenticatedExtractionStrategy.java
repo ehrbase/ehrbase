@@ -152,8 +152,10 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication> 
         return null != theAuthentication && predicate.test(theAuthentication);
     }
 
+    public abstract Optional<TenantAuthentication<String>> extractWithPrior(Optional<TenantAuthentication<?>> priorAuthentication, Object... args);
+    
     public Optional<TenantAuthentication<String>> extract(Object... args) {
-        return extract(null, args);
+        return extractWithPrior(null, args);
     }
 }
 // @format:on
