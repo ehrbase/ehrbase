@@ -17,7 +17,6 @@
  */
 package org.ehrbase.application.config.security;
 
-import static org.ehrbase.application.config.security.SecurityProperties.ADMIN;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.util.Arrays;
@@ -100,8 +99,7 @@ public class OAuth2SecurityConfiguration {
         http.cors(withDefaults())
                 .authorizeHttpRequests(auth -> {
                     AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry =
-                            auth.requestMatchers("/rest/admin/**")
-                                    .hasRole(adminRole);
+                            auth.requestMatchers("/rest/admin/**").hasRole(adminRole);
 
                     var managementAuthorizedUrl =
                             registry.requestMatchers(this.managementWebEndpointProperties.getBasePath() + "/**");
