@@ -100,8 +100,8 @@ public class OAuth2SecurityConfiguration {
         http.cors(withDefaults())
                 .authorizeHttpRequests(auth -> {
                     AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry =
-                            auth.requestMatchers("/rest/admin/**", "/management/**")
-                                    .hasRole(ADMIN);
+                            auth.requestMatchers("/rest/admin/**")
+                                    .hasRole(adminRole);
 
                     var managementAuthorizedUrl =
                             registry.requestMatchers(this.managementWebEndpointProperties.getBasePath() + "/**");
