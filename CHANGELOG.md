@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added 
  ### Changed 
  ### Fixed 
- - Fix oauth for admin and management ([#1196](https://github.com/ehrbase/ehrbase/pull/1160](https://github.com/ehrbase/ehrbase/pull/1196))
+ - Fix OAuth2 Security Configuration for admin role and management endpoints ([#1196](https://github.com/ehrbase/ehrbase/pull/1196))
 
 ## [0.31.0]
  ### Added
