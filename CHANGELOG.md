@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+ - Fix party identified NP ([#1191](https://github.com/ehrbase/ehrbase/pull/1191))
 
 ## [0.31.0]
  ### Added
