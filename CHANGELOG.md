@@ -9,7 +9,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added 
  ### Changed 
  ### Fixed 
+ - Fix the folder audit status event type ([#1193](https://github.com/ehrbase/ehrbase/pull/1193))
  - Fix OAuth2 Security Configuration for admin role and management endpoints ([#1196](https://github.com/ehrbase/ehrbase/pull/1196))
+
 
 ## [0.31.0]
  ### Added
