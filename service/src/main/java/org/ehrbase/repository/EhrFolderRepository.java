@@ -109,7 +109,7 @@ public class EhrFolderRepository {
                         folderRecordList.get(0).getEhrId(), ContributionDataType.folder, contributionChangeType));
 
         UUID finalAuditId = Optional.ofNullable(auditId)
-                .orElseGet(() -> contributionRepository.createDefaultAudit(ContributionChangeType.creation));
+                .orElseGet(() -> contributionRepository.createDefaultAudit(contributionChangeType));
 
         Short sysTenant = tenantService.getCurrentSysTenant();
 
@@ -317,7 +317,7 @@ public class EhrFolderRepository {
         }
 
         if (auditId == null) {
-            auditId = contributionRepository.createDefaultAudit(ContributionChangeType.creation);
+            auditId = contributionRepository.createDefaultAudit(ContributionChangeType.deleted);
         }
 
         // add delete entry to history
