@@ -25,6 +25,7 @@ import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -133,7 +134,7 @@ public class PersistedPartyIdentified extends PersistedParty {
         if (uuid != null) {
             Record record = domainAccess.getContext().fetchAny(PARTY_IDENTIFIED, PARTY_IDENTIFIED.ID.eq(uuid));
             if (record == null) throw new InternalServerException("Inconsistent PartyIdentified UUID:" + uuid);
-            if (!record.get(PARTY_IDENTIFIED.NAME).equals(((PartyIdentified) partyProxy).getName()))
+            if (!Objects.equals(record.get(PARTY_IDENTIFIED.NAME), ((PartyIdentified) partyProxy).getName()))
                 throw new IllegalArgumentException(
                         "Conflicting identification, existing name was:" + record.get(PARTY_IDENTIFIED.NAME)
                                 + ", but found passed name:"
