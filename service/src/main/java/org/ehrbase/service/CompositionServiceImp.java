@@ -360,6 +360,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
         } catch (ObjectNotFoundException
                 | InvalidApiParameterException
+                | IllegalArgumentException
                         e) { // otherwise exceptions would always get sucked up by the catch below
             throw e;
         } catch (Exception e) {
