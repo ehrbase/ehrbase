@@ -118,7 +118,7 @@
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <postgresql.version>42.5.3</postgresql.version>
-        <prometheus.version>1.11.4</prometheus.version>
+        <prometheus.version>1.11.5</prometheus.version>
         <spring-boot.version>3.1.4</spring-boot.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->
