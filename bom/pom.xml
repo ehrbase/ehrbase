@@ -122,7 +122,7 @@
         <spring-boot.version>3.1.5</spring-boot.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->
-        <log4j.version>2.21.0</log4j.version>
+        <log4j.version>2.21.1</log4j.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
         <versions-maven-plugin.version>2.10.0</versions-maven-plugin.version>
         <pf4j-spring.version>0.8.0</pf4j-spring.version>
