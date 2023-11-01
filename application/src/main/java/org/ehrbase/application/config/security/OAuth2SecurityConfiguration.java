@@ -44,6 +44,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * {@link Configuration} for OAuth2 authentication.
@@ -99,10 +100,11 @@ public class OAuth2SecurityConfiguration {
         http.cors(withDefaults())
                 .authorizeHttpRequests(auth -> {
                     AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry =
-                            auth.requestMatchers("/rest/admin/**").hasRole(adminRole);
+                            auth.requestMatchers(AntPathRequestMatcher.antMatcher("/rest/admin/**"))
+                                    .hasRole(adminRole);
 
-                    var managementAuthorizedUrl =
-                            registry.requestMatchers(this.managementWebEndpointProperties.getBasePath() + "/**");
+                    var managementAuthorizedUrl = registry.requestMatchers(AntPathRequestMatcher.antMatcher(
+                            this.managementWebEndpointProperties.getBasePath() + "/**"));
 
                     switch (managementEndpointsAccessType) {
                         case ADMIN_ONLY ->

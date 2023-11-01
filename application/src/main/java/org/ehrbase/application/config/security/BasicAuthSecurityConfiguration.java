@@ -35,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * {@link Configuration} for Basic authentication.
@@ -75,8 +76,10 @@ public class BasicAuthSecurityConfiguration {
         http.addFilterBefore(new SecurityFilter(), BasicAuthenticationFilter.class);
 
         http.cors(withDefaults())
-                .csrf(c -> c.ignoringRequestMatchers("/rest/**"))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/rest/admin/**", "/management/**")
+                .csrf(c -> c.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/rest/**")))
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                AntPathRequestMatcher.antMatcher("/rest/admin/**"),
+                                AntPathRequestMatcher.antMatcher("/management/**"))
                         .hasRole(ADMIN)
                         .anyRequest()
                         .hasAnyRole(ADMIN, SecurityProperties.USER))
