@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -223,6 +224,17 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     private <T extends EhrStatusResponseData> Optional<InternalResponse<T>> buildEhrStatusResponseData(
             Supplier<T> factory, UUID ehrId, UUID ehrStatusId, int version, String accept, List<String> headerList) {
+        String versionedObjectUid = String.format(
+                "%s::%s::%s", ehrStatusId, ehrService.getServerConfig().getNodename(), version);
+
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId.toString())
+                .setDirectoryId(versionedObjectUid)
+                .setLocation(fromPath("")
+                        .pathSegment(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid)
+                        .build()
+                        .toString());
+
         // create either EhrStatusResponseData or null (means no body, only headers incl. link to resource), via lambda
         // request
         T minimalOrRepresentation = factory.get();
@@ -258,15 +270,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                     break;
                 case LOCATION:
                     try {
-                        URI url = createLocationUri(
-                                EHR,
-                                ehrId.toString(),
-                                EHR_STATUS,
-                                String.format(
-                                        "%s::%s::%s",
-                                        ehrStatusId,
-                                        ehrService.getServerConfig().getNodename(),
-                                        version));
+                        URI url = createLocationUri(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid);
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());
