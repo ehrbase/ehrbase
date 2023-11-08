@@ -229,7 +229,6 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         AuditMsgBuilder.getInstance()
                 .setEhrIds(ehrId.toString())
-                .setDirectoryId(versionedObjectUid)
                 .setLocation(fromPath("")
                         .pathSegment(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid)
                         .build()
