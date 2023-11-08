@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -162,7 +164,12 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private void createAuditLogsMsgBuilder(UUID resultEhrId) {
-        AuditMsgBuilder.getInstance().setEhrIds(resultEhrId);
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(resultEhrId)
+                .setLocation(fromPath("")
+                        .pathSegment(EHR, resultEhrId.toString())
+                        .build()
+                        .toString());
     }
 
     /**
