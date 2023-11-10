@@ -1,0 +1,30 @@
+name: 'Build and Push'
+description: 'Build Docker image and Push to GCR'
+
+inputs:
+  name:
+    description: 'Helm name'
+    required: true
+  namespace:
+    description: 'Namespace'
+    required: true
+  image_tag:
+    description: 'Image tag'
+    required: true
+  environment:
+    description: 'Environment'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Dry Run
+      shell: bash
+      run: |-
+        helm upgrade ${{ inputs.name }} ./helm -f ./helm/environments/${{ inputs.environment }}.yaml --namespace ${{ inputs.namespace }} --create-namespace --set image.tag=${{ inputs.image_tag }} --install --dry-run
+  
+    - name: Deploy
+      shell: bash
+      run: |-
+        helm upgrade ${{ inputs.name }} ./helm -f ./helm/environments/${{ inputs.environment }}.yaml --namespace ${{ inputs.namespace }} --create-namespace --set image.tag=${{ inputs.image_tag }} --install
+  

@@ -1,0 +1,109 @@
+name: ehrbase
+
+on: workflow_dispatch
+  #push:
+  #  tags:
+  #    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build:
+    runs-on: ["elmeas", "Linux"] 
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          buildkitd-flags: --debug
+      
+      - name: Preperation
+        uses: ./.github/actions/prepare
+        with:
+          gke_cluster: production-cluster
+          gcp_project: production-404312
+          gcp_region: europe-west3
+          google_cred: ${{ secrets.GOOGLE_CREDENTIALS }}
+          gcr_domain: ${{ vars.GCR_DOMAIN }}
+
+      - name: Build and Push
+        id: build
+        uses: ./.github/actions/build-and-push
+        with:
+          gcr_domain: ${{ vars.GCR_DOMAIN }}
+          gcr_path: adminplane/erhbase
+
+#  approval:
+#    runs-on: ubuntu-latest
+#    needs: build
+#    steps:
+#      - name: ProductionApproval
+#        uses: trstringer/manual-approval@v1
+#        with:
+#          secret: ${{ github.TOKEN }}
+#          approvers: Kostiantyn-Miniailo
+#          minimum-approvals: 1
+#          issue-title: "Deploying to PROD version ${{ needs.build.outputs.image_tag }}"
+#          issue-body: "Please approve or deny the deployment for PROD for version ${{ needs.build.outputs.image_tag }}"
+#          exclude-workflow-initiator-as-approver: false
+#          additional-approved-words: ''
+#          additional-denied-words: ''
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ["elmeas", "Linux"] 
+#  needs: [approval, build]
+    needs: [build]
+    steps:
+      - name: "Build Changelog"
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v3.7.0 
+        
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ needs.build.outputs.image_tag }}
+          release_name: Release ${{ needs.build.outputs.image_tag }}
+          body: ${{steps.github_release.outputs.changelog}}
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-b') || contains(github.ref, '-a') }}
+          draft: false
+  
+          
+  deploy:
+    runs-on: ["elmeas", "Linux"] 
+  #  needs: [release, build]
+#    needs: [approval, build]
+    needs: [build]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Preperation
+      uses: ./.github/actions/prepare
+      with:
+        gke_cluster: production-cluster
+        gcp_project: production-404312
+        gcp_region: europe-west3
+        google_cred: ${{ secrets.GOOGLE_CREDENTIALS }}
+        gcr_domain: ${{ vars.GCR_DOMAIN }}
+    
+#    - name: Migrate
+#      shell: bash
+#      run: |-
+#        mvn flyway:migrate -Dflyway.user=${{ secrets.PROD_DBUSER }} -Dflyway.password=${{ secrets.PROD_DBPASS }} -Dflyway.defaultSchema=core -Dflyway.url=jdbc:postgresql://${{ secrets.PROD_DBHOST }}:5432/elio
+
+    - name: Deploy
+      uses: ./.github/actions/deploy
+      with:
+        name: ehrbase
+        namespace: ehrbase
+        environment: production
+        image_tag: ${{needs.build.outputs.image_tag}} 
+    
