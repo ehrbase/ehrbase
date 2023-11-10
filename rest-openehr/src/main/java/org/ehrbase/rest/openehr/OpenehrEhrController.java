@@ -93,6 +93,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         } else {
             ehrId = ehrService.create(null, null);
         }
+        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
 
         return internalPostEhrProcessing(accept, prefer, ehrId);
     }
@@ -130,11 +131,12 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             throw new InternalServerException("Error creating EHR with custom ID and/or status");
         }
 
+        createAuditLogsMsgBuilder(resultEhrId);
+
         return internalPostEhrProcessing(accept, prefer, resultEhrId);
     }
 
     private ResponseEntity<EhrResponseData> internalPostEhrProcessing(String accept, String prefer, UUID resultEhrId) {
-        createAuditLogsMsgBuilder(resultEhrId);
         URI url = createLocationUri(EHR, resultEhrId.toString());
 
         List<String> headerList =
