@@ -1,0 +1,35 @@
+environment: release
+
+ingress:
+  enabled: true
+  # className: ""
+  # annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: elio.production.internal.elmeas.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+secrets:
+  name: database-credentials
+  items:
+    - target: POSTGRES_HOST
+      gcpRemoteKey: "elio-release_elio-release_host"
+    - target: POSTGRES_DBNAME
+      gcpRemoteKey: "elio-release_elio-release_db"
+    - target: POSTGRES_USER
+      gcpRemoteKey: "elio-release_elio-release_user"
+    - target: POSTGRES_PASSWORD
+      gcpRemoteKey: "elio-release_elio-release_user_pw"
+    - target: MINIO_ACCESS_KEY
+      gcpRemoteKey: "minio-user-accessKey"
+    - target: MINIO_SECRET_KEY
+      gcpRemoteKey: "minio-user-secretKey"
+    - target: KEYCLOAK_USER
+      gcpRemoteKey: "keycloak_user"
+    - target: KEYCLOAK_PASSWORD
+      gcpRemoteKey: "keycloak_password"
+    - target: KEYCLOAK_CLIENT_SECRET
+      gcpRemoteKey: "keycloak_client_secret"  

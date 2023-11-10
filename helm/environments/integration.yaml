@@ -1,0 +1,13 @@
+environment: integration
+
+ingress:
+  enabled: true
+  # className: ""
+  # annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: elio.app.internal.elmeas.com
+      paths:
+        - path: /
+          pathType: Prefix
