@@ -32,7 +32,7 @@ ENV JAVA_HOME /usr/lib/jvm/java-17-temurin
 ENV PATH $JAVA_HOME/bin:$PATH
 RUN wget -O /etc/apk/keys/adoptium.rsa.pub https://packages.adoptium.net/artifactory/api/security/keypair/public/repositories/apk && \
     echo 'https://packages.adoptium.net/artifactory/apk/alpine/main' >> /etc/apk/repositories && \
-    su -c "apk add temurin-17=17.0.9_p9-r1" && \
+    su -c "apk add temurin-17=17.0.6_p10-r0" && \
     java --version
 
 # INSTALL MAVEN
