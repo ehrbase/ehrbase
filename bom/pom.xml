@@ -24,7 +24,7 @@
 
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>bom</artifactId>
-    <version>0.31.0</version>
+    <version>0.32.0</version>
     <packaging>pom</packaging>
 
     <name>EHRbase</name>
@@ -101,30 +101,30 @@
         <!-- antlr4 and archie versions should be sync with sdk antlr4 and archie versions  -->
         <antlr4.version>4.11.1</antlr4.version>
         <archie.version>3.3.0</archie.version>
-        <commons-io.version>2.13.0</commons-io.version>
-        <commons-lang3.version>3.13.0</commons-lang3.version>
-        <ehrbase.sdk.version>2.3.0</ehrbase.sdk.version>
+        <commons-io.version>2.15.1</commons-io.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <ehrbase.sdk.version>2.6.0</ehrbase.sdk.version>
         <flyway.version>8.5.13</flyway.version>
         <jackson-bom.version>2.15.0</jackson-bom.version>
         <javamelody.version>1.95.0</javamelody.version>
         <joda.version>2.12.5</joda.version>
-        <jooq.version>3.18.6</jooq.version>
+        <jooq.version>3.18.7</jooq.version>
         <json-path.version>2.8.0</json-path.version>
         <junit.version>5.7.2</junit.version>
-        <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
+        <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
+        <maven-failsafe-plugin.version>3.2.2</maven-failsafe-plugin.version>
         <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
-        <maven-jacoco-plugin.version>0.8.7</maven-jacoco-plugin.version>
+        <maven-jacoco-plugin.version>0.8.11</maven-jacoco-plugin.version>
         <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
-        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <postgresql.version>42.5.3</postgresql.version>
-        <prometheus.version>1.11.4</prometheus.version>
-        <spring-boot.version>3.1.4</spring-boot.version>
+        <maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
+        <postgresql.version>42.7.1</postgresql.version>
+        <prometheus.version>1.12.0</prometheus.version>
+        <spring-boot.version>3.1.5</spring-boot.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <!-- not used erhbase but needed for the version plugin -->
-        <log4j.version>2.20.0</log4j.version>
+        <log4j.version>2.22.0</log4j.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
-        <versions-maven-plugin.version>2.10.0</versions-maven-plugin.version>
+        <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
         <pf4j-spring.version>0.8.0</pf4j-spring.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <gson.version>2.8.9</gson.version>

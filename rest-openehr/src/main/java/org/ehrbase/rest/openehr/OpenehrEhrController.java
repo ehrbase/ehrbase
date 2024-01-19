@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -91,6 +93,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         } else {
             ehrId = ehrService.create(null, null);
         }
+        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
 
         return internalPostEhrProcessing(accept, prefer, ehrId);
     }
@@ -128,11 +131,12 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             throw new InternalServerException("Error creating EHR with custom ID and/or status");
         }
 
+        createAuditLogsMsgBuilder(resultEhrId);
+
         return internalPostEhrProcessing(accept, prefer, resultEhrId);
     }
 
     private ResponseEntity<EhrResponseData> internalPostEhrProcessing(String accept, String prefer, UUID resultEhrId) {
-        createAuditLogsMsgBuilder(resultEhrId);
         URI url = createLocationUri(EHR, resultEhrId.toString());
 
         List<String> headerList =
@@ -162,7 +166,12 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private void createAuditLogsMsgBuilder(UUID resultEhrId) {
-        AuditMsgBuilder.getInstance().setEhrIds(resultEhrId);
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(resultEhrId)
+                .setLocation(fromPath("")
+                        .pathSegment(EHR, resultEhrId.toString())
+                        .build()
+                        .toString());
     }
 
     /**

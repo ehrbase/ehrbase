@@ -207,6 +207,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-1
 
+      - STOREDQUERY-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-1
+
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
@@ -271,6 +277,7 @@ workflows:
             - EHRSERVICE-test
             - EHRSTATUS-test
             - KNOWLEDGE-test
+            - STOREDQUERY-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - NEWQUERY-test-set
@@ -467,6 +474,12 @@ workflows:
             - build-ehrbase
             - QUERYSERVICE-test-2
 
+      - STOREDQUERY-test:
+          context: org-global
+          requires:
+            - build-ehrbase
+            - QUERYSERVICE-test-2
+
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
@@ -525,6 +538,7 @@ workflows:
             - EHRSERVICE-test
             - EHRSTATUS-test
             - KNOWLEDGE-test
+            - STOREDQUERY-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - NEWQUERY-test-set
@@ -745,6 +759,10 @@ workflows:
           context: org-global
           requires:
             - build package ehrbase with locally built sdk from sync-branch
+      - STOREDQUERY-test:
+          context: org-global
+          requires:
+            - build package ehrbase with locally built sdk from sync-branch
       - QUERYSERVICE-test-1:
           context: org-global
           requires:
@@ -797,6 +815,7 @@ workflows:
             - EHRSERVICE-test
             - EHRSTATUS-test
             - KNOWLEDGE-test
+            - STOREDQUERY-test
             - QUERYSERVICE-test-1
             - QUERYSERVICE-test-2
             - NEWQUERY-test-set
@@ -1226,6 +1245,19 @@ jobs:
           test-suite-name: "KNOWLEDGE"
           allow-template-overwrite: false
           cache-enabled: false
+
+  STOREDQUERY-test:
+    executor: docker-py3-postgres
+    steps:
+      - checkout
+      - restore-workspace
+      - git-clone-robot-integration-tests-repo
+      - move-integration-tests-content-to-local-tests-folder
+      - run-robot-tests:
+          include-tags: "stored_query"
+          test-suite-path: "STORED_QUERY_TESTS"
+          test-suite-name: "STORED_QUERY"
+          allow-template-overwrite: true
 
   QUERYSERVICE-test-1:
     executor: docker-py3-postgres

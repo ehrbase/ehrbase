@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.0]
+ ### Added 
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.6.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed 
+ - Fix the folder audit status event type ([#1193](https://github.com/ehrbase/ehrbase/pull/1193))
+ - Fix OAuth2 Security Configuration for admin role and management endpoints ([#1196](https://github.com/ehrbase/ehrbase/pull/1196))
+ - Fix party identified NP ([#1191](https://github.com/ehrbase/ehrbase/pull/1191))
+
+
 ## [0.31.0]
  ### Added
  ### Changed 
@@ -696,3 +706,4 @@ the next release this file will provide a proper overview.
 [0.29.0]: https://github.com/ehrbase/ehrbase/compare/v0.28.0...v0.29.0
 [0.30.0]: https://github.com/ehrbase/ehrbase/compare/v0.29.0...v0.30.0
 [0.31.0]: https://github.com/ehrbase/ehrbase/compare/v0.30.0...v0.31.0
+[0.32.0]: https://github.com/ehrbase/ehrbase/compare/v0.31.0...v0.32.0
