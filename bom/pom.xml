@@ -109,7 +109,7 @@
         <javamelody.version>1.95.0</javamelody.version>
         <joda.version>2.12.5</joda.version>
         <jooq.version>3.18.7</jooq.version>
-        <json-path.version>2.8.0</json-path.version>
+        <json-path.version>2.9.0</json-path.version>
         <junit.version>5.7.2</junit.version>
         <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
         <maven-failsafe-plugin.version>3.2.2</maven-failsafe-plugin.version>
