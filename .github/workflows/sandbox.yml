@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/build-and-push
         with:
           gcr_domain: ${{ vars.GCR_DOMAIN }}
-          gcr_path: adminplane/erhbase
+          gcr_path: adminplane/ehrbase
 
   check-approvals:
     name: "Approval Request"
