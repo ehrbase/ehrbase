@@ -2,6 +2,10 @@ environment: sandbox
 
 ingress:
   enabled: true
+  tls:
+  - hosts:
+    - ehrbase.sandbox.elmeas.com
+    secretName: letsencrypt-sandbox  
   hosts:
     - host: ehrbase.sandbox.elmeas.com
       paths:
