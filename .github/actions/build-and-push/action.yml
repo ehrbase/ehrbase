@@ -8,6 +8,9 @@ inputs:
   gcr_domain:
     description: 'GCR Domain'
     required: true
+  build-args:
+    description: 'build-args'
+    required: true
 
 outputs:
   image_tag: 
