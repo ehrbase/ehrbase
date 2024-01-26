@@ -34,7 +34,7 @@ jobs:
           gcr_domain: ${{ vars.GCR_DOMAIN }}
           gcr_path: adminplane/erhbase
 
-  approval:
+  check-approvals:
     name: "Approval Request"
     runs-on: ubuntu-latest
     needs: [build]
