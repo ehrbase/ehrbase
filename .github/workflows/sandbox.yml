@@ -73,6 +73,6 @@ jobs:
       uses: ./.github/actions/deploy
       with:
         name: ehrbase
-        namespace: elio
+        namespace: ehrbase
         environment: sandbox
         image_tag: ${{ needs.build.outputs.image_tag }}
