@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 0
           
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-flags: --debug
       
@@ -34,10 +34,13 @@ jobs:
           gcr_domain: ${{ vars.GCR_DOMAIN }}
           gcr_path: adminplane/erhbase
 
-  approval:
+  check-approvals:
+    name: "Approval Request"
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Sandbox Approval
         uses: trstringer/manual-approval@v1
         with:
@@ -48,14 +51,14 @@ jobs:
           issue-body: "Please approve or deny the deployment for Sandbox for version ${{ needs.build.outputs.image_tag }}"
           exclude-workflow-initiator-as-approver: false
           additional-approved-words: ''
-          additional-denied-words: ''
+          additional-denied-words: ''          
           
   deploy:
     runs-on: ["elmeas", "Linux"] 
-    needs: [approval, build]
+    needs: [build, check-approvals]
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Preperation
       uses: ./.github/actions/prepare
@@ -72,5 +75,4 @@ jobs:
         name: ehrbase
         namespace: elio
         environment: sandbox
-        image_tag: ${{needs.build.outputs.image_tag}} 
-    
+        image_tag: ${{ needs.build.outputs.image_tag }}
