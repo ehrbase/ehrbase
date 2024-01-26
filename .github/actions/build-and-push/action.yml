@@ -8,6 +8,9 @@ inputs:
   gcr_domain:
     description: 'GCR Domain'
     required: true
+  build-args:
+    description: 'build-args'
+    required: true
 
 outputs:
   image_tag: 
@@ -52,16 +55,14 @@ runs:
         tag_prefix: ""
         version_format: '${major}.${minor}.${patch}-${{ steps.branch_pr.outputs.NAME || steps.branch_custom.outputs.NAME  }}${increment}'
 
-    - name: Build 
-      shell: bash
-      run: |-
-        mvn clean
-        mvn compile com.google.cloud.tools:jib-maven-plugin:3.3.1:dockerBuild -Dimage="${{ inputs.gcr_domain }}/${{ inputs.gcr_path }}/${{ github.event.repository.name }}:${{ steps.release_bump_version.outputs.version || steps.feature_bump_version.outputs.version }}"
-    
-    - name: Push
-      shell: bash
-      run: |-
-        docker push ${{ inputs.gcr_domain }}/${{ inputs.gcr_path }}/${{ github.event.repository.name }}:${{ steps.release_bump_version.outputs.version || steps.feature_bump_version.outputs.version }}
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        push: true
+        tags: |
+          ${{ inputs.gcr_domain }}/${{ inputs.gcr_path }}/${{ github.event.repository.name }}:${{ github.sha }}
+          ${{ inputs.gcr_domain }}/${{ inputs.gcr_path }}/${{ github.event.repository.name }}:${{ steps.release_bump_version.outputs.version || steps.feature_bump_version.outputs.version }}
+        build-args: ${{ inputs.build-args }}
 
     - name: Image address
       shell: bash
