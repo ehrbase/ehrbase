@@ -27,6 +27,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "validation.external-terminology")
 public class ValidationProperties {
 
+    private boolean authenticate = false;
+
+    public boolean isAuthenticate() {
+        return authenticate;
+    }
+
+    public void setAuthenticate(boolean authenticate) {
+        this.authenticate = authenticate;
+    }
+
     private boolean enabled = false;
 
     private boolean failOnError = false;
