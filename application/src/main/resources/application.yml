@@ -199,10 +199,12 @@ management:
 validation:
   external-terminology:
     enabled: false
+    #If set to true spring oauth2 client needs to be configured
+    authenticate: false
     provider:
       fhir:
         type: FHIR
-        url: https://r4.ontoserver.csiro.au/fhir/
+        url: https://fhir.example.com/fhir/
 
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
