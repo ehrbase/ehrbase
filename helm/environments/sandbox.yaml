@@ -2,6 +2,9 @@ environment: sandbox
 
 ingress:
   enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt-sandbox" 
   tls:
   - hosts:
     - ehrbase.sandbox.elmeas.com
