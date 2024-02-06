@@ -17,10 +17,10 @@
  */
 package org.ehrbase.aql.sql.queryimpl;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER;
 import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
 import static org.jooq.impl.DSL.select;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
@@ -105,16 +105,16 @@ public class FunctionBasedNodePredicateCallTest {
     @Test
     public void testConstruct3() {
         String[] pathArray = {
-            "'other_context'",
-            "'/items[openEHR-EHR-CLUSTER.case_identification.v0]'",
+            "other_context",
+            "/items[openEHR-EHR-CLUSTER.case_identification.v0]",
             AQL_NODE_NAME_PREDICATE_MARKER,
-            "'item-1'",
-            "'/items[at0001]'",
+            "item-1",
+            "/items[at0001]",
             AQL_NODE_NAME_PREDICATE_MARKER,
-            "'item-2'",
-            "'/name'",
-            "'0'",
-            "'value'",
+            "item-2",
+            "/name",
+            "0",
+            "value",
         };
 
         FunctionBasedNodePredicateCall functionBasedNodePredicateCall =
@@ -124,17 +124,17 @@ public class FunctionBasedNodePredicateCallTest {
 
         String dummySelect = select(test).toString();
 
-        assertEquals(
-                dummySelect,
-                "select jsonb_extract_path_text(cast(\"ehr\".\"aql_node_name_predicate\"(\n"
-                        + "  cast(jsonb_extract_path_text(\"ehr\".\"aql_node_name_predicate\"(\n"
-                        + "  cast(jsonb_extract_path_text(cast(\"ehr\".\"js_context\"(\"ehr\".\"event_context\".\"id\") as jsonb),'other_context','/items[openEHR-EHR-CLUSTER.case_identification.v0]') as jsonb),\n"
-                        + "  'item-1',\n"
-                        + "  ''\n"
-                        + "),'/items[at0001]') as jsonb),\n"
-                        + "  'item-2',\n"
-                        + "  ''\n"
-                        + ") as jsonb),'/name','0','value')");
+        assertThat(dummySelect)
+                .isEqualToIgnoringWhitespace(
+                        "select jsonb_extract_path_text(cast(\"ehr\".\"aql_node_name_predicate\"(\n"
+                                + "  cast(jsonb_extract_path_text(\"ehr\".\"aql_node_name_predicate\"(\n"
+                                + "  cast(jsonb_extract_path_text(cast(\"ehr\".\"js_context\"(\"ehr\".\"event_context\".\"id\") as jsonb),'other_context','/items[openEHR-EHR-CLUSTER.case_identification.v0]') as jsonb),\n"
+                                + "  'item-1',\n"
+                                + "  ''\n"
+                                + "),'/items[at0001]') as jsonb),\n"
+                                + "  'item-2',\n"
+                                + "  ''\n"
+                                + ") as jsonb),'/name','0','value')");
     }
 
     @Test

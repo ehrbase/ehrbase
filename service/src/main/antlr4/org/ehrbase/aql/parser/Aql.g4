@@ -30,10 +30,10 @@ topExpr
 //        | TOP INTEGER FORWARD ;
 
 function
-        : FUNCTION_IDENTIFIER OPEN_PAR (IDENTIFIER|identifiedPath|operand|) (COMMA (IDENTIFIER|identifiedPath|operand))* CLOSE_PAR;
+        : FUNCTION_IDENTIFIER OPEN_PAR (function|identifiedPath|operand|) (COMMA (function|identifiedPath|operand))* CLOSE_PAR;
 
 castFunction :
-        CAST_FUNCTION_IDENTIFIER OPEN_PAR (IDENTIFIER|identifiedPath|operand) AS STRING CLOSE_PAR;
+        CAST_FUNCTION_IDENTIFIER OPEN_PAR (function|identifiedPath|operand) AS STRING CLOSE_PAR;
 
 extension
         : EXTENSION_IDENTIFIER OPEN_PAR STRING COMMA STRING CLOSE_PAR;

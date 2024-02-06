@@ -55,22 +55,20 @@ public class FullCompositionJson extends CompositionAttribute {
         Field jsonFullComposition;
 
         if (jsonPath.isPresent()) {
-            jsonFullComposition = DSL.field(jsonpathItemAsText(
+            jsonFullComposition = jsonpathItemAsText(
                     configuration,
                     jsComposition2(
-                                    DSL.field(JoinBinder.compositionRecordTable.getName() + "." + tableField.getName())
-                                            .cast(UUID.class),
-                                    DSL.val(fieldContext.getServerNodeId()))
+                                    JoinBinder.compositionRecordTable.field(tableField.getName(), UUID.class),
+                                    DSL.inline(fieldContext.getServerNodeId()))
                             .cast(JSONB.class),
-                    jsonpathParameters(jsonPath.get())));
+                    jsonpathParameters(jsonPath.get()));
         } else
-            jsonFullComposition = DSL.field(jsComposition2(
-                            DSL.field(JoinBinder.compositionRecordTable.getName() + "." + tableField.getName())
-                                    .cast(UUID.class),
-                            DSL.val(fieldContext.getServerNodeId()))
-                    .cast(String.class));
+            jsonFullComposition = jsComposition2(
+                            JoinBinder.compositionRecordTable.field(tableField.getName(), UUID.class),
+                            DSL.inline(fieldContext.getServerNodeId()))
+                    .cast(String.class);
 
-        if (fieldContext.isWithAlias()) return aliased(DSL.field(jsonFullComposition));
+        if (fieldContext.isWithAlias()) return aliased(jsonFullComposition);
         else return defaultAliased(jsonFullComposition);
     }
 

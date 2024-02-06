@@ -60,16 +60,16 @@ import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
-import org.ehrbase.response.ehrscape.CompositionDto;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.StructuredString;
-import org.ehrbase.response.ehrscape.StructuredStringFormat;
-import org.ehrbase.serialisation.flatencoding.FlatFormat;
-import org.ehrbase.serialisation.flatencoding.FlatJasonProvider;
-import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
-import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
-import org.ehrbase.webtemplate.model.WebTemplate;
-import org.ehrbase.webtemplate.templateprovider.TemplateProvider;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat;
+import org.ehrbase.openehr.sdk.serialisation.flatencoding.FlatFormat;
+import org.ehrbase.openehr.sdk.serialisation.flatencoding.FlatJasonProvider;
+import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.sdk.serialisation.xmlencoding.CanonicalXML;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.templateprovider.TemplateProvider;
 import org.jooq.DSLContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
@@ -159,7 +159,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
         try {
             validationService.check(composition);
 
-        } catch (org.ehrbase.validation.ValidationException e) {
+        } catch (org.ehrbase.openehr.sdk.validation.ValidationException e) {
             throw new UnprocessableEntityException(e.getMessage());
         } catch (UnprocessableEntityException | ValidationException e) {
             throw e;
@@ -360,7 +360,7 @@ public class CompositionServiceImp extends BaseServiceImp implements Composition
 
         } catch (ObjectNotFoundException
                 | InvalidApiParameterException
-                        e) { // otherwise exceptions would always get sucked up by the catch below
+                | IllegalArgumentException e) { // otherwise exceptions would always get sucked up by the catch below
             throw e;
         } catch (Exception e) {
             throw new InternalServerException(e);

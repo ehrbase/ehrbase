@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
-import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
+import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.DSLContext;
 import org.junit.Test;
 

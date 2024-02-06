@@ -18,7 +18,7 @@
 package org.ehrbase.aql.containment;
 
 import java.util.List;
-import org.ehrbase.webtemplate.parser.NodeId;
+import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 
 /**
  * Definition of a 'simple' chained CONTAINS

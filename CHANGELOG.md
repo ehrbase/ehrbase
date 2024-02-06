@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
+## [0.32.0]
+ ### Added 
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.6.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed 
+ - Fix the folder audit status event type ([#1193](https://github.com/ehrbase/ehrbase/pull/1193))
+ - Fix OAuth2 Security Configuration for admin role and management endpoints ([#1196](https://github.com/ehrbase/ehrbase/pull/1196))
+ - Fix party identified NP ([#1191](https://github.com/ehrbase/ehrbase/pull/1191))
+
+
+## [0.31.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.3.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ - Migrated to spring boot 3 ([#1174](https://github.com/ehrbase/ehrbase/pull/1174))
+ - Removed authorization scopes from endpoints and added support for overwriting controllers ([#1157](https://github.com/ehrbase/ehrbase/pull/1157))
+ ### Fixed
+ - Fix audit logs location ([#1160](https://github.com/ehrbase/ehrbase/pull/1160))
+ - Address AQL query security vulnerabilities ([#1190](https://github.com/ehrbase/ehrbase/pull/1190))
+
+## [0.30.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.2.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed 
+ - Fix storing attributes of Locatable.name ([#1161](https://github.com/ehrbase/ehrbase/pull/1161))
+
+## [0.29.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.1.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed
+- cleanup security context ([#1159](https://github.com/ehrbase/ehrbase/pull/1159))
+- enforce unique template id ([#1158](https://github.com/ehrbase/ehrbase/pull/1158))
+
+## [0.28.0]
+ ### Added
+
+ - Added support tenant deletion ([#1146](https://github.com/ehrbase/ehrbase/pull/1146))
+
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.0.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ - Audit log functionality has been integrated as a plugin ([#1131](https://github.com/ehrbase/ehrbase/pull/1131))
+ - update to SDK 2.0.0-SNAPSHOT ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
+ - move dbencoding from SDK to ehrbase ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
+ - adjust to new SDK package paths ([#1141](https://github.com/ehrbase/ehrbase/pull/1141))
+
+ ### Fixed 
+
+## [0.27.4]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 1.29.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed 
+ - Run directory operation in one transaction ([#1133](https://github.com/ehrbase/ehrbase/pull/1133))
+
 ## [0.27.3]
  ### Added
  ### Changed 
@@ -645,3 +706,10 @@ the next release this file will provide a proper overview.
 [0.27.1]: https://github.com/ehrbase/ehrbase/compare/v0.27.0...v0.27.1
 [0.27.2]: https://github.com/ehrbase/ehrbase/compare/v0.27.1...v0.27.2
 [0.27.3]: https://github.com/ehrbase/ehrbase/compare/v0.27.2...v0.27.3
+[0.27.4]: https://github.com/ehrbase/ehrbase/compare/v0.27.3...v0.27.4
+[0.28.0]: https://github.com/ehrbase/ehrbase/compare/v0.27.4...v0.28.0
+[0.29.0]: https://github.com/ehrbase/ehrbase/compare/v0.28.0...v0.29.0
+[0.30.0]: https://github.com/ehrbase/ehrbase/compare/v0.29.0...v0.30.0
+[0.31.0]: https://github.com/ehrbase/ehrbase/compare/v0.30.0...v0.31.0
+[0.32.0]: https://github.com/ehrbase/ehrbase/compare/v0.31.0...v0.32.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v0.32.0...HEAD

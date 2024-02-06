@@ -26,7 +26,7 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.27.3</version>
+        <version>0.33.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>service</artifactId>
@@ -40,6 +40,11 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <scope>provided</scope>
+        </dependency>        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
@@ -90,6 +95,14 @@
             <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>validation</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>validation</artifactId>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <version>${ehrbase.sdk.version}</version>
+            <scope>test</scope>
+        </dependency>    
         <dependency>
             <groupId>org.ehrbase.openehr.sdk</groupId>
             <artifactId>web-template</artifactId>
@@ -168,6 +181,24 @@
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-r4</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.java</groupId>
+            <artifactId>quickcheck</artifactId>
+            <version>0.6</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

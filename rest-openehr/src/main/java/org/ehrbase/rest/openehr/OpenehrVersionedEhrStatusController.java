@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
@@ -26,20 +29,22 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.ehrscape.ContributionDto;
-import org.ehrbase.response.openehr.OriginalVersionResponseData;
-import org.ehrbase.response.openehr.RevisionHistoryResponseData;
-import org.ehrbase.response.openehr.VersionedObjectResponseData;
+import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
+import org.ehrbase.openehr.sdk.response.dto.VersionedObjectResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedEhrStatusApiSpecification;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -51,16 +56,20 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Controller for /ehr/{ehrId}/versioned_ehr_status resource of openEHR REST API
  */
+@ConditionalOnMissingBean(name = "primaryopenehrversionedehrstatuscontroller")
 @TenantAware
 @RestController
 @RequestMapping(
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/versioned_ehr_status",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrVersionedEhrStatusController extends BaseController implements VersionedEhrStatusApiSpecification {
+
+    private static final String REVISION_HISTORY = "revision_history";
 
     private final ContributionService contributionService;
 
@@ -71,7 +80,6 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping
     @Override
     public ResponseEntity<VersionedObjectResponseData<EhrStatus>> retrieveVersionedEhrStatusByEhr(
@@ -92,10 +100,11 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping(path = "/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
@@ -116,10 +125,11 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        createAuditLogsMsgBuilder(ehrId, REVISION_HISTORY);
+
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping(path = "/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
@@ -165,10 +175,15 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        createAuditLogsMessageBuilder(
+                        ehrId,
+                        new ImmutablePair<>("version_at_time", versionAtTime != null ? versionAtTime.toString() : null),
+                        "version")
+                .setVersion(version);
+
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @GetMapping(path = "/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PreAuthorize("checkAbacPre(@openehrVersionedEhrStatusController.EHR_STATUS, "
@@ -215,6 +230,30 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        createAuditLogsMsgBuilder(
+                        ehrId,
+                        "version",
+                        versionedObjectId + "::" + ehrService.getServerConfig().getNodename() + "::" + version)
+                .setVersion(version);
+
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
+    }
+
+    private AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId, String... pathSegments) {
+        return createAuditLogsMessageBuilder(ehrId, new ImmutablePair<>("", ""), pathSegments);
+    }
+
+    private AuditMsgBuilder createAuditLogsMessageBuilder(
+            UUID ehrId, Pair<String, String> queryParam, String... pathSegments) {
+        UriComponentsBuilder uriComponentsBuilder = fromPath("")
+                .pathSegment(EHR, ehrId.toString(), VERSIONED_EHR_STATUS)
+                .pathSegment(pathSegments);
+
+        if (isNotBlank(queryParam.getKey()) && isNotBlank(queryParam.getValue()))
+            uriComponentsBuilder.queryParam(queryParam.getKey(), queryParam.getValue());
+
+        return AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
+                .setLocation(uriComponentsBuilder.build().toString());
     }
 }

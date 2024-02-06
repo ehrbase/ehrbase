@@ -153,7 +153,7 @@ public abstract class AuthenticatedExtractionStrategy<A extends Authentication> 
     }
 
     public Optional<TenantAuthentication<String>> extract(Object... args) {
-        return extract(null, args);
+        return extractWithPrior(Optional.empty(), args);
     }
 }
 // @format:on

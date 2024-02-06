@@ -29,7 +29,6 @@ import org.jooq.Field;
 import org.jooq.SelectQuery;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 public class CompositionUidValue extends CompositionAttribute {
 
@@ -53,7 +52,7 @@ public class CompositionUidValue extends CompositionAttribute {
         return this;
     }
 
-    private Field<?> uid() {
+    private Field<String> uid() {
 
         // use inline SQL as it seems coalesce is not going through with POSTGRES dialect
         SelectQuery<?> subSelect = fieldContext.getContext().selectQuery();
@@ -63,22 +62,13 @@ public class CompositionUidValue extends CompositionAttribute {
                 JoinBinder.compositionRecordTable.field("id", UUID.class).eq(COMPOSITION_HISTORY.ID));
         subSelect.addGroupBy(COMPOSITION_HISTORY.ID);
 
-        String coalesceVersion = "1 + COALESCE(\n(" + subSelect + "), 0)";
+        Field<Integer> version = DSL.inline(1).plus(DSL.function("COALESCE", Integer.class, subSelect.asField()));
 
-        return aliased(DSL.field(
-                JoinBinder.compositionRecordTable.field("id")
-                        + "||"
-                        + DSL.val("::")
-                        + "||"
-                        + DSL.val(fieldContext.getServerNodeId())
-                        + "||"
-                        + DSL.val("::")
-                        + "||"
-                        + DSL.field(coalesceVersion),
-                SQLDataType.VARCHAR));
+        return DSL.concat(
+                rawUid(), DSL.inline("::"), DSL.inline(fieldContext.getServerNodeId()), DSL.inline("::"), version);
     }
 
     private Field<?> rawUid() {
-        return as(DSL.field(JoinBinder.compositionRecordTable.field("id", UUID.class)));
+        return as(JoinBinder.compositionRecordTable.field("id", UUID.class));
     }
 }

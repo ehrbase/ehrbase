@@ -1,0 +1,16 @@
+{
+  "bericht/körpergewicht:0/any_event_en:0/gewicht|magnitude": 55,
+  "bericht/körpergewicht:0/any_event_en:0/gewicht|unit": "kg",
+  "bericht/körpergewicht:0/any_event_en:0/time": "2013-11-02T12:00:00Z",
+  "bericht/körpergewicht:0/any_event_en:1/gewicht|magnitude": 60,
+  "bericht/körpergewicht:0/any_event_en:1/gewicht|unit": "kg",
+  "bericht/körpergewicht:0/any_event_en:1/time": "2015-11-02T12:00:00Z",
+  "bericht/körpergewicht:0/any_event_en:1/width": "P30D",
+  "bericht/körpergewicht:0/any_event_en:2/gewicht|magnitude": 61,
+  "bericht/körpergewicht:0/any_event_en:2/gewicht|unit": "kg",
+  "bericht/körpergewicht:0/any_event_en:2/time": "2015-11-02T12:00:00Z",
+  "bericht/körpergewicht:0/any_event_en:2/width": "P30D",
+  "bericht/körpergewicht:0/any_event_en:3/gewicht|magnitude": 62,
+  "bericht/körpergewicht:0/any_event_en:3/gewicht|unit": "kg",
+  "bericht/körpergewicht:0/any_event_en:3/time": "2013-11-02T12:00:00Z"
+}

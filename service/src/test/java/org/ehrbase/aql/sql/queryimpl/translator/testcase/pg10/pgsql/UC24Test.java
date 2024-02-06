@@ -27,7 +27,7 @@ public class UC24Test extends UC24 {
     public UC24Test() {
         super();
         this.expectedSqlExpression =
-                "select cast(\"ehr\".\"js_composition\"(cast(cast(composition_join.id as uuid) as uuid), cast(? as text)) as varchar) as \"c\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" where (\"ehr\".\"entry\".\"template_id\" = ? and ( null IS  NULL ))";
+                "select cast(\"ehr\".\"js_composition\"(cast(\"composition_join\".\"id\" as uuid), cast('local' as text)) as varchar) as \"c\" from \"ehr\".\"entry\" right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\" where (\"ehr\".\"entry\".\"template_id\" = ? and ( null IS  NULL ))";
     }
 
     @Test

@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -30,17 +31,17 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.openehr.EhrStatusResponseData;
+import org.ehrbase.openehr.sdk.response.dto.EhrStatusResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -62,6 +63,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Renaud Subiger
  * @since 1.0
  */
+@ConditionalOnMissingBean(name = "primaryopenehrehrstatuscontroller")
 @TenantAware
 @RestController
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/ehr_status")
@@ -78,7 +80,6 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @GetMapping
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
@@ -108,7 +109,6 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @GetMapping(path = "/{version_uid}")
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ_STATUS)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(
             @PathVariable(name = "ehr_id") UUID ehrId,
@@ -136,7 +136,6 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @PutMapping
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
     @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
             @PathVariable("ehr_id") UUID ehrId,
@@ -174,6 +173,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
@@ -198,8 +199,14 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
+        createAuditLogsMsgBuilder(ehrId);
+
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+
+    private void createAuditLogsMsgBuilder(UUID ehrId) {
+        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
     }
 
     /**
@@ -217,6 +224,16 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     private <T extends EhrStatusResponseData> Optional<InternalResponse<T>> buildEhrStatusResponseData(
             Supplier<T> factory, UUID ehrId, UUID ehrStatusId, int version, String accept, List<String> headerList) {
+        String versionedObjectUid = String.format(
+                "%s::%s::%s", ehrStatusId, ehrService.getServerConfig().getNodename(), version);
+
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId.toString())
+                .setLocation(fromPath("")
+                        .pathSegment(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid)
+                        .build()
+                        .toString());
+
         // create either EhrStatusResponseData or null (means no body, only headers incl. link to resource), via lambda
         // request
         T minimalOrRepresentation = factory.get();
@@ -252,15 +269,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                     break;
                 case LOCATION:
                     try {
-                        URI url = createLocationUri(
-                                EHR,
-                                ehrId.toString(),
-                                EHR_STATUS,
-                                String.format(
-                                        "%s::%s::%s",
-                                        ehrStatusId,
-                                        ehrService.getServerConfig().getNodename(),
-                                        version));
+                        URI url = createLocationUri(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid);
                         respHeaders.setLocation(url);
                     } catch (Exception e) {
                         throw new InternalServerException(e.getMessage());

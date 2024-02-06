@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import java.io.IOException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 
 public class StructuredStringJSonSerializer extends JsonSerializer<StructuredString> {
     @Override

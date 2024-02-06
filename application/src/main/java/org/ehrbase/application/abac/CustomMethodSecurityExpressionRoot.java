@@ -43,8 +43,8 @@ import org.ehrbase.application.abac.AbacConfig.AbacType;
 import org.ehrbase.application.abac.AbacConfig.Policy;
 import org.ehrbase.application.abac.AbacConfig.PolicyParameter;
 import org.ehrbase.aql.compiler.AuditVariables;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.openehr.OriginalVersionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.rest.BaseController;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -188,7 +188,7 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot
         }
 
         // Check and extract JWT
-        var jwt = getJwtAuthenticationToken(this.authentication);
+        var jwt = getJwtAuthenticationToken(this.getAuthentication());
 
         // Request body map. will result in simple JSON like {"patient_id":"...", ...}
         // but requires "Object" for template handling, which can have a Set<String> for multiple IDs

@@ -28,8 +28,8 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
-import org.ehrbase.functional.Try;
-import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
+import org.ehrbase.openehr.sdk.util.functional.Try;
+import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.junit.Test;
 
 public class InvokeVisitorTest {

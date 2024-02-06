@@ -19,12 +19,12 @@ package org.ehrbase.service;
 
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import org.ehrbase.terminology.openehr.CodeSetAccess;
-import org.ehrbase.terminology.openehr.OpenEHRCodeSetIdentifiers;
-import org.ehrbase.terminology.openehr.TerminologyAccess;
-import org.ehrbase.terminology.openehr.TerminologyService;
-import org.ehrbase.terminology.openehr.implementation.AttributeCodesetMapping;
-import org.ehrbase.terminology.openehr.implementation.LocalizedTerminologies;
+import org.ehrbase.openehr.sdk.terminology.openehr.CodeSetAccess;
+import org.ehrbase.openehr.sdk.terminology.openehr.OpenEHRCodeSetIdentifiers;
+import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyAccess;
+import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
+import org.ehrbase.openehr.sdk.terminology.openehr.implementation.AttributeCodesetMapping;
+import org.ehrbase.openehr.sdk.terminology.openehr.implementation.LocalizedTerminologies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -30,7 +30,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.response.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -96,13 +96,17 @@ public abstract class BaseController {
     // constants of all API resources
     public static final String EHR = "ehr";
     public static final String EHR_STATUS = "ehr_status";
+    public static final String VERSIONED_EHR_STATUS = "versioned_ehr_status";
+    public static final String VERSIONED_COMPOSITION = "versioned_composition";
     public static final String COMPOSITION = "composition";
     public static final String DIRECTORY = "directory";
     public static final String CONTRIBUTION = "contribution";
     public static final String QUERY = "query";
     public static final String DEFINITION = "definition";
     public static final String TEMPLATE = "template";
-    public static final String API_CONTEXT_PATH_WITH_VERSION = "${openehr-api.context-path:/rest/openehr}/v1";
+    public static final String API_CONTEXT_PATH = "${openehr-api.context-path:/rest/openehr}";
+    public static final String API_CONTEXT_PATH_WITH_VERSION = API_CONTEXT_PATH + "/v1";
+    public static final String ADMIN_API_CONTEXT_PATH = "${admin-api.context-path:/rest/admin}";
 
     public Map<String, Map<String, String>> add2MetaMap(
             Map<String, Map<String, String>> metaMap, String key, String value) {

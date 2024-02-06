@@ -27,9 +27,9 @@ public class UC35Test extends UC35 {
     public UC35Test() {
         super();
         this.expectedSqlExpression =
-                "select cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" + "  cast(ehr_join.id as uuid), \n"
+                "select jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" + "  \"ehr_join\".\"id\" , \n"
                         + "  'local'\n"
-                        + ") as jsonb),'directory') as jsonb) as \"/directory\" from \"ehr\".\"ehr\" as \"ehr_join\"";
+                        + ") as jsonb),'directory') as \"/directory\" from \"ehr\".\"ehr\" as \"ehr_join\"";
     }
 
     @Test

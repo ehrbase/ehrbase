@@ -25,7 +25,6 @@ import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.jooq.Field;
 import org.jooq.TableField;
-import org.jooq.impl.DSL;
 
 @SuppressWarnings({"java:S3740", "java:S1452"})
 public class SimpleCompositionAttribute extends CompositionAttribute {
@@ -38,10 +37,10 @@ public class SimpleCompositionAttribute extends CompositionAttribute {
 
     @Override
     public Field<?> sqlField() {
-        Field actualField = DSL.field(tableField);
+        Field actualField = tableField;
 
         if (tableField.getTable().equals(COMPOSITION)) {
-            actualField = DSL.field(JoinBinder.compositionRecordTable.getName() + "." + tableField.getName());
+            actualField = JoinBinder.compositionRecordTable.field(tableField);
         }
 
         return as(actualField);

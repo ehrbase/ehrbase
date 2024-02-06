@@ -26,20 +26,19 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
-import org.ehrbase.response.ehrscape.CompositionDto;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.ActionRestResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.CompositionWriteRestResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,6 +51,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(name = {"primarycompositioncontroller"})
 @TenantAware
 @RestController
 @RequestMapping(
@@ -65,7 +65,6 @@ public class CompositionController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_CREATE)
     @PostMapping
     public ResponseEntity<CompositionWriteRestResponseData> createComposition(
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
@@ -97,7 +96,6 @@ public class CompositionController extends BaseController {
                 .body(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{uid}")
     public ResponseEntity<CompositionResponseData> getComposition(
             @PathVariable("uid") String compositionUid,
@@ -136,7 +134,6 @@ public class CompositionController extends BaseController {
         }
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_UPDATE)
     @PutMapping(path = "/{uid}")
     public ResponseEntity<ActionRestResponseData> update(
             @PathVariable("uid") String compositionUid,
@@ -170,7 +167,6 @@ public class CompositionController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_DELETE)
     @DeleteMapping(path = "/{uid}")
     public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
 

@@ -17,7 +17,7 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
-import static org.ehrbase.serialisation.dbencoding.CompositionSerializer.TAG_OTHER_DETAILS;
+import static org.ehrbase.jooq.dbencoding.CompositionSerializer.TAG_OTHER_DETAILS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +27,7 @@ import org.ehrbase.aql.sql.queryimpl.JqueryPath;
 import org.ehrbase.aql.sql.queryimpl.JsonbEntryQuery;
 import org.ehrbase.aql.sql.queryimpl.NormalizedRmAttributePath;
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
-import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 
 public class GenericJsonPath {
 

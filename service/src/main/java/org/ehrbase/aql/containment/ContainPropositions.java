@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.collections4.SetUtils;
+import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 import org.ehrbase.service.KnowledgeCacheService;
-import org.ehrbase.webtemplate.parser.NodeId;
 
 /**
  * Handles and evaluation contain proposition:

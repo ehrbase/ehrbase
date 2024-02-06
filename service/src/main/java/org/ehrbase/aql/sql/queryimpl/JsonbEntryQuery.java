@@ -29,8 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.PathResolver;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.service.IntrospectService;
-import org.ehrbase.webtemplate.model.WebTemplate;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -234,7 +234,7 @@ public class JsonbEntryQuery extends ObjectQuery implements IQueryImpl {
             } else if (clause.equals(Clause.WHERE)) {
                 fieldPathItem = buildFieldWithCast(itemPath, castTypeAs, null);
                 if (itemPathArray.contains(AQL_NODE_ITERATIVE_MARKER))
-                    fieldPathItem = DSL.field(DSL.select(fieldPathItem));
+                    fieldPathItem = DSL.select(fieldPathItem).asField();
             }
 
             if (setReturningFunctionInWhere)

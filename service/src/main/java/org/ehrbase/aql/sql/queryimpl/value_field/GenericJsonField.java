@@ -61,7 +61,7 @@ public class GenericJsonField extends RMObjectAttribute {
 
     protected Optional<String> jsonPath = Optional.empty();
 
-    private static final String ITERATIVE_MARKER = "'" + AQL_NODE_ITERATIVE_MARKER + "'";
+    private static final String ITERATIVE_MARKER = AQL_NODE_ITERATIVE_MARKER;
 
     public GenericJsonField(FieldResolutionContext fieldContext, JoinSetup joinSetup) {
         super(fieldContext, joinSetup);
@@ -139,24 +139,27 @@ public class GenericJsonField extends RMObjectAttribute {
 
             if (tokenized.contains(QueryImplConstants.AQL_NODE_NAME_PREDICATE_MARKER)) {
                 // replace the ITERATIVE_MARKERs by default index
-                Collections.replaceAll(tokenized, ITERATIVE_MARKER, "'0'");
+                Collections.replaceAll(tokenized, ITERATIVE_MARKER, "0");
                 jsonField = new FunctionBasedNodePredicateCall(fieldContext, tokenized).resolve(function, tableFields);
             } else if (tokenized.contains(ITERATIVE_MARKER))
                 jsonField = fieldWithJsonArrayIteration(configuration, tokenized, function, tableFields);
             else
-                jsonField = DSL.field(jsonpathItemAsText(
+                jsonField = jsonpathItemAsText(
                         configuration,
-                        DSL.field(apply(function, tableFields).toString()).cast(JSONB.class),
-                        tokenized.toArray(new String[] {})));
+                        Functions.inline(apply(function, tableFields).cast(JSONB.class)),
+                        tokenized.toArray(new String[] {}));
 
-        } else jsonField = DSL.field(apply(function, tableFields).toString()).cast(String.class);
+        } else {
+            // output as sting
+            jsonField = Functions.inline(apply(function, tableFields)).cast(String.class);
+        }
 
         // check if the SQL expression contains a set returned in a WHERE clause (implying a lateral join)
         if (jsonField.toString().contains(QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION)
                 && fieldContext.getClause().equals(IQueryImpl.Clause.WHERE))
-            jsonField = DSL.field(DSL.select(jsonField));
+            jsonField = DSL.select(jsonField).asField();
 
-        return as(DSL.field(jsonField));
+        return as(jsonField);
     }
 
     private Field fieldWithJsonArrayIteration(
@@ -169,10 +172,7 @@ public class GenericJsonField extends RMObjectAttribute {
                 .toArray(new String[] {});
 
         // initial
-        Field field = jsonpathItem(
-                configuration,
-                DSL.field(apply(function, tableFields).toString()).cast(JSONB.class),
-                prefix);
+        Field field = jsonpathItem(configuration, apply(function, tableFields).cast(JSONB.class), prefix);
 
         while (remaining.length > 0) {
             List<String> tokens = Arrays.asList(remaining.clone());
@@ -185,8 +185,8 @@ public class GenericJsonField extends RMObjectAttribute {
                 remaining = new String[] {};
             }
 
-            field = DSL.field(jsonpathItemAsText(
-                    configuration, jsonArraySplitElements(configuration, field.cast(JSONB.class)), prefix));
+            field = jsonpathItemAsText(
+                    configuration, jsonArraySplitElements(configuration, field.cast(JSONB.class)), prefix);
         }
 
         return field;

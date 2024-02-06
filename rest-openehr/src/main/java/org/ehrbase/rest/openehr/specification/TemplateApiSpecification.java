@@ -19,7 +19,7 @@ package org.ehrbase.rest.openehr.specification;
 
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
-import org.ehrbase.response.openehr.TemplateResponseData;
+import org.ehrbase.openehr.sdk.response.dto.TemplateResponseData;
 import org.springframework.http.ResponseEntity;
 
 @SuppressWarnings("java:S107")

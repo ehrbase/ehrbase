@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>0.27.3</version>
+        <version>0.33.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>rest-ehr-scape</artifactId>
@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>

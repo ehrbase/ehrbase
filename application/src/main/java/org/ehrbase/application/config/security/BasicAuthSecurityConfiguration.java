@@ -18,18 +18,24 @@
 package org.ehrbase.application.config.security;
 
 import static org.ehrbase.application.config.security.SecurityProperties.ADMIN;
-import static org.ehrbase.application.config.security.SecurityProperties.USER;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * {@link Configuration} for Basic authentication.
@@ -41,53 +47,45 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Configuration
 @ConditionalOnProperty(prefix = "security", name = "authType", havingValue = "basic")
 @EnableWebSecurity
-public class BasicAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class BasicAuthSecurityConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private final SecurityProperties properties;
-
-    public BasicAuthSecurityConfiguration(SecurityProperties securityProperties) {
-        this.properties = securityProperties;
-    }
 
     @PostConstruct
     public void initialize() {
         logger.info("Using basic authentication");
     }
 
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // @formatter:off
-        auth.inMemoryAuthentication()
-                .withUser(properties.getAuthUser())
-                .password("{noop}" + properties.getAuthPassword())
-                .roles(USER)
-                .and()
-                .withUser(properties.getAuthAdminUser())
-                .password("{noop}" + properties.getAuthAdminPassword())
-                .roles(ADMIN);
-        // @formatter:on
+    @Bean
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager(
+            SecurityProperties properties, ObjectProvider<PasswordEncoder> passwordEncoder) {
+
+        return new InMemoryUserDetailsManager(
+                User.withUsername(properties.getAuthUser())
+                        .password("{noop}" + properties.getAuthPassword())
+                        .roles(SecurityProperties.USER)
+                        .build(),
+                User.withUsername(properties.getAuthAdminUser())
+                        .password("{noop}" + properties.getAuthAdminPassword())
+                        .roles(SecurityProperties.ADMIN)
+                        .build());
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        // @formatter:off
-        http.cors()
-                .and()
-                .csrf()
-                .ignoringAntMatchers("/rest/**")
-                .and()
-                .authorizeRequests()
-                .antMatchers("/rest/admin/**", "/management/**")
-                .hasRole(ADMIN)
-                .anyRequest()
-                .hasAnyRole(ADMIN, USER)
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .httpBasic();
-        // @formatter:on
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.addFilterBefore(new SecurityFilter(), BasicAuthenticationFilter.class);
+
+        http.cors(withDefaults())
+                .csrf(c -> c.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/rest/**")))
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                AntPathRequestMatcher.antMatcher("/rest/admin/**"),
+                                AntPathRequestMatcher.antMatcher("/management/**"))
+                        .hasRole(ADMIN)
+                        .anyRequest()
+                        .hasAnyRole(ADMIN, SecurityProperties.USER))
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(withDefaults());
+
+        return http.build();
     }
 }

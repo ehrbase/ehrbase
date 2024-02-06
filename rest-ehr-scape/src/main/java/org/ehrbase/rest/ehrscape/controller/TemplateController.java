@@ -27,22 +27,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.response.ehrscape.CompositionDto;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.StructuredString;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
+import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import org.ehrbase.rest.ehrscape.responsedata.TemplateResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.TemplatesResponseData;
-import org.ehrbase.webtemplate.filter.Filter;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(name = "primarytemplatecontroller")
 @TenantAware
 @RestController
 @RequestMapping(
@@ -69,7 +69,6 @@ public class TemplateController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping()
     public ResponseEntity<TemplatesResponseData> getTemplate() {
         TemplatesResponseData responseData = new TemplatesResponseData();
@@ -78,7 +77,6 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_CREATE)
     @PostMapping()
     public ResponseEntity<TemplatesResponseData> createTemplate(@RequestBody() String content) {
 
@@ -97,7 +95,6 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_EXAMPLE)
     @GetMapping(path = "/{templateId}/example")
     public ResponseEntity<String> getTemplateExample(
             @PathVariable(value = "templateId") String templateId,
@@ -118,7 +115,6 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_READ)
     @GetMapping(path = "/{templateId}")
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();

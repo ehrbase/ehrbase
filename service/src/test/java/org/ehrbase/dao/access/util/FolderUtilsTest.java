@@ -22,8 +22,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.nedap.archie.rm.directory.Folder;
 import java.io.IOException;
 import org.apache.commons.io.IOUtils;
-import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
-import org.ehrbase.test_data.folder.FolderTestDataCanonicalJson;
+import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.sdk.test_data.folder.FolderTestDataCanonicalJson;
 import org.junit.Test;
 
 public class FolderUtilsTest {

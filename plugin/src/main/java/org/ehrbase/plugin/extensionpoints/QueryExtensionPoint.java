@@ -18,8 +18,8 @@
 package org.ehrbase.plugin.extensionpoints;
 
 import java.util.function.Function;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.plugin.dto.QueryWithParameters;
-import org.ehrbase.response.ehrscape.QueryResultDto;
 import org.pf4j.ExtensionPoint;
 
 /**

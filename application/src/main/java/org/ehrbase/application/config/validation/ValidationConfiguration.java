@@ -21,20 +21,29 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.client.HttpClient;
-import org.ehrbase.functional.Try;
-import org.ehrbase.validation.ConstraintViolation;
-import org.ehrbase.validation.ConstraintViolationException;
-import org.ehrbase.validation.terminology.ExternalTerminologyValidation;
-import org.ehrbase.validation.terminology.ExternalTerminologyValidationChain;
-import org.ehrbase.validation.terminology.FhirTerminologyValidation;
-import org.ehrbase.validation.terminology.TerminologyParam;
+import org.ehrbase.openehr.sdk.util.functional.Try;
+import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
+import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
+import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
+import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationChain;
+import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
+import org.ehrbase.validation.FhirTerminologyValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * {@link Configuration} for external terminology validation.
@@ -49,19 +58,48 @@ public class ValidationConfiguration {
     private static final String ERR_MSG = "External terminology validation is disabled, consider to enable it";
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ValidationProperties properties;
-    private final HttpClient httpClient;
 
     //  @Autowired
     @Value("${validation.external-terminology.enabled}")
     private Boolean enableExternalValidation;
 
-    public ValidationConfiguration(ValidationProperties properties, HttpClient httpClient) {
+    public ValidationConfiguration(ValidationProperties properties) {
         this.properties = properties;
-        this.httpClient = httpClient;
     }
 
     @Bean
-    public ExternalTerminologyValidation externalTerminologyValidator() {
+    @ConditionalOnExpression(
+            "${validation.external-terminology.authenticate:true} and ${validation.external-terminology.enabled:true}")
+    public OAuth2AuthorizedClientManager authorizedClientManager(
+            ClientRegistrationRepository clientRegRep, OAuth2AuthorizedClientRepository authrClientRep) {
+        OAuth2AuthorizedClientProvider authrClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
+                .clientCredentials()
+                .build();
+
+        DefaultOAuth2AuthorizedClientManager authrClientMngr =
+                new DefaultOAuth2AuthorizedClientManager(clientRegRep, authrClientRep);
+        authrClientMngr.setAuthorizedClientProvider(authrClientProvider);
+        return authrClientMngr;
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnExpression(
+            "${validation.external-terminology.authenticate:true} and ${validation.external-terminology.enabled:true}")
+    WebClient authrWebClient(OAuth2AuthorizedClientManager authrClientMngr) {
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
+                new ServletOAuth2AuthorizedClientExchangeFilterFunction(authrClientMngr);
+        oauth2Client.setDefaultClientRegistrationId("custom");
+        return WebClient.builder().apply(oauth2Client.oauth2Configuration()).build();
+    }
+
+    @Bean
+    WebClient webClient() {
+        return WebClient.builder().build();
+    }
+
+    @Bean
+    public ExternalTerminologyValidation externalTerminologyValidator(WebClient webClient) {
         if (!enableExternalValidation) {
             logger.warn(ERR_MSG);
             return new ExternalTerminologyValidation() {
@@ -89,30 +127,30 @@ public class ValidationConfiguration {
         } else if (providers.size() == 1) {
             Map.Entry<String, ValidationProperties.Provider> provider =
                     providers.entrySet().iterator().next();
-            return buildExternalTerminologyValidation(provider);
+            return buildExternalTerminologyValidation(provider, webClient);
         } else {
             ExternalTerminologyValidationChain chain = new ExternalTerminologyValidationChain();
             for (Map.Entry<String, ValidationProperties.Provider> provider : providers.entrySet()) {
-                chain.addExternalTerminologyValidationSupport(buildExternalTerminologyValidation(provider));
+                chain.addExternalTerminologyValidationSupport(buildExternalTerminologyValidation(provider, webClient));
             }
             return chain;
         }
     }
 
     private ExternalTerminologyValidation buildExternalTerminologyValidation(
-            Map.Entry<String, ValidationProperties.Provider> provider) {
+            Map.Entry<String, ValidationProperties.Provider> provider, WebClient webClient) {
         logger.info(
                 "Initializing '{}' external terminology provider (type: {})",
                 provider.getKey(),
                 provider.getValue().getType());
         if (provider.getValue().getType() == ValidationProperties.ProviderType.FHIR) {
-            return fhirTerminologyValidation(provider.getValue().getUrl());
+            return fhirTerminologyValidation(provider.getValue().getUrl(), webClient);
         }
         throw new IllegalArgumentException(
                 "Invalid provider type: " + provider.getValue().getType());
     }
 
-    private FhirTerminologyValidation fhirTerminologyValidation(String url) {
-        return new FhirTerminologyValidation(url, properties.isFailOnError(), httpClient);
+    private FhirTerminologyValidation fhirTerminologyValidation(String url, WebClient webClient) {
+        return new FhirTerminologyValidation(url, properties.isFailOnError(), webClient);
     }
 }

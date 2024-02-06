@@ -44,7 +44,7 @@ import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderRecord;
-import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Field;
@@ -109,7 +109,7 @@ public class EhrFolderRepository {
                         folderRecordList.get(0).getEhrId(), ContributionDataType.folder, contributionChangeType));
 
         UUID finalAuditId = Optional.ofNullable(auditId)
-                .orElseGet(() -> contributionRepository.createDefaultAudit(ContributionChangeType.creation));
+                .orElseGet(() -> contributionRepository.createDefaultAudit(contributionChangeType));
 
         Short sysTenant = tenantService.getCurrentSysTenant();
 
@@ -317,7 +317,7 @@ public class EhrFolderRepository {
         }
 
         if (auditId == null) {
-            auditId = contributionRepository.createDefaultAudit(ContributionChangeType.creation);
+            auditId = contributionRepository.createDefaultAudit(ContributionChangeType.deleted);
         }
 
         // add delete entry to history
@@ -380,8 +380,8 @@ public class EhrFolderRepository {
     private static SelectJoinStep<Record> headQuery(DSLContext context) {
         return context.select(EHR_FOLDER.fields())
                 .select(
-                        DSL.field("null").as(EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()),
-                        DSL.field("false").as(EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
+                        DSL.inline((OffsetDateTime) null).as(EHR_FOLDER_HISTORY.SYS_PERIOD_UPPER.getName()),
+                        DSL.inline(false).as(EHR_FOLDER_HISTORY.SYS_DELETED.getName()))
                 .from(EHR_FOLDER);
     }
 

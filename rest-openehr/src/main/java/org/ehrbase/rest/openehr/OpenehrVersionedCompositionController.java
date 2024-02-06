@@ -17,6 +17,10 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
+import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
+
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
@@ -27,21 +31,21 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
+import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.ehrscape.ContributionDto;
-import org.ehrbase.response.openehr.OriginalVersionResponseData;
-import org.ehrbase.response.openehr.RevisionHistoryResponseData;
-import org.ehrbase.response.openehr.VersionedObjectResponseData;
+import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
+import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
+import org.ehrbase.openehr.sdk.response.dto.VersionedObjectResponseData;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedCompositionApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,14 +57,16 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Controller for /ehr/{ehrId}/versioned_composition resource of openEHR REST API
  */
+@ConditionalOnMissingBean(name = "primaryopenehrversionedcompositioncontroller")
 @TenantAware
 @RestController
 @RequestMapping(
-        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/versioned_composition",
+        path = API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/" + VERSIONED_COMPOSITION,
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrVersionedCompositionController extends BaseController
         implements VersionedCompositionApiSpecification {
@@ -77,7 +83,6 @@ public class OpenehrVersionedCompositionController extends BaseController
         this.contributionService = Objects.requireNonNull(contributionService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}")
     @Override
     public ResponseEntity<VersionedObjectResponseData<Composition>> retrieveVersionedCompositionByVersionedObjectUid(
@@ -96,13 +101,15 @@ public class OpenehrVersionedCompositionController extends BaseController
 
         VersionedObjectResponseData<Composition> response = new VersionedObjectResponseData<>(versionedComposition);
 
+        String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0);
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
+
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
@@ -121,13 +128,15 @@ public class OpenehrVersionedCompositionController extends BaseController
 
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
+        String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0, "revision_history");
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
+
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}/version/{version_uid}")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
@@ -162,10 +171,12 @@ public class OpenehrVersionedCompositionController extends BaseController
 
         // -----------------
 
+        String auditLocation = getLocationUrl(versionedObjectId, ehrId, version, "version", versionUid);
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
+
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_COMPOSITION_READ)
     @GetMapping(path = "/{versioned_object_uid}/version")
     // checkAbacPre /-Post attributes (type, subject, payload, content type)
     @PostAuthorize("checkAbacPost(@openehrVersionedCompositionController.COMPOSITION, "
@@ -191,6 +202,9 @@ public class OpenehrVersionedCompositionController extends BaseController
         } else {
             version = compositionService.getLastVersionNumber(versionedCompoUid);
         }
+
+        String auditLocation = getLocationUrl(versionedCompoUid, ehrId, version, "version");
+        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
 
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedCompoUid, version);
     }
@@ -230,5 +244,32 @@ public class OpenehrVersionedCompositionController extends BaseController
         respHeaders.setContentType(resolveContentType(accept));
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
+    }
+
+    private void createAuditLogsMsgBuilder(UUID ehrId, UUID versionedCompoUid, String auditLocation) {
+        AuditMsgBuilder.getInstance()
+                .setEhrIds(ehrId)
+                .setCompositionId(versionedCompoUid.toString())
+                .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
+                .setLocation(auditLocation);
+    }
+
+    private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version, String... pathSegments) {
+        if (version == 0) {
+            version = compositionService.getLastVersionNumber(versionedObjectUid);
+        }
+
+        String versionedComposition = String.format(
+                "%s::%s::%s",
+                versionedObjectUid, compositionService.getServerConfig().getNodename(), version);
+
+        UriComponentsBuilder uriComponentsBuilder =
+                fromPath("").pathSegment(EHR, ehrId.toString(), VERSIONED_COMPOSITION, versionedComposition);
+
+        if (pathSegments.length > 0) {
+            uriComponentsBuilder.pathSegment(pathSegments);
+        }
+
+        return uriComponentsBuilder.build().toString();
     }
 }

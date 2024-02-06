@@ -23,7 +23,7 @@ import java.util.List;
 import org.ehrbase.aql.definition.I_VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.DefaultColumnId;
 import org.ehrbase.ehr.util.LocatableHelper;
-import org.ehrbase.serialisation.dbencoding.wrappers.json.I_DvTypeAdapter;
+import org.ehrbase.jooq.dbencoding.wrappers.json.I_DvTypeAdapter;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
@@ -51,7 +51,7 @@ public class FieldConstantHandler {
         List<String> segments = LocatableHelper.dividePathIntoSegments(variableDefinition.getPath());
 
         if (segments.get(segments.size() - 1).equals(I_DvTypeAdapter.ARCHETYPE_NODE_ID))
-            return DSL.field(DSL.val(implicitArchetypeNodeId(segments.get(segments.size() - 2))))
+            return DSL.inline(implicitArchetypeNodeId(segments.get(segments.size() - 2)))
                     .as(alias());
         return null;
     }

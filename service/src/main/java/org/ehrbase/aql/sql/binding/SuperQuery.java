@@ -116,8 +116,9 @@ public class SuperQuery {
             if (variableDefinition.isFunction()) {
                 skipField.add(alias);
 
-                FunctionExpression functionExpression = new FunctionExpression(variableDefinitions, variableDefinition);
-                Field<?> field = field(functionExpression.toString());
+                FunctionExpression functionExpression =
+                        new FunctionExpression(variableDefinitions, variableDefinition, this.query);
+                Field<?> field = functionExpression.buildField();
                 skipField.addAll(functionExpression.arguments());
 
                 if (variableDefinition.getAlias() != null) {

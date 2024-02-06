@@ -22,12 +22,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.definition.I_VariableDefinition;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.SortField;
-import org.jooq.impl.DSL;
 
 /**
  * Created by christian on 9/23/2016.
@@ -46,13 +47,13 @@ public class OrderByBinder {
         this.variableDefinitions = variableDefinitions;
     }
 
-    List<SortField<Object>> getOrderByFields() {
+    List<SortField<?>> getOrderByFields() {
         if (orderAttributes.isEmpty()) return Collections.emptyList();
 
-        List<SortField<Object>> orderFields = new ArrayList<>();
+        List<SortField<?>> orderFields = new ArrayList<>();
 
         for (OrderAttribute orderAttribute : orderAttributes) {
-            SortField<Object> field;
+            SortField<?> field;
             String fieldIdentifier = null;
 
             // get the corresponding variable definition
@@ -80,18 +81,24 @@ public class OrderByBinder {
                 orderAttribute.getVariableDefinition().setHidden(true);
             }
 
-            if (!fieldIdentifier.startsWith("\""))
-                fieldIdentifier = "\"" + fieldIdentifier + "\""; // by postgresql convention
-
             if (orderAttribute.getDirection() != null
                     && orderAttribute.getDirection().equals(OrderAttribute.OrderDirection.DESC)) {
-                field = DSL.field(fieldIdentifier).desc();
+                field = find(select, fieldIdentifier).desc();
             } else // default to ASCENDING
-            field = DSL.field(fieldIdentifier).asc();
+            field = find(select, fieldIdentifier).asc();
 
             orderFields.add(field);
         }
+
         return orderFields;
+    }
+
+    public static Field<?> find(SelectQuery<?> selectQuery, String fieldIdentifier) {
+        return selectQuery.getSelect().stream()
+                .filter(a -> StringUtils.strip(a.getUnqualifiedName().toString(), "\"")
+                        .equals(fieldIdentifier))
+                .findFirst()
+                .orElseThrow();
     }
 
     public SelectQuery<Record> bind() {

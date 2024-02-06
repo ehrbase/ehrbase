@@ -23,10 +23,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
-import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
+import org.ehrbase.openehr.sdk.response.dto.admin.AdminStatusResponseData;
 import org.ehrbase.rest.BaseController;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,17 +33,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnMissingBean(name = "primaryadmincontroller")
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Heartbeat")
-@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
         path = "${admin-api.context-path:/rest/admin}",
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminController extends BaseController {
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_SYSTEM_STATUS)
     @GetMapping(path = "/status")
     @ApiResponses(
             value = {

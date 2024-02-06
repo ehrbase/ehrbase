@@ -21,7 +21,7 @@ import static org.jooq.impl.SQLDataType.*;
 
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.serialisation.dbencoding.wrappers.json.writer.translator_db2raw.GenericRmType;
+import org.ehrbase.jooq.dbencoding.wrappers.json.writer.translator_db2raw.GenericRmType;
 import org.jooq.DataType;
 
 /**

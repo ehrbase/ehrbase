@@ -99,3 +99,23 @@ or directories with the same ID to exist in different tenants. This was achieved
 with an internal number-based ID and adding it to the primary key.
 
 Please note that executing the Flyway migration script `V83__change_sys_tenant_to_short.sql` may take some time.
+
+## EHRbase 0.29.0
+
+### Fix Duplicated UUIDs and template IDs
+Prior to release 0.29.0, EHRbase contained a bug that may have resulted in duplicated UUIDs and template IDs within the tenant
+If exception occurs during the migration script execution (`V85__enforce_unique_template_id.sql`) manual interventions are required. 
+
+Action Required:
+Ensure that the **ehr.template_store.id** and **ehr.template_store.template_id** columns have unique values within the tenant.
+
+## EHRbase 0.30.0
+
+### Fix storage of Locatable.name
+An error in the encoding for Locatable.name was fixed. 
+With the fixed encoding Locatable.name.mappings and Locatable.name.defining_code are now stored correctly in the DB and Locatable.name.defining_code can also be queried using AQL.
+There is a manual migration script available at `base/db-setup/fix-dv_coded_text-locatable-names.sql` which will fix the existing compositions.
+This migration is only needed if Locatable.name.defining_code is used in any composition. 
+Be aware that this migration might take a while, as it will affect every composition in the database. 
+It will replace the Strings `"codeString":` and `"terminologyId":` with `"code_string":` and `"terminology_id":`. 
+This replacement is done over the whole JSON stored in the database, so there is a small chance that not only the broken JSON keys are affected.

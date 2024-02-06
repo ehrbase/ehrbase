@@ -24,26 +24,32 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.response.openehr.admin.AdminDeleteResponseData;
-import org.ehrbase.response.openehr.admin.AdminStatusResponseData;
+import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
+import org.ehrbase.openehr.sdk.response.dto.admin.AdminStatusResponseData;
 import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Admin API controller for Templates. Provides endpoints to update (replace) and delete templates.
  */
+@ConditionalOnMissingBean(name = "primaryadmintemplatecontroller")
+@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @TenantAware
 @Tag(name = "Admin - Template")
-@ConditionalOnProperty(prefix = "admin-api", name = "active")
 @RestController
 @RequestMapping(
         path = "${admin-api.context-path:/rest/admin}/template",
@@ -53,15 +59,13 @@ public class AdminTemplateController extends BaseController {
     TemplateService templateService;
 
     @Autowired
-    AdminTemplateController(TemplateService templateService) {
+    public AdminTemplateController(TemplateService templateService) {
         this.templateService = templateService;
     }
 
     @Autowired
     AdminApiConfiguration adminApiConfiguration;
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_UPDATE)
     @PutMapping(
             path = "/{template_id}",
             consumes = {MediaType.APPLICATION_XML_VALUE},
@@ -105,8 +109,6 @@ public class AdminTemplateController extends BaseController {
         return ResponseEntity.ok().headers(headers).body(updatedTemplate);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_DELETE)
     @DeleteMapping(path = "/{template_id}")
     @ApiResponses(
             value = {
@@ -130,8 +132,6 @@ public class AdminTemplateController extends BaseController {
         return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_TEMPLATE_DELETE)
     @DeleteMapping(path = "/all")
     @ApiResponses(
             value = {

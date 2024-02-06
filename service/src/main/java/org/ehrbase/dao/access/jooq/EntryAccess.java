@@ -55,13 +55,13 @@ import org.ehrbase.dao.access.interfaces.I_EntryAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.dao.access.support.SafeNav;
+import org.ehrbase.jooq.dbencoding.RawJson;
+import org.ehrbase.jooq.dbencoding.rmobject.FeederAuditEncoding;
+import org.ehrbase.jooq.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.jooq.pg.enums.EntryType;
 import org.ehrbase.jooq.pg.tables.records.EntryHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
 import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
-import org.ehrbase.serialisation.dbencoding.RawJson;
-import org.ehrbase.serialisation.dbencoding.rmobject.FeederAuditEncoding;
-import org.ehrbase.serialisation.dbencoding.rmobject.LinksEncoding;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.jooq.Condition;
@@ -477,16 +477,16 @@ public class EntryAccess extends DataAccess implements I_EntryAccess {
 
         UpdateQuery<?> updateQuery = getContext().updateQuery(ENTRY);
         updateQuery.addValue(ENTRY.COMPOSITION_ID, getCompositionId());
-        updateQuery.addValue(ENTRY.SEQUENCE, DSL.field(DSL.val(getSequence())));
-        updateQuery.addValue(ENTRY.TEMPLATE_ID, DSL.field(DSL.val(getTemplateId())));
+        updateQuery.addValue(ENTRY.SEQUENCE, DSL.val(getSequence()));
+        updateQuery.addValue(ENTRY.TEMPLATE_ID, DSL.val(getTemplateId()));
 
-        updateQuery.addValue(ENTRY.ITEM_TYPE, DSL.field(DSL.val(EntryType.valueOf(getItemType()))));
-        updateQuery.addValue(ENTRY.ARCHETYPE_ID, DSL.field(DSL.val(getArchetypeId())));
-        updateQuery.addValue(ENTRY.CATEGORY, DSL.field(DSL.val(getCategory())));
-        updateQuery.addValue(ENTRY.ENTRY_, DSL.field(DSL.val(getEntryJson())));
-        updateQuery.addValue(ENTRY.SYS_TRANSACTION, DSL.field(DSL.val(transactionTime)));
-        updateQuery.addValue(ENTRY.NAME, DSL.field(DSL.val(getCompositionName())));
-        updateQuery.addValue(ENTRY.RM_VERSION, DSL.field(DSL.val(getRmVersion())));
+        updateQuery.addValue(ENTRY.ITEM_TYPE, DSL.val(EntryType.valueOf(getItemType())));
+        updateQuery.addValue(ENTRY.ARCHETYPE_ID, DSL.val(getArchetypeId()));
+        updateQuery.addValue(ENTRY.CATEGORY, DSL.val(getCategory()));
+        updateQuery.addValue(ENTRY.ENTRY_, DSL.val(getEntryJson()));
+        updateQuery.addValue(ENTRY.SYS_TRANSACTION, DSL.val(transactionTime));
+        updateQuery.addValue(ENTRY.NAME, DSL.val(getCompositionName()));
+        updateQuery.addValue(ENTRY.RM_VERSION, DSL.val(getRmVersion()));
         updateQuery.addConditions(ENTRY.ID.eq(getId()));
 
         logger.debug("Update done...");

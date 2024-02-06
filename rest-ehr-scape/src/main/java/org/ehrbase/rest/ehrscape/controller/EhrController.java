@@ -33,17 +33,16 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.annotations.TenantAware;
-import org.ehrbase.api.authorization.EhrbaseAuthorization;
-import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.response.ehrscape.CompositionFormat;
-import org.ehrbase.response.ehrscape.EhrStatusDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.EhrStatusDto;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.EhrResponseData;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +63,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Stefan Spiska
  * @author Jake Smolka
  */
+@ConditionalOnMissingBean(name = "primaryehrcontroller")
 @TenantAware
 @RestController
 @RequestMapping(path = API_ECIS_CONTEXT_PATH_WITH_VERSION + "/ehr")
@@ -79,7 +79,6 @@ public class EhrController extends BaseController {
         this.ehrService = Objects.requireNonNull(ehrService);
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_CREATE)
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
@@ -115,7 +114,6 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping
     public ResponseEntity<EhrResponseData> getEhr(
             @RequestParam(value = "subjectId") String subjectId,
@@ -128,7 +126,6 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_READ)
     @GetMapping(path = "/{uuid}")
     public ResponseEntity<EhrResponseData> getEhr(
             @PathVariable("uuid") UUID ehrId,
@@ -140,7 +137,6 @@ public class EhrController extends BaseController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_UPDATE_STATUS)
     @PutMapping(path = "/{uuid}/status")
     public ResponseEntity<EhrResponseData> updateStatus(
             @PathVariable("uuid") UUID ehrId,

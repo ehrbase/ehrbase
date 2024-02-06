@@ -19,9 +19,8 @@ package org.ehrbase.util;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import org.ehrbase.webtemplate.model.WebTemplate;
-import org.ehrbase.webtemplate.parser.OPTParser;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -73,21 +72,5 @@ public class TemplateUtils {
         return Optional.ofNullable(template.getTemplateId())
                 .map(OBJECTID::getValue)
                 .orElseThrow(() -> new IllegalArgumentException("Template ID must not be null for the given template"));
-    }
-
-    /**
-     * Retrieves the template unique ID from the given OPT template.
-     *
-     * @param template the template
-     * @return template unique ID
-     */
-    public static UUID getUid(OPERATIONALTEMPLATE template) {
-        if (template == null) {
-            throw new IllegalArgumentException("Template must not be null");
-        }
-        return Optional.ofNullable(template.getUid())
-                .map(OBJECTID::getValue)
-                .map(UUID::fromString)
-                .orElseThrow(() -> new IllegalArgumentException("Unique ID must not be null for the given template"));
     }
 }

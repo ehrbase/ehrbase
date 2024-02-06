@@ -34,5 +34,9 @@ public interface TenantService extends BaseService {
 
     Optional<Tenant> findBy(String tenantId);
 
+    void deleteTenant(String tenantId);
+
     List<Tenant> getAll();
+
+    boolean hasTenant(String tenantId);
 }
