@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,12 +30,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
 import java.util.Optional;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
-import org.ehrbase.api.service.QueryService;
+import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.openehr.sdk.response.dto.ErrorBodyPayload;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
@@ -51,7 +50,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -62,7 +60,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnMissingBean(name = "primaryopenehrdefinitionquerycontroller")
-@TenantAware
 @RestController
 @RequestMapping(
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/definition/query",
@@ -73,11 +70,11 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final QueryService queryService;
+    private final StoredQueryService storedQueryService;
 
     @Autowired
-    public OpenehrDefinitionQueryController(QueryService queryService) {
-        this.queryService = Objects.requireNonNull(queryService);
+    public OpenehrDefinitionQueryController(StoredQueryService storedQueryService) {
+        this.storedQueryService = Objects.requireNonNull(storedQueryService);
     }
 
     // ----- DEFINITION: Manage Stored Query, From definition package
@@ -100,7 +97,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
         createAuditLogsMsgBuilder(qualifiedQueryName, null);
         QueryDefinitionListResponseData responseData =
-                new QueryDefinitionListResponseData(queryService.retrieveStoredQueries(qualifiedQueryName));
+                new QueryDefinitionListResponseData(storedQueryService.retrieveStoredQueries(qualifiedQueryName));
         AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return ResponseEntity.ok(responseData);
@@ -119,7 +116,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         createAuditLogsMsgBuilder(qualifiedQueryName, version.orElse(null));
 
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(
-                queryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
+                storedQueryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
         AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return ResponseEntity.ok(queryDefinitionResponseData);
@@ -183,28 +180,10 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         createAuditLogsMsgBuilder(qualifiedQueryName, version.orElse(null));
 
         QueryDefinitionResultDto storedQuery =
-                queryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
+                storedQueryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
         AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
 
         return getPutDefenitionResponseEntity(mediaType, storedQuery);
-    }
-
-    @Override
-    @DeleteMapping(value = {"/{qualified_query_name}/{version}"})
-    public ResponseEntity<QueryDefinitionResponseData> deleteStoredQuery(
-            @RequestHeader(value = ACCEPT, required = false) String accept,
-            @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-            @PathVariable(value = "version") String version) {
-
-        logger.debug("deleteStoredQuery for the following input: {} , version: {}", qualifiedQueryName, version);
-
-        createAuditLogsMsgBuilder(qualifiedQueryName, version);
-
-        QueryDefinitionResponseData queryDefinitionResponseData =
-                new QueryDefinitionResponseData(queryService.deleteStoredQuery(qualifiedQueryName, version));
-        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
-
-        return ResponseEntity.ok(queryDefinitionResponseData);
     }
 
     private ResponseEntity<QueryDefinitionResponseData> getPutDefenitionResponseEntity(

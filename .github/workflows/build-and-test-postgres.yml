@@ -1,0 +1,246 @@
+name: build-and-test-postgres
+
+on:
+  push:
+    branches: [ develop, release/* ]
+  workflow_dispatch:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '21' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Login to GitLab
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn -B -U package
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ehrbase.jar
+          path: /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/application/target/ehrbase.jar
+  test:
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '21' ]
+        robot-test-suit: [ 'AQL_TESTS','STORED_QUERY_TESTS','COMPOSITION_TESTS/COMPOSITION_WITH_DIFFERENT_TIME_ZONES','COMPOSITION_TESTS/CREATE_COMPO_1','COMPOSITION_TESTS/CREATE_COMPO_2','COMPOSITION_TESTS/CREATE_COMPO_3','COMPOSITION_TESTS/CREATE_COMPO_4','COMPOSITION_TESTS/CREATE_COMPO_5','COMPOSITION_TESTS/DELETE_COMPOSITION','COMPOSITION_TESTS/GET_COMPOSITION','COMPOSITION_TESTS/GET_VERSIONED_COMPOSITION','COMPOSITION_TESTS/HEADERS_CHECKS','COMPOSITION_TESTS/ISM_TRANSITIONS_COMPOSITION','COMPOSITION_TESTS/UPDATE_COMPOSITION','COMPOSITION_TESTS/VALIDATION','CONTRIBUTION_TESTS','DIRECTORY_TESTS','EHR_SERVICE_TESTS','EHR_STATUS_TESTS','SANITY_TESTS','TEMPLATE_TESTS' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Login to GitLab
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Run Create DB script
+        run: |
+          docker run -d --name postgres -p5432:5432 ehrbase/ehrbase-postgres:16.2-mvp
+          WAIT_COUNTER=0
+          until [ $WAIT_COUNTER -eq 20 ] || psql -h localhost -p 5432 -c "SELECT 1"; do echo $(( ++WAIT_COUNTER )); sleep 5; done
+          if [ $WAIT_COUNTER -eq 20 ]; then
+            echo "PostgreSQL not ready"
+            exit 1
+          fi
+
+        env:
+          PGUSER: postgres
+          PGPASSWORD: postgres
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+
+      - name: Download ehrbase jar
+        uses: actions/download-artifact@v4
+        with:
+          name: ehrbase.jar
+          path: ~/
+
+      - name: Run EHRbase
+        run: |
+          java -jar /home/runner/ehrbase.jar --server.nodename=local.ehrbase.org --spring.profiles.active=local --server.servlet.context-path=/ehrbase --spring.datasource.url=jdbc:postgresql://localhost:5432/ehrbase --ehrbase.rest.aql.response.generator-details-enabled=true --ehrbase.dbms-provider=POSTGRESQL >/var/tmp/log.txt &
+          WAIT_COUNTER=0
+          until [ $WAIT_COUNTER -eq 60 ] || curl -s -f -o /dev/null "http://localhost:8080/ehrbase/rest/openehr/v1/definition/template/adl1.4/"; do echo $(( ++WAIT_COUNTER )); sleep 2; done
+          cat /var/tmp/log.txt
+          if [ $WAIT_COUNTER -eq 60 ]; then
+            echo "EHRbase not ready"
+            exit 1
+          fi
+
+      - name: Checkout Robot
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: ehrbase/integration-tests
+          ref: feature/new
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Robot dependencies
+        run: pip install -r tests/requirements.txt
+
+      - name: Run Robot scripts
+        run: |
+          cd tests
+          robot -v nodocker \
+                -v NODENAME:local.ehrbase.org \
+                --dotted \
+                --console quiet \
+                --flattenkeywords for \
+                --flattenkeywords foritem \
+                --flattenkeywords name:_resources.* \
+                --report NONE \
+                -d results \
+                --skiponfailure not-ready -L TRACE \
+                robot/${{ matrix.robot-test-suit }}
+
+      - name: Replace forward slash to archive Robot result
+        if: always()
+        run: |
+          TEST_NAME="${{ matrix.robot-test-suit }}"
+          TEST_NAME_MODIFIED="${TEST_NAME//\//_}"
+          echo "Modified test_name: $TEST_NAME_MODIFIED"
+          echo "TEST_NAME_MODIFIED=$TEST_NAME_MODIFIED" >> $GITHUB_ENV
+
+      - name: Archive Robot results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-result-${{ env.TEST_NAME_MODIFIED }}
+          path: /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/tests/results/output.xml
+
+      - name: Archive logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-${{ env.TEST_NAME_MODIFIED }}
+          path: /var/tmp/log.txt
+
+  collect:
+    if: ${{ always() }}
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Download Robot results
+        uses: actions/download-artifact@v4
+        with:
+          path: /home/runner/robot-results
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: /home/runner/robot-results
+
+      - name: Checkout Robot
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: ehrbase/integration-tests
+          ref: feature/new
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Robot dependencies
+        run: pip install -r tests/requirements.txt
+
+      - name: Build Robot output.xml and log.html
+        run: |
+          pwd
+          rebot \
+            --name EHRbase \
+            --outputdir /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/reports \
+            -l Final_Log.html \
+            -r Final_Report.html \
+            -o output.xml \
+            /home/runner/robot-results/robot-result-*/output.xml
+          ls -R /home/runner/
+
+      - name: Delete old Robot reports
+        if: always()
+        run: |
+          rm -vf /home/runner/robot-results/robot-result-*/*
+
+      - name: Send Robot report to commit
+        if: always()
+        uses: joonvena/robotframework-reporter-action@v2.3
+        with:
+          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
+          report_path: '/reports'
+          show_passed_tests: false
+
+      - name: Delete merged output.xml
+        if: always()
+        run: |
+          rm -vf /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/reports/*.xml
+
+      - name: Robot results final
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-result-final
+          path: /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/reports
+
+#  cleanup:
+#    if: ${{ always() }}
+#    needs: [collect]
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        robot-test-suit: ['AQL_TESTS','STORED_QUERY_TESTS','COMPOSITION_TESTS/COMPOSITION_WITH_DIFFERENT_TIME_ZONES','COMPOSITION_TESTS/CREATE_COMPO_1','COMPOSITION_TESTS/CREATE_COMPO_2','COMPOSITION_TESTS/CREATE_COMPO_3','COMPOSITION_TESTS/CREATE_COMPO_4','COMPOSITION_TESTS/CREATE_COMPO_5','COMPOSITION_TESTS/DELETE_COMPOSITION','COMPOSITION_TESTS/GET_COMPOSITION','COMPOSITION_TESTS/GET_VERSIONED_COMPOSITION','COMPOSITION_TESTS/HEADERS_CHECKS','COMPOSITION_TESTS/ISM_TRANSITIONS_COMPOSITION','COMPOSITION_TESTS/UPDATE_COMPOSITION','COMPOSITION_TESTS/VALIDATION','CONTRIBUTION_TESTS','DIRECTORY_TESTS','EHR_SERVICE_TESTS','EHR_STATUS_TESTS','SANITY_TESTS','TEMPLATE_TESTS']
+#
+#    steps:
+#      - name: Replace forward slash to delete Robot result
+#        if: always()
+#        run: |
+#          TEST_NAME="${{ matrix.robot-test-suit }}"
+#          TEST_NAME_MODIFIED="${TEST_NAME//\//_}"
+#          echo "Modified test_name: $TEST_NAME_MODIFIED"
+#          echo "TEST_NAME_MODIFIED=$TEST_NAME_MODIFIED" >> $GITHUB_ENV
+#
+#      - name: Delete single reports
+#        if: always()
+#        uses: geekyeggo/delete-artifact@v4
+#        with:
+#          name: robot-result-${{ env.TEST_NAME_MODIFIED }}

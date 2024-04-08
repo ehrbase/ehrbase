@@ -1,0 +1,182 @@
+/*
+ * Copyright (c) 2024 vitasystems GmbH.
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.ehrbase.service;
+
+import java.util.List;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.exception.GeneralRequestProcessingException;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.service.StoredQueryService;
+import org.ehrbase.jooq.pg.tables.records.StoredQueryRecord;
+import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
+import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
+import org.ehrbase.repository.StoredQueryRepository;
+import org.ehrbase.util.InvalidVersionFormatException;
+import org.ehrbase.util.SemVer;
+import org.ehrbase.util.SemVerUtil;
+import org.ehrbase.util.VersionConflictException;
+import org.jooq.exception.DataAccessException;
+import org.springframework.stereotype.Service;
+
+@Service
+public class StoredQueryServiceImp implements StoredQueryService {
+
+    private final StoredQueryRepository storedQueryRepository;
+
+    public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository) {
+
+        this.storedQueryRepository = storedQueryRepository;
+    }
+
+    // === DEFINITION: manage stored queries
+    @Override
+    public List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName) {
+        String name = StringUtils.defaultIfEmpty(fullyQualifiedName, null);
+        try {
+            return storedQueryRepository.retrieveQualifiedList(name);
+
+        } catch (DataAccessException e) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error: " + e.getCause().getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("Could not retrieve stored query, reason: " + e, e);
+        }
+    }
+
+    @Override
+    public QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version) {
+        SemVer requestedVersion = parseRequestSemVer(version);
+
+        Optional<StoredQueryRecord> storedQueryAccess;
+        try {
+            storedQueryAccess = storedQueryRepository.retrieveQualified(qualifiedName, requestedVersion);
+        } catch (DataAccessException e) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error: " + e.getCause().getMessage(), e);
+        } catch (RuntimeException e) {
+            throw new InternalServerException(e.getMessage());
+        }
+
+        return storedQueryAccess
+                .map(StoredQueryRepository::mapToQueryDefinitionDto)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Could not retrieve stored query for qualified name: " + qualifiedName));
+    }
+
+    @Override
+    public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
+
+        SemVer requestedVersion = parseRequestSemVer(version);
+
+        // validate the query syntax
+        try {
+            AqlQueryParser.parse(queryString);
+        } catch (AqlParseException e) {
+            throw new IllegalArgumentException("Invalid query, reason:" + e, e);
+        }
+
+        // lookup version in db
+        SemVer dbSemVer = storedQueryRepository
+                .retrieveQualified(qualifiedName, requestedVersion)
+                .map(q -> SemVer.parse(q.getSemver()))
+                .orElse(SemVer.NO_VERSION);
+
+        checkVersionCombination(requestedVersion, dbSemVer);
+
+        SemVer newVersion = SemVerUtil.determineVersion(requestedVersion, dbSemVer);
+
+        // if not final version and already existing: update
+        boolean isUpdate = dbSemVer.isPreRelease();
+
+        try {
+            if (isUpdate) {
+                storedQueryRepository.update(qualifiedName, newVersion, queryString);
+            } else {
+                storedQueryRepository.store(qualifiedName, newVersion, queryString);
+            }
+        } catch (DataAccessException e) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error: " + e.getCause().getMessage(), e);
+        } catch (VersionConflictException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+        return storedQueryRepository
+                .retrieveQualified(qualifiedName, newVersion)
+                .map(StoredQueryRepository::mapToQueryDefinitionDto)
+                .orElseThrow();
+    }
+
+    private static void checkVersionCombination(SemVer requestSemVer, SemVer dbSemVer) {
+        if (dbSemVer.isNoVersion()) {
+            // Noop: no issue
+        } else if (dbSemVer.isPartial()) {
+            throw new IllegalStateException("The database contains stored queries with partial versions");
+
+        } else if (dbSemVer.isPreRelease()) {
+            if (!requestSemVer.isPreRelease()) {
+                throw new RuntimeException(
+                        "Pre-release " + dbSemVer + " was provided when " + requestSemVer + " was requested");
+            }
+        } else {
+            // release
+            if (requestSemVer.isPreRelease()) {
+                throw new RuntimeException(
+                        "Version " + dbSemVer + " was provided when pre-release " + requestSemVer + " was requested");
+
+            } else if (requestSemVer.isRelease()) {
+                throw new StateConflictException("Version already exists");
+            }
+        }
+    }
+
+    @Override
+    public void deleteStoredQuery(String qualifiedName, String version) {
+
+        SemVer requestedVersion = parseRequestSemVer(version);
+        if (requestedVersion.isNoVersion() || requestedVersion.isPartial()) {
+            throw new InvalidApiParameterException("A qualified version has to be specified");
+        }
+
+        try {
+            storedQueryRepository.delete(qualifiedName, SemVer.parse(version));
+
+        } catch (ObjectNotFoundException e) {
+            throw e;
+        } catch (DataAccessException dae) {
+            throw new GeneralRequestProcessingException(
+                    "Data Access Error:" + dae.getCause().getMessage());
+        } catch (RuntimeException e) {
+            throw new InternalServerException(e.getMessage());
+        }
+    }
+
+    private static SemVer parseRequestSemVer(String version) {
+        try {
+            return SemVer.parse(version);
+        } catch (InvalidVersionFormatException e) {
+            throw new InvalidApiParameterException("Incorrect version. Use the SEMVER format.", e);
+        }
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,60 +17,66 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
+import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
+
+import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZonedDateTime;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.TerminologyId;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.api.service.TenantService;
+import org.ehrbase.api.service.ContributionService;
+import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.enums.ContributionState;
 import org.ehrbase.jooq.pg.tables.AuditDetails;
 import org.ehrbase.jooq.pg.tables.Contribution;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
-import org.ehrbase.service.IUserService;
-import org.ehrbase.service.PartyService;
-import org.ehrbase.service.SystemService;
+import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.service.TimeProvider;
+import org.ehrbase.service.UserService;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Handles DB-Access to {@link Contribution} and {@link AuditDetails}
- * @author Stefan Spiska
  */
 @Repository
 public class ContributionRepository {
 
     private final DSLContext context;
     private final SystemService systemService;
-    private final IUserService userService;
+    private final UserService userService;
+    private final PartyProxyRepository partyProxyRepository;
 
-    private final PartyService partyService;
-
-    private final TenantService tenantService;
+    private final TimeProvider timeProvider;
 
     public ContributionRepository(
             DSLContext context,
             SystemService systemService,
-            IUserService userService,
-            PartyService partyService,
-            TenantService tenantService) {
+            UserService userService,
+            PartyProxyRepository partyProxyRepository,
+            TimeProvider timeProvider) {
         this.context = context;
         this.systemService = systemService;
         this.userService = userService;
-        this.partyService = partyService;
-        this.tenantService = tenantService;
+        this.partyProxyRepository = partyProxyRepository;
+
+        this.timeProvider = timeProvider;
     }
 
     /**
      * Create the default contribution in the DB for usage in case data is not saved via explicit provided contribution. Sets the committer from the auth context.
+     *
      * @param ehrId
      * @param contributionType
      * @param contributionChangeType
@@ -80,16 +86,43 @@ public class ContributionRepository {
     public UUID createDefault(
             UUID ehrId, ContributionDataType contributionType, ContributionChangeType contributionChangeType) {
 
-        UUID auditDetailsRecordId = createDefaultAudit(contributionChangeType);
+        UUID auditDetailsRecordId = createDefaultAudit(contributionChangeType, AuditDetailsTargetType.CONTRIBUTION);
+
+        return createContribution(ehrId, UuidGenerator.randomUUID(), contributionType, auditDetailsRecordId);
+    }
+
+    /**
+     * Create the default audit in the DB  for usage in case data is not saved via explicit provided contribution. Sets the committer from the auth context.
+     *
+     * @param contributionChangeType
+     * @return {@link UUID} of the corresponding Database Record.
+     */
+    @Transactional
+    public UUID createDefaultAudit(ContributionChangeType contributionChangeType, AuditDetailsTargetType targetType) {
+        AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
+
+        auditDetailsRecord.setId(UuidGenerator.randomUUID());
+        auditDetailsRecord.setTimeCommitted(timeProvider.getNow());
+        auditDetailsRecord.setTargetType(targetType.getAlias());
+
+        auditDetailsRecord.setCommitter(null);
+        auditDetailsRecord.setUserId(userService.getCurrentUserId());
+        auditDetailsRecord.setChangeType(contributionChangeType);
+
+        auditDetailsRecord.store();
+        return auditDetailsRecord.getId();
+    }
+
+    @Transactional
+    public UUID createContribution(
+            UUID ehrId, UUID contributionUuid, ContributionDataType contributionType, UUID auditDetailsRecordId) {
 
         ContributionRecord contributionRecord = context.newRecord(Contribution.CONTRIBUTION);
 
-        contributionRecord.setId(UuidGenerator.randomUUID());
         contributionRecord.setEhrId(ehrId);
+        contributionRecord.setId(contributionUuid);
         contributionRecord.setContributionType(contributionType);
-        contributionRecord.setState(ContributionState.complete);
         contributionRecord.setHasAudit(auditDetailsRecordId);
-        contributionRecord.setSysTenant(tenantService.getCurrentSysTenant());
 
         contributionRecord.store();
 
@@ -97,49 +130,33 @@ public class ContributionRepository {
     }
 
     /**
-     * Create the default audit in the DB  for usage in case data is not saved via explicit provided contribution. Sets the committer from the auth context.
-     * @param contributionChangeType
-     * @return {@link UUID} of the corresponding Database Record.
-     */
-    @Transactional
-    public UUID createDefaultAudit(ContributionChangeType contributionChangeType) {
-        AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
-
-        auditDetailsRecord.setId(UuidGenerator.randomUUID());
-        auditDetailsRecord.setTimeCommitted(Timestamp.from(Instant.now()));
-        auditDetailsRecord.setTimeCommittedTzid(ZonedDateTime.now().getZone().getId());
-        auditDetailsRecord.setSystemId(systemService.getSystemUuid());
-        auditDetailsRecord.setCommitter(userService.getCurrentUserId());
-        auditDetailsRecord.setChangeType(contributionChangeType);
-        auditDetailsRecord.setSysTenant(tenantService.getCurrentSysTenant());
-
-        auditDetailsRecord.store();
-        return auditDetailsRecord.getId();
-    }
-
-    /**
      * Creates a Audit in the Database
+     *
      * @param auditDetails {@link AuditDetails} from which to take the data.
+     * @param targetType
      * @return {@link UUID} of the corresponding Database Record.
      */
     @Transactional
-    public UUID createAudit(com.nedap.archie.rm.generic.AuditDetails auditDetails) {
+    public UUID createAudit(com.nedap.archie.rm.generic.AuditDetails auditDetails, AuditDetailsTargetType targetType) {
 
         AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
 
         auditDetailsRecord.setId(UuidGenerator.randomUUID());
-        auditDetailsRecord.setTimeCommitted(Timestamp.from(Instant.now()));
-        auditDetailsRecord.setTimeCommittedTzid(ZonedDateTime.now().getZone().getId());
-        // according to https://specifications.openehr.org/releases/RM/latest/common.html#_audit_details_class
-        // this should be set to Identifier of the logical EHR system where the change was committed.
-        auditDetailsRecord.setSystemId(systemService.getSystemUuid());
-        auditDetailsRecord.setCommitter(partyService.findOrCreateParty(auditDetails.getCommitter()));
+        auditDetailsRecord.setTimeCommitted(timeProvider.getNow());
+
+        // save committer as json if not user
+        if (!partyProxyRepository.fromUser(userService.getCurrentUserId()).equals(auditDetails.getCommitter())) {
+            auditDetailsRecord.setCommitter(JSONB.jsonb(new CanonicalJson().marshal(auditDetails.getCommitter())));
+        }
+
+        auditDetailsRecord.setTargetType(targetType.getAlias());
+
         auditDetailsRecord.setChangeType(to(auditDetails.getChangeType()));
         // We just save the text here wich is not 100 % correct here.
         auditDetailsRecord.setDescription(Optional.ofNullable(auditDetails.getDescription())
                 .map(DvText::getValue)
                 .orElse(null));
-        auditDetailsRecord.setSysTenant(tenantService.getCurrentSysTenant());
+        auditDetailsRecord.setUserId(userService.getCurrentUserId());
 
         auditDetailsRecord.store();
         return auditDetailsRecord.getId();
@@ -156,5 +173,45 @@ public class ContributionRepository {
             case "523" -> ContributionChangeType.deleted;
             default -> throw new UnexpectedSwitchCaseException(changeType.toString());
         };
+    }
+
+    public ContributionRecord findById(UUID contibutionId) {
+
+        return context.fetchOne(CONTRIBUTION, CONTRIBUTION.ID.eq(contibutionId));
+    }
+
+    public com.nedap.archie.rm.generic.AuditDetails findAuditDetails(UUID auditId) {
+
+        AuditDetailsRecord auditDetailsRecord =
+                context.fetchOne(AuditDetails.AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
+        Objects.requireNonNull(auditDetailsRecord);
+
+        com.nedap.archie.rm.generic.AuditDetails auditDetails = new com.nedap.archie.rm.generic.AuditDetails();
+
+        auditDetails.setSystemId(systemService.getSystemId());
+
+        if (auditDetailsRecord.getCommitter() != null) {
+            auditDetails.setCommitter(new CanonicalJson()
+                    .unmarshal(auditDetailsRecord.getCommitter().data(), PartyProxy.class));
+        } else {
+            auditDetails.setCommitter(partyProxyRepository.fromUser(auditDetailsRecord.getUserId()));
+        }
+        auditDetails.setDescription(new DvText(auditDetailsRecord.getDescription()));
+
+        DvCodedText changeType = new DvCodedText(
+                auditDetailsRecord.getChangeType().getLiteral(),
+                new CodePhrase(
+                        new TerminologyId("openehr"),
+                        Integer.toString(ContributionService.ContributionChangeType.valueOf(auditDetailsRecord
+                                        .getChangeType()
+                                        .getLiteral()
+                                        .toUpperCase())
+                                .getCode())));
+        auditDetails.setChangeType(changeType);
+
+        DvDateTime time = new DvDateTime(auditDetailsRecord.getTimeCommitted());
+        auditDetails.setTimeCommitted(time);
+
+        return auditDetails;
     }
 }

@@ -1,121 +1,13 @@
 # Updating EHRbase
 
-This file documents any backwards-incompatible changes in EHRBase and
-assists users migrating to a new version.
+This file documents any backwards-incompatible changes in EHRBase and assists users migrating to a new version.
 
-## EHRbase 0.19.0
+## EHRbase 2.0.0
 
-### Database Configuration
+### Migrating data
 
-The creation of the DB must ensure that SQL interval type is ISO-8601 compliant. This is required to ensure proper
-formatting of the resultset.
-Scripts provided ensure this encoding is done properly (see `base/db-setup`) with the following statement:
+EHRbase 2.0.0 comes with a completely overhauled data structure that is not automatically migrated when deploying this 
+new version over an older data structure.
 
-```
--- ensure INTERVAL is ISO8601 encoded
-alter database ehrbase SET intervalstyle = 'iso_8601';
-```
-
-If an old version of the scripts was used this statement needs to be run manually.
-
-## EHRbase 0.21.0
-
-### Switch to native Postgres
-
-Before 0.21.0 EHRbase offered two setups, one using the
-extensions   [temporal tables](https://github.com/arkhipov/temporal_tables),
-[jsquery](https://github.com/postgrespro/jsquery) and one without. With 0.21.0 EHRbase now always runs against a plain
-postgres.
-To migrate a postgres without those extensions run `base/db-setup/migrate_to_cloud_db_setup.sql`. This is not needed if
-you used the old `base/db-setup/cloud_db_setup.sql`
-or run the EHRbase Postgres docker image.
-
-### Fix Duplicate User issue
-Prior to release 0.21.0, EHRbase contained a bug that creates a new internal user for each request.
-
-The execution of the Flyway migration script `V71__merge_duplicate_users.sql` may take its time as the duplicates are
-being consolidated.
-
-## EHRbase 0.24.0
-
-### Switch to non-privileged user for DB Access
-
-Prior to 0.24.0 used one user for DDL Statements and to run the application's logic. With 0.24.0 these are run with different Users with different DB Privileges.
-To migrate run adjust the password in `base/db-setup/add_restricted_user.sql` and run it as DB-Admin in the ehrbase DB. 
-After that adjust the ehrbase Properties:
-
-Set the migration to use the user with DDL Privilege:
-```
-spring:
-  flyway:
-    user: ehrbase
-    password: ehrbase
-```
-And set the application to use the restricted user
-```
-spring:
-  datasource:
-    username: ehrbase_restricted
-    password: ehrbase_restricted
-```
-
-If you use the official Docker image you can also set this via
-
-```
-    environment:
-      DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
-      DB_USER_ADMIN: ehrbase
-      DB_PASS_ADMIN: ehrbase
-      DB_USER: ehrbase_restricted
-      DB_PASS: ehrbase_restricted
-```
-
-see `\docker-compose.yml `
-
-## EHRbase 0.25.0
-
-### Switch to new directory structure
-
-With release 0.25.0 a new Structure to store EHR directory was introduced. There is no automatic migration of old EHR
-directory data into the new structure.
-If you used EHR directory and are fine with losing this data you can run in postgres as admin
-
-```
--- remove Ehr directory!!!
-
-begin;
-alter table ehr.ehr drop column if exists directory;
-TRUNCATE ehr.folder, ehr.folder_hierarchy, ehr.folder_items,ehr.folder_history,ehr.folder_items_history,ehr.folder_hierarchy_history;
-alter table ehr.ehr add column directory uuid references ehr.folder(id);
-commit ;
-```
-
-If you need to migrate old EHR directory data please contact us.
-
-## EHRbase 0.27.0
-
-With release 0.27.0 the multi-tenancy implementation has been updated to allow two EHRs, compositions, 
-or directories with the same ID to exist in different tenants. This was achieved by replacing the tenant UUID 
-with an internal number-based ID and adding it to the primary key.
-
-Please note that executing the Flyway migration script `V83__change_sys_tenant_to_short.sql` may take some time.
-
-## EHRbase 0.29.0
-
-### Fix Duplicated UUIDs and template IDs
-Prior to release 0.29.0, EHRbase contained a bug that may have resulted in duplicated UUIDs and template IDs within the tenant
-If exception occurs during the migration script execution (`V85__enforce_unique_template_id.sql`) manual interventions are required. 
-
-Action Required:
-Ensure that the **ehr.template_store.id** and **ehr.template_store.template_id** columns have unique values within the tenant.
-
-## EHRbase 0.30.0
-
-### Fix storage of Locatable.name
-An error in the encoding for Locatable.name was fixed. 
-With the fixed encoding Locatable.name.mappings and Locatable.name.defining_code are now stored correctly in the DB and Locatable.name.defining_code can also be queried using AQL.
-There is a manual migration script available at `base/db-setup/fix-dv_coded_text-locatable-names.sql` which will fix the existing compositions.
-This migration is only needed if Locatable.name.defining_code is used in any composition. 
-Be aware that this migration might take a while, as it will affect every composition in the database. 
-It will replace the Strings `"codeString":` and `"terminologyId":` with `"code_string":` and `"terminology_id":`. 
-This replacement is done over the whole JSON stored in the database, so there is a small chance that not only the broken JSON keys are affected.
+To support the migrating of data from systems `pre-2.0.0` to `2.0.0`, a migration tool and instructions are provided 
+at https://github.com/ehrbase/migration-tool. 

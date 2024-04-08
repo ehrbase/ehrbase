@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Copyright (c) 2024 vitasystems GmbH.
+
+    This file is part of Project EHRbase
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.ehrbase.openehr</groupId>
+    <artifactId>server</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>jooq-pg</artifactId>
+
+  <name>jooq-pg</name>
+
+
+  <properties>
+    <docker-maven-plugin.version>0.44.0</docker-maven-plugin.version>
+    <database.docker.image>ehrbase/ehrbase-postgres:16.2-mvp</database.docker.image>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${docker-maven-plugin.version}</version>
+        <configuration>
+          <skip>${database.external}</skip>
+          <images>
+            <image>
+              <name>${database.docker.image}</name>
+              <alias>postgres</alias>
+              <run>
+                <env>
+                  <EHRBASE_USER_ADMIN>${database.user}</EHRBASE_USER_ADMIN>
+                  <EHRBASE_PASSWORD_ADMIN>${database.pass}</EHRBASE_PASSWORD_ADMIN>
+                </env>
+                <ports>
+                  <port>${database.port}:5432</port>
+                </ports>
+                <wait>
+                  <!-- The log entry is not usable as indicator since the DB restarts multiple times during init -->
+                  <!-- Possilbe log entry(?): PostgreSQL init process complete; ready for start up. -->
+                  <!--<log>database system is ready to accept connections</log>-->
+                  <time>10000</time>
+                </wait>
+                <log>
+                  <enabled>true</enabled>
+                  <prefix>DB__</prefix>
+                  <color>red</color>
+                </log>
+              </run>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>prepare-generate-environment</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <!-- execute stop to ensure we can spin up a fresh database -->
+              <goal>stop</goal>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>remove-generate-environment</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>${flyway.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+          </dependency>
+          <!--
+          <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
+          </dependency>
+          -->
+        </dependencies>
+        <executions>
+          <execution>
+            <id>ext</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>migrate</goal>
+            </goals>
+            <configuration>
+              <failOnMissingLocations>true</failOnMissingLocations>
+              <locations>
+                <location>filesystem:src/main/resources/db/migration/ext</location>
+              </locations>
+              <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+              <driver>org.postgresql.Driver</driver>
+              <user>${database.user}</user>
+              <password>${database.pass}</password>
+              <defaultSchema>ext</defaultSchema>
+              <schemas>
+                <schema>ext</schema>
+              </schemas>
+              <placeholders>
+                <extSchema>ext</extSchema>
+              </placeholders>
+            </configuration>
+          </execution>
+          <execution>
+            <id>ehr</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>migrate</goal>
+            </goals>
+            <configuration>
+              <failOnMissingLocations>true</failOnMissingLocations>
+              <locations>
+                <location>filesystem:src/main/resources/db/migration/ehr</location>
+              </locations>
+              <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+              <driver>org.postgresql.Driver</driver>
+              <user>${database.user}</user>
+              <password>${database.pass}</password>
+              <defaultSchema>ehr</defaultSchema>
+              <schemas>
+                <schema>ehr</schema>
+              </schemas>
+              <placeholders>
+                <ehrSchema>ehr</ehrSchema>
+              </placeholders>
+            </configuration>
+          </execution>
+        </executions>
+
+      </plugin>
+      <plugin>
+        <groupId>org.jooq</groupId>
+        <artifactId>jooq-codegen-maven</artifactId>
+        <version>${jooq.version}</version>
+        <!-- The plugin should hook into the generate goal -->
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <jdbc>
+            <driver>org.postgresql.Driver</driver>
+            <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
+            <user>${database.user}</user>
+            <password>${database.pass}</password>
+          </jdbc>
+          <generator>
+            <database>
+              <name>org.jooq.meta.postgres.PostgresDatabase</name>
+              <includes></includes>
+              <excludes></excludes>
+              <inputSchema>ehr</inputSchema>
+            </database>
+            <generate>
+              <javaTimeTypes>true</javaTimeTypes>
+            </generate>
+            <target>
+              <packageName>org.ehrbase.jooq.pg</packageName>
+              <directory>target/generated-sources/</directory>
+            </target>
+          </generator>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

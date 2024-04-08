@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.UUID;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
@@ -48,7 +47,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @ConditionalOnMissingBean(name = "primaryadmincompositioncontroller")
 @ConditionalOnProperty(prefix = "admin-api", name = "active")
-@TenantAware
 @Tag(name = "Admin - Composition")
 @RestController
 @RequestMapping(
@@ -107,7 +105,6 @@ public class AdminCompositionController extends BaseController {
         AuditMsgBuilder.getInstance()
                 .setEhrIds(ehrId)
                 .setCompositionId(compositionId)
-                .setTemplateId(compositionService.retrieveTemplateId(compositionUid))
                 .setLocation(UriComponentsBuilder.fromPath("/ehr/{ehr_id}/composition/{composition_id}")
                         .build(ehrId, compositionId)
                         .toString());

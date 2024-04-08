@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,33 +22,27 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import java.sql.Timestamp;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.exception.DuplicateObjectException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.EhrStatusDto;
 
-public interface EhrService extends BaseService {
+public interface EhrService {
     /**
      * Creates new EHR instance, with default settings and values when no status or ID is supplied.
      *
      * @param ehrId Optional, sets custom ID
      * @param status Optional, sets custom status
      * @return UUID of new EHR instance
-     * @throws DuplicateObjectException when given party/subject already has an EHR
      * @throws InternalServerException when unspecified error occurs
      */
     UUID create(UUID ehrId, EhrStatus status);
-
-    @Deprecated
-    Optional<EhrStatusDto> getEhrStatusEhrScape(UUID ehrUuid, CompositionFormat format);
 
     /**
      * Gets latest EHR_STATUS of the given EHR.
@@ -80,7 +74,8 @@ public interface EhrService extends BaseService {
      * @throws org.ehrbase.api.exception.InvalidApiParameterException when given status is invalid,
      *                                                                e.g. not a valid openEHR RM object
      */
-    UUID updateStatus(UUID ehrId, EhrStatus status, UUID contribution, UUID audit);
+    ObjectVersionId updateStatus(
+            UUID ehrId, EhrStatus status, ObjectVersionId targetObjId, UUID contribution, UUID audit);
 
     Optional<UUID> findBySubject(String subjectId, String nameSpace);
 
@@ -90,7 +85,7 @@ public interface EhrService extends BaseService {
      * @param ehrId EHR ID
      * @return EHR_STATUS version UID
      */
-    String getLatestVersionUidOfStatus(UUID ehrId);
+    ObjectVersionId getLatestVersionUidOfStatus(UUID ehrId);
 
     DvDateTime getCreationTime(UUID ehrId);
 
@@ -101,7 +96,7 @@ public interface EhrService extends BaseService {
      * @param timestamp Timestamp of point in time
      * @return version number
      */
-    Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp);
+    ObjectVersionId getEhrStatusVersionByTimestamp(UUID ehrUid, OffsetDateTime timestamp);
 
     /**
      * Return True if a EHR with identifier ehrId exists.
@@ -119,14 +114,6 @@ public interface EhrService extends BaseService {
      * @return flag value (true/false) if EHR exists, null otherwise
      */
     Boolean isModifiable(UUID ehrId);
-
-    /**
-     * Helper to get (Versioned Object) Uid of EHR_STATUS of given EHR.
-     *
-     * @param ehrUid Uid of EHR
-     * @return UUID of corresponding EHR_STATUS
-     */
-    UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid);
 
     /**
      * Gets version container EhrStatus associated with given EHR.
@@ -150,18 +137,6 @@ public interface EhrService extends BaseService {
      * @param ehrId EHR to delete
      */
     void adminDeleteEhr(UUID ehrId);
-
-    void adminPurgePartyIdentified();
-
-    void adminDeleteOrphanHistory();
-
-    /**
-     * Helper to directly get the linked subject ID to given EHR.
-     *
-     * @param ehrId Given EHR ID
-     * @return Linked subject ID or null
-     */
-    UUID getSubjectUuid(String ehrId);
 
     /**
      * Helper to directly get the external subject reference form the linked subject to given EHR.

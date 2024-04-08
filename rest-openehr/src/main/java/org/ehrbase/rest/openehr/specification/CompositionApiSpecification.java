@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,8 @@ package org.ehrbase.rest.openehr.specification;
 
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
@@ -39,6 +41,14 @@ public interface CompositionApiSpecification {
             String accept,
             String prefer,
             String ehrIdString,
+            String templateId,
+            @Parameter(
+                            description = "Composition format",
+                            schema =
+                                    @Schema(
+                                            type = "string",
+                                            allowableValues = {"JSON", "XML", "STRUCTURED", "FLAT"}))
+                    String format,
             String composition);
 
     @Operation(
@@ -56,6 +66,14 @@ public interface CompositionApiSpecification {
             String ifMatch,
             String ehrIdString,
             String versionedObjectUidString,
+            String templateId,
+            @Parameter(
+                            description = "Composition format",
+                            schema =
+                                    @Schema(
+                                            type = "string",
+                                            allowableValues = {"JSON", "XML", "STRUCTURED", "FLAT"}))
+                    String format,
             String composition);
 
     @Operation(
@@ -73,5 +91,16 @@ public interface CompositionApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-get"))
-    ResponseEntity getComposition(String accept, String ehrIdString, String versionedObjectUid, String versionAtTime);
+    ResponseEntity getComposition(
+            String accept,
+            String ehrIdString,
+            String versionedObjectUid,
+            @Parameter(
+                            description = "Composition format",
+                            schema =
+                                    @Schema(
+                                            type = "string",
+                                            allowableValues = {"JSON", "XML", "STRUCTURED", "FLAT"}))
+                    String format,
+            String versionAtTime);
 }

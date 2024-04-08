@@ -1,0 +1,845 @@
+{
+  "": {
+    "T": "CO",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "ad": {
+      "T": "AR",
+      "aX": {
+        "T": "AX",
+        "V": "openEHR-EHR-COMPOSITION.test_all_types.v1"
+      },
+      "tm": {
+        "T": "TP",
+        "V": "test_all_types.en.v1"
+      },
+      "rv": "1.0.2"
+    },
+    "la": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "ISO_639-1"
+      },
+      "cd": "en"
+    },
+    "ty": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "ISO_3166-1"
+      },
+      "cd": "UY"
+    },
+    "ca": {
+      "T": "c",
+      "V": "event",
+      "df": {
+        "T": "C",
+        "te": {
+          "T": "T",
+          "V": "openehr"
+        },
+        "cd": "433"
+      }
+    },
+    "cp": {
+      "T": "PI",
+      "er": {
+        "T": "PF",
+        "ns": "DEMOGRAPHIC",
+        "tp": "PERSON",
+        "X": {
+          "T": "GX",
+          "V": "b7c07d35-fa06-4280-8e65-eabdfbe64fdc",
+          "sc": "test"
+        }
+      },
+      "N": "Dr. House"
+    },
+    "A": "openEHR-EHR-COMPOSITION.test_all_types.v1",
+    "U": {
+      "T": "OV",
+      "V": "bb015b91-68c0-460f-a458-8ef06869b53c::ehrbase.org::1"
+    }
+  },
+  "x.": {
+    "T": "EC",
+    "st": {
+      "T": "dt",
+      "V": "2019-01-14T18:36:49.294Z",
+      "M": 63683087809
+    },
+    "se": {
+      "T": "c",
+      "V": "primary nursing care",
+      "df": {
+        "T": "C",
+        "te": {
+          "T": "T",
+          "V": "openehr"
+        },
+        "cd": "229"
+      }
+    }
+  },
+  "c0.": {
+    "T": "OB",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "ad": {
+      "T": "AR",
+      "aX": {
+        "T": "AX",
+        "V": "openEHR-EHR-OBSERVATION.test_all_types.v1"
+      },
+      "rv": "1.0.4"
+    },
+    "la": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "ISO_639-1"
+      },
+      "cd": "en"
+    },
+    "ec": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "IANA_character-sets"
+      },
+      "cd": "UTF-8"
+    },
+    "su": {
+      "T": "PS"
+    },
+    "A": "openEHR-EHR-OBSERVATION.test_all_types.v1"
+  },
+  "c0.d.": {
+    "T": "HI",
+    "N": {
+      "T": "x",
+      "V": "Event Series"
+    },
+    "og": {
+      "T": "dt",
+      "V": "2019-01-28T21:22:49.326Z",
+      "M": 63684307369
+    },
+    "A": "at0001"
+  },
+  "c0.d.e0.": {
+    "T": "PE",
+    "N": {
+      "T": "x",
+      "V": "Cualquier evento"
+    },
+    "ti": {
+      "T": "dt",
+      "V": "2019-01-28T21:22:49.332Z",
+      "M": 63684307369
+    },
+    "A": "at0002"
+  },
+  "c0.d.e0.d.": {
+    "T": "TR",
+    "N": {
+      "T": "x",
+      "V": "Arbol"
+    },
+    "A": "at0003"
+  },
+  "c0.d.e0.d.i0.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "text"
+    },
+    "V": {
+      "T": "x",
+      "V": "At,ffwkm.xsuDu,LNtqXEQJzxNMXTjyKVzQojaNTidAxLLZRbWWoGnfOIMUM.XxakRgJxExjtjBPirOxu,nUnPdIegLQbhNDKNRqGbFuvXrXYuNPXwnELoIsYMKgFEWHnR.XSBuESAamCrjJMssGgI.QOOyzatFlaXbiVaUBxzSdkOscZza,IumnYWoxwekcSAYSJiILhmKEOUWdoElCavaQPNNpGcxHEGASUMSAkFuu jZdWcysffi.QLeVONn"
+    },
+    "A": "at0004"
+  },
+  "c0.d.e0.d.i1.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "coded text"
+    },
+    "V": {
+      "T": "c",
+      "V": "value1",
+      "df": {
+        "T": "C",
+        "te": {
+          "T": "T",
+          "V": "local"
+        },
+        "cd": "at0006"
+      }
+    },
+    "A": "at0005"
+  },
+  "c0.d.e0.d.i2.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "coded text terminology"
+    },
+    "V": {
+      "T": "c",
+      "V": ".HCXbqCyQtseLkDyKS,QLpOdDZxrEJ",
+      "df": {
+        "T": "C",
+        "te": {
+          "T": "T",
+          "V": "SNOMED-CT"
+        },
+        "cd": "1004034"
+      }
+    },
+    "A": "at0006"
+  },
+  "c0.d.e0.d.i3.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "quantity"
+    },
+    "V": {
+      "T": "q",
+      "un": "mg",
+      "m": 636.3397240638733
+    },
+    "A": "at0007"
+  },
+  "c0.d.e0.d.i4.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "count"
+    },
+    "V": {
+      "T": "co",
+      "m": 10
+    },
+    "A": "at0008"
+  },
+  "c0.d.e0.d.i5.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "date"
+    },
+    "V": {
+      "T": "d",
+      "V": "2019-01-14",
+      "M": 737072
+    },
+    "A": "at0009"
+  },
+  "c0.d.e0.d.i6.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "datetime"
+    },
+    "V": {
+      "T": "dt",
+      "V": "2019-01-28T21:22:49.426Z",
+      "M": 63684307369
+    },
+    "A": "at0010"
+  },
+  "c0.d.e0.d.i7.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "datetime any"
+    },
+    "V": {
+      "T": "dt",
+      "V": "2019-01-28T21:22:49.427Z",
+      "M": 63684307369
+    },
+    "A": "at0011"
+  },
+  "c0.d.e0.d.i8.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "time"
+    },
+    "V": {
+      "T": "t",
+      "V": "18:36:49",
+      "M": 67009.0
+    },
+    "A": "at0012"
+  },
+  "c0.d.e0.d.i9.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "ordinal"
+    },
+    "V": {
+      "T": "o",
+      "sy": {
+        "T": "c",
+        "V": "ord1",
+        "df": {
+          "T": "C",
+          "te": {
+            "T": "T",
+            "V": "local"
+          },
+          "cd": "at0015"
+        }
+      },
+      "V": 1
+    },
+    "A": "at0013"
+  },
+  "c0.d.e0.d.i10.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "boolean"
+    },
+    "V": {
+      "T": "b",
+      "V": true
+    },
+    "A": "at0017"
+  },
+  "c0.d.e0.d.i11.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "duration any"
+    },
+    "V": {
+      "T": "du",
+      "V": "P1Y2M10DT2H30M",
+      "M": 3.7686312E7
+    },
+    "A": "at0018"
+  },
+  "c0.d.e0.d.i12.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "multimedia any"
+    },
+    "V": {
+      "T": "mu",
+      "ur": {
+        "T": "u",
+        "V": "www.iana.org"
+      },
+      "mt": {
+        "T": "C",
+        "te": {
+          "T": "T",
+          "V": "IANA_media-types"
+        },
+        "cd": "image/jpeg"
+      },
+      "si": 177628
+    },
+    "A": "at0019"
+  },
+  "c0.d.e0.d.i13.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "parsable any"
+    },
+    "V": {
+      "T": "pa",
+      "V": "20170629",
+      "fm": "ISO8601"
+    },
+    "A": "at0020"
+  },
+  "c0.d.e0.d.i14.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "identifier"
+    },
+    "V": {
+      "T": "id",
+      "is": "Hospital de Clinicas",
+      "as": "Hospital de Clinicas",
+      "X": "55175056",
+      "tp": "LOCALID"
+    },
+    "A": "at0021"
+  },
+  "c0.d.e0.d.i15.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "proportion any"
+    },
+    "V": {
+      "T": "pr",
+      "nu": 1.5,
+      "de": 1.0,
+      "tp": 1,
+      "pc": 1,
+      "M": 1.5
+    },
+    "A": "at0022"
+  },
+  "c1.": {
+    "T": "EV",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "ad": {
+      "T": "AR",
+      "aX": {
+        "T": "AX",
+        "V": "openEHR-EHR-EVALUATION.test_all_types.v1"
+      },
+      "rv": "1.0.4"
+    },
+    "la": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "ISO_639-1"
+      },
+      "cd": "en"
+    },
+    "ec": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "IANA_character-sets"
+      },
+      "cd": "UTF-8"
+    },
+    "su": {
+      "T": "PS"
+    },
+    "A": "openEHR-EHR-EVALUATION.test_all_types.v1"
+  },
+  "c1.d.": {
+    "T": "TR",
+    "N": {
+      "T": "x",
+      "V": "Arbol"
+    },
+    "A": "at0001"
+  },
+  "c1.d.i0.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "uri"
+    },
+    "V": {
+      "T": "u",
+      "V": "www.iana.org"
+    },
+    "A": "at0002"
+  },
+  "c1.d.i1.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "interval count"
+    },
+    "V": {
+      "T": "iv",
+      "l": {
+        "T": "co",
+        "m": 123
+      },
+      "u": {
+        "T": "co",
+        "m": 234
+      },
+      "ui": true,
+      "lu": false,
+      "li": true,
+      "uu": false
+    },
+    "A": "at0003"
+  },
+  "c1.d.i2.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "interval quantity"
+    },
+    "V": {
+      "T": "iv",
+      "l": {
+        "T": "q",
+        "un": "mm[H20]",
+        "m": 123.123
+      },
+      "u": {
+        "T": "q",
+        "un": "mm[H20]",
+        "m": 234.234
+      },
+      "ui": true,
+      "lu": false,
+      "li": true,
+      "uu": false
+    },
+    "A": "at0004"
+  },
+  "c1.d.i3.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "interval datetime"
+    },
+    "V": {
+      "T": "iv",
+      "l": {
+        "T": "dt",
+        "V": "2019-01-28T21:22:49.426Z",
+        "M": 63684307369
+      },
+      "u": {
+        "T": "dt",
+        "V": "2019-01-28T21:22:49.426Z",
+        "M": 63684307369
+      },
+      "ui": true,
+      "lu": false,
+      "li": true,
+      "uu": false
+    },
+    "A": "at0005"
+  },
+  "c1.d.i4.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "choice"
+    },
+    "V": {
+      "T": "q",
+      "un": "mm[H20]",
+      "m": 148.01210165023804
+    },
+    "A": "at0009"
+  },
+  "c1.d.i5.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 1"
+    },
+    "A": "at0006"
+  },
+  "c1.d.i5.i0.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 2"
+    },
+    "A": "at0007"
+  },
+  "c1.d.i5.i0.i0.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 3"
+    },
+    "A": "at0008"
+  },
+  "c1.d.i5.i0.i0.i0.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "text 2"
+    },
+    "V": {
+      "T": "x",
+      "V": "FViqRjKtFGXm ,iPOYGPuYNjqqVYifvxzvbOlMnuidJvvdYByUiDUgQIBkyOcJtgZcRKdFmyo .TrsPDcaXtFeqLlnZgqdTxb.,LGavIsdXKcBhTWd,PElsLCymSIGcfRrObkevpucVkThYTAZZxcikhpGVaQ.UbyrkwewgarEn gLmIWGLqFZBFYLcBje.GwiYMBoHEEVymGCkyXUyosuq,CNvWsuUnHdVEjEuxGSEwBDEVgwWrXWOYWUCIhos"
+    },
+    "A": "at0010"
+  },
+  "c2.": {
+    "T": "SE",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "A": "openEHR-EHR-SECTION.test_all_types.v1"
+  },
+  "c2.i0.": {
+    "T": "SE",
+    "N": {
+      "T": "x",
+      "V": "section 2"
+    },
+    "A": "at0001"
+  },
+  "c2.i0.i0.": {
+    "T": "SE",
+    "N": {
+      "T": "x",
+      "V": "section 3"
+    },
+    "A": "at0002"
+  },
+  "c2.i0.i0.i0.": {
+    "T": "IN",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "ad": {
+      "T": "AR",
+      "aX": {
+        "T": "AX",
+        "V": "openEHR-EHR-INSTRUCTION.test_all_types.v1"
+      },
+      "rv": "1.0.4"
+    },
+    "la": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "ISO_639-1"
+      },
+      "cd": "en"
+    },
+    "ec": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "IANA_character-sets"
+      },
+      "cd": "UTF-8"
+    },
+    "su": {
+      "T": "PS"
+    },
+    "nv": {
+      "T": "x",
+      "V": "WAZotVojPPlPDKcOwCqQGlJjRdMC.ujKPgVAmyWABEoOgtrRSznogUWokmqmfgxjZOYmUEAcyvmnfz,KhtTC FrpwevrLJFNiJKzkzOwfOPRFQJjRmQCTW,ewdqvscogOkayvONWrOTPcCFnZsUod CAQ fuhLaBA.pFWdEyzyFgDODbueIlUjIGBdnIDDpMfjzWivfUDSEvTUsncmCgPdHnpONCuNGXUwFTaiSHHHJBZYssxGne.BLIbBQzXhG"
+    },
+    "A": "openEHR-EHR-INSTRUCTION.test_all_types.v1"
+  },
+  "c2.i0.i0.i0.a0.": {
+    "T": "AY",
+    "N": {
+      "T": "x",
+      "V": "Current Activity"
+    },
+    "tg": {
+      "T": "pa",
+      "V": "P1D",
+      "fm": "ISO8601"
+    },
+    "aa": "openEHR-EHR-ACTION.test_all_types.v1",
+    "A": "at0001"
+  },
+  "c2.i0.i0.i0.a0.t.": {
+    "T": "IL",
+    "N": {
+      "T": "x",
+      "V": "Lista"
+    },
+    "A": "at0002"
+  },
+  "c2.i0.i0.i0.a0.t.i0.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "partial date"
+    },
+    "V": {
+      "T": "d",
+      "V": "2019-01-14",
+      "M": 737072
+    },
+    "A": "at0003"
+  },
+  "c2.i0.i0.i0.a0.t.i1.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "partial datetime"
+    },
+    "V": {
+      "T": "dt",
+      "V": "2019-01-28T21:22:49.426Z",
+      "M": 63684307369
+    },
+    "A": "at0004"
+  },
+  "c2.i0.i0.i1.": {
+    "T": "AN",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "ad": {
+      "T": "AR",
+      "aX": {
+        "T": "AX",
+        "V": "openEHR-EHR-ACTION.test_all_types.v1"
+      },
+      "rv": "1.0.4"
+    },
+    "la": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "ISO_639-1"
+      },
+      "cd": "en"
+    },
+    "ec": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "IANA_character-sets"
+      },
+      "cd": "UTF-8"
+    },
+    "su": {
+      "T": "PS"
+    },
+    "ti": {
+      "T": "dt",
+      "V": "2019-01-28T21:22:50.154Z",
+      "M": 63684307370
+    },
+    "it": {
+      "T": "IT",
+      "cu": {
+        "T": "c",
+        "V": "planned",
+        "df": {
+          "T": "C",
+          "te": {
+            "T": "T",
+            "V": "openehr"
+          },
+          "cd": "526"
+        }
+      }
+    },
+    "A": "openEHR-EHR-ACTION.test_all_types.v1"
+  },
+  "c2.i0.i0.i1.t.": {
+    "T": "TR",
+    "N": {
+      "T": "x",
+      "V": "Arbol"
+    },
+    "A": "at0001"
+  },
+  "c2.i0.i0.i1.t.i0.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "A": "openEHR-EHR-CLUSTER.test_all_types.v1"
+  },
+  "c2.i0.i0.i1.t.i0.i0.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 5"
+    },
+    "A": "at0001"
+  },
+  "c2.i0.i0.i1.t.i0.i0.i0.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 6"
+    },
+    "A": "at0002"
+  },
+  "c2.i0.i0.i1.t.i0.i0.i0.i0.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "boolean 2"
+    },
+    "V": {
+      "T": "b",
+      "V": true
+    },
+    "A": "at0003"
+  },
+  "c2.i0.i1.": {
+    "T": "AE",
+    "N": {
+      "T": "x",
+      "V": "Test all types"
+    },
+    "ad": {
+      "T": "AR",
+      "aX": {
+        "T": "AX",
+        "V": "openEHR-EHR-ADMIN_ENTRY.test_all_types.v1"
+      },
+      "rv": "1.0.4"
+    },
+    "la": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "ISO_639-1"
+      },
+      "cd": "en"
+    },
+    "ec": {
+      "T": "C",
+      "te": {
+        "T": "T",
+        "V": "IANA_character-sets"
+      },
+      "cd": "UTF-8"
+    },
+    "su": {
+      "T": "PS"
+    },
+    "A": "openEHR-EHR-ADMIN_ENTRY.test_all_types.v1"
+  },
+  "c2.i0.i1.d.": {
+    "T": "IS",
+    "N": {
+      "T": "x",
+      "V": "Unico(a)"
+    },
+    "A": "at0001"
+  },
+  "c2.i0.i1.d.j.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "count 3"
+    },
+    "V": {
+      "T": "co",
+      "m": 123
+    },
+    "A": "at0002"
+  }
+}

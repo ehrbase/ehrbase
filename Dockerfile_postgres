@@ -1,0 +1,27 @@
+ARG POSTGRES_VERSION
+
+# syntax=docker/dockerfile:1
+FROM postgres:${POSTGRES_VERSION}-alpine
+
+RUN apk --no-cache add musl-locales
+
+# SHOW POSTGRES SERVER AND CLIENT VERSION
+RUN postgres -V; \
+    psql -V
+
+# SET DEFAULT VALUES FOR DATABASE USER AND PASSWORDS
+ARG EHRBASE_USER="ehrbase_restricted"
+ARG EHRBASE_PASSWORD="ehrbase_restricted"
+ARG EHRBASE_USER_ADMIN="ehrbase"
+ARG EHRBASE_PASSWORD_ADMIN="ehrbase"
+ARG POSTGRES_PASSWORD="postgres"
+ENV EHRBASE_USER_ADMIN=${EHRBASE_USER_ADMIN}
+ENV EHRBASE_PASSWORD_ADMIN=${EHRBASE_PASSWORD_ADMIN}
+ENV EHRBASE_USER=${EHRBASE_USER}
+ENV EHRBASE_PASSWORD=${EHRBASE_PASSWORD}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+# COPY DB SETUP SCRIPT TO POSTGRES's DEFAULT DOCKER ENTRYPOINT FOLDER
+# NOTE: check postgres's docker docs for details
+#       https://hub.docker.com/_/postgres/
+COPY createdb-docker.sql /docker-entrypoint-initdb.d/

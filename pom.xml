@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    Copyright (C) 2019 Vitasystems GmbH and Hannover Medical School.
+    Copyright (c) 2024 vitasystems GmbH.
 
     This file is part of Project EHRbase
 
@@ -23,276 +23,287 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.ehrbase.openehr</groupId>
-        <artifactId>bom</artifactId>
-        <version>0.33.0-SNAPSHOT</version>
-        <relativePath>/bom/pom.xml</relativePath>
-    </parent>
+  <parent>
+    <groupId>org.ehrbase.openehr</groupId>
+    <artifactId>bom</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <relativePath>/bom/pom.xml</relativePath>
+  </parent>
 
-    <artifactId>server</artifactId>
-    <version>0.33.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+  <artifactId>server</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>ehrbase server</name>
+  <description>EHRbase openEHR server</description>
 
-    <repositories>
-        <repository>
-            <id>ossrh-snapshots</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+  <repositories>
+    <repository>
+      <id>ossrh-snapshots</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
-    <modules>
-        <module>bom</module>
-        <module>api</module>
-        <module>application</module>
-        <module>base</module>
-        <module>jooq-pq</module>
-        <module>rest-ehr-scape</module>
-        <module>rest-openehr</module>
-        <module>service</module>
-        <module>test-coverage</module>
-        <module>plugin</module>
-    </modules>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- PostgreSQL Database Properties -->
-        <database.host>localhost</database.host>
-        <database.port>5432</database.port>
-        <database.user>ehrbase</database.user>
-        <database.pass>ehrbase</database.pass>
-        <database.name>ehrbase</database.name>
+  <modules>
+    <module>bom</module>
+    <module>api</module>
+    <module>application</module>
+    <module>jooq-pg</module>
+    <module>rest-ehr-scape</module>
+    <module>rest-openehr</module>
+    <module>service</module>
+    <module>test-coverage</module>
+    <module>plugin</module>
+    <module>rm-db-format</module>
+    <module>aql-engine</module>
+    <module>configuration</module>
+  </modules>
+
+  <properties>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- PostgreSQL Database Properties -->
+    <database.host>localhost</database.host>
+    <!-- use a port different from the default postgres port, so people do not have to stop their postgres servers-->
+    <database.port>5449</database.port>
+    <database.user>ehrbase</database.user>
+    <database.pass>ehrbase</database.pass>
+    <database.name>ehrbase</database.name>
+    <database.external>false</database.external>
+    <test.profile>unit</test.profile>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <configuration>
+          <generateBackupPoms>false</generateBackupPoms>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${maven-jacoco-plugin.version}</version>
+        <executions>
+          <!-- SET ARG LINE PROPERTY FOR SUREFIRE -->
+          <execution>
+            <id>agent for unit tests</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <propertyName>surefireArgLine</propertyName>
+            </configuration>
+          </execution>
+          <!-- SET ARG LINE PROPERTY FOR FAILSAFE -->
+          <execution>
+            <id>agent for integration tests</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+            <configuration>
+              <propertyName>failsafeArgLine</propertyName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- HANDLES JUNIT UNIT TESTS -->
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <skipTests>true</skipTests>
+          <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
+          <argLine>${surefireArgLine}</argLine>
+        </configuration>
+        <executions>
+          <execution>
+            <id>${test.profile} tests</id>
+            <phase>test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skipTests>false</skipTests>
+              <includes>
+                <include>${include.tests}</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- HANDLES JUNIT INTEGRATION TESTS -->
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-failsafe-plugin.version}</version>
+        <configuration>
+          <skipITs>${skipIntegrationTests}</skipITs>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <!-- SETS THE VM ARGUMENT LINE USED WHEN INTEGRATION TESTS ARE RUN. -->
+              <argLine>${failsafeArgLine}</argLine>
+              <includes>
+                <include>**/*IT.java</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <rules>
+            <bannedDependencies>
+              <searchTransitive>true</searchTransitive>
+              <excludes>
+                <exclude>org.apache.logging.log4j</exclude>
+              </excludes>
+
+            </bannedDependencies>
+            <requireMavenVersion>
+              <version>3.0</version>
+            </requireMavenVersion>
+          </rules>
+          <fail>true</fail>
+        </configuration>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- RUN UNIT TESTS ONLY -->
+    <profile>
+      <id>fast</id>
+      <properties>
+        <include.tests>**/*Test.java</include.tests>
         <test.profile>unit</test.profile>
-    </properties>
+      </properties>
+    </profile>
 
-    <build>
+    <!-- RUN INTEGRATION TESTS ONLY -->
+    <profile>
+      <id>slow</id>
+      <properties>
+        <include.tests>**/*IT.java</include.tests>
+        <test.profile>integration</test.profile>
+      </properties>
+    </profile>
+
+    <!-- RUN ALL JAVA TESTS (UNIT & INTEGRATION) -->
+    <profile>
+      <id>full</id>
+      <properties>
+        <include.tests>**/*</include.tests>
+        <test.profile>all</test.profile>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>release</id>
+      <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
                 <configuration>
-                    <generateBackupPoms>false</generateBackupPoms>
+                  <additionalJOption>-Xdoclint:none</additionalJOption>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${maven-jacoco-plugin.version}</version>
-                <executions>
-                    <!-- SET ARG LINE PROPERTY FOR SUREFIRE -->
-                    <execution>
-                        <id>agent for unit tests</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <propertyName>surefireArgLine</propertyName>
-                        </configuration>
-                    </execution>
-                    <!-- SET ARG LINE PROPERTY FOR FAILSAFE -->
-                    <execution>
-                        <id>agent for integration tests</id>
-                        <goals>
-                            <goal>prepare-agent-integration</goal>
-                        </goals>
-                        <configuration>
-                            <propertyName>failsafeArgLine</propertyName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- HANDLES JUNIT UNIT TESTS -->
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <configuration>
-                    <skipTests>true</skipTests>
-                    <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
-                    <argLine>${surefireArgLine}</argLine>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>${test.profile} tests</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <skipTests>false</skipTests>
-                            <includes>
-                                <include>${include.tests}</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- HANDLES JUNIT INTEGRATION TESTS -->
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-failsafe-plugin.version}</version>
-                <configuration>
-                    <skipITs>${skipIntegrationTests}</skipITs>
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
-                    </additionalClasspathElements>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>integration-test</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <!-- SETS THE VM ARGUMENT LINE USED WHEN INTEGRATION TESTS ARE RUN. -->
-                            <argLine>${failsafeArgLine}</argLine>
-                            <includes>
-                                <include>**/*IT.java</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.4.1</version>
-                <configuration>
-                    <rules>
-                        <bannedDependencies>
-                            <searchTransitive>true</searchTransitive>
-                            <excludes>
-                                <exclude>org.apache.logging.log4j</exclude>
-                            </excludes>
-
-                        </bannedDependencies>
-                        <requireMavenVersion>
-                            <version>3.0</version>
-                        </requireMavenVersion>
-                    </rules>
-                    <fail>true</fail>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>enforce-banned-dependencies</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-            </plugin>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-
-
-    </build>
-
-    <profiles>
-        <!-- RUN UNIT TESTS ONLY -->
-        <profile>
-            <id>fast</id>
-            <properties>
-                <include.tests>**/*Test.java</include.tests>
-                <test.profile>unit</test.profile>
-            </properties>
-        </profile>
-
-        <!-- RUN INTEGRATION TESTS ONLY -->
-        <profile>
-            <id>slow</id>
-            <properties>
-                <include.tests>**/*IT.java</include.tests>
-                <test.profile>integration</test.profile>
-            </properties>
-        </profile>
-
-        <!-- RUN ALL JAVA TESTS (UNIT & INTEGRATION) -->
-        <profile>
-            <id>full</id>
-            <properties>
-                <include.tests>**/*</include.tests>
-                <test.profile>all</test.profile>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <additionalJOption>-Xdoclint:none</additionalJOption>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+      </build>
+    </profile>
+  </profiles>
 </project>
