@@ -118,7 +118,7 @@ public class HttpRestContext {
         register(key4, value4);
     }
 
-    public void handle(HttpRestContextHandler handler) {
+    public static void handle(HttpRestContextHandler handler) {
         handler.handler(httpContext.get());
     }
 }
