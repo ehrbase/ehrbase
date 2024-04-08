@@ -17,7 +17,7 @@
  */
 package org.ehrbase.rest.admin;
 
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.QUERY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_ID;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
@@ -26,10 +26,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
+import org.ehrbase.api.rest.HttpRestContext;
+import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
-import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

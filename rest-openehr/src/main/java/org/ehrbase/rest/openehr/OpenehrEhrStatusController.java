@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.DIRECTORY_ID;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.DIRECTORY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -34,12 +34,12 @@ import java.util.function.Supplier;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
+import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrStatusResponseData;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
-import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

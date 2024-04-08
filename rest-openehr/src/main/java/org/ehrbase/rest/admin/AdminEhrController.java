@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.admin;
 
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.REMOVED_PATIENTS;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.REMOVED_PATIENTS;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -31,11 +31,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminUpdateResponseData;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

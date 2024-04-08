@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest;
+package org.ehrbase.api.rest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,13 +72,11 @@ public class HttpRestContext {
         httpContext.get().computeIfAbsent(key, s -> new ArrayList<>());
         httpContext.get().get(key).add(value);
     }
-    ;
 
     public static void register(RestAttr key0, Object value0, RestAttr key1, Object value1) {
         register(key0, value0);
         register(key1, value1);
     }
-    ;
 
     public static void register(
             RestAttr key0, Object value0, RestAttr key1, Object value1, RestAttr key2, Object value2) {
@@ -86,7 +84,6 @@ public class HttpRestContext {
         register(key1, value1);
         register(key2, value2);
     }
-    ;
 
     public static void register(
             RestAttr key0,
@@ -119,5 +116,9 @@ public class HttpRestContext {
         register(key2, value2);
         register(key3, value3);
         register(key4, value4);
+    }
+
+    public void handle(HttpRestContextHandler handler) {
+        handler.handler(httpContext.get());
     }
 }

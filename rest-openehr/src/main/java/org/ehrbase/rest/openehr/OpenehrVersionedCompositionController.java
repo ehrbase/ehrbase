@@ -17,10 +17,10 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.TEMPLATE_ID;
 import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.TEMPLATE_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -35,6 +35,8 @@ import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
+import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
@@ -45,8 +47,6 @@ import org.ehrbase.openehr.sdk.response.dto.VersionedObjectResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
-import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.VersionedCompositionApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

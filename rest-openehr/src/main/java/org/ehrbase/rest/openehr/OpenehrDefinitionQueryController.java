@@ -18,7 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.QUERY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_ID;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
@@ -34,14 +34,14 @@ import java.util.Optional;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
+import org.ehrbase.api.rest.HttpRestContext;
+import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.openehr.sdk.response.dto.ErrorBodyPayload;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
-import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

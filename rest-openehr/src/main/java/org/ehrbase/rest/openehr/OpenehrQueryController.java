@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.QUERY_EXECUTE_ENDPOINT;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.QUERY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_EXECUTE_ENDPOINT;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import java.net.URI;
@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
+import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.AqlQueryRequest;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.StatusService;
@@ -40,8 +42,6 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
-import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

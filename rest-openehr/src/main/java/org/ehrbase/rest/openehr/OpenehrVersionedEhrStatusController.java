@@ -18,8 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.VERSION;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.VERSION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -35,6 +35,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
+import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
@@ -43,8 +45,6 @@ import org.ehrbase.openehr.sdk.response.dto.VersionedObjectResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
-import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.VersionedEhrStatusApiSpecification;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;

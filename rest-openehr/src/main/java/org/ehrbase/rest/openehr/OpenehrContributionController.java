@@ -18,7 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -31,12 +31,12 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.rest.HttpRestContext;
+import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.rest.BaseController;
-import org.ehrbase.rest.HttpRestContext;
-import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.ContributionApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
