@@ -17,6 +17,9 @@
  */
 package org.ehrbase.rest.admin;
 
+import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.rest.HttpRestContext.StdRestAttr.REMOVED_PATIENTS;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,12 +30,12 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminUpdateResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.HttpRestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -101,8 +104,7 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
-        AuditMsgBuilder.getInstance().setEhrIds(ehrUuid);
-
+        HttpRestContext.register(EHR_ID, ehrUuid);
         // TODO: Implement endpoint functionality
 
         return ResponseEntity.ok().body(new AdminUpdateResponseData(0));
@@ -131,7 +133,7 @@ public class AdminEhrController extends BaseController {
             throw new ObjectNotFoundException("Admin EHR", String.format("EHR with id %s does not exist.", ehrId));
         }
 
-        AuditMsgBuilder.getInstance().setEhrIds(ehrUuid).setRemovedPatients(getPatientNumbers(ehrUuid));
+        HttpRestContext.register(EHR_ID, ehrUuid, REMOVED_PATIENTS, getPatientNumbers(ehrUuid));
 
         ehrService.adminDeleteEhr(ehrUuid);
 

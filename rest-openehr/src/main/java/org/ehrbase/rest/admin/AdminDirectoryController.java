@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.admin;
 
+import static org.ehrbase.rest.HttpRestContext.StdRestAttr.DIRECTORY_ID;
+import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,10 +28,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.HttpRestContext;
+import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -90,20 +93,19 @@ public class AdminDirectoryController extends BaseController {
 
         UUID folderUid = UUID.fromString(directoryId);
 
-        createAuditLogsMsgBuilder(ehrUuid.toString(), folderUid.toString());
+        HttpRestContext.register(
+                EHR_ID,
+                ehrUuid,
+                DIRECTORY_ID,
+                folderUid.toString(),
+                StdRestAttr.LOCATION,
+                fromPath("")
+                        .pathSegment(EHR, ehrId, DIRECTORY, folderUid.toString())
+                        .build()
+                        .toString());
 
         directoryService.adminDeleteFolder(ehrUuid, folderUid);
 
         return ResponseEntity.noContent().build();
-    }
-
-    private void createAuditLogsMsgBuilder(String ehrId, String versionedObjectUid) {
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId)
-                .setDirectoryId(versionedObjectUid)
-                .setLocation(fromPath("")
-                        .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)
-                        .build()
-                        .toString());
     }
 }

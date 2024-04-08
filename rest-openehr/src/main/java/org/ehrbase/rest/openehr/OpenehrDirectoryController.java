@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
@@ -29,12 +30,13 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.openehr.sdk.response.dto.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.HttpRestContext;
+import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.DirectoryApiSpecification;
 import org.joda.time.DateTime;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -125,9 +127,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         directoryService.delete(ehrId, folderId);
-        createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
 
-        createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
+        createRestContext(ehrId.toString(), folderId.toString());
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
@@ -241,7 +242,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());
-            createAuditLogsMsgBuilder(ehrId.toString(), versionUid);
+            createRestContext(ehrId.toString(), versionUid);
         }
 
         return new ResponseEntity<>(body, headers, successStatus);
@@ -274,10 +275,12 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         }
     }
 
-    private void createAuditLogsMsgBuilder(String ehrId, String versionedObjectUid) {
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId)
-                .setLocation(fromPath("")
+    private void createRestContext(String ehrId, String versionedObjectUid) {
+        HttpRestContext.register(
+                EHR_ID,
+                versionedObjectUid,
+                StdRestAttr.LOCATION,
+                fromPath("")
                         .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)
                         .build()
                         .toString());

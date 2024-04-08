@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.ehrbase.rest.HttpRestContext.StdRestAttr.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
@@ -29,7 +30,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -38,6 +38,8 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.HttpRestContext;
+import org.ehrbase.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +95,8 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         } else {
             ehrId = ehrService.create(null, null);
         }
-        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
+
+        HttpRestContext.register(EHR_ID, ehrId);
 
         return internalPostEhrProcessing(accept, prefer, ehrId);
     }
@@ -131,7 +134,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             throw new InternalServerException("Error creating EHR with custom ID and/or status");
         }
 
-        createAuditLogsMsgBuilder(resultEhrId);
+        createRestContext(resultEhrId);
 
         return internalPostEhrProcessing(accept, prefer, resultEhrId);
     }
@@ -165,13 +168,12 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    private void createAuditLogsMsgBuilder(UUID resultEhrId) {
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(resultEhrId)
-                .setLocation(fromPath("")
-                        .pathSegment(EHR, resultEhrId.toString())
-                        .build()
-                        .toString());
+    private void createRestContext(UUID resultEhrId) {
+        HttpRestContext.register(
+                EHR_ID,
+                resultEhrId,
+                StdRestAttr.LOCATION,
+                fromPath("").pathSegment(EHR, resultEhrId.toString()).build().toString());
     }
 
     /**
@@ -209,7 +211,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId) {
-        createAuditLogsMsgBuilder(ehrId);
+        createRestContext(ehrId);
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
 
