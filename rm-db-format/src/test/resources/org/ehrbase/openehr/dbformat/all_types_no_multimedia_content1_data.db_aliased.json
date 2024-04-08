@@ -1,0 +1,144 @@
+{
+  "c1.d.": {
+    "T": "TR",
+    "N": {
+      "T": "x",
+      "V": "Arbol"
+    },
+    "A": "at0001"
+  },
+  "c1.d.i0.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "uri"
+    },
+    "V": {
+      "T": "u",
+      "V": "www.iana.org"
+    },
+    "A": "at0002"
+  },
+  "c1.d.i1.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "interval count"
+    },
+    "V": {
+      "T": "iv",
+      "l": {
+        "T": "co",
+        "m": 123
+      },
+      "u": {
+        "T": "co",
+        "m": 234
+      },
+      "ui": true,
+      "lu": false,
+      "li": true,
+      "uu": false
+    },
+    "A": "at0003"
+  },
+  "c1.d.i2.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "interval quantity"
+    },
+    "V": {
+      "T": "iv",
+      "l": {
+        "T": "q",
+        "un": "mm[H20]",
+        "m": 123.123
+      },
+      "u": {
+        "T": "q",
+        "un": "mm[H20]",
+        "m": 234.234
+      },
+      "ui": true,
+      "lu": false,
+      "li": true,
+      "uu": false
+    },
+    "A": "at0004"
+  },
+  "c1.d.i3.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "interval datetime"
+    },
+    "V": {
+      "T": "iv",
+      "l": {
+        "T": "dt",
+        "V": "2019-01-28T21:22:49.426Z",
+        "M": 63684307369
+      },
+      "u": {
+        "T": "dt",
+        "V": "2019-01-28T21:22:49.426Z",
+        "M": 63684307369
+      },
+      "ui": true,
+      "lu": false,
+      "li": true,
+      "uu": false
+    },
+    "A": "at0005"
+  },
+  "c1.d.i4.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "choice"
+    },
+    "V": {
+      "T": "q",
+      "un": "mm[H20]",
+      "m": 148.01210165023804
+    },
+    "A": "at0009"
+  },
+  "c1.d.i5.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 1"
+    },
+    "A": "at0006"
+  },
+  "c1.d.i5.i0.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 2"
+    },
+    "A": "at0007"
+  },
+  "c1.d.i5.i0.i0.": {
+    "T": "CL",
+    "N": {
+      "T": "x",
+      "V": "cluster 3"
+    },
+    "A": "at0008"
+  },
+  "c1.d.i5.i0.i0.i0.": {
+    "T": "E",
+    "N": {
+      "T": "x",
+      "V": "text 2"
+    },
+    "V": {
+      "T": "x",
+      "V": "FViqRjKtFGXm ,iPOYGPuYNjqqVYifvxzvbOlMnuidJvvdYByUiDUgQIBkyOcJtgZcRKdFmyo .TrsPDcaXtFeqLlnZgqdTxb.,LGavIsdXKcBhTWd,PElsLCymSIGcfRrObkevpucVkThYTAZZxcikhpGVaQ.UbyrkwewgarEn gLmIWGLqFZBFYLcBje.GwiYMBoHEEVymGCkyXUyosuq,CNvWsuUnHdVEjEuxGSEwBDEVgwWrXWOYWUCIhos"
+    },
+    "A": "at0010"
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,13 +29,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
@@ -46,7 +46,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,7 +61,6 @@ import org.springframework.web.bind.annotation.RestController;
  * Controller for /ehr resource of openEHR REST API
  */
 @ConditionalOnMissingBean(name = "primaryopenehrehrcontroller")
-@TenantAware
 @RestController
 @RequestMapping(
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
@@ -70,10 +68,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpenehrEhrController extends BaseController implements EhrApiSpecification {
 
     private final EhrService ehrService;
+    private final SystemService systemService;
 
     @Autowired
-    public OpenehrEhrController(EhrService ehrService) {
+    public OpenehrEhrController(EhrService ehrService, SystemService systemService) {
         this.ehrService = Objects.requireNonNull(ehrService);
+        this.systemService = systemService;
     }
 
     @PostMapping // (consumes = {"application/xml", "application/json"})
@@ -178,7 +178,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
      * Returns EHR by ID
      */
     @GetMapping(path = "/{ehr_id}")
-    @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, @ehrService.getSubjectExtRef(#ehrIdString))")
     public ResponseEntity<EhrResponseData> retrieveEhrById(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString) {
@@ -196,7 +195,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
      * Returns EHR by subject (id and namespace)
      */
     @GetMapping(params = {"subject_id", "subject_namespace"})
-    @PreAuthorize("checkAbacPre(@openehrEhrController.EHR, #subjectId)")
     public ResponseEntity<EhrResponseData> retrieveEhrBySubject(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestParam(value = "subject_id") String subjectId,
@@ -247,8 +245,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             EhrResponseData objByReference = minimalOrRepresentation;
             objByReference.setEhrId(new HierObjectId(ehrId.toString()));
             objByReference.setEhrStatus(ehrStatus);
-            objByReference.setSystemId(
-                    new HierObjectId(ehrService.getSystemUuid().toString()));
+            objByReference.setSystemId(new HierObjectId(systemService.getSystemId()));
             DvDateTime timeCreated = ehrService.getCreationTime(ehrId);
             objByReference.setTimeCreated(timeCreated.getValue().toString());
             // objByReference.setCompositions(null);    // TODO get actual data from service layer
@@ -260,8 +257,10 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         for (String header : headerList) {
             switch (header) {
                 case CONTENT_TYPE:
-                    if (minimalOrRepresentation != null) // if response is going to have a body
-                    respHeaders.setContentType(contentType);
+                    if (minimalOrRepresentation != null) {
+                        // if response is going to have a body
+                        respHeaders.setContentType(contentType);
+                    }
                     break;
                 case LOCATION:
                     try {

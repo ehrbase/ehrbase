@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,12 +21,9 @@ import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTE
 import static org.ehrbase.rest.ehrscape.controller.BaseController.TEMPLATE;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
-import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
@@ -38,26 +35,22 @@ import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
 import org.ehrbase.rest.ehrscape.responsedata.TemplateResponseData;
-import org.ehrbase.rest.ehrscape.responsedata.TemplatesResponseData;
-import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnMissingBean(name = "primarytemplatecontroller")
-@TenantAware
 @RestController
 @RequestMapping(
         path = API_ECIS_CONTEXT_PATH_WITH_VERSION + "/" + TEMPLATE,
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@Tag(name = "TEMPLATE")
 public class TemplateController extends BaseController {
 
     private final TemplateService templateService;
@@ -69,33 +62,13 @@ public class TemplateController extends BaseController {
         this.compositionService = Objects.requireNonNull(compositionService);
     }
 
-    @GetMapping()
-    public ResponseEntity<TemplatesResponseData> getTemplate() {
-        TemplatesResponseData responseData = new TemplatesResponseData();
-        responseData.setAction(Action.LIST);
-        responseData.setTemplates(templateService.getAllTemplates());
-        return ResponseEntity.ok(responseData);
-    }
-
-    @PostMapping()
-    public ResponseEntity<TemplatesResponseData> createTemplate(@RequestBody() String content) {
-
-        TemplateDocument document;
-        try {
-            document =
-                    TemplateDocument.Factory.parse(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-        } catch (XmlException | IOException e) {
-            throw new InvalidApiParameterException(e.getMessage());
-        }
-
-        templateService.create(document.getTemplate());
-        TemplatesResponseData responseData = new TemplatesResponseData();
-        responseData.setAction(Action.LIST);
-        responseData.setTemplates(templateService.getAllTemplates());
-        return ResponseEntity.ok(responseData);
-    }
-
     @GetMapping(path = "/{templateId}/example")
+    @Operation(
+            summary = "Deprecated since 1.0.0 and marked for removal",
+            description =
+                    "Replaced by [/rest/openehr/v1/definition/template/adl1.4/{template_id}/example](./index.html?urls.primaryName=1.%20openEHR%20API#/ADL%201.4%20TEMPLATE/getTemplateExample)",
+            deprecated = true)
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public ResponseEntity<String> getTemplateExample(
             @PathVariable(value = "templateId") String templateId,
             @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
@@ -112,10 +85,20 @@ public class TemplateController extends BaseController {
 
         MediaType contentType =
                 format == CompositionFormat.XML ? MediaType.APPLICATION_XML : MediaType.APPLICATION_JSON;
-        return ResponseEntity.ok().contentType(contentType).body(serialized.getValue());
+        return ResponseEntity.ok()
+                .headers(deprecationHeaders("TEMPLATE/getTemplateExample", "ADL 1.4 TEMPLATE/getTemplateExample"))
+                .contentType(contentType)
+                .body(serialized.getValue());
     }
 
     @GetMapping(path = "/{templateId}")
+    @Operation(
+            summary = "Deprecated since 1.0.0 and marked for removal",
+            description =
+                    "Replaced by [/rest/openehr/v1/definition/template/adl1.4/{template_id}/webtemplate](./index.html?urls.primaryName=1.%20openEHR%20API#/TEMPLATE/getWebTemplate). "
+                            + "Note the replacement endpoint provides the Web-Template as it is, without wrapping it in a `webTemplate` property.",
+            deprecated = true)
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();
         responseData.setWebTemplate(new Filter().filter(templateService.findTemplate(templateId)));
@@ -125,6 +108,8 @@ public class TemplateController extends BaseController {
         Meta meta = new Meta();
         meta.setHref(url);
         responseData.setMeta(meta);
-        return ResponseEntity.ok(responseData);
+        return ResponseEntity.ok()
+                .headers(deprecationHeaders("TEMPLATE/getTemplate", "TEMPLATE/getWebTemplate"))
+                .body(responseData);
     }
 }

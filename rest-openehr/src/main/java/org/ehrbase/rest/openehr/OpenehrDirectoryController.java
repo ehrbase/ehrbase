@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +18,6 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
-import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
@@ -30,7 +29,6 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -58,14 +56,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for openEHR /directory endpoints
- *
- * @author Jake Smolka
- * @author Luis Marco-Ruiz
- * @author Renaud Subiger
- * @since 1.0
  */
 @ConditionalOnMissingBean(name = "primaryopenehrdirectorycontroller")
-@TenantAware
 @RestController
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr")
 public class OpenehrDirectoryController extends BaseController implements DirectoryApiSpecification {
@@ -135,7 +127,9 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         directoryService.delete(ehrId, folderId);
         createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
 
-        return createDirectoryResponse(DELETE, null, accept, null, ehrId);
+        createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
+
+        return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
 
     /**
@@ -240,10 +234,11 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         }
 
         if (folderDto != null) {
-            String versionUid = folderDto.getUid().toString();
 
+            String versionUid = folderDto.getUid().toString();
             headers.setETag("\"" + versionUid + "\"");
             headers.setLocation(createLocationUri(EHR, ehrId.toString(), DIRECTORY, versionUid));
+
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());
             createAuditLogsMsgBuilder(ehrId.toString(), versionUid);
@@ -253,9 +248,9 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     }
 
     private HttpStatus getSuccessStatus(HttpMethod method) {
-        if (method.equals(POST)) {
+        if (method.equals(HttpMethod.POST)) {
             return HttpStatus.CREATED;
-        } else if (method.equals(DELETE)) {
+        } else if (method.equals(HttpMethod.DELETE)) {
             return HttpStatus.NO_CONTENT;
         }
         return HttpStatus.OK;
@@ -282,7 +277,6 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     private void createAuditLogsMsgBuilder(String ehrId, String versionedObjectUid) {
         AuditMsgBuilder.getInstance()
                 .setEhrIds(ehrId)
-                .setDirectoryId(versionedObjectUid)
                 .setLocation(fromPath("")
                         .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)
                         .build()

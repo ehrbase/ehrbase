@@ -3,7 +3,7 @@ name: Set test status
 
 on:
   workflow_run:
-    workflows: ["Build & Deploy Docker Image (version-tag)"]
+    workflows: ["build-and-test-postgres"]
     types:
       - completed
 

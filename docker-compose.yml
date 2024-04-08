@@ -18,13 +18,12 @@ services:
     restart: on-failure
 
   ehrdb:
-    image: ehrbase/ehrbase-postgres:13.4.v2
+    image: ehrbase/ehrbase-v2-postgres:16.2
+
     ports:
       - 5432:5432
     networks:
       - ehrbase-net
-    volumes:
-      - ./.pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -33,5 +32,8 @@ services:
       EHRBASE_USER: ehrbase_restricted
       EHRBASE_PASSWORD: ehrbase_restricted
 
+
+
 networks:
-  ehrbase-net: {}
+  ehrbase-net: { }
+
