@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,26 +17,24 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.apache.commons.lang3.StringUtils.unwrap;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
-import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrStatusResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
@@ -46,7 +44,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -58,21 +55,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for /ehr/{ehrId}/ehr_status resource of openEHR REST API
- *
- * @author Jake Smolka
- * @author Renaud Subiger
- * @since 1.0
  */
 @ConditionalOnMissingBean(name = "primaryopenehrehrstatuscontroller")
-@TenantAware
 @RestController
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr/{ehr_id}/ehr_status")
 public class OpenehrEhrStatusController extends BaseController implements EhrStatusApiSpecification {
 
     private final EhrService ehrService;
 
-    public OpenehrEhrStatusController(EhrService ehrService) {
+    private final SystemService systemService;
+
+    public OpenehrEhrStatusController(EhrService ehrService, SystemService systemService) {
         this.ehrService = ehrService;
+        this.systemService = systemService;
     }
 
     /**
@@ -80,26 +75,25 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @GetMapping
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestParam(name = "version_at_time", required = false) String versionAtTime,
             @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept) {
 
-        assertEhrExists(ehrId);
+        final ObjectVersionId objectVersionId;
 
-        // timestamp optional, otherwise latest
-        int version;
         if (versionAtTime != null) {
-            OffsetDateTime time = OffsetDateTime.parse(versionAtTime);
-            Timestamp timestamp = Timestamp.valueOf(time.toLocalDateTime());
-            version = ehrService.getEhrStatusVersionByTimestamp(ehrId, timestamp);
+            OffsetDateTime time = decodeVersionAtTime(versionAtTime).orElseThrow();
+
+            objectVersionId = ehrService.getEhrStatusVersionByTimestamp(ehrId, time);
+
         } else {
-            version = Integer.parseInt(
-                    ehrService.getLatestVersionUidOfStatus(ehrId).split("::")[2]);
+
+            objectVersionId = ehrService.getLatestVersionUidOfStatus(ehrId);
         }
 
-        UUID statusUid = ehrService.getEhrStatusVersionedObjectUidByEhr(ehrId);
+        int version = extractVersionFromVersionUid(objectVersionId.getValue()).orElseThrow();
+        UUID statusUid = extractVersionedObjectUidFromVersionUid(objectVersionId.getValue());
 
         return internalGetEhrStatusProcessing(accept, ehrId, statusUid, version);
     }
@@ -109,26 +103,17 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @GetMapping(path = "/{version_uid}")
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> getEhrStatusByVersionId(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @PathVariable(name = "version_uid") String versionUid,
             @RequestHeader(name = HttpHeaders.ACCEPT, required = false) String accept) {
 
-        assertEhrExists(ehrId);
-
         UUID versionedObjectUid = extractVersionedObjectUidFromVersionUid(versionUid);
-        int version = extractVersionFromVersionUid(versionUid);
+        int version = extractVersionFromVersionUid(versionUid)
+                .orElseThrow(
+                        () -> new InvalidApiParameterException("VERSION UID parameter does not contain a version"));
 
-        Optional<OriginalVersion<EhrStatus>> ehrStatus =
-                ehrService.getEhrStatusAtVersion(ehrId, versionedObjectUid, version);
-
-        UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(ehrStatus
-                .orElseThrow(() -> new ObjectNotFoundException("ehr_status", "EHR_STATUS not found"))
-                .getUid()
-                .toString());
-
-        return internalGetEhrStatusProcessing(accept, ehrId, ehrStatusId, version);
+        return internalGetEhrStatusProcessing(accept, ehrId, versionedObjectUid, version);
     }
 
     /**
@@ -136,7 +121,6 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     @Override
     @PutMapping
-    @PreAuthorize("checkAbacPre(@openehrEhrStatusController.EHR_STATUS, @ehrService.getSubjectExtRef(#ehrId))")
     public ResponseEntity<EhrStatusResponseData> updateEhrStatus(
             @PathVariable("ehr_id") UUID ehrId,
             @RequestHeader(name = IF_MATCH) String versionUid,
@@ -145,50 +129,26 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
             @RequestBody EhrStatus ehrStatus) {
 
-        assertEhrExists(ehrId);
-
-        // If-Match header check
-        String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
-        versionUid = unwrap(versionUid, '"');
-        if (!latestVersionUid.equals(versionUid)) {
-            throw new PreconditionFailedException("Given If-Match header does not match latest existing version");
-        }
-
         // update EHR_STATUS and check for success
-        UUID statusUid = ehrService.updateStatus(ehrId, ehrStatus, null, null);
+        ObjectVersionId targetObjId = new ObjectVersionId(versionUid);
+
+        ObjectVersionId statusUid = ehrService.updateStatus(ehrId, ehrStatus, targetObjId, null, null);
 
         // update and prepare current version number
-        String newLatestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
-        String[] split = latestVersionUid.split("::");
-        if (latestVersionUid.equals(newLatestVersionUid) || split.length != 3) {
-            throw new InvalidApiParameterException("Update of EHR_STATUS failed");
-        }
-        int version = Integer.parseInt(split[split.length - 1]) + 1;
+        int version = extractVersionFromVersionUid(statusUid.getValue()).orElseThrow();
 
         List<String> headerList =
                 Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
-        Optional<InternalResponse<EhrStatusResponseData>>
-                respData; // variable to overload with more specific object if requested
-
-        respData =
-                buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, statusUid, version, accept, headerList);
-
         createAuditLogsMsgBuilder(ehrId);
-
-        return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
+        return buildEhrStatusResponseData(
+                        EhrStatusResponseData::new,
+                        ehrId,
+                        UUID.fromString(statusUid.getObjectId().getValue()),
+                        version,
+                        accept,
+                        headerList)
+                .map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-    }
-
-    /**
-     * Assert that an EHR with the given ID exists.
-     *
-     * @param ehrId the EHR ID to check
-     * @throws ObjectNotFoundException if the EHR does not exist
-     */
-    private void assertEhrExists(UUID ehrId) {
-        if (!ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException("EHR", "The EHR with the specified id does not exist");
-        }
     }
 
     private ResponseEntity<EhrStatusResponseData> internalGetEhrStatusProcessing(
@@ -202,7 +162,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         createAuditLogsMsgBuilder(ehrId);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .orElseThrow(() -> new ObjectNotFoundException("ehr_status", "EHR_STATUS not found"));
     }
 
     private void createAuditLogsMsgBuilder(UUID ehrId) {
@@ -224,11 +184,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
      */
     private <T extends EhrStatusResponseData> Optional<InternalResponse<T>> buildEhrStatusResponseData(
             Supplier<T> factory, UUID ehrId, UUID ehrStatusId, int version, String accept, List<String> headerList) {
-        String versionedObjectUid = String.format(
-                "%s::%s::%s", ehrStatusId, ehrService.getServerConfig().getNodename(), version);
-
+        String versionedObjectUid = String.format("%s::%s::%s", ehrStatusId, systemService.getSystemId(), version);
         AuditMsgBuilder.getInstance()
                 .setEhrIds(ehrId.toString())
+                .setDirectoryId(versionedObjectUid)
                 .setLocation(fromPath("")
                         .pathSegment(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid)
                         .build()
@@ -276,8 +235,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                     }
                     break;
                 case ETAG:
-                    respHeaders.setETag("\"" + ehrStatusId + "::"
-                            + ehrService.getServerConfig().getNodename() + "::" + version + "\"");
+                    respHeaders.setETag(
+                            "\"" + ehrStatusId + "::" + systemService.getSystemId() + "::" + version + "\"");
                     break;
                 case LAST_MODIFIED:
                     ehrStatus.ifPresent(ehrStatusOriginalVersion -> respHeaders.setLastModified(ehrStatusOriginalVersion

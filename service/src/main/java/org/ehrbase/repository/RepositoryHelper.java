@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,17 +18,14 @@
 package org.ehrbase.repository;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.ehrbase.api.exception.InternalServerException;
 import org.jooq.DSLContext;
 import org.jooq.Loader;
 import org.jooq.Record;
 import org.jooq.Table;
 
-/**
- * @author Stefan Spiska
- */
 public class RepositoryHelper {
 
     private RepositoryHelper() {
@@ -37,12 +34,13 @@ public class RepositoryHelper {
 
     }
 
-    public static <T extends Record> void executeBulkInsert(DSLContext context, List<T> recordList, Table<?> table) {
+    public static <T extends Record> void executeBulkInsert(
+            DSLContext context, Stream<T> recordStream, Table<?> table) {
 
         try {
             Loader<?> execute = context.loadInto(table)
                     .bulkAfter(500)
-                    .loadRecords(recordList)
+                    .loadRecords(recordStream)
                     .fields(table.fields())
                     .execute();
 

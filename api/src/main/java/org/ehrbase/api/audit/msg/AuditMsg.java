@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ package org.ehrbase.api.audit.msg;
 
 import java.util.Set;
 
+@Deprecated
 public class AuditMsg {
     private final String query;
     private final String queryId;
@@ -33,11 +34,11 @@ public class AuditMsg {
     private final Boolean isQueryExecuteEndpoint;
 
     private AuditMsg(Builder builder) {
-        this.query = builder.query;
-        this.ehrIds = builder.ehrIds;
-        this.queryId = builder.queryId;
-        this.version = builder.version;
         this.location = builder.location;
+        this.ehrIds = builder.ehrIds;
+        this.version = builder.version;
+        this.query = builder.query;
+        this.queryId = builder.queryId;
         this.templateId = builder.templateId;
         this.compositionId = builder.compositionId;
         this.contributionId = builder.contributionId;
@@ -153,13 +154,13 @@ public class AuditMsg {
             return this;
         }
 
-        public Builder isQueryExecuteEndpoint(Boolean isQueryExecuteEndpoint) {
-            this.isQueryExecuteEndpoint = isQueryExecuteEndpoint;
-            return this;
-        }
-
         public AuditMsg build() {
             return new AuditMsg(this);
+        }
+
+        public Builder queryExecuteEndpoint(Boolean queryExecuteEndpoint) {
+            isQueryExecuteEndpoint = queryExecuteEndpoint;
+            return this;
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,14 +30,11 @@ import javax.xml.namespace.QName;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.api.service.TenantService;
-import org.ehrbase.ehr.knowledge.TemplateMetaData;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorConfig;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorToCompositionWalker;
 import org.ehrbase.openehr.sdk.generator.commons.shareddefinition.Language;
@@ -49,36 +46,21 @@ import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValuePa
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValues;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.webtemplateskeletonbuilder.WebTemplateSkeletonBuilder;
-import org.jooq.DSLContext;
 import org.openehr.schemas.v1.CARCHETYPEROOT;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * @author Stefan Spiska
- * @author Jake Smolka
- * @since 1.0
- */
 @Service
 @Transactional
-public class TemplateServiceImp extends BaseServiceImp implements TemplateService {
+public class TemplateServiceImp implements TemplateService {
 
-    private final KnowledgeCacheService knowledgeCacheService;
-    private final CompositionService compositionService;
-    private final TenantService tenantService;
+    private final KnowledgeCacheServiceImp knowledgeCacheService;
 
-    public TemplateServiceImp(
-            KnowledgeCacheService knowledgeCacheService,
-            DSLContext context,
-            ServerConfig serverConfig,
-            CompositionService compositionService,
-            TenantService tenantService) {
-        super(knowledgeCacheService, context, serverConfig);
+    public TemplateServiceImp(KnowledgeCacheServiceImp knowledgeCacheService) {
+
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
-        this.compositionService = compositionService;
-        this.tenantService = tenantService;
     }
 
     @Override

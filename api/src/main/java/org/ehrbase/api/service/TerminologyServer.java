@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ package org.ehrbase.api.service;
 
 import java.util.EnumSet;
 import java.util.List;
+import org.apache.commons.lang3.EnumUtils;
 
 /***
  *@Created by Luis Marco-Ruiz on Feb 12, 2020
@@ -62,15 +63,15 @@ public interface TerminologyServer<T, ID, U> {
 
     /**
      * Evaluates if the concept provided as one operationParams  belongs to the value set provided as another operationParam.
-     * @param dynamic list of parameters to perform the operation against an external terminology server.
+     * @param operationParams dynamic list of parameters to perform the operation against an external terminology server.
      * @return true if the concept belongs to the specified value set.
      */
     Boolean validate(U... operationParams);
     /**
      * Evaluates if the concept B subsumes concept A.
-     * @param concept that is subsumed by the concept in the second param.
-     * @param concept that subsumes the concept in the first param.
-     * @return {@link org.ehrbase.aql.compiler.tsclient.TerminologyServer.SubsumptionResult} indicating the result of the subsumption evaluation.
+     * @param conceptA concept that is subsumed by the concept in the second param.
+     * @param conceptB concept that subsumes the concept in the first param.
+     * @return {@link TerminologyServer.SubsumptionResult} indicating the result of the subsumption evaluation.
      */
     SubsumptionResult subsumes(T conceptA, T conceptB);
     /**
@@ -85,7 +86,7 @@ public interface TerminologyServer<T, ID, U> {
         NOTSUBSUMED;
     }
 
-    public enum TerminologyAdapter {
+    enum TerminologyAdapter {
         FHIR("hl7.org/fhir/R4"),
         OCEAN("OTS.OCEANHEALTHSYSTEMS.COM"),
         BETTER("bts.better.care"),
@@ -100,17 +101,12 @@ public interface TerminologyServer<T, ID, U> {
 
         private static EnumSet<TerminologyAdapter> supportedAdapters = EnumSet.of(FHIR);
 
-        private TerminologyAdapter(String adapterId) {
+        TerminologyAdapter(String adapterId) {
             this.adapterId = adapterId;
         }
 
         public static boolean isAdapterSupported(String adapterToCheck) {
-            for (TerminologyAdapter ta : supportedAdapters) {
-                if (ta.name().equals(adapterToCheck)) {
-                    return true;
-                }
-            }
-            return false;
+            return EnumUtils.isValidEnum(TerminologyAdapter.class, adapterToCheck);
         }
     }
 }

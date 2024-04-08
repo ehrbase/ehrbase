@@ -27,10 +27,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: install sdk main
-        run: mvn install -Dmaven.test.skip=true
+        run: mvn install
       # Install the sdk dev in the local repo so maven version plugin can find them
       - name: Checkout SDK dev
         uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
           else
             v=${{ github.event.inputs.version }}
           fi
-          echo "realise version ${v}"
+          echo "release version ${v}"
           # Set as Environment for all further steps 
           echo "VERSION=${v}" >> $GITHUB_ENV
 
@@ -150,5 +150,3 @@ jobs:
           git pull
           git merge --no-ff release/v${VERSION}
           git push
-
-

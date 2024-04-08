@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,72 +19,58 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import org.ehrbase.api.definitions.ServerConfig;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_TemplateStoreAccess;
-import org.ehrbase.dao.access.support.ServiceDataAccess;
-import org.ehrbase.ehr.knowledge.TemplateMetaData;
-import org.ehrbase.util.TemplateUtils;
-import org.jooq.DSLContext;
+import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.repository.CompositionRepository;
+import org.ehrbase.repository.TemplateStoreRepository;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class TemplateDBStorageService implements TemplateStorage {
-    private final DSLContext context;
-    private final ServerConfig serverConfig;
 
-    public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig) {
-        this.context = context;
-        this.serverConfig = serverConfig;
+    private final CompositionRepository compositionRepository;
+
+    private final TemplateStoreRepository templateStoreRepository;
+
+    public TemplateDBStorageService(
+            @Lazy CompositionRepository compositionRepository, TemplateStoreRepository templateStoreRepository) {
+
+        this.compositionRepository = compositionRepository;
+        this.templateStoreRepository = templateStoreRepository;
     }
 
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
-        return I_TemplateStoreAccess.fetchAll(getDataAccess());
+        return templateStoreRepository.findAll();
     }
 
     @Override
-    public Set<String> findAllTemplateIds() {
-        return I_TemplateStoreAccess.fetchAllTemplateIds(getDataAccess());
+    public void storeTemplate(OPERATIONALTEMPLATE template) {
+        if (readOperationaltemplate(template.getTemplateId().getValue()).isEmpty()) {
+            templateStoreRepository.store(template);
+        } else {
+            checkUsage(template.getTemplateId().getValue(), "update");
+            templateStoreRepository.update(template);
+        }
     }
 
     @Override
-    public Optional<UUID> findUuidByTemplateId(String templateId) {
-        return Optional.ofNullable(
-                getTemplateStoreAccessByTemplateId(templateId).getId());
+    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
+        return templateStoreRepository.findByTemplateId(templateId);
     }
 
-    @Override
-    public void storeTemplate(OPERATIONALTEMPLATE template, Short sysTenant) {
-        findUuidByTemplateId(TemplateUtils.getTemplateId(template))
-                .ifPresentOrElse(
-                        uuid -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant, uuid)
-                                .update(),
-                        () -> I_TemplateStoreAccess.getInstance(getDataAccess(), template, sysTenant)
-                                .commit());
-    }
+    private void checkUsage(String templateId, String operation) {
 
-    @Override
-    public Optional<OPERATIONALTEMPLATE> readOperationalTemplate(String templateId) {
-        return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId)
-                .getTemplate());
-    }
-
-    private I_TemplateStoreAccess getTemplateStoreAccessByTemplateId(String templateId) {
-        return I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
-        return I_TemplateStoreAccess.adminUpdateTemplate(getDataAccess(), template);
+        if (compositionRepository.isTemplateUsed(templateId)) {
+            // There are compositions using this template -> Return list of uuids
+            throw new UnprocessableEntityException("Cannot %s template %s since it is used by at least one composition"
+                    .formatted(operation, templateId));
+        }
     }
 
     /**
@@ -93,18 +79,20 @@ public class TemplateDBStorageService implements TemplateStorage {
     @Override
     public boolean deleteTemplate(String templateId) {
 
-        return I_TemplateStoreAccess.deleteTemplate(getDataAccess(), templateId);
+        // Check if template is used anymore
+        checkUsage(templateId, "delete");
+
+        templateStoreRepository.delete(templateId);
+        return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
-        return I_TemplateStoreAccess.adminDeleteAllTemplates(getDataAccess());
+    public Optional<String> findTemplateIdByUuid(UUID uuid) {
+        return templateStoreRepository.findTemplateIdByUuid(uuid);
     }
 
-    protected I_DomainAccess getDataAccess() {
-        return new ServiceDataAccess(context, null, null, this.serverConfig);
+    @Override
+    public Optional<UUID> findUuidByTemplateId(String templateId) {
+        return templateStoreRepository.findUuidByTemplateId(templateId);
     }
 }

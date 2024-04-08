@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,15 +20,17 @@ package org.ehrbase.rest.ehrscape.controller;
 import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
+import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
@@ -52,20 +54,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnMissingBean(name = {"primarycompositioncontroller"})
-@TenantAware
 @RestController
 @RequestMapping(
         path = API_ECIS_CONTEXT_PATH_WITH_VERSION + "/" + BaseController.COMPOSITION,
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@Tag(name = "COMPOSITION")
 public class CompositionController extends BaseController {
 
     private final CompositionService compositionService;
 
-    public CompositionController(CompositionService compositionService) {
+    private final SystemService systemService;
+
+    public CompositionController(CompositionService compositionService, SystemService systemService) {
         this.compositionService = Objects.requireNonNull(compositionService);
+        this.systemService = systemService;
     }
 
     @PostMapping
+    @Operation(
+            summary = "Deprecated since 1.0.0 and marked for removal",
+            description =
+                    "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/createComposition)",
+            deprecated = true)
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public ResponseEntity<CompositionWriteRestResponseData> createComposition(
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
             @RequestParam(value = "templateId", required = false) String templateId,
@@ -87,16 +98,22 @@ public class CompositionController extends BaseController {
 
         var responseData = new CompositionWriteRestResponseData();
         responseData.setAction(Action.CREATE);
-        responseData.setCompositionUid(
-                compositionUuid + "::" + compositionService.getServerConfig().getNodename() + "::" + 1);
+        responseData.setCompositionUid(compositionUuid + "::" + systemService.getSystemId() + "::" + 1);
         responseData.setMeta(buildMeta(responseData.getCompositionUid()));
 
         return ResponseEntity.created(
                         URI.create(responseData.getMeta().getHref().getUrl()))
+                .headers(deprecationHeaders("COMPOSITION/createComposition", "COMPOSITION/createComposition"))
                 .body(responseData);
     }
 
     @GetMapping(path = "/{uid}")
+    @Operation(
+            summary = "Deprecated since 1.0.0 and marked for removal",
+            description =
+                    "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition/{versioned_object_uid}](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/getComposition)",
+            deprecated = true)
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public ResponseEntity<CompositionResponseData> getComposition(
             @PathVariable("uid") String compositionUid,
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
@@ -121,20 +138,30 @@ public class CompositionController extends BaseController {
             responseDto.setFormat(format);
             responseDto.setTemplateId(compositionDto.get().getTemplateId());
             String fullUid = compositionDto.get().getUuid() + "::"
-                    + compositionService.getServerConfig().getNodename() + "::"
+                    + systemService.getSystemId() + "::"
                     + compositionService.getLastVersionNumber(
                             compositionDto.get().getUuid());
             responseDto.setCompositionUid(fullUid);
             responseDto.setEhrId(compositionDto.get().getEhrId());
             Meta meta = buildMeta(responseDto.getCompositionUid());
             responseDto.setMeta(meta);
-            return ResponseEntity.ok(responseDto);
+            return ResponseEntity.ok()
+                    .headers(deprecationHeaders("COMPOSITION/getComposition", "COMPOSITION/getComposition"))
+                    .body(responseDto);
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound()
+                    .headers(deprecationHeaders("COMPOSITION/getComposition", "COMPOSITION/getComposition"))
+                    .build();
         }
     }
 
     @PutMapping(path = "/{uid}")
+    @Operation(
+            summary = "Deprecated since 1.0.0 and marked for removal",
+            description =
+                    "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition/{versioned_object_uid}](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/updateComposition)",
+            deprecated = true)
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public ResponseEntity<ActionRestResponseData> update(
             @PathVariable("uid") String compositionUid,
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
@@ -164,10 +191,18 @@ public class CompositionController extends BaseController {
         ActionRestResponseData responseData = new ActionRestResponseData();
         responseData.setAction(Action.UPDATE);
         responseData.setMeta(buildMeta(compositionVersionUid));
-        return ResponseEntity.ok(responseData);
+        return ResponseEntity.ok()
+                .headers(deprecationHeaders("COMPOSITION/update", "COMPOSITION/updateComposition"))
+                .body(responseData);
     }
 
     @DeleteMapping(path = "/{uid}")
+    @Operation(
+            summary = "Deprecated since 1.0.0 and marked for removal",
+            description =
+                    "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition/{versioned_object_uid}](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/deleteComposition)",
+            deprecated = true)
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
 
         ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
@@ -178,7 +213,9 @@ public class CompositionController extends BaseController {
         ActionRestResponseData responseData = new ActionRestResponseData();
         responseData.setAction(Action.DELETE);
         responseData.setMeta(buildMeta(""));
-        return ResponseEntity.ok(responseData);
+        return ResponseEntity.ok()
+                .headers(deprecationHeaders("COMPOSITION/delete", "COMPOSITION/deleteComposition"))
+                .body(responseData);
     }
 
     private ObjectVersionId getLatestVersionId(UUID compositionId) {
@@ -186,8 +223,8 @@ public class CompositionController extends BaseController {
         // be retrieved.
         return new ObjectVersionId(
                 compositionId.toString(),
-                compositionService.getServerConfig().getNodename(),
-                compositionService.getLastVersionNumber(compositionId).toString());
+                systemService.getSystemId(),
+                Integer.toString(compositionService.getLastVersionNumber(compositionId)));
     }
 
     private Meta buildMeta(String compositionUid) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,20 +17,23 @@
  */
 package org.ehrbase.rest;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
+import org.ehrbase.rest.openehr.format.CompositionRepresentation;
+import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -43,10 +46,6 @@ import org.springframework.web.util.UriUtils;
 /**
  * This base controller implements the basic functionality for all specific controllers. This
  * includes error handling and utils.
- *
- * @author Stefan Spiska
- * @author Jake Smolka
- * @since 1.0.0
  */
 public abstract class BaseController {
 
@@ -55,6 +54,8 @@ public abstract class BaseController {
     public static final String OPENEHR_AUDIT_DETAILS = "openEHR-AUDIT_DETAILS";
 
     public static final String OPENEHR_VERSION = "openEHR-VERSION";
+
+    public static final String EHRBASE_TEMPLATE_ID = "EHRBase-Template-ID";
 
     public static final String PREFER = "Prefer";
 
@@ -124,7 +125,8 @@ public abstract class BaseController {
         return metaMap;
     }
 
-    protected String getContextPath() {
+    @VisibleForTesting
+    public String getContextPath() {
         return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
     }
 
@@ -202,26 +204,37 @@ public abstract class BaseController {
     }
 
     /**
-     * Extracts the {@link CompositionFormat} from the REST request's input {@link MediaType} style
-     * content type header string.
+     * Extracts the {@link CompositionRepresentation} from the REST request's input {@link MediaType} style
+     * content type header string and validates them against the given format as {@link CompositionFormat}.
      *
-     * @param contentType String representation of REST request's input {@link MediaType} style
-     *                    content type header
+     * @param contentType String representation of REST request's input {@link MediaType} style content type header
+     * @param format      String representation of the REST request <code>format</code> parameter that is
+     *                    interpreted as an {@link CompositionFormat}
      * @return {@link CompositionFormat} expressing the content type
-     * @throws NotAcceptableException when content type is not supported or input is invalid
+     * @throws NotAcceptableException when content type or composition format is not supported or the input is invalid
      */
-    protected CompositionFormat extractCompositionFormat(String contentType) {
-        final CompositionFormat compositionFormat;
+    protected CompositionRepresentation extractCompositionRepresentation(String contentType, String format) {
 
-        MediaType mediaType = resolveContentType(contentType);
-        if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            compositionFormat = CompositionFormat.XML;
-        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            compositionFormat = CompositionFormat.JSON;
-        } else {
-            throw new NotAcceptableException("Only compositions in XML or JSON are supported at the moment");
+        final CompositionRepresentation representation;
+        try {
+            final Optional<CompositionFormat> parsedFormat =
+                    Optional.ofNullable(format).filter(s -> !s.isEmpty()).map(CompositionFormat::valueOf);
+            final MediaType mediaType = resolveContentType(
+                    contentType,
+                    MediaType.APPLICATION_JSON,
+                    mediaType1 -> mediaType1.isCompatibleWith(MediaType.APPLICATION_JSON)
+                            || mediaType1.isCompatibleWith(MediaType.APPLICATION_XML)
+                            || mediaType1.isCompatibleWith(OpenEHRMediaType.APPLICATION_WT_FLAT_SCHEMA_JSON)
+                            || mediaType1.isCompatibleWith(OpenEHRMediaType.APPLICATION_WT_STRUCTURED_SCHEMA_JSON));
+
+            representation =
+                    CompositionRepresentation.selectFromMediaTypeWithFormat(mediaType, parsedFormat.orElse(null));
+        } catch (IllegalArgumentException e) {
+            throw new NotAcceptableException(
+                    "Invalid compositions format [%s] only [XML, JSON, FLAT, STRUCTURED] are supported at the moment"
+                            .formatted(format));
         }
-        return compositionFormat;
+        return representation;
     }
 
     /**
@@ -251,13 +264,15 @@ public abstract class BaseController {
         return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
     }
 
-    protected int extractVersionFromVersionUid(String versionUid) {
-        if (!versionUid.contains("::")) {
-            return 0; // current version
-        }
+    protected Optional<Integer> extractVersionFromVersionUid(String versionUid) {
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
         // via making a substring starting at last occurrence of "::" + 2
-        return Integer.parseInt(versionUid.substring(versionUid.lastIndexOf("::") + 2));
+        int lastOccourence = versionUid.lastIndexOf("::");
+        if (lastOccourence > 0 && versionUid.indexOf("::") != lastOccourence) {
+            return Optional.of(Integer.parseInt(versionUid.substring(lastOccourence + 2)));
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -289,6 +304,24 @@ public abstract class BaseController {
      * @return Content-Type of the response
      */
     protected MediaType resolveContentType(String acceptHeader, MediaType defaultMediaType) {
+        return resolveContentType(
+                acceptHeader,
+                defaultMediaType,
+                mediaType -> mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)
+                        || mediaType.isCompatibleWith(MediaType.APPLICATION_XML));
+    }
+
+    /**
+     * Resolves the Content-Type based on Accept header using the supported predicate.
+     *
+     * @param acceptHeader     Accept header value
+     * @param defaultMediaType Default Content-Type
+     * @param isSupported      Filter the supported Content-Types
+     * @return Content-Type of the response
+     */
+    protected MediaType resolveContentType(
+            String acceptHeader, MediaType defaultMediaType, Predicate<MediaType> isSupported) {
+
         List<MediaType> mediaTypes = MediaType.parseMediaTypes(acceptHeader);
         if (mediaTypes.isEmpty()) {
             return defaultMediaType;
@@ -296,8 +329,7 @@ public abstract class BaseController {
 
         MediaType.sortBySpecificityAndQuality(mediaTypes);
         MediaType contentType = mediaTypes.stream()
-                .filter(mediaType -> mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)
-                        || mediaType.isCompatibleWith(MediaType.APPLICATION_XML))
+                .filter(isSupported)
                 .findFirst()
                 .orElseThrow(() -> new InvalidApiParameterException("Wrong Content-Type header in request"));
 
@@ -315,7 +347,18 @@ public abstract class BaseController {
                 .map(s -> s.replace(' ', '+'))
                 .map(s -> {
                     try {
-                        return OffsetDateTime.parse(s);
+                        DvDateTime dvDateTime = new DvDateTime(s);
+
+                        if (dvDateTime.getValue() instanceof OffsetDateTime offsetDateTime) {
+                            return offsetDateTime;
+                        } else if (dvDateTime.getValue() instanceof LocalDateTime localDateTime) {
+
+                            return localDateTime.atOffset(ZoneOffset.UTC);
+                        } else {
+                            throw new IllegalArgumentException(
+                                    "Value '%s' is not valid for version_at_time parameter. Value must be in the extended ISO 8601 format."
+                                            .formatted(versionAtTimeParam));
+                        }
                     } catch (DateTimeParseException e) {
                         throw new IllegalArgumentException(
                                 "Value '%s' is not valid for version_at_time parameter. Value must be in the extended ISO 8601 format."

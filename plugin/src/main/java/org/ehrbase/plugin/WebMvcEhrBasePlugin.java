@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,12 @@
  */
 package org.ehrbase.plugin;
 
+import java.util.Map;
+import org.ehrbase.plugin.registration.ExternalBeanRegistration;
 import org.ehrbase.plugin.security.AuthorizationInfo;
 import org.ehrbase.plugin.security.PluginSecurityConfiguration;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigRegistry;
@@ -31,11 +31,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-/**
- * @author Stefan Spiska
- */
 public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
-    private final Logger log = LoggerFactory.getLogger(WebMvcEhrBasePlugin.class);
 
     protected WebMvcEhrBasePlugin(PluginWrapper wrapper) {
         super(wrapper);
@@ -53,6 +49,7 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
             dispatcherServlet = buildDispatcherServlet();
 
             WebApplicationContext applicationContext = dispatcherServlet.getWebApplicationContext();
+            externalBeanRegistration(applicationContext);
             initPluginSecurity(applicationContext);
 
             EhrBasePluginManagerInterface pluginManager =
@@ -63,6 +60,24 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
 
         return dispatcherServlet;
     }
+
+    //////////////////////////////
+    private void externalBeanRegistration(WebApplicationContext ctx) {
+        EhrBasePluginManagerInterface pluginManager =
+                (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
+
+        Map<String, ExternalBeanRegistration> allExternalRegistrations =
+                ctx.getParent().getBeansOfType(ExternalBeanRegistration.class);
+        allExternalRegistrations.values().forEach(exReg -> {
+            if (ctx instanceof AbstractApplicationContext a1) {
+                a1.setClassLoader(wrapper.getPluginClassLoader());
+                a1.setParent(pluginManager.getApplicationContext());
+            } else log.warn(WARN_PLUGIN_SEC);
+
+            exReg.externalRegistration(ctx);
+        });
+    }
+    //////////////////////////////
 
     private static String DISABLE_PLUGIN_AUTHORIZATION = "authorization.service.disable.for.%s";
 

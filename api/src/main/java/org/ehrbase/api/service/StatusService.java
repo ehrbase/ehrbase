@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,7 @@ package org.ehrbase.api.service;
 /**
  * Status service to get information about the running EHRbase instance
  */
-public interface StatusService extends BaseService {
+public interface StatusService {
 
     /**
      * Returns information on the current operating system this EHRbase instance is running on.
@@ -64,9 +64,9 @@ public interface StatusService extends BaseService {
     String getArchieVersion();
 
     /**
-     * Returns the current version of openEHR_SDK which has been used to build the running EHRbase instance.
+     * Returns the current version of ehrbase SDK which has been used to build the running EHRbase instance.
      *
-     * @return Current used openEHR_SDK version
+     * @return Current used ehrbase SDK version
      */
     String getOpenEHR_SDK_Version();
 }

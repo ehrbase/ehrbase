@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,18 +25,14 @@ import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
-import org.ehrbase.api.annotations.TenantAware;
+import java.util.stream.Collectors;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionResponseData;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.ContributionApiSpecification;
@@ -47,7 +43,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,7 +53,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnMissingBean(name = "primaryopenehrcontributioncontroller")
-@TenantAware
 @RestController
 @RequestMapping(
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
@@ -75,9 +69,6 @@ public class OpenehrContributionController extends BaseController implements Con
     @PostMapping(
             value = "/{ehr_id}/contribution",
             consumes = {"application/xml", "application/json"})
-    // checkAbacPre /-Post attributes (type, subject, payload, content type)
-    @PreAuthorize("checkAbacPre(@openehrContributionController.CONTRIBUTION, "
-            + "@ehrService.getSubjectExtRef(#ehrIdString), #contribution, #contentType)")
     @ResponseStatus(
             value = HttpStatus.CREATED) // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     @Override
@@ -89,10 +80,15 @@ public class OpenehrContributionController extends BaseController implements Con
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @RequestBody String contribution) {
+
+        if (!resolveContentType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            throw new NotAcceptableException(
+                    "Invalid content type, only %s is supported".formatted(MediaType.APPLICATION_JSON));
+        }
+
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        UUID contributionId =
-                contributionService.commitContribution(ehrId, contribution, extractCompositionFormat(contentType));
+        UUID contributionId = contributionService.commitContribution(ehrId, contribution);
 
         URI uri = createLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString());
 
@@ -100,36 +96,20 @@ public class OpenehrContributionController extends BaseController implements Con
                 LOCATION,
                 ETAG); // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so handled separately
 
-        Optional<InternalResponse<ContributionResponseData>>
-                respData; // variable to overload with more specific object if requested
+        boolean doReturnRepresentation = RETURN_REPRESENTATION.equals(prefer);
 
-        if (Optional.ofNullable(prefer)
-                .map(i -> i.equals(RETURN_REPRESENTATION))
-                .orElse(false)) { // null safe way to test prefer header
-            respData = buildContributionResponseData(
-                    contributionId,
-                    ehrId,
-                    accept,
-                    uri,
-                    headerList,
-                    () -> new ContributionResponseData(null, null, null));
-        } else { // "minimal" is default fallback
-            respData = buildContributionResponseData(contributionId, ehrId, accept, uri, headerList, () -> null);
-        }
+        InternalResponse<ContributionResponseData> respData =
+                buildContributionResponseData(contributionId, ehrId, accept, uri, headerList, doReturnRepresentation);
 
         createAuditLogsMsgBuilder(ehrId, contributionId);
 
-        // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
-        return respData.map(i -> Optional.ofNullable(i.getResponseData())
-                        .map(j -> ResponseEntity.created(uri)
-                                .headers(i.getHeaders())
-                                .body(j))
-                        // when the body is empty
-                        .orElse(ResponseEntity.noContent()
-                                .headers(i.getHeaders())
-                                .build()))
-                // when no response could be created at all
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        if (doReturnRepresentation) {
+            // 201 with body + headers
+            return ResponseEntity.created(uri).headers(respData.getHeaders()).body(respData.getResponseData());
+        } else {
+            // 204 only with headers
+            return ResponseEntity.noContent().headers(respData.getHeaders()).build();
+        }
     }
 
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
@@ -149,30 +129,23 @@ public class OpenehrContributionController extends BaseController implements Con
         List<String> headerList = Arrays.asList(
                 LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE handled separately
 
-        Optional<InternalResponse<ContributionResponseData>>
-                respData; // variable to overload with more specific object if requested
-
         // building full / representation response
-        respData = buildContributionResponseData(
-                contributionUid, ehrId, accept, uri, headerList, () -> new ContributionResponseData(null, null, null));
+        InternalResponse<ContributionResponseData> respData =
+                buildContributionResponseData(contributionUid, ehrId, accept, uri, headerList, true);
 
         createAuditLogsMsgBuilder(ehrId, contributionUid);
 
-        // returns 200 with body + headers or 500 in case of unexpected error
-        return respData.map(i -> Optional.ofNullable(i.getResponseData())
-                        .map(j -> ResponseEntity.ok().headers(i.getHeaders()).body(j))
-                        // when response is empty, throw error
-                        .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .build()))
-                // when no response could be created at all, throw error, too
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        // returns 200 with body
+        return ResponseEntity.ok().headers(respData.getHeaders()).body(respData.getResponseData());
     }
 
-    private <T extends ContributionResponseData> Optional<InternalResponse<T>> buildContributionResponseData(
-            UUID contributionId, UUID ehrId, String accept, URI uri, List<String> headerList, Supplier<T> factory) {
-        // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
-        // lambda request
-        T minimalOrRepresentation = factory.get();
+    private InternalResponse<ContributionResponseData> buildContributionResponseData(
+            UUID contributionId,
+            UUID ehrId,
+            String accept,
+            URI uri,
+            List<String> headerList,
+            boolean includeResponseData) {
 
         // do minimal scope steps
         // create and supplement headers with data depending on which headers are requested
@@ -195,47 +168,40 @@ public class OpenehrContributionController extends BaseController implements Con
             }
         }
 
+        // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
+        // lambda request
         // if response data objects was created as "representation" do all task from wider scope, too
-        if (minimalOrRepresentation != null) {
+
+        final ContributionResponseData responseData;
+        if (includeResponseData) {
+            final MediaType mediaType = resolveContentType(accept);
+            respHeaders.setContentType(mediaType);
+
             // when this "if" is true the following casting can be executed and data manipulated by reference (handled
             // by temporary variable)
-            ContributionResponseData objByReference = minimalOrRepresentation;
 
             // retrieve contribution
-            Optional<ContributionDto> contribution = contributionService.getContribution(ehrId, contributionId);
+            ContributionDto contribution = contributionService.getContribution(ehrId, contributionId);
 
             // set all response field according to retrieved contribution
-            objByReference.setUid(new HierObjectId(contributionId.toString()));
-            List<ObjectRef<ObjectVersionId>> refs = new LinkedList<>();
-            contribution
-                    .get()
-                    .getObjectReferences()
-                    .forEach((id, type) -> refs.add(new ObjectRef<>(new ObjectVersionId(id), "local", type)));
-            objByReference.setVersions(refs);
-            objByReference.setAudit(contribution.get().getAuditDetails());
+            responseData = new ContributionResponseData(
+                    new HierObjectId(contributionId.toString()),
+                    contribution.getObjectReferences().entrySet().stream()
+                            .map(e -> new ObjectRef<>(new ObjectVersionId(e.getKey()), "local", e.getValue()))
+                            .collect(Collectors.toList()),
+                    contribution.getAuditDetails());
 
-            CompositionFormat format = extractCompositionFormat(accept);
+        } else {
+            // else continue with returning but without additional data from above, e.g. body
+            responseData = null;
+        }
 
-            // finally set last header
-            if (format.equals(CompositionFormat.XML)) {
-                respHeaders.setContentType(MediaType.APPLICATION_XML);
-            } else if (format.equals(CompositionFormat.JSON)
-                    || format.equals(CompositionFormat.FLAT)
-                    || format.equals(CompositionFormat.ECISFLAT)
-                    || format.equals(CompositionFormat.RAW)) {
-                respHeaders.setContentType(MediaType.APPLICATION_JSON);
-            } else {
-                throw new NotAcceptableException("Wrong Accept header in request");
-            }
-        } // else continue with returning but without additional data from above, e.g. body
-
-        return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
+        return new InternalResponse<>(responseData, respHeaders);
     }
 
     private void createAuditLogsMsgBuilder(UUID ehrId, UUID contributionId) {
         AuditMsgBuilder.getInstance()
                 .setEhrIds(ehrId)
-                .setContributionId(contributionId.toString())
                 .setLocation(fromPath(EMPTY)
                         .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
                         .build()

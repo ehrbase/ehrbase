@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,16 +17,23 @@
  */
 package org.ehrbase.rest;
 
+import com.nimbusds.jose.util.Pair;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Optional;
-import org.ehrbase.api.tenant.TenantAuthentication;
-import org.ehrbase.api.tenant.ThreadLocalSupplier;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.security.core.context.SecurityContext;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.format.FormatterRegistry;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -36,56 +43,58 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages = {"org.ehrbase.rest", "org.ehrbase.rest.admin", "org.ehrbase.rest.openehr"})
 @EnableAspectJAutoProxy
 public class RestModuleConfiguration implements WebMvcConfigurer {
-    public static final String HTTP_HEADER_TENANT_ID = "Tenant-Id";
     public static final String NONE = "none";
 
     @Value("${security.auth-type}")
     private String authType;
 
+    @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new HttpRequestSupplierInterceptor());
         if (NONE.equalsIgnoreCase(authType)) {
             registry.addInterceptor(new SecurityContextCleanupInterceptor());
         }
     }
 
-    public static class HttpRequestSupplierInterceptor implements HandlerInterceptor {
-
-        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-                throws Exception {
-            ThreadLocalSupplier<HttpServletRequest> threadLocalSupplier =
-                    ThreadLocalSupplier.supplyFor(HttpServletRequest.class);
-            threadLocalSupplier.accept(request);
-            return true;
-        }
-
-        public void afterCompletion(
-                HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
-                throws Exception {
-
-            ThreadLocalSupplier<HttpServletRequest> threadLocalSupplier =
-                    ThreadLocalSupplier.supplyFor(HttpServletRequest.class);
-            threadLocalSupplier.reset();
-
-            extractTenantId().ifPresent(id -> response.setHeader(HTTP_HEADER_TENANT_ID, id));
-        }
-
-        private Optional<String> extractTenantId() {
-            SecurityContext secCtx = SecurityContextHolder.getContext();
-            return Optional.ofNullable(secCtx.getAuthentication())
-                    .filter(TenantAuthentication.class::isInstance)
-                    .map(auth -> (TenantAuthentication<?>) auth)
-                    .map(TenantAuthentication::getTenantId);
-        }
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new QueryParameterConverter());
     }
 
     public static class SecurityContextCleanupInterceptor implements HandlerInterceptor {
 
         @Override
-        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-                throws Exception {
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
             SecurityContextHolder.clearContext();
             return true;
+        }
+    }
+
+    public static class QueryParameterConverter implements Converter<String, Map<String, Object>> {
+        private static final String PARAM_ASSIGN = "=";
+        private static final String PARAM_DELIM = "&";
+
+        // x=1&ehrId=b907e17a-0dc0-49ef-b126-95b9abb4f906
+        @Override
+        public Map<String, Object> convert(@NonNull String source) {
+            //noinspection ConstantValue
+            if (source == null) {
+                return new HashMap<>();
+            }
+
+            StringTokenizer tokenizer = new StringTokenizer(source, PARAM_DELIM);
+            Spliterator<Object> spliterator = Spliterators.spliterator(tokenizer.asIterator(), 1, Spliterator.ORDERED);
+
+            return StreamSupport.stream(spliterator, false)
+                    .map(t -> (String) t)
+                    .map(str -> {
+                        String[] split = str.split(PARAM_ASSIGN, 2);
+                        return switch (split.length) {
+                            case 1 -> Pair.of(split[0], "");
+                            case 2 -> Pair.of(split[0], split[1]);
+                            default -> Pair.of("", "");
+                        };
+                    })
+                    .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 
 /**
  * ValidationService
@@ -32,21 +33,12 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 public interface ValidationService {
 
     /**
-     * check a composition based on the operation template constraints
-     *
-     * @param templateID  the template Id (String)
-     * @param composition the RM composition
-     * @throws Exception if the validation fails or the template cannot be resolved
-     */
-    void check(String templateID, Composition composition) throws Exception;
-
-    /**
      * initially check if the composition is valid for further processing
      *
      * @param composition
      * @throws IllegalArgumentException
      */
-    void check(Composition composition) throws Exception;
+    void check(Composition composition) throws NoSuchMethodException, IllegalAccessException;
 
     /**
      * initially check if ehrstatus is valid for further processing
@@ -55,4 +47,12 @@ public interface ValidationService {
      * @throws IllegalArgumentException
      */
     void check(EhrStatus ehrStatus);
+
+    /**
+     * initially check if contribution is valid for further processing
+     *
+     * @param contribution
+     * @throws IllegalArgumentException
+     */
+    void check(ContributionCreateDto contribution);
 }

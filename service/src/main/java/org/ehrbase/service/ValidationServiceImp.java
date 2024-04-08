@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,16 +22,22 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rmobjectvalidator.APathQueryCache;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
+import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessageType;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
 import org.ehrbase.openehr.sdk.validation.CompositionValidator;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
@@ -46,9 +52,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * {@link ValidationService} implementation.
- *
- * @author Christian Chevalley
- * @since 1.0.0
  */
 @Service
 public class ValidationServiceImp implements ValidationService {
@@ -57,7 +60,7 @@ public class ValidationServiceImp implements ValidationService {
 
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
-    private final KnowledgeCacheService knowledgeCacheService;
+    private final KnowledgeCacheServiceImp knowledgeCacheService;
 
     private final TerminologyService terminologyService;
 
@@ -66,7 +69,7 @@ public class ValidationServiceImp implements ValidationService {
     private final Map<String, RMPathQuery> rmPathQueryCache = new ConcurrentHashMap<>();
 
     public ValidationServiceImp(
-            KnowledgeCacheService knowledgeCacheService,
+            KnowledgeCacheServiceImp knowledgeCacheService,
             TerminologyService terminologyService,
             ServerConfig serverConfig,
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
@@ -91,11 +94,8 @@ public class ValidationServiceImp implements ValidationService {
             logger.warn("shared RMPathQueryCache is disabled");
             delegator = null;
         }
-        compositionValidator = ThreadLocal.withInitial(() -> {
-            CompositionValidator validator =
-                    createCompositionValidator(objectProvider, disableStrictValidation, delegator);
-            return validator;
-        });
+        compositionValidator = ThreadLocal.withInitial(
+                () -> createCompositionValidator(objectProvider, disableStrictValidation, delegator));
     }
 
     private static CompositionValidator createCompositionValidator(
@@ -105,11 +105,11 @@ public class ValidationServiceImp implements ValidationService {
         CompositionValidator validator = new CompositionValidator();
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
         validator.setRunInvariantChecks(!disableStrictValidation);
-        setSharedAqlQueryCache(validator, delegator);
+        setSharedAPathQueryCache(validator, delegator);
         return validator;
     }
 
-    private static void setSharedAqlQueryCache(CompositionValidator validator, APathQueryCache delegator) {
+    private static void setSharedAPathQueryCache(CompositionValidator validator, APathQueryCache delegator) {
         if (delegator == null) {
             return;
         }
@@ -123,8 +123,7 @@ public class ValidationServiceImp implements ValidationService {
         }
     }
 
-    @Override
-    public void check(String templateID, Composition composition) throws Exception {
+    public void check(String templateID, Composition composition) throws NoSuchMethodException, IllegalAccessException {
         WebTemplate webTemplate;
         try {
             webTemplate = knowledgeCacheService.getQueryOptMetaData(templateID);
@@ -144,7 +143,7 @@ public class ValidationServiceImp implements ValidationService {
     }
 
     @Override
-    public void check(Composition composition) throws Exception {
+    public void check(Composition composition) throws NoSuchMethodException, IllegalAccessException {
         // check if this composition is valid for processing
         if (composition.getName() == null) {
             throw new IllegalArgumentException("Composition missing mandatory attribute: name");
@@ -221,6 +220,82 @@ public class ValidationServiceImp implements ValidationService {
                     .matches()) {
                 throw new ValidationException("Subject's namespace format invalid");
             }
+        }
+    }
+
+    @Override
+    public void check(ContributionCreateDto contribution) {
+
+        // first, check the built EhrStatus using the general Archie RM-Validator
+        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
+
+        // UID does not have to be validated
+
+        List<RMObjectValidationMessage> messages = new ArrayList<>();
+
+        // validate audit details
+        Optional.of(contribution).map(ContributionCreateDto::getAudit).ifPresent(ad -> {
+            // audit/time_committed must be null
+            nullCheck(messages, ad.getTimeCommitted(), "/audit/time_committed");
+            rmObjectValidator.validate(ad).stream()
+                    .filter(m -> !m.getPath().equals("/time_committed"))
+                    .forEach(messages::add);
+        });
+
+        if (CollectionUtils.isEmpty(contribution.getVersions())) {
+            // reject contribution without versions
+            messages.add(new RMObjectValidationMessage(
+                    "/versions",
+                    null,
+                    null,
+                    null,
+                    "Versions must not be empty",
+                    RMObjectValidationMessageType.CARDINALITY_MISMATCH));
+
+        } else {
+            // validate versions (without data)
+            contribution.getVersions().stream()
+                    .map(v -> {
+                        // version/contribution must be null
+                        nullCheck(messages, v.getContribution(), "/version/contribution");
+                        return v;
+                    })
+                    .map(rmObjectValidator::validate)
+                    .flatMap(List::stream)
+                    .filter(m -> {
+                        String path = m.getPath();
+                        return !(
+                        // versions/commit_audit/time_committed must be null
+                        path.equals("/commit_audit/time_committed")
+                                ||
+                                // versions/data must not be validated here
+                                // TODO performance: skip validation
+                                path.startsWith("/data")
+                                ||
+                                // version/contribution must be null
+                                path.startsWith("/contribution")
+                                ||
+                                // versions/uid may be null
+                                (path.startsWith("/uid") && m.getType() == RMObjectValidationMessageType.REQUIRED));
+                    })
+                    .forEach(messages::add);
+        }
+
+        if (!messages.isEmpty()) {
+            String messageStr = messages.stream().map(Object::toString).collect(Collectors.joining("\n"));
+            throw new ValidationException(messageStr);
+        }
+    }
+
+    private static void nullCheck(List<RMObjectValidationMessage> messages, Object mustBeNull, String path) {
+        if (mustBeNull != null) {
+            messages.add(new RMObjectValidationMessage(
+                    path,
+                    null,
+                    null,
+                    null,
+                    "Attribute must not be set",
+                    RMObjectValidationMessageType.CARDINALITY_MISMATCH));
         }
     }
 }

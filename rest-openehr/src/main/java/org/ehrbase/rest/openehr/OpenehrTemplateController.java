@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,9 +16,6 @@
  * limitations under the License.
  */
 package org.ehrbase.rest.openehr;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_XML;
 
 import com.nedap.archie.rm.composition.Composition;
 import java.io.ByteArrayInputStream;
@@ -32,20 +29,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.annotations.TenantAware;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.openehr.sdk.response.dto.ResponseData;
 import org.ehrbase.openehr.sdk.response.dto.TemplateResponseData;
 import org.ehrbase.openehr.sdk.response.dto.TemplatesResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.format.CompositionRepresentation;
+import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
 import org.ehrbase.rest.util.InternalResponse;
 import org.openehr.schemas.v1.TemplateDocument;
@@ -69,7 +66,6 @@ import org.springframework.web.bind.annotation.RestController;
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
 @ConditionalOnMissingBean(name = "primaryopenehrtemplatecontroller")
-@TenantAware
 @RestController
 @RequestMapping(
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/definition/template",
@@ -77,6 +73,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpenehrTemplateController extends BaseController implements TemplateApiSpecification {
 
     protected static final String ADL_1_4 = "adl1.4";
+
     private final TemplateService templateService;
     private final CompositionService compositionService;
 
@@ -103,7 +100,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestBody String template) {
 
         // TODO: only XML at the moment
-        if (!MediaType.parseMediaType(contentType).isCompatibleWith(APPLICATION_XML)) {
+        if (!MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Only XML is supported at the moment");
         }
 
@@ -125,13 +122,13 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so handled
         // separately
 
-        Optional<InternalResponse<ResponseData>>
+        Optional<InternalResponse<TemplateResponseData>>
                 respData; // variable to overload with more specific object if requested
 
         if (Optional.ofNullable(prefer)
                 .map(i -> i.equals(RETURN_REPRESENTATION))
                 .orElse(false)) { // null safe way to test prefer header
-            respData = buildTemplateResponseData(templateId, accept, uri, headerList, () -> new TemplateResponseData());
+            respData = buildTemplateResponseData(templateId, accept, uri, headerList, TemplateResponseData::new);
         } else { // "minimal" is default fallback
             respData = buildTemplateResponseData(templateId, accept, uri, headerList, () -> null);
         }
@@ -166,8 +163,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
         // handled
         // separately
 
-        Optional<InternalResponse<ResponseData>> respData =
-                buildTemplateResponseData("", accept, uri, headerList, () -> new TemplatesResponseData());
+        Optional<InternalResponse<TemplatesResponseData>> respData =
+                buildTemplateResponseData("", accept, uri, headerList, TemplatesResponseData::new);
 
         // returns 200 with all templates OR error
         return respData.map(i -> ResponseEntity.ok()
@@ -194,8 +191,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so handled
         // separately
 
-        Optional<InternalResponse<ResponseData>> respData =
-                buildTemplateResponseData(templateId, accept, uri, headerList, () -> new TemplateResponseData());
+        Optional<InternalResponse<TemplateResponseData>> respData =
+                buildTemplateResponseData(templateId, accept, uri, headerList, TemplateResponseData::new);
 
         return respData.map(i -> ResponseEntity.ok()
                         .headers(i.getHeaders())
@@ -203,26 +200,44 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @GetMapping(path = "/adl1.4/{template_id}/example")
+    @GetMapping(
+            path = "/adl1.4/{template_id}/example",
+            produces = {
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.APPLICATION_XML_VALUE,
+                OpenEHRMediaType.APPLICATION_WT_STRUCTURED_SCHEMA_JSON_VALUE,
+                OpenEHRMediaType.APPLICATION_WT_FLAT_SCHEMA_JSON_VALUE
+            })
     public ResponseEntity<String> getTemplateExample(
             @RequestHeader(value = ACCEPT, required = false) String accept,
-            @PathVariable(value = "template_id") String templateId) {
-        CompositionFormat format = extractCompositionFormat(accept);
+            @PathVariable(value = "template_id") String templateId,
+            @RequestParam(value = "format", required = false) String format) {
 
+        CompositionRepresentation representation = extractCompositionRepresentation(accept, format);
         Composition composition = templateService.buildExample(templateId);
 
-        HttpHeaders respHeaders = new HttpHeaders();
-        if (format.equals(CompositionFormat.XML)) {
-            respHeaders.setContentType(APPLICATION_XML);
-        } else if (format.equals(CompositionFormat.JSON)) {
-            respHeaders.setContentType(APPLICATION_JSON);
-        }
-
         return ResponseEntity.ok()
-                .headers(respHeaders)
+                .contentType(representation.mediaType)
                 .body(compositionService
-                        .serialize(new CompositionDto(composition, templateId, null, null), format)
+                        .serialize(new CompositionDto(composition, templateId, null, null), representation.format)
                         .getValue());
+    }
+
+    @GetMapping(
+            path = "/adl1.4/{template_id}/webtemplate",
+            produces = {MediaType.APPLICATION_JSON_VALUE, OpenEHRMediaType.APPLICATION_WT_JSON_VALUE})
+    public ResponseEntity<WebTemplate> getWebTemplate(
+            @RequestHeader(value = ACCEPT, required = false) String accept,
+            @PathVariable(value = "template_id") String templateId) {
+
+        final MediaType mediaType = resolveContentType(
+                accept,
+                OpenEHRMediaType.APPLICATION_WT_JSON,
+                m -> m.isCompatibleWith(OpenEHRMediaType.APPLICATION_WT_JSON)
+                        || m.isCompatibleWith(MediaType.APPLICATION_JSON));
+        final WebTemplate webTemplate = templateService.findTemplate(templateId);
+
+        return ResponseEntity.ok().contentType(mediaType).body(webTemplate);
     }
 
     /*
@@ -248,7 +263,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
         URI url = URI.create("todo");
         // TODO - continuing stub but list of headers most likely the correct list of necessary ones
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(APPLICATION_JSON);
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setLocation(url);
         headers.setETag("\"something...\"");
         headers.setLastModified(1234565778);
@@ -281,7 +296,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
         URI url = URI.create("todo");
         // TODO - continuing stub but list of headers most likely the correct list of necessary ones
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(APPLICATION_JSON);
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setLocation(url);
         headers.setETag("\"something...\"");
         headers.setLastModified(1234565778);
@@ -338,7 +353,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
         } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
             format = OperationalTemplateFormat.JSON;
         } else {
-            throw new NotAcceptableException("Currently only xml (or emtpy for fallback) is allowed");
+            throw new NotAcceptableException("Currently only xml (or empty for fallback) is allowed");
         }
 
         // is null when request wants only metadata returned, so skips provisioning of body if null
@@ -353,7 +368,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 objByReference.set(template);
 
                 // finally set last header // TODO only XML for now
-                respHeaders.setContentType(APPLICATION_XML);
+                respHeaders.setContentType(MediaType.APPLICATION_XML);
 
             } else if (oneOrAllTemplates.getClass().equals(TemplatesResponseData.class)) { // get all templates
                 TemplatesResponseData objByReference = (TemplatesResponseData) oneOrAllTemplates;

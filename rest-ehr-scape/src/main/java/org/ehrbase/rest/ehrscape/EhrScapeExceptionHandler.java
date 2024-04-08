@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +21,9 @@ import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
+import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
+import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -33,6 +35,8 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.openehr.sdk.serialisation.exception.UnmarshalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -50,11 +54,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 /**
  * EhrScape API exception handler.
- *
- * @author Renaud Subiger
- * @since 1.0.0
  */
 @RestControllerAdvice(basePackages = "org.ehrbase.rest.ehrscape.controller")
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class EhrScapeExceptionHandler {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -75,6 +77,8 @@ public class EhrScapeExceptionHandler {
         UnprocessableEntityException.class,
         ValidationException.class,
         UnmarshalException.class,
+        AqlFeatureNotImplementedException.class,
+        IllegalAqlException.class,
     })
     public ResponseEntity<Object> handleBadRequestExceptions(Exception ex) {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
