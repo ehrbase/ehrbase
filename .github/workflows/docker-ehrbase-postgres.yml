@@ -74,4 +74,4 @@ jobs:
       - name: Build and push Versioned Docker Image (Summary)
         if: ${{ github.ref != 'refs/heads/main' }}
         run: |
-          echo "Image \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.POSTGRES_VERSION }}-mvp\`" >> $GITHUB_STEP_SUMMARY
+          echo "Image \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.POSTGRES_VERSION }}\`" >> $GITHUB_STEP_SUMMARY

@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ehrbase:
-    image: ehrbase/ehrbasemvp:next
+    image: ehrbase/ehrbase:next
     ports:
       - 8080:8080
     networks:

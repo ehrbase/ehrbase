@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ehrbase.jar
-          path: /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/application/target/ehrbase.jar
+          path: /home/runner/work/ehrbase/ehrbase/application/target/ehrbase.jar
   test:
     runs-on: ubuntu-latest
     needs: [ build ]
@@ -64,7 +64,7 @@ jobs:
 
       - name: Run Create DB script
         run: |
-          docker run -d --name postgres -p5432:5432 ehrbase/ehrbase-postgres:16.2-mvp
+          docker run -d --name postgres -p5432:5432 ehrbase/ehrbase-v2-postgres:16.2
           WAIT_COUNTER=0
           until [ $WAIT_COUNTER -eq 20 ] || psql -h localhost -p 5432 -c "SELECT 1"; do echo $(( ++WAIT_COUNTER )); sleep 5; done
           if [ $WAIT_COUNTER -eq 20 ]; then
@@ -144,7 +144,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: robot-result-${{ env.TEST_NAME_MODIFIED }}
-          path: /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/tests/results/output.xml
+          path: /home/runner/work/ehrbase/ehrbase/tests/results/output.xml
 
       - name: Archive logs
         if: always()
@@ -189,7 +189,7 @@ jobs:
           pwd
           rebot \
             --name EHRbase \
-            --outputdir /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/reports \
+            --outputdir /home/runner/work/ehrbase/ehrbase/reports \
             -l Final_Log.html \
             -r Final_Report.html \
             -o output.xml \
@@ -212,14 +212,14 @@ jobs:
       - name: Delete merged output.xml
         if: always()
         run: |
-          rm -vf /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/reports/*.xml
+          rm -vf /home/runner/work/ehrbase/ehrbase/reports/*.xml
 
       - name: Robot results final
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: robot-result-final
-          path: /home/runner/work/ehrbase_aql_mvp/ehrbase_aql_mvp/reports
+          path: /home/runner/work/ehrbase/ehrbase/reports
 
 #  cleanup:
 #    if: ${{ always() }}

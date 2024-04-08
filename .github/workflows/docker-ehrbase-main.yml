@@ -59,4 +59,4 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ehrbase/ehrbasemvp:latest,ehrbase/ehrbasemvp:${{ env.VERSION }}
+          tags: ehrbase/ehrbase:latest,ehrbase/ehrbase:${{ env.VERSION }}
