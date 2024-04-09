@@ -21,11 +21,55 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class RmTypeAliasTest {
+
+    @Disabled
+    @Test
+    void createSqlAliasingFunction() {
+        String func =
+                """
+        CREATE OR REPLACE FUNCTION rm_type_alias(t text)
+        RETURNS text AS $$
+        BEGIN
+        %s
+        END;
+        $$
+            LANGUAGE plpgsql
+            IMMUTABLE
+            STRICT
+            PARALLEL SAFE;
+        """;
+
+        Map<Field<Object>, Field<Object>> typeToAliasMap = RmTypeAlias.values.stream()
+                .sorted(Comparator.comparing(RmTypeAlias::type))
+                .collect(Collectors.toMap(
+                        r -> DSL.field(DSL.sql("'" + r.type() + "'")),
+                        r -> DSL.field(DSL.sql("RETURN '" + r.alias() + "';")),
+                        (a, b) -> null,
+                        LinkedHashMap::new));
+        String t = DSL.case_(DSL.field(DSL.sql("t")))
+                        .mapFields(typeToAliasMap)
+                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing alias for %', t;")))
+                + " case;";
+        System.out.printf(
+                func,
+                t.indent(4)
+                        .replace("when ", "WHEN ")
+                        .replace("then ", "THEN ")
+                        .replace("case ", "CASE ")
+                        .replace("else ", "ELSE ")
+                        .replace("end case;", "END CASE;"));
+    }
 
     @Test
     void checkStructureAliases() {

@@ -20,11 +20,55 @@ package org.ehrbase.openehr.dbformat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class RmAttributeAliasTest {
+
+    @Disabled
+    @Test
+    void createSqlAliasingFunction() {
+        String func =
+                """
+        CREATE OR REPLACE FUNCTION rm_attribute_alias(a text)
+        RETURNS text AS $$
+        BEGIN
+        %s
+        END;
+        $$
+            LANGUAGE plpgsql
+            IMMUTABLE
+            STRICT
+            PARALLEL SAFE;
+        """;
+
+        Map<Field<Object>, Field<Object>> attributeToAliasMap = RmAttributeAlias.VALUES.stream()
+                .sorted(Comparator.comparing(RmAttributeAlias::attribute))
+                .collect(Collectors.toMap(
+                        r -> DSL.field(DSL.sql("'" + r.attribute() + "'")),
+                        r -> DSL.field(DSL.sql("RETURN '" + r.alias() + "';")),
+                        (a, b) -> null,
+                        LinkedHashMap::new));
+        String a = DSL.case_(DSL.field(DSL.sql("a")))
+                        .mapFields(attributeToAliasMap)
+                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing alias for %', a;")))
+                + " case;";
+        System.out.printf(
+                func,
+                a.indent(4)
+                        .replace("when ", "WHEN ")
+                        .replace("then ", "THEN ")
+                        .replace("case ", "CASE ")
+                        .replace("else ", "ELSE ")
+                        .replace("end case;", "END CASE;"));
+    }
 
     @Test
     void checkAliases() {
