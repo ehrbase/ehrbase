@@ -35,14 +35,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: | 
           mvn verify sonar:sonar \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.organization=ehrbase \
-          -Dsonar.projectKey=ehrbase_ehrbase \
-          -Dsonar.sources=api/src/main/java,configuration/src/main/java,application/src/main/java,aql-engine/src/main/java,jooq-pg/src/main/java,rest-ehr-scape/src/main/java,rest-openehr/src/main/java,rm-db-format/src/main/java,plugin/src/main/java,service/src/main/java \
-          -Dsonar.java.binaries=**/target/** \
-          -Dsonar.exclusions=**/test/** \
-          -Dsonar.coverage.exclusions=**/test/** \
-          -Dsonar.coverage.jacoco.xmlReportPaths=test-coverage/overall-coverage-report/jacoco.xml
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=ehrbase \
+            -Dsonar.projectKey=ehrbase_ehrbase \
+            -Dsonar.sources=api/src/main/java,configuration/src/main/java,application/src/main/java,aql-engine/src/main/java,jooq-pg/src/main/java,rest-ehr-scape/src/main/java,rest-openehr/src/main/java,rm-db-format/src/main/java,plugin/src/main/java,service/src/main/java \
+            -Dsonar.java.binaries=**/target/** \
+            -Dsonar.exclusions=**/test/** \
+            -Dsonar.coverage.exclusions=**/test/** \
+            -Dsonar.coverage.jacoco.xmlReportPaths=test-coverage/overall-coverage-report/jacoco.xml
 
       - name: Upload jar
         uses: actions/upload-artifact@v4
