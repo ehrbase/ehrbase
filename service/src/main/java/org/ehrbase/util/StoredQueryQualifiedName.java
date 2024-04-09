@@ -17,51 +17,82 @@
  */
 package org.ehrbase.util;
 
+import java.util.Optional;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
-public final class StoredQueryQualifiedName {
+/**
+ * Represents a stored <code>AQL</code> Query, as described in
+ * <a href="https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_service">openEHR Platform Service Model: 8. Query Service</a>
+ * with format
+ * <pre>
+ * reverse-domain-name '::' semantic-id [ '/' version ]
+ *
+ * org.example.departmentx.test::diabetes-patient-overview/1.0.2
+ * </pre>
+ *
+ * @param reverseDomainName reverse domain name like <code> rg.example.departmentx.test::diabetes-patient-overview</code>
+ * @param semanticId semantic identifier of the query <code>prod</code>
+ * @param semVer <a href="https://semver.org">semantic version</a> of the query like <code>1.2.3</code>
+ *
+ * @see <a href="https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_service">openEHR Platform Service Model: 8. Query Service</a>
+ * @see <a href="https://semver.org">semver.org</a>
+ */
+public record StoredQueryQualifiedName(
+        @NonNull String reverseDomainName, @NonNull String semanticId, @NonNull SemVer semVer) {
 
-    private final String reverseDomainName;
-    private final String semanticId;
-
-    private final SemVer semVer;
-
-    public StoredQueryQualifiedName(@NonNull String qualifiedName, @NonNull SemVer version) {
+    public static StoredQueryQualifiedName create(@NonNull String qualifiedName, @Nullable SemVer version) {
 
         String[] nameParts = qualifiedName.split("::");
 
         if (nameParts.length != 2 || qualifiedName.contains("/"))
             throw new IllegalArgumentException(
-                    "Qualified name is not valid (https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_package):"
+                    "Qualified name is not valid (https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_service):"
                             + qualifiedName);
 
-        this.reverseDomainName = nameParts[0];
-        this.semanticId = nameParts[1];
-        this.semVer = version;
+        return new StoredQueryQualifiedName(
+                nameParts[0], nameParts[1], Optional.ofNullable(version).orElse(SemVer.NO_VERSION));
     }
 
-    public String reverseDomainName() {
-        return reverseDomainName;
+    /**
+     * Returns the name part of the qualified query name:
+     * <pre>
+     * reverse-domain-name '::' semantic-id [ '/' version ]
+     *
+     * org.example.departmentx.test::diabetes-patient-overview/1.0.2
+     * </pre>
+     *
+     * @return name part concatenated <code>{@link #reverseDomainName}::{@link #semanticId}</code>
+     */
+    public String toName() {
+        return reverseDomainName + "::" + semanticId;
     }
 
-    public String semanticId() {
-        return semanticId;
-    }
-
-    public SemVer semVer() {
-        return semVer;
-    }
-
-    public boolean hasVersion() {
-        return !semVer.isNoVersion();
-    }
-
-    public String toString() {
+    /**
+     * Returns the fully qualified query name
+     * <pre>
+     * reverse-domain-name '::' semantic-id
+     *
+     * org.example.departmentx.test::diabetes-patient-overview
+     * </pre>
+     *
+     * @return qualifiedName part concatenated <code>{@link #reverseDomainName}::{@link #semanticId}/{@link #semVer}</code>
+     */
+    public String toQualifiedNameString() {
         StringBuilder sb =
                 new StringBuilder().append(reverseDomainName).append("::").append(semanticId);
         if (!semVer.isNoVersion()) {
             sb.append('/').append(semVer);
         }
         return sb.toString();
+    }
+
+    /**
+     * Uses {@link #toQualifiedNameString()}
+     *
+     * @return qualifiedName from {@link #toQualifiedNameString()}
+     */
+    public String toString() {
+        return toQualifiedNameString();
     }
 }
