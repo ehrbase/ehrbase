@@ -278,7 +278,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     private void createRestContext(String ehrId, String versionedObjectUid) {
         HttpRestContext.register(
                 EHR_ID,
-                versionedObjectUid,
+                ehrId,
                 StdRestAttr.LOCATION,
                 fromPath("")
                         .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)

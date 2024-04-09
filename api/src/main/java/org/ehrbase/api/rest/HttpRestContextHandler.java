@@ -17,11 +17,10 @@
  */
 package org.ehrbase.api.rest;
 
-import java.util.List;
 import java.util.Map;
-import org.ehrbase.api.rest.HttpRestContext.RestAttr;
+import org.ehrbase.api.rest.HttpRestContext.CtxAttr;
 
 public interface HttpRestContextHandler {
 
-    public void handler(Map<RestAttr, List<Object>> context);
+    public void handle(Map<CtxAttr, Object> context);
 }

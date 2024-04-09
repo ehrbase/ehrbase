@@ -17,22 +17,20 @@
  */
 package org.ehrbase.api.rest;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 public class HttpRestContext {
 
-    public interface RestAttr {
+    public interface CtxAttr {
         public String name();
 
         public Class<?> getAttributeType();
     }
 
-    public enum StdRestAttr implements RestAttr {
+    public enum StdRestAttr implements CtxAttr {
         QUERY(String.class),
         QUERY_ID(String.class),
         LOCATION(String.class),
@@ -58,41 +56,43 @@ public class HttpRestContext {
 
     private static final String ERR_BAD_ARG = "Value should be of type[%s]";
 
-    private static ThreadLocal<Map<RestAttr, List<Object>>> httpContext =
-            ThreadLocal.withInitial(() -> new HashMap<>());
+    private static ThreadLocal<Map<CtxAttr, Object>> httpContext = ThreadLocal.withInitial(() -> new HashMap<>());
 
-    public static void remove() {
+    public static void clear() {
         httpContext.remove();
     }
 
-    public static void register(RestAttr key, Object value) {
-        if (!key.getAttributeType().isAssignableFrom(value.getClass()))
-            throw new IllegalArgumentException(ERR_BAD_ARG.formatted(key.getAttributeType()));
-
-        httpContext.get().computeIfAbsent(key, s -> new ArrayList<>());
-        httpContext.get().get(key).add(value);
+    public <T> T getValueBy(CtxAttr key) {
+        Map<CtxAttr, Object> ctxMap = httpContext.get();
+        if (!ctxMap.containsKey(key)) return null;
+        return (T) ctxMap.get(key);
     }
 
-    public static void register(RestAttr key0, Object value0, RestAttr key1, Object value1) {
+    public static void register(CtxAttr key, Object value) {
+        if (!key.getAttributeType().isAssignableFrom(value.getClass()))
+            throw new IllegalArgumentException(ERR_BAD_ARG.formatted(key.getAttributeType()));
+        httpContext.get().put(key, value);
+    }
+
+    public static void register(CtxAttr key0, Object value0, CtxAttr key1, Object value1) {
         register(key0, value0);
         register(key1, value1);
     }
 
-    public static void register(
-            RestAttr key0, Object value0, RestAttr key1, Object value1, RestAttr key2, Object value2) {
+    public static void register(CtxAttr key0, Object value0, CtxAttr key1, Object value1, CtxAttr key2, Object value2) {
         register(key0, value0);
         register(key1, value1);
         register(key2, value2);
     }
 
     public static void register(
-            RestAttr key0,
+            CtxAttr key0,
             Object value0,
-            RestAttr key1,
+            CtxAttr key1,
             Object value1,
-            RestAttr key2,
+            CtxAttr key2,
             Object value2,
-            RestAttr key3,
+            CtxAttr key3,
             Object value3) {
         register(key0, value0);
         register(key1, value1);
@@ -101,15 +101,15 @@ public class HttpRestContext {
     }
 
     public static void register(
-            RestAttr key0,
+            CtxAttr key0,
             Object value0,
-            RestAttr key1,
+            CtxAttr key1,
             Object value1,
-            RestAttr key2,
+            CtxAttr key2,
             Object value2,
-            RestAttr key3,
+            CtxAttr key3,
             Object value3,
-            RestAttr key4,
+            CtxAttr key4,
             Object value4) {
         register(key0, value0);
         register(key1, value1);
@@ -119,6 +119,6 @@ public class HttpRestContext {
     }
 
     public static void handle(HttpRestContextHandler handler) {
-        handler.handler(httpContext.get());
+        handler.handle(httpContext.get());
     }
 }
