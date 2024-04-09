@@ -38,9 +38,8 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=ehrbase \
             -Dsonar.projectKey=ehrbase_ehrbase \
-            -Dsonar.java.binaries=**/target/** \
-            -Dsonar.exclusions=**/test/** \
-            -Dsonar.coverage.exclusions=**/test/** \
+            -Dsonar.exclusions=test/** \
+            -Dsonar.coverage.exclusions=test/** \
             -Dsonar.coverage.jacoco.xmlReportPaths=test-coverage/overall-coverage-report/jacoco.xml
 
       - name: Upload jar
