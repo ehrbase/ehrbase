@@ -46,6 +46,11 @@ jobs:
         java: [ '21' ]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
