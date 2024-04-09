@@ -41,8 +41,18 @@ permissions:
 jobs:
   Analysis:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '21' ]
 
     steps:
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+
       - name: Analyze with SonarCloud
 
         # You can pin the exact commit or the version.
