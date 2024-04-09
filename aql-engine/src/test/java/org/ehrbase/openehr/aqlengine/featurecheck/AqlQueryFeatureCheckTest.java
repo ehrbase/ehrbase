@@ -372,6 +372,19 @@ class AqlQueryFeatureCheckTest {
                      cv/uid/value
                 """,
                 """
+                   SELECT
+                     cv/commit_audit/committer,
+                     cv/commit_audit/committer/name,
+                     cv/commit_audit/committer/identifiers/id
+                   FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
+                   WHERE
+                     cv/commit_audit/committer/name = 'abc'
+                     AND cv/commit_audit/committer/identifiers/id != 'xyz'
+                   ORDER BY
+                     cv/commit_audit/committer/name,
+                     cv/commit_audit/committer/identifiers/id
+                """,
+                """
                    SELECT es/uid/value
                    FROM VERSION cv[LATEST_VERSION] CONTAINS EHR_STATUS es
                 """,

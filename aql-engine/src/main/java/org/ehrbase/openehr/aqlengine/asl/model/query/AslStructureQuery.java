@@ -89,7 +89,8 @@ public final class AslStructureQuery extends AslQuery {
         EHR_STATUS(StructureRoot.EHR_STATUS, EHR_STATUS_VERSION, EHR_STATUS_DATA),
         COMPOSITION(StructureRoot.COMPOSITION, COMP_VERSION, COMP_DATA),
         FOLDER(StructureRoot.FOLDER, EHR_FOLDER_VERSION, EHR_FOLDER_DATA),
-        AUDIT_DETAILS(null, null, Tables.AUDIT_DETAILS);
+        AUDIT_DETAILS(null, null, Tables.AUDIT_DETAILS),
+        COMMITTER(null, null, Tables.COMMITTER);
 
         private static final Map<StructureRoot, AslSourceRelation> BY_STRUCTURE_ROOT =
                 new EnumMap<>(StructureRoot.class);

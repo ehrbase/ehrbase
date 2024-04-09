@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.sql;
 
 import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
+import static org.ehrbase.jooq.pg.Tables.COMMITTER;
 import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.openehr.dbformat.DbToRmFormat.TYPE_ATTRIBUTE;
@@ -57,6 +58,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslCommitterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
@@ -101,6 +103,15 @@ final class ConditionUtils {
                                 AUDIT_DETAILS.ID.getName(),
                                 UUID.class,
                                 true)));
+                case AslCommitterJoinCondition cc -> conditions.add(FieldUtils.field(
+                                sqlLeft,
+                                aslJoin.getLeft(),
+                                cc.getLeftOwner(),
+                                AUDIT_DETAILS.COMMITTER_ID.getName(),
+                                UUID.class,
+                                true)
+                        .eq(FieldUtils.field(
+                                sqlRight, aslJoin.getRight(), cc.getRightOwner(), COMMITTER.ID.getName(), UUID.class, true)));
             }
         }
 
@@ -212,8 +223,8 @@ final class ConditionUtils {
                                         isJoinCondition)));
             }
             case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
-            case AUDIT_DETAILS -> throw new IllegalArgumentException(
-                    "Descendant condition not applicable to AUDIT_DETAILS");
+            case AUDIT_DETAILS, COMMITTER -> throw new IllegalArgumentException(
+                    "Descendant condition not applicable to " + parentRelation.name());
         };
     }
 

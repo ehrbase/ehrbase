@@ -208,10 +208,13 @@ final class FeatureCheckUtils {
                 .toList();
         // if VERSION check supported paths list first
         if (isVersionPath
-                && SUPPORTED_VERSION_PATHS.stream()
-                        .filter(p -> p.getRight().contains(clauseType))
-                        .map(Pair::getLeft)
-                        .noneMatch(p -> p.equals(pathAttributes))) {
+                && !(SUPPORTED_VERSION_PATHS.stream()
+                                .filter(p -> p.getRight().contains(clauseType))
+                                .map(Pair::getLeft)
+                                .anyMatch(p -> p.equals(pathAttributes))
+                        || pathAttributes
+                                .subList(0, Math.min(2, pathAttributes.size()))
+                                .equals(List.of("commit_audit", "committer")))) {
             throw new AqlFeatureNotImplementedException("%s: VERSION path %s/%s is not supported"
                     .formatted(clauseType, root.getIdentifier(), path.render()));
         }

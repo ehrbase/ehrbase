@@ -46,6 +46,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslCommitterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
@@ -211,6 +212,10 @@ public class AslGraph {
                     case AslDelegatingJoinCondition c -> "DelegatingJoinCondition %s ->\n%s"
                             .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getDelegate()));
                     case AslAuditDetailsJoinCondition c -> "AuditDetailsJoinCondition %s -> %s"
+                            .formatted(
+                                    c.getLeftOwner().getAlias(),
+                                    c.getRightOwner().getAlias());
+                    case AslCommitterJoinCondition c -> "CommitterJoinCondition %s -> %s"
                             .formatted(
                                     c.getLeftOwner().getAlias(),
                                     c.getRightOwner().getAlias());

@@ -268,8 +268,9 @@ public class AqlSqlQueryBuilder {
 
         Table<?> data;
         Function<String, Field<JSONB>> dataFieldProvider;
-        if (base instanceof AslStructureQuery baseSq) {
-            data = baseSq.getType().getDataTable().as(subqueryAlias(aslData));
+        if (base instanceof AslStructureQuery baseSq && baseSq.getType() != AslSourceRelation.COMMITTER) {
+            Table<?> dataTable = baseSq.getType().getDataTable();
+            data = dataTable.as(subqueryAlias(aslData));
             dataFieldProvider = __ -> data.field(ObjectDataTablePrototype.INSTANCE.DATA);
         } else {
             data = targetTable;
@@ -281,7 +282,7 @@ public class AqlSqlQueryBuilder {
                 .map(f -> pathDataField(aslData, f, dataFieldProvider))
                 .toList());
 
-        if (base instanceof AslStructureQuery) {
+        if (base instanceof AslStructureQuery baseSq && baseSq.getType() != AslSourceRelation.COMMITTER) {
             // primary key condition
             List<Condition> pkeyCondition = data.getPrimaryKey().getFields().stream()
                     .map(f -> FieldUtils.aliasedField(targetTable, aslData, f).eq((Field) data.field(f)))
@@ -383,7 +384,7 @@ public class AqlSqlQueryBuilder {
         if (hasVersionTable) {
             // join version and data table
             step = switch (aq.getType()) {
-                case EHR, AUDIT_DETAILS -> throw new IllegalArgumentException(
+                case EHR, AUDIT_DETAILS, COMMITTER -> throw new IllegalArgumentException(
                         "%s has no version table".formatted(aq.getType()));
                 case EHR_STATUS -> step.join(dataTable, JoinType.JOIN)
                         .on(primaryTable.field(EHR_STATUS_VERSION.EHR_ID).eq(dataTable.field(EHR_STATUS_DATA.EHR_ID)));
