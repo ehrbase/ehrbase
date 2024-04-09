@@ -66,6 +66,7 @@
     <prometheus.version>1.12.5</prometheus.version>
     <spring-boot.version>3.2.4</spring-boot.version>
     <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
+    <sonar.scanner.version>3.11.0.3922</sonar.scanner.version>
     <!-- not used ehrbase but needed for the version plugin -->
     <log4j.version>2.22.1</log4j.version>
     <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
@@ -421,6 +422,11 @@
               </configuration>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>${sonar.scanner.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
