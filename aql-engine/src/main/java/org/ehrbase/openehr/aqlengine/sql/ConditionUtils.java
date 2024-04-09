@@ -111,7 +111,12 @@ final class ConditionUtils {
                                 UUID.class,
                                 true)
                         .eq(FieldUtils.field(
-                                sqlRight, aslJoin.getRight(), cc.getRightOwner(), COMMITTER.ID.getName(), UUID.class, true)));
+                                sqlRight,
+                                aslJoin.getRight(),
+                                cc.getRightOwner(),
+                                COMMITTER.ID.getName(),
+                                UUID.class,
+                                true)));
             }
         }
 

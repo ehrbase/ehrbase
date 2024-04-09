@@ -94,7 +94,9 @@ public class PartyProxyRepository {
     @Transactional(propagation = Propagation.MANDATORY)
     public CommitterRecord findOrCreateCommitter(PartyProxy party) {
 
-        String dbJson = VersionedObjectDataStructure.applyRmAliases(VersionedObjectDataStructure.MARSHAL_OM.valueToTree(party)).toString();
+        String dbJson = VersionedObjectDataStructure.applyRmAliases(
+                        VersionedObjectDataStructure.MARSHAL_OM.valueToTree(party))
+                .toString();
         // XXX Cache?
         return context.selectFrom(COMMITTER)
                 // SQLDataType.CLOB is resolved to PostgresDataType.TEXT, which is necessary to enable index usage
