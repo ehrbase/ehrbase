@@ -93,7 +93,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: ehrbase/integration-tests
-          ref: feature/new
+          ref: main
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -161,7 +161,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: ehrbase/integration-tests
-          ref: feature/new
+          ref: main
 
       - name: Install Python
         uses: actions/setup-python@v5
