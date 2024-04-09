@@ -26,7 +26,7 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.StoredQueryService;
-import org.ehrbase.jooq.pg.tables.records.StoredQueryRecord;
+import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
@@ -34,6 +34,7 @@ import org.ehrbase.repository.StoredQueryRepository;
 import org.ehrbase.util.InvalidVersionFormatException;
 import org.ehrbase.util.SemVer;
 import org.ehrbase.util.SemVerUtil;
+import org.ehrbase.util.StoredQueryQualifiedName;
 import org.ehrbase.util.VersionConflictException;
 import org.jooq.exception.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -42,10 +43,12 @@ import org.springframework.stereotype.Service;
 public class StoredQueryServiceImp implements StoredQueryService {
 
     private final StoredQueryRepository storedQueryRepository;
+    private final CacheProvider cacheProvider;
 
-    public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository) {
+    public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository, CacheProvider cacheProvider) {
 
         this.storedQueryRepository = storedQueryRepository;
+        this.cacheProvider = cacheProvider;
     }
 
     // === DEFINITION: manage stored queries
@@ -58,8 +61,6 @@ public class StoredQueryServiceImp implements StoredQueryService {
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
                     "Data Access Error: " + e.getCause().getMessage(), e);
-        } catch (IllegalArgumentException e) {
-            throw e;
         } catch (RuntimeException e) {
             throw new IllegalArgumentException("Could not retrieve stored query, reason: " + e, e);
         }
@@ -67,11 +68,22 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
     @Override
     public QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version) {
-        SemVer requestedVersion = parseRequestSemVer(version);
 
-        Optional<StoredQueryRecord> storedQueryAccess;
+        SemVer requestedVersion = parseRequestSemVer(version);
+        StoredQueryQualifiedName storedQueryQualifiedName =
+                StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
+
+        return cacheProvider.get(
+                CacheProvider.STORED_QUERY_CACHE,
+                storedQueryQualifiedName.toQualifiedNameString(),
+                () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
+    }
+
+    private QueryDefinitionResultDto retrieveStoredQueryInternal(StoredQueryQualifiedName storedQueryQualifiedName) {
+
+        Optional<QueryDefinitionResultDto> storedQueryAccess;
         try {
-            storedQueryAccess = storedQueryRepository.retrieveQualified(qualifiedName, requestedVersion);
+            storedQueryAccess = storedQueryRepository.retrieveQualified(storedQueryQualifiedName);
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
                     "Data Access Error: " + e.getCause().getMessage(), e);
@@ -79,16 +91,15 @@ public class StoredQueryServiceImp implements StoredQueryService {
             throw new InternalServerException(e.getMessage());
         }
 
-        return storedQueryAccess
-                .map(StoredQueryRepository::mapToQueryDefinitionDto)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Could not retrieve stored query for qualified name: " + qualifiedName));
+        return storedQueryAccess.orElseThrow(() -> new IllegalArgumentException(
+                "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
     }
 
     @Override
     public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
 
         SemVer requestedVersion = parseRequestSemVer(version);
+        StoredQueryQualifiedName queryQualifiedName = StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
 
         // validate the query syntax
         try {
@@ -99,22 +110,23 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         // lookup version in db
         SemVer dbSemVer = storedQueryRepository
-                .retrieveQualified(qualifiedName, requestedVersion)
-                .map(q -> SemVer.parse(q.getSemver()))
+                .retrieveQualified(queryQualifiedName)
+                .map(q -> SemVer.parse(q.getVersion()))
                 .orElse(SemVer.NO_VERSION);
 
         checkVersionCombination(requestedVersion, dbSemVer);
 
         SemVer newVersion = SemVerUtil.determineVersion(requestedVersion, dbSemVer);
+        StoredQueryQualifiedName newQueryQualifiedName = StoredQueryQualifiedName.create(qualifiedName, newVersion);
 
         // if not final version and already existing: update
         boolean isUpdate = dbSemVer.isPreRelease();
 
         try {
             if (isUpdate) {
-                storedQueryRepository.update(qualifiedName, newVersion, queryString);
+                storedQueryRepository.update(newQueryQualifiedName, queryString);
             } else {
-                storedQueryRepository.store(qualifiedName, newVersion, queryString);
+                storedQueryRepository.store(newQueryQualifiedName, queryString);
             }
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
@@ -122,10 +134,11 @@ public class StoredQueryServiceImp implements StoredQueryService {
         } catch (VersionConflictException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
-        return storedQueryRepository
-                .retrieveQualified(qualifiedName, newVersion)
-                .map(StoredQueryRepository::mapToQueryDefinitionDto)
-                .orElseThrow();
+
+        // clear partially cached versions
+        evictPartiallyCachedVersions(qualifiedName, newVersion);
+
+        return retrieveStoredQueryInternal(newQueryQualifiedName);
     }
 
     private static void checkVersionCombination(SemVer requestSemVer, SemVer dbSemVer) {
@@ -159,8 +172,11 @@ public class StoredQueryServiceImp implements StoredQueryService {
             throw new InvalidApiParameterException("A qualified version has to be specified");
         }
 
+        StoredQueryQualifiedName storedQueryQualifiedName =
+                StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
+
         try {
-            storedQueryRepository.delete(qualifiedName, SemVer.parse(version));
+            storedQueryRepository.delete(storedQueryQualifiedName);
 
         } catch (ObjectNotFoundException e) {
             throw e;
@@ -169,7 +185,23 @@ public class StoredQueryServiceImp implements StoredQueryService {
                     "Data Access Error:" + dae.getCause().getMessage());
         } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
+        } finally {
+            cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, storedQueryQualifiedName.toQualifiedNameString());
         }
+    }
+
+    private void evictPartiallyCachedVersions(String qualifiedName, SemVer semVer) {
+
+        SemVer versionMajor = new SemVer(semVer.major(), null, null, null);
+        SemVer versionMajorMinor = new SemVer(semVer.major(), semVer.minor(), null, null);
+
+        cacheProvider.evict(
+                CacheProvider.STORED_QUERY_CACHE,
+                StoredQueryQualifiedName.create(qualifiedName, versionMajor).toQualifiedNameString());
+        cacheProvider.evict(
+                CacheProvider.STORED_QUERY_CACHE,
+                StoredQueryQualifiedName.create(qualifiedName, versionMajorMinor)
+                        .toQualifiedNameString());
     }
 
     private static SemVer parseRequestSemVer(String version) {

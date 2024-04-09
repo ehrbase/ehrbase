@@ -18,6 +18,7 @@
 package org.ehrbase.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.function.Function;
 import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -38,25 +39,33 @@ public class CacheConfiguration {
     @ConditionalOnExpression(
             "T(org.springframework.boot.autoconfigure.cache.CacheType).CAFFEINE.name().equalsIgnoreCase(\"${spring.cache.type}\")")
     public CacheManagerCustomizer<CaffeineCacheManager> cacheManagerCustomizer(CacheProperties cacheProperties) {
-        return cm -> {
-            cm.registerCustomCache(
-                    CacheProvider.INTROSPECT_CACHE.name(), Caffeine.newBuilder().build());
-            cm.registerCustomCache(
-                    CacheProvider.TEMPLATE_UUID_ID_CACHE.name(),
-                    Caffeine.newBuilder().build());
-            cm.registerCustomCache(
-                    CacheProvider.TEMPLATE_ID_UUID_CACHE.name(),
-                    Caffeine.newBuilder().build());
+        return cm -> configureCaffeineCacheManager(cm, cacheProperties, CacheProvider.EhrBaseCache::name);
+    }
 
-            cm.registerCustomCache(
-                    CacheProvider.USER_ID_CACHE.name(),
-                    configureCache(Caffeine.newBuilder(), cacheProperties.getUserIdCacheConfig())
-                            .build());
-            cm.registerCustomCache(
-                    CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE.name(),
-                    configureCache(Caffeine.newBuilder(), cacheProperties.getExternalFhirTerminologyCacheConfig())
-                            .build());
-        };
+    protected void configureCaffeineCacheManager(
+            CaffeineCacheManager cacheManager,
+            CacheProperties cacheProperties,
+            Function<CacheProvider.EhrBaseCache<?, ?>, String> createCacheName) {
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.INTROSPECT_CACHE),
+                Caffeine.newBuilder().build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.TEMPLATE_UUID_ID_CACHE),
+                Caffeine.newBuilder().build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.TEMPLATE_ID_UUID_CACHE),
+                Caffeine.newBuilder().build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.USER_ID_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getUserIdCacheConfig())
+                        .build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getExternalFhirTerminologyCacheConfig())
+                        .build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.STORED_QUERY_CACHE),
+                Caffeine.newBuilder().build());
     }
 
     private static Caffeine<Object, Object> configureCache(

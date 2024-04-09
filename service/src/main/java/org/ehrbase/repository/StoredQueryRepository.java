@@ -51,46 +51,30 @@ public class StoredQueryRepository {
         this.timeProvider = timeProvider;
     }
 
-    public void store(String qualifiedQueryName, SemVer version, String sourceAqlText) {
+    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
 
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(qualifiedQueryName, version, sourceAqlText);
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
         storedQueryRecord.insert();
     }
 
-    public void update(String qualifiedQueryName, SemVer version, String sourceAqlText) {
+    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
 
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(qualifiedQueryName, version, sourceAqlText);
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
         storedQueryRecord.update();
     }
 
-    public Optional<StoredQueryRecord> retrieveQualified(String qualifiedName, @NonNull SemVer version) {
+    public Optional<QueryDefinitionResultDto> retrieveQualified(StoredQueryQualifiedName storedQueryQualifiedName) {
 
-        // Split the qualified name in fields
-        StoredQueryQualifiedName qn = new StoredQueryQualifiedName(qualifiedName, version);
-
-        SemVer semVer = qn.semVer();
-
-        Condition condition = nameConstraint(qn);
-        condition = condition.and(versionConstraint(semVer));
-        var unordered = context.selectFrom(STORED_QUERY).where(condition);
-
-        Optional<StoredQueryRecord> queryRecord;
-        if (semVer.isRelease() || semVer.isPreRelease()) {
-            // equals => only one result
-            queryRecord = unordered.fetchOptional();
-        } else {
-            var ordered = unordered.orderBy(orderBySemVerStream(SortOrder.DESC).toList());
-            queryRecord = ordered.limit(1).fetchOptional();
-        }
-
-        return queryRecord;
+        return retrieveStoredQueryRecord(storedQueryQualifiedName).map(StoredQueryRepository::mapToQueryDefinitionDto);
     }
 
-    public void delete(String qualifiedName, @NonNull SemVer version) {
+    public void delete(StoredQueryQualifiedName storedQueryQualifiedName) {
 
-        StoredQueryRecord storedQuery = retrieveQualified(qualifiedName, version)
+        StoredQueryRecord storedQuery = retrieveStoredQueryRecord(storedQueryQualifiedName)
                 .orElseThrow(() -> new ObjectNotFoundException(
-                        "STORED_QUERY", "No Stored Query with %s and %s".formatted(qualifiedName, version)));
+                        "STORED_QUERY",
+                        "No Stored Query with %s and %s"
+                                .formatted(storedQueryQualifiedName.toName(), storedQueryQualifiedName.semVer())));
 
         storedQuery.delete();
     }
@@ -186,18 +170,37 @@ public class StoredQueryRepository {
                         .sort(sortOrder));
     }
 
-    private StoredQueryRecord createStoredQueryRecord(String qualifiedQueryName, SemVer version, String sourceAqlText) {
+    private StoredQueryRecord createStoredQueryRecord(
+            StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
         StoredQueryRecord storedQueryRecord = context.newRecord(STORED_QUERY);
 
-        StoredQueryQualifiedName qn = new StoredQueryQualifiedName(qualifiedQueryName, version);
-
-        storedQueryRecord.setReverseDomainName(qn.reverseDomainName());
-        storedQueryRecord.setSemanticId(qn.semanticId());
-        storedQueryRecord.setSemver(version.toVersionString());
+        storedQueryRecord.setReverseDomainName(storedQueryQualifiedName.reverseDomainName());
+        storedQueryRecord.setSemanticId(storedQueryQualifiedName.semanticId());
+        storedQueryRecord.setSemver(storedQueryQualifiedName.semVer().toVersionString());
         storedQueryRecord.setQueryText(sourceAqlText);
         storedQueryRecord.setType("AQL");
 
         storedQueryRecord.setCreationDate(timeProvider.getNow());
         return storedQueryRecord;
+    }
+
+    private Optional<StoredQueryRecord> retrieveStoredQueryRecord(StoredQueryQualifiedName storedQueryQualifiedName) {
+
+        SemVer semVer = storedQueryQualifiedName.semVer();
+
+        Condition condition = nameConstraint(storedQueryQualifiedName);
+        condition = condition.and(versionConstraint(semVer));
+        var unordered = context.selectFrom(STORED_QUERY).where(condition);
+
+        Optional<StoredQueryRecord> queryRecord;
+        if (semVer.isRelease() || semVer.isPreRelease()) {
+            // equals => only one result
+            queryRecord = unordered.fetchOptional();
+        } else {
+            var ordered = unordered.orderBy(orderBySemVerStream(SortOrder.DESC).toList());
+            queryRecord = ordered.limit(1).fetchOptional();
+        }
+
+        return queryRecord;
     }
 }
