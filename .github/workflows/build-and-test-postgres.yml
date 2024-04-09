@@ -38,7 +38,6 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=ehrbase \
             -Dsonar.projectKey=ehrbase_ehrbase \
-            -Dsonar.sources=src/main/java \
             -Dsonar.java.binaries=**/target/** \
             -Dsonar.exclusions=**/test/** \
             -Dsonar.coverage.exclusions=**/test/** \
