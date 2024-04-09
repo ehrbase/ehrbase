@@ -1,246 +1,276 @@
-name: build-and-test-postgres
+name: "Assemble"
 
 on:
   push:
     branches: [ develop, release/* ]
-  workflow_dispatch:
   pull_request:
     branches: [ develop ]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ehrbase/ehrbase
+  IMAGE_TAG_BUILD: build
+  IMAGE_TAG_TEST: test
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ '21' ]
 
+  #
+  # Performs maven build and check as well as junit test result collection. Finally, creates the ehrbase docker image
+  # and saves it, as an archive, for later usage.
+  #
+  build:
+    name: Build
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Java
+      - name: Setup - Java 21
         uses: actions/setup-java@v4
         with:
+          java-version: 21
           distribution: 'temurin'
-          java-version: ${{ matrix.java }}
           cache: 'maven'
 
-      - name: Build with Maven
-        run: mvn -B -U package
+      - name: Spotless - Check
+        run: mvn spotless:check
 
-      - name: Run Sonar
+      - name: Maven - Verify and Package
+        run: mvn -B -U -Dmaven.test.failure.ignore=true verify package
+
+      - name: Sonar - Analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: | 
-          mvn verify sonar:sonar \
+        run: |
+          mvn -B sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=ehrbase \
             -Dsonar.projectKey=ehrbase_ehrbase \
             -Dsonar.exclusions=test/** \
             -Dsonar.coverage.exclusions=test/** \
-            -Dsonar.coverage.jacoco.xmlReportPaths=test-coverage/overall-coverage-report/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/test-coverage/target/site/jacoco-overall-coverage/jacoco.xml \
+            -Dsonar.java.enablePreview=true
 
-      - name: Upload jar
+      - name: Docker - Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # build the test image for the actual architecture. This us needed for the robot tests because Docker uses a
+      # legacy import format and is unable to use multi arch oci images (for now). As an alternative we could use
+      # podman in the future.
+      - name: Docker - Build Test Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          tags: ${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_TEST }}
+          outputs: type=docker,dest=${{ runner.temp }}/ehrbase-test.tar
+
+      # build the release multi arch image
+      - name: Docker - Build OCI Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_BUILD }}
+          outputs: type=oci,dest=${{ runner.temp }}/ehrbase-oci.tar
+
+      - name: Upload - Test Image
         uses: actions/upload-artifact@v4
         with:
-          name: ehrbase.jar
-          path: /home/runner/work/ehrbase/ehrbase/application/target/ehrbase.jar
-  test:
+          name: ehrbase-image-test
+          path: ${{ runner.temp }}/ehrbase-test.tar
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload - OCI Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ehrbase-image-oci
+          path: ${{ runner.temp }}/ehrbase-oci.tar
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Collect - JUnit Reports
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Tests
+          path: '**/target/surefire-reports/*.xml'
+          reporter: java-junit
+          fail-on-error: 'true'
+          fail-on-empty: 'true'
+
+  #
+  # Uses the ehrbase docker image from [build] to run the robot integrations against it.
+  #
+  integration-test-run:
     runs-on: ubuntu-latest
     needs: [ build ]
     strategy:
       fail-fast: false
       matrix:
-        java: [ '21' ]
-        robot-test-suit: [ 'AQL_TESTS','STORED_QUERY_TESTS','COMPOSITION_TESTS/COMPOSITION_WITH_DIFFERENT_TIME_ZONES','COMPOSITION_TESTS/CREATE_COMPO_1','COMPOSITION_TESTS/CREATE_COMPO_2','COMPOSITION_TESTS/CREATE_COMPO_3','COMPOSITION_TESTS/CREATE_COMPO_4','COMPOSITION_TESTS/CREATE_COMPO_5','COMPOSITION_TESTS/DELETE_COMPOSITION','COMPOSITION_TESTS/GET_COMPOSITION','COMPOSITION_TESTS/GET_VERSIONED_COMPOSITION','COMPOSITION_TESTS/HEADERS_CHECKS','COMPOSITION_TESTS/ISM_TRANSITIONS_COMPOSITION','COMPOSITION_TESTS/UPDATE_COMPOSITION','COMPOSITION_TESTS/VALIDATION','CONTRIBUTION_TESTS','DIRECTORY_TESTS','EHR_SERVICE_TESTS','EHR_STATUS_TESTS','SANITY_TESTS','TEMPLATE_TESTS' ]
+        test-suite: [
+          #
+          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity' },
+          # rest/openehr/v1/definition
+          { path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template' },
+          { path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST' },
+          # rest/openehr/v1/ehr
+          { path: 'EHR_SERVICE_TESTS', name: 'EHR_SERVICE', tags: 'EHR_SERVICE' },
+          { path: 'EHR_STATUS_TESTS', name: 'EHR_STATUS', tags: 'EHR_STATUS' },
+          { path: 'DIRECTORY_TESTS', name: 'DIRECTORY', tags: 'directory' },
+          # rest/openehr/v1/ehr/{ehr_id}/contribution
+          { path: 'CONTRIBUTION_TESTS', name: 'CONTRIBUTION', tags: 'CONTRIBUTION' },
+          # rest/openehr/v1/ehr/{ehr_id}/composition
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_WITH_DIFFERENT_TIME_ZONES', tags: 'COMPOSITION_dtz' },
+          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_1', tags: 'compositionANDcomposition_create_1' },
+          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_2', tags: 'compositionANDcomposition_create_2' },
+          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_3', tags: 'compositionANDcomposition_create_3' },
+          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_4', tags: 'compositionANDcomposition_create_4' },
+          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_5', tags: 'compositionANDcomposition_create_5' },
+          { path: 'COMPOSITION_TESTS', name: 'DELETE_COMPOSITION', tags: 'compositionANDcomposition_delete' },
+          { path: 'COMPOSITION_TESTS', name: 'GET_COMPOSITION', tags: 'compositionANDcomposition_get' },
+          { path: 'COMPOSITION_TESTS', name: 'GET_VERSIONED_COMPOSITION', tags: 'compositionANDcomposition_get_versioned' },
+          { path: 'COMPOSITION_TESTS', name: 'HEADERS_CHECKS', tags: 'HeadersChecks' },
+          { path: 'COMPOSITION_TESTS', name: 'ISM_TRANSITIONS_COMPOSITION', tags: 'compositionANDcomposition_ism_transitions' },
+          { path: 'COMPOSITION_TESTS', name: 'UPDATE_COMPOSITION', tags: 'compositionANDcomposition_update' },
+          { path: 'COMPOSITION_TESTS', name: 'VALIDATION', tags: 'COMPOSITION_validation' },
+          # rest/openehr/v1/query/aql - could be split into individual sub-suite
+          { path: 'AQL_TESTS', name: 'AQL', tags: 'AQL_TESTS_PACKAGE' },
+          # Still missing
+          # rest/rest/ecis
+          { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag' },
+          # FHIR_TERMINOLOGY
+          # SECURITY_TESTS
+        ]
+    name: Robot (${{ matrix.test-suite.name }})
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Wait for postgres
-        run: |
-          docker run -d --name postgres -p5432:5432 ehrbase/ehrbase-v2-postgres:16.2
-          WAIT_COUNTER=0
-          until [ $WAIT_COUNTER -eq 20 ] || psql -h localhost -p 5432 -c "SELECT 1"; do echo $(( ++WAIT_COUNTER )); sleep 5; done
-          if [ $WAIT_COUNTER -eq 20 ]; then
-            echo "PostgreSQL not ready"
-            exit 1
-          fi
-
-        env:
-          PGUSER: postgres
-          PGPASSWORD: postgres
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java }}
-          cache: 'maven'
-
-      - name: Download ehrbase jar
+      - name: Download - Test Image
         uses: actions/download-artifact@v4
         with:
-          name: ehrbase.jar
-          path: ~/
+          name: ehrbase-image-test
+          path: ${{ runner.temp }}
 
-      - name: Run EHRbase
+      - name: Docker - Load Image
+        run: docker load --input ${{ runner.temp }}/ehrbase-test.tar
+
+      # image used by the docker-compose-int-test.yml
+      - name: Docker Compose - Setup env
+        run: echo "EHRBASE_IMAGE=${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_TEST }}" >> $GITHUB_ENV
+
+      - name: Docker Compose - Starting
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+
+      - name: Run - Robot Test-Suite
         run: |
-          java -jar /home/runner/ehrbase.jar --server.nodename=local.ehrbase.org --spring.profiles.active=local --server.servlet.context-path=/ehrbase --spring.datasource.url=jdbc:postgresql://localhost:5432/ehrbase --ehrbase.rest.aql.response.generator-details-enabled=true --ehrbase.dbms-provider=POSTGRESQL >/var/tmp/log.txt &
-          WAIT_COUNTER=0
-          until [ $WAIT_COUNTER -eq 60 ] || curl -s -f -o /dev/null "http://localhost:8080/ehrbase/rest/openehr/v1/definition/template/adl1.4/"; do echo $(( ++WAIT_COUNTER )); sleep 2; done
-          cat /var/tmp/log.txt
-          if [ $WAIT_COUNTER -eq 60 ]; then
-            echo "EHRbase not ready"
-            exit 1
-          fi
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml run --remove-orphans --rm ehrbase-integration-tests runRobotTest \
+            --name ${{ matrix.test-suite.name }} \
+            --path ${{ matrix.test-suite.path }} \
+            --tags ${{ matrix.test-suite.tags }}
 
-      - name: Checkout Robot
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          repository: ehrbase/integration-tests
-          ref: main
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-
-      - name: Install Robot dependencies
-        run: pip install -r tests/requirements.txt
-
-      - name: Run Robot scripts
-        run: |
-          cd tests
-          robot -v nodocker \
-                -v NODENAME:local.ehrbase.org \
-                --dotted \
-                --console quiet \
-                --flattenkeywords for \
-                --flattenkeywords foritem \
-                --flattenkeywords name:_resources.* \
-                --report NONE \
-                -d results \
-                --skiponfailure not-ready -L TRACE \
-                robot/${{ matrix.robot-test-suit }}
-
-      - name: Replace forward slash to archive Robot result
+      - name: Docker Compose - Stopping
         if: always()
-        run: |
-          TEST_NAME="${{ matrix.robot-test-suit }}"
-          TEST_NAME_MODIFIED="${TEST_NAME//\//_}"
-          echo "Modified test_name: $TEST_NAME_MODIFIED"
-          echo "TEST_NAME_MODIFIED=$TEST_NAME_MODIFIED" >> $GITHUB_ENV
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --stop --force --volumes
 
-      - name: Archive Robot results
+      - name: Archive - Robot results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: robot-result-${{ env.TEST_NAME_MODIFIED }}
-          path: /home/runner/work/ehrbase/ehrbase/tests/results/output.xml
+          name: robot-result-${{ matrix.test-suite.name }}
+          path: ./tests/results/${{ matrix.test-suite.name }}/output.xml
+          if-no-files-found: error
 
-      - name: Archive logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: log-${{ env.TEST_NAME_MODIFIED }}
-          path: /var/tmp/log.txt
-
-  collect:
+  #
+  # Collect all Robot result from [integration-test-run] and generated the final report.
+  #
+  integration-test-results:
+    name: Robot-Collect
     if: ${{ always() }}
-    needs: [ test ]
+    needs: [ integration-test-run ]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Download Robot results
+      - name: Download - Robot results
         uses: actions/download-artifact@v4
         with:
-          path: /home/runner/robot-results
+          pattern: robot-result-*
+          path: ./tests/results/
 
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: /home/runner/robot-results
-
-      - name: Checkout Robot
-        uses: actions/checkout@v4
+      - name: Download - Test Image
+        uses: actions/download-artifact@v4
         with:
-          fetch-depth: 0
-          repository: ehrbase/integration-tests
-          ref: main
+          name: ehrbase-image-test
+          path: ${{ runner.temp }}
 
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          cache: 'pip'
+      - name: Docker - Load Image
+        run: docker load --input ${{ runner.temp }}/ehrbase-test.tar
 
-      - name: Install Robot dependencies
-        run: pip install -r tests/requirements.txt
+      # image used by the docker-compose-int-test.yml
+      - name: Docker Compose - Setup env
+        run: echo "EHRBASE_IMAGE=${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_TEST }}" >> $GITHUB_ENV
 
-      - name: Build Robot output.xml and log.html
+      # FIXME replace with single docker run and mount
+      #      - ./tests/results:/integration-tests/results
+      #      - ./tests/report:/integration-tests/report
+      - name: Generate - Robot Tests-Report
         run: |
-          pwd
-          rebot \
-            --name EHRbase \
-            --outputdir /home/runner/work/ehrbase/ehrbase/reports \
-            -l Final_Log.html \
-            -r Final_Report.html \
-            -o output.xml \
-            /home/runner/robot-results/robot-result-*/output.xml
-          ls -R /home/runner/
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml run --rm ehrbase-integration-tests collectRebotResults
 
-      - name: Delete old Robot reports
+      - name: Docker Compose - Stopping
         if: always()
-        run: |
-          rm -vf /home/runner/robot-results/robot-result-*/*
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --stop --force --volumes
 
-      - name: Send Robot report to commit
+      - name: Github - Send Robot Report to PR
         if: always()
         uses: joonvena/robotframework-reporter-action@v2.3
         with:
           gh_access_token: ${{ secrets.GITHUB_TOKEN }}
-          report_path: '/reports'
+          report_path: ./tests/report
           show_passed_tests: false
 
-      - name: Delete merged output.xml
-        if: always()
-        run: |
-          rm -vf /home/runner/work/ehrbase/ehrbase/reports/*.xml
-
-      - name: Robot results final
+      - name: Archive - Robot Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: robot-result-final
-          path: /home/runner/work/ehrbase/ehrbase/reports
+          name: robot-report-final
+          path: ./tests/report
 
-#  cleanup:
-#    if: ${{ always() }}
-#    needs: [collect]
-#    runs-on: ubuntu-latest
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        robot-test-suit: ['AQL_TESTS','STORED_QUERY_TESTS','COMPOSITION_TESTS/COMPOSITION_WITH_DIFFERENT_TIME_ZONES','COMPOSITION_TESTS/CREATE_COMPO_1','COMPOSITION_TESTS/CREATE_COMPO_2','COMPOSITION_TESTS/CREATE_COMPO_3','COMPOSITION_TESTS/CREATE_COMPO_4','COMPOSITION_TESTS/CREATE_COMPO_5','COMPOSITION_TESTS/DELETE_COMPOSITION','COMPOSITION_TESTS/GET_COMPOSITION','COMPOSITION_TESTS/GET_VERSIONED_COMPOSITION','COMPOSITION_TESTS/HEADERS_CHECKS','COMPOSITION_TESTS/ISM_TRANSITIONS_COMPOSITION','COMPOSITION_TESTS/UPDATE_COMPOSITION','COMPOSITION_TESTS/VALIDATION','CONTRIBUTION_TESTS','DIRECTORY_TESTS','EHR_SERVICE_TESTS','EHR_STATUS_TESTS','SANITY_TESTS','TEMPLATE_TESTS']
-#
-#    steps:
-#      - name: Replace forward slash to delete Robot result
-#        if: always()
-#        run: |
-#          TEST_NAME="${{ matrix.robot-test-suit }}"
-#          TEST_NAME_MODIFIED="${TEST_NAME//\//_}"
-#          echo "Modified test_name: $TEST_NAME_MODIFIED"
-#          echo "TEST_NAME_MODIFIED=$TEST_NAME_MODIFIED" >> $GITHUB_ENV
-#
-#      - name: Delete single reports
-#        if: always()
-#        uses: geekyeggo/delete-artifact@v4
-#        with:
-#          name: robot-result-${{ env.TEST_NAME_MODIFIED }}
+      - name: Cleanup - Test Folder
+        if: always()
+        run: |
+          rm -rf ./tests/result | true
+          rm -rf ./tests/report | true
+
+  # TODO docker deploy should be done here for develop, release/* and main
+
+  #
+  # Cleanup serialized oci image as well as intermediate robot results
+  #
+  cleanup:
+    name: Cleanup
+    if: ${{ always() }}
+    needs: [
+      build,
+      integration-test-run,
+      integration-test-results
+    ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete - Test Image
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: ehrbase-image-test
+          failOnError: false
+
+      - name: Delete - Intermediate Robot results
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: robot-result-*
+          failOnError: false

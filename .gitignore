@@ -183,7 +183,10 @@ log.html
 output.xml
 report.html
 std*
+*.robot
 *.tmp.json
+tests/results
+tests/report
 tests/DBDUMP_STDERR
 tests/DBRESTORE_STDERR
 tests/DBRESTORE_STDOUT
@@ -219,7 +222,3 @@ vulnerability_analysis.json
 application/.pgdata
 /plugin_dir/
 /plugin_config_dir/
-
-# Robot tests, as they are stored in external repository
-tests/
-*.robot
