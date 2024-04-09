@@ -20,5 +20,10 @@ package org.ehrbase.service;
 import java.util.UUID;
 
 public interface UserService {
+
     UUID getCurrentUserId();
+
+    record UserAndCommitterId(UUID userId, UUID committerId) {}
+
+    UserAndCommitterId getCurrentUserAndCommitterId();
 }

@@ -18,6 +18,7 @@
 package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
+import static org.ehrbase.jooq.pg.Tables.COMMITTER;
 import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
 
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -30,7 +31,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
-import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -38,12 +38,15 @@ import org.ehrbase.jooq.pg.tables.AuditDetails;
 import org.ehrbase.jooq.pg.tables.Contribution;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
-import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
+import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.service.TimeProvider;
 import org.ehrbase.service.UserService;
+import org.ehrbase.service.UserService.UserAndCommitterId;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Record2;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,8 +108,9 @@ public class ContributionRepository {
         auditDetailsRecord.setTimeCommitted(timeProvider.getNow());
         auditDetailsRecord.setTargetType(targetType.getAlias());
 
-        auditDetailsRecord.setCommitter(null);
-        auditDetailsRecord.setUserId(userService.getCurrentUserId());
+        UserAndCommitterId currentUserIds = userService.getCurrentUserAndCommitterId();
+        auditDetailsRecord.setCommitterId(currentUserIds.committerId());
+        auditDetailsRecord.setUserId(currentUserIds.userId());
         auditDetailsRecord.setChangeType(contributionChangeType);
 
         auditDetailsRecord.store();
@@ -144,9 +148,13 @@ public class ContributionRepository {
         auditDetailsRecord.setId(UuidGenerator.randomUUID());
         auditDetailsRecord.setTimeCommitted(timeProvider.getNow());
 
-        // save committer as json if not user
-        if (!partyProxyRepository.fromUser(userService.getCurrentUserId()).equals(auditDetails.getCommitter())) {
-            auditDetailsRecord.setCommitter(JSONB.jsonb(new CanonicalJson().marshal(auditDetails.getCommitter())));
+        UserAndCommitterId currentUserAndCommitterId = userService.getCurrentUserAndCommitterId();
+        if (auditDetails.getCommitter() != null) {
+            auditDetailsRecord.setCommitterId(partyProxyRepository
+                    .findOrCreateCommitter(auditDetails.getCommitter())
+                    .getId());
+        } else {
+            auditDetailsRecord.setCommitterId(currentUserAndCommitterId.committerId());
         }
 
         auditDetailsRecord.setTargetType(targetType.getAlias());
@@ -156,7 +164,7 @@ public class ContributionRepository {
         auditDetailsRecord.setDescription(Optional.ofNullable(auditDetails.getDescription())
                 .map(DvText::getValue)
                 .orElse(null));
-        auditDetailsRecord.setUserId(userService.getCurrentUserId());
+        auditDetailsRecord.setUserId(currentUserAndCommitterId.userId());
 
         auditDetailsRecord.store();
         return auditDetailsRecord.getId();
@@ -182,31 +190,31 @@ public class ContributionRepository {
 
     public com.nedap.archie.rm.generic.AuditDetails findAuditDetails(UUID auditId) {
 
-        AuditDetailsRecord auditDetailsRecord =
-                context.fetchOne(AuditDetails.AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
+        Record2<AuditDetailsRecord, JSONB> auditDetailsWithCommitter = context.select(AUDIT_DETAILS, COMMITTER.DATA)
+                .from(AUDIT_DETAILS)
+                .join(COMMITTER)
+                .on(AUDIT_DETAILS.COMMITTER_ID.eq(COMMITTER.ID))
+                .where(AUDIT_DETAILS.ID.eq(auditId))
+                .fetchOne();
+        if (auditDetailsWithCommitter == null) {
+            return null;
+        }
+        AuditDetailsRecord auditDetailsRecord = auditDetailsWithCommitter.value1();
         Objects.requireNonNull(auditDetailsRecord);
 
         com.nedap.archie.rm.generic.AuditDetails auditDetails = new com.nedap.archie.rm.generic.AuditDetails();
 
         auditDetails.setSystemId(systemService.getSystemId());
 
-        if (auditDetailsRecord.getCommitter() != null) {
-            auditDetails.setCommitter(new CanonicalJson()
-                    .unmarshal(auditDetailsRecord.getCommitter().data(), PartyProxy.class));
-        } else {
-            auditDetails.setCommitter(partyProxyRepository.fromUser(auditDetailsRecord.getUserId()));
-        }
+        auditDetails.setCommitter(DbToRmFormat.reconstructRmObject(
+                PartyProxy.class, auditDetailsWithCommitter.value2().data()));
         auditDetails.setDescription(new DvText(auditDetailsRecord.getDescription()));
 
         DvCodedText changeType = new DvCodedText(
                 auditDetailsRecord.getChangeType().getLiteral(),
                 new CodePhrase(
                         new TerminologyId("openehr"),
-                        Integer.toString(ContributionService.ContributionChangeType.valueOf(auditDetailsRecord
-                                        .getChangeType()
-                                        .getLiteral()
-                                        .toUpperCase())
-                                .getCode())));
+                        ChangeTypeUtils.getCodeByJooqChangeType(auditDetailsRecord.getChangeType())));
         auditDetails.setChangeType(changeType);
 
         DvDateTime time = new DvDateTime(auditDetailsRecord.getTimeCommitted());

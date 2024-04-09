@@ -53,21 +53,26 @@ public class UserServiceImp implements UserService {
      * @return UUID of default user, derived from authenticated user.
      */
     @Override
-    public UUID getCurrentUserId() {
+    public UserAndCommitterId getCurrentUserAndCommitterId() {
         String key = authenticationFacade.getAuthentication().getName();
         return cacheProvider.get(CacheProvider.USER_ID_CACHE, key, () -> getOrCreateCurrentUserIdSync(key));
     }
 
-    private UUID getOrCreateCurrentUserIdSync(String key) {
+    @Override
+    public UUID getCurrentUserId() {
+        return getCurrentUserAndCommitterId().userId();
+    }
+
+    private UserAndCommitterId getOrCreateCurrentUserIdSync(String key) {
 
         return partyProxyRepository
-                .findInternalUserId(key)
+                .findInternalUserAndCommitterId(key)
                 .or(() -> {
                     try {
                         return Optional.of(partyProxyRepository.createInternalUser(key));
                     } catch (DataIntegrityViolationException ex) {
                         logger.info(ex.getMessage(), ex.getMessage());
-                        return partyProxyRepository.findInternalUserId(key);
+                        return partyProxyRepository.findInternalUserAndCommitterId(key);
                     }
                 })
                 .orElseThrow(() -> new InternalServerException("Cannot create User"));

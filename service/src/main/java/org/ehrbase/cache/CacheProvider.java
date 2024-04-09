@@ -22,6 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.service.UserService.UserAndCommitterId;
 
 public interface CacheProvider {
     EhrBaseCache<String, WebTemplate> INTROSPECT_CACHE =
@@ -30,7 +31,8 @@ public interface CacheProvider {
             new EhrBaseCache<>("TemplateIdUuidCache", String.class, UUID.class);
     EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE =
             new EhrBaseCache<>("TemplateUuidIdCache", UUID.class, String.class);
-    EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache", String.class, UUID.class);
+    EhrBaseCache<String, UserAndCommitterId> USER_ID_CACHE =
+            new EhrBaseCache<>("userIdCache", String.class, UserAndCommitterId.class);
     EhrBaseCache<String, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =
             new EhrBaseCache<>("externalFhirTerminologyCache", String.class, DocumentContext.class);
     EhrBaseCache<String, QueryDefinitionResultDto> STORED_QUERY_CACHE =
