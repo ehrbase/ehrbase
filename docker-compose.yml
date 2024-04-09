@@ -1,12 +1,16 @@
 version: '3'
 
+#
+# Minimal setup for a running EHRbase. Contains the server component as well as the required postgres instance.
+#
 services:
+
+  #
+  # EHRBase container. see `.env.ehrbase` for configuration details.
+  #
   ehrbase:
-    image: ehrbase/ehrbase:next
-    ports:
-      - 8080:8080
-    networks:
-      - ehrbase-net
+    image: ${EHRBASE_IMAGE:-ehrbase/ehrbase:next}
+    container_name: "EHRbase"
     env_file:
       - .env.ehrbase
     environment:
@@ -15,15 +19,22 @@ services:
       DB_PASS_ADMIN: ehrbase
       DB_USER: ehrbase_restricted
       DB_PASS: ehrbase_restricted
-    restart: on-failure
-
-  ehrdb:
-    image: ehrbase/ehrbase-v2-postgres:16.2
-
+    links:
+      - ehrdb
+    depends_on:
+      ehrdb:
+        condition: service_started
     ports:
-      - 5432:5432
+      - "8080:8080"
     networks:
       - ehrbase-net
+
+  #
+  # Pre-configured ehrbase postgres.
+  #
+  ehrdb:
+    image: ${EHRBASE_POSTGRES_IMAGE:-ehrbase/ehrbase-postgres:16.2-mvp} # FIXME use latest after the image build is adjusted
+    container_name: "EHRbase-PG"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -31,9 +42,15 @@ services:
       EHRBASE_PASSWORD_ADMIN: ehrbase
       EHRBASE_USER: ehrbase_restricted
       EHRBASE_PASSWORD: ehrbase_restricted
-
-
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "5432:5432"
+    networks:
+      - ehrbase-net
 
 networks:
   ehrbase-net: { }
-
