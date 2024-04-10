@@ -28,6 +28,7 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -160,7 +161,8 @@ public final class AslStructureQuery extends AslQuery {
         this.requiresVersionTableJoin = requiresVersionTableJoin;
         fields.forEach(this::addField);
         this.alias = alias;
-        if (type != AslSourceRelation.EHR && type != AslSourceRelation.AUDIT_DETAILS) {
+        if (!EnumSet.of(AslSourceRelation.EHR, AslSourceRelation.AUDIT_DETAILS, AslSourceRelation.COMMITTER)
+                .contains(type)) {
             if (!rmTypes.isEmpty()) {
                 List<String> aliasedRmTypes = rmTypes.stream()
                         .map(StructureRmType::getAliasOrTypeName)
