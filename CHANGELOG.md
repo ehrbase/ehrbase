@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
 * Added `STORED_QUERY_CACHE` ([#1258](https://github.com/ehrbase/ehrbase/pull/1258))
+* Support for AQL on `VERSION.commit_audit.committer` paths ([#1264](https://github.com/ehrbase/ehrbase/pull/1264))
  ### Changed 
 * Changed `StoredQueryRepository` methods to only accept `StoredQueryQualifiedName` as arguments ([#1258](https://github.com/ehrbase/ehrbase/pull/1258))
  ### Fixed 
