@@ -18,7 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.openehr.sdk.response.dto.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
@@ -128,7 +127,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         directoryService.delete(ehrId, folderId);
 
-        createRestContext(ehrId.toString(), folderId.toString());
+        createRestContext(ehrId, folderId.toString());
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
@@ -242,7 +241,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());
-            createRestContext(ehrId.toString(), versionUid);
+            createRestContext(ehrId, versionUid);
         }
 
         return new ResponseEntity<>(body, headers, successStatus);
@@ -275,13 +274,13 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         }
     }
 
-    private void createRestContext(String ehrId, String versionedObjectUid) {
+    private void createRestContext(UUID ehrId, String versionedObjectUid) {
         HttpRestContext.register(
                 EHR_ID,
                 ehrId,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("")
-                        .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)
+                        .pathSegment(EHR, ehrId.toString(), DIRECTORY, versionedObjectUid)
                         .build()
                         .toString());
     }

@@ -18,7 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -32,7 +32,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
@@ -205,7 +204,7 @@ public class OpenehrContributionController extends BaseController implements Con
         HttpRestContext.register(
                 EHR_ID,
                 ehrId,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath(EMPTY)
                         .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
                         .build()

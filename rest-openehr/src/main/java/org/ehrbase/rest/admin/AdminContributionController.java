@@ -18,7 +18,7 @@
 package org.ehrbase.rest.admin;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +30,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
@@ -159,7 +158,7 @@ public class AdminContributionController extends BaseController {
         HttpRestContext.register(
                 EHR_ID,
                 ehrId,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath(EMPTY)
                         .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
                         .build()

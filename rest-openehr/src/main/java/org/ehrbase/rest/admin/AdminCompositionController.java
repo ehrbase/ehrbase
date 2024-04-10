@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.admin;
 
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.COMPOSITION_ID;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.COMPOSITION_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,7 +31,6 @@ import java.util.Objects;
 import java.util.UUID;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
@@ -111,7 +110,7 @@ public class AdminCompositionController extends BaseController {
                 ehrUuid,
                 COMPOSITION_ID,
                 compositionUid,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("/ehr/{ehr_id}/composition/{composition_id}")
                         .build(ehrId, compositionId)
                         .toString());

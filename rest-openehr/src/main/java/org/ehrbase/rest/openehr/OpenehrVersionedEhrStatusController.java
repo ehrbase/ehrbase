@@ -18,8 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.VERSION;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.VERSION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -36,7 +36,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
@@ -227,7 +226,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpRestContext.register(
                 EHR_ID,
                 ehrId,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 uriComponentsBuilder.build().toString());
     }
 }

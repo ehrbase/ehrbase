@@ -18,7 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.QUERY_ID;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
@@ -35,7 +35,6 @@ import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.openehr.sdk.response.dto.ErrorBodyPayload;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
@@ -209,7 +208,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     private void registerLocation(String queryName, @Nullable String version) {
         HttpRestContext.register(
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("")
                         .pathSegment(DEFINITION, QUERY, queryName, version)
                         .build()

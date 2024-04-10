@@ -17,7 +17,7 @@
  */
 package org.ehrbase.rest.admin;
 
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.QUERY_ID;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
@@ -27,7 +27,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.rest.BaseController;
 import org.slf4j.Logger;
@@ -78,7 +77,7 @@ public class AdminDefinitionController extends BaseController {
         logger.debug("deleteStoredQuery for the following input: {} , version: {}", qualifiedQueryName, version);
 
         HttpRestContext.register(
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("")
                         .pathSegment(DEFINITION, QUERY, qualifiedQueryName, version)
                         .build()

@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_EXECUTE_ENDPOINT;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.QUERY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.QUERY_EXECUTE_ENDPOINT;
+import static org.ehrbase.api.rest.HttpRestContext.QUERY_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import java.net.URI;
@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.AqlQueryRequest;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.StatusService;
@@ -249,7 +248,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         HttpRestContext.register(
                 QUERY_EXECUTE_ENDPOINT,
                 Boolean.TRUE,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("").pathSegment(QUERY, qualifiedName, version).build().toString());
     }
 

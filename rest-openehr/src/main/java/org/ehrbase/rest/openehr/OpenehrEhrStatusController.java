@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.DIRECTORY_ID;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.DIRECTORY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -35,7 +35,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrStatusResponseData;
@@ -192,7 +191,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 ehrId,
                 DIRECTORY_ID,
                 versionedObjectUid,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("")
                         .pathSegment(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid)
                         .build()

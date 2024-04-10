@@ -17,7 +17,7 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
@@ -35,7 +35,6 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
@@ -172,7 +171,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         HttpRestContext.register(
                 EHR_ID,
                 resultEhrId,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("").pathSegment(EHR, resultEhrId.toString()).build().toString());
     }
 

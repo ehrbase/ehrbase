@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.admin;
 
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.REMOVED_PATIENTS;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.REMOVED_PATIENTS;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;

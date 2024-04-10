@@ -24,93 +24,112 @@ import java.util.UUID;
 
 public class HttpRestContext {
 
-    public interface CtxAttr {
-        public String name();
+    public abstract static class CtxAttr<T> {
+        private final String name = getClass().getSimpleName();
 
-        public Class<?> getAttributeType();
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        public boolean equals(Object obj) {
+            return name.equals(obj);
+        }
     }
 
-    public enum StdRestAttr implements CtxAttr {
-        QUERY(String.class),
-        QUERY_ID(String.class),
-        LOCATION(String.class),
-        VERSION(Integer.class),
-        EHR_ID(UUID.class),
-        TEMPLATE_ID(String.class),
-        COMPOSITION_ID(String.class),
-        DIRECTORY_ID(String.class),
-        CONTRIBUTION_ID(String.class),
-        REMOVED_PATIENTS(Set.class),
-        QUERY_EXECUTE_ENDPOINT(Boolean.class);
+    private static class Query extends CtxAttr<String> {}
 
-        private final Class<?> attributeType;
+    private static class QueryId extends CtxAttr<String> {}
 
-        private StdRestAttr(Class<?> type) {
-            this.attributeType = type;
-        }
+    private static class Location extends CtxAttr<String> {}
 
-        public Class<?> getAttributeType() {
-            return attributeType;
-        }
-    };
+    private static class Version extends CtxAttr<Integer> {}
 
-    private static final String ERR_BAD_ARG = "Value should be of type[%s]";
+    private static class EhrId extends CtxAttr<UUID> {}
 
-    private static ThreadLocal<Map<CtxAttr, Object>> httpContext = ThreadLocal.withInitial(() -> new HashMap<>());
+    private static class TemplateId extends CtxAttr<String> {}
+
+    private static class CompositionId extends CtxAttr<UUID> {}
+
+    private static class DirectoryId extends CtxAttr<String> {}
+
+    private static class ContributionId extends CtxAttr<UUID> {}
+
+    private static class RemovedPatients extends CtxAttr<Set<String>> {}
+
+    private static class QueryExecuteEndpoint extends CtxAttr<Boolean> {}
+
+    public static CtxAttr<String> QUERY = new Query();
+    public static CtxAttr<String> QUERY_ID = new QueryId();
+    public static CtxAttr<String> LOCATION = new Location();
+    public static CtxAttr<Integer> VERSION = new Version();
+    public static CtxAttr<UUID> EHR_ID = new EhrId();
+    public static CtxAttr<String> TEMPLATE_ID = new TemplateId();
+    public static CtxAttr<UUID> COMPOSITION_ID = new CompositionId();
+    public static CtxAttr<String> DIRECTORY_ID = new DirectoryId();
+    public static CtxAttr<UUID> CONTRIBUTION_ID = new ContributionId();
+    public static CtxAttr<Set<String>> REMOVED_PATIENTS = new RemovedPatients();
+    public static CtxAttr<Boolean> QUERY_EXECUTE_ENDPOINT = new QueryExecuteEndpoint();
+
+    public static final class HttpCtxMap extends HashMap<CtxAttr<?>, Object> {
+        private static final long serialVersionUID = -910609086038543024L;
+
+        private HttpCtxMap() {}
+    }
+
+    private static ThreadLocal<HttpCtxMap> httpContext = ThreadLocal.withInitial(() -> new HttpCtxMap());
 
     public static void clear() {
         httpContext.remove();
     }
 
-    public <T> T getValueBy(CtxAttr key) {
-        Map<CtxAttr, Object> ctxMap = httpContext.get();
-        if (!ctxMap.containsKey(key)) return null;
+    @SuppressWarnings("unchecked")
+    public <T> T getValueBy(CtxAttr<T> key) {
+        Map<CtxAttr<?>, Object> ctxMap = httpContext.get();
         return (T) ctxMap.get(key);
     }
 
-    public static void register(CtxAttr key, Object value) {
-        if (!key.getAttributeType().isAssignableFrom(value.getClass()))
-            throw new IllegalArgumentException(ERR_BAD_ARG.formatted(key.getAttributeType()));
+    public static <V> void register(CtxAttr<V> key, V value) {
         httpContext.get().put(key, value);
     }
 
-    public static void register(CtxAttr key0, Object value0, CtxAttr key1, Object value1) {
+    public static <V0, V1> void register(CtxAttr<V0> key0, V0 value0, CtxAttr<V1> key1, V1 value1) {
         register(key0, value0);
         register(key1, value1);
     }
 
-    public static void register(CtxAttr key0, Object value0, CtxAttr key1, Object value1, CtxAttr key2, Object value2) {
+    public static <V0, V1, V2> void register(
+            CtxAttr<V0> key0, V0 value0, CtxAttr<V1> key1, V1 value1, CtxAttr<V2> key2, V2 value2) {
         register(key0, value0);
         register(key1, value1);
         register(key2, value2);
     }
 
-    public static void register(
-            CtxAttr key0,
-            Object value0,
-            CtxAttr key1,
-            Object value1,
-            CtxAttr key2,
-            Object value2,
-            CtxAttr key3,
-            Object value3) {
+    public static <V0, V1, V2, V3> void register(
+            CtxAttr<V0> key0,
+            V0 value0,
+            CtxAttr<V1> key1,
+            V1 value1,
+            CtxAttr<V2> key2,
+            V2 value2,
+            CtxAttr<V3> key3,
+            V3 value3) {
         register(key0, value0);
         register(key1, value1);
         register(key2, value2);
         register(key3, value3);
     }
 
-    public static void register(
-            CtxAttr key0,
-            Object value0,
-            CtxAttr key1,
-            Object value1,
-            CtxAttr key2,
-            Object value2,
-            CtxAttr key3,
-            Object value3,
-            CtxAttr key4,
-            Object value4) {
+    public static <V0, V1, V2, V3, V4> void register(
+            CtxAttr<V0> key0,
+            V0 value0,
+            CtxAttr<V1> key1,
+            V1 value1,
+            CtxAttr<V2> key2,
+            V2 value2,
+            CtxAttr<V3> key3,
+            V3 value3,
+            CtxAttr<V4> key4,
+            V4 value4) {
         register(key0, value0);
         register(key1, value1);
         register(key2, value2);

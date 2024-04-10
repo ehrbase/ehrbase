@@ -18,8 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.TEMPLATE_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.TEMPLATE_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.composition.Composition;
@@ -39,7 +39,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.CompositionResponseData;
@@ -269,7 +268,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             HttpRestContext.register(
                     EHR_ID,
                     ehrId,
-                    StdRestAttr.LOCATION,
+                    HttpRestContext.LOCATION,
                     getLocationUrl(compositionUid, ehrId, version),
                     TEMPLATE_ID,
                     compositionService.retrieveTemplateId(compositionUid));
@@ -438,7 +437,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         HttpRestContext.register(
                 EHR_ID,
                 ehrId,
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 getLocationUrl(compositionId, ehrId, version),
                 TEMPLATE_ID,
                 templateId);

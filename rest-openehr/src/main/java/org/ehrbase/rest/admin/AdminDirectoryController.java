@@ -17,8 +17,8 @@
  */
 package org.ehrbase.rest.admin;
 
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.DIRECTORY_ID;
-import static org.ehrbase.api.rest.HttpRestContext.StdRestAttr.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.DIRECTORY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +29,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.rest.HttpRestContext.StdRestAttr;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.rest.BaseController;
@@ -98,7 +97,7 @@ public class AdminDirectoryController extends BaseController {
                 ehrUuid,
                 DIRECTORY_ID,
                 folderUid.toString(),
-                StdRestAttr.LOCATION,
+                HttpRestContext.LOCATION,
                 fromPath("")
                         .pathSegment(EHR, ehrId, DIRECTORY, folderUid.toString())
                         .build()
