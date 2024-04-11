@@ -18,6 +18,8 @@
 package org.ehrbase.plugin;
 
 import java.util.Map;
+import java.util.Optional;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.plugin.registration.ExternalBeanRegistration;
 import org.ehrbase.plugin.security.AuthorizationInfo;
 import org.ehrbase.plugin.security.PluginSecurityConfiguration;
@@ -66,8 +68,9 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
         EhrBasePluginManagerInterface pluginManager =
                 (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
 
-        Map<String, ExternalBeanRegistration> allExternalRegistrations =
-                ctx.getParent().getBeansOfType(ExternalBeanRegistration.class);
+        Map<String, ExternalBeanRegistration> allExternalRegistrations = Optional.ofNullable(ctx.getParent())
+                .orElseThrow(() -> new InternalServerException("Plugin parent context not set"))
+                .getBeansOfType(ExternalBeanRegistration.class);
         allExternalRegistrations.values().forEach(exReg -> {
             if (ctx instanceof AbstractApplicationContext a1) {
                 a1.setClassLoader(wrapper.getPluginClassLoader());

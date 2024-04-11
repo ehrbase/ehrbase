@@ -20,7 +20,6 @@ package org.ehrbase.rest;
 import com.nimbusds.jose.util.Pair;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -76,10 +75,6 @@ public class RestModuleConfiguration implements WebMvcConfigurer {
         // x=1&ehrId=b907e17a-0dc0-49ef-b126-95b9abb4f906
         @Override
         public Map<String, Object> convert(@NonNull String source) {
-            //noinspection ConstantValue
-            if (source == null) {
-                return new HashMap<>();
-            }
 
             StringTokenizer tokenizer = new StringTokenizer(source, PARAM_DELIM);
             Spliterator<Object> spliterator = Spliterators.spliterator(tokenizer.asIterator(), 1, Spliterator.ORDERED);
