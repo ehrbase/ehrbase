@@ -32,21 +32,18 @@ import java.util.Objects;
 import java.util.Optional;
 import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.service.StoredQueryService;
-import org.ehrbase.openehr.sdk.response.dto.ErrorBodyPayload;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -67,8 +64,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
     private static final String AQL = "AQL";
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final StoredQueryService storedQueryService;
 
@@ -93,8 +88,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
 
-        logger.debug("getStoredQueryList invoked with the following input: {}", qualifiedQueryName);
-
         createAuditLogsMsgBuilder(qualifiedQueryName, null);
         QueryDefinitionListResponseData responseData =
                 new QueryDefinitionListResponseData(storedQueryService.retrieveStoredQueries(qualifiedQueryName));
@@ -109,9 +102,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(value = "version") Optional<String> version) {
-
-        logger.debug(
-                "getStoredQueryVersion invoked with the following input: {}, version:{}", qualifiedQueryName, version);
 
         createAuditLogsMsgBuilder(qualifiedQueryName, version.orElse(null));
 
@@ -135,18 +125,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestParam(value = "type", required = false, defaultValue = "AQL") String type,
             @RequestBody String queryPayload) {
 
-        logger.debug(
-                "putStoreQuery invoked with the following input: {}, version: {}, query: {}, type: {}",
-                qualifiedQueryName,
-                version,
-                queryPayload,
-                type);
-
         if (!AQL.equalsIgnoreCase(type)) {
-            return new ResponseEntity(
-                    new ErrorBodyPayload("Invalid query", String.format("Query type:%s not supported!", type))
-                            .toString(),
-                    HttpStatus.BAD_REQUEST);
+            throw new InvalidApiParameterException("Query type:%s not supported!".formatted(type));
         }
 
         MediaType mediaType = MediaType.parseMediaType(contentType);
@@ -173,8 +153,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         }
 
         if (isBlank(aql)) {
-            return new ResponseEntity(
-                    new ErrorBodyPayload("Invalid query", "no aql query provided").toString(), HttpStatus.BAD_REQUEST);
+
+            throw new InvalidApiParameterException("no aql query provided");
         }
 
         createAuditLogsMsgBuilder(qualifiedQueryName, version.orElse(null));
