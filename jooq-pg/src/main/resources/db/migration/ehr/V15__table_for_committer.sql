@@ -20,6 +20,7 @@ ALTER TABLE users ADD COLUMN committer_id uuid NOT NULL DEFAULT uuid_generate_v4
 ALTER TABLE users ALTER COLUMN committer_id DROP DEFAULT;
 
 ALTER TABLE audit_details ADD COLUMN committer_id uuid;
+
 UPDATE audit_details a SET committer_id = (SELECT u.committer_id FROM users u WHERE u.id=a.user_id) WHERE committer IS NULL;
 
 CREATE TABLE committer
@@ -32,6 +33,7 @@ CREATE TABLE committer
     PRIMARY KEY (id)
 );
 CREATE INDEX committer_data_idx ON committer USING hash ((data::text));
+
 
 INSERT INTO committer (id,data)
     SELECT committer_id ,
@@ -61,13 +63,14 @@ INSERT INTO committer (id,data)
             '{Xs,0,X}', to_jsonb(username))
     FROM users;
 
+
 INSERT INTO committer (id, data, audit_ids)
     SELECT uuid_generate_v4(), jsonb_with_aliased_keys_and_types(a.committer), array_agg(a.id)
     FROM audit_details a
     WHERE a.committer IS NOT NULL
     GROUP BY a.committer;
 
-UPDATE audit_details a SET committer_id = (SELECT c.id FROM committer c WHERE a.id = ANY(c.audit_ids)) WHERE committer IS NOT NULL;
+UPDATE audit_details a  SET committer_id = c.id FROM (SELECT id, UNNEST(audit_ids) as audit_id FROM committer) as c WHERE a.id = c.audit_id;
 ALTER TABLE audit_details ALTER COLUMN committer_id SET NOT NULL;
 
 ALTER TABLE committer DROP COLUMN audit_ids;
