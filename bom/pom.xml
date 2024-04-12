@@ -44,6 +44,15 @@
     <url>https://github.com/ehrbase/ehrbase</url>
   </scm>
 
+  <developers>
+    <developer>
+      <name>Stefan Spiska</name>
+      <email>stefan.spiska@vitagroup.ag</email>
+      <organization>vitasystems GmbH</organization>
+      <organizationUrl>https://www.vitagroup.ag/</organizationUrl>
+    </developer>
+  </developers>
+
   <properties>
     <!-- antlr4 and archie versions should be sync with sdk antlr4 and archie versions  -->
     <archie.version>3.3.0</archie.version>
