@@ -63,13 +63,13 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
         return dispatcherServlet;
     }
 
-    //////////////////////////////
     private void externalBeanRegistration(WebApplicationContext ctx) {
         EhrBasePluginManagerInterface pluginManager =
                 (EhrBasePluginManagerInterface) getWrapper().getPluginManager();
 
-        Map<String, ExternalBeanRegistration> allExternalRegistrations = Optional.ofNullable(ctx.getParent())
-                .orElseThrow(() -> new InternalServerException("Plugin parent context not set"))
+        Map<String, ExternalBeanRegistration> allExternalRegistrations = Optional.ofNullable(ctx)
+                .map(ApplicationContext::getParent)
+                .orElseThrow(() -> new InternalServerException("Plugin  context not correctly set"))
                 .getBeansOfType(ExternalBeanRegistration.class);
         allExternalRegistrations.values().forEach(exReg -> {
             if (ctx instanceof AbstractApplicationContext a1) {
@@ -80,7 +80,6 @@ public abstract class WebMvcEhrBasePlugin extends EhrBasePlugin {
             exReg.externalRegistration(ctx);
         });
     }
-    //////////////////////////////
 
     private static String DISABLE_PLUGIN_AUTHORIZATION = "authorization.service.disable.for.%s";
 
