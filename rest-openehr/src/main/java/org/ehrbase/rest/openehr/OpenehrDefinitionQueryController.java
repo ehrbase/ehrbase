@@ -42,6 +42,8 @@ import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
@@ -65,6 +67,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
     private static final String AQL = "AQL";
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final StoredQueryService storedQueryService;
 
