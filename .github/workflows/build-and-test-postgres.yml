@@ -12,25 +12,32 @@ env:
   IMAGE_TAG_BUILD: build
   IMAGE_TAG_TEST: test
 
+#run-name: Assemble ${{ inputs.deploy_target }} by @${{ github.actor }}
+# Dynamically set the run name to include the type of branch (feature or bugfix), branch name, and the user
+run-name: "${{ contains(github.head_ref, 'feature/') && 'Feature' || contains(github.head_ref, 'bugfix/') && 'Bugfix' || 'Update' }}: ${{ github.head_ref }} by @${{ github.actor }}"
+
 jobs:
 
   #
   # Performs maven build and check as well as junit test result collection. Finally, creates the ehrbase docker image
   # and saves it, as an archive, for later usage.
   #
-  build:
-    name: Build
+  build-maven:
+    name: Build-Maven
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches - so sonar can find ref and collect blame
+          fetch-depth: 0
 
       - name: Setup - Java 21
         uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: 'temurin'
-          cache: 'maven'
+#          cache: 'maven'
 
       - name: Spotless - Check
         run: mvn spotless:check
@@ -53,45 +60,24 @@ jobs:
             -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/test-coverage/target/site/jacoco-overall-coverage/jacoco.xml \
             -Dsonar.java.enablePreview=true
 
-      - name: Docker - Set up Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # build the test image for the actual architecture. This us needed for the robot tests because Docker uses a
-      # legacy import format and is unable to use multi arch oci images (for now). As an alternative we could use
-      # podman in the future.
-      - name: Docker - Build Test Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          tags: ${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_TEST }}
-          outputs: type=docker,dest=${{ runner.temp }}/ehrbase-test.tar
-
-      # build the release multi arch image
-      - name: Docker - Build OCI Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_BUILD }}
-          outputs: type=oci,dest=${{ runner.temp }}/ehrbase-oci.tar
-
-      - name: Upload - Test Image
+      - name: Upload - Jar
         uses: actions/upload-artifact@v4
         with:
-          name: ehrbase-image-test
-          path: ${{ runner.temp }}/ehrbase-test.tar
+          name: ehrbase-jar
+          path: ./application/target/ehrbase.jar
           if-no-files-found: error
           retention-days: 1
 
-      - name: Upload - OCI Image
+      - name: DEBUG - exec
+        run: ls -las configuration/target
+
+      - name: Upload - Jacoco Coverage
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ehrbase-image-oci
-          path: ${{ runner.temp }}/ehrbase-oci.tar
+          name: jacoco-coverage-partial-assemble
+          path: "**/target/jacoco*.exec"
           if-no-files-found: error
-          retention-days: 1
 
       - name: Collect - JUnit Reports
         uses: dorny/test-reporter@v1
@@ -105,13 +91,113 @@ jobs:
           fail-on-empty: 'true'
 
   #
+  # Performs docker OCI image builds.
+  #
+#  docker-oci-build:
+#    name: Docker-OCI-Image
+#    runs-on: ubuntu-latest
+#    needs: [ build-maven ]
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#        with:
+#          sparse-checkout: |
+#            Dockerfile
+#
+#      - name: Download - Jar
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: ehrbase-jar
+#          path: ./application/target/
+#
+#      - name: Docker - Set up Buildx
+#        uses: docker/setup-buildx-action@v3
+#
+#      # build the release multi arch image
+#      - name: Docker - Build OCI Image
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          file: Dockerfile
+#          platforms: linux/amd64,linux/arm64
+#          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
+#          outputs: type=oci,dest=${{ runner.temp }}/ehrbase-oci.tar
+#
+#      - name: Upload - OCI Image
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ehrbase-image-oci
+#          path: ${{ runner.temp }}/ehrbase-oci.tar
+#          if-no-files-found: error
+#          retention-days: 1
+
+  #
+  # Performs docker test image builds.
+  #
+  docker-test-build:
+    name: Docker-Test-Image
+    runs-on: ubuntu-latest
+    needs: [
+      build-maven
+    ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            Dockerfile
+            tests
+
+      - name: Download - Jar
+        uses: actions/download-artifact@v4
+        with:
+          name: ehrbase-jar
+          path: ./application/target/
+
+      # build the release image and load it. This is needed for the robot tests because Docker uses a legacy import
+      # format and is unable to use multi arch oci images (for now). As an alternative we could use podman in the future.
+      # podman load --quiet -i fedora.tar.gz
+      - name: Docker - Build Base Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          # load: true
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
+
+      # Build the test image for the actual architecture. This is needed for the robot tests because Docker uses a
+      # legacy import format and is unable to use multi arch oci images (for now). As an alternative we could use
+      # podman in the future. We also use plain docker build here because buildx does no use the local image in the
+      # FROM clause.
+      - name: Docker - Build Test Image
+        run: | 
+          docker build \
+            --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }} \
+            --build-arg EHRBASE_IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }} \
+            --file tests/DockerfileTest .
+
+      - name: Docker - Save Test Image
+        run: docker save --output ${{ runner.temp }}/ehrbase-test.tar ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }}
+
+      - name: Upload - Test Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ehrbase-image-test
+          path: ${{ runner.temp }}/ehrbase-test.tar
+          if-no-files-found: error
+          retention-days: 1
+
+  #
   # Uses the ehrbase docker image from [build] to run the robot integrations against it.
   #
   integration-test-run:
     runs-on: ubuntu-latest
-    needs: [ build ]
+    needs: [
+#      docker-oci-build,
+      docker-test-build
+    ]
     strategy:
-      fail-fast: false
+      fail-fast: false # ensure all tests run
       matrix:
         test-suite: [
           # sanity checks
@@ -152,6 +238,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tests
+            .env.ehrbase
+            docker-compose.yml
 
       - name: Download - Test Image
         uses: actions/download-artifact@v4
@@ -164,7 +255,9 @@ jobs:
 
       # image used by the docker-compose-int-test.yml
       - name: Docker Compose - Setup env
-        run: echo "EHRBASE_IMAGE=${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_TEST }}" >> $GITHUB_ENV
+        run: |
+          echo "EHRBASE_IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }}" >> $GITHUB_ENV
+          echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
       - name: Docker Compose - Starting
         run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
@@ -176,11 +269,25 @@ jobs:
             --path ${{ matrix.test-suite.path }} \
             --tags ${{ matrix.test-suite.tags }}
 
+      - name: Docker Compose - Logs ehrbase
+        if: always()
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs ehrbase
+
       - name: Docker Compose - Stopping
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --stop --force --volumes
+        run: |
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml down --remove-orphans
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --force --volumes
 
-      - name: Archive - Robot results
+      - name: Upload - Jacoco Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-partial-robot-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}
+          path: ./tests/coverage/jacoco*.exec
+          if-no-files-found: error
+
+      - name: Upload - Robot results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -191,15 +298,14 @@ jobs:
   #
   # Collect all Robot result from [integration-test-run] and generated the final report.
   #
-  integration-test-results:
+  integration-test-collect:
     name: Robot-Collect
     if: ${{ always() }}
-    needs: [ build, integration-test-run ]
+    needs: [
+      integration-test-run
+    ]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Download - Robot results
         uses: actions/download-artifact@v4
         with:
@@ -236,6 +342,38 @@ jobs:
           rm -rf ./tests/result | true
           rm -rf ./tests/report | true
 
+  #
+  # Collect all Robot result from [integration-test-run] and generated the final report.
+  #
+  coverage-collect:
+    name: Coverage-Collect
+    if: ${{ always() }}
+    needs: [
+      integration-test-run
+    ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download - Robot results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jacoco-coverage-partial-*
+          path: ./
+
+      - name: DEBUG - list dir
+        run: ls -lasR  ./
+
+      - name: Archive - Jacoco Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-final
+          path: .
+
+      - name: Cleanup - Partial Coverage
+        if: always()
+        run: |
+          rm -rf ./ | true
+
   # TODO docker deploy should be done here for develop, release/* and main
 
   #
@@ -245,20 +383,21 @@ jobs:
     name: Cleanup
     if: ${{ always() }}
     needs: [
-      build,
+      build-maven,
+#      docker-oci-build,
+      docker-test-build,
       integration-test-run,
-      integration-test-results
+      integration-test-collect,
+      coverage-collect,
     ]
     runs-on: ubuntu-latest
     steps:
-      - name: Delete - Test Image
+      - name: Delete - Temp Artifacts
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: ehrbase-image-test
-          failOnError: false
-
-      - name: Delete - Intermediate Robot results
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: robot-result-*
+          name: |
+            ehrbase-jar
+            ehrbase-image-test
+            robot-result-*
+            jacoco-coverage-partial-*
           failOnError: false
