@@ -31,7 +31,7 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-class RmTypeAliasTest {
+class RmTypeTest {
 
     @Disabled
     @Test
@@ -50,8 +50,8 @@ class RmTypeAliasTest {
             PARALLEL SAFE;
         """;
 
-        Map<Field<Object>, Field<Object>> typeToAliasMap = RmTypeAlias.values.stream()
-                .sorted(Comparator.comparing(RmTypeAlias::type))
+        Map<Field<Object>, Field<Object>> typeToAliasMap = RmType.values.stream()
+                .sorted(Comparator.comparing(RmType::type))
                 .collect(Collectors.toMap(
                         r -> DSL.field(DSL.sql("'" + r.type() + "'")),
                         r -> DSL.field(DSL.sql("RETURN '" + r.alias() + "';")),
@@ -74,12 +74,12 @@ class RmTypeAliasTest {
     @Test
     void checkStructureAliases() {
         Arrays.stream(StructureRmType.values())
-                .forEach(v -> assertThat(RmTypeAlias.getAlias(v.name())).isEqualTo(v.getAlias()));
+                .forEach(v -> assertThat(RmType.getAlias(v.name())).isEqualTo(v.getAlias()));
 
         Set<String> typesWithAliases =
-                RmTypeAlias.values.stream().map(RmTypeAlias::type).collect(Collectors.toSet());
+                RmType.values.stream().map(RmType::type).collect(Collectors.toSet());
 
-        typesWithAliases.forEach(t -> assertThatThrownBy(() -> RmTypeAlias.getRmType(t))
+        typesWithAliases.forEach(t -> assertThatThrownBy(() -> RmType.getRmType(t))
                 .withFailMessage(() -> "Alias name clashes with an existing type: " + t)
                 .isInstanceOf(IllegalArgumentException.class));
     }

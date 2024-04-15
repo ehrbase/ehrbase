@@ -45,7 +45,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRoot;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
@@ -176,7 +176,7 @@ public final class AslStructureQuery extends AslQuery {
                 this.structureConditions.add(new AslFieldValueQueryCondition(
                         new AslColumnField(String.class, ENTITY_ATTRIBUTE, FieldSource.withOwner(this), false),
                         AslConditionOperator.EQ,
-                        List.of(RmAttributeAlias.getAlias(attribute))));
+                        List.of(RmAttribute.getAlias(attribute))));
             }
         }
     }

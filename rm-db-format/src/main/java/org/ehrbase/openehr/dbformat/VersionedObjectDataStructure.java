@@ -59,7 +59,7 @@ public final class VersionedObjectDataStructure {
                             return OpenEHRBase.class.isAssignableFrom(t.getRawClass());
                         }
                     }.init(JsonTypeInfo.Id.NAME, new CanonicalJson.CJOpenEHRTypeNaming())
-                            .typeProperty(DbToRmFormat.TYPE_ATTRIBUTE)
+                            .typeProperty(RmAttribute.OBJ_TYPE.attribute())
                             .typeIdVisibility(true)
                             .inclusion(JsonTypeInfo.As.PROPERTY));
 
@@ -112,7 +112,7 @@ public final class VersionedObjectDataStructure {
         streamObjectNodes(jsonNode)
                 .filter(JsonNode::isObject)
                 .forEach(n ->
-                        addMagnitudeAttribute(n.get(DbToRmFormat.TYPE_ATTRIBUTE).textValue(), n));
+                        addMagnitudeAttribute(n.get(RmAttribute.OBJ_TYPE.attribute()).textValue(), n));
     }
 
     private static void addMagnitudeAttribute(String type, ObjectNode object) {
@@ -265,7 +265,7 @@ public final class VersionedObjectDataStructure {
     private static Optional<String> getType(JsonNode childNode) {
         return Optional.of(childNode)
                 .filter(JsonNode::isObject)
-                .map(n -> n.get(DbToRmFormat.TYPE_ATTRIBUTE))
+                .map(n -> n.get(RmAttribute.OBJ_TYPE.attribute()))
                 .map(JsonNode::asText);
     }
 
@@ -273,7 +273,7 @@ public final class VersionedObjectDataStructure {
         ObjectNode newNode = jsonNode.objectNode();
 
         jsonNode.fields().forEachRemaining(e -> {
-            String alias = RmAttributeAlias.getAlias(e.getKey());
+            String alias = RmAttribute.getAlias(e.getKey());
             JsonNode child = e.getValue();
             if (child.isObject()) {
                 child = applyRmAliases((ObjectNode) child);
@@ -287,8 +287,8 @@ public final class VersionedObjectDataStructure {
                     }
                 });
                 child = newArray;
-            } else if (child.isTextual() && e.getKey().equals(DbToRmFormat.TYPE_ATTRIBUTE)) {
-                String rmNameAlias = RmTypeAlias.getAlias(child.textValue());
+            } else if (child.isTextual() && e.getKey().equals(RmAttribute.OBJ_TYPE.attribute())) {
+                String rmNameAlias = RmType.getAlias(child.textValue());
                 child = new TextNode(rmNameAlias);
             }
             newNode.put(alias, child);

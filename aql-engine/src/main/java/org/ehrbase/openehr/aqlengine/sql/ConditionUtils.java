@@ -21,7 +21,6 @@ import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
 import static org.ehrbase.jooq.pg.Tables.COMMITTER;
 import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
-import static org.ehrbase.openehr.dbformat.DbToRmFormat.TYPE_ATTRIBUTE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,8 +64,8 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
-import org.ehrbase.openehr.dbformat.RmTypeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
+import org.ehrbase.openehr.dbformat.RmType;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -295,9 +294,9 @@ final class ConditionUtils {
                     tables.getDataTable(internalProvider), (AslColumnField) field, JSONB.class, useAliases);
             Field<JSONB> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField);
             Field<String> sqlTypeField =
-                    DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttributeAlias.getAlias(TYPE_ATTRIBUTE));
+                    DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttribute.OBJ_TYPE.alias());
             List<String> types =
-                    dvc.getTypesToCompare().stream().map(RmTypeAlias::getAlias).toList();
+                    dvc.getTypesToCompare().stream().map(RmType::getAlias).toList();
             return applyOperator(AslConditionOperator.IN, sqlTypeField, types)
                     .and(applyOperator(dvc.getOperator(), sqlMagnitudeField, dvc.getValues()));
         }

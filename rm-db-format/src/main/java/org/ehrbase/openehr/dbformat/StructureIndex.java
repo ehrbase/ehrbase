@@ -163,7 +163,7 @@ public final class StructureIndex {
     }
 
     private static String getNodeString(Node node, boolean withIndex) {
-        String att = RmAttributeAlias.getAlias(node.attribute);
+        String att = RmAttribute.getAlias(node.attribute);
         return (withIndex && Objects.nonNull(node.idx)) ? (att + node.idx) : att;
     }
 

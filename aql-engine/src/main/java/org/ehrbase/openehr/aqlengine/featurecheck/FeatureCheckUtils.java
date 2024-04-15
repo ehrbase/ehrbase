@@ -44,6 +44,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.pathanalysis.ANode;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathAnalysis;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
@@ -214,7 +215,7 @@ final class FeatureCheckUtils {
                                 .anyMatch(p -> p.equals(pathAttributes))
                         || pathAttributes
                                 .subList(0, Math.min(2, pathAttributes.size()))
-                                .equals(List.of("commit_audit", "committer")))) {
+                                .equals(List.of(RmAttribute.COMMIT_AUDIT.attribute(), RmAttribute.COMMITTER.attribute())))) {
             throw new AqlFeatureNotImplementedException("%s: VERSION path %s/%s is not supported"
                     .formatted(clauseType, root.getIdentifier(), path.render()));
         }

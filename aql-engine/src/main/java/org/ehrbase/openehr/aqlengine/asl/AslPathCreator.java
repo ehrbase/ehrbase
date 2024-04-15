@@ -80,6 +80,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
@@ -569,7 +570,7 @@ final class AslPathCreator {
                 .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 
         Stream<DataNodeInfo> dataNodeStream = currentNode.getChildren().stream()
-                .filter(n -> !"committer".equals(n.getAttribute().getAttribute()))
+                .filter(n -> !RmAttribute.COMMITTER.attribute().equals(n.getAttribute().getAttribute()))
                 .map(PathCohesionTreeNode::getPaths)
                 .flatMap(List::stream)
                 .map(ip -> Pair.of(
@@ -589,7 +590,7 @@ final class AslPathCreator {
                 });
 
         Stream<DataNodeInfo> committerDataNodeStream = currentNode.getChildren().stream()
-                .filter(n -> "committer".equals(n.getAttribute().getAttribute()))
+                .filter(n -> RmAttribute.COMMITTER.attribute().equals(n.getAttribute().getAttribute()))
                 .flatMap(committerNode -> joinCommitterPaths(
                         currentQuery, auditDetailsParent.get(), committerNode, rootProviderSubQuery, pathInfo));
 

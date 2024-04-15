@@ -51,7 +51,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.jooq.Condition;
@@ -313,7 +313,7 @@ public class AqlSqlQueryBuilder {
             List<PathNode> pathNodes, boolean multipleValued, Field<JSONB> jsonbField) {
         Iterator<String> attributeIt = pathNodes.stream()
                 .map(PathNode::getAttribute)
-                .map(RmAttributeAlias::getAlias)
+                .map(RmAttribute::getAlias)
                 .iterator();
 
         Field<JSONB> field = jsonbField;

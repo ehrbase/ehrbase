@@ -30,7 +30,7 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-class RmAttributeAliasTest {
+class RmAttributeTest {
 
     @Disabled
     @Test
@@ -49,8 +49,8 @@ class RmAttributeAliasTest {
             PARALLEL SAFE;
         """;
 
-        Map<Field<Object>, Field<Object>> attributeToAliasMap = RmAttributeAlias.VALUES.stream()
-                .sorted(Comparator.comparing(RmAttributeAlias::attribute))
+        Map<Field<Object>, Field<Object>> attributeToAliasMap = RmAttribute.VALUES.stream()
+                .sorted(Comparator.comparing(RmAttribute::attribute))
                 .collect(Collectors.toMap(
                         r -> DSL.field(DSL.sql("'" + r.attribute() + "'")),
                         r -> DSL.field(DSL.sql("RETURN '" + r.alias() + "';")),
@@ -72,20 +72,20 @@ class RmAttributeAliasTest {
 
     @Test
     void checkAliases() {
-        Set<String> attributes = RmAttributeAlias.VALUES.stream()
-                .map(RmAttributeAlias::attribute)
+        Set<String> attributes = RmAttribute.VALUES.stream()
+                .map(RmAttribute::attribute)
                 .collect(Collectors.toSet());
 
-        attributes.forEach(a -> assertThatThrownBy(() -> RmAttributeAlias.getAttribute(a))
+        attributes.forEach(a -> assertThatThrownBy(() -> RmAttribute.getAttribute(a))
                 .withFailMessage(() -> "Alias name clashes with an existing attribute " + a)
                 .isInstanceOf(IllegalArgumentException.class));
     }
 
     @Test
     void rmToJsonPathParts() {
-        assertThat(RmAttributeAlias.rmToJsonPathParts("archetype_details/template_id/value"))
+        assertThat(RmAttribute.rmToJsonPathParts("archetype_details/template_id/value"))
                 .isEqualTo(new String[] {"ad", "tm", "V"});
-        assertThat(RmAttributeAlias.rmToJsonPathParts("subject/external_ref/id/value"))
+        assertThat(RmAttribute.rmToJsonPathParts("subject/external_ref/id/value"))
                 .isEqualTo(new String[] {"su", "er", "X", "V"});
     }
 }
