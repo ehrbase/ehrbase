@@ -21,12 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.jooq.Field;
-import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -49,25 +45,16 @@ class RmAttributeTest {
             PARALLEL SAFE;
         """;
 
-        Map<Field<Object>, Field<Object>> attributeToAliasMap = RmAttribute.VALUES.stream()
+        String statement = RmAttribute.VALUES.stream()
                 .sorted(Comparator.comparing(RmAttribute::attribute))
-                .collect(Collectors.toMap(
-                        r -> DSL.field(DSL.sql("'" + r.attribute() + "'")),
-                        r -> DSL.field(DSL.sql("RETURN '" + r.alias() + "';")),
-                        (a, b) -> null,
-                        LinkedHashMap::new));
-        String a = DSL.case_(DSL.field(DSL.sql("a")))
-                        .mapFields(attributeToAliasMap)
-                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing attribute alias for %', a;")))
-                + " case;";
-        System.out.printf(
-                func,
-                a.indent(4)
-                        .replace("when ", "WHEN ")
-                        .replace("then ", "THEN ")
-                        .replace("case ", "CASE ")
-                        .replace("else ", "ELSE ")
-                        .replace("end case;", "END CASE;"));
+                .map(att -> "WHEN '%s' THEN RETURN '%s';"
+                        .formatted(att.attribute(), att.alias())
+                        .indent(4))
+                .collect(Collectors.joining(
+                        "",
+                        "CASE a\n",
+                        "ELSE RAISE EXCEPTION 'Missing attribute alias for %', a;".indent(4) + "END CASE;"));
+        System.out.printf(func, statement.indent(4));
     }
 
     @Test

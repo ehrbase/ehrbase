@@ -22,12 +22,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.jooq.Field;
-import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -50,25 +46,14 @@ class RmTypeTest {
             PARALLEL SAFE;
         """;
 
-        Map<Field<Object>, Field<Object>> typeToAliasMap = RmType.values.stream()
+        String statement = RmType.values.stream()
                 .sorted(Comparator.comparing(RmType::type))
-                .collect(Collectors.toMap(
-                        r -> DSL.field(DSL.sql("'" + r.type() + "'")),
-                        r -> DSL.field(DSL.sql("RETURN '" + r.alias() + "';")),
-                        (a, b) -> null,
-                        LinkedHashMap::new));
-        String t = DSL.case_(DSL.field(DSL.sql("t")))
-                        .mapFields(typeToAliasMap)
-                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing type alias for %', t;")))
-                + " case;";
-        System.out.printf(
-                func,
-                t.indent(4)
-                        .replace("when ", "WHEN ")
-                        .replace("then ", "THEN ")
-                        .replace("case ", "CASE ")
-                        .replace("else ", "ELSE ")
-                        .replace("end case;", "END CASE;"));
+                .map(att -> "WHEN '%s' THEN RETURN '%s';"
+                        .formatted(att.type(), att.alias())
+                        .indent(4))
+                .collect(Collectors.joining(
+                        "", "CASE t\n", "ELSE RAISE EXCEPTION 'Missing type alias for %', t;".indent(4) + "END CASE;"));
+        System.out.printf(func, statement.indent(4));
     }
 
     @Test
