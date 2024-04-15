@@ -37,6 +37,7 @@ import org.ehrbase.util.SemVerUtil;
 import org.ehrbase.util.StoredQueryQualifiedName;
 import org.ehrbase.util.VersionConflictException;
 import org.jooq.exception.DataAccessException;
+import org.springframework.cache.Cache;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -72,11 +73,16 @@ public class StoredQueryServiceImp implements StoredQueryService {
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName storedQueryQualifiedName =
                 StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
-
-        return cacheProvider.get(
-                CacheProvider.STORED_QUERY_CACHE,
-                storedQueryQualifiedName.toQualifiedNameString(),
-                () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
+        try {
+            return cacheProvider.get(
+                    CacheProvider.STORED_QUERY_CACHE,
+                    storedQueryQualifiedName.toQualifiedNameString(),
+                    () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
+        } catch (Cache.ValueRetrievalException e) {
+            // No template with that templateId exist
+            throw new GeneralRequestProcessingException(
+                    "Cache Access Error: " + e.getCause().getMessage(), e);
+        }
     }
 
     private QueryDefinitionResultDto retrieveStoredQueryInternal(StoredQueryQualifiedName storedQueryQualifiedName) {
