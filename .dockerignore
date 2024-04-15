@@ -1,13 +1,5 @@
-.git
-.gitattributes
-.gitignore
-.circleci
-.circleciignore
-.dockerignore
-.pgdata
-CHANGELOG.md
-LICENSE.md
-Notice.md
-README.md
-sonar-project.properties
-tests
+# Ignore everything
+*
+
+# Allow files and directories
+!/application/target/ehrbase.jar
