@@ -10,7 +10,6 @@ services:
   #
   ehrbase:
     image: ${EHRBASE_IMAGE:-ehrbase/ehrbase:next}
-    container_name: "EHRbase"
     env_file:
       - .env.ehrbase
     environment:
@@ -34,7 +33,6 @@ services:
   #
   ehrdb:
     image: ${EHRBASE_POSTGRES_IMAGE:-ehrbase/ehrbase-postgres:16.2-mvp} # FIXME use latest after the image build is adjusted
-    container_name: "EHRbase-PG"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

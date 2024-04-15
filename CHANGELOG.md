@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added `STORED_QUERY_CACHE` ([#1258](https://github.com/ehrbase/ehrbase/pull/1258))
  ### Changed 
 * Changed `StoredQueryRepository` methods to only accept `StoredQueryQualifiedName` as arguments ([#1258](https://github.com/ehrbase/ehrbase/pull/1258))
+* Changed docker image and run integration test against it instead of the ehrbase.jar ([#1259](https://github.com/ehrbase/ehrbase/pull/1259))
  ### Fixed 
 
 ## [2.0.0]

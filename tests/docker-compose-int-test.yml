@@ -12,6 +12,7 @@ services:
     # ensure image is provided externally and prevent pulling of remote while running tests
     image: ${EHRBASE_IMAGE?error}
     pull_policy: never
+    container_name: "EHRbase"
     # adjust env as needed
     environment:
       MANAGEMENT_ENDPOINTS_WEB_ACCESS: "PUBLIC"
@@ -20,11 +21,20 @@ services:
       EHRBASE_REST_AQL_RESPONSE_GENERATOR_DETAILS_ENABLED: "true"
       ADMIN_API_ACTIVE: "true"
       SECURITY_AUTHTYPE: "NONE"
+      JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage}"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ehrbase/management/info || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 12
+    volumes:
+      - ./tests/coverage:/app/coverage
+
+  #
+  # Change container name for better readability of logs
+  #
+  ehrdb:
+    container_name: "EHRbase-PG"
 
   #
   # Integration tests will be ready after ehrbase is healthy.
@@ -45,8 +55,6 @@ services:
     networks:
       - ehrbase-net
     volumes:
-      - ./tests/runRobotTest.sh:/bin/runRobotTest:Z
-      - ./tests/collectRebotResults.sh:/bin/collectRebotResults:Z
       - ./tests/results:/integration-tests/results
       - ./tests/report:/integration-tests/report
     command: bash -c 'echo "ready to run runRobotTest/collectRebotResults"'

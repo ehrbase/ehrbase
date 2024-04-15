@@ -111,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         test-suite: [
-          #
+          # sanity checks
           { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity' },
           # rest/openehr/v1/definition
           { path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template' },
@@ -123,24 +123,24 @@ jobs:
           # rest/openehr/v1/ehr/{ehr_id}/contribution
           { path: 'CONTRIBUTION_TESTS', name: 'CONTRIBUTION', tags: 'CONTRIBUTION' },
           # rest/openehr/v1/ehr/{ehr_id}/composition
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_1', tags: 'compositionANDcomposition_create_1' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_2', tags: 'compositionANDcomposition_create_2' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_3', tags: 'compositionANDcomposition_create_3' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_4', tags: 'compositionANDcomposition_create_4' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_5', tags: 'compositionANDcomposition_create_5' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET', tags: 'compositionANDcomposition_get' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_UPDATE', tags: 'compositionANDcomposition_update' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_DELETE', tags: 'compositionANDcomposition_delete' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET_VERSIONED', tags: 'compositionANDcomposition_get_versioned' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_VALIDATION', tags: 'COMPOSITION_validation' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_HEADERS_CHECKS', tags: 'HeadersChecks' },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_ISM_TRANSITIONS', tags: 'compositionANDcomposition_ism_transitions' },
           { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_WITH_DIFFERENT_TIME_ZONES', tags: 'COMPOSITION_dtz' },
-          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_1', tags: 'compositionANDcomposition_create_1' },
-          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_2', tags: 'compositionANDcomposition_create_2' },
-          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_3', tags: 'compositionANDcomposition_create_3' },
-          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_4', tags: 'compositionANDcomposition_create_4' },
-          { path: 'COMPOSITION_TESTS', name: 'CREATE_COMPO_5', tags: 'compositionANDcomposition_create_5' },
-          { path: 'COMPOSITION_TESTS', name: 'DELETE_COMPOSITION', tags: 'compositionANDcomposition_delete' },
-          { path: 'COMPOSITION_TESTS', name: 'GET_COMPOSITION', tags: 'compositionANDcomposition_get' },
-          { path: 'COMPOSITION_TESTS', name: 'GET_VERSIONED_COMPOSITION', tags: 'compositionANDcomposition_get_versioned' },
-          { path: 'COMPOSITION_TESTS', name: 'HEADERS_CHECKS', tags: 'HeadersChecks' },
-          { path: 'COMPOSITION_TESTS', name: 'ISM_TRANSITIONS_COMPOSITION', tags: 'compositionANDcomposition_ism_transitions' },
-          { path: 'COMPOSITION_TESTS', name: 'UPDATE_COMPOSITION', tags: 'compositionANDcomposition_update' },
-          { path: 'COMPOSITION_TESTS', name: 'VALIDATION', tags: 'COMPOSITION_validation' },
           # rest/openehr/v1/query/aql - could be split into individual sub-suite
           { path: 'AQL_TESTS', name: 'AQL', tags: 'AQL_TESTS_PACKAGE' },
-          # Still missing
           # rest/rest/ecis
           { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag' },
+          # TODO Still missing
           # FHIR_TERMINOLOGY
           # SECURITY_TESTS
         ]
@@ -203,29 +203,13 @@ jobs:
           pattern: robot-result-*
           path: ./tests/results/
 
-      - name: Download - Test Image
-        uses: actions/download-artifact@v4
-        with:
-          name: ehrbase-image-test
-          path: ${{ runner.temp }}
-
-      - name: Docker - Load Image
-        run: docker load --input ${{ runner.temp }}/ehrbase-test.tar
-
-      # image used by the docker-compose-int-test.yml
-      - name: Docker Compose - Setup env
-        run: echo "EHRBASE_IMAGE=${{ env.IMAGE_NAME }}/${{ env.IMAGE_TAG_TEST }}" >> $GITHUB_ENV
-
-      # FIXME replace with single docker run and mount
-      #      - ./tests/results:/integration-tests/results
-      #      - ./tests/report:/integration-tests/report
+      # FIXME use same integration test image as the compose is using
       - name: Generate - Robot Tests-Report
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml run --rm ehrbase-integration-tests collectRebotResults
-
-      - name: Docker Compose - Stopping
-        if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --stop --force --volumes
+          docker run \
+            -v ./tests/results:/integration-tests/results \
+            -v ./tests/report:/integration-tests/report \
+            ehrbase/integration-tests:latest collectRebotResults
 
       - name: Github - Send Robot Report to PR
         if: always()
