@@ -266,6 +266,7 @@ $$
     STRICT
     PARALLEL SAFE;
 
+/* This function only performs aliasing. It does NOT do additional things like calculating _magnitude values! */
 CREATE OR REPLACE FUNCTION jsonb_with_aliased_keys_and_types(j jsonb)
     RETURNS jsonb AS $$
 DECLARE

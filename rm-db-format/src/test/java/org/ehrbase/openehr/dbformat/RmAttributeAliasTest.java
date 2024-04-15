@@ -58,7 +58,7 @@ class RmAttributeAliasTest {
                         LinkedHashMap::new));
         String a = DSL.case_(DSL.field(DSL.sql("a")))
                         .mapFields(attributeToAliasMap)
-                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing alias for %', a;")))
+                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing attribute alias for %', a;")))
                 + " case;";
         System.out.printf(
                 func,

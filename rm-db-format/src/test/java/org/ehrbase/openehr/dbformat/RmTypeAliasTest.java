@@ -59,7 +59,7 @@ class RmTypeAliasTest {
                         LinkedHashMap::new));
         String t = DSL.case_(DSL.field(DSL.sql("t")))
                         .mapFields(typeToAliasMap)
-                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing alias for %', t;")))
+                        .else_(DSL.field(DSL.sql("RAISE EXCEPTION 'Missing type alias for %', t;")))
                 + " case;";
         System.out.printf(
                 func,
