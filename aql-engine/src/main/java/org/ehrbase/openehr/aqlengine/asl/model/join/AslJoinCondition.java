@@ -19,8 +19,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.join;
 
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
-public sealed interface AslJoinCondition
-        permits AslAbstractJoinCondition, AslAuditDetailsJoinCondition, AslCommitterJoinCondition {
+public sealed interface AslJoinCondition permits AslAbstractForeignKeyJoinCondition, AslAbstractJoinCondition {
     AslQuery getLeftOwner();
 
     AslQuery getRightOwner();

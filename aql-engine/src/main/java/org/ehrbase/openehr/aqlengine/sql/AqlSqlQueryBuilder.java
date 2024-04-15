@@ -269,8 +269,7 @@ public class AqlSqlQueryBuilder {
         Table<?> data;
         Function<String, Field<JSONB>> dataFieldProvider;
         if (base instanceof AslStructureQuery baseSq && baseSq.getType() != AslSourceRelation.COMMITTER) {
-            Table<?> dataTable = baseSq.getType().getDataTable();
-            data = dataTable.as(subqueryAlias(aslData));
+            data = baseSq.getType().getDataTable().as(subqueryAlias(aslData));
             dataFieldProvider = __ -> data.field(ObjectDataTablePrototype.INSTANCE.DATA);
         } else {
             data = targetTable;

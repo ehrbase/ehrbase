@@ -56,6 +56,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslAbstractJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslCommitterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
@@ -66,6 +67,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.RmType;
+import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -88,38 +90,31 @@ final class ConditionUtils {
                         desc, conditions, sqlLeft, sqlRight);
                 case AslPathFilterJoinCondition filterCondition -> conditions.add(
                         buildCondition(filterCondition.getCondition(), aslQueryToTable, true));
-                case AslAuditDetailsJoinCondition ac -> conditions.add(FieldUtils.field(
-                                sqlLeft,
-                                aslJoin.getLeft(),
-                                ac.getLeftOwner(),
-                                AslStructureColumn.AUDIT_ID.getFieldName(),
-                                UUID.class,
-                                true)
-                        .eq(FieldUtils.field(
-                                sqlRight,
-                                aslJoin.getRight(),
-                                ac.getRightOwner(),
-                                AUDIT_DETAILS.ID.getName(),
-                                UUID.class,
-                                true)));
-                case AslCommitterJoinCondition cc -> conditions.add(FieldUtils.field(
-                                sqlLeft,
-                                aslJoin.getLeft(),
-                                cc.getLeftOwner(),
-                                AUDIT_DETAILS.COMMITTER_ID.getName(),
-                                UUID.class,
-                                true)
-                        .eq(FieldUtils.field(
-                                sqlRight,
-                                aslJoin.getRight(),
-                                cc.getRightOwner(),
-                                COMMITTER.ID.getName(),
-                                UUID.class,
-                                true)));
+                case AslAuditDetailsJoinCondition ac -> conditions.add(buildForeignKeyJoinCondition(
+                        sqlLeft,
+                        ObjectVersionTablePrototype.INSTANCE.AUDIT_ID,
+                        sqlRight,
+                        AUDIT_DETAILS.ID,
+                        aslJoin,
+                        ac));
+                case AslCommitterJoinCondition cc -> conditions.add(buildForeignKeyJoinCondition(
+                        sqlLeft, AUDIT_DETAILS.COMMITTER_ID, sqlRight, COMMITTER.ID, aslJoin, cc));
             }
         }
 
         return conditions.stream().reduce(DSL.noCondition(), DSL::and);
+    }
+
+    private static Condition buildForeignKeyJoinCondition(
+            Table<?> left,
+            Field<UUID> leftField,
+            Table<?> right,
+            Field<UUID> rightField,
+            AslJoin join,
+            AslAbstractJoinCondition condition) {
+        return FieldUtils.field(left, join.getLeft(), condition.getLeftOwner(), leftField.getName(), UUID.class, true)
+                .eq(FieldUtils.field(
+                        right, join.getRight(), condition.getRightOwner(), rightField.getName(), UUID.class, true));
     }
 
     private static void addDelegatingJoinConditions(
