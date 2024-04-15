@@ -215,7 +215,8 @@ final class FeatureCheckUtils {
                                 .anyMatch(p -> p.equals(pathAttributes))
                         || pathAttributes
                                 .subList(0, Math.min(2, pathAttributes.size()))
-                                .equals(List.of(RmAttribute.COMMIT_AUDIT.attribute(), RmAttribute.COMMITTER.attribute())))) {
+                                .equals(List.of(
+                                        RmAttribute.COMMIT_AUDIT.attribute(), RmAttribute.COMMITTER.attribute())))) {
             throw new AqlFeatureNotImplementedException("%s: VERSION path %s/%s is not supported"
                     .formatted(clauseType, root.getIdentifier(), path.render()));
         }

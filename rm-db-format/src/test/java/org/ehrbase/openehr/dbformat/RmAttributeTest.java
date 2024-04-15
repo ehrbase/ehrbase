@@ -72,9 +72,8 @@ class RmAttributeTest {
 
     @Test
     void checkAliases() {
-        Set<String> attributes = RmAttribute.VALUES.stream()
-                .map(RmAttribute::attribute)
-                .collect(Collectors.toSet());
+        Set<String> attributes =
+                RmAttribute.VALUES.stream().map(RmAttribute::attribute).collect(Collectors.toSet());
 
         attributes.forEach(a -> assertThatThrownBy(() -> RmAttribute.getAttribute(a))
                 .withFailMessage(() -> "Alias name clashes with an existing attribute " + a)

@@ -293,8 +293,7 @@ final class ConditionUtils {
             Field<JSONB> sqlDvOrderedField = FieldUtils.field(
                     tables.getDataTable(internalProvider), (AslColumnField) field, JSONB.class, useAliases);
             Field<JSONB> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField);
-            Field<String> sqlTypeField =
-                    DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttribute.OBJ_TYPE.alias());
+            Field<String> sqlTypeField = DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttribute.OBJ_TYPE.alias());
             List<String> types =
                     dvc.getTypesToCompare().stream().map(RmType::getAlias).toList();
             return applyOperator(AslConditionOperator.IN, sqlTypeField, types)

@@ -111,8 +111,8 @@ public final class VersionedObjectDataStructure {
     public static void fillInMagnitudes(JsonNode jsonNode) {
         streamObjectNodes(jsonNode)
                 .filter(JsonNode::isObject)
-                .forEach(n ->
-                        addMagnitudeAttribute(n.get(RmAttribute.OBJ_TYPE.attribute()).textValue(), n));
+                .forEach(n -> addMagnitudeAttribute(
+                        n.get(RmAttribute.OBJ_TYPE.attribute()).textValue(), n));
     }
 
     private static void addMagnitudeAttribute(String type, ObjectNode object) {

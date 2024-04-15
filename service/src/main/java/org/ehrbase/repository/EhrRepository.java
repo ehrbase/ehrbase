@@ -69,8 +69,7 @@ public class EhrRepository
                 EhrStatus> {
 
     public static final String[] IS_MODIFIABLE_JSON_PATH = RmAttribute.rmToJsonPathParts("is_modifiable");
-    public static final String[] SUBJECT_ID_JSON_PATH =
-            RmAttribute.rmToJsonPathParts("subject/external_ref/id/value");
+    public static final String[] SUBJECT_ID_JSON_PATH = RmAttribute.rmToJsonPathParts("subject/external_ref/id/value");
     public static final String[] SUBJECT_NAMESPACE_JSON_PATH =
             RmAttribute.rmToJsonPathParts("subject/external_ref/namespace");
 

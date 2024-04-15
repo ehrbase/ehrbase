@@ -76,8 +76,7 @@ class RmTypeTest {
         Arrays.stream(StructureRmType.values())
                 .forEach(v -> assertThat(RmType.getAlias(v.name())).isEqualTo(v.getAlias()));
 
-        Set<String> typesWithAliases =
-                RmType.values.stream().map(RmType::type).collect(Collectors.toSet());
+        Set<String> typesWithAliases = RmType.values.stream().map(RmType::type).collect(Collectors.toSet());
 
         typesWithAliases.forEach(t -> assertThatThrownBy(() -> RmType.getRmType(t))
                 .withFailMessage(() -> "Alias name clashes with an existing type: " + t)

@@ -228,8 +228,7 @@ public final class DbToRmFormat {
                     JsonNode value;
                     if (RmAttribute.OBJ_TYPE.attribute().equals(attribute)) {
                         // revert type aliases
-                        String rmType =
-                                RmType.getRmType(property.getValue().textValue());
+                        String rmType = RmType.getRmType(property.getValue().textValue());
                         value = TextNode.valueOf(rmType);
                     } else {
                         value = property.getValue();
