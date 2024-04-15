@@ -259,6 +259,11 @@ class AqlQueryFeatureCheckTest {
                        SELECT c
                        FROM COMPOSITION c
                        WHERE c/content/content/name/value = 'invalid'
+                    """,
+                """
+                       SELECT
+                         cv/commit_audit/committer/start_time
+                       FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
                     """
             })
     void ensureInvalidPathRejected(String aql) {
@@ -481,6 +486,10 @@ class AqlQueryFeatureCheckTest {
                 """,
                 """
                    SELECT cv
+                   FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
+                """,
+                """
+                   SELECT cv/commit_audit
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
                 """
             })

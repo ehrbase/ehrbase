@@ -41,6 +41,7 @@ public class CacheProperties {
 
     private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
     private CacheConfig userIdCacheConfig = new CacheConfig();
+    private CacheConfig committerIdCacheConfig = new CacheConfig();
 
     public CacheConfig getExternalFhirTerminologyCacheConfig() {
         return externalFhirTerminologyCacheConfig;
@@ -56,6 +57,14 @@ public class CacheProperties {
 
     public void setUserIdCacheConfig(CacheConfig userIdCacheConfig) {
         this.userIdCacheConfig = userIdCacheConfig;
+    }
+
+    public CacheConfig getCommitterIdCacheConfig() {
+        return committerIdCacheConfig;
+    }
+
+    public void setCommitterIdCacheConfig(final CacheConfig committerIdCacheConfig) {
+        this.committerIdCacheConfig = committerIdCacheConfig;
     }
 
     public static class CacheConfig {

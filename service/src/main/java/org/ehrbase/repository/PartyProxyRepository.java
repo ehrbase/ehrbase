@@ -36,6 +36,7 @@ import org.ehrbase.service.UserService.UserAndCommitterId;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Record1;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Repository;
@@ -84,21 +85,21 @@ public class PartyProxyRepository {
 
         usersRecord.setId(uuid);
         usersRecord.setUsername(username);
-        usersRecord.setCommitterId(
-                findOrCreateCommitter(partyIdentifiedForUser(uuid, username)).getId());
+        usersRecord.setCommitterId(findOrCreateCommitter(partyIdentifiedForUser(uuid, username)));
         usersRecord.store();
 
         return new UserAndCommitterId(uuid, usersRecord.getCommitterId());
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public CommitterRecord findOrCreateCommitter(PartyProxy party) {
+    public UUID findOrCreateCommitter(PartyProxy party) {
 
         String dbJson = VersionedObjectDataStructure.applyRmAliases(
                         VersionedObjectDataStructure.MARSHAL_OM.valueToTree(party))
                 .toString();
-        // XXX Cache?
-        return context.selectFrom(COMMITTER)
+
+        return context.select(COMMITTER.ID)
+                .from(COMMITTER)
                 // SQLDataType.CLOB is resolved to PostgresDataType.TEXT, which is necessary to enable index usage
                 .where(COMMITTER
                         .DATA
@@ -106,14 +107,14 @@ public class PartyProxyRepository {
                         .eq(DSL.inline(dbJson).cast(JSONB.class).cast(SQLDataType.CLOB)))
                 // The migration did not necessarily eliminate all duplicates, so choose the first matching one
                 .limit(1)
-                .fetchOptional()
+                .fetchOptional(Record1::value1)
                 .orElseGet(() -> {
                     CommitterRecord committerRecord = context.newRecord(COMMITTER);
                     committerRecord.setId(UuidGenerator.randomUUID());
                     committerRecord.setData(JSONB.valueOf(dbJson));
                     committerRecord.store();
 
-                    return committerRecord;
+                    return committerRecord.getId();
                 });
     }
 

@@ -48,6 +48,7 @@ import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record2;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -140,8 +141,11 @@ public class ContributionRepository {
      * @param targetType
      * @return {@link UUID} of the corresponding Database Record.
      */
-    @Transactional
-    public UUID createAudit(com.nedap.archie.rm.generic.AuditDetails auditDetails, AuditDetailsTargetType targetType) {
+    @Transactional(propagation = Propagation.MANDATORY)
+    public UUID createAudit(
+            UUID committerId,
+            com.nedap.archie.rm.generic.AuditDetails auditDetails,
+            AuditDetailsTargetType targetType) {
 
         AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
 
@@ -149,12 +153,10 @@ public class ContributionRepository {
         auditDetailsRecord.setTimeCommitted(timeProvider.getNow());
 
         UserAndCommitterId currentUserAndCommitterId = userService.getCurrentUserAndCommitterId();
-        if (auditDetails.getCommitter() != null) {
-            auditDetailsRecord.setCommitterId(partyProxyRepository
-                    .findOrCreateCommitter(auditDetails.getCommitter())
-                    .getId());
-        } else {
+        if (committerId == null) {
             auditDetailsRecord.setCommitterId(currentUserAndCommitterId.committerId());
+        } else {
+            auditDetailsRecord.setCommitterId(committerId);
         }
 
         auditDetailsRecord.setTargetType(targetType.getAlias());

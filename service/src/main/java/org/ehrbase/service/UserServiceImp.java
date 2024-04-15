@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import java.util.Optional;
-import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.repository.PartyProxyRepository;
@@ -55,23 +54,18 @@ public class UserServiceImp implements UserService {
     @Override
     public UserAndCommitterId getCurrentUserAndCommitterId() {
         String key = authenticationFacade.getAuthentication().getName();
-        return cacheProvider.get(CacheProvider.USER_ID_CACHE, key, () -> getOrCreateCurrentUserIdSync(key));
+        return cacheProvider.get(CacheProvider.USER_ID_CACHE, key, () -> getOrCreateCurrentUserId(key));
     }
 
-    @Override
-    public UUID getCurrentUserId() {
-        return getCurrentUserAndCommitterId().userId();
-    }
-
-    private UserAndCommitterId getOrCreateCurrentUserIdSync(String key) {
+    private UserAndCommitterId getOrCreateCurrentUserId(String key) {
 
         return partyProxyRepository
                 .findInternalUserAndCommitterId(key)
                 .or(() -> {
                     try {
                         return Optional.of(partyProxyRepository.createInternalUser(key));
-                    } catch (DataIntegrityViolationException ex) {
-                        logger.info(ex.getMessage(), ex.getMessage());
+                    } catch (DataIntegrityViolationException e) {
+                        logger.info(e.getMessage(), e);
                         return partyProxyRepository.findInternalUserAndCommitterId(key);
                     }
                 })
