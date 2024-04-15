@@ -217,6 +217,7 @@ final class AslPathCreator {
         if (base instanceof AslStructureQuery asq
                 && asq.getType() == AslSourceRelation.COMMITTER
                 && dni.pathInJson().isEmpty()) {
+            // if full committer is used, we do not need an extra subquery to return it
             dataQuery = base;
             dataFieldName = COMMITTER.DATA.getName();
         } else {
@@ -234,25 +235,22 @@ final class AslPathCreator {
             parentJoin.addChild(dataQuery, new AslJoin(provider, joinType, dataQuery));
             dataFieldName = ((AslPathDataQuery) dataQuery).getDataField().getColumnName();
         }
-        dni.node()
-                .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(
-                        path,
-                        parentJoin == rootQuery
-                                ? dataQuery.getSelect().stream()
-                                        .filter(AslColumnField.class::isInstance)
-                                        .map(AslColumnField.class::cast)
-                                        .filter(f -> dataFieldName.equals(f.getColumnName()))
-                                        .findFirst()
-                                        .orElseThrow()
-                                : dni.providerSubQuery().getSelect().stream()
-                                        .filter(AslColumnField.class::isInstance)
-                                        .map(AslColumnField.class::cast)
-                                        .filter(f -> dataFieldName.equals(f.getColumnName()))
-                                        .filter(f -> f.getOwner() == dataQuery)
-                                        .map(f -> f.withProvider(rootQuery))
-                                        .findFirst()
-                                        .orElseThrow()));
+
+        List<IdentifiedPath> pathsEndingAtNode = dni.node().getPathsEndingAtNode();
+        if (!pathsEndingAtNode.isEmpty()) {
+            AslField target = (parentJoin == rootQuery
+                            ? dataQuery.getSelect().stream()
+                            : dni.providerSubQuery().getSelect().stream()
+                                    .filter(f -> f.getOwner() == dataQuery)
+                                    .map(f -> f.withProvider(rootQuery)))
+                    .filter(AslColumnField.class::isInstance)
+                    .map(AslColumnField.class::cast)
+                    .filter(f -> dataFieldName.equals(f.getColumnName()))
+                    .findFirst()
+                    .orElseThrow();
+
+            pathsEndingAtNode.forEach(path -> pathToField.put(path, target));
+        }
 
         addQueriesForDataNode(dni.dependentPathDataNodes(), rootQuery, dataQuery, pathToField);
     }
@@ -570,7 +568,10 @@ final class AslPathCreator {
                 .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 
         Stream<DataNodeInfo> dataNodeStream = currentNode.getChildren().stream()
-                .filter(n -> !RmAttribute.COMMITTER.attribute().equals(n.getAttribute().getAttribute()))
+                // No commit_audit.committer
+                .filter(n -> !RmAttribute.COMMITTER
+                        .attribute()
+                        .equals(n.getAttribute().getAttribute()))
                 .map(PathCohesionTreeNode::getPaths)
                 .flatMap(List::stream)
                 .map(ip -> Pair.of(
@@ -589,8 +590,11 @@ final class AslPathCreator {
                             p.getRight());
                 });
 
+        // commit_audit.committer
         Stream<DataNodeInfo> committerDataNodeStream = currentNode.getChildren().stream()
-                .filter(n -> RmAttribute.COMMITTER.attribute().equals(n.getAttribute().getAttribute()))
+                .filter(n -> RmAttribute.COMMITTER
+                        .attribute()
+                        .equals(n.getAttribute().getAttribute()))
                 .flatMap(committerNode -> joinCommitterPaths(
                         currentQuery, auditDetailsParent.get(), committerNode, rootProviderSubQuery, pathInfo));
 
