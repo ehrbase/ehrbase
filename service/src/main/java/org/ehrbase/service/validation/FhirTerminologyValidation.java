@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.util.functional.Try;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
@@ -97,7 +98,8 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
         WebClient client = buildRestClientCall(uri);
         RequestBodyUriSpec method = client.method(HttpMethod.GET);
         Mono<ResponseEntity<String>> mono = method.retrieve().toEntity(String.class);
-        ResponseEntity<String> respEntity = mono.block();
+        ResponseEntity<String> respEntity = Optional.ofNullable(mono.block())
+                .orElseThrow(() -> new InternalServerException("could not connect to external Terminology Server"));
 
         String responseBody = respEntity.getBody();
 
@@ -132,6 +134,7 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
             add("//hl7.org/fhir");
         }
 
+        @Override
         public String toString() {
             return this.stream().collect(Collectors.joining(", "));
         }
@@ -223,6 +226,10 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
         private static final String SYS = "system";
         private static final String CODE = "code";
         private static final String DISP = "display";
+
+        private ValueSetConverter() {
+            // NOP
+        }
 
         @SuppressWarnings("unchecked")
         static List<DvCodedText> convert(DocumentContext ctx) {
