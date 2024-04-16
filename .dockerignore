@@ -3,3 +3,5 @@
 
 # Allow files and directories
 !/application/target/ehrbase.jar
+!pom.xml
+!**/pom.xml

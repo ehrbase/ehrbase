@@ -92,7 +92,7 @@
         <executions>
           <!-- AGGREGATED UNIT TEST COVERAGE REPORT -->
           <execution>
-            <id>aggregate-jacoco-unit-test-coverage</id>
+            <id>jacoco-aggregate-unit-test-coverage</id>
             <phase>test</phase>
             <goals>
               <goal>report-aggregate</goal>
@@ -107,7 +107,7 @@
           </execution>
           <!-- AGGREGATED INTEGRATION TEST COVERAGE REPORT -->
           <execution>
-            <id>aggregate-jacoco-integration-test-coverage</id>
+            <id>jacoco-aggregate-integration-test-coverage</id>
             <phase>verify</phase>
             <goals>
               <goal>report-aggregate</goal>
@@ -122,7 +122,7 @@
           </execution>
           <!-- AGGREGATED OVERALL COVERAGE REPORT -->
           <execution>
-            <id>aggregate-jacoco-overall-coverage</id>
+            <id>jacoco-aggregate-overall-coverage</id>
             <phase>package</phase>
             <goals>
               <goal>report-aggregate</goal>

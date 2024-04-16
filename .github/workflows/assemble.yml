@@ -1,5 +1,8 @@
 name: "Assemble"
 
+# we have multiple workflows - this helps to distinguish for them
+run-name: "${{ github.event.pull_request.title || github.head_ref }} - Assemble"
+
 on:
   push:
     branches: [ develop, release/* ]
@@ -8,13 +11,11 @@ on:
   workflow_dispatch:
 
 env:
+  JAVA_VERSION: 21
+  JAVA_DISTRIBUTION: 'temurin'
   IMAGE_NAME: ehrbase/ehrbase
   IMAGE_TAG_BUILD: build
   IMAGE_TAG_TEST: test
-
-#run-name: Assemble ${{ inputs.deploy_target }} by @${{ github.actor }}
-# Dynamically set the run name to include the type of branch (feature or bugfix), branch name, and the user
-run-name: "${{ contains(github.head_ref, 'feature/') && 'Feature' || contains(github.head_ref, 'bugfix/') && 'Bugfix' || 'Update' }}: ${{ github.head_ref }} by @${{ github.actor }}"
 
 jobs:
 
@@ -28,37 +29,30 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # Fetch all history for all tags and branches - so sonar can find ref and collect blame
-          fetch-depth: 0
 
       - name: Setup - Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: 21
-          distribution: 'temurin'
-#          cache: 'maven'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: 'maven'
+
+      - name: Setup - Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            deps-${{ runner.os }}-m2-${{ github.head_ref }}-
+            deps-${{ runner.os }}-m2-
+            deps-${{ runner.os }}-
+            deps-
 
       - name: Spotless - Check
         run: mvn spotless:check
 
       - name: Maven - Verify and Package
-        run: mvn --batch-mode -U -Dmaven.test.failure.ignore=true verify package
-
-      - name: Sonar - Analyze
-        # Dependabot has no access to the SONAR_TOKEN secret.
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn --batch-mode sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=ehrbase \
-            -Dsonar.projectKey=ehrbase_ehrbase \
-            -Dsonar.exclusions=test/** \
-            -Dsonar.coverage.exclusions=test/** \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/test-coverage/target/site/jacoco-overall-coverage/jacoco.xml \
-            -Dsonar.java.enablePreview=true
+        run: mvn --batch-mode --update-snapshots -Dmaven.test.failure.ignore=true verify package
 
       - name: Upload - Jar
         uses: actions/upload-artifact@v4
@@ -68,8 +62,14 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-      - name: DEBUG - exec
-        run: ls -las configuration/target
+      # Upload created class files that are needed for the merged jacoco coverage in a later step
+      - name: Upload - Class Files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-class-files
+          path: "**/target/classes/**/*.class"
+          if-no-files-found: error
 
       - name: Upload - Jacoco Coverage
         if: always()
@@ -93,43 +93,45 @@ jobs:
   #
   # Performs docker OCI image builds.
   #
-#  docker-oci-build:
-#    name: Docker-OCI-Image
-#    runs-on: ubuntu-latest
-#    needs: [ build-maven ]
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#        with:
-#          sparse-checkout: |
-#            Dockerfile
-#
-#      - name: Download - Jar
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: ehrbase-jar
-#          path: ./application/target/
-#
-#      - name: Docker - Set up Buildx
-#        uses: docker/setup-buildx-action@v3
-#
-#      # build the release multi arch image
-#      - name: Docker - Build OCI Image
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          file: Dockerfile
-#          platforms: linux/amd64,linux/arm64
-#          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
-#          outputs: type=oci,dest=${{ runner.temp }}/ehrbase-oci.tar
-#
-#      - name: Upload - OCI Image
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: ehrbase-image-oci
-#          path: ${{ runner.temp }}/ehrbase-oci.tar
-#          if-no-files-found: error
-#          retention-days: 1
+  docker-oci-build:
+    name: Docker-OCI-Image
+    runs-on: ubuntu-latest
+    needs: [
+      build-maven
+    ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            Dockerfile
+
+      - name: Download - Jar
+        uses: actions/download-artifact@v4
+        with:
+          name: ehrbase-jar
+          path: ./application/target/
+
+      - name: Docker - Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # build the release multi arch image
+      - name: Docker - Build OCI Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
+          outputs: type=oci,dest=${{ runner.temp }}/ehrbase-oci.tar
+
+      - name: Upload - OCI Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ehrbase-image-oci
+          path: ${{ runner.temp }}/ehrbase-oci.tar
+          if-no-files-found: error
+          retention-days: 1
 
   #
   # Performs docker test image builds.
@@ -143,10 +145,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            Dockerfile
-            tests
 
       - name: Download - Jar
         uses: actions/download-artifact@v4
@@ -162,7 +160,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          # load: true
+          load: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
 
       # Build the test image for the actual architecture. This is needed for the robot tests because Docker uses a
@@ -193,7 +191,7 @@ jobs:
   integration-test-run:
     runs-on: ubuntu-latest
     needs: [
-#      docker-oci-build,
+      docker-oci-build,
       docker-test-build
     ]
     strategy:
@@ -346,33 +344,127 @@ jobs:
   # Collect all Robot result from [integration-test-run] and generated the final report.
   #
   coverage-collect:
-    name: Coverage-Collect
+    name: Jacoco-Collect
     if: ${{ always() }}
     needs: [
       integration-test-run
     ]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download - Class files
+        uses: actions/download-artifact@v4
+        with:
+          name: java-class-files
+          path: ./
+
       - name: Download - Robot results
         uses: actions/download-artifact@v4
         with:
           pattern: jacoco-coverage-partial-*
-          path: ./
+          path: ./tests/coverage
 
-      - name: DEBUG - list dir
-        run: ls -lasR  ./
+      - name: Docker - Build Jacoco-CLI
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: tests/DockerfileJacocoCLI
+          load: true
+          tags: jacoco-cli:local
 
-      - name: Archive - Jacoco Coverage
+      # create merged.exec
+      - name: Jacoco - Merge
+        run: |
+          cd ./tests/coverage
+          docker run --rm -v ./:/workspace -w /workspace --pull never jacoco-cli:local merge $(find . -type f -name '*.exec' | tr '\n' ' ') --destfile jacoco-merged.exec
+
+      # it is easier to copy over .java and .class and pass them later as a bundle to the jacoco report generation
+      - name: Collect - Sources & Classes
+        run: |
+          mkdir -p ./tests/coverage/ehrbase
+          mkdir -p ./tests/coverage/ehrbase/src
+          find . -type d -path '*/src/main/java' | xargs -0 sh -c 'cp -prnv $0 ./tests/coverage/ehrbase/src' | true
+          find . -type d -path '*/generated-sources' | xargs -0 sh -c 'cp -prnv $0 ./tests/coverage/ehrbase/src' | true
+          find . -type d -path '*/target/classes' | xargs -0 sh -c 'cp -prnv $0 ./tests/coverage/ehrbase' | true
+
+      # create final jacoco report
+      - name: Jacoco - Report
+        run: |
+          cd ./tests/coverage
+          mkdir -p jacoco-report-final 
+          docker run --rm -v $(pwd)/:/workspace -w /workspace --pull never jacoco-cli:local report jacoco-merged.exec --classfiles ehrbase/classes/ --sourcefiles ehrbase/src/java --sourcefiles ehrbase/src/generated-sources --encoding utf-8 --name Merged --html ./jacoco-report-final --xml ./jacoco-report-final/jacoco.xml
+
+      - name: Archive - Jacoco Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jacoco-coverage-final
-          path: .
+          name: jacoco-report-final
+          path: ./tests/coverage/jacoco-report-final
 
-      - name: Cleanup - Partial Coverage
-        if: always()
+  #
+  # Trigger sonar cloud upload as Quality-Gate
+  #
+  sonar-quality-gate:
+    name: Sonar-Quality-Gate
+    # dependabot has not enough rights to access the secrets for a pull_request.
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    needs: [
+      coverage-collect,
+      integration-test-collect
+    ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+
+      - name: Setup - Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: 'maven'
+
+      - name: Setup - Dependency Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            deps-${{ runner.os }}-m2-${{ github.head_ref }}-
+            deps-${{ runner.os }}-m2-
+            deps-${{ runner.os }}-
+            deps-
+          fail-on-cache-miss: true # we run only with cached dependencies
+
+      - name: Download - Jacoco Report
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report-final
+          path: ${{ github.workspace }}/tests/coverage/jacoco-report-final/
+
+      - name: Sonar - Analyze
+        # Dependabot has no access to the SONAR_TOKEN secret, so we need to skip sonar.
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # note we re-compile the project here because we need the compile class files
         run: |
-          rm -rf ./ | true
+          mvn --batch-mode compile sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=ehrbase \
+            -Dsonar.projectKey=ehrbase_ehrbase \
+            -Dsonar.exclusions=test/** \
+            -Dsonar.coverage.exclusions=test/** \
+            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml \
+            
+  # -Dsonar.inclusions=src/main/**
+  # -Dsonar.java.enablePreview=true
+  # -Dsonar.exclusions=test/** \
+  # -Dsonar.coverage.exclusions=test/** \
 
   # TODO docker deploy should be done here for develop, release/* and main
 
@@ -383,12 +475,7 @@ jobs:
     name: Cleanup
     if: ${{ always() }}
     needs: [
-      build-maven,
-#      docker-oci-build,
-      docker-test-build,
-      integration-test-run,
-      integration-test-collect,
-      coverage-collect,
+      sonar-quality-gate
     ]
     runs-on: ubuntu-latest
     steps:
@@ -396,8 +483,9 @@ jobs:
         uses: geekyeggo/delete-artifact@v5
         with:
           name: |
+            java-class-files
             ehrbase-jar
             ehrbase-image-test
             robot-result-*
-            jacoco-coverage-partial-*
+            jacoco-coverage-*
           failOnError: false
