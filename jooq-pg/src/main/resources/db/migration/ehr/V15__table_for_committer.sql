@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -18,15 +18,11 @@
 
 ALTER TABLE users ADD COLUMN committer_id uuid NOT NULL DEFAULT uuid_generate_v4();
 ALTER TABLE users ALTER COLUMN committer_id DROP DEFAULT;
-
 ALTER TABLE audit_details ADD COLUMN committer_id uuid;
-
-UPDATE audit_details a SET committer_id = (SELECT u.committer_id FROM users u WHERE u.id=a.user_id) WHERE committer IS NULL;
 
 CREATE TABLE committer
 (
     id          uuid        NOT NULL,
-    --TODO extracted columns?
     data        jsonb       NOT NULL,
     audit_ids   uuid[],
 
@@ -70,6 +66,8 @@ INSERT INTO committer (id, data, audit_ids)
     WHERE a.committer IS NOT NULL
     GROUP BY a.committer;
 
+
+UPDATE audit_details a SET committer_id = (SELECT u.committer_id FROM users u WHERE u.id=a.user_id) WHERE committer IS NULL;
 UPDATE audit_details a  SET committer_id = c.id FROM (SELECT id, UNNEST(audit_ids) as audit_id FROM committer) as c WHERE a.id = c.audit_id;
 ALTER TABLE audit_details ALTER COLUMN committer_id SET NOT NULL;
 
