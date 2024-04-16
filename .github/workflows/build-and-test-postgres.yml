@@ -36,13 +36,15 @@ jobs:
         run: mvn spotless:check
 
       - name: Maven - Verify and Package
-        run: mvn -B -U -Dmaven.test.failure.ignore=true verify package
+        run: mvn --batch-mode -U -Dmaven.test.failure.ignore=true verify package
 
       - name: Sonar - Analyze
+        # Dependabot has no access to the SONAR_TOKEN secret, so we need to skip sonar.
+        if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B sonar:sonar \
+          mvn --batch-mode sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=ehrbase \
             -Dsonar.projectKey=ehrbase_ehrbase \
@@ -191,7 +193,7 @@ jobs:
   integration-test-results:
     name: Robot-Collect
     if: ${{ always() }}
-    needs: [ integration-test-run ]
+    needs: [ build, integration-test-run ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
