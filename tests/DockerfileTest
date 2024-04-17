@@ -1,0 +1,30 @@
+ARG EHRBASE_IMAGE
+
+#
+# Builder to fetch jacoco
+#
+FROM maven:3.9-eclipse-temurin-21-alpine as builder
+
+WORKDIR /build
+
+ADD ./ /build
+
+RUN apk --update add unzip && rm -rf /var/cache/apk/*
+# download same jacoco version as used in the app
+RUN export JACOCO_VERSION=$(mvn help:evaluate -Dexpression=maven-jacoco-plugin.version -q -DforceStdout) && \
+	echo "Downloading [$JACOCO_VERSION] curl -sGL --data-urlencode 'filepath=org/jacoco/jacoco/$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip' https://search.maven.org/remotecontent > jacoco-agent.zip" && \
+	curl -sGL --data-urlencode "filepath=org/jacoco/jacoco/$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" https://search.maven.org/remotecontent > jacoco-agent.zip
+# unpack aganet
+RUN unzip jacoco-agent.zip && \
+    cp lib/jacocoagent.jar jacoco-agent.jar
+
+#
+# Build test image on top of standard ehrbase image
+#
+FROM ${EHRBASE_IMAGE}
+
+COPY --from=builder /build/*.jar /app/
+
+ENV JACOCO_RESULT_PATH=/app/coverage/jacoco.exec
+
+ENTRYPOINT java -jar -Dspring.profiles.active=docker -javaagent:/app/jacoco-agent.jar=destfile=${JACOCO_RESULT_PATH},append=false,includes=org.ehrbase.* /app/ehrbase.jar
