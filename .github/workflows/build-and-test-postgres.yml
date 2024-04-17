@@ -217,7 +217,7 @@ jobs:
       - name: Github - Send Robot Report to PR
         # Dependabot has not enough rights to add the report to the PR.
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: joonvena/robotframework-reporter-action@v2.3
+        uses: joonvena/robotframework-reporter-action@v2.4
         with:
           gh_access_token: ${{ secrets.GITHUB_TOKEN }}
           report_path: ./tests/report
