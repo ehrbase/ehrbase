@@ -22,7 +22,7 @@ services:
       ADMINAPI_ACTIVE: "true"
       ADMINAPI_ALLOWDELETEALL: "true"
       SECURITY_AUTHTYPE: "NONE"
-      JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage}"
+      JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage/jacoco.exec}"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ehrbase/management/info || exit 1" ]
       interval: 5s

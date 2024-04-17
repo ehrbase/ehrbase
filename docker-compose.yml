@@ -32,7 +32,7 @@ services:
   # Pre-configured ehrbase postgres.
   #
   ehrdb:
-    image: ${EHRBASE_POSTGRES_IMAGE:-ehrbase/ehrbase-postgres:16.2-mvp} # FIXME use latest after the image build is adjusted
+    image: ${EHRBASE_POSTGRES_IMAGE:-ehrbase/ehrbase-v2-postgres:16.2}
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
