@@ -8,6 +8,7 @@ jobs:
   Check-Changelog:
     name: Check Changelog Action
     runs-on: ubuntu-20.04
+    if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
       - uses: tarides/changelog-check-action@v2
         with:
