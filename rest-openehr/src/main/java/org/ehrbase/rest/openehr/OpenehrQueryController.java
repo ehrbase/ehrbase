@@ -17,15 +17,20 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.ehrbase.api.rest.HttpRestContext.QUERY_EXECUTE_ENDPOINT;
+import static org.ehrbase.api.rest.HttpRestContext.QUERY_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.AqlQueryRequest;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.StatusService;
@@ -98,7 +103,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             @RequestHeader(name = ACCEPT, required = false) String accept) {
 
         // Enriches request attributes with aql for later audit processing
-        createAdHocAuditLogsMsgBuilder();
+        HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
 
         // get the query and pass it to the service
         QueryResultDto queryResult = invoke(
@@ -139,7 +144,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         String queryString = (String) rawQuery;
 
         // Enriches request attributes with aql for later audit processing
-        createAdHocAuditLogsMsgBuilder();
+        HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
 
         // get the query and pass it to the service
         QueryResultDto queryResult = invoke(queryString, queryRequest);
@@ -171,7 +176,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 fetch,
                 queryParameters);
 
-        createAuditLogsMsgBuilder(qualifiedQueryName, version);
+        createRestContext(qualifiedQueryName, version);
 
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
@@ -194,7 +199,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResponseData queryResponseData = createQueryResponse(queryString, queryResult, locationUri);
         setQueryName(queryDefinition, queryResponseData);
 
-        AuditMsgBuilder.getInstance().setQueryId(queryDefinition.getQualifiedName());
+        HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
 
         return ResponseEntity.ok(queryResponseData);
     }
@@ -216,7 +221,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
 
         // Enriches request attributes with aql for later audit processing
-        createAuditLogsMsgBuilder(qualifiedQueryName, version);
+        createRestContext(qualifiedQueryName, version);
 
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
 
@@ -234,22 +239,17 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResponseData queryResponseData = createQueryResponse(queryString, queryResult);
         setQueryName(queryDefinition, queryResponseData);
 
-        AuditMsgBuilder.getInstance().setQueryId(queryDefinition.getQualifiedName());
+        HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
 
         return ResponseEntity.ok(queryResponseData);
     }
 
-    private void createAuditLogsMsgBuilder(String qualifiedName, @Nullable String version) {
-        AuditMsgBuilder.getInstance()
-                .setIsQueryExecuteEndpoint(true)
-                .setLocation(fromPath("")
-                        .pathSegment(QUERY, qualifiedName, version)
-                        .build()
-                        .toString());
-    }
-
-    private void createAdHocAuditLogsMsgBuilder() {
-        AuditMsgBuilder.getInstance().setIsQueryExecuteEndpoint(true);
+    private void createRestContext(String qualifiedName, @Nullable String version) {
+        HttpRestContext.register(
+                QUERY_EXECUTE_ENDPOINT,
+                Boolean.TRUE,
+                HttpRestContext.LOCATION,
+                fromPath("").pathSegment(QUERY, qualifiedName, version).build().toString());
     }
 
     @SuppressWarnings("unchecked")

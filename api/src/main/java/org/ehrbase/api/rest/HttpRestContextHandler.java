@@ -15,6 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.audit.interceptor;
+package org.ehrbase.api.rest;
 
-public interface AuditEhrStatusInterceptor extends AuditInterceptor {}
+import org.ehrbase.api.rest.HttpRestContext.HttpCtxMap;
+
+public interface HttpRestContextHandler {
+
+    public void handle(HttpCtxMap context);
+}

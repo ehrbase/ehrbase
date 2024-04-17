@@ -18,6 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.VERSION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -31,9 +33,9 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
@@ -91,7 +93,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        createAuditLogsMsgBuilder(ehrId);
+        createRestContext(ehrId);
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -111,7 +113,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        createAuditLogsMsgBuilder(ehrId, REVISION_HISTORY);
+        createRestContext(ehrId, REVISION_HISTORY);
 
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
@@ -155,8 +157,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        createAuditLogsMessageBuilder(ehrId, new ImmutablePair<>("version_at_time", versionAtTime), "version")
-                .setVersion(version);
+        createRestContext(ehrId, new ImmutablePair<>("version_at_time", versionAtTime), "version");
+        HttpRestContext.register(VERSION, Integer.valueOf(version));
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
@@ -202,21 +204,18 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        createAuditLogsMsgBuilder(
-                        ehrId,
-                        "version",
-                        originalVersionResponseData.getVersionId().toString())
-                .setVersion(version);
+        createRestContext(
+                ehrId, "version", originalVersionResponseData.getVersionId().toString());
+        HttpRestContext.register(VERSION, Integer.valueOf(version));
 
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
-    private AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId, String... pathSegments) {
-        return createAuditLogsMessageBuilder(ehrId, new ImmutablePair<>("", ""), pathSegments);
+    private void createRestContext(UUID ehrId, String... pathSegments) {
+        createRestContext(ehrId, new ImmutablePair<>("", ""), pathSegments);
     }
 
-    private AuditMsgBuilder createAuditLogsMessageBuilder(
-            UUID ehrId, Pair<String, String> queryParam, String... pathSegments) {
+    private void createRestContext(UUID ehrId, Pair<String, String> queryParam, String... pathSegments) {
         UriComponentsBuilder uriComponentsBuilder = fromPath("")
                 .pathSegment(EHR, ehrId.toString(), VERSIONED_EHR_STATUS)
                 .pathSegment(pathSegments);
@@ -224,8 +223,10 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         if (isNotBlank(queryParam.getKey()) && isNotBlank(queryParam.getValue()))
             uriComponentsBuilder.queryParam(queryParam.getKey(), queryParam.getValue());
 
-        return AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId)
-                .setLocation(uriComponentsBuilder.build().toString());
+        HttpRestContext.register(
+                EHR_ID,
+                ehrId,
+                HttpRestContext.LOCATION,
+                uriComponentsBuilder.build().toString());
     }
 }

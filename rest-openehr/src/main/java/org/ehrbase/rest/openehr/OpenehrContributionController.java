@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -29,8 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.NotAcceptableException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
@@ -101,7 +102,7 @@ public class OpenehrContributionController extends BaseController implements Con
         InternalResponse<ContributionResponseData> respData =
                 buildContributionResponseData(contributionId, ehrId, accept, uri, headerList, doReturnRepresentation);
 
-        createAuditLogsMsgBuilder(ehrId, contributionId);
+        createRestContext(ehrId, contributionId);
 
         if (doReturnRepresentation) {
             // 201 with body + headers
@@ -133,7 +134,7 @@ public class OpenehrContributionController extends BaseController implements Con
         InternalResponse<ContributionResponseData> respData =
                 buildContributionResponseData(contributionUid, ehrId, accept, uri, headerList, true);
 
-        createAuditLogsMsgBuilder(ehrId, contributionUid);
+        createRestContext(ehrId, contributionUid);
 
         // returns 200 with body
         return ResponseEntity.ok().headers(respData.getHeaders()).body(respData.getResponseData());
@@ -199,10 +200,12 @@ public class OpenehrContributionController extends BaseController implements Con
         return new InternalResponse<>(responseData, respHeaders);
     }
 
-    private void createAuditLogsMsgBuilder(UUID ehrId, UUID contributionId) {
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId)
-                .setLocation(fromPath(EMPTY)
+    private void createRestContext(UUID ehrId, UUID contributionId) {
+        HttpRestContext.register(
+                EHR_ID,
+                ehrId,
+                HttpRestContext.LOCATION,
+                fromPath(EMPTY)
                         .pathSegment(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString())
                         .build()
                         .toString());

@@ -18,6 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.TEMPLATE_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.composition.Composition;
@@ -33,10 +35,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.CompositionResponseData;
@@ -260,13 +262,16 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .toInstant()
                     .toEpochMilli());
 
-            createAuditLogsMsgBuilder(
+            UUID compositionUid = UUID.fromString(targetObjId.getObjectId().getValue());
+            Integer version = Integer.parseInt(targetObjId.getVersionTreeId().getValue());
+
+            HttpRestContext.register(
+                    EHR_ID,
                     ehrId,
-                    UUID.fromString(targetObjId.getObjectId().getValue()),
-                    Integer.parseInt(targetObjId.getVersionTreeId().getValue()));
-            AuditMsgBuilder.getInstance()
-                    .setTemplateId(compositionService.retrieveTemplateId(
-                            UUID.fromString(targetObjId.getObjectId().getValue())));
+                    HttpRestContext.LOCATION,
+                    getLocationUrl(compositionUid, ehrId, version),
+                    TEMPLATE_ID,
+                    compositionService.retrieveTemplateId(compositionUid));
 
             return ResponseEntity.noContent().headers(headers).build();
         } catch (ObjectNotFoundException e) {
@@ -275,6 +280,14 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     COMPOSITION,
                     "No EHR with the supplied ehr_id or no COMPOSITION with the supplied " + "preceding_version_uid.");
         }
+    }
+
+    private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version) {
+        if (version == 0) version = compositionService.getLastVersionNumber(versionedObjectUid);
+
+        return fromPath("/{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
+                .build(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid, systemService.getSystemId(), version)
+                .toString();
     }
 
     /**
@@ -339,22 +352,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
                                 .build()))
                 // when no response could be created at all
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-    }
-
-    private AuditMsgBuilder createAuditLogsMsgBuilder(UUID ehrId, UUID compositionUid, int version) {
-        return AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId)
-                .setLocation(getLocationUrl(compositionUid, ehrId, version));
-    }
-
-    private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version) {
-        if (version == 0) {
-            version = compositionService.getLastVersionNumber(versionedObjectUid);
-        }
-
-        return fromPath("/{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
-                .build(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid, systemService.getSystemId(), version)
-                .toString();
     }
 
     /**
@@ -437,8 +434,13 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
         respHeaders.addIfAbsent(EHRBASE_TEMPLATE_ID, templateId);
 
-        AuditMsgBuilder.getInstance().setTemplateId(templateId);
-        createAuditLogsMsgBuilder(ehrId, compositionId, version);
+        HttpRestContext.register(
+                EHR_ID,
+                ehrId,
+                HttpRestContext.LOCATION,
+                getLocationUrl(compositionId, ehrId, version),
+                TEMPLATE_ID,
+                templateId);
 
         return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
     }
