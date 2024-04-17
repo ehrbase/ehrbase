@@ -20,6 +20,7 @@ services:
       SERVER_NODENAME: "local.ehrbase.org"
       EHRBASE_REST_AQL_RESPONSE_GENERATOR_DETAILS_ENABLED: "true"
       ADMIN_API_ACTIVE: "true"
+      ADMIN_API_ALLOWDELETEALL: "true"
       SECURITY_AUTHTYPE: "NONE"
       JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage}"
     healthcheck:
