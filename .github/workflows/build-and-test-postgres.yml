@@ -12,6 +12,12 @@ env:
   IMAGE_TAG_BUILD: build
   IMAGE_TAG_TEST: test
 
+# needed for dorny/test-reporter@v1
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
 jobs:
 
   #
