@@ -12,12 +12,6 @@ env:
   IMAGE_TAG_BUILD: build
   IMAGE_TAG_TEST: test
 
-# needed for dorny/test-reporter@v1
-permissions:
-  contents: read
-  actions: read
-  checks: write
-
 jobs:
 
   #
@@ -45,7 +39,7 @@ jobs:
         run: mvn --batch-mode -U -Dmaven.test.failure.ignore=true verify package
 
       - name: Sonar - Analyze
-        # Dependabot has no access to the SONAR_TOKEN secret, so we need to skip sonar.
+        # Dependabot has no access to the SONAR_TOKEN secret.
         if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -101,7 +95,8 @@ jobs:
 
       - name: Collect - JUnit Reports
         uses: dorny/test-reporter@v1
-        if: always()
+        # Dependabot has not enough rights to add the report to the run.
+        if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           name: Unit Tests
           path: '**/target/surefire-reports/*.xml'
@@ -220,7 +215,8 @@ jobs:
             ehrbase/integration-tests:latest collectRebotResults
 
       - name: Github - Send Robot Report to PR
-        if: always()
+        # Dependabot has not enough rights to add the report to the PR.
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: joonvena/robotframework-reporter-action@v2.3
         with:
           gh_access_token: ${{ secrets.GITHUB_TOKEN }}
