@@ -224,6 +224,7 @@ jobs:
           { path: 'AQL_TESTS', name: 'AQL', tags: 'AQL_TESTS_PACKAGE' },
           # rest/rest/ecis
           { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag' },
+          { path: 'ADMIN_TESTS', name: 'ADMIN', tags: 'ADMIN' },
           # TODO Still missing
           # FHIR_TERMINOLOGY
           # SECURITY_TESTS
