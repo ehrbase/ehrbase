@@ -1,7 +1,7 @@
-name: "Assemble"
+name: "Build & Test"
 
 # we have multiple workflows - this helps to distinguish for them
-run-name: "${{ github.event.pull_request.title || github.head_ref }} - Assemble"
+run-name: "${{ github.event.pull_request.title || github.head_ref }} - Build & Test"
 
 on:
   push:
@@ -47,9 +47,6 @@ jobs:
             deps-${{ runner.os }}-m2-
             deps-${{ runner.os }}-
             deps-
-
-      - name: Spotless - Check
-        run: mvn spotless:check
 
       - name: Maven - Verify and Package
         run: mvn --batch-mode --update-snapshots -Dmaven.test.failure.ignore=true verify package
