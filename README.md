@@ -34,7 +34,7 @@ project on a live system.
 
 You will need Java JDK/JRE 21 (preferably openJDK: e.g. from https://adoptopenjdk.net/)
 
-You will need a Postgres Database (at least Version 10.4, Version 16 recommended) (Docker image or local installation).
+You will need a Postgres Database (at least Version 15 or higher, Version 16 recommended) (Docker image or local installation).
 We recommend the Docker image to get started quickly.
 
 ### Installing
