@@ -72,7 +72,7 @@
     <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
     <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
     <pf4j-spring.version>0.8.0</pf4j-spring.version>
-    <pf4j.version>3.10.0</pf4j.version>
+    <pf4j.version>3.11.0</pf4j.version>
     <commons-collections4.version>4.4</commons-collections4.version>
 
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
