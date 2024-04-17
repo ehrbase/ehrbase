@@ -2,7 +2,7 @@ name: "Assemble"
 
 on:
   push:
-    branches: [ develop, release/* ]
+    branches: [ develop, release/*, feature/* ]
   pull_request:
     branches: [ develop ]
   workflow_dispatch:
