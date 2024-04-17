@@ -68,7 +68,7 @@
     <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
     <sonar.scanner.version>3.11.0.3922</sonar.scanner.version>
     <!-- not used ehrbase but needed for the version plugin -->
-    <log4j.version>2.22.1</log4j.version>
+    <log4j.version>2.23.1</log4j.version>
     <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
     <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
     <pf4j-spring.version>0.8.0</pf4j-spring.version>
