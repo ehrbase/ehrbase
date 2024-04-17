@@ -309,8 +309,7 @@ jobs:
         with:
           pattern: robot-result-*
           path: ./tests/results/
-
-      # FIXME use same integration test image as the compose is using
+      
       - name: Generate - Robot Tests-Report
         run: |
           docker run \
@@ -460,13 +459,9 @@ jobs:
             -Dsonar.exclusions=test/** \
             -Dsonar.coverage.exclusions=test/** \
             -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml \
-            
-  # -Dsonar.inclusions=src/main/**
-  # -Dsonar.java.enablePreview=true
-  # -Dsonar.exclusions=test/** \
-  # -Dsonar.coverage.exclusions=test/** \
 
-  # TODO docker deploy should be done here for develop, release/* and main
+  # TODO docker deploy should be done here for develop, release/* and main instead of using docker-ehrbase-dev.yml or
+  #      docker-ehrbase-main.yml. This allows us to deploy exactly the same docker artifact that was tested here.
 
   #
   # Cleanup serialized oci image as well as intermediate robot results
