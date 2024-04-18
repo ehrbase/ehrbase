@@ -163,6 +163,13 @@ public class DefaultExceptionHandler {
         return handleExceptionInternal(ex, message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // 501 - not implemented
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<Object> handleUncaughtException(UnsupportedOperationException ex) {
+        var message = "The current operation is not supported by this server. Please contact your administrator.";
+        return handleExceptionInternal(ex, message, HttpStatus.NOT_IMPLEMENTED);
+    }
+
     private ResponseEntity<Object> handleExceptionInternal(Exception ex, String message, HttpStatusCode status) {
         return handleExceptionInternal(ex, message, status, HttpHeaders.EMPTY);
     }

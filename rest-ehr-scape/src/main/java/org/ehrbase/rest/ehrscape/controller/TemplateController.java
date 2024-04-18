@@ -64,11 +64,11 @@ public class TemplateController extends BaseController {
 
     @GetMapping(path = "/{templateId}/example")
     @Operation(
-            summary = "Deprecated since 1.0.0 and marked for removal",
+            summary = "Deprecated since 2.0.0 and marked for removal",
             description =
                     "Replaced by [/rest/openehr/v1/definition/template/adl1.4/{template_id}/example](./index.html?urls.primaryName=1.%20openEHR%20API#/ADL%201.4%20TEMPLATE/getTemplateExample)",
             deprecated = true)
-    @Deprecated(since = "1.0.0", forRemoval = true)
+    @Deprecated(since = "2.0.0", forRemoval = true)
     public ResponseEntity<String> getTemplateExample(
             @PathVariable(value = "templateId") String templateId,
             @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
@@ -93,12 +93,12 @@ public class TemplateController extends BaseController {
 
     @GetMapping(path = "/{templateId}")
     @Operation(
-            summary = "Deprecated since 1.0.0 and marked for removal",
+            summary = "Deprecated since 2.0.0 and marked for removal",
             description =
                     "Replaced by [/rest/openehr/v1/definition/template/adl1.4/{template_id}/webtemplate](./index.html?urls.primaryName=1.%20openEHR%20API#/TEMPLATE/getWebTemplate). "
                             + "Note the replacement endpoint provides the Web-Template as it is, without wrapping it in a `webTemplate` property.",
             deprecated = true)
-    @Deprecated(since = "1.0.0", forRemoval = true)
+    @Deprecated(since = "2.0.0", forRemoval = true)
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();
         responseData.setWebTemplate(new Filter().filter(templateService.findTemplate(templateId)));

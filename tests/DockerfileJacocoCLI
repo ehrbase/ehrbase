@@ -1,0 +1,29 @@
+#
+# Builder to fetch jacoco
+#
+FROM maven:3.9-eclipse-temurin-21-alpine as builder
+
+WORKDIR /build
+
+ADD ./ /build
+
+RUN apk --update add unzip && rm -rf /var/cache/apk/*
+# download same jacoco version as used in the app
+RUN export JACOCO_VERSION=$(mvn help:evaluate -Dexpression=maven-jacoco-plugin.version -q -DforceStdout) && \
+	echo "Downloading [$JACOCO_VERSION] curl -sGL --data-urlencode 'filepath=org/jacoco/jacoco/$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip' https://search.maven.org/remotecontent > jacoco-agent.zip" && \
+	curl -sGL --data-urlencode "filepath=org/jacoco/jacoco/$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" https://search.maven.org/remotecontent > jacoco-agent.zip
+# unpack aganet
+RUN unzip jacoco-agent.zip && \
+    cp lib/jacococli.jar jacoco-cli.jar
+
+#
+# Build test image on top of standard ehrbase image
+#
+FROM eclipse-temurin:21-jre-alpine
+
+COPY --from=builder /build/*.jar /app/
+
+WORKDIR /workspace
+
+ENTRYPOINT [ "java", "-jar", "/app/jacoco-cli.jar" ]
+CMD ["--help"]
