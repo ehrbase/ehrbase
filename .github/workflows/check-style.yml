@@ -1,7 +1,7 @@
 name: "Codestyle"
 
 # we have multiple workflows - this helps to distinguish for them
-run-name: "${{ github.event.pull_request.title || github.head_ref }} - Codestyle"
+run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.head_ref }} - Codestyle"
 
 on:
   push:
@@ -14,7 +14,8 @@ on:
 # Style-check it a dedicated workflow. This allows us to open a PR, run all tests and fix styling issue later ;).
 #
 jobs:
-  build:
+  spotless:
+    name: Spotless-Check
     runs-on: ubuntu-latest
 
     steps:

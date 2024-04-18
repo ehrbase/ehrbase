@@ -46,17 +46,27 @@
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>aql-engine</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>configuration</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
       <artifactId>jooq-pg</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>rest-openehr</artifactId>
+      <artifactId>rest-ehr-scape</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>rest-ehr-scape</artifactId>
+      <artifactId>rest-openehr</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
