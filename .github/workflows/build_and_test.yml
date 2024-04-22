@@ -1,11 +1,11 @@
 name: "Build & Test"
 
 # we have multiple workflows - this helps to distinguish for them
-run-name: "${{ github.event.pull_request.title || github.head_ref }} - Build & Test"
+run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.head_ref }} - Build & Test"
 
 on:
   push:
-    branches: [ develop, release/* ]
+    branches: [ master, develop, release/* ]
   pull_request:
     branches: [ develop ]
   workflow_dispatch:
@@ -13,9 +13,6 @@ on:
 env:
   JAVA_VERSION: 21
   JAVA_DISTRIBUTION: 'temurin'
-  IMAGE_NAME: ehrbase/ehrbase
-  IMAGE_TAG_BUILD: build
-  IMAGE_TAG_TEST: test
 
 jobs:
 
@@ -26,6 +23,9 @@ jobs:
   build-maven:
     name: Build-Maven
     runs-on: ubuntu-latest
+    outputs:
+      # Map the step outputs to job outputs
+      ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,6 +51,14 @@ jobs:
       - name: Maven - Verify and Package
         run: mvn --batch-mode --update-snapshots -Dmaven.test.failure.ignore=true verify package
 
+      - name: Maven - Get Version
+        id: "get_version"
+        run: |
+          # evaluate project version
+          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "EHRbase version [$version]"
+          echo "ehrbase-version=${version}" >> $GITHUB_OUTPUT  
+
       - name: Upload - Jar
         uses: actions/upload-artifact@v4
         with:
@@ -72,7 +80,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jacoco-coverage-partial-assemble
+          name: jacoco-coverage-partial-build-maven
           path: "**/target/jacoco*.exec"
           if-no-files-found: error
 
@@ -88,53 +96,10 @@ jobs:
           fail-on-empty: 'true'
 
   #
-  # Performs docker OCI image builds.
-  #
-  docker-oci-build:
-    name: Docker-OCI-Image
-    runs-on: ubuntu-latest
-    needs: [
-      build-maven
-    ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            Dockerfile
-
-      - name: Download - Jar
-        uses: actions/download-artifact@v4
-        with:
-          name: ehrbase-jar
-          path: ./application/target/
-
-      - name: Docker - Set up Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # build the release multi arch image
-      - name: Docker - Build OCI Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
-          outputs: type=oci,dest=${{ runner.temp }}/ehrbase-oci.tar
-
-      - name: Upload - OCI Image
-        uses: actions/upload-artifact@v4
-        with:
-          name: ehrbase-image-oci
-          path: ${{ runner.temp }}/ehrbase-oci.tar
-          if-no-files-found: error
-          retention-days: 1
-
-  #
   # Performs docker test image builds.
   #
-  docker-test-build:
-    name: Docker-Test-Image
+  docker-test-image:
+    name: Docker Test-Image
     runs-on: ubuntu-latest
     needs: [
       build-maven
@@ -149,30 +114,23 @@ jobs:
           name: ehrbase-jar
           path: ./application/target/
 
-      # build the release image and load it. This is needed for the robot tests because Docker uses a legacy import
-      # format and is unable to use multi arch oci images (for now). As an alternative we could use podman in the future.
-      # podman load --quiet -i fedora.tar.gz
       - name: Docker - Build Base Image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile
           load: true
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
+          tags: ehrbase/ehrbase:build
 
-      # Build the test image for the actual architecture. This is needed for the robot tests because Docker uses a
-      # legacy import format and is unable to use multi arch oci images (for now). As an alternative we could use
-      # podman in the future. We also use plain docker build here because buildx does no use the local image in the
-      # FROM clause.
       - name: Docker - Build Test Image
         run: | 
           docker build \
-            --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }} \
-            --build-arg EHRBASE_IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }} \
+            --tag ehrbase/ehrbase:test \
+            --build-arg EHRBASE_IMAGE=ehrbase/ehrbase:build \
             --file tests/DockerfileTest .
 
       - name: Docker - Save Test Image
-        run: docker save --output ${{ runner.temp }}/ehrbase-test.tar ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }}
+        run: docker save --output ${{ runner.temp }}/ehrbase-test.tar ehrbase/ehrbase:test
 
       - name: Upload - Test Image
         uses: actions/upload-artifact@v4
@@ -188,8 +146,7 @@ jobs:
   integration-test-run:
     runs-on: ubuntu-latest
     needs: [
-      docker-oci-build,
-      docker-test-build
+      docker-test-image
     ]
     strategy:
       fail-fast: false # ensure all tests run
@@ -252,7 +209,7 @@ jobs:
       # image used by the docker-compose-int-test.yml
       - name: Docker Compose - Setup env
         run: |
-          echo "EHRBASE_IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }}" >> $GITHUB_ENV
+          echo "EHRBASE_IMAGE=ehrbase/ehrbase:test" >> $GITHUB_ENV
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
       - name: Docker Compose - Starting
@@ -408,8 +365,7 @@ jobs:
     # dependabot has not enough rights to access the secrets for a pull_request.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
-      coverage-collect,
-      integration-test-collect
+      coverage-collect
     ]
     runs-on: ubuntu-latest
     steps:
@@ -426,7 +382,7 @@ jobs:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: 'maven'
 
-      - name: Setup - Dependency Cache
+      - name: Restore - Dependency Cache
         uses: actions/cache/restore@v4
         with:
           path: ~/.m2/repository
@@ -437,6 +393,13 @@ jobs:
             deps-${{ runner.os }}-
             deps-
           fail-on-cache-miss: true # we run only with cached dependencies
+
+      - name: Setup - SonarCloud Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: sonar-${{ runner.os }}
+          restore-keys: sonar-${{ runner.os }}
 
       - name: Download - Jacoco Report
         uses: actions/download-artifact@v4
@@ -457,9 +420,37 @@ jobs:
             -Dsonar.exclusions=test/** \
             -Dsonar.coverage.exclusions=test/** \
             -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml \
+  
 
-  # TODO docker deploy should be done here for develop, release/* and main instead of using docker-ehrbase-dev.yml or
-  #      docker-ehrbase-main.yml. This allows us to deploy exactly the same docker artifact that was tested here.
+  #
+  # Build and push docker image
+  #
+  docker-build-push:
+    name: Docker
+    uses: ./.github/workflows/job-docker-build-push.yml
+    # ignore dependabot here.
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    needs: [
+      build-maven, # needed to obtain ehrbase-version from
+      sonar-quality-gate,
+      integration-test-collect
+    ]
+    with:
+      ehrbase-version: ${{ needs.build-maven.outputs.ehrbase-version }}
+      ehrbase-jar-artifact: ehrbase-jar
+
+  #
+  # Maven publish
+  #
+  maven-publish:
+    name: Maven
+    uses: ./.github/workflows/job-maven-publish.yml
+    # ignore dependabot here.
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    needs: [
+      sonar-quality-gate,
+      integration-test-collect
+    ]
 
   #
   # Cleanup serialized oci image as well as intermediate robot results
@@ -468,7 +459,8 @@ jobs:
     name: Cleanup
     if: ${{ always() }}
     needs: [
-      sonar-quality-gate
+      docker-build-push,
+      maven-publish
     ]
     runs-on: ubuntu-latest
     steps:

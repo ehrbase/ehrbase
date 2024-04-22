@@ -156,7 +156,7 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven-failsafe-plugin.version}</version>
         <configuration>
-          <skipITs>${skipIntegrationTests}</skipITs>
+          <skipITs>${skipTests}</skipITs>
           <additionalClasspathElements>
             <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
           </additionalClasspathElements>
