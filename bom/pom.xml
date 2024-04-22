@@ -64,7 +64,7 @@
     <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
     <postgresql.version>42.7.3</postgresql.version>
     <prometheus.version>1.12.5</prometheus.version>
-    <spring-boot.version>3.2.4</spring-boot.version>
+    <spring-boot.version>3.2.5</spring-boot.version>
     <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
     <sonar.scanner.version>3.11.0.3922</sonar.scanner.version>
     <!-- not used ehrbase but needed for the version plugin -->
