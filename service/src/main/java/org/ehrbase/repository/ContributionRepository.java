@@ -64,10 +64,7 @@ public class ContributionRepository {
     private final TimeProvider timeProvider;
 
     public ContributionRepository(
-            DSLContext context,
-            SystemService systemService,
-            UserService userService,
-            TimeProvider timeProvider) {
+            DSLContext context, SystemService systemService, UserService userService, TimeProvider timeProvider) {
         this.context = context;
         this.systemService = systemService;
         this.userService = userService;
