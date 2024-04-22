@@ -67,12 +67,10 @@ public class ContributionRepository {
             DSLContext context,
             SystemService systemService,
             UserService userService,
-            PartyProxyRepository partyProxyRepository,
             TimeProvider timeProvider) {
         this.context = context;
         this.systemService = systemService;
         this.userService = userService;
-
         this.timeProvider = timeProvider;
     }
 
