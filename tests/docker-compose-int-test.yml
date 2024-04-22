@@ -23,14 +23,14 @@ services:
       ADMINAPI_ACTIVE: "true"
       ADMINAPI_ALLOWDELETEALL: "true"
       SECURITY_AUTHTYPE: "NONE"
-      JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage/jacoco.exec}"
+      JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/opt/app/coverage/jacoco.exec}"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ehrbase/management/info || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 12
     volumes:
-      - ./tests/coverage:/app/coverage
+      - ./tests/coverage:/var/ehrbase/coverage:Z
 
   #
   # Change container name for better readability of logs

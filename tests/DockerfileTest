@@ -23,8 +23,10 @@ RUN unzip jacoco-agent.zip && \
 #
 FROM ${EHRBASE_IMAGE}
 
-COPY --from=builder /build/*.jar /app/
+# to be able to write the jacoco.exec file
+USER root
 
-ENV JACOCO_RESULT_PATH=/app/coverage/jacoco.exec
+COPY --from=builder /build/*.jar /opt/jacoco/
 
-ENTRYPOINT java -jar -Dspring.profiles.active=docker -javaagent:/app/jacoco-agent.jar=destfile=${JACOCO_RESULT_PATH},append=false,includes=org.ehrbase.* /app/ehrbase.jar
+ENV JACOCO_RESULT_PATH=/var/ehrbase/coverage/jacoco.exec
+ENV JAVA_OPTS="-javaagent:/opt/jacoco/jacoco-agent.jar=destfile=${JACOCO_RESULT_PATH},append=false,includes=org.ehrbase.*"

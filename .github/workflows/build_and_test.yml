@@ -206,7 +206,7 @@ jobs:
       - name: Docker Compose - Setup env
         run: |
           echo "EHRBASE_IMAGE=ehrbase/ehrbase:test" >> $GITHUB_ENV
-          echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
+          echo "JACOCO_RESULT_PATH=/var/ehrbase/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
       - name: Docker Compose - Starting
         run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
@@ -227,6 +227,9 @@ jobs:
         run: |
           docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml down --remove-orphans
           docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --force --volumes
+
+      - name: DEBUG - exec
+        run: ls -las ./tests/coverage/
 
       - name: Upload - Jacoco Coverage
         if: always()
