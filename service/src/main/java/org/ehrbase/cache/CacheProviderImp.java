@@ -33,6 +33,7 @@ public class CacheProviderImp implements CacheProvider {
 
     @Override
     public Cache getCache(final EhrBaseCache<?, ?> cache) {
-        return Optional.ofNullable(cacheManager.getCache(cache.name())).orElseThrow(CacheProvider.getExceptionSupplier(cache));
+        return Optional.ofNullable(cacheManager.getCache(cache.name()))
+                .orElseThrow(CacheProvider.getExceptionSupplier(cache));
     }
 }

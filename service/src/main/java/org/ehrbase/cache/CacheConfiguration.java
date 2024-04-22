@@ -98,7 +98,6 @@ public class CacheConfiguration {
             @Override
             public Object postProcessAfterInitialization(final Object bean, final String beanName) {
                 if (bean instanceof CacheManager cm) {
-                    // TODO CDR-1259 breaks template delete, because the template caches are not managed properly
                     return new CustomTxAwareCacheManagerProxy(cm);
                 }
                 return bean;
@@ -107,7 +106,7 @@ public class CacheConfiguration {
     }
 
     public static class CustomTxAwareCacheManagerProxy implements CacheManager {
-        private CacheManager targetCacheManager;
+        private final CacheManager targetCacheManager;
 
         /**
          * Create a new TransactionAwareCacheManagerProxy for the given target CacheManager.
@@ -119,6 +118,10 @@ public class CacheConfiguration {
                 throw new IllegalArgumentException("Property 'targetCacheManager' is required");
             }
             this.targetCacheManager = targetCacheManager;
+        }
+
+        public CacheManager getTargetCacheManager() {
+            return targetCacheManager;
         }
 
         @Override

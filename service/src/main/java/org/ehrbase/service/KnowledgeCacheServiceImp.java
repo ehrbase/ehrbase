@@ -119,10 +119,11 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     private void invalidateCache(OPERATIONALTEMPLATE template) {
 
         String templateId = template.getTemplateId().getValue();
-        UUID uuid = findUuidByTemplateId(templateId).orElseThrow();
         CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, templateId);
+        Optional.of(templateId)
+                .map(t -> CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, t, () -> null))
+                .ifPresent(uuid -> CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, uuid));
         CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
-        CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, uuid);
     }
 
     @Override
