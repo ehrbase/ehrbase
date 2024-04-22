@@ -102,7 +102,6 @@ public class CacheConfiguration {
             @Override
             public Object postProcessAfterInitialization(final Object bean, final String beanName) {
                 if (bean instanceof CacheManager cm) {
-                    // TODO CDR-1259 breaks template delete, because the template caches are not managed properly
                     return new CustomTxAwareCacheManagerProxy(cm);
                 }
                 return bean;

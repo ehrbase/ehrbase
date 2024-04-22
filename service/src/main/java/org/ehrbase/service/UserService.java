@@ -25,6 +25,11 @@ public interface UserService {
 
     UserAndCommitterId getCurrentUserAndCommitterId();
 
+    /**
+     *
+     * @deprecated use ::getCurrentUserAndCommitterId
+     * @return
+     */
     @Deprecated(forRemoval = true)
     default UUID getCurrentUserId() {
         return getCurrentUserAndCommitterId().userId();
