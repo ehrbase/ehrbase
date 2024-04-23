@@ -428,6 +428,7 @@ jobs:
   docker-build-push:
     name: Docker
     uses: ./.github/workflows/job-docker-build-push.yml
+    secrets: inherit
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
@@ -445,6 +446,7 @@ jobs:
   maven-publish:
     name: Maven
     uses: ./.github/workflows/job-maven-publish.yml
+    secrets: inherit
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
