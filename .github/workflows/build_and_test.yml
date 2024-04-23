@@ -1,7 +1,7 @@
 name: "Build & Test"
 
 # we have multiple workflows - this helps to distinguish for them
-run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.head_ref }} - Build & Test"
+run-name: "${{ github.event_name == 'pull_request' && github.event.pull_request.title || github.head_ref }} - Build & Test"
 
 on:
   push:
