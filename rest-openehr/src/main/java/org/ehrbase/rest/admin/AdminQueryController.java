@@ -48,14 +48,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(
         path = BaseController.ADMIN_API_CONTEXT_PATH + "/query",
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-public class AdminDefinitionController extends BaseController {
+public class AdminQueryController extends BaseController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final StoredQueryService storedQueryService;
 
     @Autowired
-    public AdminDefinitionController(StoredQueryService storedQueryService) {
+    public AdminQueryController(StoredQueryService storedQueryService) {
         this.storedQueryService = Objects.requireNonNull(storedQueryService);
     }
 
@@ -79,7 +79,7 @@ public class AdminDefinitionController extends BaseController {
         HttpRestContext.register(
                 HttpRestContext.LOCATION,
                 fromPath("")
-                        .pathSegment(DEFINITION, QUERY, qualifiedQueryName, version)
+                        .pathSegment(QUERY, qualifiedQueryName, version)
                         .build()
                         .toString());
         storedQueryService.deleteStoredQuery(qualifiedQueryName, version);
