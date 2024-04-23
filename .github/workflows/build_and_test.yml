@@ -1,7 +1,7 @@
 name: "Build & Test"
 
 # we have multiple workflows - this helps to distinguish for them
-run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.head_ref }} - Build & Test"
+run-name: "${{ github.event_name == 'pull_request' && github.event.pull_request.title || github.head_ref }} - Build & Test"
 
 on:
   push:
@@ -428,6 +428,7 @@ jobs:
   docker-build-push:
     name: Docker
     uses: ./.github/workflows/job-docker-build-push.yml
+    secrets: inherit
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
@@ -445,6 +446,7 @@ jobs:
   maven-publish:
     name: Maven
     uses: ./.github/workflows/job-maven-publish.yml
+    secrets: inherit
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
