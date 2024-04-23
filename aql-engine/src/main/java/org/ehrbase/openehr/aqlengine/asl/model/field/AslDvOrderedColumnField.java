@@ -42,6 +42,6 @@ public final class AslDvOrderedColumnField extends AslColumnField {
 
     @Override
     public AslDvOrderedColumnField copyWithOwner(AslQuery owner) {
-        return new AslDvOrderedColumnField(getColumnName(), fieldSource.withProvider(owner), dvOrderedTypes);
+        return new AslDvOrderedColumnField(getColumnName(), FieldSource.withOwner(owner), dvOrderedTypes);
     }
 }
