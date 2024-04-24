@@ -53,7 +53,8 @@ import org.springframework.boot.test.context.SpringBootTest;
             // ValidationConfiguration.class, // <- needs CacheConfiguration
             // CacheConfiguration.class
             WebConfiguration.class,
-        })
+        },
+        properties = {"spring.cache.type=simple"})
 @AutoConfigureMockMvc
 @EnableAutoConfiguration(
         exclude = {

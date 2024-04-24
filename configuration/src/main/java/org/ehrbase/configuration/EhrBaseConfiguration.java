@@ -21,7 +21,6 @@ import org.ehrbase.ServiceModuleConfiguration;
 import org.ehrbase.openehr.aqlengine.AqlEngineModuleConfiguration;
 import org.ehrbase.rest.RestModuleConfiguration;
 import org.ehrbase.rest.ehrscape.RestEHRScapeModuleConfiguration;
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -34,9 +33,4 @@ import org.springframework.context.annotation.Import;
     RestModuleConfiguration.class,
     AqlEngineModuleConfiguration.class
 })
-public class EhrBaseConfiguration {
-
-    public static void main(String[] args) {
-        SpringApplication.run(EhrBaseConfiguration.class, args);
-    }
-}
+public class EhrBaseConfiguration {}
