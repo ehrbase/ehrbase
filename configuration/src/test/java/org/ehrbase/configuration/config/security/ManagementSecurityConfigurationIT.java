@@ -54,10 +54,11 @@ public class ManagementSecurityConfigurationIT {
             properties = {
                 "management.endpoints.enabled-by-default=true",
                 "management.endpoints.web.exposure.include=health,info,metrics,prometheus,loggers",
-                "management.endpoint.health.enabled=true",
                 "management.endpoint.info.enabled=true",
                 "management.endpoint.metrics.enabled=true",
-                "management.endpoint.loggers.enabled=true"
+                "management.endpoint.loggers.enabled=true",
+                "management.endpoint.health.enabled=true",
+                "management.health.db.enabled=false", // turn off db health checks for tests
             })
     @Nested
     class EndpointsEnabled {
