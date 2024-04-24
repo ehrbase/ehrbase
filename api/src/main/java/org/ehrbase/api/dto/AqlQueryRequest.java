@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.service;
+package org.ehrbase.api.dto;
 
 import java.util.Map;
 import java.util.Optional;
@@ -23,31 +23,57 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.ehrbase.api.service.AqlQueryService;
 
 /**
  * The requested AQL to be executed by {@link AqlQueryService#query(AqlQueryRequest)}.
  *
- * @param queryString the actual aql query string
- * @param parameters  additional query parameters
- * @param fetch       query limit to apply
- * @param offset      query offset to apply
+ * @param queryString          the actual aql query string
+ * @param parameters           additional query parameters
+ * @param fetch                query limit to apply
+ * @param offset               query offset to apply
+ * @param executionInstruction additional execution instructions
  */
 public record AqlQueryRequest(
         @Nonnull String queryString,
         @Nullable Map<String, Object> parameters,
         @Nullable Long fetch,
-        @Nullable Long offset) {
+        @Nullable Long offset,
+        @Nonnull ExecutionInstruction executionInstruction) {
+
     public AqlQueryRequest(
             @Nonnull String queryString,
             @Nullable Map<String, Object> parameters,
             @Nullable Long fetch,
             @Nullable Long offset) {
+        this(queryString, parameters, fetch, offset, new ExecutionInstruction());
+    }
+
+    public AqlQueryRequest(
+            @Nonnull String queryString,
+            @Nullable Map<String, Object> parameters,
+            @Nullable Long fetch,
+            @Nullable Long offset,
+            @Nonnull ExecutionInstruction executionInstruction) {
         this.queryString = queryString;
         this.parameters = Optional.ofNullable(parameters).map(Map::entrySet).stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> handleExplicitParameterTypes(e.getValue())));
         this.fetch = fetch;
         this.offset = offset;
+        this.executionInstruction = executionInstruction;
+    }
+
+    /**
+     * Additional instruction for the AQL execution.
+     *
+     * @param dryRun            instruct to only perform a dry that does not execute the final query
+     * @param returnExecutedSQL instruct to return the final SQL statement
+     */
+    public record ExecutionInstruction(boolean dryRun, boolean returnExecutedSQL) {
+        public ExecutionInstruction() {
+            this(false, false);
+        }
     }
 
     /**
@@ -71,8 +97,6 @@ public record AqlQueryRequest(
                             .map(Object::toString)
                             .<Object>map(Double::parseDouble)
                             .orElse(paramValue);
-                        // XXX These can be merged, but it currently crashes the formatter
-                    case null -> paramValue;
                     default -> paramValue;};
         }
         return paramValue;

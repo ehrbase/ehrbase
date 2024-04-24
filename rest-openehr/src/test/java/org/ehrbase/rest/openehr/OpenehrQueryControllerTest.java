@@ -31,8 +31,9 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.ehrbase.api.dto.AqlQueryRequest;
+import org.ehrbase.api.dto.AqlQueryResult;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.service.AqlQueryRequest;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.api.service.StoredQueryService;
@@ -66,7 +67,8 @@ public class OpenehrQueryControllerTest {
     }
 
     private OpenehrQueryController controller(Supplier<QueryResultDto> resultSupplier) {
-        doReturn(resultSupplier.get()).when(mockAqlQueryService).query(any());
+        AqlQueryResult aqlQueryResult = new AqlQueryResult(resultSupplier.get());
+        doReturn(aqlQueryResult).when(mockAqlQueryService).query(any());
         return spyController;
     }
 

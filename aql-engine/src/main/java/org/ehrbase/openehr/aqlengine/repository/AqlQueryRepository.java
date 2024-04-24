@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -63,7 +65,13 @@ public class AqlQueryRepository {
         this.knowledgeCache = knowledgeCache;
     }
 
-    public List<List<Object>> executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
+    public record QueryResult(@Nonnull List<List<Object>> result, @Nullable String executedSQL) {}
+
+    public QueryResult executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
+        return executeQuery(aslQuery, selects, false);
+    }
+
+    public QueryResult executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects, boolean returnExecutedSQL) {
         SelectQuery<Record> queryResults = queryBuilder.buildSqlQuery(aslQuery);
 
         final Map<Integer, AqlSqlResultPostprocessor> postProcessors;
@@ -75,9 +83,15 @@ public class AqlQueryRepository {
                     .boxed()
                     .collect(Collectors.toMap(i -> i, i -> getPostProcessor(selects.get(i))));
         }
-        return queryResults.stream()
+        List<List<Object>> result = queryResults.stream()
                 .map(r -> postProcessDbRecord(r, postProcessors))
                 .toList();
+
+        String executedSQL = null;
+        if (returnExecutedSQL) {
+            executedSQL = queryResults.getSQL();
+        }
+        return new QueryResult(result, executedSQL);
     }
 
     private AqlSqlResultPostprocessor getPostProcessor(SelectWrapper select) {
@@ -90,9 +104,8 @@ public class AqlQueryRepository {
 
         Optional<AqlObjectPath> selectPath = select.getIdentifiedPath().map(IdentifiedPath::getPath);
         List<PathNode> nodes = selectPath.map(AqlObjectPath::getPathNodes).orElseGet(Collections::emptyList);
-        return
         // extracted column by full path
-        AslExtractedColumn.find(select.root(), selectPath.orElse(null))
+        return AslExtractedColumn.find(select.root(), selectPath.orElse(null))
                 // OR extracted column by archetype_node_id suffix
                 .or(() -> Optional.of(AslExtractedColumn.ARCHETYPE_NODE_ID)
                         .filter(e ->

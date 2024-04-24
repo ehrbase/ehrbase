@@ -17,6 +17,8 @@
  */
 package org.ehrbase.openehr.aqlengine.service;
 
+import static org.ehrbase.openehr.aqlengine.AqlParameterReplacement.replaceParameters;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.re2j.Pattern;
@@ -28,17 +30,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.api.dto.AqlQueryRequest;
+import org.ehrbase.api.dto.AqlQueryResult;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.service.AqlQueryRequest;
 import org.ehrbase.api.service.AqlQueryService;
-import org.ehrbase.openehr.aqlengine.AqlParameterReplacement;
 import org.ehrbase.openehr.aqlengine.AqlQueryUtils;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
@@ -92,27 +95,20 @@ public class AqlQueryServiceImp implements AqlQueryService {
     }
 
     @Override
-    public QueryResultDto query(AqlQueryRequest aqlQuery) {
+    public AqlQueryResult query(AqlQueryRequest aqlQuery) {
         return queryAql(aqlQuery);
     }
 
-    private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
+    private static void raiseInvalidApiParameterIf(boolean condition, Supplier<String> messageSupplier) {
+        if (condition) {
+            throw new InvalidApiParameterException(messageSupplier.get());
+        }
+    }
+
+    private AqlQueryResult queryAql(AqlQueryRequest aqlQueryRequest) {
         // TODO: check that select aliases are not duplicated
         try {
-            AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
-            // apply limit and offset - where the definitions from the aql will be preferred over the request values.
-            aqlQuery.setLimit(Optional.ofNullable(aqlQuery.getLimit()).orElse(aqlQueryRequest.fetch()));
-            aqlQuery.setOffset(Optional.ofNullable(aqlQuery.getOffset()).orElse(aqlQueryRequest.offset()));
-
-            // Sanity check - In AQL there is no offset without limit.
-            if (aqlQuery.getOffset() != null && aqlQuery.getLimit() == null) {
-                throw new InvalidApiParameterException(
-                        "Invalid AQL query: provided offset %s without a limit".formatted(aqlQuery.getOffset()));
-            }
-
-            AqlParameterReplacement.replaceParameters(aqlQuery, aqlQueryRequest.parameters());
-
-            replaceEhrPaths(aqlQuery);
+            AqlQuery aqlQuery = buildAqlQuery(aqlQueryRequest);
 
             aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
 
@@ -122,7 +118,10 @@ public class AqlQueryServiceImp implements AqlQueryService {
                 AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
                 List<SelectWrapper> nonPrimitiveSelects =
                         queryWrapper.nonPrimitiveSelects().toList();
-                List<List<Object>> result = aqlQueryRepository.executeQuery(aslQuery, nonPrimitiveSelects);
+
+                AqlQueryRepository.QueryResult queryResult =
+                        aqlQueryRepository.executeQuery(aslQuery, nonPrimitiveSelects);
+                List<List<Object>> result = queryResult.result();
 
                 if (nonPrimitiveSelects.isEmpty()) {
                     // only primitives selected: only a count() was performed, so the list must be constructed
@@ -153,7 +152,8 @@ public class AqlQueryServiceImp implements AqlQueryService {
                 }
 
                 String understoodByAqlParser = AqlRenderer.render(aqlQuery);
-                return formatResult(queryWrapper, result, understoodByAqlParser);
+                QueryResultDto queryResultDto = formatResult(queryWrapper, result, understoodByAqlParser);
+                return new AqlQueryResult(queryResultDto);
 
             } catch (IllegalArgumentException e) {
                 // regular IllegalArgumentException, not due to illegal query parameters
@@ -185,6 +185,38 @@ public class AqlQueryServiceImp implements AqlQueryService {
                                     .getMessage()),
                     e);
         }
+    }
+
+    private static AqlQuery buildAqlQuery(AqlQueryRequest aqlQueryRequest) {
+
+        AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
+
+        // apply limit and offset - where the definitions from the aql are the precedence
+        Optional.ofNullable(aqlQueryRequest.fetch()).ifPresent(fetch -> {
+            raiseInvalidApiParameterIf(
+                    aqlQuery.getLimit() != null,
+                    () -> "Invalid AQL query: fetch is defined on query %s and as parameter %s"
+                            .formatted(aqlQuery.getLimit(), fetch));
+            aqlQuery.setLimit(fetch);
+        });
+        Optional.ofNullable(aqlQueryRequest.offset()).ifPresent(offset -> {
+            raiseInvalidApiParameterIf(
+                    aqlQuery.getOffset() != null,
+                    () -> "Invalid AQL query: fetch is defined on query %s and as parameter %s"
+                            .formatted(aqlQuery.getOffset(), offset));
+            aqlQuery.setOffset(offset);
+        });
+
+        // sanity check - In AQL there is no offset without limit.
+        raiseInvalidApiParameterIf(
+                aqlQuery.getOffset() != null && aqlQuery.getLimit() == null,
+                () -> "Invalid AQL query: provided offset %s without a limit".formatted(aqlQuery.getOffset()));
+
+        // postprocess
+        replaceParameters(aqlQuery, aqlQueryRequest.parameters());
+        replaceEhrPaths(aqlQuery);
+
+        return aqlQuery;
     }
 
     private QueryResultDto formatResult(AqlQueryWrapper query, List<List<Object>> resultData, String queryString) {
