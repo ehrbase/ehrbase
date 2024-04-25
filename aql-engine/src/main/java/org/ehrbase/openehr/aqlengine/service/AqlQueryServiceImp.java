@@ -119,13 +119,15 @@ public class AqlQueryServiceImp implements AqlQueryService {
                 List<SelectWrapper> nonPrimitiveSelects =
                         queryWrapper.nonPrimitiveSelects().toList();
 
-                AqlQueryRepository.QueryResult queryResult =
-                        aqlQueryRepository.executeQuery(aslQuery, nonPrimitiveSelects);
-                List<List<Object>> result = queryResult.result();
+                AqlQueryRequest.ExecutionInstruction executionInstruction = aqlQueryRequest.executionInstruction();
+                AqlQueryRepository.QueryResult result = aqlQueryRepository.executeQuery(
+                        aslQuery, nonPrimitiveSelects, executionInstruction.returnExecutedSQL());
+                List<List<Object>> resultData = result.data();
 
                 if (nonPrimitiveSelects.isEmpty()) {
                     // only primitives selected: only a count() was performed, so the list must be constructed
-                    result = LongStream.range(0, (long) result.getFirst().getFirst())
+                    resultData = LongStream.range(
+                                    0, (long) resultData.getFirst().getFirst())
                             .<List<Object>>mapToObj(i -> new ArrayList<>())
                             .toList();
                 }
@@ -137,7 +139,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
                     SelectWrapper sd = selects.get(i);
                     if (sd.type() == SelectType.PRIMITIVE) {
                         Constable value = sd.getPrimitive().getValue();
-                        for (List<Object> row : result) {
+                        for (List<Object> row : resultData) {
                             row.add(i, value);
                         }
                     }
@@ -152,8 +154,13 @@ public class AqlQueryServiceImp implements AqlQueryService {
                 }
 
                 String understoodByAqlParser = AqlRenderer.render(aqlQuery);
-                QueryResultDto queryResultDto = formatResult(queryWrapper, result, understoodByAqlParser);
-                return new AqlQueryResult(queryResultDto);
+                QueryResultDto queryResultDto = formatResult(queryWrapper, resultData, understoodByAqlParser);
+
+                AqlQueryResult.ExecutionInfo executionInfo = AqlQueryResult.ExecutionInfo.Empty;
+                if (executionInstruction.isPresent()) {
+                    executionInfo = new AqlQueryResult.ExecutionInfo(result.executedSQL(), false);
+                }
+                return new AqlQueryResult(queryResultDto, executionInfo);
 
             } catch (IllegalArgumentException e) {
                 // regular IllegalArgumentException, not due to illegal query parameters

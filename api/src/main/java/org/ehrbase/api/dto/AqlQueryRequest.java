@@ -74,6 +74,10 @@ public record AqlQueryRequest(
         public ExecutionInstruction() {
             this(false, false);
         }
+
+        public boolean isPresent() {
+            return dryRun || returnExecutedSQL;
+        }
     }
 
     /**

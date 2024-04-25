@@ -31,7 +31,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 public record AqlQueryResult(@Nonnull QueryResultDto result, @Nonnull ExecutionInfo executionInfo) {
 
     public AqlQueryResult(@Nonnull QueryResultDto result) {
-        this(result, new ExecutionInfo());
+        this(result, ExecutionInfo.Empty);
     }
 
     /**
@@ -40,6 +40,9 @@ public record AqlQueryResult(@Nonnull QueryResultDto result, @Nonnull ExecutionI
      * @param executedSQL   raw SQL executed for the given AQL.
      */
     public record ExecutionInfo(@Nullable String executedSQL, boolean dryRun) {
+
+        public static final ExecutionInfo Empty = new ExecutionInfo();
+
         public ExecutionInfo() {
             this(null, false);
         }

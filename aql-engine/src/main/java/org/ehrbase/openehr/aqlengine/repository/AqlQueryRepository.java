@@ -53,6 +53,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @Transactional(readOnly = true)
 public class AqlQueryRepository {
+
+    /**
+     * Wrapper object for AQL query result
+     *
+     * @param data        result data
+     * @param executedSQL in case {@link #executeQuery(AslRootQuery, List, boolean)} is invoked with
+     *                    <code>returnExecutedSQL</code> enabled
+     */
+    public record QueryResult(@Nonnull List<List<Object>> data, @Nullable String executedSQL) {}
+
     private static final AqlSqlResultPostprocessor NOOP_POSTPROCESSOR = v -> v;
     private final SystemService systemService;
     private final KnowledgeCacheService knowledgeCache;
@@ -63,12 +73,6 @@ public class AqlQueryRepository {
         this.queryBuilder = queryBuilder;
         this.systemService = systemService;
         this.knowledgeCache = knowledgeCache;
-    }
-
-    public record QueryResult(@Nonnull List<List<Object>> result, @Nullable String executedSQL) {}
-
-    public QueryResult executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
-        return executeQuery(aslQuery, selects, false);
     }
 
     public QueryResult executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects, boolean returnExecutedSQL) {
