@@ -54,6 +54,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
 import org.ehrbase.openehr.aqlengine.repository.AqlQueryRepository;
+import org.ehrbase.openehr.aqlengine.repository.PreparedQuery;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
@@ -68,7 +69,6 @@ import org.ehrbase.openehr.sdk.aql.render.AqlRenderer;
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.query.ResultHolder;
-import org.ehrbase.openehr.sdk.serialisation.jsonencoding.ArchieObjectMapperProvider;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.exception.DataAccessException;
@@ -86,17 +86,20 @@ public class AqlQueryServiceImp implements AqlQueryService {
     private final ExternalTerminologyValidation tsAdapter;
     private final AqlSqlLayer aqlSqlLayer;
     private final AqlQueryFeatureCheck aqlQueryFeatureCheck;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public AqlQueryServiceImp(
             AqlQueryRepository aqlQueryRepository,
             ExternalTerminologyValidation tsAdapter,
             AqlSqlLayer aqlSqlLayer,
-            AqlQueryFeatureCheck aqlQueryFeatureCheck) {
+            AqlQueryFeatureCheck aqlQueryFeatureCheck,
+            ObjectMapper objectMapper) {
         this.aqlQueryRepository = aqlQueryRepository;
         this.tsAdapter = tsAdapter;
         this.aqlSqlLayer = aqlSqlLayer;
         this.aqlQueryFeatureCheck = aqlQueryFeatureCheck;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -116,27 +119,28 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
                 AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
                 AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
+                List<SelectWrapper> nonPrimitiveSelects =
+                        queryWrapper.nonPrimitiveSelects().toList();
 
-                List<List<Object>> resultData =
-                        executionOption.dryRun() ? List.of() : executeQuery(queryWrapper, aslQuery);
+                PreparedQuery preparedQuery = aqlQueryRepository.prepareQuery(aslQuery, nonPrimitiveSelects);
+
+                List<List<Object>> resultData = executionOption.dryRun()
+                        ? List.of()
+                        : executeQuery(preparedQuery, queryWrapper, nonPrimitiveSelects);
 
                 if (logger.isTraceEnabled()) {
-                    try {
-                        logger.trace(new ObjectMapper().writeValueAsString(aqlQuery));
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e.getMessage(), e);
-                    }
+                    logger.trace(objectMapper.writeValueAsString(aqlQuery));
                 }
 
                 String executedSQL = null;
                 if (executionOption.returnExecutedSQL()) {
-                    executedSQL = aqlQueryRepository.printQuery(aslQuery);
+                    executedSQL = aqlQueryRepository.printQuery(preparedQuery);
                 }
                 Map<String, Object> queryPlan = null;
                 if (executionOption.returnQueryPlan()) {
-                    String explainedQuery = aqlQueryRepository.explainQuery(aslQuery);
+                    String explainedQuery = aqlQueryRepository.explainQuery(preparedQuery);
                     TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
-                    queryPlan = ArchieObjectMapperProvider.getObjectMapper().readValue(explainedQuery, typeRef);
+                    queryPlan = objectMapper.readValue(explainedQuery, typeRef);
                 }
 
                 String understoodByAqlParser = AqlRenderer.render(aqlQuery);
@@ -193,11 +197,10 @@ public class AqlQueryServiceImp implements AqlQueryService {
         return aqlQuery;
     }
 
-    private List<List<Object>> executeQuery(AqlQueryWrapper queryWrapper, AslRootQuery aslQuery) {
+    private List<List<Object>> executeQuery(
+            PreparedQuery preparedQuery, AqlQueryWrapper queryWrapper, List<SelectWrapper> nonPrimitiveSelects) {
 
-        List<SelectWrapper> nonPrimitiveSelects =
-                queryWrapper.nonPrimitiveSelects().toList();
-        List<List<Object>> resultData = aqlQueryRepository.executeQuery(aslQuery, nonPrimitiveSelects);
+        List<List<Object>> resultData = aqlQueryRepository.executeQuery(preparedQuery);
 
         if (nonPrimitiveSelects.isEmpty()) {
             // only primitives selected: only a count() was performed, so the list must be constructed

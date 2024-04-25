@@ -64,8 +64,20 @@ public class AqlQueryRepository {
         this.knowledgeCache = knowledgeCache;
     }
 
-    public List<List<Object>> executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
-        SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
+    /**
+     * Prepares the full SQL query. Build the structure from AQL and selects postprocess based on the given
+     * <code>selects</code>.
+     *
+     * @param aslQuery to create the actual SQL query from.
+     * @param selects  to obtain {@link AqlSqlResultPostprocessor} for.
+     *
+     * @see #executeQuery(PreparedQuery)
+     * @see #printQuery(PreparedQuery)
+     * @see #explainQuery(PreparedQuery)
+     */
+    public PreparedQuery prepareQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
+
+        final SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
 
         final Map<Integer, AqlSqlResultPostprocessor> postProcessors;
         if (selects.isEmpty()) {
@@ -76,19 +88,21 @@ public class AqlQueryRepository {
                     .boxed()
                     .collect(Collectors.toMap(i -> i, i -> getPostProcessor(selects.get(i))));
         }
-        return selectQuery.stream()
-                .map(r -> postProcessDbRecord(r, postProcessors))
+        return new PreparedQuery(selectQuery, postProcessors);
+    }
+
+    public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
+        return preparedQuery.selectQuery.stream()
+                .map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
                 .toList();
     }
 
-    public String printQuery(AslRootQuery aslQuery) {
-        SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
-        return selectQuery.getSQL();
+    public String printQuery(PreparedQuery preparedQuery) {
+        return preparedQuery.selectQuery.getSQL();
     }
 
-    public String explainQuery(AslRootQuery aslQuery) {
-        SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
-        return queryBuilder.explain(selectQuery).formatJSON();
+    public String explainQuery(PreparedQuery preparedQuery) {
+        return queryBuilder.explain(preparedQuery.selectQuery).formatJSON();
     }
 
     private AqlSqlResultPostprocessor getPostProcessor(SelectWrapper select) {
