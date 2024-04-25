@@ -20,11 +20,13 @@ package org.ehrbase.openehr.aqlengine.service;
 import static org.ehrbase.openehr.aqlengine.AqlParameterReplacement.replaceParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.re2j.Pattern;
 import java.lang.constant.Constable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,8 @@ import java.util.function.Supplier;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.api.dto.AqlExecutionInfo;
+import org.ehrbase.api.dto.AqlExecutionOption;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.dto.AqlQueryResult;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
@@ -64,6 +68,7 @@ import org.ehrbase.openehr.sdk.aql.render.AqlRenderer;
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.query.ResultHolder;
+import org.ehrbase.openehr.sdk.serialisation.jsonencoding.ArchieObjectMapperProvider;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.exception.DataAccessException;
@@ -99,12 +104,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
         return queryAql(aqlQuery);
     }
 
-    private static void raiseInvalidApiParameterIf(boolean condition, Supplier<String> messageSupplier) {
-        if (condition) {
-            throw new InvalidApiParameterException(messageSupplier.get());
-        }
-    }
-
     private AqlQueryResult queryAql(AqlQueryRequest aqlQueryRequest) {
         // TODO: check that select aliases are not duplicated
         try {
@@ -113,37 +112,13 @@ public class AqlQueryServiceImp implements AqlQueryService {
             aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
 
             try {
+                AqlExecutionOption executionOption = aqlQueryRequest.executionOption();
+
                 AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-
                 AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-                List<SelectWrapper> nonPrimitiveSelects =
-                        queryWrapper.nonPrimitiveSelects().toList();
 
-                AqlQueryRequest.ExecutionInstruction executionInstruction = aqlQueryRequest.executionInstruction();
-                AqlQueryRepository.QueryResult result = aqlQueryRepository.executeQuery(
-                        aslQuery, nonPrimitiveSelects, executionInstruction.returnExecutedSQL());
-                List<List<Object>> resultData = result.data();
-
-                if (nonPrimitiveSelects.isEmpty()) {
-                    // only primitives selected: only a count() was performed, so the list must be constructed
-                    resultData = LongStream.range(
-                                    0, (long) resultData.getFirst().getFirst())
-                            .<List<Object>>mapToObj(i -> new ArrayList<>())
-                            .toList();
-                }
-
-                List<SelectWrapper> selects = queryWrapper.selects();
-                // Since we do not add primitive value selects to the SQL query, we add them after the query was
-                // executed
-                for (int i = 0; i < selects.size(); i++) {
-                    SelectWrapper sd = selects.get(i);
-                    if (sd.type() == SelectType.PRIMITIVE) {
-                        Constable value = sd.getPrimitive().getValue();
-                        for (List<Object> row : resultData) {
-                            row.add(i, value);
-                        }
-                    }
-                }
+                List<List<Object>> resultData =
+                        executionOption.dryRun() ? List.of() : executeQuery(queryWrapper, aslQuery);
 
                 if (logger.isTraceEnabled()) {
                     try {
@@ -153,44 +128,36 @@ public class AqlQueryServiceImp implements AqlQueryService {
                     }
                 }
 
+                String executedSQL = null;
+                if (executionOption.returnExecutedSQL()) {
+                    executedSQL = aqlQueryRepository.printQuery(aslQuery);
+                }
+                Map<String, Object> queryPlan = null;
+                if (executionOption.returnQueryPlan()) {
+                    String explainedQuery = aqlQueryRepository.explainQuery(aslQuery);
+                    TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
+                    queryPlan = ArchieObjectMapperProvider.getObjectMapper().readValue(explainedQuery, typeRef);
+                }
+
                 String understoodByAqlParser = AqlRenderer.render(aqlQuery);
                 QueryResultDto queryResultDto = formatResult(queryWrapper, resultData, understoodByAqlParser);
 
-                AqlQueryResult.ExecutionInfo executionInfo = AqlQueryResult.ExecutionInfo.Empty;
-                if (executionInstruction.isPresent()) {
-                    executionInfo = new AqlQueryResult.ExecutionInfo(result.executedSQL(), false);
+                AqlExecutionInfo executionInfo = AqlExecutionInfo.None;
+                if (executionOption.isPresent()) {
+                    executionInfo = new AqlExecutionInfo(executionOption.dryRun(), executedSQL, queryPlan);
                 }
                 return new AqlQueryResult(queryResultDto, executionInfo);
 
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException | JsonProcessingException e) {
                 // regular IllegalArgumentException, not due to illegal query parameters
                 throw new InternalServerException(e.getMessage(), e);
             }
-
         } catch (RestClientException e) {
-            throw new BadGatewayException(
-                    "Bad gateway: %s"
-                            .formatted(Optional.of(e)
-                                    .map(Throwable::getCause)
-                                    .orElse(e)
-                                    .getMessage()),
-                    e);
+            throw new BadGatewayException(formattedException("Bad gateway: %s", e), e);
         } catch (DataAccessException e) {
-            throw new InternalServerException(
-                    "Data Access Error: %s"
-                            .formatted(Optional.of(e)
-                                    .map(Throwable::getCause)
-                                    .orElse(e)
-                                    .getMessage()),
-                    e);
+            throw new InternalServerException(formattedException("Data Access Error: %s", e), e);
         } catch (AqlParseException e) {
-            throw new IllegalAqlException(
-                    "Could not parse AQL query: %s"
-                            .formatted(Optional.of(e)
-                                    .map(Throwable::getCause)
-                                    .orElse(e)
-                                    .getMessage()),
-                    e);
+            throw new IllegalAqlException(formattedException("Could not parse AQL query: %s", e), e);
         }
     }
 
@@ -224,6 +191,34 @@ public class AqlQueryServiceImp implements AqlQueryService {
         replaceEhrPaths(aqlQuery);
 
         return aqlQuery;
+    }
+
+    private List<List<Object>> executeQuery(AqlQueryWrapper queryWrapper, AslRootQuery aslQuery) {
+
+        List<SelectWrapper> nonPrimitiveSelects =
+                queryWrapper.nonPrimitiveSelects().toList();
+        List<List<Object>> resultData = aqlQueryRepository.executeQuery(aslQuery, nonPrimitiveSelects);
+
+        if (nonPrimitiveSelects.isEmpty()) {
+            // only primitives selected: only a count() was performed, so the list must be constructed
+            resultData = LongStream.range(0, (long) resultData.getFirst().getFirst())
+                    .<List<Object>>mapToObj(i -> new ArrayList<>())
+                    .toList();
+        }
+
+        List<SelectWrapper> selects = queryWrapper.selects();
+        // Since we do not add primitive value selects to the SQL query, we add them after the query was
+        // executed
+        for (int i = 0; i < selects.size(); i++) {
+            SelectWrapper sd = selects.get(i);
+            if (sd.type() == SelectType.PRIMITIVE) {
+                Constable value = sd.getPrimitive().getValue();
+                for (List<Object> row : resultData) {
+                    row.add(i, value);
+                }
+            }
+        }
+        return resultData;
     }
 
     private QueryResultDto formatResult(AqlQueryWrapper query, List<List<Object>> resultData, String queryString) {
@@ -373,5 +368,16 @@ public class AqlQueryServiceImp implements AqlQueryService {
             List<PathNode> pathNodes = ip.getPath().getPathNodes();
             ip.setPath(pathNodes.size() == 1 ? null : new AqlObjectPath(pathNodes.subList(1, pathNodes.size())));
         });
+    }
+
+    private static void raiseInvalidApiParameterIf(boolean condition, Supplier<String> messageSupplier) {
+        if (condition) {
+            throw new InvalidApiParameterException(messageSupplier.get());
+        }
+    }
+
+    private static String formattedException(String message, Exception e) {
+        return message.formatted(
+                Optional.of(e).map(Throwable::getCause).orElse(e).getMessage());
     }
 }

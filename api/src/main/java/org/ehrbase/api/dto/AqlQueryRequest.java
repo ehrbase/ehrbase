@@ -32,52 +32,28 @@ import org.ehrbase.api.service.AqlQueryService;
  * @param parameters           additional query parameters
  * @param fetch                query limit to apply
  * @param offset               query offset to apply
- * @param executionInstruction additional execution instructions
+ * @param executionOption additional execution instructions
  */
 public record AqlQueryRequest(
         @Nonnull String queryString,
         @Nullable Map<String, Object> parameters,
         @Nullable Long fetch,
         @Nullable Long offset,
-        @Nonnull ExecutionInstruction executionInstruction) {
-
-    public AqlQueryRequest(
-            @Nonnull String queryString,
-            @Nullable Map<String, Object> parameters,
-            @Nullable Long fetch,
-            @Nullable Long offset) {
-        this(queryString, parameters, fetch, offset, new ExecutionInstruction());
-    }
+        @Nonnull AqlExecutionOption executionOption) {
 
     public AqlQueryRequest(
             @Nonnull String queryString,
             @Nullable Map<String, Object> parameters,
             @Nullable Long fetch,
             @Nullable Long offset,
-            @Nonnull ExecutionInstruction executionInstruction) {
+            @Nonnull AqlExecutionOption executionOption) {
         this.queryString = queryString;
         this.parameters = Optional.ofNullable(parameters).map(Map::entrySet).stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> handleExplicitParameterTypes(e.getValue())));
         this.fetch = fetch;
         this.offset = offset;
-        this.executionInstruction = executionInstruction;
-    }
-
-    /**
-     * Additional instruction for the AQL execution.
-     *
-     * @param dryRun            instruct to only perform a dry that does not execute the final query
-     * @param returnExecutedSQL instruct to return the final SQL statement
-     */
-    public record ExecutionInstruction(boolean dryRun, boolean returnExecutedSQL) {
-        public ExecutionInstruction() {
-            this(false, false);
-        }
-
-        public boolean isPresent() {
-            return dryRun || returnExecutedSQL;
-        }
+        this.executionOption = executionOption;
     }
 
     /**

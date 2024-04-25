@@ -17,19 +17,17 @@
  */
 package org.ehrbase.api.dto;
 
-import javax.annotation.Nonnull;
-import org.ehrbase.api.service.AqlQueryService;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
-
 /**
- * The result AQL executed by {@link AqlQueryService#query(AqlQueryRequest)}.
+ * Additional instruction options for the AQL execution.
  *
- * @param result        of the query
- * @param executionInfo additional {@link AqlExecutionInfo}
+ * @param dryRun            instruct to only perform a dry that does not execute the final query
+ * @param returnExecutedSQL instruct to return the final SQL statement
  */
-public record AqlQueryResult(@Nonnull QueryResultDto result, @Nonnull AqlExecutionInfo executionInfo) {
+public record AqlExecutionOption(boolean dryRun, boolean returnExecutedSQL, boolean returnQueryPlan) {
 
-    public AqlQueryResult(@Nonnull QueryResultDto result) {
-        this(result, AqlExecutionInfo.None);
+    public static final AqlExecutionOption None = new AqlExecutionOption(false, false, false);
+
+    public boolean isPresent() {
+        return dryRun || returnExecutedSQL || returnQueryPlan;
     }
 }

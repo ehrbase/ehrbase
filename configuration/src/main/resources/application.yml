@@ -86,6 +86,8 @@ ehrbase:
       response:
         # add an information about the running ehrbase instance to the AQL meta.generator property
         generator-details-enabled: false
+        # allows to collect/control query execution instruction using `debug` or `dryRun` params
+        execution-options-enabled: false
   security:
     # Configuration of actuator for reporting and health endpoints
     management:

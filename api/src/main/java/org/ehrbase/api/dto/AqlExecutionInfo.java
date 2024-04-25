@@ -17,19 +17,17 @@
  */
 package org.ehrbase.api.dto;
 
-import javax.annotation.Nonnull;
-import org.ehrbase.api.service.AqlQueryService;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
+import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
- * The result AQL executed by {@link AqlQueryService#query(AqlQueryRequest)}.
+ * Contains additional execution information about the executed AQL query.
  *
- * @param result        of the query
- * @param executionInfo additional {@link AqlExecutionInfo}
+ * @param dryRun      indicates if the actual query was performed or not.
+ * @param executedSQL raw SQL executed for the given AQL.
+ * @param queryPlan   plane of the {@link #executedSQL}.
  */
-public record AqlQueryResult(@Nonnull QueryResultDto result, @Nonnull AqlExecutionInfo executionInfo) {
+public record AqlExecutionInfo(boolean dryRun, @Nullable String executedSQL, @Nullable Map<String, Object> queryPlan) {
 
-    public AqlQueryResult(@Nonnull QueryResultDto result) {
-        this(result, AqlExecutionInfo.None);
-    }
+    public static final AqlExecutionInfo None = new AqlExecutionInfo(false, null, null);
 }

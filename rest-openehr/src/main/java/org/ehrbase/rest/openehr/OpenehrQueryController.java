@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.ehrbase.api.dto.AqlExecutionInfo;
+import org.ehrbase.api.dto.AqlExecutionOption;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.dto.AqlQueryResult;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -81,6 +83,9 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
     @Value("${ehrbase.rest.aql.response.generator-details-enabled:false}")
     boolean generatorDetailsEnabled = false;
+
+    @Value("${ehrbase.rest.aql.response.execution-options-enabled:false}")
+    boolean executionOptionsEnabled = false;
 
     public OpenehrQueryController(
             AqlQueryService aqlQueryService, StoredQueryService storedQueryService, StatusService statusService) {
@@ -270,7 +275,13 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
     private AqlQueryRequest createRequest(
             @NonNull String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
-        return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null));
+
+        AqlExecutionOption executionOption = AqlExecutionOption.None;
+        if (executionOptionsEnabled) {
+            // FIXME use request params or header for arguments
+            executionOption = new AqlExecutionOption(true, true, true);
+        }
+        return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null), executionOption);
     }
 
     private static Optional<Long> optionalLong(String name, Map<String, Object> params) {
@@ -313,6 +324,16 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         if (generatorDetailsEnabled) {
             metaData.setGenerator("EHRBase/%s".formatted(statusService.getEhrbaseVersion()));
+        }
+        if (executionOptionsEnabled) {
+            AqlExecutionInfo executionInfo = aqlQueryResult.executionInfo();
+            metaData.setAdditionalProperty(MetaData.AdditionalProperty.dryRun, executionInfo.dryRun());
+            Optional.ofNullable(executionInfo.executedSQL())
+                    .ifPresent(executedSQL ->
+                            metaData.setAdditionalProperty(MetaData.AdditionalProperty.executedSQL, executedSQL));
+            Optional.ofNullable(executionInfo.queryPlan())
+                    .ifPresent(queryPlan ->
+                            metaData.setAdditionalProperty(MetaData.AdditionalProperty.queryPlan, queryPlan));
         }
 
         return queryResponseData;

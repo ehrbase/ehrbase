@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -54,15 +52,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AqlQueryRepository {
 
-    /**
-     * Wrapper object for AQL query result
-     *
-     * @param data        result data
-     * @param executedSQL in case {@link #executeQuery(AslRootQuery, List, boolean)} is invoked with
-     *                    <code>returnExecutedSQL</code> enabled
-     */
-    public record QueryResult(@Nonnull List<List<Object>> data, @Nullable String executedSQL) {}
-
     private static final AqlSqlResultPostprocessor NOOP_POSTPROCESSOR = v -> v;
     private final SystemService systemService;
     private final KnowledgeCacheService knowledgeCache;
@@ -75,8 +64,8 @@ public class AqlQueryRepository {
         this.knowledgeCache = knowledgeCache;
     }
 
-    public QueryResult executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects, boolean returnExecutedSQL) {
-        SelectQuery<Record> queryResults = queryBuilder.buildSqlQuery(aslQuery);
+    public List<List<Object>> executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
+        SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
 
         final Map<Integer, AqlSqlResultPostprocessor> postProcessors;
         if (selects.isEmpty()) {
@@ -87,15 +76,19 @@ public class AqlQueryRepository {
                     .boxed()
                     .collect(Collectors.toMap(i -> i, i -> getPostProcessor(selects.get(i))));
         }
-        List<List<Object>> result = queryResults.stream()
+        return selectQuery.stream()
                 .map(r -> postProcessDbRecord(r, postProcessors))
                 .toList();
+    }
 
-        String executedSQL = null;
-        if (returnExecutedSQL) {
-            executedSQL = queryResults.getSQL();
-        }
-        return new QueryResult(result, executedSQL);
+    public String printQuery(AslRootQuery aslQuery) {
+        SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
+        return selectQuery.getSQL();
+    }
+
+    public String explainQuery(AslRootQuery aslQuery) {
+        SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
+        return queryBuilder.explain(selectQuery).formatJSON();
     }
 
     private AqlSqlResultPostprocessor getPostProcessor(SelectWrapper select) {
