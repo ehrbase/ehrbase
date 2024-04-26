@@ -25,8 +25,8 @@ import org.jooq.Record;
 import org.jooq.SelectQuery;
 
 /**
- * Represents a prepared but not executed SQL query for the {@link AqlQueryRepository} that is constructed by the
- * {@link AqlQueryRepository#prepareQuery(AslRootQuery, List)}. This prepared query can be executed using
+ * Represents a prepared but not executed SQL query for the {@link AqlQueryRepository} that is constructed by
+ * {@link AqlQueryRepository#prepareQuery(AslRootQuery, List)}. This prepared query can be executed by
  * {@link AqlQueryRepository#executeQuery(PreparedQuery)} or can be used to obtain the raw SQL query using
  * {@link AqlQueryRepository#printQuery(PreparedQuery)} or the query planer output
  * {@link AqlQueryRepository#explainQuery(PreparedQuery)}.
