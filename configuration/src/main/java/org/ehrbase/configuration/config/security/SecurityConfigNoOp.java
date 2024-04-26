@@ -41,8 +41,9 @@ import org.springframework.util.StringUtils;
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "none", matchIfMissing = true)
 public final class SecurityConfigNoOp extends SecurityConfig {
 
-    public SecurityConfigNoOp(WebEndpointProperties webEndpointProperties) {
-        super(webEndpointProperties);
+    public SecurityConfigNoOp(
+            WebEndpointProperties webEndpointProperties, SecuredWebEndpointProperties securedWebEndpointProperties) {
+        super(webEndpointProperties, securedWebEndpointProperties);
     }
 
     @PostConstruct

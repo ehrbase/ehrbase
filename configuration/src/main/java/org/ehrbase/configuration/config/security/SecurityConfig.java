@@ -17,12 +17,12 @@
  */
 package org.ehrbase.configuration.config.security;
 
+import static org.ehrbase.configuration.config.security.SecuredWebEndpointProperties.AccessType;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
@@ -35,25 +35,16 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    /**
-     * Supported values for the <code>management.endpoints.web.access</code> property value
-     */
-    public enum ManagementEndpointsAccessType {
-        ADMIN_ONLY,
-        PRIVATE,
-        PUBLIC
-    }
-
+    final WebEndpointProperties webEndpointProperties;
     /**
      * Extended property on spring actuator config that defines who can access the management endpoint.
      */
-    @Value("${management.endpoints.web.access:ADMIN_ONLY}")
-    protected ManagementEndpointsAccessType managementEndpointsAccessType;
+    final SecuredWebEndpointProperties securedWebEndpointProperties;
 
-    protected WebEndpointProperties webEndpointProperties;
-
-    protected SecurityConfig(WebEndpointProperties webEndpointProperties) {
+    protected SecurityConfig(
+            WebEndpointProperties webEndpointProperties, SecuredWebEndpointProperties securedWebEndpointProperties) {
         this.webEndpointProperties = webEndpointProperties;
+        this.securedWebEndpointProperties = securedWebEndpointProperties;
     }
 
     protected abstract HttpSecurity configureHttpSecurity(HttpSecurity http) throws Exception;
@@ -67,21 +58,21 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                     String adminRoleSupplier,
                     List<String> privateRolesSupplier) {
 
-        logger.info("Management endpoint access type {}", managementEndpointsAccessType);
+        logger.info("Management endpoint access type {}", securedWebEndpointProperties.access());
 
-        var managementAuthorizedUrl =
-                auth.requestMatchers(antMatcher(this.webEndpointProperties.getBasePath() + "/**"));
+        var managementAuthorizedUrl = auth.requestMatchers(antMatcher(webEndpointProperties.getBasePath() + "/**"));
 
-        logger.debug("Management endpoints base path {}", this.webEndpointProperties.getBasePath());
+        logger.debug("Management endpoints base path {}", securedWebEndpointProperties.access());
 
-        return switch (managementEndpointsAccessType) {
+        return switch (securedWebEndpointProperties.access()) {
                 // management endpoints are locked behind an authorization
                 // and are only available for users with the admin role
-            case ADMIN_ONLY -> managementAuthorizedUrl.hasRole(adminRoleSupplier);
+            case AccessType.ADMIN_ONLY -> managementAuthorizedUrl.hasRole(adminRoleSupplier);
                 // management endpoints are locked behind an authorization, but are available to any role
-            case PRIVATE -> managementAuthorizedUrl.hasAnyRole(privateRolesSupplier.toArray(new String[] {}));
+            case AccessType.PRIVATE -> managementAuthorizedUrl.hasAnyRole(
+                    privateRolesSupplier.toArray(new String[] {}));
                 // management endpoints can be accessed without an authorization
-            case PUBLIC -> managementAuthorizedUrl.permitAll();
+            case AccessType.PUBLIC -> managementAuthorizedUrl.permitAll();
         };
     }
 }
