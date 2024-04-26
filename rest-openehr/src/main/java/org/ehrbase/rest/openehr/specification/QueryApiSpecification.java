@@ -94,5 +94,6 @@ public interface QueryApiSpecification {
             String version,
             String accept,
             String contentType,
-            Map<String, Object> queryRequest);
+            Map<String, Object> queryRequest // FIXME: Create DTO
+            );
 }

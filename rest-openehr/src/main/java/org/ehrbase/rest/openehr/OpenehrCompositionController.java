@@ -45,6 +45,7 @@ import org.ehrbase.openehr.sdk.response.dto.CompositionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.http.EHRbaseHeader;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
 import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.ehrbase.rest.openehr.specification.CompositionApiSpecification;
@@ -432,7 +433,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             templateId = compositionService.retrieveTemplateId(compositionId);
         }
 
-        respHeaders.addIfAbsent(EHRBASE_TEMPLATE_ID, templateId);
+        respHeaders.addIfAbsent(EHRbaseHeader.TEMPLATE_ID, templateId);
 
         HttpRestContext.register(
                 EHR_ID,

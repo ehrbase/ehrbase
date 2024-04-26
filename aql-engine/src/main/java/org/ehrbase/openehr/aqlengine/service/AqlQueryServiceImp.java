@@ -266,8 +266,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
      * Rephrases EHR.composition and EHR.status CONTAINS statements so that they can be handled regularly by the aql engine.
      * E.g. <code>SELECT e/ehr_status FROM EHR</code> is rewritten as <code>SELECT s FROM EHR e CONTAINS EHR_STATUS s</code>,
      * <code>SELECT e/composition FROM EHR</code> is rewritten as <code>SELECT c FROM EHR e CONTAINS COMPOSITION c</code>.
-     *
-     * @param aqlQuery
      */
     static void replaceEhrPaths(AqlQuery aqlQuery) {
         replaceEhrPath(aqlQuery, "compositions", "COMPOSITION", "c");
@@ -277,8 +275,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
     /**
      * Rephrases a path from EHR to EHR_STATUS as CONTAINS statement so that it can be handled regularly by the aql engine.
      * E.g. <code>SELECT e/status FROM EHR</code> is rewritten as <code>SELECT s FROM EHR e CONTAINS EHR_STATUS s</code>.
-     *
-     * @param aqlQuery
      */
     static void replaceEhrPath(AqlQuery aqlQuery, String ehrPath, String type, String aliasPrefix) {
 

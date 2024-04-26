@@ -57,12 +57,9 @@ public record AqlQueryRequest(
     }
 
     /**
-     * Allows for explicit types via xml: <param type="int">1</param>.
-     *
-     * @param paramValue
-     * @return
+     * Allows for explicit types via xml: <param type="int">1</param> in query parameters.
      */
-    static Object handleExplicitParameterTypes(Object paramValue) {
+    private static Object handleExplicitParameterTypes(Object paramValue) {
         if (paramValue instanceof Map<?, ?> m) {
             Object typeVal = m.get("type");
             if (typeVal instanceof String type)

@@ -31,6 +31,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.ehrbase.api.dto.AqlExecutionOption;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.dto.AqlQueryResult;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -97,7 +98,8 @@ public class OpenehrQueryControllerTest {
 
         controller(QueryResultDto::new)
                 .executeAdHocQuery("SELECT s FROM EHR_STATUS s", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -105,7 +107,8 @@ public class OpenehrQueryControllerTest {
 
         controller(QueryResultDto::new)
                 .executeAdHocQuery("SELECT s FROM EHR_STATUS s", null, 10, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -113,7 +116,8 @@ public class OpenehrQueryControllerTest {
 
         controller(QueryResultDto::new)
                 .executeAdHocQuery("SELECT s FROM EHR_STATUS s", 25, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 25L));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 25L, AqlExecutionOption.None));
     }
 
     @Test
@@ -126,7 +130,8 @@ public class OpenehrQueryControllerTest {
                         null,
                         Map.of("key", "value"),
                         MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
+        assertAqlQueryRequest(new AqlQueryRequest(
+                "SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -163,7 +168,8 @@ public class OpenehrQueryControllerTest {
                         Map.of("q", "SELECT s FROM EHR_STATUS s"),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -174,7 +180,8 @@ public class OpenehrQueryControllerTest {
                         Map.of("q", "SELECT s FROM EHR_STATUS s", "fetch", 10),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -185,7 +192,8 @@ public class OpenehrQueryControllerTest {
                         Map.of("q", "SELECT s FROM EHR_STATUS s", "fetch", "10"),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -208,7 +216,8 @@ public class OpenehrQueryControllerTest {
                         Map.of("q", "SELECT s FROM EHR_STATUS s", "offset", 30),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 30L));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 30L, AqlExecutionOption.None));
     }
 
     @Test
@@ -219,7 +228,8 @@ public class OpenehrQueryControllerTest {
                         Map.of("q", "SELECT s FROM EHR_STATUS s", "offset", "30"),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 30L));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 30L, AqlExecutionOption.None));
     }
 
     @Test
@@ -242,7 +252,8 @@ public class OpenehrQueryControllerTest {
                         Map.of("q", "SELECT s FROM EHR_STATUS s", "query_parameters", Map.of("key", "value")),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
+        assertAqlQueryRequest(new AqlQueryRequest(
+                "SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -283,7 +294,8 @@ public class OpenehrQueryControllerTest {
 
         controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
                 .executeStoredQuery("my_qualified_query", "v1.0.0", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -291,7 +303,8 @@ public class OpenehrQueryControllerTest {
 
         controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
                 .executeStoredQuery("my_qualified_query", "v1.0.0", null, 15, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 15L, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 15L, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -299,7 +312,8 @@ public class OpenehrQueryControllerTest {
 
         controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
                 .executeStoredQuery("my_qualified_query", "v1.0.0", 25, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 25L));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 25L, AqlExecutionOption.None));
     }
 
     @Test
@@ -313,7 +327,8 @@ public class OpenehrQueryControllerTest {
                         null,
                         Map.of("key", "value"),
                         MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
+        assertAqlQueryRequest(new AqlQueryRequest(
+                "SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -355,7 +370,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         null);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -368,7 +384,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         Map.of("fetch", 30));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 30L, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 30L, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -381,7 +398,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         Map.of("fetch", "30"));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 30L, null));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 30L, null, AqlExecutionOption.None));
     }
 
     @Test
@@ -409,7 +427,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         Map.of("offset", 15));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 15L));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 15L, AqlExecutionOption.None));
     }
 
     @Test
@@ -422,7 +441,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         Map.of("offset", "15"));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 15L));
+        assertAqlQueryRequest(
+                new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 15L, AqlExecutionOption.None));
     }
 
     @Test
@@ -450,7 +470,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         Map.of("query_parameters", Map.of("key", "value")));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
+        assertAqlQueryRequest(new AqlQueryRequest(
+                "SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null, AqlExecutionOption.None));
     }
 
     @Test

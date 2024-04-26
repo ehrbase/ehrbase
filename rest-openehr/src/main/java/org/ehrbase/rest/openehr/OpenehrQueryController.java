@@ -21,6 +21,7 @@ import static org.ehrbase.api.rest.HttpRestContext.QUERY_EXECUTE_ENDPOINT;
 import static org.ehrbase.api.rest.HttpRestContext.QUERY_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.http.EHRbaseHeader;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Controller for openEHR REST API QUERY resource.
@@ -71,9 +75,11 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
 
+    // request parameter
     private static final String QUERY_PARAMETERS = "query_parameters";
     private static final String FETCH = "fetch";
     private static final String OFFSET = "offset";
+    private static final String QUERY = "q";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -100,7 +106,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @Override
     @GetMapping(path = "/aql")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @RequestParam(name = "q") String queryString,
+            @RequestParam(name = QUERY) String queryString,
             @RequestParam(name = OFFSET, required = false) Integer offset,
             @RequestParam(name = FETCH, required = false) Integer fetch,
             @RequestParam(name = QUERY_PARAMETERS, required = false) Map<String, Object> queryParameters,
@@ -139,7 +145,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         logger.debug("Got following input: {}", queryRequest);
 
         // sanity check
-        Object rawQuery = queryRequest.get("q");
+        Object rawQuery = queryRequest.get(QUERY);
         if (rawQuery == null) {
             throw new InvalidApiParameterException("No aql query provided");
         }
@@ -278,31 +284,24 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         AqlExecutionOption executionOption = AqlExecutionOption.None;
         if (executionOptionsEnabled) {
+
+            HttpServletRequest request =
+                    ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
             // FIXME use request params or header for arguments
-            executionOption = new AqlExecutionOption(true, true, true);
+            executionOption = new AqlExecutionOption(
+                    Optional.ofNullable(request.getHeader(EHRbaseHeader.AQL_DRY_RUN))
+                            .map(Boolean::valueOf)
+                            .orElse(false),
+                    Optional.ofNullable(request.getHeader(EHRbaseHeader.AQL_EXECUTED_SQL))
+                            .map(Boolean::valueOf)
+                            .orElse(false),
+                    Optional.ofNullable(request.getHeader(EHRbaseHeader.AQL_QUERY_PLAN))
+                            .map(Boolean::valueOf)
+                            .orElse(false));
         }
+
         return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null), executionOption);
-    }
-
-    private static Optional<Long> optionalLong(String name, Map<String, Object> params) {
-        return Optional.of(name).map(params::get).map(o -> switch (o) {
-            case Integer i -> i.longValue();
-            case Long l -> l;
-            case String s -> {
-                try {
-                    yield Long.valueOf(s);
-                } catch (NumberFormatException e) {
-                    throw new InvalidApiParameterException("invalid '%s' value '%s'".formatted(name, s));
-                }
-            }
-            default -> throw new InvalidApiParameterException("invalid '%s' value '%s'".formatted(name, o));
-        });
-    }
-
-    private static void setQueryName(
-            QueryDefinitionResultDto queryDefinitionResultDto, QueryResponseData queryResponseData) {
-        queryResponseData.setName(
-                queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
     }
 
     private QueryResponseData createQueryResponse(AqlQueryRequest aqlQueryRequest, AqlQueryResult aqlQueryResult) {
@@ -335,7 +334,29 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                     .ifPresent(queryPlan ->
                             metaData.setAdditionalProperty(MetaData.AdditionalProperty.queryPlan, queryPlan));
         }
-
         return queryResponseData;
+    }
+
+    // --- Helper ---
+
+    private static void setQueryName(
+            QueryDefinitionResultDto queryDefinitionResultDto, QueryResponseData queryResponseData) {
+        queryResponseData.setName(
+                queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
+    }
+
+    private static Optional<Long> optionalLong(String name, Map<String, Object> params) {
+        return Optional.of(name).map(params::get).map(o -> switch (o) {
+            case Integer i -> i.longValue();
+            case Long l -> l;
+            case String s -> {
+                try {
+                    yield Long.valueOf(s);
+                } catch (NumberFormatException e) {
+                    throw new InvalidApiParameterException("invalid '%s' value '%s'".formatted(name, s));
+                }
+            }
+            default -> throw new InvalidApiParameterException("invalid '%s' value '%s'".formatted(name, o));
+        });
     }
 }
