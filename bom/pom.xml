@@ -79,10 +79,6 @@
     <git-commit-id-plugin.version>4.9.10</git-commit-id-plugin.version>
     <java-jwt.version>3.19.4</java-jwt.version>
 
-    <!-- build args -->
-    <image.name>ehrbase/ehrbase</image.name>
-    <image.tag>${project.version}</image.tag>
-    <ehrbase.docker.image.debug.enabled>false</ehrbase.docker.image.debug.enabled>
   </properties>
 
   <distributionManagement>
