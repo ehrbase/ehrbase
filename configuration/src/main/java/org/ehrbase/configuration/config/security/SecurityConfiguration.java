@@ -22,6 +22,7 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +44,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * {@link Configuration} for secured endpoint authentication.
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({SecurityProperties.class, SecuredWebEndpointProperties.class})
+@EnableConfigurationProperties({SecurityProperties.class, SecurityProperties.class})
 @Import({SecurityConfigNoOp.class, SecurityConfigOAuth2.class, SecurityConfigBasicAuth.class})
 @EnableWebSecurity
 public class SecurityConfiguration {
@@ -51,6 +52,12 @@ public class SecurityConfiguration {
     private final Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
 
     private final SecurityConfig securityConfig;
+
+    /**
+     * Extended property on spring actuator config that defines who can access the management endpoint.
+     */
+    @Value("${ehrbase.security.management.endpoints.web.csrf-validation-enabled:false}")
+    protected boolean managementEndpointsCSRFValidationEnabled;
 
     public SecurityConfiguration(SecurityConfig securityConfig) {
         this.securityConfig = securityConfig;
@@ -72,7 +79,7 @@ public class SecurityConfiguration {
                             antMatcher("/error/**") // ensure we have access to error re-routing
                             );
                     // disable csrf in case 'management.endpoints.web.csrf-validation-enabled=false' is defined
-                    if (!securityConfig.securedWebEndpointProperties.csrfValidationEnabled()) {
+                    if (!managementEndpointsCSRFValidationEnabled) {
                         logger.info("Management endpoint csrf security is disabled");
                         String path = StringUtils.removeEnd(securityConfig.webEndpointProperties.getBasePath(), "/");
                         csrf.ignoringRequestMatchers(antMatcher(path + "/**"));

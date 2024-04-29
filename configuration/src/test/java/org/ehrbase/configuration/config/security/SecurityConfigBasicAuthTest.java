@@ -27,16 +27,11 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
 class SecurityConfigBasicAuthTest {
 
-    private SecuredWebEndpointProperties securedWebEndpointProperties() {
-        return new SecuredWebEndpointProperties(SecuredWebEndpointProperties.AccessType.ADMIN_ONLY, false);
-    }
-
     @SuppressWarnings("deprecation")
     @Test
     void ensureNopPasswordEncoderIsUsed() throws NoSuchMethodException {
 
-        SecurityConfigBasicAuth config =
-                new SecurityConfigBasicAuth(new WebEndpointProperties(), securedWebEndpointProperties());
+        SecurityConfigBasicAuth config = new SecurityConfigBasicAuth(new WebEndpointProperties());
 
         Bean bean = config.getClass().getMethod("passwordEncoder").getAnnotation(Bean.class);
         assertNotNull(bean, "Expected PasswordEncoder bean to be defined");

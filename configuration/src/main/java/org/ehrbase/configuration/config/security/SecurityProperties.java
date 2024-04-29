@@ -19,6 +19,7 @@ package org.ehrbase.configuration.config.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+// TODO(properties) Migrate to EHRbaseSecurityProperties with ehrbase.* prefix
 @ConfigurationProperties(prefix = "security")
 public class SecurityProperties {
 
@@ -117,5 +118,14 @@ public class SecurityProperties {
         NONE,
         BASIC,
         OAUTH
+    }
+
+    /**
+     * Supported values for the <code>management.endpoints.web.access</code> property value.
+     */
+    public enum AccessType {
+        ADMIN_ONLY,
+        PRIVATE,
+        PUBLIC
     }
 }

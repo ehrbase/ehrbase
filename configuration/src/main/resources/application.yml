@@ -86,6 +86,13 @@ ehrbase:
       response:
         # add an information about the running ehrbase instance to the AQL meta.generator property
         generator-details-enabled: false
+  security:
+    # Configuration of actuator for reporting and health endpoints
+    management:
+      endpoints:
+        web:
+          # disables CSRF protection on management endpoints on base-path to use a client like curl or similar
+          csrf-validation-enabled: true
 
 
 httpclient:
@@ -154,8 +161,6 @@ management:
       # PRIVATE - endpoints are locked behind an authorization, but are available to any role
       # PUBLIC - endpoints can be accessed without an authorization
       access: ADMIN_ONLY
-      # disables CSRF protection on management endpoints on base-path to use a client like curl or similar
-      csrf-validation-enabled: true
   # Per endpoint settings
   endpoint:
     # Env endpoint - Shows information on environment of EHRbase
