@@ -141,7 +141,7 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <skipTests>false</skipTests>
+              <skipTests>${skipTests}</skipTests>
               <includes>
                 <include>${include.tests}</include>
               </includes>
