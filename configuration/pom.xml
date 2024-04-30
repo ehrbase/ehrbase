@@ -33,11 +33,6 @@
   <artifactId>configuration</artifactId>
   <packaging>jar</packaging>
 
-  <properties>
-    <docker.image.prefix>vitasystems/hip-openehr</docker.image.prefix>
-    <ehrbase.docker.image.debug.enabled>true</ehrbase.docker.image.debug.enabled>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>

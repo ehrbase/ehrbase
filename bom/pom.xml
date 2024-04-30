@@ -89,11 +89,6 @@
     <maven-compiler-plugin-version>3.13.0</maven-compiler-plugin-version>
     <maven-jar-plugin-version>3.4.1</maven-jar-plugin-version>
     <java-jwt.version>3.19.4</java-jwt.version>
-
-    <!-- build args -->
-    <image.name>ehrbase/ehrbase</image.name>
-    <image.tag>${project.version}</image.tag>
-    <ehrbase.docker.image.debug.enabled>false</ehrbase.docker.image.debug.enabled>
   </properties>
 
   <distributionManagement>
