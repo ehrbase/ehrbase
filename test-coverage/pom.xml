@@ -81,6 +81,7 @@
       <!-- disable jar execution for coverage module-->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>${maven-jar-plugin-version}</version>
         <configuration>
           <skip>true</skip>
         </configuration>
