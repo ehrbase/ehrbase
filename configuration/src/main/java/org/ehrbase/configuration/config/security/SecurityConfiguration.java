@@ -44,7 +44,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * {@link Configuration} for secured endpoint authentication.
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({SecurityProperties.class, SecurityProperties.class})
+@EnableConfigurationProperties({SecurityProperties.class})
 @Import({SecurityConfigNoOp.class, SecurityConfigOAuth2.class, SecurityConfigBasicAuth.class})
 @EnableWebSecurity
 public class SecurityConfiguration {
@@ -53,10 +53,7 @@ public class SecurityConfiguration {
 
     private final SecurityConfig securityConfig;
 
-    /**
-     * Extended property on spring actuator config that defines who can access the management endpoint.
-     */
-    @Value("${ehrbase.security.management.endpoints.web.csrf-validation-enabled:false}")
+    @Value("${ehrbase.security.management.endpoints.web.csrf-validation-enabled:true}")
     protected boolean managementEndpointsCSRFValidationEnabled;
 
     public SecurityConfiguration(SecurityConfig securityConfig) {

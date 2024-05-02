@@ -19,7 +19,6 @@ package org.ehrbase.configuration.config.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-// TODO(properties) Migrate to EHRbaseSecurityProperties with ehrbase.* prefix
 @ConfigurationProperties(prefix = "security")
 public class SecurityProperties {
 
