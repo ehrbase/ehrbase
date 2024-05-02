@@ -47,9 +47,8 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
 
     public static final String USER = "USER";
 
-    public SecurityConfigBasicAuth(
-            WebEndpointProperties webEndpointProperties, SecuredWebEndpointProperties securedWebEndpointProperties) {
-        super(webEndpointProperties, securedWebEndpointProperties);
+    public SecurityConfigBasicAuth(WebEndpointProperties webEndpointProperties) {
+        super(webEndpointProperties);
     }
 
     @PostConstruct

@@ -118,4 +118,13 @@ public class SecurityProperties {
         BASIC,
         OAUTH
     }
+
+    /**
+     * Supported values for the <code>management.endpoints.web.access</code> property value.
+     */
+    public enum AccessType {
+        ADMIN_ONLY,
+        PRIVATE,
+        PUBLIC
+    }
 }

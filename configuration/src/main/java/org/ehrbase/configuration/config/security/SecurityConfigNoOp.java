@@ -22,7 +22,6 @@ import javax.annotation.PostConstruct;
 import org.ehrbase.service.IAuthenticationFacade;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -41,9 +40,8 @@ import org.springframework.util.StringUtils;
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "none", matchIfMissing = true)
 public final class SecurityConfigNoOp extends SecurityConfig {
 
-    public SecurityConfigNoOp(
-            WebEndpointProperties webEndpointProperties, SecuredWebEndpointProperties securedWebEndpointProperties) {
-        super(webEndpointProperties, securedWebEndpointProperties);
+    public SecurityConfigNoOp(WebEndpointProperties webEndpointProperties) {
+        super(webEndpointProperties);
     }
 
     @PostConstruct
@@ -76,8 +74,9 @@ public final class SecurityConfigNoOp extends SecurityConfig {
      * the app with security enabled to be able to use an external oauth2 client.
      */
     @Bean
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager(SecurityProperties properties) {
-        final SecurityProperties.User user = properties.getUser();
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager(
+            org.springframework.boot.autoconfigure.security.SecurityProperties properties) {
+        final org.springframework.boot.autoconfigure.security.SecurityProperties.User user = properties.getUser();
         final List<String> roles = user.getRoles();
         return new InMemoryUserDetailsManager(User.withUsername(user.getName())
                 .password(user.getPassword())

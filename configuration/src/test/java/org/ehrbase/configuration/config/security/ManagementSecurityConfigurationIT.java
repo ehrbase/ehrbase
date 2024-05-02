@@ -132,8 +132,8 @@ public class ManagementSecurityConfigurationIT {
     @EhrbaseConfigurationIntegrationTest
     @TestPropertySource(
             properties = {
+                "ehrbase.security.management.endpoints.web.csrf-validation-enabled=false",
                 "management.endpoints.web.exposure.include=loggers",
-                "management.endpoints.web.csrf-validation-enabled=false",
                 "management.endpoint.loggers.enabled=true"
             })
     @Nested
