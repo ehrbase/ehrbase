@@ -23,6 +23,11 @@ jobs:
   build-maven:
     name: Build-Maven
     runs-on: ubuntu-latest
+    # required by the dorny/test-reporter@v1 to be able to write status updates
+    # see https://github.com/dorny/test-reporter/pull/174
+    permissions:
+      statuses: write
+      checks: write
     outputs:
       # Map the step outputs to job outputs
       ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
@@ -258,6 +263,10 @@ jobs:
       integration-test-run
     ]
     runs-on: ubuntu-latest
+    # allow to write comments to the issue
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - name: Download - Robot results
         uses: actions/download-artifact@v4
