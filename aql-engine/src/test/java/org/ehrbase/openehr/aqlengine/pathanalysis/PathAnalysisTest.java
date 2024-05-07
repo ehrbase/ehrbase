@@ -139,7 +139,7 @@ class PathAnalysisTest {
 
             assertThat(item.attributes).containsOnlyKeys("value");
             ANode elementValue = item.attributes.get("value");
-            assertThat(elementValue.candidateTypes).allMatch(v -> v.startsWith("DV_"));
+            assertThat(elementValue.candidateTypes).isNotEmpty().allMatch(v -> v.startsWith("DV_"));
         }
 
         // ITEM_SINGLE with one element with DvCodedText value

@@ -31,8 +31,11 @@ import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectQuery;
 import org.jooq.impl.DefaultDSLContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -174,5 +177,29 @@ public class AqlSqlQueryBuilderTest {
 
         SelectQuery<Record> sqlQuery = sqlQueryBuilder.buildSqlQuery(aslQuery);
         System.out.println(sqlQuery);
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                """
+                SELECT o/data/events/data/items/value/magnitude
+                FROM OBSERVATION o [openEHR-EHR-OBSERVATION.conformance_observation.v0]
+                WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value = 82.0
+                """
+            })
+    void canBuildSqlQuery(String aql) {
+
+        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
+        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
+        AqlSqlQueryBuilder sqlQueryBuilder =
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.YUGABYTEDB), kcs, Optional.empty());
+
+        Assertions.assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
     }
 }

@@ -72,11 +72,11 @@ public class CompositionController extends BaseController {
 
     @PostMapping
     @Operation(
-            summary = "Deprecated since 1.0.0 and marked for removal",
+            summary = "Deprecated since 2.0.0 and marked for removal",
             description =
                     "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/createComposition)",
             deprecated = true)
-    @Deprecated(since = "1.0.0", forRemoval = true)
+    @Deprecated(since = "2.0.0", forRemoval = true)
     public ResponseEntity<CompositionWriteRestResponseData> createComposition(
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
             @RequestParam(value = "templateId", required = false) String templateId,
@@ -109,11 +109,11 @@ public class CompositionController extends BaseController {
 
     @GetMapping(path = "/{uid}")
     @Operation(
-            summary = "Deprecated since 1.0.0 and marked for removal",
+            summary = "Deprecated since 2.0.0 and marked for removal",
             description =
                     "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition/{versioned_object_uid}](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/getComposition)",
             deprecated = true)
-    @Deprecated(since = "1.0.0", forRemoval = true)
+    @Deprecated(since = "2.0.0", forRemoval = true)
     public ResponseEntity<CompositionResponseData> getComposition(
             @PathVariable("uid") String compositionUid,
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format) {
@@ -157,11 +157,11 @@ public class CompositionController extends BaseController {
 
     @PutMapping(path = "/{uid}")
     @Operation(
-            summary = "Deprecated since 1.0.0 and marked for removal",
+            summary = "Deprecated since 2.0.0 and marked for removal",
             description =
                     "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition/{versioned_object_uid}](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/updateComposition)",
             deprecated = true)
-    @Deprecated(since = "1.0.0", forRemoval = true)
+    @Deprecated(since = "2.0.0", forRemoval = true)
     public ResponseEntity<ActionRestResponseData> update(
             @PathVariable("uid") String compositionUid,
             @RequestParam(value = "format", defaultValue = "XML") CompositionFormat format,
@@ -198,11 +198,11 @@ public class CompositionController extends BaseController {
 
     @DeleteMapping(path = "/{uid}")
     @Operation(
-            summary = "Deprecated since 1.0.0 and marked for removal",
+            summary = "Deprecated since 2.0.0 and marked for removal",
             description =
                     "Replaced by [/rest/openehr/v1/ehr/{ehr_id}/composition/{versioned_object_uid}](./index.html?urls.primaryName=1.%20openEHR%20API#/COMPOSITION/deleteComposition)",
             deprecated = true)
-    @Deprecated(since = "1.0.0", forRemoval = true)
+    @Deprecated(since = "2.0.0", forRemoval = true)
     public ResponseEntity<ActionRestResponseData> delete(@PathVariable("uid") String compositionUid) {
 
         ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);

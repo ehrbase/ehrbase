@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import java.util.Map;
-import javax.annotation.PostConstruct;
 import org.ehrbase.openehr.sdk.terminology.openehr.CodeSetAccess;
 import org.ehrbase.openehr.sdk.terminology.openehr.OpenEHRCodeSetIdentifiers;
 import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyAccess;
@@ -32,17 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TerminologyServiceImp implements TerminologyService {
 
-    private static volatile TerminologyServiceImp instance;
     private final LocalizedTerminologies localizedTerminologies = new LocalizedTerminologies();
-
-    public static TerminologyServiceImp getInstance() {
-        return instance;
-    }
-
-    @PostConstruct
-    public void init() {
-        instance = this;
-    }
 
     @Override
     public TerminologyAccess terminology(String name) {

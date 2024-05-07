@@ -27,7 +27,7 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
   </parent>
 
   <artifactId>configuration</artifactId>
@@ -116,12 +116,12 @@
       <artifactId>api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.ehrbase.openehr.sdk</groupId>
-      <artifactId>serialisation</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.ehrbase.openehr</groupId>
       <artifactId>rest-openehr</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr.sdk</groupId>
+      <artifactId>serialisation</artifactId>
     </dependency>
 
     <dependency>
@@ -151,6 +151,5 @@
     </dependency>
 
   </dependencies>
-
 
 </project>

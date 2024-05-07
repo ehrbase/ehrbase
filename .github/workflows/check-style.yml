@@ -1,4 +1,7 @@
-name: codestyle-check
+name: "Codestyle"
+
+# we have multiple workflows - this helps to distinguish for them
+run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.ref_name }} - Build & Test"
 
 on:
   push:
@@ -7,24 +10,23 @@ on:
   pull_request:
     branches: [ develop ]
 
+#
+# Style-check it a dedicated workflow. This allows us to open a PR, run all tests and fix styling issue later ;).
+#
 jobs:
-  build:
+  spotless:
+    name: Spotless-Check
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ '21' ]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.java }}
+          java-version: 21
           cache: 'maven'
 
       - name: Spotless

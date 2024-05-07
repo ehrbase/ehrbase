@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
+import static org.ehrbase.api.rest.HttpRestContext.TEMPLATE_ID;
 import static org.ehrbase.rest.BaseController.API_CONTEXT_PATH_WITH_VERSION;
 import static org.ehrbase.rest.BaseController.VERSIONED_COMPOSITION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
@@ -30,10 +32,10 @@ import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
@@ -106,7 +108,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         VersionedObjectResponseData<Composition> response = new VersionedObjectResponseData<>(versionedComposition);
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0);
-        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
+        createRestContext(ehrId, versionedCompoUid, auditLocation);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
@@ -133,7 +135,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0, "revision_history");
-        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
+        createRestContext(ehrId, versionedCompoUid, auditLocation);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
@@ -177,7 +179,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         // -----------------
 
         String auditLocation = getLocationUrl(versionedObjectId, ehrId, version, "version", versionUid);
-        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
+        createRestContext(ehrId, versionedCompoUid, auditLocation);
 
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
     }
@@ -206,7 +208,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         }
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, version, "version");
-        createAuditLogsMsgBuilder(ehrId, versionedCompoUid, auditLocation);
+        createRestContext(ehrId, versionedCompoUid, auditLocation);
 
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedCompoUid, version);
     }
@@ -248,11 +250,14 @@ public class OpenehrVersionedCompositionController extends BaseController
         return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
     }
 
-    private void createAuditLogsMsgBuilder(UUID ehrId, UUID versionedCompoUid, String auditLocation) {
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId)
-                .setTemplateId(compositionService.retrieveTemplateId(versionedCompoUid))
-                .setLocation(auditLocation);
+    private void createRestContext(UUID ehrId, UUID versionedCompoUid, String auditLocation) {
+        HttpRestContext.register(
+                EHR_ID,
+                ehrId,
+                TEMPLATE_ID,
+                compositionService.retrieveTemplateId(versionedCompoUid),
+                HttpRestContext.LOCATION,
+                auditLocation);
     }
 
     private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version, String... pathSegments) {

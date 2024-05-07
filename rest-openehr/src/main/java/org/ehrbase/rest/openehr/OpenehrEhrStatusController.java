@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.ehrbase.api.rest.HttpRestContext.DIRECTORY_ID;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -29,10 +31,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrStatusResponseData;
@@ -137,9 +139,11 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         // update and prepare current version number
         int version = extractVersionFromVersionUid(statusUid.getValue()).orElseThrow();
 
-        List<String> headerList =
-                Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
-        createAuditLogsMsgBuilder(ehrId);
+        // whatever is required by REST spec
+        List<String> headerList = Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED);
+
+        HttpRestContext.register(EHR_ID, ehrId);
+
         return buildEhrStatusResponseData(
                         EhrStatusResponseData::new,
                         ehrId,
@@ -159,14 +163,10 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         Optional<InternalResponse<EhrStatusResponseData>> respData =
                 buildEhrStatusResponseData(EhrStatusResponseData::new, ehrId, ehrStatusId, version, accept, headerList);
 
-        createAuditLogsMsgBuilder(ehrId);
+        HttpRestContext.register(EHR_ID, ehrId);
 
         return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
                 .orElseThrow(() -> new ObjectNotFoundException("ehr_status", "EHR_STATUS not found"));
-    }
-
-    private void createAuditLogsMsgBuilder(UUID ehrId) {
-        AuditMsgBuilder.getInstance().setEhrIds(ehrId);
     }
 
     /**
@@ -185,10 +185,14 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     private <T extends EhrStatusResponseData> Optional<InternalResponse<T>> buildEhrStatusResponseData(
             Supplier<T> factory, UUID ehrId, UUID ehrStatusId, int version, String accept, List<String> headerList) {
         String versionedObjectUid = String.format("%s::%s::%s", ehrStatusId, systemService.getSystemId(), version);
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId.toString())
-                .setDirectoryId(versionedObjectUid)
-                .setLocation(fromPath("")
+
+        HttpRestContext.register(
+                EHR_ID,
+                ehrId,
+                DIRECTORY_ID,
+                versionedObjectUid,
+                HttpRestContext.LOCATION,
+                fromPath("")
                         .pathSegment(EHR, ehrId.toString(), EHR_STATUS, versionedObjectUid)
                         .build()
                         .toString());

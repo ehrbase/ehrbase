@@ -34,7 +34,9 @@ spring:
     name: ehrbase
 
   cache:
-    type: CAFFEINE # change to type redis if usage of redis distributed cache is intended
+    # change to type redis if usage of redis distributed cache is intended. Also turn on management.health.redis.enabled
+    # if needed.
+    type: CAFFEINE
 
   # the following redis properties are only used if the cache.type=redis
   data:
@@ -84,6 +86,13 @@ ehrbase:
       response:
         # add an information about the running ehrbase instance to the AQL meta.generator property
         generator-details-enabled: false
+  security:
+    # Configuration of actuator for reporting and health endpoints
+    management:
+      endpoints:
+        web:
+          # disables CSRF protection on management endpoints on base-path to use a client like curl or similar
+          csrf-validation-enabled: true
 
 
 httpclient:
@@ -147,10 +156,10 @@ management:
       base-path: '/management'
       exposure:
         include: 'env, health, info, metrics, prometheus'
-        # The access to management endpoints can be controlled
-        # ADMIN_ONLY - (default) endpoints are locked behind an authorization and are only available for users with the admin role
-        # PRIVATE - endpoints are locked behind an authorization, but are available to any role
-        # PUBLIC - endpoints can be accessed without an authorization
+      # The access to management endpoints can be controlled
+      # ADMIN_ONLY - (default) endpoints are locked behind an authorization and are only available for users with the admin role
+      # PRIVATE - endpoints are locked behind an authorization, but are available to any role
+      # PUBLIC - endpoints can be accessed without an authorization
       access: ADMIN_ONLY
   # Per endpoint settings
   endpoint:
@@ -178,11 +187,15 @@ management:
     metrics:
       # Enable / disable metrics endpoint
       enabled: false
-    # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
+  # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
   prometheus:
     metrics:
       export:
         enabled: true
+  # turn of redis per default, shall be enabled in case spring.cache.type: REDIS is used
+  health:
+    redis:
+      enabled: false
 
 # External Terminology Validation Properties
 validation:

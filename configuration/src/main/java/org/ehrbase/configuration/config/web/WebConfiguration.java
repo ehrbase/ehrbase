@@ -21,9 +21,7 @@ import org.ehrbase.configuration.util.IsoDateTimeConverter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -36,11 +34,8 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     private final CorsProperties properties;
 
-    AuditInterceptorHandler auditInterceptorHandler;
-
-    public WebConfiguration(CorsProperties properties, AuditInterceptorHandler auditInterceptorHandler) {
+    public WebConfiguration(CorsProperties properties) {
         this.properties = properties;
-        this.auditInterceptorHandler = auditInterceptorHandler;
     }
 
     @Override
@@ -51,11 +46,6 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**").combine(properties.toCorsConfiguration());
-    }
-
-    @Override
-    public void addInterceptors(@NonNull InterceptorRegistry registry) {
-        auditInterceptorHandler.registerAuditInterceptors(registry);
     }
 
     @Override

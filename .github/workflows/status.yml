@@ -3,7 +3,7 @@ name: Set test status
 
 on:
   workflow_run:
-    workflows: ["build-and-test-postgres"]
+    workflows: ["build_and_test"]
     types:
       - completed
 

@@ -18,58 +18,70 @@
 package org.ehrbase.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
 public class StoredQueryQualifiedNameTest {
 
     @Test
-    void testFullName() {
+    void withFullName() {
         String name = "org.example.departmentx.test::diabetes-patient-overview";
         SemVer version = SemVer.parse("1.0.2");
 
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name, version);
+        StoredQueryQualifiedName storedQueryQualifiedName = StoredQueryQualifiedName.create(name, version);
 
         assertNotNull(storedQueryQualifiedName);
+        assertEquals(version, storedQueryQualifiedName.semVer());
 
         assertEquals("org.example.departmentx.test", storedQueryQualifiedName.reverseDomainName());
         assertEquals("diabetes-patient-overview", storedQueryQualifiedName.semanticId());
         assertEquals("1.0.2", storedQueryQualifiedName.semVer().toVersionString());
+        assertEquals("org.example.departmentx.test::diabetes-patient-overview", storedQueryQualifiedName.toName());
+        assertEquals(
+                "org.example.departmentx.test::diabetes-patient-overview/1.0.2",
+                storedQueryQualifiedName.toQualifiedNameString());
+        assertEquals(
+                "org.example.departmentx.test::diabetes-patient-overview/1.0.2", storedQueryQualifiedName.toString());
     }
 
     @Test
-    void testIncompleteName() {
+    void withIncompleteName() {
         String name = "org.example.departmentx.test::diabetes-patient-overview";
 
-        StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name, null);
+        StoredQueryQualifiedName storedQueryQualifiedName = StoredQueryQualifiedName.create(name, SemVer.NO_VERSION);
 
         assertNotNull(storedQueryQualifiedName);
+        assertSame(SemVer.NO_VERSION, storedQueryQualifiedName.semVer());
 
         assertEquals("org.example.departmentx.test", storedQueryQualifiedName.reverseDomainName());
         assertEquals("diabetes-patient-overview", storedQueryQualifiedName.semanticId());
-        assertNull(storedQueryQualifiedName.semVer());
+        assertEquals("", storedQueryQualifiedName.semVer().toVersionString());
+        assertEquals("org.example.departmentx.test::diabetes-patient-overview", storedQueryQualifiedName.toName());
+        assertEquals(
+                "org.example.departmentx.test::diabetes-patient-overview",
+                storedQueryQualifiedName.toQualifiedNameString());
+        assertEquals("org.example.departmentx.test::diabetes-patient-overview", storedQueryQualifiedName.toString());
     }
 
     @Test
-    void testBadlyFormedName() {
+    void withBadlyFormedName() {
         String name = "org.example.departmentx.test";
         SemVer version = SemVer.parse("");
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            new StoredQueryQualifiedName(name, version);
-        });
+        assertThrows(IllegalArgumentException.class, () -> StoredQueryQualifiedName.create(name, version));
     }
 
     @Test
     void testToString() {
-        assertThat(new StoredQueryQualifiedName(
+
+        assertThat(StoredQueryQualifiedName.create(
                         "org.example.departmentx.test::diabetes-patient-overview", SemVer.NO_VERSION))
                 .hasToString("org.example.departmentx.test::diabetes-patient-overview");
-        assertThat(new StoredQueryQualifiedName(
+        assertThat(StoredQueryQualifiedName.create(
                         "org.example.departmentx.test::diabetes-patient-overview", SemVer.parse("1.2")))
                 .hasToString("org.example.departmentx.test::diabetes-patient-overview/1.2");
     }

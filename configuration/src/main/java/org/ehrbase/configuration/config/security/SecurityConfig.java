@@ -17,6 +17,7 @@
  */
 package org.ehrbase.configuration.config.security;
 
+import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 import java.util.List;
@@ -36,21 +37,14 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Supported values for the <code>management.endpoints.web.access</code> property value
+     * Spring boot actuator properties
      */
-    public enum ManagementEndpointsAccessType {
-        ADMIN_ONLY,
-        PRIVATE,
-        PUBLIC
-    }
-
+    protected final WebEndpointProperties webEndpointProperties;
     /**
      * Extended property on spring actuator config that defines who can access the management endpoint.
      */
     @Value("${management.endpoints.web.access:ADMIN_ONLY}")
-    protected ManagementEndpointsAccessType managementEndpointsAccessType;
-
-    protected WebEndpointProperties webEndpointProperties;
+    protected SecurityProperties.AccessType managementEndpointsAccessType;
 
     protected SecurityConfig(WebEndpointProperties webEndpointProperties) {
         this.webEndpointProperties = webEndpointProperties;
@@ -69,19 +63,19 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
 
         logger.info("Management endpoint access type {}", managementEndpointsAccessType);
 
-        var managementAuthorizedUrl =
-                auth.requestMatchers(antMatcher(this.webEndpointProperties.getBasePath() + "/**"));
+        var managementAuthorizedUrl = auth.requestMatchers(antMatcher(webEndpointProperties.getBasePath() + "/**"));
 
-        logger.debug("Management endpoints base path {}", this.webEndpointProperties.getBasePath());
+        logger.debug("Management endpoints base path {}", managementEndpointsAccessType);
 
         return switch (managementEndpointsAccessType) {
                 // management endpoints are locked behind an authorization
                 // and are only available for users with the admin role
-            case ADMIN_ONLY -> managementAuthorizedUrl.hasRole(adminRoleSupplier);
+            case AccessType.ADMIN_ONLY -> managementAuthorizedUrl.hasRole(adminRoleSupplier);
                 // management endpoints are locked behind an authorization, but are available to any role
-            case PRIVATE -> managementAuthorizedUrl.hasAnyRole(privateRolesSupplier.toArray(new String[] {}));
+            case AccessType.PRIVATE -> managementAuthorizedUrl.hasAnyRole(
+                    privateRolesSupplier.toArray(new String[] {}));
                 // management endpoints can be accessed without an authorization
-            case PUBLIC -> managementAuthorizedUrl.permitAll();
+            case AccessType.PUBLIC -> managementAuthorizedUrl.permitAll();
         };
     }
 }

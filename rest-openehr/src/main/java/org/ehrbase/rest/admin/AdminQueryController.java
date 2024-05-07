@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest.admin;
 
+import static org.ehrbase.api.rest.HttpRestContext.QUERY_ID;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
@@ -25,7 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.rest.BaseController;
 import org.slf4j.Logger;
@@ -34,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -48,14 +48,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(
         path = BaseController.ADMIN_API_CONTEXT_PATH + "/query",
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-public class AdminDefinitionController extends BaseController {
+public class AdminQueryController extends BaseController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final StoredQueryService storedQueryService;
 
     @Autowired
-    public AdminDefinitionController(StoredQueryService storedQueryService) {
+    public AdminQueryController(StoredQueryService storedQueryService) {
         this.storedQueryService = Objects.requireNonNull(storedQueryService);
     }
 
@@ -76,19 +76,15 @@ public class AdminDefinitionController extends BaseController {
 
         logger.debug("deleteStoredQuery for the following input: {} , version: {}", qualifiedQueryName, version);
 
-        createAuditLogsMsgBuilder(qualifiedQueryName, version);
-
-        storedQueryService.deleteStoredQuery(qualifiedQueryName, version);
-        AuditMsgBuilder.getInstance().setQueryId(qualifiedQueryName);
-
-        return ResponseEntity.ok().build();
-    }
-
-    private void createAuditLogsMsgBuilder(String queryName, @Nullable String version) {
-        AuditMsgBuilder.getInstance()
-                .setLocation(fromPath("")
-                        .pathSegment(DEFINITION, QUERY, queryName, version)
+        HttpRestContext.register(
+                HttpRestContext.LOCATION,
+                fromPath("")
+                        .pathSegment(QUERY, qualifiedQueryName, version)
                         .build()
                         .toString());
+        storedQueryService.deleteStoredQuery(qualifiedQueryName, version);
+        HttpRestContext.register(QUERY_ID, qualifiedQueryName);
+
+        return ResponseEntity.ok().build();
     }
 }

@@ -17,7 +17,10 @@
  */
 package org.ehrbase.cache;
 
+import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
+import org.ehrbase.api.exception.InternalServerException;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 
@@ -32,11 +35,19 @@ public class CacheProviderImp implements CacheProvider {
 
     @Override
     public <V, K> V get(EhrBaseCache<K, V> cache, K key, Callable<V> valueLoader) {
-        return cacheManager.getCache(cache.name()).get(key, valueLoader);
+        return Optional.ofNullable(cacheManager.getCache(cache.name()))
+                .orElseThrow(getExceptionSupplier(cache))
+                .get(key, valueLoader);
+    }
+
+    private static <V, K> Supplier<InternalServerException> getExceptionSupplier(EhrBaseCache<K, V> cache) {
+        return () -> new InternalServerException("Non existing cache : %s".formatted(cache.name()));
     }
 
     @Override
     public <V, K> void evict(EhrBaseCache<K, V> cache, K key) {
-        cacheManager.getCache(cache.name()).evict(key);
+        Optional.ofNullable(cacheManager.getCache(cache.name()))
+                .orElseThrow(getExceptionSupplier(cache))
+                .evict(key);
     }
 }

@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
   </parent>
 
   <artifactId>test-coverage</artifactId>
@@ -46,17 +46,27 @@
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>aql-engine</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>configuration</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
       <artifactId>jooq-pg</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>rest-openehr</artifactId>
+      <artifactId>rest-ehr-scape</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>rest-ehr-scape</artifactId>
+      <artifactId>rest-openehr</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -92,7 +102,7 @@
         <executions>
           <!-- AGGREGATED UNIT TEST COVERAGE REPORT -->
           <execution>
-            <id>aggregate-jacoco-unit-test-coverage</id>
+            <id>jacoco-aggregate-unit-test-coverage</id>
             <phase>test</phase>
             <goals>
               <goal>report-aggregate</goal>
@@ -107,7 +117,7 @@
           </execution>
           <!-- AGGREGATED INTEGRATION TEST COVERAGE REPORT -->
           <execution>
-            <id>aggregate-jacoco-integration-test-coverage</id>
+            <id>jacoco-aggregate-integration-test-coverage</id>
             <phase>verify</phase>
             <goals>
               <goal>report-aggregate</goal>
@@ -122,7 +132,7 @@
           </execution>
           <!-- AGGREGATED OVERALL COVERAGE REPORT -->
           <execution>
-            <id>aggregate-jacoco-overall-coverage</id>
+            <id>jacoco-aggregate-overall-coverage</id>
             <phase>package</phase>
             <goals>
               <goal>report-aggregate</goal>

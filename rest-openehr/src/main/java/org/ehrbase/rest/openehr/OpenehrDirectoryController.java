@@ -18,6 +18,7 @@
 package org.ehrbase.rest.openehr;
 
 import static org.apache.commons.lang3.StringUtils.unwrap;
+import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
@@ -29,9 +30,9 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.audit.msg.AuditMsgBuilder;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.openehr.sdk.response.dto.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
@@ -125,9 +126,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         directoryService.delete(ehrId, folderId);
-        createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
 
-        createAuditLogsMsgBuilder(ehrId.toString(), folderId.toString());
+        createRestContext(ehrId, folderId.toString());
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
@@ -241,7 +241,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
             headers.setLastModified(DateTime.now().getMillis());
-            createAuditLogsMsgBuilder(ehrId.toString(), versionUid);
+            createRestContext(ehrId, versionUid);
         }
 
         return new ResponseEntity<>(body, headers, successStatus);
@@ -274,11 +274,13 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         }
     }
 
-    private void createAuditLogsMsgBuilder(String ehrId, String versionedObjectUid) {
-        AuditMsgBuilder.getInstance()
-                .setEhrIds(ehrId)
-                .setLocation(fromPath("")
-                        .pathSegment(EHR, ehrId, DIRECTORY, versionedObjectUid)
+    private void createRestContext(UUID ehrId, String versionedObjectUid) {
+        HttpRestContext.register(
+                EHR_ID,
+                ehrId,
+                HttpRestContext.LOCATION,
+                fromPath("")
+                        .pathSegment(EHR, ehrId.toString(), DIRECTORY, versionedObjectUid)
                         .build()
                         .toString());
     }
