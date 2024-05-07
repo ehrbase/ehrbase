@@ -23,10 +23,10 @@ jobs:
   build-maven:
     name: Build-Maven
     runs-on: ubuntu-latest
-    # required by the dorny/test-reporter@v1 to be able to write status updates
-    # see https://github.com/dorny/test-reporter/pull/174
+    # Allows dorny/test-reporter to collect results for pull request triggered from a forked repository.
     permissions:
-      statuses: write
+      contents: read
+      actions: read
       checks: write
     outputs:
       # Map the step outputs to job outputs
