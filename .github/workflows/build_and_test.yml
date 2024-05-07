@@ -286,7 +286,7 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: joonvena/robotframework-reporter-action@v2.4
         with:
-          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
+          gh_access_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           report_path: ./tests/report
           show_passed_tests: false
 
