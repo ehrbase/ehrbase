@@ -35,6 +35,12 @@ jobs:
           merge-multiple: true
           path: ./
 
+      # checkout because dorny/test-reporter needs to read tracked files
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+
       - name: Collect - JUnit Reports
         uses: dorny/test-reporter@v1
         # Dependabot has not enough rights to add the report to the run.
