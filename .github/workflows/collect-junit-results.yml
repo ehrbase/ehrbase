@@ -29,7 +29,10 @@ jobs:
       - name: Download - Unit Reports
         uses: actions/download-artifact@v4
         with:
-          name: junit-test-results  # uses artifact of build and test workflow
+          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow
+          pattern: junit-test-results                 # uses artifact of build and test workflow
+          merge-multiple: true
           path: ./
 
       - name: Collect - JUnit Reports
@@ -42,9 +45,3 @@ jobs:
           reporter: java-junit
           fail-on-error: 'true'
           fail-on-empty: 'true'
-
-      - name: Delete - JUnit Result Artifact
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: junit-test-results
-          failOnError: false
