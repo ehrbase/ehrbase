@@ -23,11 +23,6 @@ jobs:
   build-maven:
     name: Build-Maven
     runs-on: ubuntu-latest
-    # Allows dorny/test-reporter to collect results for pull request triggered from a forked repository.
-    permissions:
-      contents: read
-      actions: read
-      checks: write
     outputs:
       # Map the step outputs to job outputs
       ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
@@ -89,16 +84,12 @@ jobs:
           path: "**/target/jacoco*.exec"
           if-no-files-found: error
 
-      - name: Collect - JUnit Reports
-        uses: dorny/test-reporter@v1
-        # Dependabot has not enough rights to add the report to the run.
-        if: ${{ github.actor != 'dependabot[bot]' }}
+      - name: Upload - Junit reports
+        uses: actions/upload-artifact@v3  # upload test results
+        if: success() || failure()        # run this step even if previous step failed
         with:
-          name: Unit Tests
+          name: junit-test-results
           path: '**/target/surefire-reports/*.xml'
-          reporter: java-junit
-          fail-on-error: 'true'
-          fail-on-empty: 'true'
 
   #
   # Performs docker test image builds.
