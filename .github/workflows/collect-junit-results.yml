@@ -24,6 +24,13 @@ jobs:
   collect-junit-reports:
     runs-on: ubuntu-latest
     steps:
+
+      # checkout because dorny/test-reporter needs to read tracked files
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+
       # Download report separately because the dorny/test-reporter is not compatible with
       # actions/[upload/download]-artifact@v4 https://github.com/dorny/test-reporter/issues/363
       - name: Download - Unit Reports
@@ -35,11 +42,8 @@ jobs:
           merge-multiple: true
           path: ./
 
-      # checkout because dorny/test-reporter needs to read tracked files
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+      - name: DEBUG
+        run: ls -R
 
       - name: Collect - JUnit Reports
         uses: dorny/test-reporter@v1
