@@ -36,21 +36,8 @@ jobs:
           fail-on-error: 'true'
           fail-on-empty: 'true'
 
-  #
-  # Cleanup serialized oci image as well as intermediate robot results
-  #
-  cleanup:
-    name: Cleanup
-    if: ${{ always() }}
-    needs: [
-      docker-build-push,
-      maven-publish
-    ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Delete - Temp Artifacts
+      - name: Delete - JUnit Result Artifact
         uses: geekyeggo/delete-artifact@v5
         with:
           name: junit-test-results
           failOnError: false
-
