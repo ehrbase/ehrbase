@@ -42,9 +42,6 @@ jobs:
           merge-multiple: true
           path: ./
 
-      - name: DEBUG
-        run: ls -R
-
       - name: Collect - JUnit Reports
         uses: dorny/test-reporter@v1
         # Dependabot has not enough rights to add the report to the run.

@@ -420,7 +420,6 @@ jobs:
             -Dsonar.exclusions=test/** \
             -Dsonar.coverage.exclusions=test/** \
             -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml \
-  
 
   #
   # Build and push docker image
