@@ -5,7 +5,7 @@ run-name: "${{ github.event.pull_request.title && github.event.pull_request.titl
 
 on:
   workflow_run:
-    workflows: ['Build & Test'] # runs after build and test workflow
+    workflows: ["Build & Test"] # runs after build and test workflow
     types:
       - completed
 
