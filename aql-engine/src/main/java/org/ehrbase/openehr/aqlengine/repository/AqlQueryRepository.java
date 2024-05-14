@@ -101,8 +101,8 @@ public class AqlQueryRepository {
         return preparedQuery.selectQuery.getSQL();
     }
 
-    public String explainQuery(PreparedQuery preparedQuery) {
-        return queryBuilder.explain(preparedQuery.selectQuery).formatJSON();
+    public String explainQuery(boolean analyze, PreparedQuery preparedQuery) {
+        return queryBuilder.explain(analyze, preparedQuery.selectQuery).formatJSON();
     }
 
     private AqlSqlResultPostprocessor getPostProcessor(SelectWrapper select) {

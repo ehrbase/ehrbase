@@ -155,9 +155,12 @@ public class AqlSqlQueryBuilder {
         return query;
     }
 
-    public Result<Record> explain(SelectQuery<Record> selectQuery) {
-
-        return context.fetch("EXPLAIN (FORMAT JSON) {0}", selectQuery);
+    public Result<Record> explain(boolean analyze, SelectQuery<Record> selectQuery) {
+        if (analyze) {
+            return context.fetch("EXPLAIN ANALYZE (SUMMARY, COSTS, TIMING, VERBOSE, FORMAT JSON) {0}", selectQuery);
+        } else {
+            return context.fetch("EXPLAIN (SUMMARY, COSTS, VERBOSE, FORMAT JSON) {0}", selectQuery);
+        }
     }
 
     @Nonnull
