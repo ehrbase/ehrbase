@@ -36,10 +36,8 @@ import java.util.function.Supplier;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ehrbase.api.dto.AqlExecutionInfo;
-import org.ehrbase.api.dto.AqlExecutionOption;
+import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
-import org.ehrbase.api.dto.AqlQueryResult;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.IllegalAqlException;
@@ -87,6 +85,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
     private final AqlSqlLayer aqlSqlLayer;
     private final AqlQueryFeatureCheck aqlQueryFeatureCheck;
     private final ObjectMapper objectMapper;
+    private final AqlQueryContext aqlQueryContext;
 
     @Autowired
     public AqlQueryServiceImp(
@@ -94,20 +93,22 @@ public class AqlQueryServiceImp implements AqlQueryService {
             ExternalTerminologyValidation tsAdapter,
             AqlSqlLayer aqlSqlLayer,
             AqlQueryFeatureCheck aqlQueryFeatureCheck,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            AqlQueryContext aqlQueryContext) {
         this.aqlQueryRepository = aqlQueryRepository;
         this.tsAdapter = tsAdapter;
         this.aqlSqlLayer = aqlSqlLayer;
         this.aqlQueryFeatureCheck = aqlQueryFeatureCheck;
         this.objectMapper = objectMapper;
+        this.aqlQueryContext = aqlQueryContext;
     }
 
     @Override
-    public AqlQueryResult query(AqlQueryRequest aqlQuery) {
+    public QueryResultDto query(AqlQueryRequest aqlQuery) {
         return queryAql(aqlQuery);
     }
 
-    private AqlQueryResult queryAql(AqlQueryRequest aqlQueryRequest) {
+    private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
         // TODO: check that select aliases are not duplicated
         try {
             AqlQuery aqlQuery = buildAqlQuery(aqlQueryRequest);
@@ -115,42 +116,58 @@ public class AqlQueryServiceImp implements AqlQueryService {
             aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
 
             try {
-                AqlExecutionOption executionOption = aqlQueryRequest.executionOption();
+                if (logger.isTraceEnabled()) {
+                    logger.trace(objectMapper.writeValueAsString(aqlQuery));
+                }
 
                 AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
                 AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
                 List<SelectWrapper> nonPrimitiveSelects =
                         queryWrapper.nonPrimitiveSelects().toList();
 
                 PreparedQuery preparedQuery = aqlQueryRepository.prepareQuery(aslQuery, nonPrimitiveSelects);
 
-                List<List<Object>> resultData = executionOption.dryRun()
-                        ? List.of()
-                        : executeQuery(preparedQuery, queryWrapper, nonPrimitiveSelects);
-
-                if (logger.isTraceEnabled()) {
-                    logger.trace(objectMapper.writeValueAsString(aqlQuery));
+                // aql debug options
+                if (aqlQueryContext.showExecutedSql()) {
+                    aqlQueryContext.setMetaProperty(
+                            AqlQueryContext.EhrbaseMetaProperty.EXECUTED_SQL,
+                            AqlQueryRepository.getQuerySql(preparedQuery));
                 }
-
-                String executedSQL = null;
-                if (executionOption.returnExecutedSQL()) {
-                    executedSQL = aqlQueryRepository.printQuery(preparedQuery);
-                }
-                Map<String, Object> queryPlan = null;
-                if (executionOption.returnQueryPlan()) {
+                if (aqlQueryContext.showQueryPlan()) {
                     String explainedQuery = aqlQueryRepository.explainQuery(preparedQuery);
                     TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
-                    queryPlan = objectMapper.readValue(explainedQuery, typeRef);
+                    aqlQueryContext.setMetaProperty(
+                            AqlQueryContext.EhrbaseMetaProperty.QUERY_PLAN,
+                            objectMapper.readValue(explainedQuery, typeRef));
                 }
 
-                String understoodByAqlParser = AqlRenderer.render(aqlQuery);
-                QueryResultDto queryResultDto = formatResult(queryWrapper, resultData, understoodByAqlParser);
-
-                AqlExecutionInfo executionInfo = AqlExecutionInfo.None;
-                if (executionOption.isPresent()) {
-                    executionInfo = new AqlExecutionInfo(executionOption.dryRun(), executedSQL, queryPlan);
+                if (aqlQueryContext.showExecutedAql()) {
+                    aqlQueryContext.setExecutedAql(AqlRenderer.render(aqlQuery));
                 }
-                return new AqlQueryResult(queryResultDto, executionInfo);
+
+                Optional.of(queryWrapper)
+                        .map(AqlQueryWrapper::limit)
+                        .map(Long::intValue)
+                        .ifPresent(limit -> {
+                            aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.FETCH, limit);
+                            // in case only a limit was used we define the default offset as 0
+                            aqlQueryContext.setMetaProperty(
+                                    AqlQueryContext.EhrbaseMetaProperty.OFFSET,
+                                    Optional.of(queryWrapper)
+                                            .map(AqlQueryWrapper::offset)
+                                            .map(Long::intValue)
+                                            .orElse(0));
+                        });
+
+                List<List<Object>> resultData;
+                if (aqlQueryContext.isDryRun()) {
+                    resultData = List.of();
+                } else {
+                    resultData = executeQuery(preparedQuery, queryWrapper, nonPrimitiveSelects);
+                    aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.RESULT_SIZE, resultData.size());
+                }
+                return formatResult(queryWrapper.selects(), resultData);
 
             } catch (IllegalArgumentException | JsonProcessingException e) {
                 // regular IllegalArgumentException, not due to illegal query parameters
@@ -224,15 +241,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
         return resultData;
     }
 
-    private QueryResultDto formatResult(AqlQueryWrapper query, List<List<Object>> resultData, String queryString) {
-
-        List<SelectWrapper> selectFields = query.selects();
-
-        QueryResultDto dto = new QueryResultDto();
-        dto.setExecutedAQL(queryString);
-
-        Optional.ofNullable(query.limit()).ifPresent(v -> dto.setLimit(v.intValue()));
-        Optional.ofNullable(query.offset()).ifPresent(v -> dto.setOffset(v.intValue()));
+    private QueryResultDto formatResult(List<SelectWrapper> selectFields, List<List<Object>> resultData) {
 
         Map<String, String> columns = new LinkedHashMap<>();
         for (int i = 0; i < selectFields.size(); i++) {
@@ -241,6 +250,8 @@ public class AqlQueryServiceImp implements AqlQueryService {
                     Optional.of(namePath).map(SelectWrapper::getSelectAlias).orElse("#" + i),
                     namePath.getSelectPath().orElse(null));
         }
+
+        QueryResultDto dto = new QueryResultDto();
         dto.setVariables(columns);
 
         List<ResultHolder> resultList = resultData.stream()

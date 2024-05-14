@@ -18,7 +18,7 @@
 package org.ehrbase.api.service;
 
 import org.ehrbase.api.dto.AqlQueryRequest;
-import org.ehrbase.api.dto.AqlQueryResult;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 
 public interface AqlQueryService {
 
@@ -29,5 +29,5 @@ public interface AqlQueryService {
      * @param aqlQueryRequest to perform
      * @return aqlQueryResult
      */
-    AqlQueryResult query(AqlQueryRequest aqlQueryRequest);
+    QueryResultDto query(AqlQueryRequest aqlQueryRequest);
 }

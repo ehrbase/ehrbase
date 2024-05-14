@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.http;
+package org.ehrbase.api.rest;
 
 /**
  * EHRbase specific HTTP header that are not part of the openEHR standard.

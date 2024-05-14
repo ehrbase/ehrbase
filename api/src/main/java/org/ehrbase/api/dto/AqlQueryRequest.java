@@ -38,22 +38,19 @@ public record AqlQueryRequest(
         @Nonnull String queryString,
         @Nullable Map<String, Object> parameters,
         @Nullable Long fetch,
-        @Nullable Long offset,
-        @Nonnull AqlExecutionOption executionOption) {
+        @Nullable Long offset) {
 
     public AqlQueryRequest(
             @Nonnull String queryString,
             @Nullable Map<String, Object> parameters,
             @Nullable Long fetch,
-            @Nullable Long offset,
-            @Nonnull AqlExecutionOption executionOption) {
+            @Nullable Long offset) {
         this.queryString = queryString;
         this.parameters = Optional.ofNullable(parameters).map(Map::entrySet).stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> handleExplicitParameterTypes(e.getValue())));
         this.fetch = fetch;
         this.offset = offset;
-        this.executionOption = executionOption;
     }
 
     /**

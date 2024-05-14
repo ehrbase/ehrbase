@@ -97,7 +97,7 @@ public class AqlQueryRepository {
                 .toList();
     }
 
-    public String printQuery(PreparedQuery preparedQuery) {
+    public static String getQuerySql(PreparedQuery preparedQuery) {
         return preparedQuery.selectQuery.getSQL();
     }
 
