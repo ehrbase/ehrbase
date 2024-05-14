@@ -109,7 +109,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResultDto aqlQueryResult = aqlQueryService.query(aqlQueryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryString, createLocationUri("query", "aql"));
+        QueryResponseData queryResponseData =
+                createQueryResponse(aqlQueryResult, queryString, createLocationUri("query", "aql"));
 
         return ResponseEntity.ok(queryResponseData);
     }
@@ -130,12 +131,13 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // sanity check
         Object rawQuery = queryRequest.get(Q_PARAM);
-        String queryString = switch (rawQuery) {
-            case null -> throw new InvalidApiParameterException("No aql query provided");
-            case ArrayList<?> __ -> throw new InvalidApiParameterException("Multiple aql queries provided");
-            case String s -> s;
-            default ->  throw new InvalidApiParameterException("Data type of aql query not supported");
-        };
+        String queryString =
+                switch (rawQuery) {
+                    case null -> throw new InvalidApiParameterException("No aql query provided");
+                    case ArrayList<?> __ -> throw new InvalidApiParameterException("Multiple aql queries provided");
+                    case String s -> s;
+                    default -> throw new InvalidApiParameterException("Data type of aql query not supported");
+                };
 
         // Enriches request attributes with aql for later audit processing
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
@@ -271,7 +273,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null));
     }
 
-    protected QueryResponseData createQueryResponse(QueryResultDto aqlQueryResult, String queryString, @Nullable URI location) {
+    protected QueryResponseData createQueryResponse(
+            QueryResultDto aqlQueryResult, String queryString, @Nullable URI location) {
         final QueryResponseData queryResponseData = new QueryResponseData(aqlQueryResult);
         queryResponseData.setQuery(queryString);
         queryResponseData.setMeta(aqlQueryContext.createMetaData(location));
