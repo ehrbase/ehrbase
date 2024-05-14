@@ -18,7 +18,7 @@
 package org.ehrbase.api.rest;
 
 /**
- * EHRbase specific HTTP header that are not part of the openEHR standard.
+ * EHRbase specific HTTP headers that are not part of the openEHR standard.
  */
 public final class EHRbaseHeader {
 

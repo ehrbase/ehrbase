@@ -32,7 +32,6 @@ import org.ehrbase.api.service.AqlQueryService;
  * @param parameters           additional query parameters
  * @param fetch                query limit to apply
  * @param offset               query offset to apply
- * @param executionOption additional execution instructions
  */
 public record AqlQueryRequest(
         @Nonnull String queryString,

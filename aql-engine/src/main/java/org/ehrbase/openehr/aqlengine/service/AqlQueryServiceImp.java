@@ -174,11 +174,11 @@ public class AqlQueryServiceImp implements AqlQueryService {
                 throw new InternalServerException(e.getMessage(), e);
             }
         } catch (RestClientException e) {
-            throw new BadGatewayException(formattedException("Bad gateway: %s", e), e);
+            throw new BadGatewayException(errorMessage("Bad gateway", e), e);
         } catch (DataAccessException e) {
-            throw new InternalServerException(formattedException("Data Access Error: %s", e), e);
+            throw new InternalServerException(errorMessage("Data Access Error", e), e);
         } catch (AqlParseException e) {
-            throw new IllegalAqlException(formattedException("Could not parse AQL query: %s", e), e);
+            throw new IllegalAqlException(errorMessage("Could not parse AQL query", e), e);
         }
     }
 
@@ -187,25 +187,27 @@ public class AqlQueryServiceImp implements AqlQueryService {
         AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
 
         // apply limit and offset - where the definitions from the aql are the precedence
-        Optional.ofNullable(aqlQueryRequest.fetch()).ifPresent(fetch -> {
-            raiseInvalidApiParameterIf(
-                    aqlQuery.getLimit() != null,
-                    () -> "Invalid AQL query: fetch is defined on query %s and as parameter %s"
-                            .formatted(aqlQuery.getLimit(), fetch));
+        Long fetch = aqlQueryRequest.fetch();
+        if (fetch != null) {
+            if (aqlQuery.getLimit() != null) {
+                throw new InvalidApiParameterException("Invalid AQL query: fetch is defined on query %s and as parameter %s"
+                        .formatted(aqlQuery.getLimit(), fetch));
+            }
             aqlQuery.setLimit(fetch);
-        });
-        Optional.ofNullable(aqlQueryRequest.offset()).ifPresent(offset -> {
-            raiseInvalidApiParameterIf(
-                    aqlQuery.getOffset() != null,
-                    () -> "Invalid AQL query: fetch is defined on query %s and as parameter %s"
-                            .formatted(aqlQuery.getOffset(), offset));
+        }
+        Long offset = aqlQueryRequest.offset();
+        if (offset != null) {
+            if (aqlQuery.getOffset() != null) {
+                throw new InvalidApiParameterException("Invalid AQL query: fetch is defined on query %s and as parameter %s"
+                        .formatted(aqlQuery.getOffset(), offset));
+            }
             aqlQuery.setOffset(offset);
-        });
+        };
 
         // sanity check - In AQL there is no offset without limit.
-        raiseInvalidApiParameterIf(
-                aqlQuery.getOffset() != null && aqlQuery.getLimit() == null,
-                () -> "Invalid AQL query: provided offset %s without a limit".formatted(aqlQuery.getOffset()));
+        if (aqlQuery.getOffset() != null && aqlQuery.getLimit() == null) {
+            throw new InvalidApiParameterException("Invalid AQL query: provided offset %s without a limit".formatted(aqlQuery.getOffset()));
+        }
 
         // postprocess
         replaceParameters(aqlQuery, aqlQueryRequest.parameters());
@@ -380,14 +382,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
         });
     }
 
-    private static void raiseInvalidApiParameterIf(boolean condition, Supplier<String> messageSupplier) {
-        if (condition) {
-            throw new InvalidApiParameterException(messageSupplier.get());
-        }
-    }
-
-    private static String formattedException(String message, Exception e) {
-        return message.formatted(
-                Optional.of(e).map(Throwable::getCause).orElse(e).getMessage());
+    private static String errorMessage(String prefix, Exception e) {
+        return prefix + ": " + Optional.of(e).map(Throwable::getCause).orElse(e).getMessage();
     }
 }
