@@ -109,7 +109,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResultDto aqlQueryResult = aqlQueryService.query(aqlQueryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, createLocationUri("query", "aql"));
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryString, createLocationUri("query", "aql"));
 
         return ResponseEntity.ok(queryResponseData);
     }
@@ -130,13 +130,12 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // sanity check
         Object rawQuery = queryRequest.get(Q_PARAM);
-        if (rawQuery == null) {
-            throw new InvalidApiParameterException("No aql query provided");
-        }
-        if (rawQuery instanceof ArrayList<?>) {
-            throw new InvalidApiParameterException("Multiple aql queries provided");
-        }
-        String queryString = (String) rawQuery;
+        String queryString = switch (rawQuery) {
+            case null -> throw new InvalidApiParameterException("No aql query provided");
+            case ArrayList<?> __ -> throw new InvalidApiParameterException("Multiple aql queries provided");
+            case String s -> s;
+            default ->  throw new InvalidApiParameterException("Data type of aql query not supported");
+        };
 
         // Enriches request attributes with aql for later audit processing
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
@@ -146,7 +145,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResultDto aqlQueryResult = aqlQueryService.query(aqlQueryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, null);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryString, null);
 
         return ResponseEntity.ok(queryResponseData);
     }
@@ -193,7 +192,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         URI locationUri = createLocationUri(pathSegments.toArray(String[]::new));
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, locationUri);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryString, locationUri);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
@@ -234,7 +233,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResultDto aqlQueryResult = aqlQueryService.query(aqlQueryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, null);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryString, null);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
@@ -272,13 +271,9 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null));
     }
 
-    protected QueryResponseData createQueryResponse(QueryResultDto aqlQueryResult, @Nullable URI location) {
-
+    protected QueryResponseData createQueryResponse(QueryResultDto aqlQueryResult, String queryString, @Nullable URI location) {
         final QueryResponseData queryResponseData = new QueryResponseData(aqlQueryResult);
-        // FIXME this stores the requested AQL query in the response `p` properties - this will be done in an upcoming
-        //       ticket
-        // queryResponseData.setQuery(aqlQueryRequest.queryString());
-
+        queryResponseData.setQuery(queryString);
         queryResponseData.setMeta(aqlQueryContext.createMetaData(location));
         return queryResponseData;
     }
