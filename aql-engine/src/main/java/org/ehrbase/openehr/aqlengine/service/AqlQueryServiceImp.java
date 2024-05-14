@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
@@ -190,23 +189,27 @@ public class AqlQueryServiceImp implements AqlQueryService {
         Long fetch = aqlQueryRequest.fetch();
         if (fetch != null) {
             if (aqlQuery.getLimit() != null) {
-                throw new InvalidApiParameterException("Invalid AQL query: fetch is defined on query %s and as parameter %s"
-                        .formatted(aqlQuery.getLimit(), fetch));
+                throw new InvalidApiParameterException(
+                        "Invalid AQL query: fetch is defined on query %s and as parameter %s"
+                                .formatted(aqlQuery.getLimit(), fetch));
             }
             aqlQuery.setLimit(fetch);
         }
         Long offset = aqlQueryRequest.offset();
         if (offset != null) {
             if (aqlQuery.getOffset() != null) {
-                throw new InvalidApiParameterException("Invalid AQL query: fetch is defined on query %s and as parameter %s"
-                        .formatted(aqlQuery.getOffset(), offset));
+                throw new InvalidApiParameterException(
+                        "Invalid AQL query: fetch is defined on query %s and as parameter %s"
+                                .formatted(aqlQuery.getOffset(), offset));
             }
             aqlQuery.setOffset(offset);
-        };
+        }
+        ;
 
         // sanity check - In AQL there is no offset without limit.
         if (aqlQuery.getOffset() != null && aqlQuery.getLimit() == null) {
-            throw new InvalidApiParameterException("Invalid AQL query: provided offset %s without a limit".formatted(aqlQuery.getOffset()));
+            throw new InvalidApiParameterException(
+                    "Invalid AQL query: provided offset %s without a limit".formatted(aqlQuery.getOffset()));
         }
 
         // postprocess
