@@ -49,32 +49,11 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
 
     private String executedAql;
 
-    private Map<String, Object> metaProperties = new LinkedHashMap<>();
+    private final Map<String, Object> metaProperties = new LinkedHashMap<>();
 
     public RequestScopedAqlQueryContext(StatusService statusService, HttpServletRequest request) {
         this.statusService = statusService;
         this.request = request;
-    }
-
-    /**
-     * Bridge to MetaData.AdditionalProperty
-     */
-    private static final class GenericAdditionalProperty implements MetaData.AdditionalProperty<Object> {
-        private String name;
-
-        private GenericAdditionalProperty(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public Object apply(Object o) {
-            return o;
-        }
     }
 
     @Override
@@ -96,13 +75,9 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
             setMetaProperty(EhrbaseMetaProperty.DRY_RUN, true);
         }
 
-        metaProperties.forEach((k, v) -> setAdditionalProperty(metaData, k, v));
+        metaProperties.forEach(metaData::setAdditionalProperty);
 
         return metaData;
-    }
-
-    private void setAdditionalProperty(MetaData metaData, String key, Object value) {
-        metaData.setAdditionalProperty(new GenericAdditionalProperty(key), value);
     }
 
     @Override
