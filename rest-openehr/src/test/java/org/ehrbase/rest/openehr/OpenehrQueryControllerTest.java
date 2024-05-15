@@ -224,6 +224,7 @@ public class OpenehrQueryControllerTest {
         verify(mockAqlQueryService).query(argument.capture());
         assertEquals(aqlQueryRequest, argument.getValue());
     }
+
     private void assertMetaData(ResponseEntity<QueryResponseData> response) {
         QueryResponseData body = response.getBody();
         assertNotNull(body);
