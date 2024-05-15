@@ -18,6 +18,8 @@
 package org.ehrbase.rest.openehr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -32,6 +34,8 @@ import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.StoredQueryService;
+import org.ehrbase.openehr.sdk.response.dto.MetaData;
+import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.junit.jupiter.api.AfterEach;
@@ -42,12 +46,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.RequestContextHolder;
 
 public class OpenehrQueryControllerTest {
 
     public static final String SAMPLE_QUERY = "SELECT s FROM EHR_STATUS s";
     public static final Map<String, Object> SAMPLE_PARAMETER_MAP = Map.of("key", "value");
+    public static final MetaData SAMPLE_META_DATA = new MetaData();
 
     private final AqlQueryService mockAqlQueryService = mock();
 
@@ -71,6 +77,7 @@ public class OpenehrQueryControllerTest {
     }
 
     private OpenehrQueryController controller() {
+        doReturn(SAMPLE_META_DATA).when(mockQueryContext).createMetaData(any());
         doReturn(new QueryResultDto()).when(mockAqlQueryService).query(any());
         return spyController;
     }
@@ -86,8 +93,9 @@ public class OpenehrQueryControllerTest {
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25"})
     void GETexecuteAddHocQuery(Integer fetch, Integer offset) {
-        controller()
+        ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(SAMPLE_QUERY, offset, fetch, SAMPLE_PARAMETER_MAP, MediaType.APPLICATION_JSON_VALUE);
+        assertMetaData(response);
         assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
@@ -104,11 +112,12 @@ public class OpenehrQueryControllerTest {
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25", "'1','2'"})
     void POSTexecuteAddHocQuery(Object fetch, Object offset) {
-        controller()
+        ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(
                         sampleAqlQuery(fetch, offset),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        assertMetaData(response);
         assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
@@ -156,7 +165,7 @@ public class OpenehrQueryControllerTest {
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25"})
     void GETexecuteStoredQuery(Integer fetch, Integer offset) {
-        controllerStoredQuery()
+        ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
                         "v1.0.0",
@@ -164,19 +173,21 @@ public class OpenehrQueryControllerTest {
                         fetch,
                         SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
+        assertMetaData(response);
         assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25", "'1','2'"})
     void POSTexecuteStoredQuery(Object fetch, Object offset) {
-        controllerStoredQuery()
+        ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
                         "v1.0.0",
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         sampleAqlJson(fetch, offset));
+        assertMetaData(response);
         assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
@@ -212,5 +223,11 @@ public class OpenehrQueryControllerTest {
         ArgumentCaptor<AqlQueryRequest> argument = ArgumentCaptor.forClass(AqlQueryRequest.class);
         verify(mockAqlQueryService).query(argument.capture());
         assertEquals(aqlQueryRequest, argument.getValue());
+    }
+    private void assertMetaData(ResponseEntity<QueryResponseData> response) {
+        QueryResponseData body = response.getBody();
+        assertNotNull(body);
+        assertSame(SAMPLE_META_DATA, body.getMeta());
+        verify(mockQueryContext).createMetaData(any());
     }
 }
