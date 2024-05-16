@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
 @RequestScope
-@Component
+@Component("requestScopedAqlQueryContext")
 public class RequestScopedAqlQueryContext implements AqlQueryContext {
 
     @Value("${ehrbase.rest.aql.response.generator-details-enabled:false}")
