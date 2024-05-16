@@ -31,6 +31,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
+/**
+ * Holds the metadata for the response to an AQL request.
+ *
+ * Note: it is expected that per request no more than one AQL query is executed
+ */
 @RequestScope
 @Component("requestScopedAqlQueryContext")
 public class RequestScopedAqlQueryContext implements AqlQueryContext {

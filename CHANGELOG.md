@@ -7,14 +7,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
 ### Added
+* Added AQL debug support ([#1296](https://github.com/ehrbase/ehrbase/pull/1296))
 ### Changed
+* The field `q` of AQL query responses now contain the requested, and not the executed, query string  ([#1296](https://github.com/ehrbase/ehrbase/pull/1296))
+* The field `meta._schema_version` of AQL query responses has been changed to `1.0.3`  ([#1296](https://github.com/ehrbase/ehrbase/pull/1296))
 ### Fixed
 
 ## [2.1.0]
  ### Added
 * Added `STORED_QUERY_CACHE` ([#1258](https://github.com/ehrbase/ehrbase/pull/1258))
 * Added new config option `ehrbase.security.management.endpoints.web.csrf-validation-enabled` ([#1294](https://github.com/ehrbase/ehrbase/pull/1294),[#1297](https://github.com/ehrbase/ehrbase/pull/1297))
-* Added AQL debug support ([#1296](https://github.com/ehrbase/ehrbase/pull/1296))
  ### Changed 
  - Upgrade openEHR_SDK to version 2.10.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
 * Changed `StoredQueryRepository` methods to only accept `StoredQueryQualifiedName` as arguments ([#1258](https://github.com/ehrbase/ehrbase/pull/1258))
