@@ -110,7 +110,7 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     }
 
     @Override
-    public void setMetaProperty(EhrbaseMetaProperty property, Object value) {
+    public void setMetaProperty(MetaProperty property, Object value) {
         String name = property.propertyName();
         if (value == null) {
             metaProperties.remove(name);

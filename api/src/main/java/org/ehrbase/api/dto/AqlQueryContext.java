@@ -22,7 +22,11 @@ import org.ehrbase.openehr.sdk.response.dto.MetaData;
 
 public interface AqlQueryContext {
 
-    enum EhrbaseMetaProperty {
+    interface MetaProperty {
+        String propertyName();
+    }
+
+    enum EhrbaseMetaProperty implements MetaProperty {
         OFFSET("offset"),
         FETCH("fetch"),
         RESULT_SIZE("resultsize"),
@@ -36,6 +40,7 @@ public interface AqlQueryContext {
             this.propertyName = propertyName;
         }
 
+        @Override
         public String propertyName() {
             return propertyName;
         }
@@ -55,5 +60,5 @@ public interface AqlQueryContext {
 
     void setExecutedAql(String executedAql);
 
-    void setMetaProperty(EhrbaseMetaProperty property, Object value);
+    void setMetaProperty(MetaProperty property, Object value);
 }
