@@ -55,8 +55,6 @@ public abstract class BaseController {
 
     public static final String OPENEHR_VERSION = "openEHR-VERSION";
 
-    public static final String EHRBASE_TEMPLATE_ID = "EHRBase-Template-ID";
-
     public static final String PREFER = "Prefer";
 
     public static final String RETURN_MINIMAL = "return=minimal";

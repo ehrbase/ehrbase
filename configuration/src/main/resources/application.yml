@@ -83,9 +83,13 @@ security:
 ehrbase:
   rest:
     aql:
+      # allows to control query execution using debug params
+      debugging-enabled: false
       response:
         # add an information about the running ehrbase instance to the AQL meta.generator property
         generator-details-enabled: false
+        # include executed_aql in the AQL meta information
+        executed-aql-enabled: true
   security:
     # Configuration of actuator for reporting and health endpoints
     management:

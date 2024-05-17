@@ -38,6 +38,7 @@ import java.util.function.Supplier;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.rest.EHRbaseHeader;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.SystemService;
@@ -432,7 +433,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             templateId = compositionService.retrieveTemplateId(compositionId);
         }
 
-        respHeaders.addIfAbsent(EHRBASE_TEMPLATE_ID, templateId);
+        respHeaders.addIfAbsent(EHRbaseHeader.TEMPLATE_ID, templateId);
 
         HttpRestContext.register(
                 EHR_ID,
