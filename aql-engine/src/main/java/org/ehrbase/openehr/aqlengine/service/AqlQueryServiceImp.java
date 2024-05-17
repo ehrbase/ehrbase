@@ -206,7 +206,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
             }
             aqlQuery.setOffset(offset);
         }
-        ;
 
         // sanity check - In AQL there is no offset without limit.
         if (aqlQuery.getOffset() != null && aqlQuery.getLimit() == null) {
