@@ -29,15 +29,15 @@ public final class EHRbaseHeader {
     /**
      * Used by the /query endpoint to perform only a dry run query.
      */
-    public static final String AQL_DRY_RUN = "EHRbase-AQL-DRY_RUN";
+    public static final String AQL_DRY_RUN = "EHRbase-AQL-Dry-Run";
 
     /**
      * Used by the /query endpoint to provide the executed SQL statement in the return metadata.
      */
-    public static final String AQL_EXECUTED_SQL = "EHRbase-AQL-EXECUTED_SQL";
+    public static final String AQL_EXECUTED_SQL = "EHRbase-AQL-Executed-SQL";
 
     /**
      * Used by the /query endpoint to provide the database query plan in the return metadata.
      */
-    public static final String AQL_QUERY_PLAN = "EHRbase-AQL-QUERY_PLAN";
+    public static final String AQL_QUERY_PLAN = "EHRbase-AQL-Query-Plan";
 }
