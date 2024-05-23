@@ -149,7 +149,7 @@ jobs:
       matrix:
         test-suite: [
           # sanity checks
-          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'OAUTH' } },
+          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'BASIC' } },
           # rest/openehr/v1/definition
           #{ path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template' },
           #{ path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST' },

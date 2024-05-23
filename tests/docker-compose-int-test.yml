@@ -48,7 +48,6 @@ services:
     environment:
       EHRBASE_BASE_URL: http://ehrbase:8080
       SERVER_NODENAME: "local.ehrbase.org"
-      AUTH_TYPE: "${AUTH_TYPE}"
     depends_on:
       ehrbase:
         condition: service_healthy
