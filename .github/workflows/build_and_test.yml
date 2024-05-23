@@ -209,7 +209,11 @@ jobs:
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
       - name: Docker Compose - Starting
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+        run: |
+          AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}
+          export AUTH_TYPE
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+          
 
       - name: Run - Robot Test-Suite
         run: |
