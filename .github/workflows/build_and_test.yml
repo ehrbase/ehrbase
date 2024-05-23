@@ -210,8 +210,7 @@ jobs:
 
       - name: Docker Compose - Starting
         run: |
-          AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}
-          export AUTH_TYPE
+          echo AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }} >> $GITHUB_ENV
           docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
           
 
