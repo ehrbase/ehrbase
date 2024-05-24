@@ -141,7 +141,7 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <skipTests>false</skipTests>
+              <skipTests>${skipTests}</skipTests>
               <includes>
                 <include>${include.tests}</include>
               </includes>
@@ -221,6 +221,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin-version}</version>
         <configuration>
           <compilerArgs>
             <arg>-parameters</arg>
