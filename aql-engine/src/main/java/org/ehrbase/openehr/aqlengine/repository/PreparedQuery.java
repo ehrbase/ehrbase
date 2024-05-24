@@ -28,15 +28,15 @@ import org.jooq.SelectQuery;
  * Represents a prepared but not executed SQL query for the {@link AqlQueryRepository} that is constructed by
  * {@link AqlQueryRepository#prepareQuery(AslRootQuery, List)}. This prepared query can be executed by
  * {@link AqlQueryRepository#executeQuery(PreparedQuery)} or can be used to obtain the raw SQL query using
- * {@link AqlQueryRepository#printQuery(PreparedQuery)} or the query planer output
- * {@link AqlQueryRepository#explainQuery(PreparedQuery)}.
+ * {@link AqlQueryRepository#getQuerySql(PreparedQuery)}} or the query planer output
+ * {@link AqlQueryRepository#explainQuery(boolean, PreparedQuery)}.
  */
 public final class PreparedQuery {
 
     final SelectQuery<Record> selectQuery;
     final Map<Integer, AqlSqlResultPostprocessor> postProcessors;
 
-    PreparedQuery(SelectQuery<Record> selectQuery, Map<Integer, AqlSqlResultPostprocessor> postProcessors) {
+    public PreparedQuery(SelectQuery<Record> selectQuery, Map<Integer, AqlSqlResultPostprocessor> postProcessors) {
         this.selectQuery = selectQuery;
         this.postProcessors = postProcessors;
     }

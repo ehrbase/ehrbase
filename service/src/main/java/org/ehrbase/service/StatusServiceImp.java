@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class StatusServiceImp implements StatusService {
 
     @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-    @Autowired
+    @Autowired(required = false)
     private BuildProperties buildProperties;
 
     private final DSLContext dslContext;
