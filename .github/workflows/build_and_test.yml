@@ -151,8 +151,8 @@ jobs:
           # sanity checks
           { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
           # rest/openehr/v1/definition
-          #{ path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template' },
-          #{ path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST' },
+          { path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST', env: { 'AUTH_TYPE': 'BASIC' } },
           ## rest/openehr/v1/ehr
           #{ path: 'EHR_SERVICE_TESTS', name: 'EHR_SERVICE', tags: 'EHR_SERVICE' },
           #{ path: 'EHR_STATUS_TESTS', name: 'EHR_STATUS', tags: 'EHR_STATUS' },
