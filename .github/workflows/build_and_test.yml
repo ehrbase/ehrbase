@@ -209,11 +209,11 @@ jobs:
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
       - name: Create auth.env file
-        run: echo "AUTH_TYPE=BASIC" > auth.env
+        run: echo "SECURITY_AUTHTYPE=BASIC" > .env.ehrbase
 
       - name: Docker Compose - Starting
         run: |
-          docker compose --env-file auth.env -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+          docker compose --env-file .env.ehrbase -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
 
       - name: Run - Robot Test-Suite
         run: |
