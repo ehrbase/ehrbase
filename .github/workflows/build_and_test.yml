@@ -149,7 +149,7 @@ jobs:
       matrix:
         test-suite: [
           # sanity checks
-          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'BASIC' } },
+          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
           # rest/openehr/v1/definition
           #{ path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template' },
           #{ path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST' },
@@ -209,7 +209,7 @@ jobs:
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
       - name: Create auth.env file
-        run: echo "SECURITY_AUTHTYPE=BASIC" > .env.ehrbase
+        run: echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" > .env.ehrbase
 
       - name: Docker Compose - Starting
         run: |
