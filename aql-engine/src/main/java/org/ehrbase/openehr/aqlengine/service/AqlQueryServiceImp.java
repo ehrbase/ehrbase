@@ -41,7 +41,7 @@ import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.openehr.aqlengine.AqlQueryUtils;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
@@ -183,34 +183,30 @@ public class AqlQueryServiceImp implements AqlQueryService {
         }
     }
 
-    private static AqlQuery buildAqlQuery(AqlQueryRequest aqlQueryRequest) {
+    static AqlQuery buildAqlQuery(AqlQueryRequest aqlQueryRequest) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
 
         // apply limit and offset - where the definitions from the aql are the precedence
-        Long fetch = aqlQueryRequest.fetch();
-        if (fetch != null) {
-            if (aqlQuery.getLimit() != null) {
-                throw new InvalidApiParameterException(
-                        "Invalid AQL query: fetch is defined on query %s and as parameter %s"
-                                .formatted(aqlQuery.getLimit(), fetch));
+        Long fetchParam = aqlQueryRequest.fetch();
+        Long offsetParam = aqlQueryRequest.offset();
+        Long limitQuery = aqlQuery.getLimit();
+
+        // verify not parameter fetch offset are defined when query contains a LIMIT or assign fetch parameter
+        if (limitQuery == null) {
+            aqlQuery.setLimit(fetchParam);
+            aqlQuery.setOffset(offsetParam);
+        } else {
+            if (fetchParam != null || offsetParam != null) {
+                throw new UnprocessableEntityException(
+                        "Query contains a LIMIT clause, fetch and offset parameters must not be used");
             }
-            aqlQuery.setLimit(fetch);
-        }
-        Long offset = aqlQueryRequest.offset();
-        if (offset != null) {
-            if (aqlQuery.getOffset() != null) {
-                throw new InvalidApiParameterException(
-                        "Invalid AQL query: fetch is defined on query %s and as parameter %s"
-                                .formatted(aqlQuery.getOffset(), offset));
-            }
-            aqlQuery.setOffset(offset);
         }
 
-        // sanity check - In AQL there is no offset without limit.
+        // sanity check parameter
         if (aqlQuery.getOffset() != null && aqlQuery.getLimit() == null) {
-            throw new InvalidApiParameterException(
-                    "Invalid AQL query: provided offset %s without a limit".formatted(aqlQuery.getOffset()));
+            throw new UnprocessableEntityException(
+                    "Query parameter for offset %s provided without a fetch limit".formatted(aqlQuery.getOffset()));
         }
 
         // postprocess

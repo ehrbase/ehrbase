@@ -72,8 +72,8 @@ public class AqlQueryRepository {
      * @param selects  to obtain {@link AqlSqlResultPostprocessor} for.
      *
      * @see #executeQuery(PreparedQuery)
-     * @see #printQuery(PreparedQuery)
-     * @see #explainQuery(PreparedQuery)
+     * @see #getQuerySql(PreparedQuery)
+     * @see #explainQuery(boolean, PreparedQuery)
      */
     public PreparedQuery prepareQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
 
