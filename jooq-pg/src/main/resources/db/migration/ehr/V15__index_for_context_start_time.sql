@@ -16,17 +16,4 @@
  * limitations under the License.
  */
 
---variant 1
-ALTER TABLE comp_version ADD COLUMN start_time_magnitude numeric;
---variant 2
-ALTER TABLE comp_version ADD COLUMN start_time jsonb;
-
-UPDATE comp_version v
-SET start_time_magnitude = (d.data -> 'st' -> 'M')::numeric, start_time = d.data -> 'st'
-FROM comp_data d
-WHERE v.vo_id = d.vo_id AND d.rm_entity = 'EC';
-
---variant 1
-CREATE INDEX IF NOT EXISTS comp_version_start_time_magnitude_idx ON comp_version (start_time_magnitude ASC);
---variant 2
-CREATE INDEX IF NOT EXISTS comp_version_start_time_magnitude_idx ON comp_version (((start_time -> 'M')::numeric) ASC);
+--TODO CDR-1434
