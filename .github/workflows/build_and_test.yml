@@ -208,13 +208,12 @@ jobs:
           echo "EHRBASE_IMAGE=ehrbase/ehrbase:test" >> $GITHUB_ENV
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
+      - name: Create auth.env file
+        run: echo "AUTH_TYPE=BASIC" > auth.env
+
       - name: Docker Compose - Starting
         run: |
-          #echo "AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> $GITHUB_ENV
-          #export AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}
-          echo "AUTH_TYPE=BASIC" > auth.env
           docker compose --env-file auth.env -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
-          
 
       - name: Run - Robot Test-Suite
         run: |
