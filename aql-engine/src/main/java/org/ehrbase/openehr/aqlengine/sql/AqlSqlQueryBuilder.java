@@ -261,13 +261,7 @@ public class AqlSqlQueryBuilder {
      * <p>
      * Structure based:
      * <p>
-     * select "cData"."data"->'N' as "pd_0_data"
-     * from "ehr"."comp" as "cData"
-     * where (
-     * "sSE_s_0"."sSE_s_0_ehr_id" = "cData"."ehr_id"
-     * and "sSE_s_0"."sSE_s_0_vo_id" = "cData"."vo_id"
-     * and "sSE_s_0"."sSE_s_0_entity_idx" = "cData"."entity_idx"
-     * )
+     * select "sSE_s_0"."data"->'N' as "pd_0_data"
      * <p>
      * Path data based:
      * <p>
@@ -280,35 +274,12 @@ public class AqlSqlQueryBuilder {
     private static TableLike<Record> buildPathDataQuery(
             AslPathDataQuery aslData, AslQuery target, AslQueryTables aslQueryToTable) {
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
+        Function<String, Field<JSONB>> dataFieldProvider = colName -> FieldUtils.aliasedField(targetTable, aslData, colName, JSONB.class);
 
-        AslQuery base = aslData.getBase();
-
-        Table<?> data;
-        Function<String, Field<JSONB>> dataFieldProvider;
-        if (base instanceof AslStructureQuery baseSq) {
-            data = baseSq.getType().getDataTable().as(subqueryAlias(aslData));
-            dataFieldProvider = __ -> data.field(ObjectDataTablePrototype.INSTANCE.DATA);
-        } else {
-            data = targetTable;
-            dataFieldProvider = colName -> FieldUtils.aliasedField(data, aslData, colName, JSONB.class);
-        }
-
-        SelectSelectStep<Record> select = DSL.select(aslData.getSelect().stream()
+        return DSL.select(aslData.getSelect().stream()
                 .map(AslColumnField.class::cast)
                 .map(f -> pathDataField(aslData, f, dataFieldProvider))
                 .toList());
-
-        if (base instanceof AslStructureQuery) {
-            // primary key condition
-            List<Condition> pkeyCondition = data.getPrimaryKey().getFields().stream()
-                    .map(f -> FieldUtils.aliasedField(targetTable, aslData, f).eq((Field) data.field(f)))
-                    .toList();
-
-            return select.from(data).where(pkeyCondition);
-
-        } else {
-            return select;
-        }
     }
 
     @Nonnull
