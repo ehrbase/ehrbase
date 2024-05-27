@@ -19,58 +19,18 @@ package org.ehrbase.openehr.aqlengine.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
-import org.ehrbase.openehr.aqlengine.featurecheck.AqlQueryFeatureCheck;
-import org.ehrbase.openehr.aqlengine.repository.AqlQueryRepository;
-import org.ehrbase.openehr.aqlengine.repository.PreparedQuery;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
-import org.ehrbase.openehr.test.Fixture;
-import org.ehrbase.openehr.test.TestAqlQueryContext;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Mockito;
 
 class AqlQueryServiceImpTest {
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    // returns null for each call
-    private final AqlQueryRepository mockQueryRepository = mock();
-
-    @BeforeEach
-    void setUp() {
-        Mockito.reset(mockQueryRepository);
-        PreparedQuery preparedQuery = Fixture.preparedQuery("SELECT * FROM AqlQueryServiceImpTest");
-        doReturn(preparedQuery).when(mockQueryRepository).prepareQuery(any(), any());
-    }
-
-    private AqlQueryServiceImp service() {
-        return service(new TestAqlQueryContext());
-    }
-
-    private AqlQueryServiceImp service(AqlQueryContext queryContext) {
-
-        return new AqlQueryServiceImp(
-                mockQueryRepository,
-                null,
-                new AqlSqlLayer(null, Fixture.systemService()),
-                new AqlQueryFeatureCheck(Fixture.systemService()),
-                objectMapper,
-                queryContext);
-    }
 
     @ParameterizedTest
     @CsvSource(
@@ -140,7 +100,8 @@ class AqlQueryServiceImpTest {
                 Optional.ofNullable(aqlLimit).filter(s -> !s.isEmpty()).map(s -> "LIMIT " + s).orElse(""),
                 Optional.ofNullable(aqlOffset).filter(s -> !s.isEmpty()).map(s -> "OFFSET " + s).orElse("")
         );
-        service().query(new AqlQueryRequest(
+
+        AqlQueryServiceImp.buildAqlQuery(new AqlQueryRequest(
                 query,
                 Map.of(),
                 Optional.ofNullable(paramLimit).filter(StringUtils::isNotEmpty).map(Long::parseLong).orElse(null),

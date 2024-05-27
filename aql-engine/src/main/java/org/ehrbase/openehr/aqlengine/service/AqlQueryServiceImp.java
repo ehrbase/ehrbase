@@ -183,7 +183,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
         }
     }
 
-    private static AqlQuery buildAqlQuery(AqlQueryRequest aqlQueryRequest) {
+    static AqlQuery buildAqlQuery(AqlQueryRequest aqlQueryRequest) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
 
@@ -193,19 +193,14 @@ public class AqlQueryServiceImp implements AqlQueryService {
         Long limitQuery = aqlQuery.getLimit();
 
         // verify not parameter fetch offset are defined when query contains a LIMIT or assign fetch parameter
-        Optional.ofNullable(limitQuery)
-                .ifPresentOrElse(
-                        limit -> {
-                            if (fetchParam != null || offsetParam != null) {
-                                throw new UnprocessableEntityException(
-                                        "Query contains a LIMIT clause, fetch and offset parameters must not be used");
-                            }
-                        },
-                        () -> Optional.ofNullable(fetchParam).ifPresent(aqlQuery::setLimit));
-
-        // assign offset parameter
-        if (aqlQuery.getOffset() == null) {
-            Optional.ofNullable(offsetParam).ifPresent(aqlQuery::setOffset);
+        if (limitQuery == null) {
+            aqlQuery.setLimit(fetchParam);
+            aqlQuery.setOffset(offsetParam);
+        } else {
+            if (fetchParam != null || offsetParam != null) {
+                throw new UnprocessableEntityException(
+                        "Query contains a LIMIT clause, fetch and offset parameters must not be used");
+            }
         }
 
         // sanity check parameter
