@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.asl.model.query;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,7 @@ public sealed class AslEncapsulatingQuery extends AslQuery permits AslRootQuery 
                                 .map(jc -> jc.withLeftProvider(this))
                                 .toList()))
                 .collect(Collectors.groupingBy(
-                        Pair::getKey, Collectors.flatMapping(e -> e.getValue().stream(), Collectors.toList())));
+                        Pair::getKey, LinkedHashMap::new, Collectors.flatMapping(e -> e.getValue().stream(), Collectors.toList())));
     }
 
     @Override
