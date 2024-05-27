@@ -211,8 +211,9 @@ jobs:
       - name: Docker Compose - Starting
         run: |
           #echo "AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> $GITHUB_ENV
-          export AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}
-          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+          #export AUTH_TYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}
+          echo "AUTH_TYPE=BASIC" > auth.env
+          docker compose --env-file auth.env -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
           
 
       - name: Run - Robot Test-Suite
