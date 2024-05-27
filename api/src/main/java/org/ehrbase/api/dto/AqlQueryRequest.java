@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.service;
+package org.ehrbase.api.dto;
 
 import java.util.Map;
 import java.util.Optional;
@@ -23,20 +23,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.ehrbase.api.service.AqlQueryService;
 
 /**
  * The requested AQL to be executed by {@link AqlQueryService#query(AqlQueryRequest)}.
  *
- * @param queryString the actual aql query string
- * @param parameters  additional query parameters
- * @param fetch       query limit to apply
- * @param offset      query offset to apply
+ * @param queryString          the actual aql query string
+ * @param parameters           additional query parameters
+ * @param fetch                query limit to apply
+ * @param offset               query offset to apply
  */
 public record AqlQueryRequest(
         @Nonnull String queryString,
         @Nullable Map<String, Object> parameters,
         @Nullable Long fetch,
         @Nullable Long offset) {
+
     public AqlQueryRequest(
             @Nonnull String queryString,
             @Nullable Map<String, Object> parameters,
@@ -51,12 +53,9 @@ public record AqlQueryRequest(
     }
 
     /**
-     * Allows for explicit types via xml: <param type="int">1</param>.
-     *
-     * @param paramValue
-     * @return
+     * Allows for explicit types via xml: <param type="int">1</param> in query parameters.
      */
-    static Object handleExplicitParameterTypes(Object paramValue) {
+    private static Object handleExplicitParameterTypes(Object paramValue) {
         if (paramValue instanceof Map<?, ?> m) {
             Object typeVal = m.get("type");
             if (typeVal instanceof String type)
@@ -71,8 +70,6 @@ public record AqlQueryRequest(
                             .map(Object::toString)
                             .<Object>map(Double::parseDouble)
                             .orElse(paramValue);
-                        // XXX These can be merged, but it currently crashes the formatter
-                    case null -> paramValue;
                     default -> paramValue;};
         }
         return paramValue;

@@ -51,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @Transactional(readOnly = true)
 public class AqlQueryRepository {
+
     private static final AqlSqlResultPostprocessor NOOP_POSTPROCESSOR = v -> v;
     private final SystemService systemService;
     private final KnowledgeCacheService knowledgeCache;
@@ -63,8 +64,20 @@ public class AqlQueryRepository {
         this.knowledgeCache = knowledgeCache;
     }
 
-    public List<List<Object>> executeQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
-        SelectQuery<Record> queryResults = queryBuilder.buildSqlQuery(aslQuery);
+    /**
+     * Prepares the full SQL query. Build the structure from AQL and selects postprocess based on the given
+     * <code>selects</code>.
+     *
+     * @param aslQuery to create the actual SQL query from.
+     * @param selects  to obtain {@link AqlSqlResultPostprocessor} for.
+     *
+     * @see #executeQuery(PreparedQuery)
+     * @see #getQuerySql(PreparedQuery)
+     * @see #explainQuery(boolean, PreparedQuery)
+     */
+    public PreparedQuery prepareQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
+
+        final SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
 
         final Map<Integer, AqlSqlResultPostprocessor> postProcessors;
         if (selects.isEmpty()) {
@@ -75,9 +88,21 @@ public class AqlQueryRepository {
                     .boxed()
                     .collect(Collectors.toMap(i -> i, i -> getPostProcessor(selects.get(i))));
         }
-        return queryResults.stream()
-                .map(r -> postProcessDbRecord(r, postProcessors))
+        return new PreparedQuery(selectQuery, postProcessors);
+    }
+
+    public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
+        return preparedQuery.selectQuery.stream()
+                .map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
                 .toList();
+    }
+
+    public static String getQuerySql(PreparedQuery preparedQuery) {
+        return preparedQuery.selectQuery.getSQL();
+    }
+
+    public String explainQuery(boolean analyze, PreparedQuery preparedQuery) {
+        return queryBuilder.explain(analyze, preparedQuery.selectQuery).formatJSON();
     }
 
     private AqlSqlResultPostprocessor getPostProcessor(SelectWrapper select) {
@@ -90,9 +115,8 @@ public class AqlQueryRepository {
 
         Optional<AqlObjectPath> selectPath = select.getIdentifiedPath().map(IdentifiedPath::getPath);
         List<PathNode> nodes = selectPath.map(AqlObjectPath::getPathNodes).orElseGet(Collections::emptyList);
-        return
         // extracted column by full path
-        AslExtractedColumn.find(select.root(), selectPath.orElse(null))
+        return AslExtractedColumn.find(select.root(), selectPath.orElse(null))
                 // OR extracted column by archetype_node_id suffix
                 .or(() -> Optional.of(AslExtractedColumn.ARCHETYPE_NODE_ID)
                         .filter(e ->

@@ -1,4 +1,4 @@
-name: Create Docker ehrbase-postgres
+name: "Create Docker ehrbase-postgres"
 
 on:
   #

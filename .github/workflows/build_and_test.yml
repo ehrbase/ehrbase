@@ -23,11 +23,6 @@ jobs:
   build-maven:
     name: Build-Maven
     runs-on: ubuntu-latest
-    # Allows dorny/test-reporter to collect results for pull request triggered from a forked repository.
-    permissions:
-      contents: read
-      actions: read
-      checks: write
     outputs:
       # Map the step outputs to job outputs
       ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
@@ -54,7 +49,7 @@ jobs:
             deps-
 
       - name: Maven - Verify and Package
-        run: mvn --batch-mode --update-snapshots -Dmaven.test.failure.ignore=true verify package
+        run: mvn --batch-mode --update-snapshots --activate-profiles full -Dmaven.test.failure.ignore=true verify package
 
       - name: Maven - Get Version
         id: "get_version"
@@ -89,16 +84,12 @@ jobs:
           path: "**/target/jacoco*.exec"
           if-no-files-found: error
 
-      - name: Collect - JUnit Reports
-        uses: dorny/test-reporter@v1
-        # Dependabot has not enough rights to add the report to the run.
-        if: ${{ github.actor != 'dependabot[bot]' }}
+      - name: Upload - Junit reports
+        uses: actions/upload-artifact@v4  # upload test results
+        if: success() || failure()        # run this step even if previous step failed
         with:
-          name: Unit Tests
+          name: junit-test-results
           path: '**/target/surefire-reports/*.xml'
-          reporter: java-junit
-          fail-on-error: 'true'
-          fail-on-empty: 'true'
 
   #
   # Performs docker test image builds.
@@ -286,7 +277,7 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: joonvena/robotframework-reporter-action@v2.4
         with:
-          gh_access_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          gh_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
           report_path: ./tests/report
           show_passed_tests: false
 
@@ -429,7 +420,6 @@ jobs:
             -Dsonar.exclusions=test/** \
             -Dsonar.coverage.exclusions=test/** \
             -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml \
-  
 
   #
   # Build and push docker image

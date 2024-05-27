@@ -1,5 +1,5 @@
 # Create a Release
-name: release
+name: "Release"
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
           ref: master
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -40,7 +40,7 @@ jobs:
           ref: develop
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
 
       - name: install sdk dev
         run: mvn install
@@ -51,7 +51,7 @@ jobs:
           fetch-depth: 0
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
 
       - name: Calculate Release Version
         run: |
@@ -113,7 +113,7 @@ jobs:
            then exit 1
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
       - name: Merge into Main
         run: |
@@ -127,7 +127,7 @@ jobs:
         run: |
           gh release create "v${VERSION}" -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.repository  }} --target master
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
       - name: Merge into dev
         run: |
