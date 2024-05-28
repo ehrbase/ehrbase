@@ -25,6 +25,7 @@ import static org.ehrbase.openehr.dbformat.DbToRmFormat.TYPE_ATTRIBUTE;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -75,6 +76,7 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 
 final class ConditionUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -295,7 +297,8 @@ final class ConditionUtils {
         if (fv instanceof AslDvOrderedValueQueryCondition<?> dvc) {
             Field<JSONB> sqlDvOrderedField = FieldUtils.field(
                     tables.getDataTable(internalProvider), (AslColumnField) field, JSONB.class, useAliases);
-            Field<JSONB> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField);
+            Field<BigDecimal> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField)
+                    .cast(SQLDataType.NUMERIC);
             Field<String> sqlTypeField =
                     DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttributeAlias.getAlias(TYPE_ATTRIBUTE));
             List<String> types =
@@ -475,10 +478,12 @@ final class ConditionUtils {
             };
             case 1 -> {
                 Object val = filteredValues.getFirst();
-                Field wrappedValue = jsonbField || orderOperator && !sqlFieldType.isInstance(val)
+                boolean valueAndFieldTypeCompatible = sqlFieldType.isInstance(val)
+                        || (Number.class.isAssignableFrom(sqlFieldType) && val instanceof Number);
+                Field wrappedValue = jsonbField || orderOperator && !valueAndFieldTypeCompatible
                         ? AdditionalSQLFunctions.to_jsonb(val)
                         : DSL.inline(val);
-                Field wrappedField = !jsonbField && orderOperator && !sqlFieldType.isInstance(val)
+                Field wrappedField = !jsonbField && orderOperator && !valueAndFieldTypeCompatible
                         ? AdditionalSQLFunctions.to_jsonb(field)
                         : field;
                 yield switch (operator) {
