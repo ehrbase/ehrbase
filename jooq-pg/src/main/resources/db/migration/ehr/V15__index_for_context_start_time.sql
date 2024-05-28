@@ -16,4 +16,6 @@
  * limitations under the License.
  */
 
---TODO CDR-1434
+-- the index contains vo_id as second expression to support stable and performant pagination
+CREATE INDEX IF NOT EXISTS comp_data_start_time_desc_idx ON comp_data USING btree
+    ((jsonb_dv_ordered_magnitude(data -> 'st')::numeric) DESC, vo_id ASC) WHERE rm_entity = 'EC';
