@@ -1,7 +1,7 @@
 name: "Collect JUnit Results"
 
 # we have multiple workflows - this helps to distinguish for them
-run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.ref_name }} - Collect JUnit Results"
+run-name: "${{ github.event.workflow_run.head_branch }} - Collect JUnit Results"
 
 on:
   workflow_run:
