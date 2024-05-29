@@ -461,7 +461,10 @@ final class ConditionUtils {
                         } catch (IllegalArgumentException e) {
                             // value stays null
                         }
-                    } else if (jsonbField || sqlFieldType.isInstance(v) || orderOperator) {
+                    } else if (jsonbField
+                            || sqlFieldType.isInstance(v)
+                            || orderOperator
+                            || (Number.class.isAssignableFrom(sqlFieldType) && v instanceof Number)) {
                         value = v;
                     }
                     return value;
