@@ -358,70 +358,6 @@ jobs:
           path: ./tests/coverage/jacoco-report-final
 
   #
-  # Trigger sonar cloud upload as Quality-Gate
-  #
-  sonar-quality-gate:
-    name: Sonar-Quality-Gate
-    # dependabot has not enough rights to access the secrets for a pull_request.
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    needs: [
-      coverage-collect
-    ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # Disabling shallow clone is recommended for improving relevancy of reporting
-          fetch-depth: 0
-
-      - name: Setup - Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-          cache: 'maven'
-
-      - name: Restore - Dependency Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ~/.m2/repository
-          key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            deps-${{ runner.os }}-m2-${{ github.head_ref }}-
-            deps-${{ runner.os }}-m2-
-            deps-${{ runner.os }}-
-            deps-
-          fail-on-cache-miss: true # we run only with cached dependencies
-
-      - name: Setup - SonarCloud Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: sonar-${{ runner.os }}
-          restore-keys: sonar-${{ runner.os }}
-
-      - name: Download - Jacoco Report
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report-final
-          path: ${{ github.workspace }}/tests/coverage/jacoco-report-final/
-
-      - name: Sonar - Analyze
-        # Dependabot has no access to the SONAR_TOKEN secret, so we need to skip sonar.
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        # note we re-compile the project here because we need the compile class files
-        run: |
-          mvn --batch-mode compile sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=ehrbase \
-            -Dsonar.projectKey=ehrbase_ehrbase \
-            -Dsonar.exclusions=test/** \
-            -Dsonar.coverage.exclusions=test/** \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml \
-
-  #
   # Build and push docker image
   #
   docker-build-push:
@@ -432,8 +368,7 @@ jobs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
       build-maven, # needed to obtain ehrbase-version from
-      sonar-quality-gate,
-      integration-test-collect
+      integration-test-run
     ]
     with:
       ehrbase-version: ${{ needs.build-maven.outputs.ehrbase-version }}
@@ -449,8 +384,7 @@ jobs:
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
-      sonar-quality-gate,
-      integration-test-collect
+      integration-test-run
     ]
 
   #
@@ -460,6 +394,8 @@ jobs:
     name: Cleanup
     if: ${{ always() }}
     needs: [
+      coverage-collect,
+      integration-test-collect,
       docker-build-push,
       maven-publish
     ]
