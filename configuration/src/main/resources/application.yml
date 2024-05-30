@@ -71,7 +71,7 @@ spring:
     default-property-inclusion: NON_NULL
 
 security:
-  authType: OAUTH
+  authType: BASIC
   authUser: ehrbase-user
   authPassword: SuperSecretPassword
   authAdminUser: ehrbase-admin

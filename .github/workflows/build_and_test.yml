@@ -210,7 +210,11 @@ jobs:
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
       - name: Create auth.env file
-        run: echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" > .env.ehrbase
+        run: |
+          echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" > .env.ehrbase
+          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/cdr-core-sanity-check" >> .env.ehrbase
+          fi
 
       - name: Docker Compose - Starting
         run: |
