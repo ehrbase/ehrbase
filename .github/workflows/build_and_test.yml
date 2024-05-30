@@ -214,8 +214,9 @@ jobs:
         run: |
           echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" > .env.ehrbase
           if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
-            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/cdr-core-sanity-check" >> .env.ehrbase
+            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/cdr-core-sanity-check" > .env.ehrbase
           fi
+          cat .env.ehrbase
 
       - name: Docker Compose - Starting
         run: |
@@ -224,7 +225,7 @@ jobs:
       - name: Wait for Keycloak to be ready
         run: |
           if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
-            sleep 40
+            sleep 30
           fi
 
       - name: Run - Robot Test-Suite

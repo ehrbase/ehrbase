@@ -37,6 +37,9 @@ services:
   ehrdb:
     container_name: "EHRbase-PG"
 
+  keycloak:
+    container_name: "Keycloak-Docker"
+
   #
   # Integration tests will be ready after ehrbase is healthy.
   # Will run `runRobotTests`
@@ -54,6 +57,7 @@ services:
     links:
       - ehrbase
       - ehrdb
+      - keycloak
     networks:
       - ehrbase-net
     volumes:
