@@ -70,8 +70,5 @@ services:
     networks:
       - ehrbase-net
 
-volumes:
-  psqldata_keycloak-postgres:
-
 networks:
   ehrbase-net: { }
