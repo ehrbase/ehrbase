@@ -47,6 +47,7 @@ services:
     environment:
       EHRBASE_BASE_URL: http://ehrbase:8080
       SERVER_NODENAME: "local.ehrbase.org"
+      KEYCLOAK_URL: "http://localhost:8081/auth"
     depends_on:
       ehrbase:
         condition: service_healthy
