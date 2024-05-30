@@ -241,6 +241,10 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs ehrbase
 
+      - name: Docker Compose - Logs keycloak
+          if: always()
+          run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs keycloak
+
       - name: Docker Compose - Stopping
         if: always()
         run: |
