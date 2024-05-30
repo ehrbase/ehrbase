@@ -234,7 +234,7 @@ jobs:
               echo "Keycloak not ready after waiting."
               exit 1
             fi
-        fi
+          fi
 
       - name: Run - Robot Test-Suite
         run: |
