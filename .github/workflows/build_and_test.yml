@@ -220,7 +220,7 @@ jobs:
       - name: Docker Compose - Starting
         run: |
           ls -an
-          ls keycloak/import -an
+          ls tests/keycloak/import -an
           docker compose --env-file .env.ehrbase -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
 
       - name: Wait for Keycloak to be ready
