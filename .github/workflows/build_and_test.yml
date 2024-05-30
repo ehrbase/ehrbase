@@ -224,21 +224,7 @@ jobs:
       - name: Wait for Keycloak to be ready
         run: |
           if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
-            retries=3
-            until [ $retries -eq 0 ]; do
-              if curl -s http://localhost:8081/auth/realms/cdr-core-sanity-check; then
-                echo "Keycloak is ready."
-                break
-              else
-                echo "Waiting for Keycloak..."
-                retries=$((retries-1))
-                sleep 20
-              fi
-            done
-            if [ $retries -eq 0 ]; then
-              echo "Keycloak not ready after waiting."
-              exit 1
-            fi
+            sleep 40
           fi
 
       - name: Run - Robot Test-Suite
