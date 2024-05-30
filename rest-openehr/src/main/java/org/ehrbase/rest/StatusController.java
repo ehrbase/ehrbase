@@ -67,12 +67,7 @@ public class StatusController extends BaseController {
                         responseCode = "200",
                         description =
                                 "EHRbase is available. Basic information on runtime and build is returned in body.",
-                        headers = {
-                            @Header(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    schema = @Schema(implementation = MediaType.class))
-                        },
+                        headers = {@Header(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC)},
                         content = @Content(schema = @Schema(implementation = StatusResponseData.class)))
             })
     @ResponseStatus(value = HttpStatus.OK)
