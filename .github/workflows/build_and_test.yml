@@ -227,7 +227,7 @@ jobs:
               retries=3
               until curl -s http://localhost:8081/auth/realms/cdr-core-sanity-check; do
                 echo "Waiting for Keycloak..."
-                sleep 10
+                sleep 40
                 retries=$((retries-1))
               done
               if [ $retries -eq 0 ]; then
