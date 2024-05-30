@@ -38,7 +38,7 @@ services:
     container_name: "EHRbase-PG"
 
   keycloak:
-    container_name: "Keycloak-Docker"
+    container_name: "keycloak"
 
   #
   # Integration tests will be ready after ehrbase is healthy.
