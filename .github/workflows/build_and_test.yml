@@ -149,6 +149,7 @@ jobs:
       matrix:
         test-suite: [
           { path: 'AUTH_TYPE_TESTS', name: 'BASIC_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
+          { path: 'AUTH_TYPE_TESTS', name: 'OAUTH_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_OAUTH', env: { 'AUTH_TYPE': 'OAUTH' } },
           # sanity checks
           #{ path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
           # rest/openehr/v1/definition
@@ -242,8 +243,8 @@ jobs:
         run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs ehrbase
 
       - name: Docker Compose - Logs keycloak
-          if: always()
-          run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs keycloak
+        if: always()
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs keycloak
 
       - name: Docker Compose - Stopping
         if: always()
