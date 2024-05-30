@@ -50,25 +50,6 @@ services:
     networks:
       - ehrbase-net
 
-  keycloak-postgres:
-    image: registry.vitasystems.dev/dockerhub-proxy/postgres:16.2
-    command: -c ssl=off
-    ports:
-      - "9432:5432"
-    environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: keycloak
-    volumes:
-      - psqldata_keycloak-postgres:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 30s
-      timeout: 30s
-      retries: 3
-    networks:
-      - ehrbase-net
-
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.3
     #image: registry.vitasystems.dev/docker-registry/keycloak-x:0.9.9
@@ -78,21 +59,12 @@ services:
       - "8443:8443"
       - "9999:8080"
     environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-postgres:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak
-      KC_DB_URL_DATABASE: keycloak
-      KC_DB_URL_HOST: hip-kc-postgres
-      KC_HOSTNAME_PORT: 7080
+      KC_HOSTNAME_PORT: 8081
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HTTP_RELATIVE_PATH: /auth
       PROXY_ADDRESS_FORWARDING: "true"
       KC_HTTP_PORT: 8080
-    depends_on:
-      keycloak-postgres:
-        condition: service_healthy
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import
     networks:

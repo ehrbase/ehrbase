@@ -220,6 +220,15 @@ jobs:
         run: |
           docker compose --env-file .env.ehrbase -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
 
+      - name: Wait for Keycloak to be ready
+        run: |
+          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+              until curl -s http://localhost:8081/auth/realms/cdr-core-sanity-check; do
+                echo "Waiting for Keycloak..."
+                sleep 10
+              done
+          fi
+
       - name: Run - Robot Test-Suite
         run: |
           docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml run --remove-orphans --rm ehrbase-integration-tests runRobotTest \
