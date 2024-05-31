@@ -210,7 +210,7 @@ jobs:
           echo "EHRBASE_IMAGE=ehrbase/ehrbase:test" >> $GITHUB_ENV
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
-      - name: Create auth.env file
+      - name: Modify .env.ehrbase file
         run: |
           echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> .env.ehrbase
           if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
@@ -220,7 +220,7 @@ jobs:
 
       - name: Docker Compose - Starting
         run: |
-          docker compose --env-file .env.ehrbase -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
 
       - name: Wait for Keycloak to be ready
         run: |
