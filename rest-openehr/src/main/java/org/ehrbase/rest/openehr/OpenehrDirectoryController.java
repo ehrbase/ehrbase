@@ -225,7 +225,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         DirectoryResponseData body;
 
         if (prefer != null && prefer.equals(RETURN_REPRESENTATION)) {
-            headers.setContentType(resolveContentType(accept, MediaType.APPLICATION_XML));
+            headers.setContentType(resolveContentType(accept));
             body = buildResponse(folderDto);
             successStatus = getSuccessStatus(method);
         } else {

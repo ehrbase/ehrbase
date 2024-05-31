@@ -9,7 +9,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
 - Create a `ehrbase` user to run the Docker container ([#1336](https://github.com/ehrbase/ehrbase/pull/1336))
  ### Changed 
-- Deprecate plugin aspects ([#1344](https://github.com/ehrbase/ehrbase/pull/1344))
+* Deprecate plugin aspects ([#1344](https://github.com/ehrbase/ehrbase/pull/1344))
+* Add simplified JSON-based “web template” format support for GET Template ADL 1.4 using header `Accept: application/openehr.wt+json` ([1334](https://github.com/ehrbase/ehrbase/pull/1334))
  ### Fixed 
 
 ## [2.4.0]

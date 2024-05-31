@@ -43,13 +43,13 @@ public enum CompositionRepresentation {
      * A structured <code>JSON</code> (<code>structSDT</code>) representation of a composition
      */
     // FlatFormat.STRUCTURED application/openehr.structSDT+json
-    JSON_STRUCTURED(MediaType.APPLICATION_JSON, CompositionFormat.STRUCTURED),
+    JSON_STRUCTURED(OpenEHRMediaType.APPLICATION_WT_STRUCTURED_SCHEMA_JSON, CompositionFormat.STRUCTURED),
 
     /**
      * A flat <code>JSON</code> (<code>simSDT</code>) representation of a composition
      */
     // FlatFormat.SIM_SDT application/openehr.simSDT+json
-    JSON_FLAT(MediaType.APPLICATION_JSON, CompositionFormat.FLAT);
+    JSON_FLAT(OpenEHRMediaType.APPLICATION_WT_FLAT_SCHEMA_JSON, CompositionFormat.FLAT);
 
     /**
      * The actual format of the composition
