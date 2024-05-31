@@ -231,7 +231,6 @@ jobs:
             done
           fi
           docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml ps
-          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml exec ehrbase-integration-tests curl -v http://keycloak:8081/auth
 
       - name: Run - Robot Test-Suite
         run: |
@@ -240,6 +239,7 @@ jobs:
             --path ${{ matrix.test-suite.path }} \
             --tags ${{ matrix.test-suite.tags }} \
             --env ${{ matrix.test-suite.env['AUTH_TYPE'] }}
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml ps
 
       - name: Docker Compose - Logs ehrbase
         if: always()
