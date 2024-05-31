@@ -30,6 +30,8 @@ services:
       retries: 12
     volumes:
       - ./tests/coverage:/app/coverage
+    networks:
+      - ehrbase-net
 
   #
   # Change container name for better readability of logs
