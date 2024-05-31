@@ -230,7 +230,7 @@ jobs:
               sleep 30
             done
           fi
-          docker network inspect ehrbase-net
+          docker-compose -f docker-compose.yml -f tests/docker-compose-int-test.yml ps
           docker-compose -f docker-compose.yml -f tests/docker-compose-int-test.yml exec ehrbase-integration-tests curl -v http://keycloak:8081/auth
 
       - name: Run - Robot Test-Suite
