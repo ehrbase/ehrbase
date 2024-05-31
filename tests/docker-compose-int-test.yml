@@ -36,9 +36,13 @@ services:
   #
   ehrdb:
     container_name: "EHRbase-PG"
+    networks:
+      - ehrbase-net
 
-#  keycloak:
-#    container_name: "Keycloak-EHRBase"
+  keycloak:
+    container_name: "Keycloak-EHRBase"
+    networks:
+      - ehrbase-net
 
   #
   # Integration tests will be ready after ehrbase is healthy.
