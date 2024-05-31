@@ -10,7 +10,7 @@ services:
   #
   ehrbase:
     # ensure image is provided externally and prevent pulling of remote while running tests
-    image: ehrbase/ehrbase:next
+    image:  ${EHRBASE_IMAGE?error}
     pull_policy: never
     container_name: "EHRbase"
     # adjust env as needed
@@ -45,7 +45,7 @@ services:
   # Will run `runRobotTests`
   #
   ehrbase-integration-tests:
-    image: ehrbase/integration-tests:latest-feature
+    image: ${EHRBASE_INTEGRATION_TEST_IMAGE:-ehrbase/integration-tests:latest-feature}
     container_name: "EHRbase-IT"
     environment:
       EHRBASE_BASE_URL: http://ehrbase:8080
