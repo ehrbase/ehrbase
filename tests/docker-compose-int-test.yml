@@ -10,7 +10,7 @@ services:
   #
   ehrbase:
     # ensure image is provided externally and prevent pulling of remote while running tests
-    image: ${EHRBASE_IMAGE?error}
+    image: ehrbase/ehrbase:next
     pull_policy: never
     container_name: "EHRbase"
     # adjust env as needed
@@ -37,15 +37,15 @@ services:
   ehrdb:
     container_name: "EHRbase-PG"
 
-  keycloak:
-    container_name: "Keycloak-EHRBase"
+#  keycloak:
+#    container_name: "Keycloak-EHRBase"
 
   #
   # Integration tests will be ready after ehrbase is healthy.
   # Will run `runRobotTests`
   #
   ehrbase-integration-tests:
-    image: ${EHRBASE_INTEGRATION_TEST_IMAGE:-ehrbase/integration-tests:latest-feature}
+    image: ehrbase/integration-tests:latest-feature
     container_name: "EHRbase-IT"
     environment:
       EHRBASE_BASE_URL: http://ehrbase:8080
