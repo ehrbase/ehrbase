@@ -20,7 +20,7 @@ services:
       DB_PASS: ehrbase_restricted
     links:
       - ehrdb
-      - keycloak
+      #- keycloak
     depends_on:
       ehrdb:
         condition: service_started
@@ -57,8 +57,6 @@ services:
     command: "start-dev --import-realm"
     ports:
       - "8081:8080"
-      - "8443:8443"
-      - "9999:8080"
     environment:
       KC_HOSTNAME_PORT: 8081
       KEYCLOAK_ADMIN: admin
