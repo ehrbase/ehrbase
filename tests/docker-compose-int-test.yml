@@ -56,13 +56,14 @@ services:
     environment:
       EHRBASE_BASE_URL: http://ehrbase:8080
       SERVER_NODENAME: "local.ehrbase.org"
-      KEYCLOAK_BASE_URL: http://localhost:8081
+      KEYCLOAK_BASE_URL: http://keycloak:8081
     depends_on:
       ehrbase:
         condition: service_healthy
     links:
       - ehrbase
       - ehrdb
+      - keycloak
     networks:
       - ehrbase-net
     volumes:
