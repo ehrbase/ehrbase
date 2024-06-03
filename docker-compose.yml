@@ -20,7 +20,7 @@ services:
       DB_PASS: ehrbase_restricted
     links:
       - ehrdb
-      #- keycloak
+      - keycloak
     depends_on:
       ehrdb:
         condition: service_started

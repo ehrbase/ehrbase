@@ -230,7 +230,7 @@ jobs:
               sleep 30
             done
           fi
-          curl -s http://localhost:8081/auth/realms/cdr-core-sanity-check/.well-known/openid-configuration
+          #curl -s http://localhost:8081/auth/realms/cdr-core-sanity-check/.well-known/openid-configuration
           docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml ps
 
       - name: Run - Robot Test-Suite
