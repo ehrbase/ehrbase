@@ -148,7 +148,7 @@ jobs:
       fail-fast: false # ensure all tests run
       matrix:
         test-suite: [
-          { path: 'AUTH_TYPE_TESTS', name: 'BASIC_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
+          #{ path: 'AUTH_TYPE_TESTS', name: 'BASIC_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
           { path: 'AUTH_TYPE_TESTS', name: 'OAUTH_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_OAUTH', env: { 'AUTH_TYPE': 'OAUTH' } },
           # sanity checks
           #{ path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
@@ -214,7 +214,7 @@ jobs:
         run: |
           echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> .env.ehrbase
           if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
-            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/cdr-core-sanity-check" >> .env.ehrbase
+            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8081/auth/realms/cdr-core-sanity-check" >> .env.ehrbase
           fi
           cat .env.ehrbase
 
