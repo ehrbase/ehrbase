@@ -1,3 +1,4 @@
+name: "Maven Publish"
 
 on:
   workflow_call:

@@ -55,8 +55,8 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
     public SecurityConfigOAuth2(
             SecurityProperties securityProperties,
             OAuth2ResourceServerProperties oAuth2Properties,
-            WebEndpointProperties managementWebEndpointProperties) {
-        super(managementWebEndpointProperties);
+            WebEndpointProperties webEndpointProperties) {
+        super(webEndpointProperties);
         this.securityProperties = securityProperties;
         this.oAuth2Properties = oAuth2Properties;
     }

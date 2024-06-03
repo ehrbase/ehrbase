@@ -19,7 +19,10 @@ package org.ehrbase.configuration.config.security;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -41,14 +44,19 @@ import org.springframework.security.web.SecurityFilterChain;
  * {@link Configuration} for secured endpoint authentication.
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(SecurityProperties.class)
+@EnableConfigurationProperties({SecurityProperties.class})
 @Import({SecurityConfigNoOp.class, SecurityConfigOAuth2.class, SecurityConfigBasicAuth.class})
 @EnableWebSecurity
 public class SecurityConfiguration {
 
-    SecurityConfig securityConfig;
+    private final Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
 
-    public SecurityConfiguration(@Autowired SecurityConfig securityConfig) {
+    private final SecurityConfig securityConfig;
+
+    @Value("${ehrbase.security.management.endpoints.web.csrf-validation-enabled:true}")
+    protected boolean managementEndpointsCSRFValidationEnabled;
+
+    public SecurityConfiguration(SecurityConfig securityConfig) {
         this.securityConfig = securityConfig;
     }
 
@@ -59,11 +67,21 @@ public class SecurityConfiguration {
                 .configureHttpSecurity(http)
                 // CORS will be always enabled
                 .cors(Customizer.withDefaults())
-                // Exclude the rest and plugin apis from CSRF protection, because there are used by client
+                // Exclude apis from CSRF protection, to allow POST, PUT, DELETE, because there are used by client
                 // implementation and not only restricted to a browser access.
-                .csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/rest/**"))
-                        .ignoringRequestMatchers(antMatcher("/plugin/**"))
-                        .ignoringRequestMatchers(antMatcher("/error/**")))
+                .csrf(csrf -> {
+                    csrf.ignoringRequestMatchers(
+                            antMatcher("/rest/**"), // allow full access to the rest api
+                            antMatcher("/plugin/**"), // allow full access to plugin apis
+                            antMatcher("/error/**") // ensure we have access to error re-routing
+                            );
+                    // disable csrf in case 'management.endpoints.web.csrf-validation-enabled=false' is defined
+                    if (!managementEndpointsCSRFValidationEnabled) {
+                        logger.info("Management endpoint csrf security is disabled");
+                        String path = StringUtils.removeEnd(securityConfig.webEndpointProperties.getBasePath(), "/");
+                        csrf.ignoringRequestMatchers(antMatcher(path + "/**"));
+                    }
+                })
                 .build();
     }
 

@@ -17,6 +17,7 @@
  */
 package org.ehrbase.api.service;
 
+import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 
 public interface AqlQueryService {

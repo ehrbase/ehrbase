@@ -1,9 +1,12 @@
 # Adds the results of a workflow as a commit status
-name: Set test status
+name: "Set Github Status"
+
+# we have multiple workflows - this helps to distinguish for them
+run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.ref_name }} - Set Github Status"
 
 on:
   workflow_run:
-    workflows: ["build_and_test"]
+    workflows: ["Build & Test"]
     types:
       - completed
 

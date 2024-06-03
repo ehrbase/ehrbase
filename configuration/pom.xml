@@ -27,16 +27,11 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>2.3.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>configuration</artifactId>
   <packaging>jar</packaging>
-
-  <properties>
-    <docker.image.prefix>vitasystems/hip-openehr</docker.image.prefix>
-    <ehrbase.docker.image.debug.enabled>true</ehrbase.docker.image.debug.enabled>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -90,6 +85,11 @@
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver-dns-native-macos</artifactId>
+      <classifier>osx-aarch_64</classifier>
+    </dependency>
+    <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
@@ -116,12 +116,12 @@
       <artifactId>api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.ehrbase.openehr.sdk</groupId>
-      <artifactId>serialisation</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.ehrbase.openehr</groupId>
       <artifactId>rest-openehr</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr.sdk</groupId>
+      <artifactId>serialisation</artifactId>
     </dependency>
 
     <dependency>
@@ -138,7 +138,6 @@
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
@@ -148,9 +147,9 @@
       <groupId>org.ehrbase.openehr.sdk</groupId>
       <artifactId>test-data</artifactId>
       <scope>test</scope>
+
     </dependency>
 
   </dependencies>
-
 
 </project>

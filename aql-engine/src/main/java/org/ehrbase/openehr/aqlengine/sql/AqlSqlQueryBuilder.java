@@ -63,6 +63,7 @@ import org.jooq.JoinType;
 import org.jooq.Operator;
 import org.jooq.Record;
 import org.jooq.Record1;
+import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectField;
 import org.jooq.SelectFieldOrAsterisk;
@@ -152,6 +153,14 @@ public class AqlSqlQueryBuilder {
         queryPostProcessor.ifPresent(p -> p.afterBuildSqlQuery(aslRootQuery, query));
 
         return query;
+    }
+
+    public Result<Record> explain(boolean analyze, SelectQuery<Record> selectQuery) {
+        if (analyze) {
+            return context.fetch("EXPLAIN (SUMMARY, COSTS, VERBOSE, FORMAT JSON, ANALYZE, TIMING) {0}", selectQuery);
+        } else {
+            return context.fetch("EXPLAIN (SUMMARY, COSTS, VERBOSE, FORMAT JSON) {0}", selectQuery);
+        }
     }
 
     @Nonnull
