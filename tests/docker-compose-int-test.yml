@@ -41,10 +41,10 @@ services:
     networks:
       - ehrbase-net
 
-  keycloak:
-    container_name: "Keycloak-EHRBase"
-    networks:
-      - ehrbase-net
+#  keycloak:
+#    container_name: "Keycloak-EHRBase"
+#    networks:
+#      - ehrbase-net
 
   #
   # Integration tests will be ready after ehrbase is healthy.
@@ -56,14 +56,14 @@ services:
     environment:
       EHRBASE_BASE_URL: http://ehrbase:8080
       SERVER_NODENAME: "local.ehrbase.org"
-      KEYCLOAK_BASE_URL: http://keycloak:8081
+      KEYCLOAK_BASE_URL: http://keycloak:8080
     depends_on:
       ehrbase:
         condition: service_healthy
     links:
       - ehrbase
       - ehrdb
-      - keycloak
+      #- keycloak
     networks:
       - ehrbase-net
     volumes:
