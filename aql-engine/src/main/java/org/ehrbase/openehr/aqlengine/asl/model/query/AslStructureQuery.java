@@ -25,12 +25,15 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 
+import com.nedap.archie.rm.archetyped.Locatable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -138,6 +141,12 @@ public final class AslStructureQuery extends AslQuery {
         }
     }
 
+    private static final Set<String> NON_LOCATABLE_STRUCTURE_RM_TYPES = Arrays.stream(StructureRmType.values())
+            .filter(StructureRmType::isStructureEntry)
+            .filter(s -> !Locatable.class.isAssignableFrom(s.type))
+            .map(StructureRmType::getAlias)
+            .collect(Collectors.toSet());
+
     private final Map<IdentifiedPath, AslPathFilterJoinCondition> joinConditionsForFiltering = new HashMap<>();
     private final AslSourceRelation type;
     private final Collection<String> rmTypes;
@@ -164,6 +173,12 @@ public final class AslStructureQuery extends AslQuery {
                 List<String> aliasedRmTypes = rmTypes.stream()
                         .map(StructureRmType::getAliasOrTypeName)
                         .toList();
+                if (NON_LOCATABLE_STRUCTURE_RM_TYPES.containsAll(aliasedRmTypes)) {
+                    this.structureConditions.add(new AslFieldValueQueryCondition(
+                            AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_CONCEPT, this.getSelect(), this),
+                            AslConditionOperator.IS_NULL,
+                            List.of()));
+                }
                 this.structureConditions.add(new AslFieldValueQueryCondition(
                         AslUtils.findFieldForOwner(AslStructureColumn.RM_ENTITY, this.getSelect(), this),
                         AslConditionOperator.IN,
