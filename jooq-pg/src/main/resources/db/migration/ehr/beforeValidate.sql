@@ -47,7 +47,8 @@ $$
                                ('11', 1312863182, ARRAY [1973315905]),
                                ('12', -1180956002, ARRAY [-1833794828]),
                                ('13', 2140263155, ARRAY [1159298511]),
-                               ('14', -263968835, ARRAY [-1374259243])) v(version, checksum, old_checksums)) fsm
+                               ('14', -263968835, ARRAY [-1374259243]),
+                               ('15', 313825418, ARRAY[]::integer[])) v(version, checksum, old_checksums)) fsm
             WHERE fsh.version = fsm.version
               AND fsh.checksum = fsm.old_checksum;
         END IF;
