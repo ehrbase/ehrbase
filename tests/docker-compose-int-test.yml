@@ -10,7 +10,7 @@ services:
   #
   ehrbase:
     # ensure image is provided externally and prevent pulling of remote while running tests
-    image:  ${EHRBASE_IMAGE?error}
+    image: ${EHRBASE_IMAGE?error}
     pull_policy: never
     container_name: "EHRbase"
     # adjust env as needed
@@ -41,11 +41,6 @@ services:
     networks:
       - ehrbase-net
 
-#  keycloak:
-#    container_name: "Keycloak-EHRBase"
-#    networks:
-#      - ehrbase-net
-
   #
   # Integration tests will be ready after ehrbase is healthy.
   # Will run `runRobotTests`
@@ -63,7 +58,6 @@ services:
     links:
       - ehrbase
       - ehrdb
-      #- keycloak
     networks:
       - ehrbase-net
     volumes:

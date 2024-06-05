@@ -5,7 +5,7 @@ run-name: "${{ github.event.pull_request.title && github.event.pull_request.titl
 
 on:
   push:
-    branches: [ master, develop, release/*, feature/* ]
+    branches: [ master, develop, release/* ]
   pull_request:
     branches: [ develop ]
   workflow_dispatch:
