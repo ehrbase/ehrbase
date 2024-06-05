@@ -7,8 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
- ### Fixed 
+ ### Changed
+* AQL-Performance: paths containing non-locatable structure attributes (EVENT_CONTEXT, FEEDER_AUDIT) ([#1341](https://github.com/ehrbase/ehrbase/pull/1341))
+ ### Fixed
 
 ## [2.2.0]
 ### Added
