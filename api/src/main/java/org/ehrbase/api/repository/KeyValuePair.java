@@ -20,6 +20,14 @@ package org.ehrbase.api.repository;
 import java.util.UUID;
 
 public interface KeyValuePair {
+	
+    public static KeyValuePair of(String pluginId, String key, String value) {
+        return KeyValuePair.of(UUID.randomUUID(), pluginId, key, value);
+    }
+
+    public static KeyValuePair of(UUID id, String pluginId, String key, String value) {
+        return new KeyValueEntry(id, pluginId, key, value);
+    }	
 
     public UUID getId();
 
@@ -28,4 +36,35 @@ public interface KeyValuePair {
     public String getKey();
 
     public String getValue();
+}
+
+class KeyValueEntry implements KeyValuePair {
+
+    private final UUID id;
+    private final String context;
+    private final String key;
+    private final String value;
+
+    KeyValueEntry(UUID id, String pluginId, String key, String value) {
+        this.id = id;
+        this.context = pluginId;
+        this.key = key;
+        this.value = value;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

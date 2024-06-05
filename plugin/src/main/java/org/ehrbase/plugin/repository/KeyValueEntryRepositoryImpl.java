@@ -22,6 +22,7 @@ import static org.ehrbase.jooq.pg.tables.Plugin.PLUGIN;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.ehrbase.api.repository.KeyValuePair;
@@ -41,14 +42,14 @@ public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
     @Override
     public List<KeyValuePair> findAllBy(String context) {
         return ctx.fetchStream(PLUGIN, PLUGIN.PLUGINID.eq(context))
-                .map(rec -> KeyValueEntry.of(rec))
+                .map(rec -> toKvp.apply(rec))
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<KeyValuePair> findBy(String context, String key) {
         return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(context).and(PLUGIN.KEY.eq(key)))
-                .map(rec -> KeyValueEntry.of(rec));
+        	.map(rec -> toKvp.apply(rec));
     }
 
     @Override
@@ -65,7 +66,7 @@ public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
 
     @Override
     public Optional<KeyValuePair> findBy(UUID uid) {
-        return ctx.fetchOptional(PLUGIN, PLUGIN.ID.eq(uid)).map(rec -> KeyValueEntry.of(rec));
+        return ctx.fetchOptional(PLUGIN, PLUGIN.ID.eq(uid)).map(rec -> toKvp.apply(rec));
     }
 
     @Override
@@ -73,4 +74,6 @@ public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
         int res = ctx.delete(PLUGIN).where(PLUGIN.ID.eq(uid)).execute();
         return res > 0;
     }
+    
+    private Function<PluginRecord, KeyValuePair> toKvp = rec -> KeyValuePair.of(rec.getId(), rec.getPluginid(), rec.getKey(), rec.getValue()); 
 }
