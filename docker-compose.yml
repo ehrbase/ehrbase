@@ -23,6 +23,8 @@ services:
       - keycloak
     depends_on:
       ehrdb:
+        condition: service_healthy
+      keycloak:
         condition: service_started
     ports:
       - "8080:8080"
@@ -70,3 +72,4 @@ services:
 
 networks:
   ehrbase-net: { }
+  #driver: bridge
