@@ -18,9 +18,11 @@
 package org.ehrbase.plugin.repository;
 
 import java.util.UUID;
+
+import org.ehrbase.api.repsitory.KeyValuePair;
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 
-public class KeyValueEntry {
+public class KeyValueEntry implements KeyValuePair {
     public static KeyValueEntry of(String pluginId, String key, String value) {
         return KeyValueEntry.of(UUID.randomUUID(), pluginId, key, value);
     }
@@ -34,13 +36,13 @@ public class KeyValueEntry {
     }
 
     private final UUID id;
-    private final String pluginId;
+    private final String context;
     private final String key;
     private final String value;
 
     private KeyValueEntry(UUID id, String pluginId, String key, String value) {
         this.id = id;
-        this.pluginId = pluginId;
+        this.context = pluginId;
         this.key = key;
         this.value = value;
     }
@@ -49,8 +51,8 @@ public class KeyValueEntry {
         return id;
     }
 
-    public String getPluginId() {
-        return pluginId;
+    public String getContext() {
+        return context;
     }
 
     public String getKey() {

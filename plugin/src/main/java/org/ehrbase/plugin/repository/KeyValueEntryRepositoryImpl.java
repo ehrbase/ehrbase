@@ -23,12 +23,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.ehrbase.api.repsitory.KeyValuePair;
+import org.ehrbase.api.repsitory.KeyValuePairRepository;
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
+public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
     private final DSLContext ctx;
 
     public KeyValueEntryRepositoryImpl(DSLContext ctx) {
@@ -36,23 +39,23 @@ public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
     }
 
     @Override
-    public List<KeyValueEntry> findByPluginId(String pid) {
-        return ctx.fetchStream(PLUGIN, PLUGIN.PLUGINID.eq(pid))
+    public List<KeyValuePair> findAllBy(String context) {
+        return ctx.fetchStream(PLUGIN, PLUGIN.PLUGINID.eq(context))
                 .map(rec -> KeyValueEntry.of(rec))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<KeyValueEntry> findByPluginIdAndKey(String id, String key) {
-        return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(id).and(PLUGIN.KEY.eq(key)))
+    public Optional<KeyValuePair> findBy(String context, String key) {
+        return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(context).and(PLUGIN.KEY.eq(key)))
                 .map(rec -> KeyValueEntry.of(rec));
     }
 
     @Override
-    public KeyValueEntry save(KeyValueEntry kve) {
+    public KeyValuePair save(KeyValuePair kve) {
         PluginRecord rec = ctx.newRecord(PLUGIN);
         rec.setId(kve.getId());
-        rec.setPluginid(kve.getPluginId());
+        rec.setPluginid(kve.getContext());
         rec.setKey(kve.getKey());
         rec.setValue(kve.getValue());
 
@@ -61,7 +64,7 @@ public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
     }
 
     @Override
-    public Optional<KeyValueEntry> findBy(UUID uid) {
+    public Optional<KeyValuePair> findBy(UUID uid) {
         return ctx.fetchOptional(PLUGIN, PLUGIN.ID.eq(uid)).map(rec -> KeyValueEntry.of(rec));
     }
 
