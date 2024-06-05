@@ -28,10 +28,18 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>2.3.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>test-coverage</artifactId>
+  <packaging>pom</packaging>
+
+  <properties>
+    <!-- per default, we disable and skip al coverage generation to speed up our local test execution -->
+    <jacoco.coverage.skip.unit-test>true</jacoco.coverage.skip.unit-test>
+    <jacoco.coverage.skip.integration-test>true</jacoco.coverage.skip.integration-test>
+    <jacoco.coverage.skip.overall>true</jacoco.coverage.skip.overall>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -78,13 +86,6 @@
 
   <build>
     <plugins>
-      <!-- disable jar execution for coverage module-->
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
 
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -100,14 +101,16 @@
           </excludes>
         </configuration>
         <executions>
+
           <!-- AGGREGATED UNIT TEST COVERAGE REPORT -->
           <execution>
-            <id>jacoco-aggregate-unit-test-coverage</id>
+            <id>jacoco-report-aggregate-unit-test</id>
             <phase>test</phase>
             <goals>
               <goal>report-aggregate</goal>
             </goals>
             <configuration>
+              <skip>${jacoco.coverage.skip.unit-test}</skip>
               <title>Coverage with Unit Tests</title>
               <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut-coverage</outputDirectory>
               <dataFileExcludes>
@@ -115,14 +118,16 @@
               </dataFileExcludes>
             </configuration>
           </execution>
+
           <!-- AGGREGATED INTEGRATION TEST COVERAGE REPORT -->
           <execution>
-            <id>jacoco-aggregate-integration-test-coverage</id>
+            <id>jacoco-report-aggregate-integration-test</id>
             <phase>verify</phase>
             <goals>
               <goal>report-aggregate</goal>
             </goals>
             <configuration>
+              <skip>${jacoco.coverage.skip.integration-test}</skip>
               <title>Coverage with Integration Tests</title>
               <outputDirectory>${project.reporting.outputDirectory}/jacoco-it-coverage</outputDirectory>
               <dataFileExcludes>
@@ -130,6 +135,7 @@
               </dataFileExcludes>
             </configuration>
           </execution>
+
           <!-- AGGREGATED OVERALL COVERAGE REPORT -->
           <execution>
             <id>jacoco-aggregate-overall-coverage</id>
@@ -138,11 +144,13 @@
               <goal>report-aggregate</goal>
             </goals>
             <configuration>
+              <skip>${jacoco.coverage.skip.overall}</skip>
               <title>Overall Coverage</title>
               <outputDirectory>${project.reporting.outputDirectory}/jacoco-overall-coverage
               </outputDirectory>
             </configuration>
           </execution>
+
           <!-- FAIL BUILD IF RULES NOT MET! -->
           <execution>
             <id>default-check</id>
@@ -171,6 +179,36 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
+
+  <profiles>
+
+    <!-- GENERATE UNIT TESTS COVERAGE ONLY -->
+    <profile>
+      <id>fast</id>
+      <properties>
+        <jacoco.coverage.skip.unit-test>false</jacoco.coverage.skip.unit-test>
+      </properties>
+    </profile>
+
+    <!-- GENERATE INTEGRATION COVERAGE ONLY -->
+    <profile>
+      <id>slow</id>
+      <properties>
+        <jacoco.coverage.skip.integration-test>false</jacoco.coverage.skip.integration-test>
+      </properties>
+    </profile>
+
+    <!-- GENERATE OVERALL COVERAGE FOR (UNIT & INTEGRATION) -->
+    <profile>
+      <id>full</id>
+      <properties>
+        <jacoco.coverage.skip.overall>false</jacoco.coverage.skip.overall>
+      </properties>
+    </profile>
+
+  </profiles>
+
 </project>

@@ -24,7 +24,7 @@
 
   <groupId>org.ehrbase.openehr</groupId>
   <artifactId>bom</artifactId>
-  <version>2.2.0-SNAPSHOT</version>
+  <version>2.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>EHRbase</name>
@@ -58,40 +58,46 @@
     <archie.version>3.3.0</archie.version>
     <commons-io.version>2.16.1</commons-io.version>
     <commons-lang3.version>3.14.0</commons-lang3.version>
-    <ehrbase.sdk.version>2.11.0-SNAPSHOT</ehrbase.sdk.version>
+    <ehrbase.sdk.version>2.12.0-SNAPSHOT</ehrbase.sdk.version>
     <flyway.version>8.5.13</flyway.version>
     <jackson-bom.version>2.17.1</jackson-bom.version>
     <javamelody.version>1.98.0</javamelody.version>
     <jooq.version>3.19.8</jooq.version>
     <json-path.version>2.9.0</json-path.version>
     <junit.version>5.10.2</junit.version>
-    <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
-    <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
-    <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
-    <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
-    <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
-    <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+
+    <!-- jooq -->
     <postgresql.version>42.7.3</postgresql.version>
     <prometheus.version>1.12.6</prometheus.version>
+
+    <!-- spring -->
     <spring-boot.version>3.2.5</spring-boot.version>
     <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
-    <sonar.scanner.version>3.11.0.3922</sonar.scanner.version>
+
     <!-- not used ehrbase but needed for the version plugin -->
     <log4j.version>2.23.1</log4j.version>
-    <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
-    <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
     <pf4j-spring.version>0.8.0</pf4j-spring.version>
-    <pf4j.version>3.11.0</pf4j.version>
+    <pf4j.version>3.11.1</pf4j.version>
     <commons-collections4.version>4.4</commons-collections4.version>
 
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <git-commit-id-plugin.version>4.9.10</git-commit-id-plugin.version>
     <java-jwt.version>3.19.4</java-jwt.version>
 
-    <!-- build args -->
-    <image.name>ehrbase/ehrbase</image.name>
-    <image.tag>${project.version}</image.tag>
-    <ehrbase.docker.image.debug.enabled>false</ehrbase.docker.image.debug.enabled>
+    <!-- maven plugins -->
+    <maven-compiler-plugin-version>3.13.0</maven-compiler-plugin-version>
+    <maven-jar-plugin-version>3.4.1</maven-jar-plugin-version>
+    <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
+    <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
+    <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
+    <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
+    <maven-spotless-maven-plugin.version>2.43.0</maven-spotless-maven-plugin.version>
+    <maven-nexus-staging-plugin.version>1.6.13</maven-nexus-staging-plugin.version>
+    <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+    <maven-versions-maven-plugin.version>2.16.2</maven-versions-maven-plugin.version>
+    <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
+    <maven-sonar.scanner.version>3.11.0.3922</maven-sonar.scanner.version>
+
   </properties>
 
   <distributionManagement>
@@ -359,7 +365,7 @@
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.43.0</version>
+          <version>${maven-spotless-maven-plugin.version}</version>
           <configuration>
             <java>
               <toggleOffOn>
@@ -383,7 +389,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
-          <version>${versions-maven-plugin.version}</version>
+          <version>${maven-versions-maven-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -398,7 +404,7 @@
         <plugin>
           <groupId>com.spotify</groupId>
           <artifactId>dockerfile-maven-plugin</artifactId>
-          <version>${dockerfile-maven-plugin.version}</version>
+          <version>${maven-dockerfile-maven-plugin.version}</version>
           <configuration>
             <dockerConfigFile/>
           </configuration>
@@ -428,7 +434,7 @@
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>${sonar.scanner.version}</version>
+          <version>${maven-sonar.scanner.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
