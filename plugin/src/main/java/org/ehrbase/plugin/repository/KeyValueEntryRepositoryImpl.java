@@ -24,8 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.ehrbase.api.repsitory.KeyValuePair;
-import org.ehrbase.api.repsitory.KeyValuePairRepository;
+import org.ehrbase.api.repository.KeyValuePair;
+import org.ehrbase.api.repository.KeyValuePairRepository;
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;

@@ -19,7 +19,7 @@ package org.ehrbase.plugin.repository;
 
 import java.util.UUID;
 
-import org.ehrbase.api.repsitory.KeyValuePair;
+import org.ehrbase.api.repository.KeyValuePair;
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 
 public class KeyValueEntry implements KeyValuePair {
