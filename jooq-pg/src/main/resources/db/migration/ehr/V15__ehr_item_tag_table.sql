@@ -22,13 +22,15 @@ create type ehr_item_tag_target_type as enum ('ehr_status', 'composition');
 --One single table for all VERSIONED_OBJECT types
 CREATE TABLE ehr_item_tag
 (
-    id            uuid                       NOT NULL,
-    ehr_id        uuid                       NOT NULL, -- (FK)
-    target_vo_id  uuid                       NOT NULL, -- ENUM EHR
-    target_type   "ehr_item_tag_target_type" NOT NULL,
-    key           text collate "C"           NOT NULL,
-    value         text collate "C",          -- not empty
-    target_path   text collate "C",          -- not empty, plain or aliased?
+    id               uuid                       NOT NULL,
+    ehr_id           uuid                       NOT NULL,
+    target_vo_id     uuid                       NOT NULL,
+    target_type      "ehr_item_tag_target_type" NOT NULL,
+    key              text collate "C"           NOT NULL,
+    value            text collate "C",
+    target_path      text collate "C",
+    creation_date    timestamptz(6)             NOT NULL,
+    sys_period_lower timestamptz(6)             NOT NULL,
 
     CONSTRAINT ehr_item_tag_pkey PRIMARY KEY (id),
     CONSTRAINT ehr_item_tag_ehr_id_fkey FOREIGN KEY (ehr_id) REFERENCES ehr (id)

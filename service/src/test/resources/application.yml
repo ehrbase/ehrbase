@@ -15,7 +15,10 @@
 # limitations under the License.
 
 spring:
-  profiles: test
+  profiles:
+    active: test
+  cache:
+    type: CAFFEINE
 
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'
@@ -23,6 +26,11 @@ terminology_server:
   systemPath: '$[\"expansion\"][\"contains\"][*][\"system\"]'
   displayPath: '$[\"expansion\"][\"contains\"][*][\"display\"]'
   validationResultPath: '$.parameter[:1].valueBoolean'
+
+# Logging Properties
+logging:
+  pattern:
+    console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X]){faint} %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
 
 client:
   ssl:

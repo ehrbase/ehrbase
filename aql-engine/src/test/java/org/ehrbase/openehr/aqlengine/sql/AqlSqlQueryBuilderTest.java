@@ -173,7 +173,7 @@ public class AqlSqlQueryBuilderTest {
         System.out.println();
 
         AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.YUGABYTEDB), kcs, Optional.empty());
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
 
         SelectQuery<Record> sqlQuery = sqlQueryBuilder.buildSqlQuery(aslQuery);
         System.out.println(sqlQuery);
@@ -198,7 +198,7 @@ public class AqlSqlQueryBuilderTest {
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.YUGABYTEDB), kcs, Optional.empty());
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
 
         Assertions.assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
     }
