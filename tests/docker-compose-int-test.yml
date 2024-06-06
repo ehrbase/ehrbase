@@ -46,7 +46,7 @@ services:
   # Will run `runRobotTests`
   #
   ehrbase-integration-tests:
-    image: ${EHRBASE_INTEGRATION_TEST_IMAGE:-ehrbase/integration-tests:latest-feature}
+    image: ${EHRBASE_INTEGRATION_TEST_IMAGE:-ehrbase/integration-tests:latest}
     container_name: "EHRbase-IT"
     environment:
       EHRBASE_BASE_URL: http://ehrbase:8080
