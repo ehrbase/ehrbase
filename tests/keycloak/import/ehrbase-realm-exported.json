@@ -48,13 +48,6 @@
   "failureFactor" : 30,
   "roles" : {
     "realm" : [ {
-      "id" : "19509040-3f55-488a-a520-ab22accf7a36",
-      "name" : "domain-expert",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
-      "attributes" : { }
-    }, {
       "id" : "de2ada1d-99b3-4de1-8c2d-6da1598ef2dd",
       "name" : "uma_authorization",
       "description" : "${role_uma_authorization}",
@@ -66,20 +59,6 @@
       "id" : "4eab895c-d58d-47cc-b208-89322ae9afed",
       "name" : "USER",
       "description" : "",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
-      "attributes" : { }
-    }, {
-      "id" : "b1342bc8-0b6c-448f-8aaf-c81574f30595",
-      "name" : "compensation-admin",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
-      "attributes" : { }
-    }, {
-      "id" : "e47d350d-a951-4ddb-9923-657b981ce38f",
-      "name" : "tenant-admin",
       "composite" : false,
       "clientRole" : false,
       "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
@@ -107,23 +86,9 @@
       "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
       "attributes" : { }
     }, {
-      "id" : "3cb1f8ed-9807-48ab-9e72-7570e40d6a8e",
-      "name" : "dev-admin",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
-      "attributes" : { }
-    }, {
       "id" : "243cd507-dd35-4cd6-a7d5-b620743189ad",
       "name" : "ADMIN",
       "description" : "",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
-      "attributes" : { }
-    }, {
-      "id" : "124a098e-6463-4b07-ae93-83b1b9c6d25f",
-      "name" : "hcp",
       "composite" : false,
       "clientRole" : false,
       "containerId" : "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86",
@@ -438,58 +403,6 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
   "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
   "users" : [ {
-    "id" : "f5721c7f-9ac9-49bd-aaa6-3674ca4106b2",
-    "username" : "dev-admin@testvitagroup.ag",
-    "firstName" : "",
-    "lastName" : "",
-    "email" : "dev-admin@testvitagroup.ag",
-    "emailVerified" : true,
-    "attributes" : {
-      "tenant_uuid" : [ "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86" ]
-    },
-    "createdTimestamp" : 1696235906919,
-    "enabled" : true,
-    "totp" : false,
-    "credentials" : [ {
-      "id" : "c841e8f7-2f9a-4e3c-9ecc-f42c2e09ac94",
-      "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1696235933583,
-      "secretData" : "{\"value\":\"uFapvoOzJtyrkNLoa1VhiKKzW/w3dVgVDmIMmRg0Oik=\",\"salt\":\"AtCO1LPJ6ip5WTJG9Avt4A==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-cdr-core-sanity-check", "dev-admin", "ADMIN" ],
-    "notBefore" : 0,
-    "groups" : [ ]
-  }, {
-    "id" : "d4c915a8-6732-4eaa-99a1-a8e3a6ffed76",
-    "username" : "domain-expert@testvitagroup.ag",
-    "firstName" : "",
-    "lastName" : "",
-    "email" : "domain-expert@testvitagroup.ag",
-    "emailVerified" : true,
-    "attributes" : {
-      "tenant_uuid" : [ "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86" ]
-    },
-    "createdTimestamp" : 1696234471205,
-    "enabled" : true,
-    "totp" : false,
-    "credentials" : [ {
-      "id" : "48656468-6550-440a-ad24-0747a77b6af6",
-      "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1696234569707,
-      "secretData" : "{\"value\":\"ydeB28u48Lak7Lqqx6sjzNZ3u2DqWruIaxZU92RGCw0=\",\"salt\":\"l7oAtDgaM/Xe4S1VBixwPA==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "domain-expert", "default-roles-cdr-core-sanity-check" ],
-    "notBefore" : 0,
-    "groups" : [ ]
-  }, {
     "id" : "d06b336b-8343-4253-b5e5-e6dace5cff0c",
     "username" : "ehrbase-admin",
     "email" : "ehrbase-admin@test.de",
@@ -535,32 +448,6 @@
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
     "realmRoles" : [ "USER" ],
-    "notBefore" : 0,
-    "groups" : [ ]
-  }, {
-    "id" : "d21fe5d3-1964-4f61-9946-a3cd9ae2f202",
-    "username" : "hcp@testvitagroup.ag",
-    "firstName" : "",
-    "lastName" : "",
-    "email" : "hcp@testvitagroup.ag",
-    "emailVerified" : true,
-    "attributes" : {
-      "tenant_uuid" : [ "ca3e0ff6-5282-4d18-b860-8d28d7ac1b86" ]
-    },
-    "createdTimestamp" : 1696234206828,
-    "enabled" : true,
-    "totp" : false,
-    "credentials" : [ {
-      "id" : "9a4a56bc-f553-489b-b8e7-1abd2fec1bc3",
-      "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1696234244741,
-      "secretData" : "{\"value\":\"+YejGXnc+SvGaEJs1nWSgrbEVGcspK0jpYcaal2EX/c=\",\"salt\":\"lR9fGrX7yeWchso6iO8oJg==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "USER", "default-roles-cdr-core-sanity-check", "hcp" ],
     "notBefore" : 0,
     "groups" : [ ]
   }, {
@@ -1457,7 +1344,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     }, {
       "id" : "b08207ff-99f3-4679-967e-07e0a9e7e37e",
@@ -1508,7 +1395,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-full-name-mapper" ]
       }
     } ],
     "org.keycloak.userprofile.UserProfileProvider" : [ {
