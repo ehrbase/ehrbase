@@ -89,8 +89,10 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
     @Value("${ehrbase.rest.aql.default-limit:}")
     private Optional<Long> defaultLimit = Optional.empty();
+
     @Value("${ehrbase.rest.aql.max-limit:}")
     private Optional<Long> maxLimit = Optional.empty();
+
     @Value("${ehrbase.rest.aql.max-fetch:}")
     private Optional<Long> maxFetch = Optional.empty();
 
@@ -191,7 +193,11 @@ public class AqlQueryServiceImp implements AqlQueryService {
         }
     }
 
-    static AqlQuery buildAqlQuery(AqlQueryRequest aqlQueryRequest, Optional<Long> defaultLimit, Optional<Long> maxLimit, Optional<Long> maxFetch) {
+    static AqlQuery buildAqlQuery(
+            AqlQueryRequest aqlQueryRequest,
+            Optional<Long> defaultLimit,
+            Optional<Long> maxLimit,
+            Optional<Long> maxFetch) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
 
@@ -206,10 +212,12 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
         // verify not parameter fetch offset are defined when query contains a LIMIT or assign fetch parameter
         if (limit.isPresent()) {
-            limit.flatMap(l ->
-                    maxLimit.filter(m -> l > m).map(m -> new UnprocessableEntityException(
-                            "Query LIMIT %d exceeds maximum limit %d".formatted(l, m)))
-            ).ifPresent(ex -> {throw ex;});
+            limit.flatMap(l -> maxLimit.filter(m -> l > m)
+                            .map(m -> new UnprocessableEntityException(
+                                    "Query LIMIT %d exceeds maximum limit %d".formatted(l, m))))
+                    .ifPresent(ex -> {
+                        throw ex;
+                    });
 
             if (fetchParam.isPresent() || offsetParam.isPresent()) {
                 throw new UnprocessableEntityException(
@@ -218,11 +226,14 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
         } else {
             if (fetchParam.isPresent()) {
-                //set from parameters
-                fetchParam.flatMap(l ->
-                        maxFetch.filter(m -> l > m).map(m -> new UnprocessableEntityException(
-                                "Fetch parameter %d exceeds maximum fetch %d".formatted(l, m)))
-                ).ifPresent(ex -> {throw ex;});
+                // set from parameters
+                fetchParam
+                        .flatMap(l -> maxFetch.filter(m -> l > m)
+                                .map(m -> new UnprocessableEntityException(
+                                        "Fetch parameter %d exceeds maximum fetch %d".formatted(l, m))))
+                        .ifPresent(ex -> {
+                            throw ex;
+                        });
 
                 limit = fetchParam;
                 offset = offsetParam;
@@ -233,7 +244,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
                             "Query parameter for offset provided, but no fetch parameter");
                 });
 
-                //set default
+                // set default
                 limit = defaultLimit;
             }
 

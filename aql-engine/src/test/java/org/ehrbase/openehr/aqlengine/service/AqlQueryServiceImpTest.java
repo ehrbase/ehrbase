@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalLong;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.UnprocessableEntityException;
@@ -76,9 +75,17 @@ class AqlQueryServiceImpTest {
             """,
             delimiterString = "|")
     void queryOffsetLimitRejected(
-            String aqlLimit, String aqlOffset, String paramLimit, String paramOffset, String defaultLimit, String maxLimit, String maxFetch, String message) {
+            String aqlLimit,
+            String aqlOffset,
+            String paramLimit,
+            String paramOffset,
+            String defaultLimit,
+            String maxLimit,
+            String maxFetch,
+            String message) {
 
-        assertThatThrownBy(() -> runQueryTest(aqlLimit, aqlOffset, paramLimit, paramOffset, defaultLimit, maxLimit, maxFetch))
+        assertThatThrownBy(() ->
+                        runQueryTest(aqlLimit, aqlOffset, paramLimit, paramOffset, defaultLimit, maxLimit, maxFetch))
                 .isInstanceOf(UnprocessableEntityException.class)
                 .hasMessage(message);
     }
@@ -97,11 +104,25 @@ class AqlQueryServiceImpTest {
                 ||20|50|20|20|20
             """,
             delimiterString = "|")
-    void queryOffsetLimitAccepted(String aqlLimit, String aqlOffset, String paramLimit, String paramOffset, String defaultLimit, String maxLimit, String maxFetch) {
+    void queryOffsetLimitAccepted(
+            String aqlLimit,
+            String aqlOffset,
+            String paramLimit,
+            String paramOffset,
+            String defaultLimit,
+            String maxLimit,
+            String maxFetch) {
         runQueryTest(aqlLimit, aqlOffset, paramLimit, paramOffset, defaultLimit, maxLimit, maxFetch);
     }
 
-    private void runQueryTest(String aqlLimit, String aqlOffset, String paramLimit, String paramOffset, String defaultLimit, String maxLimit, String maxFetch) {
+    private void runQueryTest(
+            String aqlLimit,
+            String aqlOffset,
+            String paramLimit,
+            String paramOffset,
+            String defaultLimit,
+            String maxLimit,
+            String maxFetch) {
         // @format:off
         String query = "SELECT s FROM EHR_STATUS s %s %s".formatted(
                 parseLong(aqlLimit).map(s -> "LIMIT " + s).orElse(""),
@@ -124,8 +145,6 @@ class AqlQueryServiceImpTest {
     }
 
     private static Optional<Long> parseLong(String longStr) {
-        return Optional.ofNullable(longStr)
-                .filter(StringUtils::isNotEmpty)
-                .map(Long::parseLong);
+        return Optional.ofNullable(longStr).filter(StringUtils::isNotEmpty).map(Long::parseLong);
     }
 }
