@@ -61,6 +61,8 @@ spring:
     ext-schema: ext
     ehr-location: classpath:db/migration/ehr
     ext-location: classpath:db/migration/ext
+    ehr-strategy: MIGRATE
+    ext-strategy: MIGRATE
     user: ehrbase
     password: ehrbase
 

@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+ - Configurable flyway migration strategy
  ### Changed 
  ### Fixed 
 

@@ -18,8 +18,11 @@
 package org.ehrbase.configuration.config.flyway;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +30,24 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MigrationStrategyConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(MigrationStrategyConfig.class);
+
+    public enum MigrationStrategy {
+        DISABLED(f -> {}),
+        MIGRATE(Flyway::migrate),
+        VALIDATE(Flyway::validate);
+
+        private final Consumer<Flyway> strategy;
+
+        MigrationStrategy(Consumer<Flyway> strategy) {
+            this.strategy = strategy;
+        }
+
+        void applyStrategy(Flyway flyway) {
+            strategy.accept(flyway);
+        }
+    }
 
     @Value("${spring.flyway.ehr-schema:ehr}")
     private String ehrSchema;
@@ -40,22 +61,34 @@ public class MigrationStrategyConfig {
     @Value("${spring.flyway.ext-location:classpath:db/migration/ext}")
     private String extLocation;
 
+    @Value("${spring.flyway.ext-strategy:MIGRATE}")
+    private MigrationStrategy extStrategy = MigrationStrategy.MIGRATE;
+
+    @Value("${spring.flyway.ehr-strategy:MIGRATE}")
+    private MigrationStrategy ehrStrategy = MigrationStrategy.MIGRATE;
+
     @Bean
     public FlywayMigrationStrategy flywayMigrationStrategy() {
         return flyway -> {
-            setSchema(flyway, extSchema)
-                    .locations(extLocation)
-                    // ext was not yet managed by flyway
-                    .baselineOnMigrate(true)
-                    .baselineVersion("1")
-                    .placeholders(Map.of("extSchema", extSchema))
-                    .load()
-                    .migrate();
-            setSchema(flyway, ehrSchema)
-                    .placeholders(Map.of("ehrSchema", ehrSchema))
-                    .locations(ehrLocation)
-                    .load()
-                    .migrate();
+            if (extStrategy != MigrationStrategy.DISABLED) {
+                extStrategy.applyStrategy(setSchema(flyway, extSchema)
+                        .locations(extLocation)
+                        // ext was not yet managed by flyway
+                        .baselineOnMigrate(true)
+                        .baselineVersion("1")
+                        .placeholders(Map.of("extSchema", extSchema))
+                        .load());
+            } else {
+                log.info("Flyway migration for schema 'ext' is disabled");
+            }
+            if (ehrStrategy != MigrationStrategy.DISABLED) {
+                ehrStrategy.applyStrategy(setSchema(flyway, ehrSchema)
+                        .placeholders(Map.of("ehrSchema", ehrSchema))
+                        .locations(ehrLocation)
+                        .load());
+            } else {
+                log.info("Flyway migration for schema 'ehr' is disabled");
+            }
         };
     }
 
