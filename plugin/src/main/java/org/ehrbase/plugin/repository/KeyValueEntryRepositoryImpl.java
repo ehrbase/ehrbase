@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.ehrbase.api.repository.KeyValuePair;
 import org.ehrbase.api.repository.KeyValuePairRepository;
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
@@ -49,7 +48,7 @@ public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
     @Override
     public Optional<KeyValuePair> findBy(String context, String key) {
         return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(context).and(PLUGIN.KEY.eq(key)))
-        	.map(rec -> toKvp.apply(rec));
+                .map(rec -> toKvp.apply(rec));
     }
 
     @Override
@@ -74,6 +73,7 @@ public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
         int res = ctx.delete(PLUGIN).where(PLUGIN.ID.eq(uid)).execute();
         return res > 0;
     }
-    
-    private Function<PluginRecord, KeyValuePair> toKvp = rec -> KeyValuePair.of(rec.getId(), rec.getPluginid(), rec.getKey(), rec.getValue()); 
+
+    private Function<PluginRecord, KeyValuePair> toKvp =
+            rec -> KeyValuePair.of(rec.getId(), rec.getPluginid(), rec.getKey(), rec.getValue());
 }
