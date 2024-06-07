@@ -19,10 +19,10 @@ package org.ehrbase.plugin;
 
 import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 
+import com.nedap.archie.rm.ehr.EhrStatus;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -32,8 +32,6 @@ import org.ehrbase.plugin.extensionpoints.EhrExtensionPoint;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
-import com.nedap.archie.rm.ehr.EhrStatus;
 
 @Deprecated(forRemoval = true)
 @Component
