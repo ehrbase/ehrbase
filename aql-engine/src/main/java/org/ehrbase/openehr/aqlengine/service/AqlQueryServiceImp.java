@@ -118,6 +118,14 @@ public class AqlQueryServiceImp implements AqlQueryService {
     }
 
     private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
+
+        defaultLimit.ifPresent(v -> aqlQueryContext.setMetaProperty(
+                AqlQueryContext.EhrbaseMetaProperty.DEFAULT_LIMIT, v));
+        maxLimit.ifPresent(v -> aqlQueryContext.setMetaProperty(
+                AqlQueryContext.EhrbaseMetaProperty.MAX_LIMIT, v));
+        maxFetch.ifPresent(v -> aqlQueryContext.setMetaProperty(
+                AqlQueryContext.EhrbaseMetaProperty.MAX_FETCH, v));
+
         // TODO: check that select aliases are not duplicated
         try {
             AqlQuery aqlQuery = buildAqlQuery(aqlQueryRequest, defaultLimit, maxLimit, maxFetch);
