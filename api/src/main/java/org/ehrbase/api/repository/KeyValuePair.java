@@ -20,14 +20,14 @@ package org.ehrbase.api.repository;
 import java.util.UUID;
 
 public interface KeyValuePair {
-	
+
     public static KeyValuePair of(String pluginId, String key, String value) {
         return KeyValuePair.of(UUID.randomUUID(), pluginId, key, value);
     }
 
     public static KeyValuePair of(UUID id, String pluginId, String key, String value) {
         return new KeyValueEntry(id, pluginId, key, value);
-    }	
+    }
 
     public UUID getId();
 
