@@ -520,7 +520,8 @@ final class AslPathCreator {
 
     private static Optional<AslPathFilterJoinCondition> parentFiltersAsJoinCondition(
             OwnerProviderTuple parent, PathCohesionTreeNode currentNode) {
-        Map<IdentifiedPath, List<AslPathFilterJoinCondition>> filterConditions = parent.owner().joinConditionsForFiltering();
+        Map<IdentifiedPath, List<AslPathFilterJoinCondition>> filterConditions =
+                parent.owner().joinConditionsForFiltering();
         if (filterConditions.isEmpty()) {
             return Optional.empty();
         }
@@ -656,7 +657,7 @@ final class AslPathCreator {
                                 pathInfo,
                                 multipleValued ? childNodes : Stream.empty(),
                                 levelInJson),
-                                multipleValued ? Stream.<DataNodeInfo>empty() : childNodes)
+                        multipleValued ? Stream.<DataNodeInfo>empty() : childNodes)
                 .flatMap(s -> s);
     }
 

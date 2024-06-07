@@ -65,7 +65,9 @@ public sealed class AslEncapsulatingQuery extends AslQuery permits AslRootQuery 
                                 .map(jc -> jc.withLeftProvider(this))
                                 .toList()))
                 .collect(Collectors.groupingBy(
-                        Pair::getKey, LinkedHashMap::new, Collectors.flatMapping(e -> e.getValue().stream(), Collectors.toList())));
+                        Pair::getKey,
+                        LinkedHashMap::new,
+                        Collectors.flatMapping(e -> e.getValue().stream(), Collectors.toList())));
     }
 
     @Override
