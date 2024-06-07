@@ -19,10 +19,9 @@ package org.ehrbase.plugin;
 
 import static org.ehrbase.plugin.PluginHelper.PLUGIN_MANAGER_PREFIX;
 
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -35,6 +34,10 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
+@Deprecated(forRemoval = true)
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = PLUGIN_MANAGER_PREFIX, name = "enable", havingValue = "true")

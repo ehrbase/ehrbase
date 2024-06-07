@@ -17,6 +17,7 @@
  */
 package org.ehrbase.plugin;
 
+@Deprecated(forRemoval = true)
 public class PluginHelper {
 
     private PluginHelper() {
