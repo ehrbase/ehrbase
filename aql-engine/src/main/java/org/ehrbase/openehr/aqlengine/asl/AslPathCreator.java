@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -112,7 +112,7 @@ final class AslPathCreator {
             AqlQueryWrapper query,
             AslFromCreator.ContainsToOwnerProvider containsToStructureSubQuery,
             AslRootQuery rootQuery) {
-        Map<IdentifiedPath, AslField> pathToField = new HashMap<>();
+        Map<IdentifiedPath, AslField> pathToField = new LinkedHashMap<>();
 
         addEhrFields(query, containsToStructureSubQuery, pathToField);
         for (Entry<ContainsWrapper, PathInfo> containsWithPathInfo :
@@ -520,13 +520,15 @@ final class AslPathCreator {
 
     private static Optional<AslPathFilterJoinCondition> parentFiltersAsJoinCondition(
             OwnerProviderTuple parent, PathCohesionTreeNode currentNode) {
-        if (parent.owner().joinConditionsForFiltering().isEmpty()) {
+        Map<IdentifiedPath, List<AslPathFilterJoinCondition>> filterConditions =
+                parent.owner().joinConditionsForFiltering();
+        if (filterConditions.isEmpty()) {
             return Optional.empty();
         }
 
         return AslUtils.reduceConditions(
                         LogicalConditionOperator.OR,
-                        parent.owner().joinConditionsForFiltering().entrySet().stream()
+                        filterConditions.entrySet().stream()
                                 .filter(e -> currentNode.getPaths().contains(e.getKey()))
                                 .map(Entry::getValue)
                                 .map(Collection::stream)
@@ -647,7 +649,6 @@ final class AslPathCreator {
         });
 
         return Stream.of(
-                        multipleValued ? Stream.<DataNodeInfo>empty() : childNodes,
                         streamJsonRmDataNodes(
                                 currentNode,
                                 parentStructureQuery,
@@ -655,7 +656,8 @@ final class AslPathCreator {
                                 rootProviderQuery,
                                 pathInfo,
                                 multipleValued ? childNodes : Stream.empty(),
-                                levelInJson))
+                                levelInJson),
+                        multipleValued ? Stream.<DataNodeInfo>empty() : childNodes)
                 .flatMap(s -> s);
     }
 

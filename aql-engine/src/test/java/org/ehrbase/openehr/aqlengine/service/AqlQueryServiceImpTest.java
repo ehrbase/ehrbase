@@ -66,16 +66,38 @@ class AqlQueryServiceImpTest {
     @CsvSource(
             textBlock =
                     """
-                5||10||Query contains a LIMIT clause, fetch and offset parameters must not be used
-                5|20||40|Query contains a LIMIT clause, fetch and offset parameters must not be used
-                5|||30|Query contains a LIMIT clause, fetch and offset parameters must not be used
-                |||42|Query parameter for offset 42 provided without a fetch limit
+                5||10||REJECT||||Query contains a LIMIT clause, fetch and offset parameters must not be used (with fetch precedence REJECT)
+                5|20||40|REJECT||||Query parameter for offset provided, but no fetch parameter
+                5|20||40|MIN_FETCH||||Query parameter for offset provided, but no fetch parameter
+                5|||30|REJECT||||Query parameter for offset provided, but no fetch parameter
+                |||42|REJECT||||Query parameter for offset provided, but no fetch parameter
+                20||||REJECT||19||Query LIMIT 20 exceeds maximum limit 19
+                20||||MIN_FETCH||19||Query LIMIT 20 exceeds maximum limit 19
+                ||20||REJECT|||19|Fetch parameter 20 exceeds maximum fetch 19
+                ||20||MIN_FETCH|||19|Fetch parameter 20 exceeds maximum fetch 19
+                20|5|30||MIN_FETCH||||Query contains a OFFSET clause, fetch parameter must not be used (with fetch precedence MIN_FETCH)
             """,
             delimiterString = "|")
     void queryOffsetLimitRejected(
-            String aqlLimit, String aqlOffset, String paramLimit, String paramOffset, String message) {
+            String aqlLimit,
+            String aqlOffset,
+            String paramLimit,
+            String paramOffset,
+            AqlQueryServiceImp.FetchPrecedence fetchPrecedence,
+            String defaultLimit,
+            String maxLimit,
+            String maxFetch,
+            String message) {
 
-        assertThatThrownBy(() -> runQueryTest(aqlLimit, aqlOffset, paramLimit, paramOffset))
+        assertThatThrownBy(() -> runQueryTest(
+                        aqlLimit,
+                        aqlOffset,
+                        paramLimit,
+                        paramOffset,
+                        fetchPrecedence,
+                        defaultLimit,
+                        maxLimit,
+                        maxFetch))
                 .isInstanceOf(UnprocessableEntityException.class)
                 .hasMessage(message);
     }
@@ -84,29 +106,62 @@ class AqlQueryServiceImpTest {
     @CsvSource(
             textBlock =
                     """
-                5|||
-                5|15||
-                ||20|
-                ||20|25
+                ||||REJECT|||
+                5||||REJECT|||
+                5|15|||REJECT|||
+                ||20||REJECT|||
+                ||20|25|REJECT|||
+                ||||REJECT|20|10|10
+                20|30|||REJECT|20|20|20
+                ||20|50|REJECT|20|20|20
+                30||20|50|MIN_FETCH|30|30|20
+                10||20|50|MIN_FETCH|30|30|20
             """,
             delimiterString = "|")
-    void queryOffsetLimitAccepted(String aqlLimit, String aqlOffset, String paramLimit, String paramOffset) {
-        runQueryTest(aqlLimit, aqlOffset, paramLimit, paramOffset);
+    void queryOffsetLimitAccepted(
+            String aqlLimit,
+            String aqlOffset,
+            String paramLimit,
+            String paramOffset,
+            AqlQueryServiceImp.FetchPrecedence fetchPrecedence,
+            String defaultLimit,
+            String maxLimit,
+            String maxFetch) {
+        runQueryTest(aqlLimit, aqlOffset, paramLimit, paramOffset, fetchPrecedence, defaultLimit, maxLimit, maxFetch);
     }
 
-    private void runQueryTest(String aqlLimit, String aqlOffset, String paramLimit, String paramOffset) {
+    private void runQueryTest(
+            String aqlLimit,
+            String aqlOffset,
+            String paramLimit,
+            String paramOffset,
+            AqlQueryServiceImp.FetchPrecedence fetchPrecedence,
+            String defaultLimit,
+            String maxLimit,
+            String maxFetch) {
         // @format:off
         String query = "SELECT s FROM EHR_STATUS s %s %s".formatted(
-                Optional.ofNullable(aqlLimit).filter(s -> !s.isEmpty()).map(s -> "LIMIT " + s).orElse(""),
-                Optional.ofNullable(aqlOffset).filter(s -> !s.isEmpty()).map(s -> "OFFSET " + s).orElse("")
+                parseLong(aqlLimit).map(s -> "LIMIT " + s).orElse(""),
+                parseLong(aqlOffset).map(s -> "OFFSET " + s).orElse("")
         );
 
-        AqlQueryServiceImp.buildAqlQuery(new AqlQueryRequest(
-                query,
-                Map.of(),
-                Optional.ofNullable(paramLimit).filter(StringUtils::isNotEmpty).map(Long::parseLong).orElse(null),
-                Optional.ofNullable(paramOffset).filter(s -> !s.isEmpty()).map(Long::parseLong).orElse(null))
-        );
+        AqlQueryServiceImp.buildAqlQuery(
+                new AqlQueryRequest(
+                        query,
+                        Map.of(),
+                        parseLong(paramLimit).orElse(null),
+                        Optional.ofNullable(paramOffset)
+                                .filter(s -> !s.isEmpty())
+                                .map(Long::parseLong)
+                                .orElse(null)),
+                fetchPrecedence,
+                parseLong(defaultLimit).orElse(null),
+                parseLong(maxLimit).orElse(null),
+                parseLong(maxFetch).orElse(null));
         // @format:on
+    }
+
+    private static Optional<Long> parseLong(String longStr) {
+        return Optional.ofNullable(longStr).filter(StringUtils::isNotEmpty).map(Long::parseLong);
     }
 }

@@ -125,7 +125,7 @@ final class ConditionUtils {
                         AslStructureColumn.ENTITY_IDX_LEN.getFieldName(),
                         Integer.class,
                         true)
-                .add(ic.getOffset())
+                .add(DSL.inline(ic.getOffset()))
                 .eq(FieldUtils.field(
                         sqlRight,
                         ic.getRightProvider(),

@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
@@ -72,6 +73,7 @@ import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
@@ -85,6 +87,59 @@ public class AqlQueryServiceImp implements AqlQueryService {
     private final AqlQueryFeatureCheck aqlQueryFeatureCheck;
     private final ObjectMapper objectMapper;
     private final AqlQueryContext aqlQueryContext;
+
+    @Value("${ehrbase.rest.aql.default-limit:}")
+    private Long defaultLimit;
+
+    @Value("${ehrbase.rest.aql.max-limit:}")
+    private Long maxLimit;
+
+    @Value("${ehrbase.rest.aql.max-fetch:}")
+    private Long maxFetch;
+
+    enum FetchPrecedence {
+        /**
+         * Fail if both fetch and limit are present
+         */
+        REJECT,
+        /**
+         * Take minimum of fetch and limit for limit;
+         * fail if query has offset
+         */
+        MIN_FETCH;
+    }
+
+    @Value("${ehrbase.rest.aql.fetch-precedence:REJECT}")
+    private FetchPrecedence fetchPrecedence = FetchPrecedence.REJECT;
+
+    private static Long applyFetchPrecedence(
+            FetchPrecedence fetchPrecedence, Long queryLimit, Long queryOffset, Long fetchParam, Long offsetParam) {
+        if (fetchParam == null) {
+            if (offsetParam != null) {
+                throw new UnprocessableEntityException("Query parameter for offset provided, but no fetch parameter");
+            }
+            return queryLimit;
+        } else if (queryLimit == null) {
+            assert queryOffset == null;
+            return fetchParam;
+        }
+
+        return switch (fetchPrecedence) {
+            case REJECT -> {
+                throw new UnprocessableEntityException(
+                        "Query contains a LIMIT clause, fetch and offset parameters must not be used (with fetch precedence %s)"
+                                .formatted(fetchPrecedence));
+            }
+            case MIN_FETCH -> {
+                if (queryOffset != null) {
+                    throw new UnprocessableEntityException(
+                            "Query contains a OFFSET clause, fetch parameter must not be used (with fetch precedence %s)"
+                                    .formatted(fetchPrecedence));
+                }
+                yield Math.min(queryLimit, fetchParam);
+            }
+        };
+    }
 
     @Autowired
     public AqlQueryServiceImp(
@@ -108,9 +163,20 @@ public class AqlQueryServiceImp implements AqlQueryService {
     }
 
     private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
+
+        if (defaultLimit != null) {
+            aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.DEFAULT_LIMIT, defaultLimit);
+        }
+        if (maxLimit != null) {
+            aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.MAX_LIMIT, maxLimit);
+        }
+        if (maxFetch != null) {
+            aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.MAX_FETCH, maxFetch);
+        }
+
         // TODO: check that select aliases are not duplicated
         try {
-            AqlQuery aqlQuery = buildAqlQuery(aqlQueryRequest);
+            AqlQuery aqlQuery = buildAqlQuery(aqlQueryRequest, fetchPrecedence, defaultLimit, maxLimit, maxFetch);
 
             aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
 
@@ -183,31 +249,37 @@ public class AqlQueryServiceImp implements AqlQueryService {
         }
     }
 
-    static AqlQuery buildAqlQuery(AqlQueryRequest aqlQueryRequest) {
+    static AqlQuery buildAqlQuery(
+            AqlQueryRequest aqlQueryRequest,
+            FetchPrecedence fetchPrecedence,
+            Long defaultLimit,
+            Long maxLimit,
+            Long maxFetch) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
 
         // apply limit and offset - where the definitions from the aql are the precedence
+        Optional<AqlQueryRequest> qr = Optional.of(aqlQueryRequest);
         Long fetchParam = aqlQueryRequest.fetch();
         Long offsetParam = aqlQueryRequest.offset();
-        Long limitQuery = aqlQuery.getLimit();
 
-        // verify not parameter fetch offset are defined when query contains a LIMIT or assign fetch parameter
-        if (limitQuery == null) {
-            aqlQuery.setLimit(fetchParam);
-            aqlQuery.setOffset(offsetParam);
-        } else {
-            if (fetchParam != null || offsetParam != null) {
-                throw new UnprocessableEntityException(
-                        "Query contains a LIMIT clause, fetch and offset parameters must not be used");
-            }
-        }
+        Long queryLimit = aqlQuery.getLimit();
+        Long queryOffset = aqlQuery.getOffset();
 
-        // sanity check parameter
-        if (aqlQuery.getOffset() != null && aqlQuery.getLimit() == null) {
+        if (queryLimit != null && maxLimit != null && queryLimit > maxLimit) {
             throw new UnprocessableEntityException(
-                    "Query parameter for offset %s provided without a fetch limit".formatted(aqlQuery.getOffset()));
+                    "Query LIMIT %d exceeds maximum limit %d".formatted(queryLimit, maxLimit));
         }
+
+        if (fetchParam != null && maxFetch != null && fetchParam > maxFetch) {
+            throw new UnprocessableEntityException(
+                    "Fetch parameter %d exceeds maximum fetch %d".formatted(fetchParam, maxFetch));
+        }
+
+        Long limit = applyFetchPrecedence(fetchPrecedence, queryLimit, queryOffset, fetchParam, offsetParam);
+
+        aqlQuery.setLimit(ObjectUtils.firstNonNull(limit, defaultLimit));
+        aqlQuery.setOffset(ObjectUtils.firstNonNull(offsetParam, queryOffset));
 
         // postprocess
         replaceParameters(aqlQuery, aqlQueryRequest.parameters());
