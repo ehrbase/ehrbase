@@ -22,6 +22,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -65,6 +66,15 @@ public class SwaggerConfiguration {
         return GroupedOpenApi.builder()
                 .group("5. Management API")
                 .pathsToMatch("/management/**")
+                .build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "ehrbase.rest.experimental.tags.enabled", havingValue = "true")
+    public GroupedOpenApi experimentalApi() {
+        return GroupedOpenApi.builder()
+                .group("6. Experimental API")
+                .pathsToMatch("/rest/experimental/**")
                 .build();
     }
 
