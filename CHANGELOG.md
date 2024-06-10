@@ -7,7 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- - Configurable flyway migration strategy
+- Configurable flyway migration strategy
+- Configurable fetch limit checks + default limit for AQL queries
+- Configurable fetch limit precedence strategy for AQL queries
  ### Changed 
  ### Fixed 
 
