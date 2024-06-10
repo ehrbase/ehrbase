@@ -112,11 +112,11 @@ public class AqlQueryServiceImp implements AqlQueryService {
     @Value("${ehrbase.rest.aql.fetch-precedence:REJECT}")
     private FetchPrecedence fetchPrecedence = FetchPrecedence.REJECT;
 
-    private static Long applyFetchPrecedence(FetchPrecedence fetchPrecedence, Long queryLimit, Long queryOffset, Long fetchParam, Long offsetParam) {
+    private static Long applyFetchPrecedence(
+            FetchPrecedence fetchPrecedence, Long queryLimit, Long queryOffset, Long fetchParam, Long offsetParam) {
         if (fetchParam == null) {
             if (offsetParam != null) {
-                throw new UnprocessableEntityException(
-                        "Query parameter for offset provided, but no fetch parameter");
+                throw new UnprocessableEntityException("Query parameter for offset provided, but no fetch parameter");
             }
             return queryLimit;
         } else if (queryLimit == null) {
@@ -126,13 +126,15 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
         return switch (fetchPrecedence) {
             case REJECT -> {
-                    throw new UnprocessableEntityException(
-                            "Query contains a LIMIT clause, fetch and offset parameters must not be used (with fetch precedence %s)".formatted(fetchPrecedence));
+                throw new UnprocessableEntityException(
+                        "Query contains a LIMIT clause, fetch and offset parameters must not be used (with fetch precedence %s)"
+                                .formatted(fetchPrecedence));
             }
             case MIN_FETCH -> {
                 if (queryOffset != null) {
                     throw new UnprocessableEntityException(
-                            "Query contains a OFFSET clause, fetch parameter must not be used (with fetch precedence %s)".formatted(fetchPrecedence));
+                            "Query contains a OFFSET clause, fetch parameter must not be used (with fetch precedence %s)"
+                                    .formatted(fetchPrecedence));
                 }
                 yield Math.min(queryLimit, fetchParam);
             }
@@ -163,16 +165,13 @@ public class AqlQueryServiceImp implements AqlQueryService {
     private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
 
         if (defaultLimit != null) {
-            aqlQueryContext.setMetaProperty(
-                    AqlQueryContext.EhrbaseMetaProperty.DEFAULT_LIMIT, defaultLimit);
+            aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.DEFAULT_LIMIT, defaultLimit);
         }
         if (maxLimit != null) {
-            aqlQueryContext.setMetaProperty(
-                    AqlQueryContext.EhrbaseMetaProperty.MAX_LIMIT, maxLimit);
+            aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.MAX_LIMIT, maxLimit);
         }
         if (maxFetch != null) {
-            aqlQueryContext.setMetaProperty(
-                    AqlQueryContext.EhrbaseMetaProperty.MAX_FETCH, maxFetch);
+            aqlQueryContext.setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.MAX_FETCH, maxFetch);
         }
 
         // TODO: check that select aliases are not duplicated
@@ -268,12 +267,12 @@ public class AqlQueryServiceImp implements AqlQueryService {
         Long queryOffset = aqlQuery.getOffset();
 
         if (queryLimit != null && maxLimit != null && queryLimit > maxLimit) {
-            throw  new UnprocessableEntityException(
+            throw new UnprocessableEntityException(
                     "Query LIMIT %d exceeds maximum limit %d".formatted(queryLimit, maxLimit));
         }
 
         if (fetchParam != null && maxFetch != null && fetchParam > maxFetch) {
-            throw  new UnprocessableEntityException(
+            throw new UnprocessableEntityException(
                     "Fetch parameter %d exceeds maximum fetch %d".formatted(fetchParam, maxFetch));
         }
 

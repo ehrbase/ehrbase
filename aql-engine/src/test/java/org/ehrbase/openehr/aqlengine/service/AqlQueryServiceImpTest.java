@@ -89,8 +89,15 @@ class AqlQueryServiceImpTest {
             String maxFetch,
             String message) {
 
-        assertThatThrownBy(() ->
-                runQueryTest(aqlLimit, aqlOffset, paramLimit, paramOffset, fetchPrecedence, defaultLimit, maxLimit, maxFetch))
+        assertThatThrownBy(() -> runQueryTest(
+                        aqlLimit,
+                        aqlOffset,
+                        paramLimit,
+                        paramOffset,
+                        fetchPrecedence,
+                        defaultLimit,
+                        maxLimit,
+                        maxFetch))
                 .isInstanceOf(UnprocessableEntityException.class)
                 .hasMessage(message);
     }
