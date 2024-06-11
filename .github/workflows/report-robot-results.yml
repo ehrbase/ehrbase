@@ -31,7 +31,7 @@ jobs:
       - name: Download - Robot Results
         uses: actions/download-artifact@v4
         with:
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow
           pattern: robot-report-final                 # uses artifact of build and test workflow
           merge-multiple: true
