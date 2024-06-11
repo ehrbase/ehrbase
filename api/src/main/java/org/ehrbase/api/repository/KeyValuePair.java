@@ -15,32 +15,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.plugin.repository;
+package org.ehrbase.api.repository;
 
 import java.util.UUID;
-import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 
-public class KeyValueEntry {
-    public static KeyValueEntry of(String pluginId, String key, String value) {
-        return KeyValueEntry.of(UUID.randomUUID(), pluginId, key, value);
+public interface KeyValuePair {
+
+    public static KeyValuePair of(String pluginId, String key, String value) {
+        return KeyValuePair.of(UUID.randomUUID(), pluginId, key, value);
     }
 
-    public static KeyValueEntry of(UUID id, String pluginId, String key, String value) {
+    public static KeyValuePair of(UUID id, String pluginId, String key, String value) {
         return new KeyValueEntry(id, pluginId, key, value);
     }
 
-    static KeyValueEntry of(PluginRecord rec) {
-        return new KeyValueEntry(rec.getId(), rec.getPluginid(), rec.getKey(), rec.getValue());
-    }
+    public UUID getId();
+
+    public String getContext();
+
+    public String getKey();
+
+    public String getValue();
+}
+
+class KeyValueEntry implements KeyValuePair {
 
     private final UUID id;
-    private final String pluginId;
+    private final String context;
     private final String key;
     private final String value;
 
-    private KeyValueEntry(UUID id, String pluginId, String key, String value) {
+    KeyValueEntry(UUID id, String pluginId, String key, String value) {
         this.id = id;
-        this.pluginId = pluginId;
+        this.context = pluginId;
         this.key = key;
         this.value = value;
     }
@@ -49,8 +56,8 @@ public class KeyValueEntry {
         return id;
     }
 
-    public String getPluginId() {
-        return pluginId;
+    public String getContext() {
+        return context;
     }
 
     public String getKey() {

@@ -33,6 +33,7 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 /*TODO: maybe we should add the Ordered interface, so derived aspects will be evaluated in a predictable order in
 relation to other aspects we might have or add later for other features or even through a plugin?*/
+@Deprecated(forRemoval = true)
 public abstract class AbstractPluginAspect<EXTENSIONPOINT> {
 
     private final Comparator<Map.Entry<String, EXTENSIONPOINT>> EXTENSION_POINTS_COMPARATOR =
