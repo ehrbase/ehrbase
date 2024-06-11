@@ -24,13 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
-
-      - name: DEBUG
-        env:
-          GITHUB_EVENT_CONTEXT: ${{ toJson(github.event) }}
-        run: |
-          echo "$GITHUB_EVENT_CONTEXT"
-            
       # Download jacoco overall coverage from build & test output
       - name: Download - Robot Results
         uses: actions/download-artifact@v4
@@ -40,9 +33,6 @@ jobs:
           pattern: robot-report-final                 # uses artifact of build and test workflow
           merge-multiple: true
           path: ${{ github.workspace }}/tests/report
-
-      - name: DEBUG - DIR
-        run: ls -R ${{ github.workspace }}
 
       - name: Github - Send Robot Report to PR
         # Dependabot has not enough rights to add the report to the PR.

@@ -27,6 +27,10 @@ jobs:
       # Map the step outputs to job outputs
       ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
     steps:
+      - name: DEBUG
+        run: |
+          echo "${{ github.sha }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -301,15 +305,6 @@ jobs:
             -v ./tests/results:/integration-tests/results \
             -v ./tests/report:/integration-tests/report \
             ehrbase/integration-tests:latest collectRebotResults
-
-      - name: Github - Send Robot Report to PR
-        # Dependabot has not enough rights to add the report to the PR.
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: joonvena/robotframework-reporter-action@v2.4
-        with:
-          gh_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
-          report_path: ./tests/report
-          show_passed_tests: false
 
       - name: Archive - Robot Report
         if: always()
