@@ -26,7 +26,6 @@ import static org.mockito.Mockito.spy;
 
 import com.nedap.archie.rm.composition.Composition;
 import java.util.List;
-import java.util.Optional;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
@@ -38,6 +37,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -95,23 +95,13 @@ class OpenehrTemplateControllerTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
-                ||
-                application/xml||return=minimal
-                application/xml|application/xml|
-                application/xml|application/xml|return=representation
-            """,
-            delimiterString = "|")
-    void createTemplateADL1_4(String contentType, String accept, String prefer) {
+    @ValueSource(strings = {"", "return=minimal", "return=representation"})
+    void createTemplateADL1_4(String prefer) {
 
-        var response = controller().createTemplateClassic("1.0.3", null, contentType, accept, prefer, SAMPLE_OPT);
+        var response = controller().createTemplateClassic("1.0.3", null, prefer, SAMPLE_OPT);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getHeaders())
-                .containsEntry(
-                        HttpHeaders.CONTENT_TYPE,
-                        List.of(Optional.ofNullable(accept).orElse("application/xml")));
+                .containsEntry(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_XML_VALUE));
         assertThat(response.getHeaders())
                 .containsEntry(
                         HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID));
@@ -124,11 +114,10 @@ class OpenehrTemplateControllerTest {
     }
 
     @Test
-    void createTemplateADL1_4_foo() {
+    void createTemplateADL1_4_OPTInvalidError() {
 
         OpenehrTemplateController controller = controller();
-        assertThatThrownBy(() ->
-                        controller.createTemplateClassic("1.0.3", null, "application/xml", null, null, "not a xml"))
+        assertThatThrownBy(() -> controller.createTemplateClassic("1.0.3", null, null, "not a xml"))
                 .isInstanceOf(InvalidApiParameterException.class)
                 .hasMessage("error: Content is not allowed in prolog.");
     }

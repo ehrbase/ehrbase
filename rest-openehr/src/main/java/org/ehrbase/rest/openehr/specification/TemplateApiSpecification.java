@@ -38,12 +38,7 @@ public interface TemplateApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL1.4/operation/definition_template_adl1.4_upload"))
     ResponseEntity<String> createTemplateClassic(
-            String openehrVersion,
-            String openehrAuditDetails,
-            String contentType,
-            String accept,
-            String prefer,
-            String template);
+            String openehrVersion, String openehrAuditDetails, String prefer, String template);
 
     @Operation(
             tags = "ADL 1.4 TEMPLATE",

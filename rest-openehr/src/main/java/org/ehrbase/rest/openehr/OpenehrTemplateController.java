@@ -86,13 +86,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
     public ResponseEntity<String> createTemplateClassic(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.CONTENT_TYPE) String contentType,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @RequestBody String template) {
-
-        // ensure the response media type is supported
-        MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
 
         // create template
         String templateId;
@@ -104,12 +99,13 @@ public class OpenehrTemplateController extends BaseController implements Templat
         }
 
         // initialize HTTP 201 Created body builder
-        ResponseEntity.BodyBuilder bodyBuilder = templateResponseBuilder(HttpStatus.CREATED, templateId, mediaType);
+        ResponseEntity.BodyBuilder bodyBuilder =
+                templateResponseBuilder(HttpStatus.CREATED, templateId, MediaType.APPLICATION_XML);
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            OperationalTemplateFormat format = operationalTemplateFormatForMediaType(mediaType);
-            String responseTemplate = templateService.findOperationalTemplate(templateId, format);
+            String responseTemplate =
+                    templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
             return bodyBuilder.body(responseTemplate);
         } else {
             return bodyBuilder.build();
@@ -131,7 +127,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         List<TemplateMetaDataDto> templates = templateService.getAllTemplates();
 
-        // returns 200 with all templates OR error
+        // returns 200 with all templates
         return ResponseEntity.ok().location(uri).contentType(mediaType).body(templates);
     }
 
