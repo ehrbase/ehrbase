@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
-      
       - name: DEBUG
         env:
           GITHUB_DEBUG_CONTEXT: ${{ toJson(github.event.workflow_run.head_repository) }}
