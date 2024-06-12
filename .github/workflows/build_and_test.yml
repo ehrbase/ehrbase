@@ -302,15 +302,6 @@ jobs:
             -v ./tests/report:/integration-tests/report \
             ehrbase/integration-tests:latest collectRebotResults
 
-      - name: Github - Send Robot Report to PR
-        # Dependabot has not enough rights to add the report to the PR.
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: joonvena/robotframework-reporter-action@v2.4
-        with:
-          gh_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
-          report_path: ./tests/report
-          show_passed_tests: false
-
       - name: Archive - Robot Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -414,6 +405,7 @@ jobs:
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
+      build-maven, # only to have them in the same UI group as docker-build-push
       integration-test-run
     ]
 
