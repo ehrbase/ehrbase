@@ -18,16 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: DEBUG
-        env:
-          GITHUB_DEBUG_CONTEXT: ${{ toJson(github.event.workflow_run.head_repository) }}
-        run: |
-          echo "$GITHUB_DEBUG_CONTEXT"
           
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
       
