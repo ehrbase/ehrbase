@@ -43,7 +43,8 @@ jobs:
         uses: joonvena/robotframework-reporter-action@v2.4
         with:
           gh_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
-          pull_request_id: ${{ github.event.workflow_run.pull_requests[0].id }}
+          # pull_request_id: ${{ github.event.workflow_run.pull_requests[0].id }}
+          sha: ${{ github.event.workflow_run.head_sha }}
           report_path: ./tests/report
           summary: true
           only_summary: false
