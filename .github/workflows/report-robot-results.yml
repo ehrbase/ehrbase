@@ -25,6 +25,12 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     steps:
 
+      - name: DEBUG
+        env:
+          GITHUB_EVENT_CONTEXT: ${{ toJson(github.event) }}
+          run: |
+            echo "$GITHUB_EVENT_CONTEXT"
+            
       # Download jacoco overall coverage from build & test output
       - name: Download - Robot Results
         uses: actions/download-artifact@v4
