@@ -10,9 +10,7 @@ on:
       - completed
 
 permissions:
-  contents: read
-  actions: read
-  checks: write
+  contents: write
 
 #
 # see https://github.com/dorny/test-reporter?tab=readme-ov-file#recommended-setup-for-public-repositories
