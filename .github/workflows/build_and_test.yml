@@ -27,10 +27,6 @@ jobs:
       # Map the step outputs to job outputs
       ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
     steps:
-      - name: DEBUG
-        run: |
-          echo "${{ github.sha }}"
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -409,6 +405,7 @@ jobs:
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
+      build-maven, # only to have them in the same UI group as docker-build-push
       integration-test-run
     ]
 
