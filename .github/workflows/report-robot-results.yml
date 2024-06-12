@@ -28,8 +28,8 @@ jobs:
       - name: DEBUG
         env:
           GITHUB_EVENT_CONTEXT: ${{ toJson(github.event) }}
-          run: |
-            echo "$GITHUB_EVENT_CONTEXT"
+        run: |
+          echo "$GITHUB_EVENT_CONTEXT"
             
       # Download jacoco overall coverage from build & test output
       - name: Download - Robot Results
