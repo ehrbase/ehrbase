@@ -17,8 +17,6 @@
  */
 package org.ehrbase.openehr.dbformat;
 
-import static org.ehrbase.openehr.dbformat.DbToRmFormat.TYPE_ATTRIBUTE;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +25,13 @@ import java.util.stream.Collectors;
 /**
  * For the database: Shorter aliases for attributes of RmObjects
  */
-public record RmAttributeAlias(String attribute, String alias) {
+public record RmAttribute(String attribute, String alias) {
 
-    public static final List<RmAttributeAlias> VALUES = List.of(
+    public static final RmAttribute COMMITTER = alias("committer", "co");
+    public static final RmAttribute COMMIT_AUDIT = alias("commit_audit", "cau");
+    public static final RmAttribute OBJ_TYPE = alias("_type", "T");
+
+    public static final List<RmAttribute> VALUES = List.of(
             // INSTRUCTION
             alias("activities", 'a'),
             // COMPOSITION
@@ -77,8 +79,8 @@ public record RmAttributeAlias(String attribute, String alias) {
             alias("change_type", "ct"),
             alias("charset", "ch"),
             alias("code_string", "cd"),
-            alias("committer", "co"),
-            alias("commit_audit", "cau"),
+            COMMITTER,
+            COMMIT_AUDIT,
             alias("composer", "cp"),
             alias("compression_algorithm", "calg"),
             alias("contribution", "con"),
@@ -198,17 +200,15 @@ public record RmAttributeAlias(String attribute, String alias) {
             alias("workflow_id", "wX"),
             alias("_index", "I"),
             alias("_magnitude", "M"),
-            alias(TYPE_ATTRIBUTE, "T"));
+            OBJ_TYPE);
 
     private static Map<String, String> attribute2alias;
 
     private static Map<String, String> alias2attribute;
 
     static {
-        attribute2alias =
-                VALUES.stream().collect(Collectors.toMap(RmAttributeAlias::attribute, RmAttributeAlias::alias));
-        alias2attribute =
-                VALUES.stream().collect(Collectors.toMap(RmAttributeAlias::alias, RmAttributeAlias::attribute));
+        attribute2alias = VALUES.stream().collect(Collectors.toMap(RmAttribute::attribute, RmAttribute::alias));
+        alias2attribute = VALUES.stream().collect(Collectors.toMap(RmAttribute::alias, RmAttribute::attribute));
     }
 
     /**
@@ -216,7 +216,7 @@ public record RmAttributeAlias(String attribute, String alias) {
      * @param attribute
      * @param alias
      */
-    private static RmAttributeAlias alias(String attribute, char alias) {
+    private static RmAttribute alias(String attribute, char alias) {
         return alias(attribute, Character.toString(alias));
     }
 
@@ -225,8 +225,8 @@ public record RmAttributeAlias(String attribute, String alias) {
      * @param attribute
      * @param alias
      */
-    private static RmAttributeAlias alias(String attribute, String alias) {
-        return new RmAttributeAlias(attribute, alias);
+    private static RmAttribute alias(String attribute, String alias) {
+        return new RmAttribute(attribute, alias);
     }
 
     public static String getAlias(String attribute) {
@@ -238,7 +238,7 @@ public record RmAttributeAlias(String attribute, String alias) {
     }
 
     public static String[] rmToJsonPathParts(String rmPath) {
-        return Arrays.stream(rmPath.split("/")).map(RmAttributeAlias::getAlias).toArray(String[]::new);
+        return Arrays.stream(rmPath.split("/")).map(RmAttribute::getAlias).toArray(String[]::new);
     }
 
     public static String getAttribute(String alias) {

@@ -50,7 +50,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.VersionContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
-import org.ehrbase.openehr.dbformat.RmTypeAlias;
+import org.ehrbase.openehr.dbformat.RmType;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperatorSymbol;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
@@ -250,7 +250,7 @@ final class AslFromCreator {
             RmContainsWrapper containsWrapper, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         // e.g. "sCO_c_1"
         final String sAlias = aliasProvider.uniqueAlias("s"
-                + RmTypeAlias.optionalAlias(containsWrapper.getRmType()).orElse(containsWrapper.getRmType())
+                + RmType.optionalAlias(containsWrapper.getRmType()).orElse(containsWrapper.getRmType())
                 + Optional.of(containsWrapper)
                         .map(ContainsWrapper::alias)
                         .map(a -> "_" + a)

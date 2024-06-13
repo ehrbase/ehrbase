@@ -20,23 +20,9 @@ package org.ehrbase.openehr.aqlengine.asl.model.join;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 
-public final class AslAuditDetailsJoinCondition implements AslJoinCondition {
-
-    private final AslQuery leftOwner;
-    private final AslStructureQuery rightOwner;
+public final class AslAuditDetailsJoinCondition extends AslAbstractJoinCondition {
 
     public AslAuditDetailsJoinCondition(AslQuery leftOwner, AslStructureQuery rightOwner) {
-        this.leftOwner = leftOwner;
-        this.rightOwner = rightOwner;
-    }
-
-    @Override
-    public AslQuery getLeftOwner() {
-        return leftOwner;
-    }
-
-    @Override
-    public AslStructureQuery getRightOwner() {
-        return rightOwner;
+        super(leftOwner, rightOwner);
     }
 }

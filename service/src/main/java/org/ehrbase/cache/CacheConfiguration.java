@@ -17,15 +17,21 @@
  */
 package org.ehrbase.cache;
 
+import com.ethlo.cache.spring.EnhancedTransactionAwareCacheDecorator;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.Collection;
 import java.util.function.Function;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link Configuration} for EhCache using JCache.
@@ -60,6 +66,10 @@ public class CacheConfiguration {
                 configureCache(Caffeine.newBuilder(), cacheProperties.getUserIdCacheConfig())
                         .build());
         cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.COMMITTER_ID_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getCommitterIdCacheConfig())
+                        .build());
+        cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE),
                 configureCache(Caffeine.newBuilder(), cacheProperties.getExternalFhirTerminologyCacheConfig())
                         .build());
@@ -84,5 +94,46 @@ public class CacheConfiguration {
         }
 
         return caffeine;
+    }
+
+    @Bean
+    public BeanPostProcessor cacheManagerTxProxyBeanPostProcessor() {
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessAfterInitialization(final Object bean, final String beanName) {
+                if (bean instanceof CacheManager cm) {
+                    return new CustomTxAwareCacheManagerProxy(cm);
+                }
+                return bean;
+            }
+        };
+    }
+
+    public static class CustomTxAwareCacheManagerProxy implements CacheManager {
+        private CacheManager targetCacheManager;
+
+        /**
+         * Create a new TransactionAwareCacheManagerProxy for the given target CacheManager.
+         * @param targetCacheManager the target CacheManager to proxy
+         */
+        public CustomTxAwareCacheManagerProxy(CacheManager targetCacheManager) {
+
+            if (targetCacheManager == null) {
+                throw new IllegalArgumentException("Property 'targetCacheManager' is required");
+            }
+            this.targetCacheManager = targetCacheManager;
+        }
+
+        @Override
+        @Nullable
+        public Cache getCache(String name) {
+            Cache targetCache = this.targetCacheManager.getCache(name);
+            return (targetCache != null ? new EnhancedTransactionAwareCacheDecorator(targetCache, true, false) : null);
+        }
+
+        @Override
+        public Collection<String> getCacheNames() {
+            return this.targetCacheManager.getCacheNames();
+        }
     }
 }

@@ -83,6 +83,7 @@
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <git-commit-id-plugin.version>4.9.10</git-commit-id-plugin.version>
     <java-jwt.version>3.19.4</java-jwt.version>
+    <spring-tx-cache.version>1.0.5</spring-tx-cache.version>
 
     <!-- maven plugins -->
     <maven-compiler-plugin-version>3.13.0</maven-compiler-plugin-version>
@@ -103,11 +104,11 @@
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <repository>
       <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
 
@@ -343,6 +344,11 @@
         <groupId>com.sun.xml.bind</groupId>
         <artifactId>jaxb-impl</artifactId>
         <version>2.3.9</version>
+      </dependency>
+      <dependency>
+        <groupId>com.ethlo.cache</groupId>
+        <artifactId>spring-tx-cache-decorator</artifactId>
+        <version>${spring-tx-cache.version}</version>
       </dependency>
 
     </dependencies>

@@ -20,5 +20,18 @@ package org.ehrbase.service;
 import java.util.UUID;
 
 public interface UserService {
-    UUID getCurrentUserId();
+
+    record UserAndCommitterId(UUID userId, UUID committerId) {}
+
+    UserAndCommitterId getCurrentUserAndCommitterId();
+
+    /**
+     *
+     * @deprecated use ::getCurrentUserAndCommitterId
+     * @return
+     */
+    @Deprecated(forRemoval = true)
+    default UUID getCurrentUserId() {
+        return getCurrentUserAndCommitterId().userId();
+    }
 }

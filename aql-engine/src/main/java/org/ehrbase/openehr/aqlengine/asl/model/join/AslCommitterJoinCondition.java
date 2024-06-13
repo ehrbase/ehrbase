@@ -18,27 +18,11 @@
 package org.ehrbase.openehr.aqlengine.asl.model.join;
 
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 
-public abstract sealed class AslAbstractJoinCondition implements AslJoinCondition
-        permits AslAuditDetailsJoinCondition,
-                AslCommitterJoinCondition,
-                AslDelegatingJoinCondition,
-                AslPathFilterJoinCondition {
-    protected AslQuery leftOwner;
-    protected AslQuery rightOwner;
+public final class AslCommitterJoinCondition extends AslAbstractJoinCondition {
 
-    public AslAbstractJoinCondition(AslQuery leftOwner, AslQuery rightOwner) {
-        this.leftOwner = leftOwner;
-        this.rightOwner = rightOwner;
-    }
-
-    @Override
-    public AslQuery getLeftOwner() {
-        return leftOwner;
-    }
-
-    @Override
-    public AslQuery getRightOwner() {
-        return rightOwner;
+    public AslCommitterJoinCondition(AslQuery leftOwner, AslStructureQuery rightOwner) {
+        super(leftOwner, rightOwner);
     }
 }
