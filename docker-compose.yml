@@ -1,5 +1,3 @@
-version: '3'
-
 #
 # Minimal setup for a running EHRbase. Contains the server component as well as the required postgres instance.
 #
