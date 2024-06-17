@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+- Create a `ehrbase` user to run the Docker container ([#1336](https://github.com/ehrbase/ehrbase/pull/1336))
  ### Changed 
 - Deprecate plugin aspects ([#1344](https://github.com/ehrbase/ehrbase/pull/1344))
  ### Fixed 
