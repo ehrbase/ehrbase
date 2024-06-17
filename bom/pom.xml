@@ -62,7 +62,7 @@
     <flyway.version>8.5.13</flyway.version>
     <jackson-bom.version>2.17.1</jackson-bom.version>
     <javamelody.version>1.99.0</javamelody.version>
-    <jooq.version>3.19.8</jooq.version>
+    <jooq.version>3.19.10</jooq.version>
     <json-path.version>2.9.0</json-path.version>
     <junit.version>5.10.2</junit.version>
 
