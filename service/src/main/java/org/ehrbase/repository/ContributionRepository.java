@@ -98,7 +98,7 @@ public class ContributionRepository {
      * @return {@link UUID} of the corresponding Database Record.
      */
     @Transactional
-    public UUID createDefaultAudit(ContributionChangeType contributionChangeType, AuditDetailsTargetType targetType) {
+    UUID createDefaultAudit(ContributionChangeType contributionChangeType, AuditDetailsTargetType targetType) {
         AuditDetailsRecord auditDetailsRecord = context.newRecord(AuditDetails.AUDIT_DETAILS);
 
         auditDetailsRecord.setId(UuidGenerator.randomUUID());
@@ -152,7 +152,7 @@ public class ContributionRepository {
         auditDetailsRecord.setTargetType(targetType.getAlias());
 
         auditDetailsRecord.setChangeType(to(auditDetails.getChangeType()));
-        // We just save the text here wich is not 100 % correct here.
+        // We just save the text here which is not 100 % correct here.
         auditDetailsRecord.setDescription(Optional.ofNullable(auditDetails.getDescription())
                 .map(DvText::getValue)
                 .orElse(null));

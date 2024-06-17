@@ -99,9 +99,7 @@ public class PartyProxyRepository {
         identifier.setType(SECURITY_USER_TYPE);
 
         PartyRef externalRef = new PartyRef(new GenericId(userId.toString(), "DEMOGRAPHIC"), "User", "PARTY");
-        PartyIdentified partyIdentified =
-                new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
 
-        return partyIdentified;
+        return new PartyIdentified(externalRef, "EHRbase Internal " + username, List.of(identifier));
     }
 }

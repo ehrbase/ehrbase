@@ -17,8 +17,6 @@
  */
 package org.ehrbase.repository;
 
-import static org.ehrbase.repository.EhrFolderRepository.NOT_MATCH_LATEST_VERSION;
-
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -78,6 +76,8 @@ public abstract class AbstractVersionedObjectRepository<
         VH extends UpdatableRecord,
         DH extends UpdatableRecord,
         O extends Locatable> {
+
+    static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version.";
 
     protected static final ObjectVersionTablePrototype VERSION_PROTOTYPE = ObjectVersionTablePrototype.INSTANCE;
     protected static final ObjectVersionHistoryTablePrototype VERSION_HISTORY_PROTOTYPE =
@@ -189,10 +189,10 @@ public abstract class AbstractVersionedObjectRepository<
         if (field.getTable() instanceof AbstractTablePrototype t) {
             var targetTable =
                     switch (t) {
-                        case ObjectVersionTablePrototype __ -> tables.versionHead;
-                        case ObjectVersionHistoryTablePrototype __ -> tables.versionHistory;
-                        case ObjectDataTablePrototype __ -> tables.dataHead;
-                        case ObjectDataHistoryTablePrototype __ -> tables.dataHistory;
+                        case ObjectVersionTablePrototype ignored -> tables.versionHead;
+                        case ObjectVersionHistoryTablePrototype ignored -> tables.versionHistory;
+                        case ObjectDataTablePrototype ignored -> tables.dataHead;
+                        case ObjectDataHistoryTablePrototype ignored -> tables.dataHistory;
                     };
             return targetTable.field(field);
         } else {
@@ -205,7 +205,7 @@ public abstract class AbstractVersionedObjectRepository<
         var head = tables.versionHead;
         var history = tables.versionHistory;
 
-        Field[] historyFields = Stream.concat(
+        Field<?>[] historyFields = Stream.concat(
                         Arrays.stream(head.fields()),
                         Stream.of(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_UPPER, VERSION_HISTORY_PROTOTYPE.SYS_DELETED))
                 .map(history::field)
@@ -397,10 +397,7 @@ public abstract class AbstractVersionedObjectRepository<
                         .dataRecords()
                         .get()
                         .map(r -> r.into(tables.dataHead))
-                        .map(r -> {
-                            addDataFieldsFunction.accept(r);
-                            return r;
-                        }),
+                        .peek(addDataFieldsFunction),
                 tables.dataHead);
     }
 

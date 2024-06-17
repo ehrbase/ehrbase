@@ -22,7 +22,6 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION_HISTORY;
-import static org.ehrbase.repository.EhrFolderRepository.NOT_MATCH_LATEST_VERSION;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
@@ -74,13 +73,10 @@ public class EhrRepository
     public static final String[] SUBJECT_NAMESPACE_JSON_PATH =
             RmAttributeAlias.rmToJsonPathParts("subject/external_ref/namespace");
 
-    private final PartyProxyRepository partyProxyRepository;
-
     public EhrRepository(
             DSLContext context,
             ContributionRepository contributionRepository,
             SystemService systemService,
-            PartyProxyRepository partyProxyRepository,
             TimeProvider timeProvider) {
 
         super(
@@ -93,7 +89,6 @@ public class EhrRepository
                 contributionRepository,
                 systemService,
                 timeProvider);
-        this.partyProxyRepository = partyProxyRepository;
     }
 
     @Override
@@ -149,15 +144,6 @@ public class EhrRepository
         return dataRootCondition(dataTable)
                 .and(jsonDataField(dataTable, SUBJECT_ID_JSON_PATH).eq(subjectId))
                 .and(jsonDataField(dataTable, SUBJECT_NAMESPACE_JSON_PATH).eq(nameSpace));
-    }
-
-    public Optional<EhrStatus> findByVersion(UUID ehrId, UUID statusVersion, int version) {
-
-        return findByVersion(
-                        singleEhrStatusCondition(ehrId, tables.dataHead()),
-                        singleEhrStatusCondition(ehrId, tables.dataHistory()),
-                        version)
-                .filter(e -> UUID.fromString(e.getUid().getRoot().getValue()).equals(statusVersion));
     }
 
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, OffsetDateTime time) {

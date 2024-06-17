@@ -46,9 +46,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.JSONB;
 import org.jooq.Record1;
-import org.jooq.Record3;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
@@ -226,10 +224,6 @@ public class CompositionRepository
 
     public Optional<Composition> findHead(UUID ehrId, UUID compId) {
         return findHead(singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()));
-    }
-
-    private Optional<Composition> toComposition(UUID compId, Record3<UUID, Integer, JSONB> jsonbRecord) {
-        return toLocatable(jsonbRecord, Composition.class);
     }
 
     private Optional<CompVersionHistoryRecord> findRootRecordByVersion(UUID ehrId, UUID compId, int version) {

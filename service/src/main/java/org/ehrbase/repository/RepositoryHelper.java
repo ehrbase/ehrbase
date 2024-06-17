@@ -26,7 +26,7 @@ import org.jooq.Loader;
 import org.jooq.Record;
 import org.jooq.Table;
 
-public class RepositoryHelper {
+class RepositoryHelper {
 
     private RepositoryHelper() {
 
@@ -34,7 +34,7 @@ public class RepositoryHelper {
 
     }
 
-    public static <T extends Record> void executeBulkInsert(
+    static <T extends Record> void executeBulkInsert(
             DSLContext context, Stream<T> recordStream, Table<?> table) {
 
         try {
