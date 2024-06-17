@@ -152,6 +152,18 @@ public class ItemTagRepository {
                 .execute();
     }
 
+    @Transactional
+    public void adminDelete(UUID targetId) {
+        context.delete(EHR_ITEM_TAG)
+                .where(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetId))
+                .execute();
+    }
+
+    @Transactional
+    public void adminDeleteAll(UUID ehrId) {
+        context.delete(EHR_ITEM_TAG).where(EHR_ITEM_TAG.EHR_ID.eq(ehrId)).execute();
+    }
+
     private Stream<UUID> bulkInsert(Collection<EhrItemTagRecord> records) {
 
         if (records.isEmpty()) {
