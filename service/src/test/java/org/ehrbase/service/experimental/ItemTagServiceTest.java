@@ -263,12 +263,13 @@ class ItemTagServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", " "})
+    @ValueSource(strings = {"null", "", " "})
     void invalidTagKeyEmptyOrBlank(String key) {
 
-        UnprocessableEntityException exception =
-                assertThrows(UnprocessableEntityException.class, () -> ItemTagServiceImpl.validateTagKey(key));
-        assertEquals("ItemTag key can not be empty or blank", exception.getMessage());
+        UnprocessableEntityException exception = assertThrows(
+                UnprocessableEntityException.class,
+                () -> ItemTagServiceImpl.validateTagKey(key.equals("null") ? null : key));
+        assertEquals("ItemTag must have a key that can not be empty or blank", exception.getMessage());
     }
 
     @ParameterizedTest

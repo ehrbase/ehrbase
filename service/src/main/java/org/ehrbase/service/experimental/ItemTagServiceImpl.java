@@ -138,10 +138,9 @@ public class ItemTagServiceImpl implements ItemTagService {
      */
     @VisibleForTesting
     static void validateTagKey(String key) {
-
         // validate given properties
-        if (key.isEmpty() || key.isBlank()) {
-            throw new UnprocessableEntityException("ItemTag key can not be empty or blank");
+        if (key == null || key.isEmpty() || key.isBlank()) {
+            throw new UnprocessableEntityException("ItemTag must have a key that can not be empty or blank");
         }
         if (!key.matches("^[a-zA-Z0-9/\\-_:]*$")) {
             throw new UnprocessableEntityException(

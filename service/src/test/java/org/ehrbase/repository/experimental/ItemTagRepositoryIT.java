@@ -19,6 +19,7 @@ package org.ehrbase.repository.experimental;
 
 import static org.ehrbase.api.service.experimental.ItemTag.ItemTagRMType.COMPOSITION;
 import static org.ehrbase.api.service.experimental.ItemTag.ItemTagRMType.EHR_STATUS;
+import static org.ehrbase.jooq.pg.tables.EhrItemTag.EHR_ITEM_TAG;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,8 +38,12 @@ import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.test.ServiceIntegrationTest;
 import org.ehrbase.util.UuidGenerator;
+import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ServiceIntegrationTest
@@ -52,6 +57,9 @@ class ItemTagRepositoryIT {
 
     @Autowired
     ItemTagRepository itemTagRepository;
+
+    @Autowired
+    DSLContext context;
 
     private final UUID ehrId = UuidGenerator.randomUUID();
     private final UUID compId = UuidGenerator.randomUUID();
@@ -69,6 +77,12 @@ class ItemTagRepositoryIT {
         status.setQueryable(true);
 
         ehrRepository.commit(ehrId, status, null, null);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // cleanup all remaining tags
+        itemTagRepository.adminDeleteAll(ehrId);
     }
 
     private ItemTag newItemTag(UUID ownerId, UUID target, ItemTagRMType type, String key) {
@@ -197,7 +211,7 @@ class ItemTagRepositoryIT {
                 findForLatestTargetVersion(compId, COMPOSITION, List.of(), List.of("find:composition:tag")).stream()
                         .toList();
         assertEquals(1, compTagIdMatch.size());
-        assertEquals(insertIds.get(0), compIdMatch.get(0).id());
+        assertEquals(insertIds.get(0), compIdMatch.getFirst().id());
 
         List<ItemTag> compTagIdIdMatch =
                 findForLatestTargetVersion(compId, COMPOSITION, List.of(insertIds.get(1)), List.of()).stream()
@@ -245,5 +259,45 @@ class ItemTagRepositoryIT {
                 findForLatestTargetVersion(ehrStatusId, EHR_STATUS, List.of(), List.of())
                         .size(),
                 "The should be EHR_STATUS tags");
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+            textBlock =
+                    """
+            EHR_STATUS|ee77096d-8aae-41ae-8c80-1c14e8e66792
+            COMPOSITION|a8019d32-af8b-49ec-a8b8-9df87acb857c
+            """,
+            delimiterString = "|")
+    void adminDelete(String type, String id) {
+
+        UUID targetId = UUID.fromString(id);
+        ItemTagRMType tagType = ItemTagRMType.valueOf(type);
+
+        Collection<UUID> insertIds = bulkStore(
+                newItemTag(ehrId, targetId, tagType, "some:%s:tag".formatted(type.toLowerCase())),
+                newItemTag(ehrId, UuidGenerator.randomUUID(), COMPOSITION, "some:composition:tag"),
+                newItemTag(ehrId, UuidGenerator.randomUUID(), EHR_STATUS, "some:ehr_status:tag"));
+        assertEquals(3, insertIds.size(), "There should be two inserted ItemTag ids");
+
+        itemTagRepository.adminDelete(targetId);
+        assertEquals(
+                0,
+                itemTagRepository
+                        .findForLatestTargetVersion(ehrId, targetId, tagType, List.of(), List.of())
+                        .size());
+    }
+
+    @Test
+    void adminDeleteAll() {
+
+        Collection<UUID> insertIds = bulkStore(
+                newItemTag(ehrId, UuidGenerator.randomUUID(), COMPOSITION, "some:composition:tag"),
+                newItemTag(ehrId, UuidGenerator.randomUUID(), EHR_STATUS, "some:ehr_status:tag"));
+        assertEquals(2, insertIds.size(), "There should be two inserted ItemTag ids");
+
+        itemTagRepository.adminDeleteAll(ehrId);
+
+        assertEquals(0, context.fetchCount(EHR_ITEM_TAG, EHR_ITEM_TAG.EHR_ID.eq(ehrId)));
     }
 }
