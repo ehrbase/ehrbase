@@ -269,7 +269,7 @@ final class AslFromCreator {
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
         AslStructureQuery aslStructureQuery =
-                new AslStructureQuery(sAlias, sourceRelation, fields, rmTypes, null, requiresVersionJoin);
+                new AslStructureQuery(sAlias, sourceRelation, fields, rmTypes, rmTypes, null, requiresVersionJoin);
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
