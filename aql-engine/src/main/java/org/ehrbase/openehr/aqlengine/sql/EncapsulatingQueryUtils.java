@@ -331,7 +331,8 @@ final class EncapsulatingQueryUtils {
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
                     case AslDvOrderedColumnField f -> Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(
-                            (Field<JSONB>) FieldUtils.field(src, f, true)));
+                                    (Field<JSONB>) FieldUtils.field(src, f, true))
+                            .cast(SQLDataType.NUMERIC));
                     case AslColumnField f -> columnOrderField(f, src, knowledgeCache);
                     case AslComplexExtractedColumnField ecf -> complexExtractedColumnOrderByFields(ecf, src);
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
