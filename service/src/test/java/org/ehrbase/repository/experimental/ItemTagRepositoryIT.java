@@ -233,10 +233,11 @@ class ItemTagRepositoryIT {
     void bulkDeleteEmptyNop() {
 
         // nop
-        assertDoesNotThrow(() -> itemTagRepository.bulkDelete(ehrId, UuidGenerator.randomUUID(), List.of()));
+        assertDoesNotThrow(
+                () -> itemTagRepository.bulkDelete(ehrId, UuidGenerator.randomUUID(), COMPOSITION, List.of()));
         // deletion of non-existing simply does nothing
-        assertDoesNotThrow(() ->
-                itemTagRepository.bulkDelete(ehrId, UuidGenerator.randomUUID(), List.of(UuidGenerator.randomUUID())));
+        assertDoesNotThrow(() -> itemTagRepository.bulkDelete(
+                ehrId, UuidGenerator.randomUUID(), EHR_STATUS, List.of(UuidGenerator.randomUUID())));
     }
 
     @Test
@@ -247,7 +248,8 @@ class ItemTagRepositoryIT {
                 newItemTag(ehrId, UuidGenerator.randomUUID(), EHR_STATUS, "some:ehr_status:tag"));
         assertEquals(2, insertIds.size(), "There should be two inserted ItemTag ids");
 
-        itemTagRepository.bulkDelete(ehrId, UuidGenerator.randomUUID(), insertIds);
+        itemTagRepository.bulkDelete(ehrId, UuidGenerator.randomUUID(), COMPOSITION, insertIds);
+        itemTagRepository.bulkDelete(ehrId, UuidGenerator.randomUUID(), EHR_STATUS, insertIds);
 
         assertEquals(
                 0,

@@ -122,8 +122,9 @@ public class ItemTagRepository {
 
         SelectConditionStep<Record1<EhrItemTagRecord>> query = context.select(EHR_ITEM_TAG)
                 .from(EHR_ITEM_TAG)
-                .where(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToEnum(targetType)))
-                .and(EHR_ITEM_TAG.EHR_ID.eq(ownerId).and(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetVoId)));
+                .where(EHR_ITEM_TAG.EHR_ID.eq(ownerId))
+                .and(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToEnum(targetType)))
+                .and(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetVoId));
 
         if (!ids.isEmpty()) {
             query = query.and(EHR_ITEM_TAG.ID.in(ids));
@@ -140,14 +141,19 @@ public class ItemTagRepository {
      * @param ids  Identifier of <code>ItemTag</code> to delete.
      */
     @Transactional
-    public void bulkDelete(UUID ownerId, UUID targetId, Collection<UUID> ids) {
+    public void bulkDelete(
+            @NonNull UUID ownerId,
+            @NonNull UUID targetVoId,
+            @NonNull ItemTag.ItemTagRMType targetType,
+            @NonNull Collection<UUID> ids) {
 
         if (ids.isEmpty()) {
             return;
         }
         context.delete(EHR_ITEM_TAG)
                 .where(EHR_ITEM_TAG.EHR_ID.eq(ownerId))
-                .and(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetId))
+                .and(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToEnum(targetType)))
+                .and(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetVoId))
                 .and(EHR_ITEM_TAG.ID.in(ids))
                 .execute();
     }

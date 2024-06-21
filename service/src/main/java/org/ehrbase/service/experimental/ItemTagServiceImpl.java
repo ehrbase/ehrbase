@@ -72,7 +72,7 @@ public class ItemTagServiceImpl implements ItemTagService {
     @Override
     public Collection<ItemTagDto> findItemTag(
             @Nonnull UUID ownerId,
-            @Nonnull UUID targetId,
+            @Nonnull UUID targetVoId,
             @Nonnull ItemTag.ItemTagRMType targetType,
             @Nonnull Collection<UUID> ids,
             @Nonnull Collection<String> keys) {
@@ -80,7 +80,7 @@ public class ItemTagServiceImpl implements ItemTagService {
         // sanity check for existing EHR version
         ehrService.checkEhrExists(ownerId);
 
-        return itemTagRepository.findForLatestTargetVersion(ownerId, targetId, targetType, ids, keys).stream()
+        return itemTagRepository.findForLatestTargetVersion(ownerId, targetVoId, targetType, ids, keys).stream()
                 .map(ItemTagServiceImpl::itemTagToDto)
                 .toList();
     }
@@ -88,7 +88,7 @@ public class ItemTagServiceImpl implements ItemTagService {
     @Override
     public void bulkDelete(
             @Nonnull UUID ownerId,
-            @Nonnull UUID targetId,
+            @Nonnull UUID targetVoId,
             @Nonnull ItemTag.ItemTagRMType targetType,
             @Nonnull Collection<UUID> ids) {
 
@@ -99,7 +99,7 @@ public class ItemTagServiceImpl implements ItemTagService {
         // sanity check for existing EHR version
         ehrService.checkEhrExists(ownerId);
 
-        itemTagRepository.bulkDelete(ownerId, targetId, ids);
+        itemTagRepository.bulkDelete(ownerId, targetVoId, targetType, ids);
     }
 
     private static ItemTag itemTagFromDto(
