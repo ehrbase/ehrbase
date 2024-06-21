@@ -247,7 +247,7 @@ class ItemTagServiceTest {
         UUID id = UUID.fromString("247d5155-a4bd-4ad6-ae9a-a8112d1fcd25");
         service.bulkDelete(SAMPLE_EHR_ID, target, targetType, List.of(id));
 
-        verify(mockIemTagRepository, times(1)).bulkDelete(SAMPLE_EHR_ID, target, List.of(id));
+        verify(mockIemTagRepository, times(1)).bulkDelete(SAMPLE_EHR_ID, target, targetType, List.of(id));
     }
 
     @TestFactory
