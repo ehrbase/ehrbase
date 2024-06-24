@@ -29,12 +29,15 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -249,32 +252,47 @@ final class AslFromCreator {
     private AslStructureQuery containsSubquery(
             RmContainsWrapper containsWrapper, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         // e.g. "sCO_c_1"
+        String rmType = containsWrapper.getRmType();
         final String sAlias = aliasProvider.uniqueAlias("s"
-                + RmTypeAlias.optionalAlias(containsWrapper.getRmType()).orElse(containsWrapper.getRmType())
+                + RmTypeAlias.optionalAlias(rmType).orElse(rmType)
                 + Optional.of(containsWrapper)
                         .map(ContainsWrapper::alias)
                         .map(a -> "_" + a)
                         .orElse(""));
 
         final List<String> rmTypes;
-        if (RmConstants.EHR.equals(containsWrapper.getRmType())) {
+        if (RmConstants.EHR.equals(rmType)) {
             rmTypes = List.of(RmConstants.EHR);
         } else {
             // We only support structure types therefore we can ignore all non-structure descendants
-            rmTypes = AncestorStructureRmType.byTypeName(containsWrapper.getRmType())
+            rmTypes = AncestorStructureRmType.byTypeName(rmType)
                     .map(AncestorStructureRmType::getDescendants)
                     .map(s -> s.stream().distinct().map(StructureRmType::name).toList())
                     .orElseGet(
                             () -> List.of(containsWrapper.getStructureRmType().name()));
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
-        AslStructureQuery aslStructureQuery =
-                new AslStructureQuery(sAlias, sourceRelation, fields, rmTypes, rmTypes, null, requiresVersionJoin);
+        AslStructureQuery aslStructureQuery = new AslStructureQuery(
+                sAlias,
+                sourceRelation,
+                fields,
+                rmTypes,
+                RmConstants.COMPOSITION.equals(rmType) ? List.of() : rmTypes,
+                null,
+                requiresVersionJoin);
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
                                 c, aslStructureQuery, knowledgeCacheService::findUuidByTemplateId))
                 .ifPresent(aslStructureQuery::addConditionAnd);
+        if (RmConstants.COMPOSITION.equals(rmType)) {
+            aslStructureQuery.addConditionAnd(new AslFieldValueQueryCondition<>(
+                    AslUtils.findFieldForOwner(
+                            AslStructureColumn.NUM, aslStructureQuery.getSelect(), aslStructureQuery),
+                    AslConditionOperator.EQ,
+                    List.of(0)));
+        }
+
         return aslStructureQuery;
     }
 
@@ -301,6 +319,14 @@ final class AslFromCreator {
                             .isPresent())
                     .map(AslStructureColumn::field)
                     .forEach(fields::add);
+            if (requiresVersionJoin && RmConstants.COMPOSITION.equals(nextDesc.getRmType())) {
+                fields.add(new AslColumnField(
+                        String.class,
+                        Tables.COMP_VERSION.ROOT_CONCEPT.getName(),
+                        null,
+                        true,
+                        AslExtractedColumn.ROOT_CONCEPT));
+            }
         }
         return fields;
     }

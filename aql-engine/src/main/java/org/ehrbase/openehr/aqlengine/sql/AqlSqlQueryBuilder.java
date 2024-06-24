@@ -137,6 +137,17 @@ public class AqlSqlQueryBuilder {
         }
     }
 
+    /**
+     * For test usage only!
+     *
+     * @deprecated
+     * @param pgLljWorkaround
+     */
+    @Deprecated
+    public void setPgLljWorkaround(final boolean pgLljWorkaround) {
+        this.pgLljWorkaround = pgLljWorkaround;
+    }
+
     public SelectQuery<Record> buildSqlQuery(AslRootQuery aslRootQuery) {
 
         AslQueryTables aslQueryToTable = new AslQueryTables();
