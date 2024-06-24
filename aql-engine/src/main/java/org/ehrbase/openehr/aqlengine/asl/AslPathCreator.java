@@ -297,6 +297,7 @@ final class AslPathCreator {
             case NAME_VALUE,
                     TEMPLATE_ID,
                     EHR_ID,
+                    ROOT_CONCEPT,
                     OV_CONTRIBUTION_ID,
                     OV_TIME_COMMITTED,
                     OV_TIME_COMMITTED_DV,

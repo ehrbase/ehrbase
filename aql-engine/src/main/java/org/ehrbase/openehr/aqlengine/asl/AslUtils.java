@@ -220,6 +220,12 @@ public final class AslUtils {
                             findFieldForOwner("id", query.getSelect(), query),
                             aslOperator,
                             conditionValue(value, operator, String.class));
+                    case ROOT_CONCEPT -> new AslFieldValueQueryCondition<>(
+                            findFieldForOwner("root_concept", query.getSelect(), query),
+                            aslOperator,
+                            archetypeNodeIdConditionValues(value, operator).stream()
+                                    .map(AslRmTypeAndConcept::concept)
+                                    .toList());
                     case ARCHETYPE_NODE_ID -> new AslFieldValueQueryCondition<>(
                             AslComplexExtractedColumnField.archetypeNodeIdField(ownerSource),
                             aslOperator,
