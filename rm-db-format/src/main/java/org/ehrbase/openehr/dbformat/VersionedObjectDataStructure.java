@@ -77,13 +77,17 @@ public final class VersionedObjectDataStructure {
 
         handleSubStructure(root, root.getJsonNode(), null, roots);
 
-        // set num field
+        // set num and parentNum fields
         {
             int num = 0;
+            root.setParentNum(0);
             for (StructureNode r : roots) {
                 // skip intermediates
                 if (r.getStructureRmType().isStructureEntry()) {
                     r.setNum(num++);
+                    r.getChildren().stream()
+                            .filter(c -> c.getStructureRmType().isStructureEntry())
+                            .forEach(c -> c.setParentNum(r.getNum()));
                 }
             }
         }

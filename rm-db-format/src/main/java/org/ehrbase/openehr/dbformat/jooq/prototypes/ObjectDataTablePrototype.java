@@ -39,6 +39,7 @@ public final class ObjectDataTablePrototype
     public final TableField<ObjectDataRecordPrototype, UUID> VO_ID = getField(FieldPrototype.VO_ID);
 
     public final TableField<ObjectDataRecordPrototype, Integer> NUM = getField(FieldPrototype.NUM);
+    public final TableField<ObjectDataRecordPrototype, Integer> PARENT_NUM = getField(FieldPrototype.PARENT_NUM);
 
     public final TableField<ObjectDataRecordPrototype, Integer> CITEM_NUM = getField(FieldPrototype.CITEM_NUM);
 
