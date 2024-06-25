@@ -36,6 +36,7 @@ public class StructureNode {
     private StructureRmType structureRmType;
 
     private StructureNode contentItem;
+    private int parentNum = -1;
 
     public StructureNode() {
         this.entityIdx = StructureIndex.of();
@@ -125,5 +126,13 @@ public class StructureNode {
 
     public void setContentItem(StructureNode contentItem) {
         this.contentItem = contentItem;
+    }
+
+    public int getParentNum() {
+        return parentNum;
+    }
+
+    public void setParentNum(final int parentNum) {
+        this.parentNum = parentNum;
     }
 }

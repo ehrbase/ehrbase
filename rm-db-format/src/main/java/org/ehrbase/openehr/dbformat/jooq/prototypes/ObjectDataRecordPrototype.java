@@ -51,6 +51,14 @@ public class ObjectDataRecordPrototype extends AbstractRecordPrototype<ObjectDat
         return (Integer) get(FieldPrototype.CITEM_NUM);
     }
 
+    public void setParentNum(Integer value) {
+        set(FieldPrototype.PARENT_NUM, value);
+    }
+
+    public Integer getParentNum() {
+        return (Integer) get(FieldPrototype.PARENT_NUM);
+    }
+
     public void setRmEntity(String value) {
         set(FieldPrototype.RM_ENTITY, value);
     }

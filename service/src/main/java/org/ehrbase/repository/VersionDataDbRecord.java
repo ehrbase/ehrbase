@@ -110,6 +110,7 @@ public record VersionDataDbRecord(
                 .map(StructureNode::getContentItem)
                 .map(StructureNode::getNum)
                 .orElse(null));
+        rec.setParentNum(node.getParentNum());
         rec.setRmEntity(StructureRmType.byTypeName(node.getRmEntity())
                 .orElseThrow(() -> new InternalServerException("No alias for %s".formatted(node.getRmEntity())))
                 .getAlias());
