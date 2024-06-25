@@ -63,6 +63,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
+import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
 import org.ehrbase.openehr.dbformat.RmAttributeAlias;
 import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.jooq.Condition;
@@ -76,7 +77,7 @@ final class ConditionUtils {
 
     private ConditionUtils() {}
 
-    public static Condition buildJoinCondition(AslJoin aslJoin, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    public static Condition buildJoinCondition(AslJoin aslJoin, AslQueryTables aslQueryToTable) {
         Table<?> sqlLeft = aslQueryToTable.getDataTable(aslJoin.getLeft());
         Table<?> sqlRight = aslQueryToTable.getDataTable(aslJoin.getRight());
 
@@ -217,8 +218,7 @@ final class ConditionUtils {
         };
     }
 
-    public static Condition buildCondition(
-            AslQueryCondition c, AqlSqlQueryBuilder.AslQueryTables tables, boolean useAliases) {
+    public static Condition buildCondition(AslQueryCondition c, AslQueryTables tables, boolean useAliases) {
         return switch (c) {
             case null -> DSL.noCondition();
             case AslAndQueryCondition and -> DSL.and(and.getOperands().stream()
@@ -250,8 +250,7 @@ final class ConditionUtils {
     }
 
     @Nonnull
-    private static Condition notNullCondition(
-            AqlSqlQueryBuilder.AslQueryTables tables, boolean useAliases, AslNotNullQueryCondition nn) {
+    private static Condition notNullCondition(AslQueryTables tables, boolean useAliases, AslNotNullQueryCondition nn) {
         AslField field = nn.getField();
         if (field.getExtractedColumn() != null) {
             return DSL.trueCondition();
@@ -270,7 +269,7 @@ final class ConditionUtils {
     }
 
     private static Condition buildFieldValueCondition(
-            AqlSqlQueryBuilder.AslQueryTables tables, boolean useAliases, AslFieldValueQueryCondition fv) {
+            AslQueryTables tables, boolean useAliases, AslFieldValueQueryCondition fv) {
         AslField field = fv.getField();
 
         AslQuery internalProvider = field.getInternalProvider();
@@ -337,6 +336,7 @@ final class ConditionUtils {
             case TEMPLATE_ID,
                     NAME_VALUE,
                     EHR_ID,
+                    ROOT_CONCEPT,
                     OV_CONTRIBUTION_ID,
                     OV_TIME_COMMITTED_DV,
                     OV_TIME_COMMITTED,
