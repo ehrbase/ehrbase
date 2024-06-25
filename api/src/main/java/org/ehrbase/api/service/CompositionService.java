@@ -31,6 +31,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 
 public interface CompositionService extends VersionedObjectService<Composition, UUID> {
+
     /**
      * @param compositionId The {@link UUID} of the composition to be returned.
      * @param ehrId         The {@link UUID} of the ehr wich contains the composition
@@ -60,6 +61,12 @@ public interface CompositionService extends VersionedObjectService<Composition, 
      */
     StructuredString serialize(CompositionDto composition, CompositionFormat format);
 
+    /**
+     * Retrieve the latest version number for the given composition ID.
+     *
+     * @param compositionId   The {@link UUID} of the composition to be returned.
+     * @return latestVersion  of the existing composition.
+     */
     int getLastVersionNumber(UUID compositionId);
 
     /**
@@ -99,9 +106,9 @@ public interface CompositionService extends VersionedObjectService<Composition, 
     /**
      * Checks if given composition ID is ID of a logically deleted composition.
      *
-     * @param ehrId
+     * @param ehrId             EHRid to delete composition for
      * @param versionedObjectId ID to check
-     * @param version
+     * @param version           Version to delete, option uses head as default
      * @return True if deleted, false if not
      */
     boolean isDeleted(UUID ehrId, UUID versionedObjectId, @Nullable Integer version);

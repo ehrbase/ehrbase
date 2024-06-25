@@ -82,7 +82,7 @@ class CompositionRepositoryTest {
         OffsetDateTime now = OffsetDateTime.of(2022, 3, 21, 23, 45, 10, 123_456_780, ZoneOffset.ofHours(2));
         Mockito.when(timeProvider.getNow()).thenReturn(now);
 
-        DefaultDSLContext context = new DefaultDSLContext(SQLDialect.YUGABYTEDB);
+        DefaultDSLContext context = new DefaultDSLContext(SQLDialect.POSTGRES);
         CompositionRepository repo = new CompositionRepository(context, null, null, null, timeProvider);
 
         VersionDataDbRecord versionData = repo.toRecords(EHR_ID, versionDataObject, CONTRIBUTION_ID, AUDIT_ID);
