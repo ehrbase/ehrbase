@@ -46,10 +46,9 @@ import org.ehrbase.openehr.aqlengine.asl.DataNodeInfo.StructureRmDataNodeInfo;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
@@ -450,8 +449,7 @@ final class AslPathCreator {
 
         AslQuery parentProvider = parentJoinMode == JoinMode.ROOT ? parent.provider() : parent.owner();
         sq.addConditionAnd(
-                new AslDescendantCondition(sourceRelation, parentProvider, parent.owner(), sourceRelation, sq, sq));
-        sq.addConditionAnd(new AslEntityIdxOffsetCondition(parentProvider, parent.owner(), sq, sq, 1));
+                new AslPathChildCondition(sourceRelation, parentProvider, parent.owner(), sourceRelation, sq, sq));
 
         query.addChild(
                 currentQuery,
@@ -478,12 +476,9 @@ final class AslPathCreator {
             PathCohesionTreeNode currentNode) {
         List<AslJoinCondition> childNodeJoinConditions = new ArrayList<>();
         parentFiltersAsJoinCondition(parent, currentNode).ifPresent(childNodeJoinConditions::add);
-        childNodeJoinConditions.add(new AslDescendantCondition(
+        childNodeJoinConditions.add(new AslPathChildCondition(
                         sourceRelation, parent.provider(), parent.owner(), sourceRelation, nodeSubquery, nodeSubquery)
                 .provideJoinCondition());
-        childNodeJoinConditions.add(
-                new AslEntityIdxOffsetCondition(parent.provider(), parent.owner(), nodeSubquery, nodeSubquery, 1)
-                        .provideJoinCondition());
         query.addChild(
                 nodeSubquery, new AslJoin(parent.provider(), JoinType.JOIN, nodeSubquery, childNodeJoinConditions));
         return query;
