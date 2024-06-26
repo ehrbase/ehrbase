@@ -306,8 +306,8 @@ public class CompositionServiceImp implements CompositionService {
     }
 
     @Override
-    public UUID getEhrId(UUID compositionId) {
-        return compositionRepository.findEHRforComposition(compositionId).orElseThrow();
+    public Optional<UUID> getEhrIdForComposition(UUID compositionId) {
+        return compositionRepository.findEHRforComposition(compositionId);
     }
 
     /**
@@ -409,17 +409,6 @@ public class CompositionServiceImp implements CompositionService {
         Optional<Integer> versionByTime = compositionRepository.findVersionByTime(compositionId, timestamp);
         return versionByTime.orElseThrow(() -> new ObjectNotFoundException(
                 "composition", "No COMPOSITION with given id: %s".formatted(compositionId)));
-    }
-
-    @Override
-    public String getTemplateIdFromInputComposition(String content, CompositionFormat format) {
-        Composition composition = buildComposition(content, format, null);
-        if (composition.getArchetypeDetails() == null
-                || composition.getArchetypeDetails().getTemplateId() == null) {
-            return null;
-        } else {
-            return composition.getArchetypeDetails().getTemplateId().getValue();
-        }
     }
 
     @Override
