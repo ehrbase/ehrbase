@@ -5,45 +5,18 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "optional: version to release"
+        description: "Version to release, defaults to project.version"
         required: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Install the sdk main in the local repo so maven version plugin can find them
-      - name: Checkout SDK main
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          repository: ehrbase/openEHR_SDK
-          ref: master
-          # This will be used by git in all further steps
-          # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
-          token: ${{ secrets.BOT_ACCESS_TOKEN }}
-
-      - name: Setup Java
+      - name: Setup - Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-
-      - name: install sdk main
-        run: mvn install
-      # Install the sdk dev in the local repo so maven version plugin can find them
-      - name: Checkout SDK dev
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          repository: ehrbase/openEHR_SDK
-          ref: develop
-          # This will be used by git in all further steps
-          # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
-          token: ${{ secrets.BOT_ACCESS_TOKEN }}
-
-      - name: install sdk dev
-        run: mvn install
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,46 +25,60 @@ jobs:
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
           token: ${{ secrets.BOT_ACCESS_TOKEN }}
+        run: |
+          # Config git robot user
+          git config --global user.email "bot@ehrbase.org"
+          git config --global user.name "bot"
 
+      #
+      # Uses the input version or read the version from the project pom
+      #
       - name: Calculate Release Version
         run: |
           if [ -z "${{ github.event.inputs.version }}" ]
           then
-            v=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml" | sed 's/-SNAPSHOT//')
-            echo ${{ github.repository }}
+            version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | sed 's/-SNAPSHOT//') 
           else
-            v=${{ github.event.inputs.version }}
+            version=${{ github.event.inputs.version }}
           fi
-          echo "release version ${v}"
+          echo "Release version: ${version}"
           # Set as Environment for all further steps 
-          echo "VERSION=${v}" >> $GITHUB_ENV
+          echo "VERSION=${version}" >> $GITHUB_ENV
 
+      #
+      # Uses the enforcer plugin to ensure no -SNAPSHOT version are used
+      #
+      - name: Enforce no SNAPSHOT used
+        run: |
+          mvn -P no-snapshots enforcer:enforce
+
+      #
+      # Create a new release branch and adjust the release version and changelog.
+      #
       - name: Create Release Branch
         run: |
-          # Config git
-          git config --global user.email "bot@ehrbase.org"
-          git config --global user.name "bot"
           # create branch
           git checkout -b release/v${VERSION}
           # Update version
           mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
-          #Update sdk version latest release 
-          mvn versions:update-properties  -Dincludes=org.ehrbase.openehr.sdk:*
-          sdk_version=$( grep -oPm1 "(?<=<ehrbase.sdk.version>)[^<]+" "bom/pom.xml")
-          echo "sdk_version: ${sdk_version}"
-          #edit changelog
-          replace="0,/Changed/{s/Changed/Changed \n - Upgrade openEHR_SDK to version ${sdk_version} see https:\/\/github.com\/ehrbase\/openEHR_SDK\/blob\/develop\/CHANGELOG.md/}"
-          sed -i "${replace}" CHANGELOG.md
-          replace="s/\[unreleased\]/\[${VERSION}\]/"
-          sed -i ${replace} CHANGELOG.md
-          replace="s/...HEAD/\...v${VERSION}/"
-          sed -i ${replace} CHANGELOG.md
+          # Update Changelog
+          sed -i "s/\[unreleased\]/\[${VERSION}\]/" CHANGELOG.md
+          sed -i "s/...HEAD/\...v${VERSION}/" CHANGELOG.md
+
+      #
+      # Publish release branch
+      #
+      - name: Publish Release Branch
+        run: |
           # commit & push
           git add -A
           git commit -m "release ${VERSION}: updated version to ${VERSION}"
           git push -u origin release/v${VERSION}
-      # wait for status of commit to change from pending
-      - name: Wait for ci pipeline
+
+      #
+      # Wait for status of commit to change from pending
+      #
+      - name: Wait for CI pipeline
         run: |
           STATUS="pending"
           # Get commit last commit of release branch
@@ -99,37 +86,43 @@ jobs:
           echo "Listen for commit $COMMIT"
           WAITED="0"
           # Time between calls
-          SLEEP_TIME="60"
+          SLEEP_TIME="15"
           while [ "$STATUS" == "pending" ] && [ "$WAITED" -le 1800 ]
           do
-           sleep ${SLEEP_TIME}
-           WAITED=$((WAITED+SLEEP_TIME))
-           STATUS=$(gh api /repos/${{ github.repository  }}/commits/"${COMMIT}"/status -q .state)
-          echo "status : $STATUS"
-          echo "waited  $WAITED s"
+            sleep ${SLEEP_TIME}
+            WAITED=$((WAITED+SLEEP_TIME))
+            STATUS=$(gh api /repos/${{ github.repository  }}/commits/"${COMMIT}"/status -q .state)
+            echo "status : $STATUS"
+            echo "waited  $WAITED s"
           done
           echo "status : $STATUS"
           if [ "$STATUS" != "success" ]
-           then exit 1
+            then exit 1
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
-      - name: Merge into Main
+      #
+      # In case the CI build was successful - we can merge everything back into the master branch
+      #
+      - name: Merge into Master
         run: |
           git checkout master
           git pull
           git merge --no-ff release/v${VERSION}
-          git tag  -a  -m "v${VERSION}" "v${VERSION}"
+          git tag -a -m "v${VERSION}" "v${VERSION}"
           git push --follow-tags
 
-      - name: Create Release
+      #
+      # Create the actual github release for the version using the actual changelog
+      #
+      - name: Create Github Release
         run: |
-          gh release create "v${VERSION}" -t "v${VERSION}"  -F CHANGELOG.md -R ${{ github.repository  }} --target master
+          gh release create "v${VERSION}" -t "v${VERSION}" -F CHANGELOG.md -R ${{ github.repository  }} --target master
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
-      - name: Merge into dev
+      - name: Prepare next dev version
         run: |
           # increment minor version and add SNAPSHOT
           ARRAY_VERSION=( ${VERSION//./ } )
@@ -138,14 +131,15 @@ jobs:
           echo "next version: $NEXT_VERSION"
           # update version
           mvn versions:set -DnewVersion=${NEXT_VERSION} -DprocessAllModules=true
-          #update sdk to latest snapshot
-          mvn versions:update-properties  -Dincludes=org.ehrbase.openehr.sdk:*  -DallowSnapshots=true
           #edit changelog
           sed -i '8i ## [unreleased]\n ### Added\n ### Changed \n ### Fixed \n' CHANGELOG.md
           replace="$ a \[unreleased\]: https:\/\/github.com\/ehrbase\/ehrbase\/compare\/v$VERSION...HEAD"
           sed -i "${replace}" CHANGELOG.md
+
+      - name: Merge into dev
+        run: |
           git add -A
-          git commit -m " updated version to ${NEXT_VERSION}"
+          git commit -m " Updated version to ${NEXT_VERSION}"
           git checkout develop
           git pull
           git merge --no-ff release/v${VERSION}
