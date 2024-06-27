@@ -25,6 +25,8 @@ jobs:
           # This will be used by git in all further steps
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
           token: ${{ secrets.BOT_ACCESS_TOKEN }}
+
+      - name: Configure Git user
         run: |
           # Config git robot user
           git config --global user.email "bot@ehrbase.org"
