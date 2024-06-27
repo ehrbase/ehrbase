@@ -51,6 +51,7 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
+import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
@@ -298,6 +299,10 @@ public class AqlSqlLayer {
                     comparison.rightComparisonOperands(), operator, knowledgeCache::findUuidByTemplateId);
             case ARCHETYPE_NODE_ID -> AslUtils.archetypeNodeIdConditionValues(
                     comparison.rightComparisonOperands(), operator);
+            case ROOT_CONCEPT -> AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator)
+                    .stream()
+                    .map(AslRmTypeAndConcept::concept)
+                    .toList();
             case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> AslUtils.streamStringPrimitives(comparison)
                     .map(AslUtils::toOffsetDateTime)
                     .filter(Objects::nonNull)

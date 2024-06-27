@@ -48,6 +48,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondi
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
@@ -63,6 +64,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
+import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
 import org.ehrbase.openehr.dbformat.RmAttributeAlias;
 import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.jooq.Condition;
@@ -76,7 +78,7 @@ final class ConditionUtils {
 
     private ConditionUtils() {}
 
-    public static Condition buildJoinCondition(AslJoin aslJoin, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    public static Condition buildJoinCondition(AslJoin aslJoin, AslQueryTables aslQueryToTable) {
         Table<?> sqlLeft = aslQueryToTable.getDataTable(aslJoin.getLeft());
         Table<?> sqlRight = aslQueryToTable.getDataTable(aslJoin.getRight());
 
@@ -112,8 +114,69 @@ final class ConditionUtils {
         (switch (joinCondition.getDelegate()) {
                     case AslEntityIdxOffsetCondition c -> entityIdxOffsetConditions(c, sqlLeft, sqlRight, true);
                     case AslDescendantCondition c -> descendantConditions(c, sqlLeft, sqlRight, true);
+                    case AslPathChildCondition c -> pathChildConditions(c, sqlLeft, sqlRight, true);
                 })
                 .forEach(conditions::add);
+    }
+
+    private static Stream<Condition> pathChildConditions(
+            final AslPathChildCondition dc,
+            final Table<?> sqlLeft,
+            final Table<?> sqlRight,
+            final boolean isJoinCondition) {
+        AslSourceRelation parentRelation = dc.getParentRelation();
+        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
+                .contains(parentRelation)) {
+            throw new IllegalArgumentException("unexpected parent relation type %s".formatted(parentRelation));
+        }
+        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
+                .contains(dc.getChildRelation())) {
+            throw new IllegalArgumentException(
+                    "unexpected descendant relation type %s".formatted(dc.getChildRelation()));
+        }
+
+        return switch (parentRelation) {
+            case COMPOSITION, EHR_STATUS -> {
+                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.COMPOSITION
+                        ? AslStructureColumn.VO_ID
+                        : AslStructureColumn.EHR_ID;
+                yield Stream.of(
+                        // l.pKey == r.pKey
+                        FieldUtils.field(
+                                        sqlLeft,
+                                        dc.getLeftProvider(),
+                                        dc.getLeftOwner(),
+                                        pKeyField.getFieldName(),
+                                        UUID.class,
+                                        true)
+                                .eq(FieldUtils.field(
+                                        sqlRight,
+                                        dc.getRightProvider(),
+                                        dc.getRightOwner(),
+                                        pKeyField.getFieldName(),
+                                        UUID.class,
+                                        isJoinCondition)),
+                        // l.num < r.parent_num
+                        FieldUtils.field(
+                                        sqlLeft,
+                                        dc.getLeftProvider(),
+                                        dc.getLeftOwner(),
+                                        AslStructureColumn.NUM.getFieldName(),
+                                        Integer.class,
+                                        true)
+                                .eq(FieldUtils.field(
+                                        sqlRight,
+                                        dc.getRightProvider(),
+                                        dc.getRightOwner(),
+                                        AslStructureColumn.PARENT_NUM.getFieldName(),
+                                        Integer.class,
+                                        isJoinCondition)));
+            }
+            case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
+            case AUDIT_DETAILS -> throw new IllegalArgumentException(
+                    "Path child condition not applicable to AUDIT_DETAILS");
+            case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
+        };
     }
 
     private static Stream<Condition> entityIdxOffsetConditions(
@@ -217,8 +280,7 @@ final class ConditionUtils {
         };
     }
 
-    public static Condition buildCondition(
-            AslQueryCondition c, AqlSqlQueryBuilder.AslQueryTables tables, boolean useAliases) {
+    public static Condition buildCondition(AslQueryCondition c, AslQueryTables tables, boolean useAliases) {
         return switch (c) {
             case null -> DSL.noCondition();
             case AslAndQueryCondition and -> DSL.and(and.getOperands().stream()
@@ -246,12 +308,19 @@ final class ConditionUtils {
                                     : tables.getDataTable(dc.getRightProvider()),
                             false)
                     .toList());
+            case AslPathChildCondition dc -> DSL.and(pathChildConditions(
+                            dc,
+                            tables.getDataTable(dc.getLeftProvider()),
+                            dc.getParentRelation() == AslSourceRelation.EHR
+                                    ? tables.getVersionTable(dc.getRightProvider())
+                                    : tables.getDataTable(dc.getRightProvider()),
+                            false)
+                    .toList());
         };
     }
 
     @Nonnull
-    private static Condition notNullCondition(
-            AqlSqlQueryBuilder.AslQueryTables tables, boolean useAliases, AslNotNullQueryCondition nn) {
+    private static Condition notNullCondition(AslQueryTables tables, boolean useAliases, AslNotNullQueryCondition nn) {
         AslField field = nn.getField();
         if (field.getExtractedColumn() != null) {
             return DSL.trueCondition();
@@ -270,7 +339,7 @@ final class ConditionUtils {
     }
 
     private static Condition buildFieldValueCondition(
-            AqlSqlQueryBuilder.AslQueryTables tables, boolean useAliases, AslFieldValueQueryCondition fv) {
+            AslQueryTables tables, boolean useAliases, AslFieldValueQueryCondition fv) {
         AslField field = fv.getField();
 
         AslQuery internalProvider = field.getInternalProvider();
@@ -337,6 +406,7 @@ final class ConditionUtils {
             case TEMPLATE_ID,
                     NAME_VALUE,
                     EHR_ID,
+                    ROOT_CONCEPT,
                     OV_CONTRIBUTION_ID,
                     OV_TIME_COMMITTED_DV,
                     OV_TIME_COMMITTED,

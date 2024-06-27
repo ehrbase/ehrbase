@@ -57,12 +57,19 @@ public enum AslExtractedColumn {
             StructureRmType.COMPOSITION.name(),
             StructureRmType.EHR_STATUS.name(),
             RmConstants.ORIGINAL_VERSION),
+    ROOT_CONCEPT(
+            AqlObjectPathUtil.ARCHETYPE_NODE_ID,
+            COMP_VERSION.ROOT_CONCEPT,
+            String.class,
+            true,
+            StructureRmType.COMPOSITION.name()),
     ARCHETYPE_NODE_ID(
             AqlObjectPathUtil.ARCHETYPE_NODE_ID,
             List.of(COMP_DATA.RM_ENTITY, COMP_DATA.ENTITY_CONCEPT),
             String.class,
             false,
             Stream.concat(Arrays.stream(StructureRmType.values()), Arrays.stream(AncestorStructureRmType.values()))
+                    .filter(v -> !v.equals(StructureRmType.COMPOSITION))
                     .map(Enum::name)
                     .toArray(String[]::new)),
     TEMPLATE_ID(

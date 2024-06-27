@@ -30,6 +30,7 @@ import org.jooq.Field;
 public enum AslStructureColumn {
     VO_ID(ObjectDataTablePrototype.INSTANCE.VO_ID, UUID.class, null),
     NUM(ObjectDataTablePrototype.INSTANCE.NUM, Integer.class, false),
+    PARENT_NUM(ObjectDataTablePrototype.INSTANCE.PARENT_NUM, Integer.class, false),
     EHR_ID(ObjectVersionTablePrototype.INSTANCE.EHR_ID, UUID.class, true),
     ENTITY_IDX(ObjectDataTablePrototype.INSTANCE.ENTITY_IDX, String.class, false),
     ENTITY_IDX_CAP(ObjectDataTablePrototype.INSTANCE.ENTITY_IDX_CAP, String.class, false),

@@ -41,6 +41,7 @@ public enum FieldPrototype {
 
     // DATA
     NUM(SQLDataType.INTEGER.nullable(false), false, false, true, true),
+    PARENT_NUM(SQLDataType.INTEGER.nullable(false), false, false, true, true),
     CITEM_NUM(SQLDataType.INTEGER, false, false, true, true),
     RM_ENTITY(SQLDataType.CLOB.nullable(false), false, false, true, true),
     ENTITY_CONCEPT(SQLDataType.CLOB, false, false, true, true),

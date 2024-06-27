@@ -135,24 +135,7 @@ public class AqlSqlQueryBuilderTest {
         -- SELECT 1,count(c/uid/value), 'a', e/ehr_id/value FROM EHR e CONTAINS EHR_STATUS s AND COMPOSITION c WHERE e/ehr_id/value matches{ 'd50c939a-7661-4ef1-a67b-5a57661263db',1}
         -- SELECT el/value FROM COMPOSITION c CONTAINS ELEMENT el ORDER BY el/value
         -- SELECT o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value/magnitude FROM OBSERVATION o[openEHR-EHR-OBSERVATION.conformance_observation.v0] ORDER BY o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value ASC
-        SELECT
-            e/ehr_id/value,
-            -- All allowed usages of aggregate functions
-            COUNT(*),
-            COUNT(c/archetype_node_id),
-            COUNT(DISTINCT c/archetype_node_id),
-            COUNT(DISTINCT c/uid/value),
-            COUNT(el),
-            COUNT(el/name/mappings),
-            COUNT(el/value),
-            COUNT(el/value/value),
-            MAX(el/value/value),
-            MIN(el/value/value),
-            MAX(el/value),
-            MIN(el/value),
-            AVG(el/value/value),
-            SUM(el/value/value)
-        FROM EHR e CONTAINS COMPOSITION c CONTAINS ELEMENT el
+        SELECT c/feeder_audit AS sisOrigenIds, c/uid/value AS compositionid, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/time/value AS dataAdmin, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/description[at0017]/items[at0020]/value/defining_code/code_string AS codiImmunitzacio, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/description[at0017]/items[openEHR-EHR-CLUSTER.medication.v2]/items[at0132]/value AS codiMarcaComercial, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/description[at0017]/items[openEHR-EHR-CLUSTER.medication.v2]/items[at0150]/value/value AS numLot, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/other_participations/performer AS dadesProfessional, c/context/other_context[at0004]/items[openEHR-EHR-CLUSTER.admin_salut.v0]/items[at0007]/items[at0014]/value/defining_code/code_string AS codiCentrePublicador, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/provider/identifiers/id AS origenInformacio, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/ism_transition/current_state AS estat, c/content[openEHR-EHR-SECTION.immunisation_list.v0]/items[openEHR-EHR-ACTION.medication.v1]/description[at0017]/items[at0021] AS reason FROM EHR e CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.vaccination_list.v0] WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
 
         System.out.println("/*");
