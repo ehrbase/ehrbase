@@ -61,7 +61,7 @@ jobs:
       # Build & Publish image
       - name: Build and push Versioned Docker Image
         id: build-and-push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile_postgres
