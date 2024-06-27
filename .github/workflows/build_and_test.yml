@@ -344,7 +344,7 @@ jobs:
       - name: Docker - Build Jacoco-CLI
         uses: docker/build-push-action@v6
         env:
-          DOCKER_BUILD_NO_SUMMARY: false
+          DOCKER_BUILD_NO_SUMMARY: true
         with:
           context: .
           file: tests/DockerfileJacocoCLI
