@@ -261,8 +261,10 @@ final class AslFromCreator {
                         .orElse(""));
 
         final List<String> rmTypes;
+        boolean isRoot;
         if (RmConstants.EHR.equals(rmType)) {
             rmTypes = List.of(RmConstants.EHR);
+            isRoot = false;
         } else {
             // We only support structure types therefore we can ignore all non-structure descendants
             rmTypes = AncestorStructureRmType.byTypeName(rmType)
@@ -270,22 +272,20 @@ final class AslFromCreator {
                     .map(s -> s.stream().distinct().map(StructureRmType::name).toList())
                     .orElseGet(
                             () -> List.of(containsWrapper.getStructureRmType().name()));
+
+            // Folder may be root, but is recursive
+            isRoot = RmConstants.COMPOSITION.equals(rmType) || RmConstants.EHR_STATUS.equals(rmType);
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
+
         AslStructureQuery aslStructureQuery = new AslStructureQuery(
-                sAlias,
-                sourceRelation,
-                fields,
-                rmTypes,
-                RmConstants.COMPOSITION.equals(rmType) ? List.of() : rmTypes,
-                null,
-                requiresVersionJoin);
+                sAlias, sourceRelation, fields, rmTypes, isRoot ? List.of() : rmTypes, null, requiresVersionJoin);
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
                                 c, aslStructureQuery, knowledgeCacheService::findUuidByTemplateId))
                 .ifPresent(aslStructureQuery::addConditionAnd);
-        if (RmConstants.COMPOSITION.equals(rmType)) {
+        if (isRoot) {
             aslStructureQuery.addConditionAnd(new AslFieldValueQueryCondition<>(
                     AslUtils.findFieldForOwner(
                             AslStructureColumn.NUM, aslStructureQuery.getSelect(), aslStructureQuery),
@@ -319,6 +319,8 @@ final class AslFromCreator {
                             .isPresent())
                     .map(AslStructureColumn::field)
                     .forEach(fields::add);
+
+            // (Only) for Compositions version.root_concept mirrors the data.entity_concept of the COMPOSITION row
             if (requiresVersionJoin && RmConstants.COMPOSITION.equals(nextDesc.getRmType())) {
                 fields.add(new AslColumnField(
                         String.class,

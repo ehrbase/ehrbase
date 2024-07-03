@@ -73,6 +73,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
             case AD_CHANGE_TYPE_CODE_STRING -> ChangeTypeUtils.getCodeByJooqChangeType(
                     (ContributionChangeType) columnValue);
             case VO_ID -> restoreVoId((Record) columnValue, nodeName);
+                // the root is always archetyped
             case ROOT_CONCEPT -> AslRmTypeAndConcept.ARCHETYPE_PREFIX + RmConstants.COMPOSITION + columnValue;
             case ARCHETYPE_NODE_ID -> restoreArchetypeNodeId((Record) columnValue);
             case EHR_SYSTEM_ID_DV -> new HierObjectId((String) columnValue);

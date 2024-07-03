@@ -74,6 +74,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.LogicalOperatorConditionWrapper;
+import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.operand.AggregateFunction.AggregateFunctionName;
 import org.ehrbase.openehr.sdk.aql.dto.operand.DoublePrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.LongPrimitive;
@@ -301,6 +302,8 @@ public class AqlSqlLayer {
                     comparison.rightComparisonOperands(), operator);
             case ROOT_CONCEPT -> AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator)
                     .stream()
+                    // archetype must be for COMPOSITION
+                    .filter(tc -> StructureRmType.COMPOSITION.getAlias().equals(tc.aliasedRmType()))
                     .map(AslRmTypeAndConcept::concept)
                     .toList();
             case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> AslUtils.streamStringPrimitives(comparison)

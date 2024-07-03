@@ -59,6 +59,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.LogicalOperatorConditionWrapper;
+import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.operand.Primitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.TemporalPrimitive;
@@ -220,16 +221,20 @@ public final class AslUtils {
                             findFieldForOwner("id", query.getSelect(), query),
                             aslOperator,
                             conditionValue(value, operator, String.class));
-                    case ROOT_CONCEPT -> new AslFieldValueQueryCondition<>(
-                            findFieldForOwner("root_concept", query.getSelect(), query),
-                            aslOperator,
-                            archetypeNodeIdConditionValues(value, operator).stream()
-                                    .map(AslRmTypeAndConcept::concept)
-                                    .toList());
                     case ARCHETYPE_NODE_ID -> new AslFieldValueQueryCondition<>(
                             AslComplexExtractedColumnField.archetypeNodeIdField(ownerSource),
                             aslOperator,
                             archetypeNodeIdConditionValues(value, operator));
+                    case ROOT_CONCEPT -> new AslFieldValueQueryCondition<>(
+                            findFieldForOwner("root_concept", query.getSelect(), query),
+                            aslOperator,
+                            archetypeNodeIdConditionValues(value, operator).stream()
+                                    // archetype must be for COMPOSITION
+                                    .filter(tc -> StructureRmType.COMPOSITION
+                                            .getAlias()
+                                            .equals(tc.aliasedRmType()))
+                                    .map(AslRmTypeAndConcept::concept)
+                                    .toList());
                     case TEMPLATE_ID -> {
                         // Template id is handled separately since the extracted column stores the internal uuid
                         List<UUID> templateUuids = templateIdConditionValues(value, operator, templateUuidLookupFunc);

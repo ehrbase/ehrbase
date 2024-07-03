@@ -88,8 +88,8 @@ public class AqlSqlQueryBuilder {
     private final KnowledgeCacheService knowledgeCache;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
 
-    @Value("${ehrbase.aql.pg-llj-workaround:true}")
-    private boolean pgLljWorkaround = true;
+    @Value("${ehrbase.aql.pg-llj-workaround}")
+    private boolean pgLljWorkaround = false;
 
     public AqlSqlQueryBuilder(
             DSLContext context,
@@ -135,17 +135,6 @@ public class AqlSqlQueryBuilder {
             dataTables.remove(aq);
             versionTables.remove(aq);
         }
-    }
-
-    /**
-     * For test usage only!
-     *
-     * @deprecated
-     * @param pgLljWorkaround
-     */
-    @Deprecated
-    public void setPgLljWorkaround(final boolean pgLljWorkaround) {
-        this.pgLljWorkaround = pgLljWorkaround;
     }
 
     public SelectQuery<Record> buildSqlQuery(AslRootQuery aslRootQuery) {

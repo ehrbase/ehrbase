@@ -83,6 +83,8 @@ security:
 
 
 ehrbase:
+  aql:
+    pg-llj-workaround: true
   rest:
     aql:
       # allows to control query execution using debug params

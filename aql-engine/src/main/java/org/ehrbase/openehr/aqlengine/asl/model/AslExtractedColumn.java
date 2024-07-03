@@ -58,6 +58,7 @@ public enum AslExtractedColumn {
             StructureRmType.EHR_STATUS.name(),
             RmConstants.ORIGINAL_VERSION),
     ROOT_CONCEPT(
+            // same path as ARCHETYPE_NODE_ID (alternative for Compositions)
             AqlObjectPathUtil.ARCHETYPE_NODE_ID,
             COMP_VERSION.ROOT_CONCEPT,
             String.class,
@@ -69,6 +70,7 @@ public enum AslExtractedColumn {
             String.class,
             false,
             Stream.concat(Arrays.stream(StructureRmType.values()), Arrays.stream(AncestorStructureRmType.values()))
+                    // for Compositions ROOT_CONCEPT is used
                     .filter(v -> !v.equals(StructureRmType.COMPOSITION))
                     .map(Enum::name)
                     .toArray(String[]::new)),
