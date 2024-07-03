@@ -252,7 +252,11 @@ final class AslPathCreator {
                     aliasProvider.uniqueAlias(sourceField.getOwner().getAlias() + "_f"), sourceField);
             rootQuery.addChild(
                     filteringQuery,
-                    new AslJoin(dni.providerSubQuery(), JoinType.LEFT_OUTER_JOIN, filteringQuery, filterConditions));
+                    new AslJoin(
+                            sourceField.getInternalProvider(),
+                            JoinType.LEFT_OUTER_JOIN,
+                            filteringQuery,
+                            filterConditions));
             pathToField.replace(identifiedPath, filteringQuery.getSelect().getFirst());
         }
     }
