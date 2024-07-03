@@ -438,18 +438,22 @@ final class AslPathCreator {
         currentQuery.addChild(sq, null);
 
         AslQuery parentProvider = parentJoinMode == JoinMode.ROOT ? parent.provider() : parent.owner();
-        sq.addConditionAnd(
-                new AslDescendantCondition(sourceRelation, parentProvider, parent.owner(), sourceRelation, sq, sq));
-        sq.addConditionAnd(new AslEntityIdxOffsetCondition(parentProvider, parent.owner(), sq, sq, 1));
-
+        AslJoinCondition[] joinConditions = Stream.concat(
+                        Stream.of(
+                                new AslDescendantCondition(
+                                                sourceRelation,
+                                                parentProvider,
+                                                parent.owner(),
+                                                sourceRelation,
+                                                currentQuery,
+                                                sq)
+                                        .provideJoinCondition(),
+                                new AslEntityIdxOffsetCondition(parentProvider, parent.owner(), currentQuery, sq, 1)
+                                        .provideJoinCondition()),
+                        parentFiltersAsJoinCondition(parent, currentNode).stream())
+                .toArray(AslJoinCondition[]::new);
         query.addChild(
-                currentQuery,
-                new AslJoin(
-                        parent.provider(),
-                        JoinType.LEFT_OUTER_JOIN,
-                        currentQuery,
-                        parentFiltersAsJoinCondition(parent, currentNode).stream()
-                                .toArray(AslJoinCondition[]::new)));
+                currentQuery, new AslJoin(parent.provider(), JoinType.LEFT_OUTER_JOIN, currentQuery, joinConditions));
 
         if (parentJoinMode == JoinMode.INTERNAL_FORK) {
             query.addConditionOr(new AslNotNullQueryCondition(

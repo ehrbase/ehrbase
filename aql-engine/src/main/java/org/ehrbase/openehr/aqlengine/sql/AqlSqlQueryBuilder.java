@@ -228,7 +228,7 @@ public class AqlSqlQueryBuilder {
         return switch (aslQuery) {
             case AslStructureQuery aq -> buildStructureQuery(aq, aslQueryToTable)
                     .asTable(aq.getAlias());
-            case AslEncapsulatingQuery aq -> DSL.lateral(buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable))
+            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable)
                     .asTable(aq.getAlias());
             case AslRmObjectDataQuery aq -> DSL.lateral(
                     buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));

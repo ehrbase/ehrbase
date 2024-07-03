@@ -212,8 +212,24 @@ final class AslFromCreator {
                 // OR operands with chaining inside need to be mapped to their own subquery.
                 // Else the nested contains chain would not be isolated from the parent
                 // and the outer left join would bleed into it.
-                var orSq = buildOrOperandAsEncapsulatingQuery(containsToStructureSubQuery, currentParent, operand);
-                currentQuery.addChild(orSq, new AslJoin(currentParent, JoinType.LEFT_OUTER_JOIN, orSq));
+                AslEncapsulatingQuery orSq =
+                        buildOrOperandAsEncapsulatingQuery(containsToStructureSubQuery, currentParent, operand);
+                AslStructureQuery child =
+                        (AslStructureQuery) orSq.getChildren().getFirst().getLeft();
+                currentQuery.addChild(
+                        orSq,
+                        new AslJoin(
+                                currentParent,
+                                JoinType.LEFT_OUTER_JOIN,
+                                orSq,
+                                new AslDescendantCondition(
+                                                currentParent.getType(),
+                                                currentParent,
+                                                currentParent,
+                                                child.getType(),
+                                                orSq,
+                                                child)
+                                        .provideJoinCondition()));
             } else {
                 // AND operands and simple (no chaining inside) OR operands can be joined directly
                 addContainsChain(
@@ -240,8 +256,6 @@ final class AslFromCreator {
         // constrain first structure query as descendant
         AslStructureQuery child =
                 ((AslStructureQuery) orSq.getChildren().getFirst().getLeft());
-        child.addConditionAnd(new AslDescendantCondition(
-                currentParent.getType(), currentParent, currentParent, child.getType(), child, child));
 
         // provider must be orSq
         subQueryMap.forEach((k, v) -> containsToStructureSubQuery.put(k, new OwnerProviderTuple(v.owner(), orSq)));
