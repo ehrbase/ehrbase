@@ -206,9 +206,7 @@ final class AslPathCreator {
         AslQuery base = parentPathDataQuery != null
                 ? parentPathDataQuery
                 : (AslStructureQuery) dni.parent().owner();
-        AslQuery provider =
-                parentPathDataQuery != null ? parentPathDataQuery : dni.parent().provider();
-        AslEncapsulatingQuery parentJoin = dni.parentJoin();
+        AslQuery provider = parentPathDataQuery != null ? parentPathDataQuery : dni.providerSubQuery();
 
         Class<?> fieldType = dni.type();
         AslPathDataQuery dataQuery = new AslPathDataQuery(
@@ -219,21 +217,11 @@ final class AslPathCreator {
                 dni.multipleValued(),
                 dni.dvOrderedTypes(),
                 fieldType);
-        // multiple-values entries have to be left-joined (actually only if other paths are retrieved, too)
-        JoinType joinType = dni.multipleValued() ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN;
-        parentJoin.addChild(dataQuery, new AslJoin(provider, joinType, dataQuery));
+        rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
 
         dni.node()
                 .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(
-                        path,
-                        parentJoin == rootQuery
-                                ? dataQuery.getSelect().getFirst()
-                                : dni.providerSubQuery().getSelect().stream()
-                                        .filter(f -> f.getOwner() == dataQuery)
-                                        .map(f -> f.withProvider(rootQuery))
-                                        .findFirst()
-                                        .orElseThrow()));
+                .forEach(path -> pathToField.put(path, dataQuery.getSelect().getFirst()));
 
         addQueriesForDataNode(dni.dependentPathDataNodes(), rootQuery, dataQuery, pathToField);
     }
