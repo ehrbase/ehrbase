@@ -203,22 +203,28 @@ final class AslPathCreator {
             AslRootQuery rootQuery,
             AslPathDataQuery parentPathDataQuery,
             Map<IdentifiedPath, AslField> pathToField) {
-        AslQuery base = parentPathDataQuery != null
+        boolean hasPathQueryParent = parentPathDataQuery != null;
+        boolean splitMultipleValued = dni.multipleValued() && !hasPathQueryParent;
+        final AslQuery base = hasPathQueryParent
                 ? parentPathDataQuery
                 : (AslStructureQuery) dni.parent().owner();
-        AslQuery provider = parentPathDataQuery != null ? parentPathDataQuery : dni.providerSubQuery();
+        final AslQuery provider = hasPathQueryParent ? parentPathDataQuery : dni.providerSubQuery();
 
-        Class<?> fieldType = dni.type();
-        AslPathDataQuery dataQuery = new AslPathDataQuery(
-                aliasProvider.uniqueAlias("pd"),
-                base,
-                provider,
-                dni.pathInJson(),
-                dni.multipleValued(),
-                dni.dvOrderedTypes(),
-                fieldType);
-        rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
+        final AslPathDataQuery dataQuery;
+        String alias = aliasProvider.uniqueAlias("pd");
+        if (splitMultipleValued) {
+            AslPathDataQuery arrayQuery = new AslPathDataQuery(
+                    alias + "_array", base, provider, dni.pathInJson(), false, dni.dvOrderedTypes(), JSONB.class);
+            rootQuery.addChild(arrayQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, arrayQuery));
 
+            dataQuery = new AslPathDataQuery(
+                    alias, arrayQuery, arrayQuery, List.of(), true, dni.dvOrderedTypes(), dni.type());
+            rootQuery.addChild(dataQuery, new AslJoin(arrayQuery, JoinType.LEFT_OUTER_JOIN, dataQuery));
+        } else {
+            dataQuery = new AslPathDataQuery(
+                    alias, base, provider, dni.pathInJson(), dni.multipleValued(), dni.dvOrderedTypes(), dni.type());
+            rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
+        }
         dni.node()
                 .getPathsEndingAtNode()
                 .forEach(path -> pathToField.put(path, dataQuery.getSelect().getFirst()));
