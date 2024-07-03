@@ -267,22 +267,13 @@ final class AslPathCreator {
             StructureRmDataNodeInfo dni, AslRootQuery rootQuery, Map<IdentifiedPath, AslField> pathToField) {
 
         AslStructureQuery base = (AslStructureQuery) dni.parent().owner();
-        AslQuery provider = dni.parent().provider();
-
+        AslQuery provider = dni.providerSubQuery();
         AslRmObjectDataQuery dataQuery = new AslRmObjectDataQuery(aliasProvider.uniqueAlias("pd"), base, provider);
 
-        dni.parentJoin().addChild(dataQuery, new AslJoin(provider, JoinType.JOIN, dataQuery));
+        rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
         dni.node()
                 .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(
-                        path,
-                        dni.parentJoin() == rootQuery
-                                ? dataQuery.getSelect().getFirst()
-                                : dni.providerSubQuery().getSelect().stream()
-                                        .filter(f -> f.getOwner() == dataQuery)
-                                        .map(f -> f.withProvider(rootQuery))
-                                        .findFirst()
-                                        .orElseThrow()));
+                .forEach(path -> pathToField.put(path, dataQuery.getSelect().getFirst()));
     }
 
     private void addExtractedColumns(
