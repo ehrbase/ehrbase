@@ -18,7 +18,8 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.ehr.EhrStatus;
+import javax.annotation.Nonnull;
+import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 
 /**
@@ -33,26 +34,26 @@ import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 public interface ValidationService {
 
     /**
-     * initially check if the composition is valid for further processing
+     * Initially check if the <code>composition</code> is valid for further processing.
      *
-     * @param composition
-     * @throws IllegalArgumentException
+     * @param composition to validate
+     * @throws IllegalArgumentException in case the given <code>composition</code> is invalid.
      */
-    void check(Composition composition) throws NoSuchMethodException, IllegalAccessException;
+    void check(Composition composition);
 
     /**
-     * initially check if ehrstatus is valid for further processing
+     * Initially check if <code>ehrStatus</code> is valid for further processing.
      *
-     * @param ehrStatus
-     * @throws IllegalArgumentException
+     * @param ehrStatus to validate
+     * @throws IllegalArgumentException in case the given <code>ehrStatus</code> is invalid.
      */
-    void check(EhrStatus ehrStatus);
+    void check(@Nonnull EhrStatusDto ehrStatus);
 
     /**
-     * initially check if contribution is valid for further processing
+     * Initially check if <code>contribution</code> is valid for further processing.
      *
-     * @param contribution
-     * @throws IllegalArgumentException
+     * @param contribution to validate
+     * @throws IllegalArgumentException in case the given <code>contribution</code> is invalid.
      */
     void check(ContributionCreateDto contribution);
 }
