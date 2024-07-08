@@ -71,7 +71,7 @@
 
     <!-- spring -->
     <spring-boot.version>3.2.5</spring-boot.version>
-    <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
+    <springdoc-openapi.version>2.6.0</springdoc-openapi.version>
 
     <!-- not used ehrbase but needed for the version plugin -->
     <log4j.version>2.23.1</log4j.version>
