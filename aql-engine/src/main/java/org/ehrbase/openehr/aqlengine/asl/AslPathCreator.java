@@ -449,15 +449,14 @@ final class AslPathCreator {
 
         AslQuery parentProvider = parentJoinMode == JoinMode.ROOT ? parent.provider() : parent.owner();
         AslJoinCondition[] joinConditions = Stream.concat(
-                        Stream.of(
-                                new AslPathChildCondition(
-                                                sourceRelation,
-                                                parentProvider,
-                                                parent.owner(),
-                                                sourceRelation,
-                                                currentQuery,
-                                                sq)
-                                        .provideJoinCondition()),
+                        Stream.of(new AslPathChildCondition(
+                                        sourceRelation,
+                                        parentProvider,
+                                        parent.owner(),
+                                        sourceRelation,
+                                        currentQuery,
+                                        sq)
+                                .provideJoinCondition()),
                         parentFiltersAsJoinCondition(parent, currentNode).stream())
                 .toArray(AslJoinCondition[]::new);
         query.addChild(

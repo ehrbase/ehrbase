@@ -59,6 +59,14 @@ public class ObjectDataHistoryRecordPrototype extends AbstractRecordPrototype<Ob
         return (Integer) get(FieldPrototype.PARENT_NUM);
     }
 
+    public void setMaxChildNum(Integer value) {
+        set(FieldPrototype.MAX_CHILD_NUM, value);
+    }
+
+    public Integer getMaxChildNum() {
+        return (Integer) get(FieldPrototype.MAX_CHILD_NUM);
+    }
+
     public void setRmEntity(String value) {
         set(FieldPrototype.RM_ENTITY, value);
     }

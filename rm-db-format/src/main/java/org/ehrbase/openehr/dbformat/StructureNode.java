@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
 
 public class StructureNode {
 
@@ -134,5 +135,13 @@ public class StructureNode {
 
     public void setParentNum(final int parentNum) {
         this.parentNum = parentNum;
+    }
+
+    public int getMaxChildNum() {
+        Integer childNumMax = CollectionUtils.emptyIfNull(children).stream()
+                .map(StructureNode::getMaxChildNum)
+                .max(Integer::compareTo)
+                .orElse(-1);
+        return Math.max(num, childNumMax);
     }
 }

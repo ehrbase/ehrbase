@@ -42,6 +42,8 @@ public final class ObjectDataHistoryTablePrototype
 
     public final TableField<ObjectDataHistoryRecordPrototype, Integer> CITEM_NUM = getField(FieldPrototype.CITEM_NUM);
     public final TableField<ObjectDataHistoryRecordPrototype, Integer> PARENT_NUM = getField(FieldPrototype.PARENT_NUM);
+    public final TableField<ObjectDataHistoryRecordPrototype, Integer> MAX_CHILD_NUM =
+            getField(FieldPrototype.MAX_CHILD_NUM);
 
     public final TableField<ObjectDataHistoryRecordPrototype, String> RM_ENTITY = getField(FieldPrototype.RM_ENTITY);
 
