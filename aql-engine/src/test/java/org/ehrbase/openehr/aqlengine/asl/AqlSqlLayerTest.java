@@ -17,12 +17,18 @@
  */
 package org.ehrbase.openehr.aqlengine.asl;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
@@ -31,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-class AqlSqlLayerTest {
+public class AqlSqlLayerTest {
 
     @Disabled
     @Test
@@ -55,5 +61,39 @@ class AqlSqlLayerTest {
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
 
         System.out.println(AslGraph.createAslGraph(aslQuery));
+    }
+
+    @Test
+    void testDataQueryPlacedLast() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+        SELECT
+        c/feeder_audit,
+        c/uid/value,
+        c/context/other_context[at0004]/items[at0014]/value
+        FROM EHR e CONTAINS COMPOSITION c
+        WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
+        """);
+
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
+        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
+
+
+        List<AslQuery> queries = aslQuery.getChildren().stream().map(Pair::getLeft).toList();
+
+        assertThat(queries).hasSize(6);
+
+        assertThat(queries.get(0)).isInstanceOf(AslStructureQuery.class);
+        assertThat(queries.get(1)).isInstanceOf(AslStructureQuery.class);
+        assertThat(queries.get(2)).isInstanceOf(AslEncapsulatingQuery.class);
+        assertThat(queries.get(3)).isInstanceOf(AslEncapsulatingQuery.class);
+
+        assertThat(queries.get(4)).isInstanceOf(AslDataQuery.class);
+        assertThat(queries.get(5)).isInstanceOf(AslDataQuery.class);
     }
 }

@@ -115,32 +115,31 @@ final class AslPathCreator {
         Map<IdentifiedPath, AslField> pathToField = new LinkedHashMap<>();
 
         addEhrFields(query, containsToStructureSubQuery, pathToField);
-        for (Entry<ContainsWrapper, PathInfo> containsWithPathInfo :
-                query.pathInfos().entrySet()) {
-            ContainsWrapper contains = containsWithPathInfo.getKey();
 
+        List<DataNodeInfo> dataNodeInfos = new ArrayList<>();
+
+        query.pathInfos().forEach((contains , pathInfo) -> {
             if (RmConstants.EHR.equals(contains.getRmType())) {
                 throw new IllegalArgumentException("Only paths within COMPOSITION or EHR_STATUS are supported");
-
-            } else {
-
-                PathInfo pathInfo = containsWithPathInfo.getValue();
-                OwnerProviderTuple parent = containsToStructureSubQuery.get(contains);
-
-                AslSourceRelation sourceRelation = ((AslStructureQuery) parent.owner()).getType();
-
-                Stream<DataNodeInfo> dataNodeInfos = joinPathStructureNode(
-                        rootQuery,
-                        parent,
-                        null,
-                        sourceRelation,
-                        pathInfo.getCohesionTreeRoot(),
-                        pathInfo,
-                        parent.provider(),
-                        -1);
-                addQueriesForDataNode(dataNodeInfos, rootQuery, null, pathToField);
             }
-        }
+
+            OwnerProviderTuple parent = containsToStructureSubQuery.get(contains);
+            AslSourceRelation sourceRelation = ((AslStructureQuery) parent.owner()).getType();
+
+            joinPathStructureNode(
+                    rootQuery,
+                    parent,
+                    null,
+                    sourceRelation,
+                    pathInfo.getCohesionTreeRoot(),
+                    pathInfo,
+                    parent.provider(),
+                    -1)
+                    .forEach(dataNodeInfos::add);
+        });
+
+        addQueriesForDataNode(dataNodeInfos.stream(), rootQuery, null, pathToField);
+
         return pathToField::get;
     }
 
