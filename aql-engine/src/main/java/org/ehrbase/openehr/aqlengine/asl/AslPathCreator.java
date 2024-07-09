@@ -118,7 +118,7 @@ final class AslPathCreator {
 
         List<DataNodeInfo> dataNodeInfos = new ArrayList<>();
 
-        query.pathInfos().forEach((contains , pathInfo) -> {
+        query.pathInfos().forEach((contains, pathInfo) -> {
             if (RmConstants.EHR.equals(contains.getRmType())) {
                 throw new IllegalArgumentException("Only paths within COMPOSITION or EHR_STATUS are supported");
             }
@@ -127,14 +127,14 @@ final class AslPathCreator {
             AslSourceRelation sourceRelation = ((AslStructureQuery) parent.owner()).getType();
 
             joinPathStructureNode(
-                    rootQuery,
-                    parent,
-                    null,
-                    sourceRelation,
-                    pathInfo.getCohesionTreeRoot(),
-                    pathInfo,
-                    parent.provider(),
-                    -1)
+                            rootQuery,
+                            parent,
+                            null,
+                            sourceRelation,
+                            pathInfo.getCohesionTreeRoot(),
+                            pathInfo,
+                            parent.provider(),
+                            -1)
                     .forEach(dataNodeInfos::add);
         });
 

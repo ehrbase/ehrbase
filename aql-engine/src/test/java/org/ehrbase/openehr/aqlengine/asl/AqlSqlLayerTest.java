@@ -83,8 +83,8 @@ public class AqlSqlLayerTest {
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
 
-
-        List<AslQuery> queries = aslQuery.getChildren().stream().map(Pair::getLeft).toList();
+        List<AslQuery> queries =
+                aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
         assertThat(queries).hasSize(6);
 
