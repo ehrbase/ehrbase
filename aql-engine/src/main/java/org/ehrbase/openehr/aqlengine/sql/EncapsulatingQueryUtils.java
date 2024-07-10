@@ -326,7 +326,7 @@ final class EncapsulatingQueryUtils {
             }
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslAggregatingField");
-            case AslSubqueryField __ -> throw new IllegalArgumentException("Cannot aggregate by AslSubqueryField");
+            case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
             case AslConstantField __ -> Stream.empty();
         };
     }
