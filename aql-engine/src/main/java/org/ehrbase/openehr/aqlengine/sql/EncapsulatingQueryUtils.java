@@ -75,7 +75,8 @@ final class EncapsulatingQueryUtils {
 
     private EncapsulatingQueryUtils() {}
 
-    private static SelectField<?> sqlAggregatingField(AslAggregatingField af, Table<?> src, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    private static SelectField<?> sqlAggregatingField(
+            AslAggregatingField af, Table<?> src, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
         if ((src == null || af.getBaseField() == null) && af.getFunction() != AggregateFunctionName.COUNT) {
             throw new IllegalArgumentException("only count does not require a source table");
         }
@@ -103,7 +104,8 @@ final class EncapsulatingQueryUtils {
     }
 
     @Nullable
-    private static Field<?> fieldToAggregate(Table<?> src, AslAggregatingField af, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    private static Field<?> fieldToAggregate(
+            Table<?> src, AslAggregatingField af, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
         return switch (af.getBaseField()) {
             case null -> null;
             case AslColumnField f -> FieldUtils.field(Objects.requireNonNull(src), f, true);
@@ -190,10 +192,13 @@ final class EncapsulatingQueryUtils {
 
     private static Field<?> subqueryField(AslSubqueryField sqf, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
         return switch (sqf.getBaseQuery()) {
-            case AslRmObjectDataQuery aq ->
-                    AqlSqlQueryBuilder.buildDataSubquery(aq, aslQueryToTable,
-                            sqf.getFilterConditions().stream().map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true)).toArray(Condition[]::new)
-                    ).asField(aq.getAlias());
+            case AslRmObjectDataQuery aq -> AqlSqlQueryBuilder.buildDataSubquery(
+                            aq,
+                            aslQueryToTable,
+                            sqf.getFilterConditions().stream()
+                                    .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
+                                    .toArray(Condition[]::new))
+                    .asField(aq.getAlias());
             default -> throw new IllegalArgumentException("");
         };
     }
@@ -320,8 +325,7 @@ final class EncapsulatingQueryUtils {
             }
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslAggregatingField");
-            case AslSubqueryField __ -> throw new IllegalArgumentException(
-                    "Cannot aggregate by AslSubqueryField");
+            case AslSubqueryField __ -> throw new IllegalArgumentException("Cannot aggregate by AslSubqueryField");
             case AslConstantField __ -> Stream.empty();
         };
     }
@@ -356,7 +360,7 @@ final class EncapsulatingQueryUtils {
                             "ORDER BY AslAggregatingField is not allowed");
                     case AslConstantField __ -> Stream.<Field<?>>empty();
                     case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
-        })
+                })
                 .map(f -> f.sort(ob.direction()));
     }
 

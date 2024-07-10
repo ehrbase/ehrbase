@@ -249,11 +249,12 @@ public class AslGraph {
                                     .map(AslAggregatingField::getBaseField)
                                     .map(bf -> fieldToGraph(level, bf))
                                     .orElse("*"));
-            case AslSubqueryField f ->
-                            sqToGraph(level + 1, f.getBaseQuery(), null) +
-                                    (f.getFilterConditions().isEmpty() ? "" :
-                                    indented(level + 1, "Filter:") +
-                                            f.getFilterConditions().stream().map(c -> conditionToGraph(level + 2, c))
+            case AslSubqueryField f -> sqToGraph(level + 1, f.getBaseQuery(), null)
+                    + (f.getFilterConditions().isEmpty()
+                            ? ""
+                            : indented(level + 1, "Filter:")
+                                    + f.getFilterConditions().stream()
+                                            .map(c -> conditionToGraph(level + 2, c))
                                             .collect(Collectors.joining("\n", "", "")));
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
         };

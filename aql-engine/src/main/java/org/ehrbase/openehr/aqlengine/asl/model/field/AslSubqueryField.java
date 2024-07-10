@@ -42,7 +42,9 @@ public final class AslSubqueryField extends AslField {
         return baseQuery;
     }
 
-    public List<AslQueryCondition> getFilterConditions() { return filterConditions; }
+    public List<AslQueryCondition> getFilterConditions() {
+        return filterConditions;
+    }
 
     @Override
     public AslQuery getOwner() {

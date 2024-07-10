@@ -25,7 +25,6 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,9 +34,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.abego.treelayout.internal.util.java.util.ListUtil;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
@@ -354,7 +350,7 @@ public class AqlSqlQueryBuilder {
                     case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "Filtering queries cannot be based on AslAggregatingField");
-                     case AslSubqueryField __ -> throw new IllegalArgumentException(
+                    case AslSubqueryField __ -> throw new IllegalArgumentException(
                             "Filtering queries cannot be based on AslSubqueryField");
                 };
         return DSL.select(fields.toArray(Field[]::new));
@@ -432,7 +428,7 @@ public class AqlSqlQueryBuilder {
      * group by "d2"."VO_ID"
      */
     static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
-            AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition ... additionalConditions) {
+            AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition... additionalConditions) {
         AslQuery target = aslData.getBaseProvider();
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
         AslSourceRelation type = getTargetType(aslData.getBase());
@@ -457,19 +453,17 @@ public class AqlSqlQueryBuilder {
                 })
                 .toList();
 
-
         Condition[] conditions = Stream.concat(
-                Stream.of(
-                // TODO can be skipped for roots
-                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX)
-                        .le(data.field(COMP_DATA.ENTITY_IDX)),
-                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX_CAP)
-                        .gt(data.field(COMP_DATA.ENTITY_IDX))),
-                Arrays.stream(additionalConditions)
-        ).toArray(Condition[]::new);
+                        Stream.of(
+                                // TODO can be skipped for roots
+                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX)
+                                        .le(data.field(COMP_DATA.ENTITY_IDX)),
+                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX_CAP)
+                                        .gt(data.field(COMP_DATA.ENTITY_IDX))),
+                        Arrays.stream(additionalConditions))
+                .toArray(Condition[]::new);
 
-        return from.where(conditions)
-                .groupBy(pKeyFields);
+        return from.where(conditions).groupBy(pKeyFields);
     }
 
     /**

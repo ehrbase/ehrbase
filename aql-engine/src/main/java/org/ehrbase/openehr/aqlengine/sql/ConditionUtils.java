@@ -307,8 +307,7 @@ final class ConditionUtils {
                     fv.getOperator(), DSL.inline(f.getValue(), f.getType()), fv.getValues());
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "AslAggregatingField cannot be used in WHERE");
-            case AslSubqueryField __ -> throw new IllegalArgumentException(
-                    "AslSubqueryField cannot be used in WHERE");
+            case AslSubqueryField __ -> throw new IllegalArgumentException("AslSubqueryField cannot be used in WHERE");
         };
     }
 
