@@ -313,22 +313,28 @@ public final class AslUtils {
     static Optional<AslQueryCondition> reduceConditions(
             LogicalConditionOperator setOp, Stream<AslQueryCondition> conditions) {
 
-        List<AslQueryCondition> list = conditions.filter(setOp::filterNotNoop).toList();
+        List<AslQueryCondition> unfiltered = conditions.toList();
 
-        if (list.isEmpty()) {
+        if (unfiltered.isEmpty()) {
             return Optional.empty();
         }
 
-        Optional<AslQueryCondition> shortCircuit =
-                list.stream().filter(setOp::filterShortCircuit).findFirst();
-        if (shortCircuit.isPresent()) {
-            return shortCircuit;
+        List<AslQueryCondition> filtered =
+                unfiltered.stream().filter(setOp::filterNotNoop).toList();
+
+        if (filtered.isEmpty()) {
+            // if all conditions are noop conditions, return one of them
+            return Optional.of(unfiltered.getFirst());
         }
 
-        if (list.size() == 1) {
-            return list.stream().findFirst();
+        if (filtered.size() == 1) {
+            return Optional.of(filtered.getFirst());
         }
-        return Optional.of(setOp.build(list));
+
+        return filtered.stream()
+                .filter(setOp::filterShortCircuit)
+                .findFirst()
+                .or(() -> Optional.of(setOp.build(filtered)));
     }
 
     static Optional<AslQueryCondition> predicates(
