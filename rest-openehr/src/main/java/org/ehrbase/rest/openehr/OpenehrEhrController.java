@@ -123,10 +123,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        // if (!ehrService.hasEhr(ehrId)) {
-        //     throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
-        // }
-
         // load the EHR response
         EhrResponseData ehrResponseData = ehrResponseData(ehrId);
 

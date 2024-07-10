@@ -123,7 +123,6 @@ public class EhrServiceImp implements EhrService {
         return ehrId;
     }
 
-    // FIXME return Optional<EhrStatus>
     @Override
     public EhrStatus getEhrStatus(UUID ehrUuid) {
 

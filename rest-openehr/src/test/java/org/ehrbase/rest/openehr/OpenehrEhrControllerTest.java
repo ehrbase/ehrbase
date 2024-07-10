@@ -51,7 +51,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.RequestContextHolder;
 
-public class OpenehrEhrControllerTest {
+class OpenehrEhrControllerTest {
 
     private static final String CONTEXT_PATH = "https://test.ehr.controller/ehrbase/rest";
 
@@ -127,7 +127,8 @@ public class OpenehrEhrControllerTest {
     @Test
     void createEhrWithIdInvalidUUID() {
 
-        assertThatThrownBy(() -> controller().createEhrWithId("1.0.3", null, null, "invalid", null))
+        OpenehrEhrController controller = controller();
+        assertThatThrownBy(() -> controller.createEhrWithId("1.0.3", null, null, "invalid", null))
                 .isInstanceOf(InvalidApiParameterException.class)
                 .hasMessage("EHR ID format not a UUID");
     }
@@ -156,7 +157,8 @@ public class OpenehrEhrControllerTest {
     @Test
     void getEhrByIdInvalidUUID() {
 
-        assertThatThrownBy(() -> controller().getEhrById("not a uui"))
+        OpenehrEhrController controller = controller();
+        assertThatThrownBy(() -> controller.getEhrById("not a uui"))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("EHR not found, in fact, only UUID-type IDs are supported");
     }
@@ -168,7 +170,8 @@ public class OpenehrEhrControllerTest {
                 .thenThrow(new ObjectNotFoundException(
                         "ehr", "No EHR found with given ID: 46e8518f-e9b7-45de-b214-1588466d71d6"));
 
-        assertThatThrownBy(() -> controller().getEhrById("46e8518f-e9b7-45de-b214-1588466d71d6"))
+        OpenehrEhrController controller = controller();
+        assertThatThrownBy(() -> controller.getEhrById("46e8518f-e9b7-45de-b214-1588466d71d6"))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("No EHR found with given ID: 46e8518f-e9b7-45de-b214-1588466d71d6");
     }
@@ -191,7 +194,8 @@ public class OpenehrEhrControllerTest {
 
         when(mockEhrService.findBySubject(any(), any())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> controller().getEhrBySubject("test_subject", "some:external:id"))
+        OpenehrEhrController controller = controller();
+        assertThatThrownBy(() -> controller.getEhrBySubject("test_subject", "some:external:id"))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("No EHR with supplied subject parameters found");
     }
@@ -203,8 +207,7 @@ public class OpenehrEhrControllerTest {
         var ehrStatus = new EhrStatus(
                 "openEHR-EHR-EHR_STATUS.generic.v1", new DvText("EHR Status"), new PartySelf(), true, true, null);
 
-        when(mockEhrService.findBySubject(eq("test_subject"), eq("some:external:id")))
-                .thenReturn(Optional.of(ehrId));
+        when(mockEhrService.findBySubject("test_subject", "some:external:id")).thenReturn(Optional.of(ehrId));
         when(mockEhrService.getEhrStatus(ehrId)).thenReturn(ehrStatus);
 
         var response = controller().getEhrBySubject("test_subject", "some:external:id");
