@@ -186,12 +186,18 @@ public class AqlSqlLayer {
                             .map(SelectWrapper::getIdentifiedPath)
                             .flatMap(Optional::stream)
                             .map(pathToField::getField)
+                            .flatMap(AslField::fieldsForAggregation)
                             .distinct()
                             .toList());
 
         } else if (query.distinct()) {
             // DISTINCT: group by all selects
-            rootQuery.getGroupByFields().addAll(rootQuery.getSelect());
+            rootQuery
+                    .getGroupByFields()
+                    .addAll(rootQuery.getSelect().stream()
+                            .flatMap(AslField::fieldsForAggregation)
+                            .distinct()
+                            .toList());
         }
         return usesAggregateFunction;
     }

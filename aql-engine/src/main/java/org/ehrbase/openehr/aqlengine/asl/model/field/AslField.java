@@ -17,6 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
+import java.util.stream.Stream;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
@@ -88,4 +89,8 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
     }
 
     public abstract AslField copyWithOwner(AslQuery aslFilteringQuery);
+
+    public Stream<AslField> fieldsForAggregation() {
+        return Stream.of(this);
+    }
 }

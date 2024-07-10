@@ -18,10 +18,14 @@
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
 import java.util.List;
+import java.util.stream.Stream;
+import org.ehrbase.openehr.aqlengine.asl.AslUtils;
+import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslRmObjectDataQuery;
 
 public final class AslSubqueryField extends AslField {
 
@@ -89,5 +93,23 @@ public final class AslSubqueryField extends AslField {
                 .toList();
 
         return new AslSubqueryField(getType(), baseQuery, conditions);
+    }
+
+    @Override
+    public Stream<AslField> fieldsForAggregation() {
+        if (getBaseQuery() instanceof AslRmObjectDataQuery odq) {
+            List<AslField> baseProviderFields = odq.getBaseProvider().getSelect();
+            AslQuery base = odq.getBase();
+            return Stream.concat(
+                    Stream.of(
+                            AslUtils.findFieldForOwner(AslStructureColumn.VO_ID, baseProviderFields, base),
+                            AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_IDX, baseProviderFields, base),
+                            AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_IDX_CAP, baseProviderFields, base)),
+                    filterConditions.stream()
+                            .flatMap(AslUtils::streamConditionFields)
+                            .distinct());
+        }
+
+        return super.fieldsForAggregation();
     }
 }

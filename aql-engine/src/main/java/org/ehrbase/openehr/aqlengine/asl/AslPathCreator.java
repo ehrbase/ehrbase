@@ -240,17 +240,13 @@ final class AslPathCreator {
         List<AslJoinCondition> filterConditions = Stream.concat(
                         rootQuery.getChildren().stream()
                                 .filter(jp -> jp.getLeft() == dni.providerSubQuery())
-                                .filter(jp -> jp.getRight() != null)
-                                .map(jp -> jp.getRight()
-                                        .getLeft()
-                                        .joinConditionsForFiltering()
-                                        .getOrDefault(identifiedPath, Collections.emptyList()))
-                                .flatMap(List::stream),
-                        dni
-                                .providerSubQuery()
-                                .joinConditionsForFiltering()
-                                .getOrDefault(identifiedPath, Collections.emptyList())
-                                .stream())
+                                .map(Pair::getRight)
+                                .filter(Objects::nonNull)
+                                .map(AslJoin::getLeft),
+                        Stream.of(dni.providerSubQuery()))
+                .map(AslQuery::joinConditionsForFiltering)
+                .map(m -> m.getOrDefault(identifiedPath, Collections.emptyList()))
+                .flatMap(List::stream)
                 .filter(jc -> !(jc.getCondition() instanceof AslTrueQueryCondition))
                 .map(jc -> jc.withLeftProvider(rootQuery))
                 .map(AslJoinCondition.class::cast)

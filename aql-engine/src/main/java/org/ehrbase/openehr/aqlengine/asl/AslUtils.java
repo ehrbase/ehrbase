@@ -44,6 +44,10 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
@@ -80,6 +84,19 @@ public final class AslUtils {
     }
 
     private AslUtils() {}
+
+    public static Stream<AslField> streamConditionFields(AslQueryCondition condition) {
+        return switch (condition) {
+            case AslAndQueryCondition c -> c.getOperands().stream().flatMap(AslUtils::streamConditionFields);
+            case AslOrQueryCondition c -> c.getOperands().stream().flatMap(AslUtils::streamConditionFields);
+            case AslNotQueryCondition c -> streamConditionFields(c.getCondition());
+            case AslNotNullQueryCondition c -> Stream.of(c.getField());
+            case AslFieldValueQueryCondition<?> c -> Stream.of(c.getField());
+            case AslFalseQueryCondition __ -> Stream.empty();
+            case AslTrueQueryCondition __ -> Stream.empty();
+            case AslProvidesJoinCondition __ -> throw new IllegalArgumentException();
+        };
+    }
 
     public static Stream<ComparisonOperatorConditionWrapper> streamConditionDescriptors(ConditionWrapper condition) {
         if (condition == null) {
