@@ -240,6 +240,7 @@ final class AslPathCreator {
         List<AslJoinCondition> filterConditions = Stream.concat(
                         rootQuery.getChildren().stream()
                                 .filter(jp -> jp.getLeft() == dni.providerSubQuery())
+                                .filter(jp -> jp.getRight() != null)
                                 .map(jp -> jp.getRight()
                                         .getLeft()
                                         .joinConditionsForFiltering()
