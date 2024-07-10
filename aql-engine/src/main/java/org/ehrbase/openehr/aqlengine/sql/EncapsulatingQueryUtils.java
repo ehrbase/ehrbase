@@ -191,16 +191,17 @@ final class EncapsulatingQueryUtils {
     }
 
     private static Field<?> subqueryField(AslSubqueryField sqf, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
-        return switch (sqf.getBaseQuery()) {
-            case AslRmObjectDataQuery aq -> AqlSqlQueryBuilder.buildDataSubquery(
-                            aq,
-                            aslQueryToTable,
-                            sqf.getFilterConditions().stream()
-                                    .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
-                                    .toArray(Condition[]::new))
-                    .asField(aq.getAlias());
-            default -> throw new IllegalArgumentException("");
-        };
+        AslQuery baseQuery = sqf.getBaseQuery();
+        if (!(baseQuery instanceof AslRmObjectDataQuery aq)) {
+            throw new IllegalArgumentException("Subquery field not supported for type: " + baseQuery.getClass());
+        }
+        return AqlSqlQueryBuilder.buildDataSubquery(
+                        aq,
+                        aslQueryToTable,
+                        sqf.getFilterConditions().stream()
+                                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
+                                .toArray(Condition[]::new))
+                .asField();
     }
 
     /**
