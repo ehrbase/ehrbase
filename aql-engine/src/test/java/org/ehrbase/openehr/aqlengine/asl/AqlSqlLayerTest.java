@@ -72,7 +72,7 @@ public class AqlSqlLayerTest {
         SELECT
         c/content,
         c/content[at0001],
-        c/content[at0002],
+        c[openEHR-EHR-COMPOSITION.test.v0]/content[at0002],
         c/uid/value,
         c/context/other_context[at0004]/items[at0014]/value
         FROM EHR e CONTAINS COMPOSITION c
@@ -99,19 +99,19 @@ public class AqlSqlLayerTest {
 
         assertThat(queries.get(4)).isInstanceOf(AslPathDataQuery.class);
 
-        //feeder_audit
+        // feeder_audit
         AslField contentField1 = aslQuery.getSelect().get(0);
         AslField contentField2 = aslQuery.getSelect().get(1);
         AslField contentField3 = aslQuery.getSelect().get(2);
 
-        //check select
+        // check select
         assertThat(contentField1).isInstanceOf(AslSubqueryField.class);
-        assertThat(((AslSubqueryField)contentField1).getFilterConditions()).isEmpty();
+        assertThat(((AslSubqueryField) contentField1).getFilterConditions()).isEmpty();
         assertThat(contentField2).isInstanceOf(AslSubqueryField.class);
-        assertThat(((AslSubqueryField)contentField2).getFilterConditions()).hasSize(1);
+        assertThat(((AslSubqueryField) contentField2).getFilterConditions()).hasSize(1);
         assertThat(contentField3).isInstanceOf(AslSubqueryField.class);
-        assertThat(((AslSubqueryField)contentField3).getFilterConditions()).hasSize(1);
+        assertThat(((AslSubqueryField) contentField3).getFilterConditions()).hasSize(2);
 
-        //assertThat(queries.get(5)).isInstanceOf(AslRmObjectDataQuery.class);
+        // assertThat(queries.get(5)).isInstanceOf(AslRmObjectDataQuery.class);
     }
 }

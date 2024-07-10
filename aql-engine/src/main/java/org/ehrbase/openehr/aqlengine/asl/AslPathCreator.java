@@ -237,12 +237,19 @@ final class AslPathCreator {
             IdentifiedPath identifiedPath,
             AslRootQuery rootQuery,
             Map<IdentifiedPath, AslField> pathToField) {
-        List<AslJoinCondition> filterConditions = dni
-                //FIXME take contains root into consideration (root predicates)
-                .providerSubQuery()
-                .joinConditionsForFiltering()
-                .getOrDefault(identifiedPath, Collections.emptyList())
-                .stream()
+        List<AslJoinCondition> filterConditions = Stream.concat(
+                        rootQuery.getChildren().stream()
+                                .filter(jp -> jp.getLeft() == dni.providerSubQuery())
+                                .map(jp -> jp.getRight()
+                                        .getLeft()
+                                        .joinConditionsForFiltering()
+                                        .getOrDefault(identifiedPath, Collections.emptyList()))
+                                .flatMap(List::stream),
+                        dni
+                                .providerSubQuery()
+                                .joinConditionsForFiltering()
+                                .getOrDefault(identifiedPath, Collections.emptyList())
+                                .stream())
                 .filter(jc -> !(jc.getCondition() instanceof AslTrueQueryCondition))
                 .map(jc -> jc.withLeftProvider(rootQuery))
                 .map(AslJoinCondition.class::cast)
@@ -258,12 +265,12 @@ final class AslPathCreator {
                 AslFilteringQuery filteringQuery = new AslFilteringQuery(
                         aliasProvider.uniqueAlias(sourceField.getOwner().getAlias() + "_f"), sourceField);
                 rootQuery.addChild(
-                    filteringQuery,
-                    new AslJoin(
-                            sourceField.getInternalProvider(),
-                            JoinType.LEFT_OUTER_JOIN,
-                            filteringQuery,
-                            filterConditions));
+                        filteringQuery,
+                        new AslJoin(
+                                sourceField.getInternalProvider(),
+                                JoinType.LEFT_OUTER_JOIN,
+                                filteringQuery,
+                                filterConditions));
                 pathToField.replace(identifiedPath, filteringQuery.getSelect().getFirst());
             }
         }
@@ -278,9 +285,7 @@ final class AslPathCreator {
 
         AslSubqueryField field = AslSubqueryField.createAslSubqueryField(JSONB.class, dataQuery);
 
-        dni.node()
-                .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(path, field));
+        dni.node().getPathsEndingAtNode().forEach(path -> pathToField.put(path, field));
     }
 
     private void addExtractedColumns(
