@@ -56,6 +56,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -306,6 +307,8 @@ final class ConditionUtils {
                     fv.getOperator(), DSL.inline(f.getValue(), f.getType()), fv.getValues());
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "AslAggregatingField cannot be used in WHERE");
+            case AslSubqueryField __ -> throw new IllegalArgumentException(
+                    "AslSubqueryField cannot be used in WHERE");
         };
     }
 

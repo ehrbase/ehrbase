@@ -62,7 +62,9 @@ public class AqlSqlQueryBuilderTest {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
         SELECT
-        c/feeder_audit,
+        c/content,
+        c/content[at0001],
+        c/content[at0002],
         c/uid/value,
         c/context/other_context[at0004]/items[at0014]/value
         FROM EHR e CONTAINS COMPOSITION c
@@ -87,7 +89,7 @@ public class AqlSqlQueryBuilderTest {
         System.out.println();
 
         AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.YUGABYTEDB), kcs, Optional.empty());
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
 
         SelectQuery<Record> sqlQuery = sqlQueryBuilder.buildSqlQuery(aslQuery);
         System.out.println(sqlQuery);
@@ -112,7 +114,33 @@ public class AqlSqlQueryBuilderTest {
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.YUGABYTEDB), kcs, Optional.empty());
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+
+        Assertions.assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
+    }
+
+    @Test
+    void testDataQuery() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+        SELECT
+        c/content,
+        c/content[at0001],
+        c/content[at0002],
+        c/uid/value,
+        c/context/other_context[at0004]/items[at0014]/value
+        FROM EHR e CONTAINS COMPOSITION c
+        WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
+        """);
+
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
+        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
+        AqlSqlQueryBuilder sqlQueryBuilder =
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
 
         Assertions.assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
     }

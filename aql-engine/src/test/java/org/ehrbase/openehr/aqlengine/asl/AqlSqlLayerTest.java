@@ -24,8 +24,10 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
-import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslPathDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
@@ -68,7 +70,9 @@ public class AqlSqlLayerTest {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
         SELECT
-        c/feeder_audit,
+        c/content,
+        c/content[at0001],
+        c/content[at0002],
         c/uid/value,
         c/context/other_context[at0004]/items[at0014]/value
         FROM EHR e CONTAINS COMPOSITION c
@@ -86,14 +90,28 @@ public class AqlSqlLayerTest {
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
-        assertThat(queries).hasSize(6);
+        assertThat(queries).hasSize(5);
 
         assertThat(queries.get(0)).isInstanceOf(AslStructureQuery.class);
         assertThat(queries.get(1)).isInstanceOf(AslStructureQuery.class);
         assertThat(queries.get(2)).isInstanceOf(AslEncapsulatingQuery.class);
         assertThat(queries.get(3)).isInstanceOf(AslEncapsulatingQuery.class);
 
-        assertThat(queries.get(4)).isInstanceOf(AslDataQuery.class);
-        assertThat(queries.get(5)).isInstanceOf(AslDataQuery.class);
+        assertThat(queries.get(4)).isInstanceOf(AslPathDataQuery.class);
+
+        //feeder_audit
+        AslField contentField1 = aslQuery.getSelect().get(0);
+        AslField contentField2 = aslQuery.getSelect().get(1);
+        AslField contentField3 = aslQuery.getSelect().get(2);
+
+        //check select
+        assertThat(contentField1).isInstanceOf(AslSubqueryField.class);
+        assertThat(((AslSubqueryField)contentField1).getFilterConditions()).isEmpty();
+        assertThat(contentField2).isInstanceOf(AslSubqueryField.class);
+        assertThat(((AslSubqueryField)contentField2).getFilterConditions()).hasSize(1);
+        assertThat(contentField3).isInstanceOf(AslSubqueryField.class);
+        assertThat(((AslSubqueryField)contentField3).getFilterConditions()).hasSize(1);
+
+        //assertThat(queries.get(5)).isInstanceOf(AslRmObjectDataQuery.class);
     }
 }

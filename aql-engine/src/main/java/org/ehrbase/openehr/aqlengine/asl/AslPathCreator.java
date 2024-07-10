@@ -57,6 +57,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
@@ -237,6 +238,7 @@ final class AslPathCreator {
             AslRootQuery rootQuery,
             Map<IdentifiedPath, AslField> pathToField) {
         List<AslJoinCondition> filterConditions = dni
+                //FIXME take contains root into consideration (root predicates)
                 .providerSubQuery()
                 .joinConditionsForFiltering()
                 .getOrDefault(identifiedPath, Collections.emptyList())
@@ -247,16 +249,23 @@ final class AslPathCreator {
                 .toList();
         if (!filterConditions.isEmpty()) {
             AslField sourceField = pathToField.get(identifiedPath);
-            AslFilteringQuery filteringQuery = new AslFilteringQuery(
-                    aliasProvider.uniqueAlias(sourceField.getOwner().getAlias() + "_f"), sourceField);
-            rootQuery.addChild(
+
+            if (sourceField instanceof AslSubqueryField sf) {
+                AslSubqueryField filtered = sf.withFilterConditions(filterConditions);
+                pathToField.replace(identifiedPath, filtered);
+
+            } else {
+                AslFilteringQuery filteringQuery = new AslFilteringQuery(
+                        aliasProvider.uniqueAlias(sourceField.getOwner().getAlias() + "_f"), sourceField);
+                rootQuery.addChild(
                     filteringQuery,
                     new AslJoin(
                             sourceField.getInternalProvider(),
                             JoinType.LEFT_OUTER_JOIN,
                             filteringQuery,
                             filterConditions));
-            pathToField.replace(identifiedPath, filteringQuery.getSelect().getFirst());
+                pathToField.replace(identifiedPath, filteringQuery.getSelect().getFirst());
+            }
         }
     }
 
@@ -267,10 +276,11 @@ final class AslPathCreator {
         AslQuery provider = dni.providerSubQuery();
         AslRmObjectDataQuery dataQuery = new AslRmObjectDataQuery(aliasProvider.uniqueAlias("pd"), base, provider);
 
-        rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
+        AslSubqueryField field = AslSubqueryField.createAslSubqueryField(JSONB.class, dataQuery);
+
         dni.node()
                 .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(path, dataQuery.getSelect().getFirst()));
+                .forEach(path -> pathToField.put(path, field));
     }
 
     private void addExtractedColumns(
@@ -498,7 +508,7 @@ final class AslPathCreator {
 
         if (allPathPredicates.stream()
                 .map(Pair::getRight)
-                .map(condition -> AqlUtil.streamPredicates(condition))
+                .map(AqlUtil::streamPredicates)
                 .map(Stream::count)
                 .anyMatch(c -> attributePredicateCount != c)) {
             allPathPredicates.forEach(p -> sq.addJoinConditionForFiltering(

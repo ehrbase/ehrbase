@@ -20,7 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.field;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
-public abstract sealed class AslField permits AslColumnField, AslConstantField, AslVirtualField {
+public abstract sealed class AslField permits AslColumnField, AslConstantField, AslSubqueryField, AslVirtualField {
     public record FieldSource(
             /**
              * The table that the fields originates from
