@@ -95,9 +95,8 @@ class CompositionRepositoryTest {
     private static <R extends org.jooq.Record> String toCsv(DefaultDSLContext context, List<R> dataRecords) {
         Result<R> result = context.newResult(DSL.table(dataRecords.get(0)));
         result.addAll(dataRecords);
-        String dataCsv = result.formatCSV(
+        return result.formatCSV(
                 CSVFormat.DEFAULT.nullString("").emptyString("''").quoteString("'"));
-        return dataCsv;
     }
 
     private static String loadExpectedCsv(String name, boolean version) throws IOException {

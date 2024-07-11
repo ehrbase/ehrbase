@@ -253,9 +253,6 @@ final class AslFromCreator {
 
         // add contains condition to orSq
         buildContainsCondition(operand, false, subQueryMap).ifPresent(orSq::addStructureCondition);
-        // constrain first structure query as descendant
-        AslStructureQuery child =
-                ((AslStructureQuery) orSq.getChildren().getFirst().getLeft());
 
         // provider must be orSq
         subQueryMap.forEach((k, v) -> containsToStructureSubQuery.put(k, new OwnerProviderTuple(v.owner(), orSq)));
