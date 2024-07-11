@@ -88,7 +88,7 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
     public void addOrderBy(AslField field, SortOrder sortOrder, boolean usesAggregateFunctionOrDistinct) {
         getOrderByFields().add(new AslOrderByField(field, sortOrder));
 
-        field.fieldsForAggregation().forEach(f -> {
+        field.fieldsForAggregation(this).forEach(f -> {
             if (usesAggregateFunctionOrDistinct && !getGroupByFields().contains(f)) {
                 if (field instanceof AslDvOrderedColumnField df) {
                     getGroupByDvOrderedMagnitudeFields().add(df);

@@ -26,6 +26,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRmObjectDataQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 
 public final class AslSubqueryField extends AslField {
 
@@ -96,7 +97,7 @@ public final class AslSubqueryField extends AslField {
     }
 
     @Override
-    public Stream<AslField> fieldsForAggregation() {
+    public Stream<AslField> fieldsForAggregation(AslRootQuery rootQuery) {
         if (getBaseQuery() instanceof AslRmObjectDataQuery odq) {
             List<AslField> baseProviderFields = odq.getBaseProvider().getSelect();
             AslQuery base = odq.getBase();
@@ -107,9 +108,10 @@ public final class AslSubqueryField extends AslField {
                             AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_IDX_CAP, baseProviderFields, base)),
                     filterConditions.stream()
                             .flatMap(AslUtils::streamConditionFields)
-                            .distinct());
+                            .distinct())
+                    .map(f -> f.getProvider() == rootQuery ? f : f.withProvider(rootQuery));
         }
 
-        return super.fieldsForAggregation();
+        return super.fieldsForAggregation(rootQuery);
     }
 }

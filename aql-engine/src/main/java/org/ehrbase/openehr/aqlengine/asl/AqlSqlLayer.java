@@ -186,7 +186,7 @@ public class AqlSqlLayer {
                             .map(SelectWrapper::getIdentifiedPath)
                             .flatMap(Optional::stream)
                             .map(pathToField::getField)
-                            .flatMap(AslField::fieldsForAggregation)
+                            .flatMap(aslField -> aslField.fieldsForAggregation(rootQuery))
                             .distinct()
                             .toList());
 
@@ -195,7 +195,7 @@ public class AqlSqlLayer {
             rootQuery
                     .getGroupByFields()
                     .addAll(rootQuery.getSelect().stream()
-                            .flatMap(AslField::fieldsForAggregation)
+                            .flatMap(aslField -> aslField.fieldsForAggregation(rootQuery))
                             .distinct()
                             .toList());
         }
