@@ -67,7 +67,9 @@ public class OpenehrQueryControllerTest {
     @BeforeEach
     void setUp() {
         Mockito.reset(mockAqlQueryService, mockStoredQueryService, mockQueryContext, spyController);
-        doReturn("https://openehr.test.com/rest").when(spyController).getContextPath();
+        doReturn("https://openehr.test.query.controller.com/rest")
+                .when(spyController)
+                .getContextPath();
     }
 
     @AfterEach

@@ -110,6 +110,22 @@ public abstract class BaseController {
     }
 
     /**
+     * Helper to parse an input UUID int string format.
+     *
+     * @param uuidString to parse
+     * @param error      to raise in case the given UUID string is invalid
+     * @return uuid      parse from the input <code>uuidString</code>
+     * @throws InvalidApiParameterException when the given <code>uuidString</code> is invalid
+     */
+    protected UUID parseUUID(String uuidString, String error) {
+        try {
+            return UUID.fromString(uuidString);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidApiParameterException(error);
+        }
+    }
+
+    /**
      * Helper to allow string UUID input from controllers, which throws an ObjectNotFound exception
      * when no UUID representation can be created. This case is equal to no matching object.
      *

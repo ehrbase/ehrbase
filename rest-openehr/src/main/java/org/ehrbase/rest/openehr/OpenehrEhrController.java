@@ -20,30 +20,20 @@ package org.ehrbase.rest.openehr;
 import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.EhrResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
-import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +54,7 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnMissingBean(name = "primaryopenehrehrcontroller")
 @RestController
 @RequestMapping(
-        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/ehr",
+        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/" + BaseController.EHR,
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrEhrController extends BaseController implements EhrApiSpecification {
 
@@ -77,94 +67,109 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         this.systemService = systemService;
     }
 
-    @PostMapping // (consumes = {"application/xml", "application/json"})
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
-    // TODO auditing headers (openehr*) ignored until auditing is implemented
-    public ResponseEntity createEhr(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
-            @RequestHeader(value = CONTENT_TYPE, required = false)
-                    String contentType, // TODO when working on EHR_STATUS
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+    public ResponseEntity<EhrResponseData> createEhr(
+            @RequestHeader(value = BaseController.OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = BaseController.OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestBody(required = false) EhrStatus ehrStatus) {
-        final UUID ehrId;
-        if (ehrStatus != null) {
-            ehrId = ehrService.create(null, ehrStatus);
-        } else {
-            ehrId = ehrService.create(null, null);
-        }
+
+        UUID ehrId = ehrService.create(null, ehrStatus);
 
         HttpRestContext.register(EHR_ID, ehrId);
 
-        return internalPostEhrProcessing(accept, prefer, ehrId);
+        // initialize HTTP 201 Created body builder
+        ResponseEntity.BodyBuilder bodyBuilder = ehrResponseBuilder(HttpStatus.CREATED, ehrId);
+
+        // return either representation body or only the created response
+        if (RETURN_REPRESENTATION.equals(prefer)) {
+            EhrResponseData ehrResponseData = ehrResponseData(ehrId);
+            return bodyBuilder.body(ehrResponseData);
+        } else {
+            return bodyBuilder.build();
+        }
     }
 
     @PutMapping(path = "/{ehr_id}")
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<EhrResponseData> createEhrWithId(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @RequestHeader(value = BaseController.OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = BaseController.OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @RequestBody(required = false) EhrStatus ehrStatus) {
 
-        UUID ehrId; // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in
-        // response)
-        try {
-            ehrId = UUID.fromString(ehrIdString);
-        } catch (IllegalArgumentException e) {
-            throw new InvalidApiParameterException("EHR ID format not a UUID");
-        }
+        // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in response)
+        UUID newEhrId = parseUUID(ehrIdString, "EHR ID format not a UUID");
+        UUID ehrId = ehrService.create(newEhrId, ehrStatus);
 
-        if (ehrService.hasEhr(ehrId)) {
-            throw new StateConflictException("EHR with this ID already exists");
-        }
+        createRestContext(ehrId);
 
-        final UUID resultEhrId;
-        if (ehrStatus != null) {
-            resultEhrId = ehrService.create(ehrId, ehrStatus);
+        // initialize HTTP 201 Created body builder
+        ResponseEntity.BodyBuilder bodyBuilder = ehrResponseBuilder(HttpStatus.CREATED, ehrId);
+
+        // return either representation body or only the created response
+        if (RETURN_REPRESENTATION.equals(prefer)) {
+            EhrResponseData ehrResponseData = ehrResponseData(ehrId);
+            return bodyBuilder.body(ehrResponseData);
         } else {
-            resultEhrId = ehrService.create(ehrId, null);
+            return bodyBuilder.build();
         }
-
-        if (!ehrId.equals(resultEhrId)) {
-            throw new InternalServerException("Error creating EHR with custom ID and/or status");
-        }
-
-        createRestContext(resultEhrId);
-
-        return internalPostEhrProcessing(accept, prefer, resultEhrId);
     }
 
-    private ResponseEntity<EhrResponseData> internalPostEhrProcessing(String accept, String prefer, UUID resultEhrId) {
-        URI url = createLocationUri(EHR, resultEhrId.toString());
+    @GetMapping(path = "/{ehr_id}")
+    public ResponseEntity<EhrResponseData> getEhrById(@PathVariable(value = "ehr_id") String ehrIdString) {
 
-        List<String> headerList =
-                Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
+        UUID ehrId = getEhrUuid(ehrIdString);
 
-        Optional<InternalResponse<EhrResponseData>>
-                respData; // variable to overload with more specific object if requested
-        if (Optional.ofNullable(prefer)
-                .map(i -> i.equals(RETURN_REPRESENTATION))
-                .orElse(false)) { // null safe way to test prefer header
-            respData = buildEhrResponseData(EhrResponseData::new, resultEhrId, accept, headerList);
-        } else { // "minimal" is default fallback
-            respData = buildEhrResponseData(() -> null, resultEhrId, accept, headerList);
-        }
+        // load the EHR response
+        EhrResponseData ehrResponseData = ehrResponseData(ehrId);
 
-        // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
-        return respData.map(i -> Optional.ofNullable(i.getResponseData())
-                        .map(j -> ResponseEntity.created(url)
-                                .headers(i.getHeaders())
-                                .body(j))
-                        // when the body is empty
-                        .orElse(ResponseEntity.noContent()
-                                .headers(i.getHeaders())
-                                .build()))
-                // when no response could be created at all
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        // Return HTTP 200 OK body builder
+        return ehrResponseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData);
+    }
+
+    /**
+     * Returns EHR by subject (id and namespace)
+     */
+    @GetMapping(params = {"subject_id", "subject_namespace"})
+    public ResponseEntity<EhrResponseData> getEhrBySubject(
+            @RequestParam(value = "subject_id") String subjectId,
+            @RequestParam(value = "subject_namespace") String subjectNamespace) {
+
+        UUID ehrId = ehrService
+                .findBySubject(subjectId, subjectNamespace)
+                .orElseThrow(() -> new ObjectNotFoundException("ehr", "No EHR with supplied subject parameters found"));
+
+        // load the EHR response
+        EhrResponseData ehrResponseData = ehrResponseData(ehrId);
+
+        // Return HTTP 200 OK body builder
+        return ehrResponseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData);
+    }
+
+    private EhrResponseData ehrResponseData(UUID ehrId) {
+
+        // populate maximum response data
+        EhrResponseData responseData = new EhrResponseData();
+        responseData.setEhrId(new HierObjectId(ehrId.toString()));
+        responseData.setSystemId(new HierObjectId(systemService.getSystemId()));
+        responseData.setEhrStatus(ehrService.getEhrStatus(ehrId));
+        responseData.setTimeCreated(ehrService.getCreationTime(ehrId));
+        return responseData;
+    }
+
+    private ResponseEntity.BodyBuilder ehrResponseBuilder(HttpStatus status, UUID ehrId) {
+
+        URI uri = createLocationUri(EHR, ehrId.toString());
+
+        // initialize HTTP 201 Created body builder
+        return ResponseEntity.status(status)
+                .location(uri)
+                .eTag("\"%s\"".formatted(ehrId.toString()))
+                // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
+                .lastModified(123124442);
     }
 
     private void createRestContext(UUID resultEhrId) {
@@ -173,117 +178,5 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                 resultEhrId,
                 HttpRestContext.LOCATION,
                 fromPath("").pathSegment(EHR, resultEhrId.toString()).build().toString());
-    }
-
-    /**
-     * Returns EHR by ID
-     */
-    @GetMapping(path = "/{ehr_id}")
-    public ResponseEntity<EhrResponseData> retrieveEhrById(
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @PathVariable(value = "ehr_id") String ehrIdString) {
-
-        UUID ehrId = getEhrUuid(ehrIdString);
-
-        if (!ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException("ehr", "No EHR with this ID can be found");
-        }
-
-        return internalGetEhrProcessing(accept, ehrId);
-    }
-
-    /**
-     * Returns EHR by subject (id and namespace)
-     */
-    @GetMapping(params = {"subject_id", "subject_namespace"})
-    public ResponseEntity<EhrResponseData> retrieveEhrBySubject(
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @RequestParam(value = "subject_id") String subjectId,
-            @RequestParam(value = "subject_namespace") String subjectNamespace) {
-
-        Optional<UUID> ehrIdOpt = ehrService.findBySubject(subjectId, subjectNamespace);
-
-        UUID ehrId = ehrIdOpt.orElseThrow(
-                () -> new ObjectNotFoundException("ehr", "No EHR with supplied subject parameters found"));
-
-        return internalGetEhrProcessing(accept, ehrId);
-    }
-
-    private ResponseEntity<EhrResponseData> internalGetEhrProcessing(String accept, UUID ehrId) {
-        createRestContext(ehrId);
-        List<String> headerList =
-                Arrays.asList(CONTENT_TYPE, LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec
-
-        Optional<InternalResponse<EhrResponseData>> respData =
-                buildEhrResponseData(EhrResponseData::new, ehrId, accept, headerList);
-
-        return respData.map(i -> ResponseEntity.ok().headers(i.getHeaders()).body(i.getResponseData()))
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-    }
-
-    /**
-     * Builder method to prepare appropriate HTTP response. Flexible to either allow minimal or full representation of resource.
-     *
-     * @param factory    Lambda function to constructor of desired object
-     * @param ehrId      Current object's reference
-     * @param accept     Requested content format
-     * @param headerList Requested headers that need to be set
-     * @param <T>        Either EhrResponseData itself or more specific sub-class EhrResponseDataRepresentation
-     * @return
-     */
-    private <T extends EhrResponseData> Optional<InternalResponse<T>> buildEhrResponseData(
-            Supplier<T> factory, UUID ehrId, /*Action create,*/ String accept, List<String> headerList) {
-        // check for valid format header to produce content accordingly
-        MediaType contentType = resolveContentType(accept);
-
-        // create either null or maximum response data class
-        T minimalOrRepresentation = factory.get();
-
-        if (minimalOrRepresentation != null) {
-
-            EhrStatus ehrStatus = ehrService.getEhrStatus(ehrId);
-            // populate maximum response data
-            EhrResponseData objByReference = minimalOrRepresentation;
-            objByReference.setEhrId(new HierObjectId(ehrId.toString()));
-            objByReference.setEhrStatus(ehrStatus);
-            objByReference.setSystemId(new HierObjectId(systemService.getSystemId()));
-            DvDateTime timeCreated = ehrService.getCreationTime(ehrId);
-            objByReference.setTimeCreated(timeCreated.getValue().toString());
-            // objByReference.setCompositions(null);    // TODO get actual data from service layer
-            // objByReference.setContributions(null);   // TODO get actual data from service layer
-        }
-
-        // create and supplement headers with data depending on which headers are requested
-        HttpHeaders respHeaders = new HttpHeaders();
-        for (String header : headerList) {
-            switch (header) {
-                case CONTENT_TYPE:
-                    if (minimalOrRepresentation != null) {
-                        // if response is going to have a body
-                        respHeaders.setContentType(contentType);
-                    }
-                    break;
-                case LOCATION:
-                    try {
-                        URI url = createLocationUri(EHR, ehrId.toString());
-                        respHeaders.setLocation(url);
-                    } catch (Exception e) {
-                        throw new InternalServerException(e.getMessage());
-                    }
-                    break;
-                case ETAG:
-                    respHeaders.setETag("\"" + ehrId + "\"");
-                    break;
-                case LAST_MODIFIED:
-                    // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for
-                    // now
-                    respHeaders.setLastModified(123124442);
-                    break;
-                default:
-                    // Ignore header
-            }
-        }
-
-        return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
     }
 }
