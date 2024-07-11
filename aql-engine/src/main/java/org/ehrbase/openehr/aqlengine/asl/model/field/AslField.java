@@ -92,6 +92,10 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
     public abstract AslField copyWithOwner(AslQuery aslFilteringQuery);
 
     public Stream<AslField> fieldsForAggregation(AslRootQuery rootQuery) {
-        return Stream.of(this);
+        if (this.getProvider() == rootQuery) {
+            return Stream.of(this);
+        } else {
+            return  Stream.of(this.withProvider(rootQuery));
+        }
     }
 }
