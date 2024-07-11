@@ -12,6 +12,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Deprecate plugin aspects ([#1344](https://github.com/ehrbase/ehrbase/pull/1344))
 * Add simplified JSON-based “web template” format support for GET Template ADL 1.4 using header `Accept: application/openehr.wt+json` ([1334](https://github.com/ehrbase/ehrbase/pull/1334))
 * Improved AQL performance ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
+* Upgrade openEHR_SDK to version 2.14.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
  ### Fixed
 * Return `201` instead of `204` for EHR creation ([1371](https://github.com/ehrbase/ehrbase/pull/1371))
 * Fixed AQL predicate reduction logic ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
