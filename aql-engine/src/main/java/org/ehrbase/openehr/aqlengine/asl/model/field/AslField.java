@@ -95,7 +95,7 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
         if (this.getProvider() == rootQuery) {
             return Stream.of(this);
         } else {
-            return  Stream.of(this.withProvider(rootQuery));
+            return Stream.of(this.withProvider(rootQuery));
         }
     }
 }

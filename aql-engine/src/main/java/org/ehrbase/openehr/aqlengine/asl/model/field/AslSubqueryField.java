@@ -102,13 +102,14 @@ public final class AslSubqueryField extends AslField {
             List<AslField> baseProviderFields = odq.getBaseProvider().getSelect();
             AslQuery base = odq.getBase();
             return Stream.concat(
-                    Stream.of(
-                            AslUtils.findFieldForOwner(AslStructureColumn.VO_ID, baseProviderFields, base),
-                            AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_IDX, baseProviderFields, base),
-                            AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_IDX_CAP, baseProviderFields, base)),
-                    filterConditions.stream()
-                            .flatMap(AslUtils::streamConditionFields)
-                            .distinct())
+                            Stream.of(
+                                    AslUtils.findFieldForOwner(AslStructureColumn.VO_ID, baseProviderFields, base),
+                                    AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_IDX, baseProviderFields, base),
+                                    AslUtils.findFieldForOwner(
+                                            AslStructureColumn.ENTITY_IDX_CAP, baseProviderFields, base)),
+                            filterConditions.stream()
+                                    .flatMap(AslUtils::streamConditionFields)
+                                    .distinct())
                     .map(f -> f.getProvider() == rootQuery ? f : f.withProvider(rootQuery));
         }
 
