@@ -160,6 +160,7 @@ public final class AslStructureQuery extends AslQuery {
             AslSourceRelation type,
             List<AslField> fields,
             Collection<String> rmTypes,
+            Collection<String> rmTypesConstraint,
             String attribute,
             boolean requiresVersionTableJoin) {
         super(alias, new ArrayList<>());
@@ -179,6 +180,11 @@ public final class AslStructureQuery extends AslQuery {
                             AslConditionOperator.IS_NULL,
                             List.of()));
                 }
+            }
+            if (!rmTypesConstraint.isEmpty()) {
+                List<String> aliasedRmTypes = rmTypesConstraint.stream()
+                        .map(StructureRmType::getAliasOrTypeName)
+                        .toList();
                 this.structureConditions.add(new AslFieldValueQueryCondition(
                         AslUtils.findFieldForOwner(AslStructureColumn.RM_ENTITY, this.getSelect(), this),
                         AslConditionOperator.IN,

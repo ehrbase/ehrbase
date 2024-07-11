@@ -44,6 +44,10 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
@@ -59,6 +63,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.LogicalOperatorConditionWrapper;
+import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.operand.Primitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.TemporalPrimitive;
@@ -79,6 +84,19 @@ public final class AslUtils {
     }
 
     private AslUtils() {}
+
+    public static Stream<AslField> streamConditionFields(AslQueryCondition condition) {
+        return switch (condition) {
+            case AslAndQueryCondition c -> c.getOperands().stream().flatMap(AslUtils::streamConditionFields);
+            case AslOrQueryCondition c -> c.getOperands().stream().flatMap(AslUtils::streamConditionFields);
+            case AslNotQueryCondition c -> streamConditionFields(c.getCondition());
+            case AslNotNullQueryCondition c -> Stream.of(c.getField());
+            case AslFieldValueQueryCondition<?> c -> Stream.of(c.getField());
+            case AslFalseQueryCondition __ -> Stream.empty();
+            case AslTrueQueryCondition __ -> Stream.empty();
+            case AslProvidesJoinCondition __ -> throw new IllegalArgumentException();
+        };
+    }
 
     public static Stream<ComparisonOperatorConditionWrapper> streamConditionDescriptors(ConditionWrapper condition) {
         if (condition == null) {
@@ -224,6 +242,16 @@ public final class AslUtils {
                             AslComplexExtractedColumnField.archetypeNodeIdField(ownerSource),
                             aslOperator,
                             archetypeNodeIdConditionValues(value, operator));
+                    case ROOT_CONCEPT -> new AslFieldValueQueryCondition<>(
+                            findFieldForOwner("root_concept", query.getSelect(), query),
+                            aslOperator,
+                            archetypeNodeIdConditionValues(value, operator).stream()
+                                    // archetype must be for COMPOSITION
+                                    .filter(tc -> StructureRmType.COMPOSITION
+                                            .getAlias()
+                                            .equals(tc.aliasedRmType()))
+                                    .map(AslRmTypeAndConcept::concept)
+                                    .toList());
                     case TEMPLATE_ID -> {
                         // Template id is handled separately since the extracted column stores the internal uuid
                         List<UUID> templateUuids = templateIdConditionValues(value, operator, templateUuidLookupFunc);
@@ -302,22 +330,28 @@ public final class AslUtils {
     static Optional<AslQueryCondition> reduceConditions(
             LogicalConditionOperator setOp, Stream<AslQueryCondition> conditions) {
 
-        List<AslQueryCondition> list = conditions.filter(setOp::filterNotNoop).toList();
+        List<AslQueryCondition> unfiltered = conditions.toList();
 
-        if (list.isEmpty()) {
+        if (unfiltered.isEmpty()) {
             return Optional.empty();
         }
 
-        Optional<AslQueryCondition> shortCircuit =
-                list.stream().filter(setOp::filterShortCircuit).findFirst();
-        if (shortCircuit.isPresent()) {
-            return shortCircuit;
+        List<AslQueryCondition> filtered =
+                unfiltered.stream().filter(setOp::filterNotNoop).toList();
+
+        if (filtered.isEmpty()) {
+            // if all conditions are noop conditions, return one of them
+            return Optional.of(unfiltered.getFirst());
         }
 
-        if (list.size() == 1) {
-            return list.stream().findFirst();
+        if (filtered.size() == 1) {
+            return Optional.of(filtered.getFirst());
         }
-        return Optional.of(setOp.build(list));
+
+        return filtered.stream()
+                .filter(setOp::filterShortCircuit)
+                .findFirst()
+                .or(() -> Optional.of(setOp.build(filtered)));
     }
 
     static Optional<AslQueryCondition> predicates(

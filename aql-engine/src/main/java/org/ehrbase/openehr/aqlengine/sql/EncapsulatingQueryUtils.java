@@ -49,8 +49,10 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslRmObjectDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.operand.AggregateFunction.AggregateFunctionName;
@@ -73,7 +75,8 @@ final class EncapsulatingQueryUtils {
 
     private EncapsulatingQueryUtils() {}
 
-    private static SelectField<?> sqlAggregatingField(AslAggregatingField af, Table<?> src) {
+    private static SelectField<?> sqlAggregatingField(
+            AslAggregatingField af, Table<?> src, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
         if ((src == null || af.getBaseField() == null) && af.getFunction() != AggregateFunctionName.COUNT) {
             throw new IllegalArgumentException("only count does not require a source table");
         }
@@ -95,13 +98,14 @@ final class EncapsulatingQueryUtils {
         }
 
         Function<Field<?>, SelectField<?>> aggregateFunction = toAggregatedFieldFunction(af);
-        Field<?> field = fieldToAggregate(src, af);
+        Field<?> field = fieldToAggregate(src, af, aslQueryToTable);
 
         return aggregateFunction.apply(field);
     }
 
     @Nullable
-    private static Field<?> fieldToAggregate(Table<?> src, AslAggregatingField af) {
+    private static Field<?> fieldToAggregate(
+            Table<?> src, AslAggregatingField af, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
         return switch (af.getBaseField()) {
             case null -> null;
             case AslColumnField f -> FieldUtils.field(Objects.requireNonNull(src), f, true);
@@ -116,6 +120,7 @@ final class EncapsulatingQueryUtils {
                     case NAME_VALUE,
                             EHR_ID,
                             TEMPLATE_ID,
+                            ROOT_CONCEPT,
                             OV_CONTRIBUTION_ID,
                             OV_TIME_COMMITTED_DV,
                             OV_TIME_COMMITTED,
@@ -135,6 +140,7 @@ final class EncapsulatingQueryUtils {
                 };
             }
             case AslConstantField cf -> DSL.inline(cf.getValue(), cf.getType());
+            case AslSubqueryField sqfd -> subqueryField(sqfd, aslQueryToTable);
         };
     }
 
@@ -164,6 +170,7 @@ final class EncapsulatingQueryUtils {
             case TEMPLATE_ID,
                     NAME_VALUE,
                     EHR_ID,
+                    ROOT_CONCEPT,
                     OV_CONTRIBUTION_ID,
                     OV_TIME_COMMITTED_DV,
                     OV_TIME_COMMITTED,
@@ -181,6 +188,20 @@ final class EncapsulatingQueryUtils {
                     EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
                     "Extracted column %s is not complex".formatted(ecf.getExtractedColumn()));
         };
+    }
+
+    private static Field<?> subqueryField(AslSubqueryField sqf, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+        AslQuery baseQuery = sqf.getBaseQuery();
+        if (!(baseQuery instanceof AslRmObjectDataQuery aq)) {
+            throw new IllegalArgumentException("Subquery field not supported for type: " + baseQuery.getClass());
+        }
+        return AqlSqlQueryBuilder.buildDataSubquery(
+                        aq,
+                        aslQueryToTable,
+                        sqf.getFilterConditions().stream()
+                                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
+                                .toArray(Condition[]::new))
+                .asField();
     }
 
     /**
@@ -276,8 +297,9 @@ final class EncapsulatingQueryUtils {
                     .as(f.getName(true));
             case AslComplexExtractedColumnField ecf -> sqlSelectFieldForExtractedColumn(
                     ecf, Objects.requireNonNull(src));
-            case AslAggregatingField af -> sqlAggregatingField(af, src);
-            case AslConstantField cf -> DSL.inline(cf.getValue(), cf.getType());
+            case AslAggregatingField af -> sqlAggregatingField(af, src, aslQueryToTable);
+            case AslConstantField<?> cf -> DSL.inline(cf.getValue(), cf.getType());
+            case AslSubqueryField sqf -> subqueryField(sqf, aslQueryToTable);
         };
     }
 
@@ -304,6 +326,7 @@ final class EncapsulatingQueryUtils {
             }
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslAggregatingField");
+            case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
             case AslConstantField __ -> Stream.empty();
         };
     }
@@ -337,6 +360,7 @@ final class EncapsulatingQueryUtils {
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "ORDER BY AslAggregatingField is not allowed");
                     case AslConstantField __ -> Stream.<Field<?>>empty();
+                    case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
                 })
                 .map(f -> f.sort(ob.direction()));
     }

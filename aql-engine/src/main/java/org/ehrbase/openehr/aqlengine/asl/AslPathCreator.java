@@ -57,6 +57,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
@@ -115,32 +116,31 @@ final class AslPathCreator {
         Map<IdentifiedPath, AslField> pathToField = new LinkedHashMap<>();
 
         addEhrFields(query, containsToStructureSubQuery, pathToField);
-        for (Entry<ContainsWrapper, PathInfo> containsWithPathInfo :
-                query.pathInfos().entrySet()) {
-            ContainsWrapper contains = containsWithPathInfo.getKey();
 
+        List<DataNodeInfo> dataNodeInfos = new ArrayList<>();
+
+        query.pathInfos().forEach((contains, pathInfo) -> {
             if (RmConstants.EHR.equals(contains.getRmType())) {
                 throw new IllegalArgumentException("Only paths within COMPOSITION or EHR_STATUS are supported");
-
-            } else {
-
-                PathInfo pathInfo = containsWithPathInfo.getValue();
-                OwnerProviderTuple parent = containsToStructureSubQuery.get(contains);
-
-                AslSourceRelation sourceRelation = ((AslStructureQuery) parent.owner()).getType();
-
-                Stream<DataNodeInfo> dataNodeInfos = joinPathStructureNode(
-                        rootQuery,
-                        parent,
-                        null,
-                        sourceRelation,
-                        pathInfo.getCohesionTreeRoot(),
-                        pathInfo,
-                        parent.provider(),
-                        -1);
-                addQueriesForDataNode(dataNodeInfos, rootQuery, null, pathToField);
             }
-        }
+
+            OwnerProviderTuple parent = containsToStructureSubQuery.get(contains);
+            AslSourceRelation sourceRelation = ((AslStructureQuery) parent.owner()).getType();
+
+            joinPathStructureNode(
+                            rootQuery,
+                            parent,
+                            null,
+                            sourceRelation,
+                            pathInfo.getCohesionTreeRoot(),
+                            pathInfo,
+                            parent.provider(),
+                            -1)
+                    .forEach(dataNodeInfos::add);
+        });
+
+        addQueriesForDataNode(dataNodeInfos.stream(), rootQuery, null, pathToField);
+
         return pathToField::get;
     }
 
@@ -203,37 +203,31 @@ final class AslPathCreator {
             AslRootQuery rootQuery,
             AslPathDataQuery parentPathDataQuery,
             Map<IdentifiedPath, AslField> pathToField) {
-        AslQuery base = parentPathDataQuery != null
+        boolean hasPathQueryParent = parentPathDataQuery != null;
+        boolean splitMultipleValued = dni.multipleValued() && !hasPathQueryParent;
+        final AslQuery base = hasPathQueryParent
                 ? parentPathDataQuery
                 : (AslStructureQuery) dni.parent().owner();
-        AslQuery provider =
-                parentPathDataQuery != null ? parentPathDataQuery : dni.parent().provider();
-        AslEncapsulatingQuery parentJoin = dni.parentJoin();
+        final AslQuery provider = hasPathQueryParent ? parentPathDataQuery : dni.providerSubQuery();
 
-        Class<?> fieldType = dni.type();
-        AslPathDataQuery dataQuery = new AslPathDataQuery(
-                aliasProvider.uniqueAlias("pd"),
-                base,
-                provider,
-                dni.pathInJson(),
-                dni.multipleValued(),
-                dni.dvOrderedTypes(),
-                fieldType);
-        // multiple-values entries have to be left-joined (actually only if other paths are retrieved, too)
-        JoinType joinType = dni.multipleValued() ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN;
-        parentJoin.addChild(dataQuery, new AslJoin(provider, joinType, dataQuery));
+        final AslPathDataQuery dataQuery;
+        String alias = aliasProvider.uniqueAlias("pd");
+        if (splitMultipleValued) {
+            AslPathDataQuery arrayQuery = new AslPathDataQuery(
+                    alias + "_array", base, provider, dni.pathInJson(), false, dni.dvOrderedTypes(), JSONB.class);
+            rootQuery.addChild(arrayQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, arrayQuery));
 
+            dataQuery = new AslPathDataQuery(
+                    alias, arrayQuery, arrayQuery, List.of(), true, dni.dvOrderedTypes(), dni.type());
+            rootQuery.addChild(dataQuery, new AslJoin(arrayQuery, JoinType.LEFT_OUTER_JOIN, dataQuery));
+        } else {
+            dataQuery = new AslPathDataQuery(
+                    alias, base, provider, dni.pathInJson(), dni.multipleValued(), dni.dvOrderedTypes(), dni.type());
+            rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
+        }
         dni.node()
                 .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(
-                        path,
-                        parentJoin == rootQuery
-                                ? dataQuery.getSelect().getFirst()
-                                : dni.providerSubQuery().getSelect().stream()
-                                        .filter(f -> f.getOwner() == dataQuery)
-                                        .map(f -> f.withProvider(rootQuery))
-                                        .findFirst()
-                                        .orElseThrow()));
+                .forEach(path -> pathToField.put(path, dataQuery.getSelect().getFirst()));
 
         addQueriesForDataNode(dni.dependentPathDataNodes(), rootQuery, dataQuery, pathToField);
     }
@@ -243,23 +237,39 @@ final class AslPathCreator {
             IdentifiedPath identifiedPath,
             AslRootQuery rootQuery,
             Map<IdentifiedPath, AslField> pathToField) {
-        List<AslJoinCondition> filterConditions = dni
-                .providerSubQuery()
-                .joinConditionsForFiltering()
-                .getOrDefault(identifiedPath, Collections.emptyList())
-                .stream()
+        List<AslJoinCondition> filterConditions = Stream.concat(
+                        rootQuery.getChildren().stream()
+                                .filter(jp -> jp.getLeft() == dni.providerSubQuery())
+                                .map(Pair::getRight)
+                                .filter(Objects::nonNull)
+                                .map(AslJoin::getLeft),
+                        Stream.of(dni.providerSubQuery()))
+                .map(AslQuery::joinConditionsForFiltering)
+                .map(m -> m.getOrDefault(identifiedPath, Collections.emptyList()))
+                .flatMap(List::stream)
                 .filter(jc -> !(jc.getCondition() instanceof AslTrueQueryCondition))
                 .map(jc -> jc.withLeftProvider(rootQuery))
                 .map(AslJoinCondition.class::cast)
                 .toList();
         if (!filterConditions.isEmpty()) {
             AslField sourceField = pathToField.get(identifiedPath);
-            AslFilteringQuery filteringQuery = new AslFilteringQuery(
-                    aliasProvider.uniqueAlias(sourceField.getOwner().getAlias() + "_f"), sourceField);
-            rootQuery.addChild(
-                    filteringQuery,
-                    new AslJoin(dni.providerSubQuery(), JoinType.LEFT_OUTER_JOIN, filteringQuery, filterConditions));
-            pathToField.replace(identifiedPath, filteringQuery.getSelect().getFirst());
+
+            if (sourceField instanceof AslSubqueryField sf) {
+                AslSubqueryField filtered = sf.withFilterConditions(filterConditions);
+                pathToField.replace(identifiedPath, filtered);
+
+            } else {
+                AslFilteringQuery filteringQuery = new AslFilteringQuery(
+                        aliasProvider.uniqueAlias(sourceField.getOwner().getAlias() + "_f"), sourceField);
+                rootQuery.addChild(
+                        filteringQuery,
+                        new AslJoin(
+                                sourceField.getInternalProvider(),
+                                JoinType.LEFT_OUTER_JOIN,
+                                filteringQuery,
+                                filterConditions));
+                pathToField.replace(identifiedPath, filteringQuery.getSelect().getFirst());
+            }
         }
     }
 
@@ -267,22 +277,12 @@ final class AslPathCreator {
             StructureRmDataNodeInfo dni, AslRootQuery rootQuery, Map<IdentifiedPath, AslField> pathToField) {
 
         AslStructureQuery base = (AslStructureQuery) dni.parent().owner();
-        AslQuery provider = dni.parent().provider();
-
+        AslQuery provider = dni.providerSubQuery();
         AslRmObjectDataQuery dataQuery = new AslRmObjectDataQuery(aliasProvider.uniqueAlias("pd"), base, provider);
 
-        dni.parentJoin().addChild(dataQuery, new AslJoin(provider, JoinType.JOIN, dataQuery));
-        dni.node()
-                .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(
-                        path,
-                        dni.parentJoin() == rootQuery
-                                ? dataQuery.getSelect().getFirst()
-                                : dni.providerSubQuery().getSelect().stream()
-                                        .filter(f -> f.getOwner() == dataQuery)
-                                        .map(f -> f.withProvider(rootQuery))
-                                        .findFirst()
-                                        .orElseThrow()));
+        AslSubqueryField field = AslSubqueryField.createAslSubqueryField(JSONB.class, dataQuery);
+
+        dni.node().getPathsEndingAtNode().forEach(path -> pathToField.put(path, field));
     }
 
     private void addExtractedColumns(
@@ -297,6 +297,7 @@ final class AslPathCreator {
             case NAME_VALUE,
                     TEMPLATE_ID,
                     EHR_ID,
+                    ROOT_CONCEPT,
                     OV_CONTRIBUTION_ID,
                     OV_TIME_COMMITTED,
                     OV_TIME_COMMITTED_DV,
@@ -448,18 +449,22 @@ final class AslPathCreator {
         currentQuery.addChild(sq, null);
 
         AslQuery parentProvider = parentJoinMode == JoinMode.ROOT ? parent.provider() : parent.owner();
-        sq.addConditionAnd(
-                new AslDescendantCondition(sourceRelation, parentProvider, parent.owner(), sourceRelation, sq, sq));
-        sq.addConditionAnd(new AslEntityIdxOffsetCondition(parentProvider, parent.owner(), sq, sq, 1));
-
+        AslJoinCondition[] joinConditions = Stream.concat(
+                        Stream.of(
+                                new AslDescendantCondition(
+                                                sourceRelation,
+                                                parentProvider,
+                                                parent.owner(),
+                                                sourceRelation,
+                                                currentQuery,
+                                                sq)
+                                        .provideJoinCondition(),
+                                new AslEntityIdxOffsetCondition(parentProvider, parent.owner(), currentQuery, sq, 1)
+                                        .provideJoinCondition()),
+                        parentFiltersAsJoinCondition(parent, currentNode).stream())
+                .toArray(AslJoinCondition[]::new);
         query.addChild(
-                currentQuery,
-                new AslJoin(
-                        parent.provider(),
-                        JoinType.LEFT_OUTER_JOIN,
-                        currentQuery,
-                        parentFiltersAsJoinCondition(parent, currentNode).stream()
-                                .toArray(AslJoinCondition[]::new)));
+                currentQuery, new AslJoin(parent.provider(), JoinType.LEFT_OUTER_JOIN, currentQuery, joinConditions));
 
         if (parentJoinMode == JoinMode.INTERNAL_FORK) {
             query.addConditionOr(new AslNotNullQueryCondition(
@@ -505,7 +510,7 @@ final class AslPathCreator {
 
         if (allPathPredicates.stream()
                 .map(Pair::getRight)
-                .map(condition -> AqlUtil.streamPredicates(condition))
+                .map(AqlUtil::streamPredicates)
                 .map(Stream::count)
                 .anyMatch(c -> attributePredicateCount != c)) {
             allPathPredicates.forEach(p -> sq.addJoinConditionForFiltering(
@@ -576,6 +581,7 @@ final class AslPathCreator {
                 aliasProvider.uniqueAlias("p_ca"),
                 AslSourceRelation.AUDIT_DETAILS,
                 fields,
+                Set.of(RmConstants.AUDIT_DETAILS),
                 Set.of(RmConstants.AUDIT_DETAILS),
                 null,
                 false);
@@ -708,7 +714,7 @@ final class AslPathCreator {
 
         final String sqAlias = aliasProvider.uniqueAlias("p_" + attribute + "_");
         AslStructureQuery aslStructureQuery =
-                new AslStructureQuery(sqAlias, sourceRelation, fields, rmTypes, attribute, false);
+                new AslStructureQuery(sqAlias, sourceRelation, fields, rmTypes, List.of(), attribute, false);
 
         AslUtils.predicates(attributePredicates, cp -> pathStructurePredicateCondition(cp, aslStructureQuery))
                 .ifPresent(aslStructureQuery::addConditionAnd);
