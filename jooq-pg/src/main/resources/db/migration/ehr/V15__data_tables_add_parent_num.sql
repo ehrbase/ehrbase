@@ -24,12 +24,12 @@ ALTER TABLE ehr_folder_data ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
 ALTER TABLE ehr_folder_data_history ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
 
 
-ALTER TABLE comp_data ADD COLUMN max_child_num integer NOT NULL DEFAULT 0;
-ALTER TABLE comp_data_history ADD COLUMN max_child_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_status_data ADD COLUMN max_child_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_status_data_history ADD COLUMN max_child_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_folder_data ADD COLUMN max_child_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_folder_data_history ADD COLUMN max_child_num integer NOT NULL DEFAULT 0;
+ALTER TABLE comp_data ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
+ALTER TABLE comp_data_history ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
+ALTER TABLE ehr_status_data ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
+ALTER TABLE ehr_status_data_history ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
+ALTER TABLE ehr_folder_data ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
+ALTER TABLE ehr_folder_data_history ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
 
 --migrate compositions
 UPDATE comp_data ch SET parent_num=pa.num
@@ -60,8 +60,17 @@ WHERE ch.vo_id=pa.vo_id
 --migrate ehr_folder
 --TODO ehr_folder_data(_history)
 
---TODO max child num
+-- num cap TODO performance
+UPDATE comp_data pa SET num_cap = (select max(ch.num)
+FROM comp_data ch
+WHERE ch.vo_id=pa.vo_id
+  AND pa.entity_idx_len >= ch.entity_idx_len
+  AND ch.entity_idx LIKE (pa.entity_idx || '%')
+);
 
+--TODO comp_data_history, ehr_status_history, ehr_folder, ehr_folder_history
+
+--TODO indexes
 
 ALTER TABLE comp_data ALTER COLUMN parent_num DROP DEFAULT;
 ALTER TABLE comp_data_history ALTER COLUMN parent_num DROP DEFAULT;
@@ -70,9 +79,12 @@ ALTER TABLE ehr_status_data_history ALTER COLUMN parent_num DROP DEFAULT;
 ALTER TABLE ehr_folder_data ALTER COLUMN parent_num DROP DEFAULT;
 ALTER TABLE ehr_folder_data_history ALTER COLUMN parent_num DROP DEFAULT;
 
-ALTER TABLE comp_data ALTER COLUMN max_child_num DROP DEFAULT;
-ALTER TABLE comp_data_history ALTER COLUMN max_child_num DROP DEFAULT;
-ALTER TABLE ehr_status_data ALTER COLUMN max_child_num DROP DEFAULT;
-ALTER TABLE ehr_status_data_history ALTER COLUMN max_child_num DROP DEFAULT;
-ALTER TABLE ehr_folder_data ALTER COLUMN max_child_num DROP DEFAULT;
-ALTER TABLE ehr_folder_data_history ALTER COLUMN max_child_num DROP DEFAULT;
+ALTER TABLE comp_data ALTER COLUMN num_cap DROP DEFAULT;
+ALTER TABLE comp_data_history ALTER COLUMN num_cap DROP DEFAULT;
+ALTER TABLE ehr_status_data ALTER COLUMN num_cap DROP DEFAULT;
+ALTER TABLE ehr_status_data_history ALTER COLUMN num_cap DROP DEFAULT;
+ALTER TABLE ehr_folder_data ALTER COLUMN num_cap DROP DEFAULT;
+ALTER TABLE ehr_folder_data_history ALTER COLUMN num_cap DROP DEFAULT;
+
+
+--TODO drop entity_idx_cap, entity_path, entity_path_cap

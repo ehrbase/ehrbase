@@ -137,9 +137,9 @@ public class StructureNode {
         this.parentNum = parentNum;
     }
 
-    public int getMaxChildNum() {
+    public int getNumCap() {
         Integer childNumMax = CollectionUtils.emptyIfNull(children).stream()
-                .map(StructureNode::getMaxChildNum)
+                .map(StructureNode::getNumCap)
                 .max(Integer::compareTo)
                 .orElse(-1);
         return Math.max(num, childNumMax);

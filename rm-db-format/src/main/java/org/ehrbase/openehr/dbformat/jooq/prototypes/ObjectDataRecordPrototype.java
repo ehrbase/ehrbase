@@ -59,12 +59,12 @@ public class ObjectDataRecordPrototype extends AbstractRecordPrototype<ObjectDat
         return (Integer) get(FieldPrototype.PARENT_NUM);
     }
 
-    public void setMaxChildNum(Integer value) {
-        set(FieldPrototype.MAX_CHILD_NUM, value);
+    public void setNumCap(Integer value) {
+        set(FieldPrototype.NUM_CAP, value);
     }
 
-    public Integer getMaxChildNum() {
-        return (Integer) get(FieldPrototype.MAX_CHILD_NUM);
+    public Integer getNumCap() {
+        return (Integer) get(FieldPrototype.NUM_CAP);
     }
 
     public void setRmEntity(String value) {
