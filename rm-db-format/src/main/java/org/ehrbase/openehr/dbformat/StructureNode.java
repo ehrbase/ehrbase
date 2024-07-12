@@ -21,17 +21,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 import org.apache.commons.collections4.CollectionUtils;
 
 public class StructureNode {
 
     private int num = -1;
+    private int numCap = -1;
     private String rmEntity;
     private String archetypeNodeId;
     private String entityName;
     private StructureIndex entityIdx;
 
-    private List<StructureNode> children = new ArrayList<>();
+    private final List<StructureNode> children = new ArrayList<>();
     private ObjectNode jsonNode;
 
     private StructureRmType structureRmType;
@@ -137,11 +139,17 @@ public class StructureNode {
         this.parentNum = parentNum;
     }
 
+    /**
+     * numCap is calculated at first access
+     * @return max num of node and its descendents
+     */
     public int getNumCap() {
-        Integer childNumMax = CollectionUtils.emptyIfNull(children).stream()
-                .map(StructureNode::getNumCap)
-                .max(Integer::compareTo)
-                .orElse(-1);
-        return Math.max(num, childNumMax);
+        if (numCap == -1) {
+            numCap = children.stream()
+                    .mapToInt(StructureNode::getNumCap)
+                    .max()
+                    .orElse(num);
+        }
+        return numCap;
     }
 }
