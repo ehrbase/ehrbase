@@ -161,7 +161,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private ResponseEntity.BodyBuilder ehrResponseBuilder(HttpStatus status, UUID ehrId) {
-
+        createRestContext(ehrId);
         URI uri = createLocationUri(EHR, ehrId.toString());
 
         // initialize HTTP 201 Created body builder
