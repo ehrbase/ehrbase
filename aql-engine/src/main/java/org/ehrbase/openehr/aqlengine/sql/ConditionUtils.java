@@ -157,7 +157,7 @@ final class ConditionUtils {
                                         pKeyField.getFieldName(),
                                         UUID.class,
                                         isJoinCondition)),
-                        // l.num < r.parent_num
+                        // l.num == r.parent_num
                         FieldUtils.field(
                                         sqlLeft,
                                         dc.getLeftProvider(),
@@ -244,35 +244,26 @@ final class ConditionUtils {
                                         pKeyField.getFieldName(),
                                         UUID.class,
                                         isJoinCondition)),
-                        // l.entityIdx < r.entityIdx
+                        // r.num <= l.num <= r.num_cap
                         FieldUtils.field(
                                         sqlLeft,
                                         dc.getLeftProvider(),
                                         dc.getLeftOwner(),
-                                        AslStructureColumn.ENTITY_IDX.getFieldName(),
-                                        String.class,
+                                        AslStructureColumn.NUM.getFieldName(),
+                                        Integer.class,
                                         true)
-                                .lt(FieldUtils.field(
+                                .between(FieldUtils.field(
                                         sqlRight,
                                         dc.getRightProvider(),
                                         dc.getRightOwner(),
-                                        AslStructureColumn.ENTITY_IDX.getFieldName(),
-                                        String.class,
-                                        isJoinCondition)),
-                        // l.entityIdxCap > r.entityIdx
-                        FieldUtils.field(
-                                        sqlLeft,
-                                        dc.getLeftProvider(),
-                                        dc.getLeftOwner(),
-                                        AslStructureColumn.ENTITY_IDX_CAP.getFieldName(),
-                                        String.class,
-                                        true)
-                                .gt(FieldUtils.field(
+                                        AslStructureColumn.NUM.getFieldName(),
+                                        Integer.class,
+                                        isJoinCondition), FieldUtils.field(
                                         sqlRight,
                                         dc.getRightProvider(),
                                         dc.getRightOwner(),
-                                        AslStructureColumn.ENTITY_IDX.getFieldName(),
-                                        String.class,
+                                        AslStructureColumn.NUM_CAP.getFieldName(),
+                                        Integer.class,
                                         isJoinCondition)));
             }
             case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
