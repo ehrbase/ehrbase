@@ -111,7 +111,7 @@ jobs:
           path: ./application/target/
 
       - name: Docker - Build Base Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
@@ -148,6 +148,9 @@ jobs:
       fail-fast: false # ensure all tests run
       matrix:
         test-suite: [
+          # Swagger EHRBase API endpoints checks
+          { path: 'SWAGGER_TESTS', name: 'SWAGGER_TESTS', tags: 'SWAGGER_EHRBASE', env: { 'AUTH_TYPE': 'NONE' } },
+          # Basic and OUATH authorization type checks
           { path: 'AUTH_TYPE_TESTS', name: 'BASIC_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
           { path: 'AUTH_TYPE_TESTS', name: 'OAUTH_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_OAUTH', env: { 'AUTH_TYPE': 'OAUTH' } },
           # sanity checks
@@ -299,15 +302,6 @@ jobs:
             -v ./tests/report:/integration-tests/report \
             ehrbase/integration-tests:latest collectRebotResults
 
-      - name: Github - Send Robot Report to PR
-        # Dependabot has not enough rights to add the report to the PR.
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: joonvena/robotframework-reporter-action@v2.4
-        with:
-          gh_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
-          report_path: ./tests/report
-          show_passed_tests: false
-
       - name: Archive - Robot Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -348,7 +342,9 @@ jobs:
           path: ./tests/coverage
 
       - name: Docker - Build Jacoco-CLI
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_NO_SUMMARY: true
         with:
           context: .
           file: tests/DockerfileJacocoCLI
@@ -411,6 +407,7 @@ jobs:
     # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
+      build-maven, # only to have them in the same UI group as docker-build-push
       integration-test-run
     ]
 

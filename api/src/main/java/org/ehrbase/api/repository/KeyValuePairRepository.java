@@ -15,20 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.plugin.repository;
+package org.ehrbase.api.repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface KeyValueEntryRepository {
-    public List<KeyValueEntry> findByPluginId(String uid);
+public interface KeyValuePairRepository {
 
-    public Optional<KeyValueEntry> findByPluginIdAndKey(String id, String key);
+    public List<KeyValuePair> findAllBy(String context);
 
-    public Optional<KeyValueEntry> findBy(UUID uid);
+    public Optional<KeyValuePair> findBy(String context, String key);
 
-    public KeyValueEntry save(KeyValueEntry kve);
+    public Optional<KeyValuePair> findBy(UUID uid);
+
+    public KeyValuePair save(KeyValuePair kve);
 
     public boolean deleteBy(UUID uid);
 }

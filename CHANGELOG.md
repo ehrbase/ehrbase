@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0]
+ ### Added
+* Create a `ehrbase` user to run the Docker container ([#1336](https://github.com/ehrbase/ehrbase/pull/1336))
+ ### Changed
+* Deprecate plugin aspects ([#1344](https://github.com/ehrbase/ehrbase/pull/1344))
+* Add simplified JSON-based “web template” format support for GET Template ADL 1.4 using header `Accept: application/openehr.wt+json` ([1334](https://github.com/ehrbase/ehrbase/pull/1334))
+* Improved AQL performance ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
+* Upgrade openEHR_SDK to version 2.14.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
+ ### Fixed
+* Return `201` instead of `204` for EHR creation ([1371](https://github.com/ehrbase/ehrbase/pull/1371))
+* Fixed AQL predicate reduction logic ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
+* Respect AQL root predicates ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
+
 ## [2.4.0]
  ### Added
 - Configurable flyway migration strategy
@@ -19,6 +33,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  - Upgrade openEHR_SDK to version 2.12.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
 * AQL-Performance: paths containing non-locatable structure attributes (EVENT_CONTEXT, FEEDER_AUDIT) ([#1341](https://github.com/ehrbase/ehrbase/pull/1341))
+* Removed `@Schema(MediaType.class)` Header declaration from swagger UI ([#1333](https://github.com/ehrbase/ehrbase/pull/1333))
  ### Fixed
 
 ## [2.2.0]
@@ -52,3 +67,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.2.0]: https://github.com/ehrbase/ehrbase/compare/v2.1.0...v2.2.0
 [2.3.0]: https://github.com/ehrbase/ehrbase/compare/v2.2.0...v2.3.0
 [2.4.0]: https://github.com/ehrbase/ehrbase/compare/v2.3.0...v2.4.0
+[2.5.0]: https://github.com/ehrbase/ehrbase/compare/v2.4.0...v2.5.0

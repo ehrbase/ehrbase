@@ -25,6 +25,8 @@ FROM ${EHRBASE_IMAGE}
 
 COPY --from=builder /build/*.jar /app/
 
+USER root
+
 ENV JACOCO_RESULT_PATH=/app/coverage/jacoco.exec
 
 ENTRYPOINT java -jar -Dspring.profiles.active=docker -javaagent:/app/jacoco-agent.jar=destfile=${JACOCO_RESULT_PATH},append=false,includes=org.ehrbase.* /app/ehrbase.jar

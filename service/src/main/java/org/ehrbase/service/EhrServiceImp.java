@@ -96,6 +96,12 @@ public class EhrServiceImp implements EhrService {
 
         check(status);
 
+        ehrId = Optional.ofNullable(ehrId).orElseGet(UuidGenerator::randomUUID);
+
+        if (hasEhr(ehrId)) {
+            throw new StateConflictException("EHR with this ID already exists");
+        }
+
         if (status == null) { // in case of new status with default values
             status = new EhrStatus();
             status.setArchetypeNodeId("openEHR-EHR-EHR_STATUS.generic.v1");
@@ -111,10 +117,6 @@ public class EhrServiceImp implements EhrService {
                 UuidGenerator.randomUUID(),
                 1,
                 systemService)); // server sets own new UUID in both cases (new or given status)
-
-        if (ehrId == null) {
-            ehrId = UuidGenerator.randomUUID();
-        }
 
         ehrRepository.commit(ehrId, status, null, null);
 

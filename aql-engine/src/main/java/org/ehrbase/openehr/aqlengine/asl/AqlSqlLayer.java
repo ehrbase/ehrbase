@@ -51,6 +51,7 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
+import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
@@ -73,6 +74,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.LogicalOperatorConditionWrapper;
+import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.operand.AggregateFunction.AggregateFunctionName;
 import org.ehrbase.openehr.sdk.aql.dto.operand.DoublePrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.LongPrimitive;
@@ -184,12 +186,18 @@ public class AqlSqlLayer {
                             .map(SelectWrapper::getIdentifiedPath)
                             .flatMap(Optional::stream)
                             .map(pathToField::getField)
+                            .flatMap(aslField -> aslField.fieldsForAggregation(rootQuery))
                             .distinct()
                             .toList());
 
         } else if (query.distinct()) {
             // DISTINCT: group by all selects
-            rootQuery.getGroupByFields().addAll(rootQuery.getSelect());
+            rootQuery
+                    .getGroupByFields()
+                    .addAll(rootQuery.getSelect().stream()
+                            .flatMap(aslField -> aslField.fieldsForAggregation(rootQuery))
+                            .distinct()
+                            .toList());
         }
         return usesAggregateFunction;
     }
@@ -298,6 +306,12 @@ public class AqlSqlLayer {
                     comparison.rightComparisonOperands(), operator, knowledgeCache::findUuidByTemplateId);
             case ARCHETYPE_NODE_ID -> AslUtils.archetypeNodeIdConditionValues(
                     comparison.rightComparisonOperands(), operator);
+            case ROOT_CONCEPT -> AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator)
+                    .stream()
+                    // archetype must be for COMPOSITION
+                    .filter(tc -> StructureRmType.COMPOSITION.getAlias().equals(tc.aliasedRmType()))
+                    .map(AslRmTypeAndConcept::concept)
+                    .toList();
             case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> AslUtils.streamStringPrimitives(comparison)
                     .map(AslUtils::toOffsetDateTime)
                     .filter(Objects::nonNull)

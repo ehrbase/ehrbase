@@ -18,13 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
+          
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
-
+      
       - name: Setup - Java 17
         uses: actions/setup-java@v4
         with:
@@ -54,7 +55,7 @@ jobs:
       - name: Download - Jacoco Overall Coverage
         uses: actions/download-artifact@v4
         with:
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow
           pattern: jacoco-report-final               # uses artifact of build and test workflow
           merge-multiple: true

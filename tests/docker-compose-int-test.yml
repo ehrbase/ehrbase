@@ -1,5 +1,3 @@
-version: '3'
-
 #
 # Extended setup for EHRbase for integration tests.
 #

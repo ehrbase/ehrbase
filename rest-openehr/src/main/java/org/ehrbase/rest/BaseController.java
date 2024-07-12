@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -25,9 +24,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.function.Predicate;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -37,8 +35,7 @@ import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
@@ -65,32 +62,15 @@ public abstract class BaseController {
     public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
     public static final String ACCEPT = HttpHeaders.ACCEPT;
     public static final String REQ_CONTENT_TYPE = "Client may request content format";
-    public static final String REQ_CONTENT_TYPE_BODY = "Format of transferred body";
     public static final String REQ_ACCEPT = "Client should specify expected format";
     // response headers
     public static final String RESP_CONTENT_TYPE_DESC = "Format of response";
-    // Audit
-    public static final String REST_OPERATION = "RestOperation";
 
     public static final String LOCATION = HttpHeaders.LOCATION;
     public static final String ETAG = HttpHeaders.ETAG;
     public static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
 
     public static final String IF_MATCH = HttpHeaders.IF_MATCH;
-    public static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH;
-    // Configuration of swagger-ui description fields
-    // request headers
-    public static final String REQ_OPENEHR_VERSION = "Optional custom request header for versioning";
-    public static final String REQ_OPENEHR_AUDIT = "Optional custom request header for auditing";
-    public static final String REQ_PREFER = "May be used by clients for resource representation negotiation";
-    public static final String RESP_LOCATION_DESC = "Location of resource";
-    public static final String RESP_ETAG_DESC = "Entity tag for resource";
-    public static final String RESP_LAST_MODIFIED_DESC = "Time of last modification of resource";
-    // common response description fields
-    public static final String RESP_NOT_ACCEPTABLE_DESC =
-            "Not Acceptable - Service can not fulfill requested format via accept header.";
-    public static final String RESP_UNSUPPORTED_MEDIA_DESC =
-            "Unsupported Media Type - request's content-type not supported.";
 
     // constants of all API resources
     public static final String EHR = "ehr";
@@ -107,23 +87,6 @@ public abstract class BaseController {
     public static final String API_CONTEXT_PATH_WITH_VERSION = API_CONTEXT_PATH + "/v1";
     public static final String ADMIN_API_CONTEXT_PATH = "${admin-api.context-path:/rest/admin}";
 
-    public Map<String, Map<String, String>> add2MetaMap(
-            Map<String, Map<String, String>> metaMap, String key, String value) {
-        Map<String, String> contentMap;
-
-        if (metaMap == null) {
-            metaMap = new HashMap<>();
-            contentMap = new HashMap<>();
-            metaMap.put("meta", contentMap);
-        } else {
-            contentMap = metaMap.get("meta");
-        }
-
-        contentMap.put(key, value);
-        return metaMap;
-    }
-
-    @VisibleForTesting
     public String getContextPath() {
         return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
     }
@@ -140,10 +103,26 @@ public abstract class BaseController {
      */
     protected URI createLocationUri(String... pathSegments) {
         return UriComponentsBuilder.fromHttpUrl(getContextPath())
-                .path(this.encodePath(apiContextPathWithVersion))
+                .path(UriUtils.encodePath(apiContextPathWithVersion, "UTF-8"))
                 .pathSegment(pathSegments)
                 .build()
                 .toUri();
+    }
+
+    /**
+     * Helper to parse an input UUID int string format.
+     *
+     * @param uuidString to parse
+     * @param error      to raise in case the given UUID string is invalid
+     * @return uuid      parse from the input <code>uuidString</code>
+     * @throws InvalidApiParameterException when the given <code>uuidString</code> is invalid
+     */
+    protected UUID parseUUID(String uuidString, String error) {
+        try {
+            return UUID.fromString(uuidString);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidApiParameterException(error);
+        }
     }
 
     /**
@@ -220,10 +199,9 @@ public abstract class BaseController {
             final MediaType mediaType = resolveContentType(
                     contentType,
                     MediaType.APPLICATION_JSON,
-                    mediaType1 -> mediaType1.isCompatibleWith(MediaType.APPLICATION_JSON)
-                            || mediaType1.isCompatibleWith(MediaType.APPLICATION_XML)
-                            || mediaType1.isCompatibleWith(OpenEHRMediaType.APPLICATION_WT_FLAT_SCHEMA_JSON)
-                            || mediaType1.isCompatibleWith(OpenEHRMediaType.APPLICATION_WT_STRUCTURED_SCHEMA_JSON));
+                    MediaType.APPLICATION_XML,
+                    OpenEHRMediaType.APPLICATION_WT_FLAT_SCHEMA_JSON,
+                    OpenEHRMediaType.APPLICATION_WT_STRUCTURED_SCHEMA_JSON);
 
             representation =
                     CompositionRepresentation.selectFromMediaTypeWithFormat(mediaType, parsedFormat.orElse(null));
@@ -236,24 +214,10 @@ public abstract class BaseController {
     }
 
     /**
-     * Convenience helper to encode path strings to URI-safe strings
-     *
-     * @param path input
-     * @return URI-safe escaped string
-     * @throws InternalServerException when encoding failed
-     */
-    public String encodePath(String path) {
-
-        path = UriUtils.encodePath(path, "UTF-8");
-
-        return path;
-    }
-
-    /**
      * Extracts the UUID base from a versioned UID. Or, if
      *
-     * @param versionUid
-     * @return
+     * @param versionUid  raw versionUid in format <code>[UUID]::[VERSION]</code>
+     * @return uuid <code>[UUID]</code> part
      */
     protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
         if (!versionUid.contains("::")) {
@@ -265,69 +229,46 @@ public abstract class BaseController {
     protected Optional<Integer> extractVersionFromVersionUid(String versionUid) {
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
         // via making a substring starting at last occurrence of "::" + 2
-        int lastOccourence = versionUid.lastIndexOf("::");
-        if (lastOccourence > 0 && versionUid.indexOf("::") != lastOccourence) {
-            return Optional.of(Integer.parseInt(versionUid.substring(lastOccourence + 2)));
+        int lastOccurrence = versionUid.lastIndexOf("::");
+        if (lastOccurrence > 0 && versionUid.indexOf("::") != lastOccurrence) {
+            return Optional.of(Integer.parseInt(versionUid.substring(lastOccurrence + 2)));
         }
 
         return Optional.empty();
     }
 
     /**
-     * Add attribute to the current request.
-     *
-     * @param attributeName
-     * @param value
-     */
-    protected void enrichRequestAttribute(String attributeName, Object value) {
-        RequestContextHolder.currentRequestAttributes()
-                .setAttribute(attributeName, value, RequestAttributes.SCOPE_REQUEST);
-    }
-
-    /**
-     * Resolves the Content-Type based on Accept header.
+     * Resolves the Content-Type based on Accept header. Validates if the given <code>acceptHeader</code> in
+     * either <code>application/json</code> or <code>application/xml</code>.
+     * In case <code>acceptHeader</code> is given <code>application/json</code> will be selected as a default.
      *
      * @param acceptHeader Accept header value
      * @return Content-Type of the response
      */
     protected MediaType resolveContentType(String acceptHeader) {
-        return resolveContentType(acceptHeader, MediaType.APPLICATION_JSON);
-    }
-
-    /**
-     * Resolves the Content-Type based on Accept header.
-     *
-     * @param acceptHeader     Accept header value
-     * @param defaultMediaType Default Content-Type
-     * @return Content-Type of the response
-     */
-    protected MediaType resolveContentType(String acceptHeader, MediaType defaultMediaType) {
-        return resolveContentType(
-                acceptHeader,
-                defaultMediaType,
-                mediaType -> mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)
-                        || mediaType.isCompatibleWith(MediaType.APPLICATION_XML));
+        return resolveContentType(acceptHeader, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML);
     }
 
     /**
      * Resolves the Content-Type based on Accept header using the supported predicate.
      *
-     * @param acceptHeader     Accept header value
-     * @param defaultMediaType Default Content-Type
-     * @param isSupported      Filter the supported Content-Types
+     * @param acceptHeader        Accept header value
+     * @param defaultMediaType    Default Content-Type
+     * @param supportedMediaTypes supported Content-Types
      * @return Content-Type of the response
      */
     protected MediaType resolveContentType(
-            String acceptHeader, MediaType defaultMediaType, Predicate<MediaType> isSupported) {
+            String acceptHeader, MediaType defaultMediaType, MediaType... supportedMediaTypes) {
 
         List<MediaType> mediaTypes = MediaType.parseMediaTypes(acceptHeader);
         if (mediaTypes.isEmpty()) {
             return defaultMediaType;
         }
 
-        MediaType.sortBySpecificityAndQuality(mediaTypes);
+        MimeTypeUtils.sortBySpecificity(mediaTypes);
         MediaType contentType = mediaTypes.stream()
-                .filter(isSupported)
+                .filter(type -> Stream.concat(Stream.of(defaultMediaType), Arrays.stream(supportedMediaTypes))
+                        .anyMatch(type::isCompatibleWith))
                 .findFirst()
                 .orElseThrow(() -> new InvalidApiParameterException("Wrong Content-Type header in request"));
 
