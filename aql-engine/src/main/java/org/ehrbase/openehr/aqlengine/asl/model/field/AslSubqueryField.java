@@ -105,8 +105,7 @@ public final class AslSubqueryField extends AslField {
                             Stream.of(
                                     AslUtils.findFieldForOwner(AslStructureColumn.VO_ID, baseProviderFields, base),
                                     AslUtils.findFieldForOwner(AslStructureColumn.NUM, baseProviderFields, base),
-                                    AslUtils.findFieldForOwner(
-                                            AslStructureColumn.NUM_CAP, baseProviderFields, base)),
+                                    AslUtils.findFieldForOwner(AslStructureColumn.NUM_CAP, baseProviderFields, base)),
                             filterConditions.stream()
                                     .flatMap(AslUtils::streamConditionFields)
                                     .distinct())

@@ -457,7 +457,10 @@ public class AqlSqlQueryBuilder {
         Condition[] conditions = Stream.concat(
                         // TODO can be skipped for roots
                         // TODO can be set to == for leafs (ELEMENT)
-                        Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM)).between(FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM), FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),
+                        Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
+                                .between(
+                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
+                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),
                         Arrays.stream(additionalConditions))
                 .toArray(Condition[]::new);
 

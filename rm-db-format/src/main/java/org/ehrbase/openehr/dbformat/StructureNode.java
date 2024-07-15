@@ -21,8 +21,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.IntStream;
-import org.apache.commons.collections4.CollectionUtils;
 
 public class StructureNode {
 
@@ -145,10 +143,7 @@ public class StructureNode {
      */
     public int getNumCap() {
         if (numCap == -1) {
-            numCap = children.stream()
-                    .mapToInt(StructureNode::getNumCap)
-                    .max()
-                    .orElse(num);
+            numCap = children.stream().mapToInt(StructureNode::getNumCap).max().orElse(num);
         }
         return numCap;
     }
