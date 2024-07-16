@@ -99,36 +99,12 @@ public class ObjectDataHistoryRecordPrototype extends AbstractRecordPrototype<Ob
         return (String) get(FieldPrototype.ENTITY_ATTRIBUTE);
     }
 
-    public void setEntityPath(String value) {
-        set(FieldPrototype.ENTITY_PATH, value);
-    }
-
-    public String getEntityPath() {
-        return (String) get(FieldPrototype.ENTITY_PATH);
-    }
-
-    public void setEntityPathCap(String value) {
-        set(FieldPrototype.ENTITY_PATH_CAP, value);
-    }
-
-    public String getEntityPathCap() {
-        return (String) get(FieldPrototype.ENTITY_PATH_CAP);
-    }
-
     public void setEntityIdx(String value) {
         set(FieldPrototype.ENTITY_IDX, value);
     }
 
     public String getEntityIdx() {
         return (String) get(FieldPrototype.ENTITY_IDX);
-    }
-
-    public void setEntityIdxCap(String value) {
-        set(FieldPrototype.ENTITY_IDX_CAP, value);
-    }
-
-    public String getEntityIdxCap() {
-        return (String) get(FieldPrototype.ENTITY_IDX_CAP);
     }
 
     public void setEntityIdxLen(Integer value) {
@@ -180,10 +156,7 @@ public class ObjectDataHistoryRecordPrototype extends AbstractRecordPrototype<Ob
             String entityConcept,
             String entityName,
             String entityAttribute,
-            String entityPath,
-            String entityPathCap,
             String entityIdx,
-            String entityIdxCap,
             Integer entityIdxLen,
             JSONB data,
             Integer sysVersion) {
@@ -196,10 +169,7 @@ public class ObjectDataHistoryRecordPrototype extends AbstractRecordPrototype<Ob
                 entityConcept,
                 entityName,
                 entityAttribute,
-                entityPath,
-                entityPathCap,
                 entityIdx,
-                entityIdxCap,
                 entityIdxLen,
                 data,
                 sysVersion);

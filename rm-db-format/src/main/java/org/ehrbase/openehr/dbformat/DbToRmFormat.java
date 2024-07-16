@@ -81,8 +81,8 @@ public final class DbToRmFormat {
      * FROM comp_data as d
      * WHERE (
      *   p.vo_id = d.vo_id
-     *   AND p.entity_idx <= d.entity_idx
-     *   AND p.entity_idx_cap > d.entity_idx
+     *   AND p.num <= d.num
+     *   AND p.num_cap >= d.entity_idx
      * )
      * GROUP BY d.vo_id
      * </pre></code>
@@ -106,8 +106,8 @@ public final class DbToRmFormat {
      * FROM comp_data as d
      * WHERE (
      *   p.vo_id = d.vo_id
-     *   AND p.entity_idx <= d.entity_idx
-     *   AND p.entity_idx_cap > d.entity_idx
+     *   AND p.num <= d.num
+     *   AND p.num_cap > d.num
      * )
      * GROUP BY d.vo_id
      * </pre></code>

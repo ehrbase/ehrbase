@@ -53,14 +53,7 @@ public final class ObjectDataTablePrototype
     public final TableField<ObjectDataRecordPrototype, String> ENTITY_ATTRIBUTE =
             getField(FieldPrototype.ENTITY_ATTRIBUTE);
 
-    public final TableField<ObjectDataRecordPrototype, String> ENTITY_PATH = getField(FieldPrototype.ENTITY_PATH);
-
-    public final TableField<ObjectDataRecordPrototype, String> ENTITY_PATH_CAP =
-            getField(FieldPrototype.ENTITY_PATH_CAP);
-
     public final TableField<ObjectDataRecordPrototype, String> ENTITY_IDX = getField(FieldPrototype.ENTITY_IDX);
-
-    public final TableField<ObjectDataRecordPrototype, String> ENTITY_IDX_CAP = getField(FieldPrototype.ENTITY_IDX_CAP);
 
     public final TableField<ObjectDataRecordPrototype, Integer> ENTITY_IDX_LEN =
             getField(FieldPrototype.ENTITY_IDX_LEN);

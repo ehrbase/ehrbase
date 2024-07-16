@@ -48,10 +48,7 @@ public enum FieldPrototype {
     ENTITY_CONCEPT(SQLDataType.CLOB, false, false, true, true),
     ENTITY_NAME(SQLDataType.CLOB, false, false, true, true),
     ENTITY_ATTRIBUTE(SQLDataType.CLOB, false, false, true, true),
-    ENTITY_PATH(SQLDataType.CLOB.nullable(false), false, false, true, true),
-    ENTITY_PATH_CAP(SQLDataType.CLOB.nullable(false), false, false, true, true),
     ENTITY_IDX(SQLDataType.CLOB.nullable(false), false, false, true, true),
-    ENTITY_IDX_CAP(SQLDataType.CLOB.nullable(false), false, false, true, true),
     ENTITY_IDX_LEN(SQLDataType.INTEGER.nullable(false), false, false, true, true),
     DATA(SQLDataType.JSONB.nullable(false), false, false, true, true);
 
