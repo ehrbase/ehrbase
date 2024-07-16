@@ -143,7 +143,7 @@ public class StructureNode {
      */
     public int getNumCap() {
         if (numCap == -1) {
-            numCap = children.stream().mapToInt(StructureNode::getNumCap).max().orElse(num);
+            numCap = Math.max(children.stream().mapToInt(StructureNode::getNumCap).max().orElse(-1), num);
         }
         return numCap;
     }
