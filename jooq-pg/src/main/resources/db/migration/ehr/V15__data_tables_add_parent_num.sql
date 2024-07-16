@@ -16,75 +16,150 @@
  * limitations under the License.
  */
 
-ALTER TABLE comp_data ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
-ALTER TABLE comp_data_history ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_status_data ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_status_data_history ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_folder_data ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_folder_data_history ADD COLUMN parent_num integer NOT NULL DEFAULT 0;
-
-
-ALTER TABLE comp_data ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
-ALTER TABLE comp_data_history ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_status_data ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_status_data_history ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_folder_data ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
-ALTER TABLE ehr_folder_data_history ADD COLUMN num_cap integer NOT NULL DEFAULT 0;
+ALTER TABLE comp_data
+    ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
+ALTER TABLE comp_data_history
+    ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
+ALTER TABLE ehr_status_data
+    ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
+ALTER TABLE ehr_status_data_history
+    ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
+ALTER TABLE ehr_folder_data
+    ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
+ALTER TABLE ehr_folder_data_history
+    ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
 
 --migrate compositions
 UPDATE comp_data ch SET parent_num=pa.num
 FROM comp_data pa
 WHERE ch.vo_id=pa.vo_id
+  AND pa.pa.entity_idx_len > 1
   AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx LIKE (pa.entity_idx || '%');
+  AND ch.entity_idx ^@ pa.entity_idx
+  AND ch.parent_num == 0;
 UPDATE comp_data_history ch SET parent_num=pa.num
 FROM comp_data_history pa
 WHERE ch.vo_id=pa.vo_id
+  AND pa.pa.entity_idx_len > 1
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx LIKE (pa.entity_idx || '%');
+  AND ch.entity_idx ^@ pa.entity_idx
+  AND ch.parent_num == 0;
 
 --migrate ehr_status
 UPDATE ehr_status_data ch SET parent_num=pa.num
 FROM ehr_status_data pa
 WHERE ch.vo_id=pa.vo_id
+  AND pa.pa.entity_idx_len != 0
   AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx LIKE (pa.entity_idx || '%');
+  AND ch.entity_idx ^@ pa.entity_idx
+  AND ch.parent_num == 0;
 UPDATE ehr_status_data_history ch SET parent_num=pa.num
 FROM ehr_status_data_history pa
 WHERE ch.vo_id=pa.vo_id
+  AND pa.pa.entity_idx_len != 0
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx LIKE (pa.entity_idx || '%');
+  AND ch.entity_idx ^@ pa.entity_idx
+  AND ch.parent_num == 0;
 
 --migrate ehr_folder
---TODO ehr_folder_data(_history)
-
--- num cap TODO performance
-UPDATE comp_data pa SET num_cap = (select max(ch.num)
-FROM comp_data ch
+UPDATE ehr_folder_data ch SET parent_num=pa.num
+FROM ehr_folder_data pa
 WHERE ch.vo_id=pa.vo_id
-  AND pa.entity_idx_len >= ch.entity_idx_len
-  AND ch.entity_idx LIKE (pa.entity_idx || '%')
-);
+  AND pa.pa.entity_idx_len != 0
+  AND pa.entity_idx_len = ch.entity_idx_len - 1
+  AND ch.entity_idx ^@ pa.entity_idx
+  AND ch.parent_num == 0;
+UPDATE ehr_folder_data_history ch SET parent_num=pa.num
+FROM ehr_folder_data_history pa
+WHERE ch.vo_id=pa.vo_id
+  AND pa.pa.entity_idx_len != 0
+  AND ch.sys_version=pa.sys_version
+  AND pa.entity_idx_len = ch.entity_idx_len - 1
+  AND ch.entity_idx ^@ pa.entity_idx
+  AND ch.parent_num == 0;
 
---TODO comp_data_history, ehr_status_history, ehr_folder, ehr_folder_history
+-- num cap
+UPDATE comp_data pa SET num_cap = (select max(ch.num)
+                                   FROM comp_data ch
+                                   WHERE ch.vo_id=pa.vo_id
+                                     AND pa.entity_idx_len >= ch.entity_idx_len
+                                     AND ch.entity_idx ^@ pa.entity_idx
+) WHERE pa.num_cap = -1;
+UPDATE comp_data_history pa SET num_cap = (select max(ch.num)
+                                   FROM comp_data_history ch
+                                   WHERE ch.vo_id=pa.vo_id
+                                     AND pa.entity_idx_len >= ch.entity_idx_len
+                                     AND ch.entity_idx ^@ pa.entity_idx
+) WHERE pa.num_cap = -1;
+UPDATE ehr_status_data pa SET num_cap = (select max(ch.num)
+                                   FROM ehr_status_data ch
+                                   WHERE ch.vo_id=pa.vo_id
+                                     AND pa.entity_idx_len >= ch.entity_idx_len
+                                     AND ch.entity_idx ^@ pa.entity_idx
+) WHERE pa.num_cap = -1;
+UPDATE ehr_status_data_history pa SET num_cap = (select max(ch.num)
+                                   FROM ehr_status_data_history ch
+                                   WHERE ch.vo_id=pa.vo_id
+                                     AND pa.entity_idx_len >= ch.entity_idx_len
+                                     AND ch.entity_idx ^@ pa.entity_idx
+) WHERE pa.num_cap = -1;
+UPDATE ehr_folder_data pa SET num_cap = (select max(ch.num)
+                                   FROM ehr_folder_data ch
+                                   WHERE ch.vo_id=pa.vo_id
+                                     AND pa.entity_idx_len >= ch.entity_idx_len
+                                     AND ch.entity_idx ^@ pa.entity_idx
+) WHERE pa.num_cap = -1;
+UPDATE ehr_folder_data_history pa SET num_cap = (select max(ch.num)
+                                   FROM ehr_folder_data_history ch
+                                   WHERE ch.vo_id=pa.vo_id
+                                     AND pa.entity_idx_len >= ch.entity_idx_len
+                                     AND ch.entity_idx ^@ pa.entity_idx
+) WHERE pa.num_cap = -1;
 
 --TODO indexes
 
-ALTER TABLE comp_data ALTER COLUMN parent_num DROP DEFAULT;
-ALTER TABLE comp_data_history ALTER COLUMN parent_num DROP DEFAULT;
-ALTER TABLE ehr_status_data ALTER COLUMN parent_num DROP DEFAULT;
-ALTER TABLE ehr_status_data_history ALTER COLUMN parent_num DROP DEFAULT;
-ALTER TABLE ehr_folder_data ALTER COLUMN parent_num DROP DEFAULT;
-ALTER TABLE ehr_folder_data_history ALTER COLUMN parent_num DROP DEFAULT;
-
-ALTER TABLE comp_data ALTER COLUMN num_cap DROP DEFAULT;
-ALTER TABLE comp_data_history ALTER COLUMN num_cap DROP DEFAULT;
-ALTER TABLE ehr_status_data ALTER COLUMN num_cap DROP DEFAULT;
-ALTER TABLE ehr_status_data_history ALTER COLUMN num_cap DROP DEFAULT;
-ALTER TABLE ehr_folder_data ALTER COLUMN num_cap DROP DEFAULT;
-ALTER TABLE ehr_folder_data_history ALTER COLUMN num_cap DROP DEFAULT;
-
-
---TODO drop entity_idx_cap, entity_path, entity_path_cap
+-- drop defaults and columns (implies dropping indexes)
+ALTER TABLE comp_data
+    ALTER COLUMN parent_num DROP DEFAULT,
+    ALTER COLUMN num_cap DROP DEFAULT,
+    DROP COLUMN IF EXISTS entity_idx_cap,
+    DROP COLUMN IF EXISTS entity_path,
+    DROP COLUMN IF EXISTS entity_path_cap;
+ALTER TABLE comp_data_history
+    ALTER COLUMN parent_num DROP DEFAULT,
+    ALTER COLUMN num_cap DROP DEFAULT,
+    DROP COLUMN IF EXISTS entity_idx_cap,
+    DROP COLUMN IF EXISTS entity_path,
+    DROP COLUMN IF EXISTS entity_path_cap;
+ALTER TABLE ehr_status_data
+    ALTER COLUMN parent_num DROP DEFAULT,
+    ALTER COLUMN num_cap DROP DEFAULT,
+    DROP COLUMN IF EXISTS entity_idx_cap,
+    DROP COLUMN IF EXISTS entity_path,
+    DROP COLUMN IF EXISTS entity_path_cap;
+ALTER TABLE ehr_status_data_history
+    ALTER COLUMN parent_num DROP DEFAULT,
+    ALTER COLUMN num_cap DROP DEFAULT,
+    DROP COLUMN IF EXISTS entity_idx_cap,
+    DROP COLUMN IF EXISTS entity_path,
+    DROP COLUMN IF EXISTS entity_path_cap;
+ALTER TABLE ehr_folder_data
+    ALTER COLUMN parent_num DROP DEFAULT,
+    ALTER COLUMN num_cap DROP DEFAULT,
+    DROP COLUMN IF EXISTS entity_idx_cap,
+    DROP COLUMN IF EXISTS entity_path,
+    DROP COLUMN IF EXISTS entity_path_cap;
+ALTER TABLE ehr_folder_data_history
+    ALTER COLUMN parent_num DROP DEFAULT,
+    ALTER COLUMN num_cap DROP DEFAULT,
+    DROP COLUMN IF EXISTS entity_idx_cap,
+    DROP COLUMN IF EXISTS entity_path,
+    DROP COLUMN IF EXISTS entity_path_cap;
