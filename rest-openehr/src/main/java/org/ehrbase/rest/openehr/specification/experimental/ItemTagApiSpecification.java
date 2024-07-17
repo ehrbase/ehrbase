@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import org.ehrbase.api.service.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 

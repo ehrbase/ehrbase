@@ -34,11 +34,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.experimental.ItemTag;
-import org.ehrbase.api.service.experimental.ItemTagDto;
 import org.ehrbase.api.service.experimental.ItemTagService;
 import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.util.UuidGenerator;
@@ -96,8 +96,9 @@ class ItemTagServiceTest {
         UUID target = UUID.fromString(targetId);
         ItemTag.ItemTagRMType targetType = ItemTag.ItemTagRMType.valueOf(type);
 
+        ItemTagService service = service();
         assertThrowsObjectNotFound(
-                () -> service().bulkUpsert(SAMPLE_EHR_ID, target, targetType, List.of(itemTagDto("some:key"))));
+                () -> service.bulkUpsert(SAMPLE_EHR_ID, target, targetType, List.of(itemTagDto("some:key"))));
     }
 
     @Test
@@ -266,9 +267,9 @@ class ItemTagServiceTest {
     @ValueSource(strings = {"null", "", " "})
     void invalidTagKeyEmptyOrBlank(String key) {
 
-        UnprocessableEntityException exception = assertThrows(
-                UnprocessableEntityException.class,
-                () -> ItemTagServiceImpl.validateTagKey(key.equals("null") ? null : key));
+        var tagKey = "null".equals(key) ? null : key;
+        UnprocessableEntityException exception =
+                assertThrows(UnprocessableEntityException.class, () -> ItemTagServiceImpl.validateTagKey(tagKey));
         assertEquals("ItemTag must have a key that can not be empty or blank", exception.getMessage());
     }
 

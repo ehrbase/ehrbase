@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.service.experimental;
+package org.ehrbase.api.dto.experimental;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.ehrbase.api.service.experimental.ItemTag;
 
-// TODO Move to OpenEHR_SDK dro module
 /**
  * ItemTag DTO use as a PUT or DELETE input as well as output for GET.
  *

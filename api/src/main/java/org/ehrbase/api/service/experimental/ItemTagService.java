@@ -20,6 +20,7 @@ package org.ehrbase.api.service.experimental;
 import java.util.Collection;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import org.ehrbase.api.dto.experimental.ItemTagDto;
 
 /**
  * Service manages the <a href="https://specifications.openehr.org/releases/RM/latest/common.html#tags">ITEM_TAG</a>

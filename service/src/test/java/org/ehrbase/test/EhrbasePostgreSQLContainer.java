@@ -73,6 +73,7 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
     /**
      * @deprecated
      */
+    @Override
     @SuppressWarnings("deprecation")
     @Deprecated
     protected @NotNull Set<Integer> getLivenessCheckPorts() {
@@ -89,6 +90,7 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
                 + this.databaseName + additionalUrlParams;
     }
 
+    @Override
     public String getDatabaseName() {
         return this.databaseName;
     }
@@ -105,25 +107,30 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
         return "SELECT 1";
     }
 
+    @Override
     public EhrbasePostgreSQLContainer withDatabaseName(String databaseName) {
         this.databaseName = databaseName;
         return this.self();
     }
 
+    @Override
     public EhrbasePostgreSQLContainer withUsername(String username) {
         this.username = username;
         return this.self();
     }
 
+    @Override
     public EhrbasePostgreSQLContainer withPassword(String password) {
         this.password = password;
         return this.self();
     }
 
+    @Override
     protected void waitUntilContainerStarted() {
         this.getWaitStrategy().waitUntilReady(this);
     }
 
+    @Override
     protected void runInitScriptIfRequired() {
         try (var conn = createConnection("")) {
             Stream.of("ext", "ehr").forEach(schema -> Flyway.configure()
