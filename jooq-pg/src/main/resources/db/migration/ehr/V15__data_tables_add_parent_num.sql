@@ -124,7 +124,6 @@ UPDATE ehr_folder_data_history pa SET num_cap = (select max(ch.num)
                                      AND ch.entity_idx ^@ pa.entity_idx
 ) WHERE pa.num_cap = -1;
 
---TODO indexes
 
 DROP INDEX IF EXISTS comp_data_idx;
 DROP INDEX IF EXISTS comp_data_leaf_idx;
@@ -168,28 +167,6 @@ ALTER TABLE ehr_folder_data_history
     DROP COLUMN IF EXISTS entity_path,
     DROP COLUMN IF EXISTS entity_path_cap;
 
---TODO proper index definition; name?
-CREATE INDEX IF NOT EXISTS comp_data_idx
-    ON comp_data USING btree
-        (vo_id,
-         entity_attribute,
-         entity_idx_len,
-         rm_entity,
-         entity_concept,
-         entity_name collate "en_US",
-         num
-            )
-    INCLUDE (num_cap, parent_num);
-
---TODO proper index definition; name?
-CREATE INDEX IF NOT EXISTS ehr_status_data_idx
-    ON ehr_status_data USING btree
-        (ehr_id,
-         entity_attribute,
-         entity_idx_len,
-         rm_entity,
-         entity_concept,
-         entity_name collate "en_US",
-         num
-            )
-    INCLUDE (vo_id, num_cap, parent_num);
+--TODO
+create index comp_data_path_idx on ehr.comp_data (vo_id, parent_num, entity_attribute, entity_concept, rm_entity, entity_name collate "en_US.utf8", num, entity_idx, num_cap);
+create index ehr_status_data_path_idx on ehr.ehr_status_data (ehr_id, parent_num, entity_attribute, entity_concept, rm_entity, entity_name collate "en_US.utf8", num, entity_idx, num_cap);
