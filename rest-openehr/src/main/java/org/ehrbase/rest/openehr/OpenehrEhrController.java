@@ -123,6 +123,8 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
+        createRestContext(ehrId);
+
         // load the EHR response
         EhrResponseData ehrResponseData = ehrResponseData(ehrId);
 
@@ -141,6 +143,8 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         UUID ehrId = ehrService
                 .findBySubject(subjectId, subjectNamespace)
                 .orElseThrow(() -> new ObjectNotFoundException("ehr", "No EHR with supplied subject parameters found"));
+
+        createRestContext(ehrId);
 
         // load the EHR response
         EhrResponseData ehrResponseData = ehrResponseData(ehrId);
@@ -161,7 +165,6 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     }
 
     private ResponseEntity.BodyBuilder ehrResponseBuilder(HttpStatus status, UUID ehrId) {
-
         URI uri = createLocationUri(EHR, ehrId.toString());
 
         // initialize HTTP 201 Created body builder
