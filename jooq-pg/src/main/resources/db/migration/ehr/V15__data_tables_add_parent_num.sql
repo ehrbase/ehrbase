@@ -183,7 +183,7 @@ CREATE INDEX IF NOT EXISTS comp_data_idx
 
 --TODO proper index definition; name?
 CREATE INDEX IF NOT EXISTS ehr_status_data_idx
-    ON comp_data USING btree
+    ON ehr_status_data USING btree
         (ehr_id,
          entity_attribute,
          entity_idx_len,
