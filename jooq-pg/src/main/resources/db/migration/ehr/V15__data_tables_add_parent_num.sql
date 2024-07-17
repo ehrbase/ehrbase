@@ -39,14 +39,14 @@ ALTER TABLE ehr_folder_data_history
 UPDATE comp_data ch SET parent_num=pa.num
 FROM comp_data pa
 WHERE ch.vo_id=pa.vo_id
-  AND pa.pa.entity_idx_len > 1
+  AND pa.entity_idx_len > 1
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
   AND ch.parent_num == 0;
 UPDATE comp_data_history ch SET parent_num=pa.num
 FROM comp_data_history pa
 WHERE ch.vo_id=pa.vo_id
-  AND pa.pa.entity_idx_len > 1
+  AND pa.entity_idx_len > 1
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
@@ -56,14 +56,14 @@ WHERE ch.vo_id=pa.vo_id
 UPDATE ehr_status_data ch SET parent_num=pa.num
 FROM ehr_status_data pa
 WHERE ch.vo_id=pa.vo_id
-  AND pa.pa.entity_idx_len != 0
+  AND pa.entity_idx_len != 0
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
   AND ch.parent_num == 0;
 UPDATE ehr_status_data_history ch SET parent_num=pa.num
 FROM ehr_status_data_history pa
 WHERE ch.vo_id=pa.vo_id
-  AND pa.pa.entity_idx_len != 0
+  AND pa.entity_idx_len != 0
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
@@ -73,14 +73,14 @@ WHERE ch.vo_id=pa.vo_id
 UPDATE ehr_folder_data ch SET parent_num=pa.num
 FROM ehr_folder_data pa
 WHERE ch.vo_id=pa.vo_id
-  AND pa.pa.entity_idx_len != 0
+  AND pa.entity_idx_len != 0
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
   AND ch.parent_num == 0;
 UPDATE ehr_folder_data_history ch SET parent_num=pa.num
 FROM ehr_folder_data_history pa
 WHERE ch.vo_id=pa.vo_id
-  AND pa.pa.entity_idx_len != 0
+  AND pa.entity_idx_len != 0
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
@@ -125,6 +125,9 @@ UPDATE ehr_folder_data_history pa SET num_cap = (select max(ch.num)
 ) WHERE pa.num_cap = -1;
 
 --TODO indexes
+
+DROP INDEX IF EXISTS comp_data_idx;
+DROP INDEX IF EXISTS comp_data_leaf_idx;
 
 -- drop defaults and columns (implies dropping indexes)
 ALTER TABLE comp_data
