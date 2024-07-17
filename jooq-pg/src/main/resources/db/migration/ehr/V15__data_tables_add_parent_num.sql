@@ -42,7 +42,7 @@ WHERE ch.vo_id=pa.vo_id
   AND pa.entity_idx_len > 1
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num == 0;
+  AND ch.parent_num = 0;
 UPDATE comp_data_history ch SET parent_num=pa.num
 FROM comp_data_history pa
 WHERE ch.vo_id=pa.vo_id
@@ -50,7 +50,7 @@ WHERE ch.vo_id=pa.vo_id
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num == 0;
+  AND ch.parent_num = 0;
 
 --migrate ehr_status
 UPDATE ehr_status_data ch SET parent_num=pa.num
@@ -59,7 +59,7 @@ WHERE ch.vo_id=pa.vo_id
   AND pa.entity_idx_len != 0
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num == 0;
+  AND ch.parent_num = 0;
 UPDATE ehr_status_data_history ch SET parent_num=pa.num
 FROM ehr_status_data_history pa
 WHERE ch.vo_id=pa.vo_id
@@ -67,7 +67,7 @@ WHERE ch.vo_id=pa.vo_id
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num == 0;
+  AND ch.parent_num = 0;
 
 --migrate ehr_folder
 UPDATE ehr_folder_data ch SET parent_num=pa.num
@@ -76,7 +76,7 @@ WHERE ch.vo_id=pa.vo_id
   AND pa.entity_idx_len != 0
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num == 0;
+  AND ch.parent_num = 0;
 UPDATE ehr_folder_data_history ch SET parent_num=pa.num
 FROM ehr_folder_data_history pa
 WHERE ch.vo_id=pa.vo_id
@@ -84,7 +84,7 @@ WHERE ch.vo_id=pa.vo_id
   AND ch.sys_version=pa.sys_version
   AND pa.entity_idx_len = ch.entity_idx_len - 1
   AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num == 0;
+  AND ch.parent_num = 0;
 
 -- num cap
 UPDATE comp_data pa SET num_cap = (select max(ch.num)
@@ -128,6 +128,7 @@ UPDATE ehr_folder_data_history pa SET num_cap = (select max(ch.num)
 
 DROP INDEX IF EXISTS comp_data_idx;
 DROP INDEX IF EXISTS comp_data_leaf_idx;
+DROP INDEX IF EXISTS ehr_status_data_idx;
 
 -- drop defaults and columns (implies dropping indexes)
 ALTER TABLE comp_data
@@ -166,3 +167,29 @@ ALTER TABLE ehr_folder_data_history
     DROP COLUMN IF EXISTS entity_idx_cap,
     DROP COLUMN IF EXISTS entity_path,
     DROP COLUMN IF EXISTS entity_path_cap;
+
+--TODO proper index definition; name?
+CREATE INDEX IF NOT EXISTS comp_data_idx
+    ON comp_data USING btree
+        (vo_id,
+         entity_attribute,
+         entity_idx_len,
+         rm_entity,
+         entity_concept,
+         entity_name collate "en_US",
+         num
+            )
+    INCLUDE (num_cap, parent_num);
+
+--TODO proper index definition; name?
+CREATE INDEX IF NOT EXISTS ehr_status_data_idx
+    ON comp_data USING btree
+        (ehr_id,
+         entity_attribute,
+         entity_idx_len,
+         rm_entity,
+         entity_concept,
+         entity_name collate "en_US",
+         num
+            )
+    INCLUDE (vo_id, num_cap, parent_num);
