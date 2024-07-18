@@ -167,6 +167,5 @@ ALTER TABLE ehr_folder_data_history
     DROP COLUMN IF EXISTS entity_path,
     DROP COLUMN IF EXISTS entity_path_cap;
 
---TODO
-create index comp_data_path_idx on ehr.comp_data (vo_id, parent_num, entity_attribute, entity_concept, rm_entity, entity_name collate "en_US", num, entity_idx, num_cap);
-create index ehr_status_data_path_idx on ehr.ehr_status_data (ehr_id, parent_num, entity_attribute, entity_concept, rm_entity, entity_name collate "en_US", num, entity_idx, num_cap);
+create index IF NOT EXISTS ehr_status_data_path_idx on ehr_status_data (ehr_id, parent_num, entity_attribute, entity_concept, rm_entity, num, num_cap);
+create index IF NOT EXISTS comp_data_path_idx on comp_data (vo_id, parent_num, entity_attribute, entity_concept, rm_entity, num, num_cap);
