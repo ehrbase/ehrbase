@@ -75,7 +75,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestBody(required = false) EhrStatusDto ehrStatus) {
 
-        UUID ehrId = ehrService.create(null, ehrStatus);
+        UUID ehrId = ehrService.create(null, ehrStatus).ehrId();
 
         HttpRestContext.register(EHR_ID, ehrId);
 
@@ -105,7 +105,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in response)
         UUID newEhrId = parseUUID(ehrIdString, "EHR ID format not a UUID");
-        UUID ehrId = ehrService.create(newEhrId, ehrStatus);
+        UUID ehrId = ehrService.create(newEhrId, ehrStatus).ehrId();
         createRestContext(ehrId);
 
         // initialize HTTP 201 Created body builder

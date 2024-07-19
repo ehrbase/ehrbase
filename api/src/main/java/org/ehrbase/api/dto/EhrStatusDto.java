@@ -36,12 +36,12 @@ import javax.annotation.Nullable;
 public record EhrStatusDto(
         @JsonProperty(value = "uid") UIDBasedId uid,
         @JsonProperty(value = "archetype_node_id", required = true) String archetypeNodeId,
-        @JsonProperty(value = "name", required = true) DvText name,
+        @JsonProperty(value = "name") DvText name,
         @JsonProperty(value = "archetype_details") @Nullable Archetyped archetypeDetails,
         @JsonProperty(value = "feeder_audit") @Nullable FeederAudit feederAudit,
         @JsonProperty(value = "subject") PartySelf subject,
-        @JsonProperty(value = "is_queryable", required = true) Boolean isQueryable,
-        @JsonProperty(value = "is_modifiable", required = true) Boolean isModifiable,
+        @JsonProperty(value = "is_queryable") Boolean isQueryable,
+        @JsonProperty(value = "is_modifiable") Boolean isModifiable,
         @JsonProperty(value = "other_details") @Nullable ItemStructure otherDetails) {
 
     @JsonProperty(value = "_type", required = true)

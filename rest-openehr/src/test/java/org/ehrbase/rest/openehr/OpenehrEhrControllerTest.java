@@ -75,13 +75,17 @@ class OpenehrEhrControllerTest {
         return spyController;
     }
 
+    private EhrService.EhrCreationResult createResult(UUID ehrId) {
+        return new EhrService.EhrCreationResult(ehrId, null);
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"", "return=minimal", "return=representation"})
     void createEhr(String prefer) {
 
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, null, prefer, () -> {
-            when(mockEhrService.create(isNull(), any())).thenReturn(ehrId);
+            when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
             return controller().createEhr("1.0.3", null, prefer, null);
         });
     }
@@ -102,7 +106,7 @@ class OpenehrEhrControllerTest {
                 null);
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
-            when(mockEhrService.create(isNull(), any())).thenReturn(ehrId);
+            when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
             return controller().createEhr("1.0.3", null, prefer, ehrStatus);
         });
     }
@@ -113,7 +117,7 @@ class OpenehrEhrControllerTest {
 
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, null, prefer, () -> {
-            when(mockEhrService.create(eq(ehrId), any())).thenReturn(ehrId);
+            when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
             return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), null);
         });
     }
@@ -134,7 +138,7 @@ class OpenehrEhrControllerTest {
                 true,
                 null);
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
-            when(mockEhrService.create(eq(ehrId), any())).thenReturn(ehrId);
+            when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
             return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), ehrStatus);
         });
     }

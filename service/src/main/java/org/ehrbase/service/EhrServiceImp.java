@@ -91,7 +91,7 @@ public class EhrServiceImp implements EhrService {
     }
 
     @Override
-    public UUID create(@Nullable UUID ehrId, @Nullable EhrStatusDto status) {
+    public EhrCreationResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status) {
 
         // pre-step: use or create UUID
         ehrId = Optional.ofNullable(ehrId).orElseGet(UuidGenerator::randomUUID);
@@ -123,7 +123,7 @@ public class EhrServiceImp implements EhrService {
 
         ehrRepository.commit(ehrId, EhrStatusMapper.fromDto(status), null, null);
 
-        return ehrId;
+        return new EhrCreationResult(ehrId, status);
     }
 
     @Override

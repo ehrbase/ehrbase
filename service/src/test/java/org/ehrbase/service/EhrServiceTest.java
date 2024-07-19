@@ -180,7 +180,7 @@ class EhrServiceTest {
     private CreationResult runCreateEhr(EhrService service, UUID ehrId, EhrStatusDto ehrStatusDto) {
 
         ArgumentCaptor<EhrStatus> captor = ArgumentCaptor.forClass(EhrStatus.class);
-        UUID createdEhrId = service.create(ehrId, ehrStatusDto);
+        UUID createdEhrId = service.create(ehrId, ehrStatusDto).ehrId();
 
         verify(ehrRepository, times(1)).commit(eq(createdEhrId), captor.capture(), isNull(), isNull());
         return new CreationResult(

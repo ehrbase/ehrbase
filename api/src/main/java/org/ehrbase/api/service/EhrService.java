@@ -34,6 +34,16 @@ import org.ehrbase.api.exception.ValidationException;
 public interface EhrService {
 
     /**
+     * Wrapper for {@link #create(UUID, EhrStatusDto)} response that contains the newly created <code>EHR</code> id as
+     * well as the {@link EhrStatusDto}. This prevents to call {@link #getEhrStatus(UUID)} with an additional DB round
+     * trip.
+     *
+     * @param ehrId   <code>ID</code> of the created <code>EHR</code>
+     * @param status  initial {@link EhrStatusDto} version
+     */
+    record EhrCreationResult(UUID ehrId, EhrStatusDto status) {}
+
+    /**
      * Creates new EHR instance, with default settings and values when no status or ID is supplied.
      *
      * @param ehrId Optional, sets custom ID
@@ -42,7 +52,7 @@ public interface EhrService {
      * @throws StateConflictException  when an EHR with the given id already exist
      * @throws ValidationException when given status is invalid, e.g. not a valid openEHR RM object
      */
-    UUID create(@Nullable UUID ehrId, @Nullable EhrStatusDto status);
+    EhrCreationResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status);
 
     /**
      * Gets latest EHR_STATUS of the given EHR.
