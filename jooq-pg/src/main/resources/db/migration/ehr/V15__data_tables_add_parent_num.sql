@@ -35,95 +35,128 @@ ALTER TABLE ehr_folder_data_history
     ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
 
---migrate compositions
-UPDATE comp_data ch SET parent_num=pa.num
-FROM comp_data pa
-WHERE ch.vo_id=pa.vo_id
-  AND pa.entity_idx_len > 1
-  AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num = 0;
-UPDATE comp_data_history ch SET parent_num=pa.num
-FROM comp_data_history pa
-WHERE ch.vo_id=pa.vo_id
-  AND pa.entity_idx_len > 1
-  AND ch.sys_version=pa.sys_version
-  AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num = 0;
+DO $$ BEGIN
+    if exists (
+        select from pg_proc p, pg_namespace ns where ns.nspname = 'ext' and ns.oid = p.pronamespace and proname = 'mig_num_columns'
+    ) then
+        CALL ext.mig_num_columns('ehr.ehr_folder_data_history'::regclass, 'ehr_id', 'mig_ehr_folder_data_history_num_idx',1000);
+        CALL ext.mig_num_columns('ehr.ehr_folder_data'::regclass, 'ehr_id', 'mig_ehr_folder_data_num_idx',1000);
+        CALL ext.mig_num_columns('ehr.ehr_status_data_history'::regclass, 'ehr_id', 'mig_ehr_status_data_history_num_idx',1000);
+        CALL ext.mig_num_columns('ehr.ehr_status_data'::regclass, 'ehr_id', 'mig_ehr_status_data_num_idx',1000);
+        CALL ext.mig_num_columns('ehr.comp_data_history'::regclass, 'vo_id', 'mig_comp_data_history_num_idx',1000);
+        CALL ext.mig_num_columns('ehr.comp_data'::regclass, 'vo_id', 'mig_comp_data_num_idx',1000);
 
---migrate ehr_status
-UPDATE ehr_status_data ch SET parent_num=pa.num
-FROM ehr_status_data pa
-WHERE ch.vo_id=pa.vo_id
-  AND pa.entity_idx_len != 0
-  AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num = 0;
-UPDATE ehr_status_data_history ch SET parent_num=pa.num
-FROM ehr_status_data_history pa
-WHERE ch.vo_id=pa.vo_id
-  AND pa.entity_idx_len != 0
-  AND ch.sys_version=pa.sys_version
-  AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num = 0;
+        DROP PROCEDURE ext.mig_num_columns;
+        DROP FUNCTION IF EXISTS ext.mig_retrieve_nums_batch;
+        DROP FUNCTION IF EXISTS ext.mig_calc_nums;
+        DROP TYPE IF EXISTS ext.mig_num_type;
 
---migrate ehr_folder
-UPDATE ehr_folder_data ch SET parent_num=pa.num
-FROM ehr_folder_data pa
-WHERE ch.vo_id=pa.vo_id
-  AND pa.entity_idx_len != 0
-  AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num = 0;
-UPDATE ehr_folder_data_history ch SET parent_num=pa.num
-FROM ehr_folder_data_history pa
-WHERE ch.vo_id=pa.vo_id
-  AND pa.entity_idx_len != 0
-  AND ch.sys_version=pa.sys_version
-  AND pa.entity_idx_len = ch.entity_idx_len - 1
-  AND ch.entity_idx ^@ pa.entity_idx
-  AND ch.parent_num = 0;
+    else
+        --migrate compositions
+        UPDATE comp_data ch SET parent_num=pa.num
+        FROM comp_data pa
+        WHERE ch.vo_id=pa.vo_id
+          AND pa.entity_idx_len > 1
+          AND pa.entity_idx_len = ch.entity_idx_len - 1
+          AND ch.entity_idx ^@ pa.entity_idx
+          AND ch.parent_num = 0;
+        UPDATE comp_data_history ch SET parent_num=pa.num
+        FROM comp_data_history pa
+        WHERE ch.vo_id=pa.vo_id
+          AND ch.sys_version=pa.sys_version
+          AND pa.entity_idx_len > 1
+          AND ch.sys_version=pa.sys_version
+          AND pa.entity_idx_len = ch.entity_idx_len - 1
+          AND ch.entity_idx ^@ pa.entity_idx
+          AND ch.parent_num = 0;
 
--- num cap
-UPDATE comp_data pa SET num_cap = (select max(ch.num)
-                                   FROM comp_data ch
-                                   WHERE ch.vo_id=pa.vo_id
-                                     AND pa.entity_idx_len >= ch.entity_idx_len
-                                     AND ch.entity_idx ^@ pa.entity_idx
-) WHERE pa.num_cap = -1;
-UPDATE comp_data_history pa SET num_cap = (select max(ch.num)
-                                   FROM comp_data_history ch
-                                   WHERE ch.vo_id=pa.vo_id
-                                     AND pa.entity_idx_len >= ch.entity_idx_len
-                                     AND ch.entity_idx ^@ pa.entity_idx
-) WHERE pa.num_cap = -1;
-UPDATE ehr_status_data pa SET num_cap = (select max(ch.num)
-                                   FROM ehr_status_data ch
-                                   WHERE ch.vo_id=pa.vo_id
-                                     AND pa.entity_idx_len >= ch.entity_idx_len
-                                     AND ch.entity_idx ^@ pa.entity_idx
-) WHERE pa.num_cap = -1;
-UPDATE ehr_status_data_history pa SET num_cap = (select max(ch.num)
-                                   FROM ehr_status_data_history ch
-                                   WHERE ch.vo_id=pa.vo_id
-                                     AND pa.entity_idx_len >= ch.entity_idx_len
-                                     AND ch.entity_idx ^@ pa.entity_idx
-) WHERE pa.num_cap = -1;
-UPDATE ehr_folder_data pa SET num_cap = (select max(ch.num)
-                                   FROM ehr_folder_data ch
-                                   WHERE ch.vo_id=pa.vo_id
-                                     AND pa.entity_idx_len >= ch.entity_idx_len
-                                     AND ch.entity_idx ^@ pa.entity_idx
-) WHERE pa.num_cap = -1;
-UPDATE ehr_folder_data_history pa SET num_cap = (select max(ch.num)
-                                   FROM ehr_folder_data_history ch
-                                   WHERE ch.vo_id=pa.vo_id
-                                     AND pa.entity_idx_len >= ch.entity_idx_len
-                                     AND ch.entity_idx ^@ pa.entity_idx
-) WHERE pa.num_cap = -1;
+        --migrate ehr_status
+        UPDATE ehr_status_data ch SET parent_num=pa.num
+        FROM ehr_status_data pa
+        WHERE ch.ehr_id=pa.ehr_id
+          AND pa.entity_idx_len != 0
+          AND pa.entity_idx_len = ch.entity_idx_len - 1
+          AND ch.entity_idx ^@ pa.entity_idx
+          AND ch.parent_num = 0;
+        UPDATE ehr_status_data_history ch SET parent_num=pa.num
+        FROM ehr_status_data_history pa
+        WHERE ch.ehr_id=pa.ehr_id
+          AND ch.sys_version=pa.sys_version
+          AND pa.entity_idx_len != 0
+          AND ch.sys_version=pa.sys_version
+          AND pa.entity_idx_len = ch.entity_idx_len - 1
+          AND ch.entity_idx ^@ pa.entity_idx
+          AND ch.parent_num = 0;
 
+        --migrate ehr_folder
+        UPDATE ehr_folder_data ch SET parent_num=pa.num
+        FROM ehr_folder_data pa
+        WHERE ch.ehr_id=pa.ehr_id
+          AND pa.entity_idx_len != 0
+          AND pa.entity_idx_len = ch.entity_idx_len - 1
+          AND ch.entity_idx ^@ pa.entity_idx
+          AND ch.parent_num = 0;
+        UPDATE ehr_folder_data_history ch SET parent_num=pa.num
+        FROM ehr_folder_data_history pa
+        WHERE ch.ehr_id=pa.ehr_id
+          AND ch.sys_version=pa.sys_version
+          AND pa.entity_idx_len != 0
+          AND ch.sys_version=pa.sys_version
+          AND pa.entity_idx_len = ch.entity_idx_len - 1
+          AND ch.entity_idx ^@ pa.entity_idx
+          AND ch.parent_num = 0;
+
+        -- num cap
+        UPDATE comp_data pa SET num_cap = (
+            select max(ch.num) FROM comp_data ch
+            WHERE ch.vo_id=pa.vo_id
+              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND ch.entity_idx ^@ pa.entity_idx
+        ) WHERE pa.num_cap = -1;
+        UPDATE comp_data_history pa SET num_cap = (
+            select max(ch.num) FROM comp_data_history ch
+            WHERE ch.vo_id=pa.vo_id
+              AND ch.sys_version=pa.sys_version
+              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND ch.entity_idx ^@ pa.entity_idx
+        ) WHERE pa.num_cap = -1;
+        UPDATE ehr_status_data pa SET num_cap = (
+            select max(ch.num) FROM ehr_status_data ch
+            WHERE ch.ehr_id=pa.ehr_id
+              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND ch.entity_idx ^@ pa.entity_idx
+        ) WHERE pa.num_cap = -1;
+        UPDATE ehr_status_data_history pa SET num_cap = (
+            select max(ch.num) FROM ehr_status_data_history ch
+            WHERE ch.ehr_id=pa.ehr_id
+              AND ch.sys_version=pa.sys_version
+              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND ch.entity_idx ^@ pa.entity_idx
+        ) WHERE pa.num_cap = -1;
+        UPDATE ehr_folder_data pa SET num_cap = (
+            select max(ch.num) FROM ehr_folder_data ch
+            WHERE ch.ehr_id=pa.ehr_id
+              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND ch.entity_idx ^@ pa.entity_idx
+        ) WHERE pa.num_cap = -1;
+        UPDATE ehr_folder_data_history pa SET num_cap = (
+            select max(ch.num)
+             FROM ehr_folder_data_history ch
+             WHERE ch.ehr_id=pa.ehr_id
+               AND ch.sys_version=pa.sys_version
+               AND pa.entity_idx_len >= ch.entity_idx_len
+               AND ch.entity_idx ^@ pa.entity_idx
+        ) WHERE pa.num_cap = -1;
+    end if;
+
+end $$;
+
+DROP INDEX IF EXISTS mig_ehr_folder_data_history_num_idx;
+DROP INDEX IF EXISTS mig_ehr_folder_data_num_idx;
+DROP INDEX IF EXISTS mig_ehr_status_data_history_num_idx;
+DROP INDEX IF EXISTS mig_ehr_status_data_num_idx;
+DROP INDEX IF EXISTS mig_comp_data_history_num_idx;
+DROP INDEX IF EXISTS mig_comp_data_num_idx;
 
 DROP INDEX IF EXISTS comp_data_idx;
 DROP INDEX IF EXISTS comp_data_leaf_idx;
@@ -167,5 +200,7 @@ ALTER TABLE ehr_folder_data_history
     DROP COLUMN IF EXISTS entity_path,
     DROP COLUMN IF EXISTS entity_path_cap;
 
-create index IF NOT EXISTS ehr_status_data_path_idx on ehr_status_data (ehr_id, parent_num, entity_attribute, entity_concept, rm_entity, num, num_cap);
-create index IF NOT EXISTS comp_data_path_idx on comp_data (vo_id, parent_num, entity_attribute, entity_concept, rm_entity, num, num_cap);
+create index IF NOT EXISTS ehr_status_data_path_idx on ehr_status_data
+    (ehr_id, parent_num, entity_attribute, entity_concept, rm_entity, num, num_cap);
+create index IF NOT EXISTS comp_data_path_idx on comp_data
+    (vo_id, parent_num, entity_attribute, entity_concept, rm_entity, num, num_cap);
