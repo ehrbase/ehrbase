@@ -37,20 +37,9 @@ ALTER TABLE ehr_folder_data_history
 
 DO $$ BEGIN
     if exists (
-        select from pg_proc p, pg_namespace ns where ns.nspname = 'ext' and ns.oid = p.pronamespace and proname = 'mig_num_columns'
+        select from pg_proc p, pg_namespace ns where ns.nspname = 'ext' and ns.oid = p.pronamespace and proname = 'migrate_num_columns'
     ) then
-        CALL ext.mig_num_columns('ehr.ehr_folder_data_history'::regclass, 'ehr_id', 'mig_ehr_folder_data_history_num_idx',1000);
-        CALL ext.mig_num_columns('ehr.ehr_folder_data'::regclass, 'ehr_id', 'mig_ehr_folder_data_num_idx',1000);
-        CALL ext.mig_num_columns('ehr.ehr_status_data_history'::regclass, 'ehr_id', 'mig_ehr_status_data_history_num_idx',1000);
-        CALL ext.mig_num_columns('ehr.ehr_status_data'::regclass, 'ehr_id', 'mig_ehr_status_data_num_idx',1000);
-        CALL ext.mig_num_columns('ehr.comp_data_history'::regclass, 'vo_id', 'mig_comp_data_history_num_idx',1000);
-        CALL ext.mig_num_columns('ehr.comp_data'::regclass, 'vo_id', 'mig_comp_data_num_idx',1000);
-
-        DROP PROCEDURE ext.mig_num_columns;
-        DROP FUNCTION IF EXISTS ext.mig_retrieve_nums_batch;
-        DROP FUNCTION IF EXISTS ext.mig_calc_nums;
-        DROP TYPE IF EXISTS ext.mig_num_type;
-
+        CALL ext.migrate_num_columns();
     else
         --migrate compositions
         UPDATE comp_data ch SET parent_num=pa.num
