@@ -110,6 +110,8 @@ public record VersionDataDbRecord(
                 .map(StructureNode::getContentItem)
                 .map(StructureNode::getNum)
                 .orElse(null));
+        rec.setParentNum(node.getParentNum());
+        rec.setNumCap(node.getNumCap());
         rec.setRmEntity(StructureRmType.byTypeName(node.getRmEntity())
                 .orElseThrow(() -> new InternalServerException("No alias for %s".formatted(node.getRmEntity())))
                 .getAlias());
@@ -118,10 +120,7 @@ public record VersionDataDbRecord(
 
         StructureIndex index = node.getEntityIdx();
         rec.setEntityAttribute(index.printLastAttribute());
-        rec.setEntityPath(index.printIndexString(false, false));
-        rec.setEntityPathCap(index.printIndexString(true, false));
         rec.setEntityIdx(index.printIndexString(false, true));
-        rec.setEntityIdxCap(index.printIndexString(true, true));
         rec.setEntityIdxLen(index.length());
 
         rec.setData(JSONB.valueOf(

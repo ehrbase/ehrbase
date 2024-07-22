@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -423,8 +424,8 @@ public class AqlSqlQueryBuilder {
      * where
      * c2."ehr_id" = "d2"."ehr_id"
      * and c2."VO_ID" = "d2"."VO_ID"
-     * and c2."entity_idx" <= "d2"."entity_idx"
-     * and c2."entity_idx_cap" > "d2"."entity_idx"
+     * and c2."num" <= "d2"."num"
+     * and c2."num_cap" >= "d2"."num"
      * group by "d2"."VO_ID"
      */
     static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
@@ -454,12 +455,12 @@ public class AqlSqlQueryBuilder {
                 .toList();
 
         Condition[] conditions = Stream.concat(
-                        Stream.of(
-                                // TODO can be skipped for roots
-                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX)
-                                        .le(data.field(COMP_DATA.ENTITY_IDX)),
-                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX_CAP)
-                                        .gt(data.field(COMP_DATA.ENTITY_IDX))),
+                        // TODO can be skipped for roots
+                        // TODO can be set to == for leafs (ELEMENT)
+                        Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
+                                .between(
+                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
+                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),
                         Arrays.stream(additionalConditions))
                 .toArray(Condition[]::new);
 
@@ -467,7 +468,7 @@ public class AqlSqlQueryBuilder {
     }
 
     /**
-     * The aggregated jsonb can be processed by JsonDataParsing::toComposition
+     * The aggregated jsonb can be processed by DbToRmFormat::reconstructFromDbFormat
      *
      * @return
      */

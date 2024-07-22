@@ -39,8 +39,8 @@ import org.jooq.JSONB;
  * 	  where
  *       c2."ehr_id" = "d2"."ehr_id"
  *       and c2."VO_ID" = "d2"."VO_ID"
- *       and c2."entity_idx" <= "d2"."entity_idx"
- *       and c2."entity_idx_cap" > "d2"."entity_idx"
+ *       and c2."num" <= "d2"."num"
+ *       and c2."num_cap" >= "d2"."num"
  * 	  group by "d2"."VO_ID"
  * 	 </pre>
  *

@@ -59,8 +59,10 @@ import org.jooq.TableField;
  * select
  *       "sCOMPOSITIONsq"."vo_id" as "sCOMPOSITIONc0_vo_id",
  *       "sCOMPOSITIONsq"."ehr_id" as "sCOMPOSITIONc0_ehr_id",
+ *       "sCOMPOSITIONsq"."parent_num" as "sCOMPOSITIONc0_parent_num",
+ *       "sCOMPOSITIONsq"."num" as "sCOMPOSITIONc0_num",
+ *       "sCOMPOSITIONsq"."num_cap" as "sCOMPOSITIONc0_num_cap",
  *       "sCOMPOSITIONsq"."entity_idx" as "sCOMPOSITIONc0_entity_idx",
- *       "sCOMPOSITIONsq"."entity_idx_cap" as "sCOMPOSITIONc0_entity_idx_cap",
  *       "sCOMPOSITIONsq"."entity_idx_len" as "sCOMPOSITIONc0_entity_idx_len",
  *       "sCOMPOSITIONsq"."entity_concept" as "sCOMPOSITIONc0_entity_concept",
  *       "sCOMPOSITIONsq"."entity_name" as "sCOMPOSITIONc0_entity_name",
