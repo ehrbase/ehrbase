@@ -45,7 +45,7 @@ DO $$ BEGIN
         UPDATE comp_data ch SET parent_num=pa.num
         FROM comp_data pa
         WHERE ch.vo_id=pa.vo_id
-          AND pa.entity_idx_len > 1
+          AND ch.entity_idx_len > 1
           AND pa.entity_idx_len = ch.entity_idx_len - 1
           AND ch.entity_idx ^@ pa.entity_idx
           AND ch.parent_num = 0;
@@ -53,8 +53,7 @@ DO $$ BEGIN
         FROM comp_data_history pa
         WHERE ch.vo_id=pa.vo_id
           AND ch.sys_version=pa.sys_version
-          AND pa.entity_idx_len > 1
-          AND ch.sys_version=pa.sys_version
+          AND ch.entity_idx_len > 1
           AND pa.entity_idx_len = ch.entity_idx_len - 1
           AND ch.entity_idx ^@ pa.entity_idx
           AND ch.parent_num = 0;
@@ -63,7 +62,7 @@ DO $$ BEGIN
         UPDATE ehr_status_data ch SET parent_num=pa.num
         FROM ehr_status_data pa
         WHERE ch.ehr_id=pa.ehr_id
-          AND pa.entity_idx_len != 0
+          AND ch.entity_idx_len > 1
           AND pa.entity_idx_len = ch.entity_idx_len - 1
           AND ch.entity_idx ^@ pa.entity_idx
           AND ch.parent_num = 0;
@@ -71,8 +70,7 @@ DO $$ BEGIN
         FROM ehr_status_data_history pa
         WHERE ch.ehr_id=pa.ehr_id
           AND ch.sys_version=pa.sys_version
-          AND pa.entity_idx_len != 0
-          AND ch.sys_version=pa.sys_version
+          AND ch.entity_idx_len > 1
           AND pa.entity_idx_len = ch.entity_idx_len - 1
           AND ch.entity_idx ^@ pa.entity_idx
           AND ch.parent_num = 0;
@@ -81,7 +79,7 @@ DO $$ BEGIN
         UPDATE ehr_folder_data ch SET parent_num=pa.num
         FROM ehr_folder_data pa
         WHERE ch.ehr_id=pa.ehr_id
-          AND pa.entity_idx_len != 0
+          AND ch.entity_idx_len > 1
           AND pa.entity_idx_len = ch.entity_idx_len - 1
           AND ch.entity_idx ^@ pa.entity_idx
           AND ch.parent_num = 0;
@@ -89,8 +87,7 @@ DO $$ BEGIN
         FROM ehr_folder_data_history pa
         WHERE ch.ehr_id=pa.ehr_id
           AND ch.sys_version=pa.sys_version
-          AND pa.entity_idx_len != 0
-          AND ch.sys_version=pa.sys_version
+          AND ch.entity_idx_len > 1
           AND pa.entity_idx_len = ch.entity_idx_len - 1
           AND ch.entity_idx ^@ pa.entity_idx
           AND ch.parent_num = 0;
@@ -99,33 +96,33 @@ DO $$ BEGIN
         UPDATE comp_data pa SET num_cap = (
             select max(ch.num) FROM comp_data ch
             WHERE ch.vo_id=pa.vo_id
-              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND pa.entity_idx_len <= ch.entity_idx_len
               AND ch.entity_idx ^@ pa.entity_idx
         ) WHERE pa.num_cap = -1;
         UPDATE comp_data_history pa SET num_cap = (
             select max(ch.num) FROM comp_data_history ch
             WHERE ch.vo_id=pa.vo_id
               AND ch.sys_version=pa.sys_version
-              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND pa.entity_idx_len <= ch.entity_idx_len
               AND ch.entity_idx ^@ pa.entity_idx
         ) WHERE pa.num_cap = -1;
         UPDATE ehr_status_data pa SET num_cap = (
             select max(ch.num) FROM ehr_status_data ch
             WHERE ch.ehr_id=pa.ehr_id
-              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND pa.entity_idx_len <= ch.entity_idx_len
               AND ch.entity_idx ^@ pa.entity_idx
         ) WHERE pa.num_cap = -1;
         UPDATE ehr_status_data_history pa SET num_cap = (
             select max(ch.num) FROM ehr_status_data_history ch
             WHERE ch.ehr_id=pa.ehr_id
               AND ch.sys_version=pa.sys_version
-              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND pa.entity_idx_len <= ch.entity_idx_len
               AND ch.entity_idx ^@ pa.entity_idx
         ) WHERE pa.num_cap = -1;
         UPDATE ehr_folder_data pa SET num_cap = (
             select max(ch.num) FROM ehr_folder_data ch
             WHERE ch.ehr_id=pa.ehr_id
-              AND pa.entity_idx_len >= ch.entity_idx_len
+              AND pa.entity_idx_len <= ch.entity_idx_len
               AND ch.entity_idx ^@ pa.entity_idx
         ) WHERE pa.num_cap = -1;
         UPDATE ehr_folder_data_history pa SET num_cap = (
@@ -133,7 +130,7 @@ DO $$ BEGIN
              FROM ehr_folder_data_history ch
              WHERE ch.ehr_id=pa.ehr_id
                AND ch.sys_version=pa.sys_version
-               AND pa.entity_idx_len >= ch.entity_idx_len
+               AND pa.entity_idx_len <= ch.entity_idx_len
                AND ch.entity_idx ^@ pa.entity_idx
         ) WHERE pa.num_cap = -1;
     end if;
