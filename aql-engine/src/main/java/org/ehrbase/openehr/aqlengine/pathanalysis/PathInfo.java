@@ -205,7 +205,11 @@ public final class PathInfo {
                 level < 0
                         ? List.of()
                         : Collections.unmodifiableList(pathNodes(ip.getPath()).subList(0, level + 1)),
-                Optional.ofNullable(attInfo).map(AttInfo::multipleValued).orElse(false),
+                Optional.ofNullable(attInfo)
+                        // BYTES are multivalued, but we store them as single Base64 value
+                        // .filter(ai -> !ai.targetTypes().contains("BYTE"))
+                        .map(AttInfo::multipleValued)
+                        .orElse(false),
                 Optional.ofNullable(attInfo)
                         .map(AttInfo::targetTypes)
                         .<Set<String>>map(t -> SetUtils.intersection(t, DV_ORDERED_TYPES))
@@ -293,6 +297,8 @@ public final class PathInfo {
     public boolean isMultipleValued(PathCohesionTreeNode node) {
         return Optional.of(node)
                 .map(nodeTypeInfo::get)
+                // BYTES are multivalued, but we store them as single Base64 value
+                // .map(info -> !info.rmTypes.contains("BYTE") && info.multipleValued)
                 .map(NodeInfo::multipleValued)
                 .orElseThrow();
     }
