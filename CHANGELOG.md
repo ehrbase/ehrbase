@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+* Improved data structure for hierarchy of versioned objects ([#1359](https://github.com/ehrbase/ehrbase/pull/1359))
  ### Fixed 
 
 ## [2.5.0]
