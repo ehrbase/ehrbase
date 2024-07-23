@@ -17,15 +17,12 @@
  */
 package org.ehrbase.openehr.dbformat;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.nedap.archie.base.OpenEHRBase;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.datavalues.quantity.DvProportion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDate;
@@ -39,6 +36,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.ehrbase.openehr.dbformat.jackson.OpenEHRBaseTypeResolverBuilder;
+import org.ehrbase.openehr.dbformat.jackson.RmDbJacksonModule;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.util.OpenEHRDateTimeSerializationUtils;
 import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
@@ -52,16 +51,8 @@ public final class VersionedObjectDataStructure {
 
     public static final ObjectMapper MARSHAL_OM = CanonicalJson.MARSHAL_OM
             .copy()
-            .setDefaultTyping(
-                    new ObjectMapper.DefaultTypeResolverBuilder(ObjectMapper.DefaultTyping.EVERYTHING) {
-                        @Override
-                        public boolean useForType(JavaType t) {
-                            return OpenEHRBase.class.isAssignableFrom(t.getRawClass());
-                        }
-                    }.init(JsonTypeInfo.Id.NAME, new CanonicalJson.CJOpenEHRTypeNaming())
-                            .typeProperty(DbToRmFormat.TYPE_ATTRIBUTE)
-                            .typeIdVisibility(true)
-                            .inclusion(JsonTypeInfo.As.PROPERTY));
+            .registerModule(new RmDbJacksonModule())
+            .setDefaultTyping(OpenEHRBaseTypeResolverBuilder.build());
 
     private VersionedObjectDataStructure() {}
 
@@ -295,7 +286,7 @@ public final class VersionedObjectDataStructure {
                 String rmNameAlias = RmTypeAlias.getAlias(child.textValue());
                 child = new TextNode(rmNameAlias);
             }
-            newNode.put(alias, child);
+            newNode.putIfAbsent(alias, child);
         });
 
         return newNode;

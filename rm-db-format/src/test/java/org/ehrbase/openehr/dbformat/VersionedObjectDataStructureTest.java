@@ -21,10 +21,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.junit.jupiter.api.Test;
@@ -37,7 +43,9 @@ class VersionedObjectDataStructureTest {
     @Test
     void testStructureRmTypeAlias() {
         // duplicate aliases?
-        Arrays.stream(StructureRmType.values()).collect(Collectors.toMap(v -> v.getAlias(), v -> v));
+        Map<String, StructureRmType> result = Arrays.stream(StructureRmType.values())
+                .collect(Collectors.toMap(StructureRmType::getAlias, Function.identity()));
+        assertThat(result).isNotNull();
     }
 
     @ParameterizedTest
@@ -83,5 +91,41 @@ class VersionedObjectDataStructureTest {
         if (type == StructureRmType.ELEMENT) {
             assertEquals(roots.get(1).getJsonNode(), jsonNode.get("feeder_audit"));
         }
+    }
+
+    private record ByteArrayTest(byte[] data) {}
+
+    @Test
+    void valueToTreeByteArray() {
+
+        var data = "TestData";
+        JsonNode jsonNode = VersionedObjectDataStructure.MARSHAL_OM.valueToTree(new ByteArrayTest(data.getBytes()));
+        assertThat(jsonNode).hasToString("""
+                {"data":"TestData"}""");
+    }
+
+    @Test
+    void valueToTreeByteArrayUTF8() {
+
+        var data = "SomeDätö";
+        JsonNode jsonNode = VersionedObjectDataStructure.MARSHAL_OM.valueToTree(new ByteArrayTest(data.getBytes()));
+        assertThat(jsonNode).hasToString("""
+                {"data":"SomeDätö"}""");
+    }
+
+    @Test
+    void valueToTreeDvMediaType() {
+
+        var data = "TestData";
+        DvMultimedia multimedia = new DvMultimedia();
+        multimedia.setMediaType(new CodePhrase(new TerminologyId("IANA_media-type"), "application/pdf"));
+        multimedia.setData(data.getBytes());
+        multimedia.setSize(data.getBytes().length);
+
+        JsonNode jsonNode = VersionedObjectDataStructure.MARSHAL_OM.valueToTree(multimedia);
+        assertThat(jsonNode)
+                .hasToString(
+                        """
+                {"_type":"DV_MULTIMEDIA","data":"TestData","media_type":{"_type":"CODE_PHRASE","terminology_id":{"_type":"TERMINOLOGY_ID","value":"IANA_media-type"},"code_string":"application/pdf"},"size":8}""");
     }
 }
