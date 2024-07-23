@@ -305,12 +305,8 @@ public class PathAnalysis {
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().entrySet().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey, f -> {
                                 RMAttributeInfo attributeInfo = RM_INFOS.getAttributeInfo(f.getKey(), e.getKey());
-                                boolean multipleValued = attributeInfo.isMultipleValued();
-                                // BYTES are multivalued, but we store them as single Base64 value
-                                // if(f.getKey().equals("DV_MULTIMEDIA") && f.getValue().contains("BYTE")) {
-                                //     multipleValued = false;
-                                // }
-                                return new AttInfo(multipleValued, attributeInfo.isNullable(), f.getValue());
+                                return new AttInfo(
+                                        attributeInfo.isMultipleValued(), attributeInfo.isNullable(), f.getValue());
                             }))));
         }
     }
