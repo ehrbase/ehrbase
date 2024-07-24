@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0]
+ ### Added
+ ### Changed 
+* Improved data structure for hierarchy of versioned objects ([#1359](https://github.com/ehrbase/ehrbase/pull/1359))
+* Upgrade openEHR_SDK to version 2.15.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ ### Fixed 
+
 ## [2.5.0]
  ### Added
 * Create a `ehrbase` user to run the Docker container ([#1336](https://github.com/ehrbase/ehrbase/pull/1336))
@@ -68,3 +75,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.3.0]: https://github.com/ehrbase/ehrbase/compare/v2.2.0...v2.3.0
 [2.4.0]: https://github.com/ehrbase/ehrbase/compare/v2.3.0...v2.4.0
 [2.5.0]: https://github.com/ehrbase/ehrbase/compare/v2.4.0...v2.5.0
+[2.6.0]: https://github.com/ehrbase/ehrbase/compare/v2.5.0...v2.6.0
