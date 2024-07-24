@@ -37,6 +37,7 @@ import java.util.UUID;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.experimental.ItemTag;
 import org.ehrbase.api.service.experimental.ItemTagService;
@@ -121,6 +122,25 @@ class ItemTagServiceTest {
                 "Can not change owner of ItemTag 'a:key' from 1dc42f91-094a-43e7-8c26-3ca6d43b8833 to %s"
                         .formatted(SAMPLE_EHR_ID.toString()),
                 exception.getMessage());
+    }
+
+    @Test
+    void buildUpdateTargetTypeMissmatch() {
+
+        List<ItemTagDto> itemTags = List.of(new ItemTagDto(
+                UUID.randomUUID(),
+                UUID.fromString("f5fe8b05-2fe3-4962-a0b7-d443e0b53304"),
+                SAMPLE_EHR_ID,
+                COMPOSITION,
+                null,
+                "some:key",
+                null));
+
+        ItemTagService service = service();
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.bulkUpsert(SAMPLE_EHR_ID, SAMPLE_EHR_ID, EHR_STATUS, itemTags));
+        assertEquals("Tag target_types [COMPOSITION] not matching EHR_STATUS", exception.getMessage());
     }
 
     @ParameterizedTest

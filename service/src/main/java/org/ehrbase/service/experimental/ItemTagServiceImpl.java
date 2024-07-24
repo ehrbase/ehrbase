@@ -26,6 +26,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.experimental.ItemTag;
 import org.ehrbase.api.service.experimental.ItemTagService;
@@ -57,6 +58,9 @@ public class ItemTagServiceImpl implements ItemTagService {
         if (itemTagsDto.isEmpty()) {
             return List.of();
         }
+
+        // Sanity check that tags matching the targetType
+        checkTags(itemTagsDto, targetType);
 
         // sanity check for existing EHR version
         ehrService.checkEhrExists(ownerId);
@@ -217,5 +221,18 @@ public class ItemTagServiceImpl implements ItemTagService {
                 Optional.ofNullable(itemTag.targetPath()).map(AqlPath::getPath).orElse(null),
                 itemTag.key(),
                 itemTag.value());
+    }
+
+    private static void checkTags(Collection<ItemTagDto> itemTagsDto, ItemTag.ItemTagRMType targetType) {
+
+        List<ItemTag.ItemTagRMType> tagsWithInvalidTarget = itemTagsDto.stream()
+                .map(ItemTagDto::targetType)
+                .filter(t -> t != null && !Objects.equals(t, targetType))
+                .distinct()
+                .toList();
+        if (!tagsWithInvalidTarget.isEmpty()) {
+            throw new ValidationException(
+                    "Tag target_types %s not matching %s".formatted(tagsWithInvalidTarget, targetType.name()));
+        }
     }
 }
