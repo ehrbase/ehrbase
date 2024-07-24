@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
 * Improved data structure for hierarchy of versioned objects ([#1359](https://github.com/ehrbase/ehrbase/pull/1359))
+* Upgrade openEHR_SDK to version 2.15.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
  ### Fixed 
 
 ## [2.5.0]
