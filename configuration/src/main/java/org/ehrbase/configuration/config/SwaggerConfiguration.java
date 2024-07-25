@@ -21,7 +21,9 @@ import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import java.util.stream.Stream;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,10 +73,14 @@ public class SwaggerConfiguration {
 
     @Bean
     @ConditionalOnProperty(name = "ehrbase.rest.experimental.tags.enabled", havingValue = "true")
-    public GroupedOpenApi experimentalApi() {
+    public GroupedOpenApi experimentalApi(
+            @Value("${ehrbase.rest.experimental.tags.context-path:/rest/experimental/tags}") String path) {
         return GroupedOpenApi.builder()
                 .group("6. Experimental API")
-                .pathsToMatch("/rest/experimental/**")
+                .pathsToMatch(Stream.of(path)
+                        .map(p -> "/%s/**".formatted(p.replaceFirst("/", "").replaceFirst("^/", "")))
+                        .toList()
+                        .toArray(String[]::new))
                 .build();
     }
 

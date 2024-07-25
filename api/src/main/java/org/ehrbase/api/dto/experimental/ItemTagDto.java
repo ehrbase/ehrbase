@@ -18,6 +18,7 @@
 package org.ehrbase.api.dto.experimental;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,6 +35,7 @@ import org.ehrbase.api.service.experimental.ItemTag;
  * @param key         The tag key. May not be empty or contain leading or trailing whitespace.
  * @param value       The value. If set, may not be empty.
  */
+@JsonRootName("ITEM_TAG")
 public record ItemTagDto(
         @JsonProperty(value = "id") @Nullable UUID id,
         @JsonProperty(value = "owner_id") @Nullable UUID ownerId, // obtained by path for PUT
