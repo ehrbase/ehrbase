@@ -19,7 +19,6 @@ package org.ehrbase.openehr.dbformat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -36,9 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.ehrbase.openehr.dbformat.jackson.OpenEHRBaseTypeResolverBuilder;
-import org.ehrbase.openehr.dbformat.jackson.RmDbJacksonModule;
-import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.OpenEHRDateTimeSerializationUtils;
 import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 
@@ -49,15 +46,10 @@ public final class VersionedObjectDataStructure {
      */
     public static final String MAGNITUDE_FIELD = "_magnitude";
 
-    public static final ObjectMapper MARSHAL_OM = CanonicalJson.MARSHAL_OM
-            .copy()
-            .registerModule(new RmDbJacksonModule())
-            .setDefaultTyping(OpenEHRBaseTypeResolverBuilder.build());
-
     private VersionedObjectDataStructure() {}
 
     public static List<StructureNode> createDataStructure(RMObject rmObject) {
-        JsonNode jsonNode = MARSHAL_OM.valueToTree(rmObject);
+        JsonNode jsonNode = RmDbJson.MARSHAL_OM.valueToTree(rmObject);
         fillInMagnitudes(jsonNode);
 
         var root = createStructureDto(
@@ -116,19 +108,25 @@ public final class VersionedObjectDataStructure {
                 case "DV_DATE_TIME" -> object.put(
                         MAGNITUDE_FIELD,
                         OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                MARSHAL_OM.treeToValue(object, DvDateTime.class)));
+                                RmDbJson.MARSHAL_OM.treeToValue(object, DvDateTime.class)));
                 case "DV_DATE" -> object.put(
                         MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(MARSHAL_OM.treeToValue(object, DvDate.class)));
+                        OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                RmDbJson.MARSHAL_OM.treeToValue(object, DvDate.class)));
                 case "DV_TIME" -> object.put(
                         MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(MARSHAL_OM.treeToValue(object, DvTime.class)));
+                        OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                RmDbJson.MARSHAL_OM.treeToValue(object, DvTime.class)));
                 case "DV_DURATION" -> object.put(
                         MAGNITUDE_FIELD,
-                        MARSHAL_OM.treeToValue(object, DvDuration.class).getMagnitude());
+                        RmDbJson.MARSHAL_OM
+                                .treeToValue(object, DvDuration.class)
+                                .getMagnitude());
                 case "DV_PROPORTION" -> object.put(
                         MAGNITUDE_FIELD,
-                        MARSHAL_OM.treeToValue(object, DvProportion.class).getMagnitude());
+                        RmDbJson.MARSHAL_OM
+                                .treeToValue(object, DvProportion.class)
+                                .getMagnitude());
                 default -> {
                     /* do not add magnitude */
                 }
