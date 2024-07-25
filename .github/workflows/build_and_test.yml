@@ -183,6 +183,7 @@ jobs:
           ## rest/rest/ecis
           { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag', env: { 'AUTH_TYPE': 'NONE' } },
           { path: 'ADMIN_TESTS', name: 'ADMIN', tags: 'ADMIN', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'TAGS_TESTS', name: 'TAGS_TESTS', tags: 'TAGS_SUITES', env: { 'AUTH_TYPE': 'NONE' } },
           # TODO Still missing
           # FHIR_TERMINOLOGY
           # SECURITY_TESTS
@@ -219,6 +220,7 @@ jobs:
           if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
             echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/ehrbase" >> .env.ehrbase
           fi
+          echo "EHRBASE_REST_EXPERIMENTAL_TAGS_ENABLED=true" >> .env.ehrbase
           cat .env.ehrbase
 
       - name: Docker Compose - Starting
