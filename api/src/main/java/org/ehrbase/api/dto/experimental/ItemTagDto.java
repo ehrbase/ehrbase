@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 import org.ehrbase.api.service.experimental.ItemTag;
 
 /**
- * ItemTag DTO use as a PUT or DELETE input as well as output for GET.
+ * ItemTag DTO used as a PUT or DELETE input as well as output for GET.
  *
  * @param id          Identifier of the tag
  * @param ownerId     Identifier of owner object, such as EHR.
