@@ -26,7 +26,7 @@ import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import org.junit.jupiter.api.Test;
 
-public class RmDbJsonTest {
+class RmDbJsonTest {
 
     private record ByteArrayTest(byte[] data) {}
 

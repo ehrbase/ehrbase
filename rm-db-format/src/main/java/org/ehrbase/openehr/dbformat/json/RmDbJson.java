@@ -39,6 +39,8 @@ import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 
 public class RmDbJson {
 
+    private RmDbJson() {}
+
     public static final ObjectMapper MARSHAL_OM = CanonicalJson.MARSHAL_OM
             .copy()
             .registerModule(rmDbJacksonModule())
@@ -53,7 +55,7 @@ public class RmDbJson {
     private static class OpenEHRBaseTypeResolverBuilder extends ObjectMapper.DefaultTypeResolverBuilder {
 
         public OpenEHRBaseTypeResolverBuilder() {
-            super(ObjectMapper.DefaultTyping.EVERYTHING, LaissezFaireSubTypeValidator.instance);
+            super(ObjectMapper.DefaultTyping.NON_FINAL_AND_ENUMS, LaissezFaireSubTypeValidator.instance);
         }
 
         @Override
@@ -61,7 +63,8 @@ public class RmDbJson {
             return OpenEHRBase.class.isAssignableFrom(t.getRawClass());
         }
 
-        public static TypeResolverBuilder<?> build() {
+        @SuppressWarnings("rawtypes")
+        public static TypeResolverBuilder build() {
             return new OpenEHRBaseTypeResolverBuilder()
                     .init(JsonTypeInfo.Id.NAME, new CanonicalJson.CJOpenEHRTypeNaming())
                     .typeProperty(DbToRmFormat.TYPE_ATTRIBUTE)

@@ -45,7 +45,6 @@ import org.mockito.Mockito;
 public class AqlSqlLayerTest {
 
     private final KnowledgeCacheService mockKnowledgeCacheService = mock();
-    private AslPathDataQuery q;
 
     @BeforeEach
     void setUp() {
@@ -126,7 +125,7 @@ public class AqlSqlLayerTest {
         assertThat(queries.get(0)).isInstanceOf(AslStructureQuery.class);
         assertThat(queries.get(1)).isInstanceOf(AslStructureQuery.class);
         assertThat(queries.get(2)).isInstanceOf(AslEncapsulatingQuery.class);
-        assertThat(queries.get(3)).isInstanceOfSatisfying(AslPathDataQuery.class, (q) -> {
+        assertThat(queries.get(3)).isInstanceOfSatisfying(AslPathDataQuery.class, q -> {
             assertThat(q.isMultipleValued()).isFalse();
             assertThat(q.getDataField().getColumnName()).isEqualTo("data");
             assertThat(q.getDataField().getType()).isSameAs(JSONB.class);

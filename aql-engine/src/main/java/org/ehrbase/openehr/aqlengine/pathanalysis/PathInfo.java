@@ -293,7 +293,7 @@ public final class PathInfo {
     public boolean isMultipleValued(PathCohesionTreeNode node) {
         return Optional.of(node)
                 .map(nodeTypeInfo::get)
-                // BYTES are multivalued, but we store them as single Base64 value
+                // BYTES are multivalued, but we store them as single JSONB Base64 value
                 .map(info -> !info.rmTypes.contains("BYTE") && info.multipleValued)
                 .orElseThrow();
     }
