@@ -187,7 +187,9 @@ class OpenehrEhrStatusControllerTest {
 
         EhrStatusDto ehrStatus = ehrStatusDto(currentVersionId, true, true);
 
-        doReturn(nextVersionId).when(mockEhrService).updateStatus(ehrId, ehrStatus, currentVersionId, null, null);
+        doReturn(new EhrService.EhrResult(ehrId, nextVersionId, ehrStatus))
+                .when(mockEhrService)
+                .updateStatus(ehrId, ehrStatus, currentVersionId, null, null);
         doReturn(Optional.of(originalVersion(nextVersionId, currentVersionId, lastModified, ehrStatus)))
                 .when(mockEhrService)
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);

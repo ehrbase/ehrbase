@@ -157,11 +157,12 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
     private EhrDto ehrResponseData(UUID ehrId) {
 
+        EhrService.EhrResult ehrResult = ehrService.getEhrStatus(ehrId);
         // populate maximum response data
         return new EhrDto(
                 new HierObjectId(systemService.getSystemId()),
                 new HierObjectId(ehrId.toString()),
-                ehrService.getEhrStatus(ehrId),
+                ehrResult.status(),
                 ehrService.getCreationTime(ehrId),
                 null,
                 null);

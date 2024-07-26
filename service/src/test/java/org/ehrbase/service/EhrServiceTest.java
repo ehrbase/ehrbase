@@ -226,7 +226,7 @@ class EhrServiceTest {
                 .when(ehrRepository)
                 .findHead(ehrId);
 
-        EhrStatusDto ehrStatus = service.getEhrStatus(ehrId);
+        EhrStatusDto ehrStatus = service.getEhrStatus(ehrId).status();
         assertThat(ehrStatus).isEqualTo(ehrStatusDto);
     }
 
@@ -299,7 +299,8 @@ class EhrServiceTest {
 
         doReturn(true).when(ehrRepository).hasEhr(ehrId);
 
-        ObjectVersionId versionId = service.updateStatus(ehrId, ehrStatusDto, ifMatch, null, null);
+        EhrService.EhrResult ehrResult = service.updateStatus(ehrId, ehrStatusDto, ifMatch, null, null);
+        ObjectVersionId versionId = ehrResult.statusVersionId();
 
         verify(validationService, times(1)).check(ehrStatusDto);
         verify(ehrRepository, times(1)).update(eq(ehrId), any(), isNull(), isNull());

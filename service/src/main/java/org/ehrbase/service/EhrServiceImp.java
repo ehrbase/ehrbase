@@ -91,7 +91,7 @@ public class EhrServiceImp implements EhrService {
     }
 
     @Override
-    public EhrCreationResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status) {
+    public EhrResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status) {
 
         // pre-step: use or create UUID
         ehrId = Optional.ofNullable(ehrId).orElseGet(UuidGenerator::randomUUID);
@@ -118,43 +118,16 @@ public class EhrServiceImp implements EhrService {
         }
 
         // server sets own new UUID in both cases (new or given status)
-        ObjectVersionId versionId = buildObjectVersionId(UuidGenerator.randomUUID(), 1, systemService);
-        status = ehrStatusDtoWithId(status, versionId);
+        ObjectVersionId statusVersionId = buildObjectVersionId(UuidGenerator.randomUUID(), 1, systemService);
+        status = ehrStatusDtoWithId(status, statusVersionId);
 
         ehrRepository.commit(ehrId, EhrStatusMapper.fromDto(status), null, null);
 
-        return new EhrCreationResult(ehrId, status);
+        return new EhrResult(ehrId, statusVersionId, status);
     }
 
     @Override
-    public EhrStatusDto getEhrStatus(UUID ehrId) {
-
-        // pre-step: check for valid ehrId
-        checkEhrExists(ehrId);
-
-        Optional<EhrStatus> head = ehrRepository.findHead(ehrId);
-
-        // post-step: check for valid head
-        if (head.isEmpty()) {
-            raiseEhrNotFoundException(ehrId);
-        }
-
-        return head.map(EhrStatusMapper::toDto).orElseThrow();
-    }
-
-    @Override
-    public Optional<OriginalVersion<EhrStatusDto>> getEhrStatusAtVersion(
-            UUID ehrId, UUID versionedObjectUid, int version) {
-        // pre-step: check for valid ehrId
-        ensureEhrExist(ehrId);
-
-        return ehrRepository
-                .getOriginalVersionStatus(ehrId, versionedObjectUid, version)
-                .map(ov -> originalVersionCopyWithData(ov, EhrStatusMapper.toDto(ov.getData())));
-    }
-
-    @Override
-    public ObjectVersionId updateStatus(
+    public EhrResult updateStatus(
             UUID ehrId, EhrStatusDto status, ObjectVersionId ifMatch, UUID contributionId, UUID audit) {
 
         // pre-step: validate + check for valid ehrId
@@ -169,12 +142,41 @@ public class EhrServiceImp implements EhrService {
         int version = Integer.parseInt(ifMatch.getVersionTreeId().getValue());
 
         // set correct uuid with changed version
-        ObjectVersionId versionId = buildObjectVersionId(compId, version + 1, systemService);
-        status = ehrStatusDtoWithId(status, versionId);
+        ObjectVersionId statusVersionId = buildObjectVersionId(compId, version + 1, systemService);
+        status = ehrStatusDtoWithId(status, statusVersionId);
 
         ehrRepository.update(ehrId, EhrStatusMapper.fromDto(status), contributionId, audit);
 
-        return versionId;
+        return new EhrResult(ehrId, statusVersionId, status);
+    }
+
+    @Override
+    public EhrResult getEhrStatus(UUID ehrId) {
+
+        // pre-step: check for valid ehrId
+        checkEhrExists(ehrId);
+
+        Optional<EhrStatus> head = ehrRepository.findHead(ehrId);
+
+        // post-step: check for valid head
+        if (head.isEmpty()) {
+            raiseEhrNotFoundException(ehrId);
+        }
+
+        return head.map(EhrStatusMapper::toDto)
+                .map(dto -> new EhrResult(ehrId, ((ObjectVersionId) dto.uid()), dto))
+                .orElseThrow();
+    }
+
+    @Override
+    public Optional<OriginalVersion<EhrStatusDto>> getEhrStatusAtVersion(
+            UUID ehrId, UUID versionedObjectUid, int version) {
+        // pre-step: check for valid ehrId
+        ensureEhrExist(ehrId);
+
+        return ehrRepository
+                .getOriginalVersionStatus(ehrId, versionedObjectUid, version)
+                .map(ov -> originalVersionCopyWithData(ov, EhrStatusMapper.toDto(ov.getData())));
     }
 
     private void checkEhrExistForParty(UUID ehrId, EhrStatusDto status) {
@@ -317,9 +319,8 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public String getSubjectExtRef(String ehrId) {
-        EhrStatusDto ehrStatus = getEhrStatus(UUID.fromString(ehrId));
-        return Optional.of(ehrStatus)
-                .map(EhrStatusDto::subject)
+        EhrStatusDto ehrStatus = getEhrStatus(UUID.fromString(ehrId)).status();
+        return Optional.of(ehrStatus.subject())
                 .map(PartyProxy::getExternalRef)
                 .map(ObjectRef::getId)
                 .map(ObjectId::getValue)

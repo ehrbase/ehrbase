@@ -119,7 +119,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         // update EHR_STATUS and check for success
         ObjectVersionId targetObjId = new ObjectVersionId(versionUid);
-        ObjectVersionId statusUid = ehrService.updateStatus(ehrId, ehrStatusDto, targetObjId, null, null);
+        EhrService.EhrResult ehrResult = ehrService.updateStatus(ehrId, ehrStatusDto, targetObjId, null, null);
+        ObjectVersionId statusUid = ehrResult.statusVersionId();
 
         // update and prepare current version number
         int version = extractVersionFromVersionUid(statusUid.getValue()).orElseThrow();

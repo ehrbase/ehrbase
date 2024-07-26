@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -75,26 +76,12 @@ class OpenehrEhrControllerTest {
         return spyController;
     }
 
-    private EhrService.EhrCreationResult createResult(UUID ehrId) {
-        return new EhrService.EhrCreationResult(ehrId, null);
+    private EhrService.EhrResult createResult(UUID ehrId) {
+        return new EhrService.EhrResult(ehrId, null, ehrStatusDto());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"", "return=minimal", "return=representation"})
-    void createEhr(String prefer) {
-
-        UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
-        runCreateTest(ehrId, null, prefer, () -> {
-            when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
-            return controller().createEhr("1.0.3", null, prefer, null);
-        });
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"", "return=minimal", "return=representation"})
-    void createEhrWithStatus(String prefer) {
-
-        var ehrStatus = new EhrStatusDto(
+    private EhrStatusDto ehrStatusDto() {
+        return new EhrStatusDto(
                 null,
                 "openEHR-EHR-EHR_STATUS.generic.v1",
                 new DvText("EHR Status"),
@@ -104,6 +91,24 @@ class OpenehrEhrControllerTest {
                 true,
                 true,
                 null);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "return=minimal", "return=representation"})
+    void createEhr(String prefer) {
+
+        UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
+        runCreateTest(ehrId, ehrStatusDto(), prefer, () -> {
+            when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
+            return controller().createEhr("1.0.3", null, prefer, null);
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "return=minimal", "return=representation"})
+    void createEhrWithStatus(String prefer) {
+
+        var ehrStatus = ehrStatusDto();
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
             when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
@@ -116,7 +121,7 @@ class OpenehrEhrControllerTest {
     void createEhrWithId(String prefer) {
 
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
-        runCreateTest(ehrId, null, prefer, () -> {
+        runCreateTest(ehrId, ehrStatusDto(), prefer, () -> {
             when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
             return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), null);
         });
@@ -127,16 +132,7 @@ class OpenehrEhrControllerTest {
     void createEhrWithIdIdAndStatus(String prefer) {
 
         UUID ehrId = UUID.fromString("2eee20ea-67cc-449f-95bc-1dbdf6d3d0c1");
-        var ehrStatus = new EhrStatusDto(
-                null,
-                "openEHR-EHR-EHR_STATUS.generic.v1",
-                new DvText("EHR Status"),
-                null,
-                null,
-                new PartySelf(),
-                true,
-                true,
-                null);
+        var ehrStatus = ehrStatusDto();
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
             when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
             return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), ehrStatus);
@@ -155,7 +151,9 @@ class OpenehrEhrControllerTest {
     private void runCreateTest(
             UUID ehrId, EhrStatusDto ehrStatus, String prefer, Supplier<ResponseEntity<EhrDto>> creation) {
 
-        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(ehrStatus);
+        doReturn(new EhrService.EhrResult(ehrId, ((ObjectVersionId) ehrStatus.uid()), ehrStatus))
+                .when(mockEhrService)
+                .getEhrStatus(ehrId);
 
         var response = creation.get();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -195,18 +193,9 @@ class OpenehrEhrControllerTest {
     void getEhrBy() {
 
         UUID ehrId = UUID.fromString("0c1f9fce-05bd-4f6f-a558-fc27a2140795");
-        var ehrStatus = new EhrStatusDto(
-                null,
-                "openEHR-EHR-EHR_STATUS.generic.v1",
-                new DvText("EHR Status"),
-                null,
-                null,
-                new PartySelf(),
-                true,
-                true,
-                null);
+        var ehrStatus = ehrStatusDto();
 
-        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(ehrStatus);
+        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(new EhrService.EhrResult(ehrId, null, ehrStatus));
 
         var response = controller().getEhrById(ehrId.toString());
         assertEhrResponseData(response, ehrId, ehrStatus);
@@ -227,19 +216,10 @@ class OpenehrEhrControllerTest {
     void getEhrBySubject() {
 
         UUID ehrId = UUID.fromString("d2c04bbd-fbd5-4a39-ade3-848a336037ed");
-        var ehrStatus = new EhrStatusDto(
-                null,
-                "openEHR-EHR-EHR_STATUS.generic.v1",
-                new DvText("EHR Status"),
-                null,
-                null,
-                new PartySelf(),
-                true,
-                true,
-                null);
+        var ehrStatus = ehrStatusDto();
 
         when(mockEhrService.findBySubject("test_subject", "some:external:id")).thenReturn(Optional.of(ehrId));
-        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(ehrStatus);
+        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(new EhrService.EhrResult(ehrId, null, ehrStatus));
 
         var response = controller().getEhrBySubject("test_subject", "some:external:id");
         assertEhrResponseData(response, ehrId, ehrStatus);

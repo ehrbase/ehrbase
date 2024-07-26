@@ -34,25 +34,39 @@ import org.ehrbase.api.exception.ValidationException;
 public interface EhrService {
 
     /**
-     * Wrapper for {@link #create(UUID, EhrStatusDto)} response that contains the newly created <code>EHR</code> id as
-     * well as the {@link EhrStatusDto}. This prevents to call {@link #getEhrStatus(UUID)} with an additional DB round
-     * trip.
+     * Wrapper for {@link #create(UUID, EhrStatusDto)} response that contains the <code>EHR</code> id as well as the
+     * {@link EhrStatusDto} and it's {@link ObjectVersionId}. This prevents to call {@link #getEhrStatus(UUID)} with an
+     * additional DB round trip.
      *
-     * @param ehrId   <code>ID</code> of the created <code>EHR</code>
-     * @param status  initial {@link EhrStatusDto} version
+     * @param ehrId           <code>ID</code> of the created <code>EHR</code>
+     * @param statusVersionId the {@link ObjectVersionId} of the @{@link EhrStatusDto}
+     * @param status          initial {@link EhrStatusDto} version
      */
-    record EhrCreationResult(UUID ehrId, EhrStatusDto status) {}
+    record EhrResult(UUID ehrId, ObjectVersionId statusVersionId, EhrStatusDto status) {}
 
     /**
      * Creates new EHR instance, with default settings and values when no status or ID is supplied.
      *
      * @param ehrId Optional, sets custom ID
      * @param status Optional, sets custom status
-     * @return UUID of new EHR instance
+     * @return {@link EhrResult} of new EHR instance
      * @throws StateConflictException  when an EHR with the given id already exist
      * @throws ValidationException when given status is invalid, e.g. not a valid openEHR RM object
      */
-    EhrCreationResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status);
+    EhrResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status);
+
+    /**
+     * Update the EHR_STATUS linked to the given EHR
+     *
+     * @param ehrId        ID of linked EHR
+     * @param status       input EHR_STATUS
+     * @param contribution Optional ID of custom contribution. Can be null.
+     * @param audit        Audit event id
+     * @return {@link EhrResult} of the updated status
+     * @throws ObjectNotFoundException if no EHR is found
+     * @throws ValidationException when given status is invalid, e.g. not a valid openEHR RM object
+     */
+    EhrResult updateStatus(UUID ehrId, EhrStatusDto status, ObjectVersionId targetObjId, UUID contribution, UUID audit);
 
     /**
      * Gets latest EHR_STATUS of the given EHR.
@@ -61,7 +75,7 @@ public interface EhrService {
      * @return Latest EHR_STATUS
      * @throws ObjectNotFoundException if no EHR is found
      */
-    EhrStatusDto getEhrStatus(UUID ehrUuid);
+    EhrResult getEhrStatus(UUID ehrUuid);
 
     /**
      * Gets particular EHR_STATUS matching the given version Uid.
@@ -73,20 +87,6 @@ public interface EhrService {
      * @throws ObjectNotFoundException if no EHR is found
      */
     Optional<OriginalVersion<EhrStatusDto>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
-
-    /**
-     * Update the EHR_STATUS linked to the given EHR
-     *
-     * @param ehrId        ID of linked EHR
-     * @param status       input EHR_STATUS
-     * @param contribution Optional ID of custom contribution. Can be null.
-     * @param audit        Audit event id
-     * @return {@link UUID} of the updated status
-     * @throws ObjectNotFoundException if no EHR is found
-     * @throws ValidationException when given status is invalid, e.g. not a valid openEHR RM object
-     */
-    ObjectVersionId updateStatus(
-            UUID ehrId, EhrStatusDto status, ObjectVersionId targetObjId, UUID contribution, UUID audit);
 
     /**
      * Search for an EHR_STATUS based on the given subject id and namespace
