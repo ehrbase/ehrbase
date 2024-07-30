@@ -17,13 +17,19 @@
  */
 package org.ehrbase.openehr.aqlengine.sql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.mock;
+
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslGraph;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
+import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis;
+import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
@@ -31,7 +37,7 @@ import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectQuery;
 import org.jooq.impl.DefaultDSLContext;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,19 +47,13 @@ import org.mockito.Mockito;
 
 public class AqlSqlQueryBuilderTest {
 
-    public static class TestServerConfig implements ServerConfig {
-        @Override
-        public int getPort() {
-            return 0;
-        }
+    private final KnowledgeCacheService mockKnowledgeCacheService = mock();
 
-        @Override
-        public void setPort(int port) {}
-
-        @Override
-        public boolean isDisableStrictValidation() {
-            return false;
-        }
+    @BeforeEach
+    void setUp() {
+        Mockito.reset(mockKnowledgeCacheService);
+        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UUID.randomUUID()));
     }
 
     @Disabled
@@ -77,7 +77,7 @@ public class AqlSqlQueryBuilderTest {
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
 
-        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
+        KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
         Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
@@ -108,7 +108,7 @@ public class AqlSqlQueryBuilderTest {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
+        KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
         Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
@@ -116,7 +116,7 @@ public class AqlSqlQueryBuilderTest {
         AqlSqlQueryBuilder sqlQueryBuilder =
                 new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
 
-        Assertions.assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
+        assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
     }
 
     @Test
@@ -132,16 +132,42 @@ public class AqlSqlQueryBuilderTest {
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
-
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
-        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
+    }
+
+    @Test
+    void clusterWithDataMultiplicitySelectSingle() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+        SELECT
+            cluster/items[at0001]/value/data
+        FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
+        """);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        assertThat(queryWrapper.pathInfos()).hasSize(1);
+        PathInfo pathInfo = queryWrapper.pathInfos().entrySet().stream()
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .orElseThrow();
+
+        PathCohesionAnalysis.PathCohesionTreeNode cohesionTreeRoot = pathInfo.getCohesionTreeRoot();
+        assertThat(pathInfo.isMultipleValued(cohesionTreeRoot)).isFalse();
+
+        // Ensure generated query does not try to perform jsonb array selection
+        SelectQuery<Record> selectQuery = buildSqlQuery(queryWrapper);
+        assertThat(selectQuery.toString()).doesNotContain("select jsonb_array_elements(");
+    }
+
+    private SelectQuery<Record> buildSqlQuery(AqlQueryWrapper queryWrapper) {
+
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-        AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder = new AqlSqlQueryBuilder(
+                new DefaultDSLContext(SQLDialect.POSTGRES), mockKnowledgeCacheService, Optional.empty());
 
-        Assertions.assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
+        return sqlQueryBuilder.buildSqlQuery(aslQuery);
     }
 }
