@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,18 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.configuration.config;
+package org.ehrbase.configuration.config.jackson;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.ehr.EhrStatus;
+import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.mapper.StructuredStringJSonSerializer;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.openehr.sdk.serialisation.mapper.RmObjectJsonDeSerializer;
 import org.ehrbase.openehr.sdk.serialisation.mapper.RmObjectJsonSerializer;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,9 +42,11 @@ public class JacksonConfiguration {
     public Jackson2ObjectMapperBuilderCustomizer addCustomSerialization() {
         return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
                 .serializerByType(StructuredString.class, new StructuredStringJSonSerializer())
+                // RMObject support
                 .serializerByType(RMObject.class, new RmObjectJsonSerializer())
-                .deserializerByType(EhrStatus.class, new RmObjectJsonDeSerializer())
                 .deserializerByType(Folder.class, new RmObjectJsonDeSerializer())
+                // DTOs with RMObjects support
+                .deserializers(new DtoDeSerializer<>(EhrStatusDto.class, RmConstants.EHR_STATUS))
                 .modules(new JavaTimeModule());
     }
 

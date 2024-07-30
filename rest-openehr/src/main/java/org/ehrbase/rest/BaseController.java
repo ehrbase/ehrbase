@@ -231,9 +231,12 @@ public abstract class BaseController {
         // via making a substring starting at last occurrence of "::" + 2
         int lastOccurrence = versionUid.lastIndexOf("::");
         if (lastOccurrence > 0 && versionUid.indexOf("::") != lastOccurrence) {
-            return Optional.of(Integer.parseInt(versionUid.substring(lastOccurrence + 2)));
+            int version = Integer.parseInt(versionUid.substring(lastOccurrence + 2));
+            if (version < 1) {
+                throw new InvalidApiParameterException("Version can't be zero or negative.");
+            }
+            return Optional.of(version);
         }
-
         return Optional.empty();
     }
 
