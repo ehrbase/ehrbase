@@ -19,7 +19,6 @@ package org.ehrbase.openehr.aqlengine.sql;
 
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslGraph;
@@ -40,21 +39,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class AqlSqlQueryBuilderTest {
-
-    public static class TestServerConfig implements ServerConfig {
-        @Override
-        public int getPort() {
-            return 0;
-        }
-
-        @Override
-        public void setPort(int port) {}
-
-        @Override
-        public boolean isDisableStrictValidation() {
-            return false;
-        }
-    }
 
     @Disabled
     @Test
