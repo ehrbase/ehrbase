@@ -62,3 +62,17 @@ services:
       - ./tests/results:/integration-tests/results
       - ./tests/report:/integration-tests/report
     command: bash -c 'echo "ready to run runRobotTest/collectRebotResults"'
+
+
+  ehrbase-performance-tests:
+    image: ehrbase/webtester:feature_cdr_1325
+    container_name: "Perf-Tests"
+    depends_on:
+      ehrbase:
+        condition: service_healthy
+    links:
+      - ehrbase
+      - ehrdb
+    networks:
+      - ehrbase-net
+    command: ls -an
