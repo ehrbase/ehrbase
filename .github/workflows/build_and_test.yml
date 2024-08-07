@@ -339,7 +339,8 @@ jobs:
           done
 
       - name: Run - Robot Perf-Suite
-        run: ls
+        run: |
+          curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter/test-plans'
           #|
           # docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --remove-orphans --rm ehrbase-performance-tests
             # runRobotTest \
