@@ -67,6 +67,8 @@ services:
   ehrbase-performance-tests:
     image: ehrbase/webtester:feature_cdr_1325
     container_name: "Perf-Tests"
+    ports:
+      - "8082:8080"
     depends_on:
       ehrbase:
         condition: service_healthy
