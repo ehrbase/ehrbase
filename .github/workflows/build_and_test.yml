@@ -342,14 +342,26 @@ jobs:
       - name: List available performance test plans
         run: |
           curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter/test-plans' --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
-          #|
-          # docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --remove-orphans --rm ehrbase-performance-tests
-            # runRobotTest \
-            #--name ${{ matrix.test-suite.name }} \
-            #--path ${{ matrix.test-suite.path }} \
-            #--tags ${{ matrix.test-suite.tags }} \
-            #--env ${{ matrix.test-suite.env['AUTH_TYPE'] }}
 
+      - name: Run performance test plan
+        run: |
+          curl --location --request POST 'http://localhost:8082/webtester/rest/jmeter/test-plans/ehrbase_no_auth_scenario/start' \
+          --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+          "protocol": "http",
+          "host": "localhost",
+          "port": 8082,
+          "threads": 1,
+          "rampUp": 1,
+          "loopCount": 1
+          }'
+
+      - name: Get JMeter status
+        run: |
+          curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter' \
+          --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
+          
       - name: Docker Compose - Logs ehrbase
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase
