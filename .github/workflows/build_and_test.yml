@@ -329,7 +329,7 @@ jobs:
         run: |
           echo "Waiting for WebTester to be up..."
           for i in {1..15}; do
-            if docker compose -f docker-compose-perf-test.yml exec ehrbase-performance-tests curl -f http://localhost:8082/webtester; then
+            if docker compose -f tests/docker-compose-perf-test.yml exec ehrbase-performance-tests curl -f http://localhost:8082/webtester; then
               echo "WebTester is up!"
               break
             else
@@ -514,24 +514,21 @@ jobs:
   #
   # Cleanup serialized oci image as well as intermediate robot results
   #
-  # cleanup:
-  #   name: Cleanup
-  #   if: ${{ always() }}
-  #   needs: [
-  #     coverage-collect,
-  #     integration-test-collect,
-  #     docker-build-push,
-  #     maven-publish
-  #   ]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Delete - Temp Artifacts
-  #       uses: geekyeggo/delete-artifact@v5
-  #       with:
-  #         name: |
-  #           java-class-files
-  #           ehrbase-jar
-  #           ehrbase-image-test
-  #           robot-result-*
-  #           jacoco-coverage-*
-  #         failOnError: false
+  cleanup:
+    name: Cleanup
+    if: ${{ always() }}
+    needs: [
+      performance-test-run
+    ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete - Temp Artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            java-class-files
+            ehrbase-jar
+            ehrbase-image-test
+            jacoco-coverage-*
+            junit-test-results
+          failOnError: false
