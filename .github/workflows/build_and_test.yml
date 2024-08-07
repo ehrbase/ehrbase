@@ -329,7 +329,7 @@ jobs:
         run: |
           echo "Waiting for WebTester to be up..."
           for i in {1..15}; do
-            if docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml exec ehrbase-performance-tests curl -f http://localhost:8082/webtester; then
+            if curl -s http://localhost:8082/webtester; then
               echo "WebTester is up!"
               break
             else
