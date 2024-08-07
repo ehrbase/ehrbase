@@ -310,10 +310,7 @@ jobs:
 
       - name: Modify .env.ehrbase file
         run: |
-          echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> .env.ehrbase
-          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
-            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/ehrbase" >> .env.ehrbase
-          fi
+          echo "SECURITY_AUTHTYPE=NONE" >> .env.ehrbase
           cat .env.ehrbase
 
       - name: Docker Compose - Starting
@@ -322,13 +319,10 @@ jobs:
 
       - name: Wait for Keycloak to be ready
         run: |
-          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
-            until curl -s http://localhost:8081/auth/realms/ehrbase; do
-              echo "Waiting for Keycloak..."
-              sleep 30
-            done
-            #curl -s http://localhost:8081/auth/realms/ehrbase/.well-known/openid-configuration
-          fi
+          until curl -s http://localhost:8081/auth/realms/ehrbase; do
+            echo "Waiting for Keycloak..."
+            sleep 30
+          done
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
 
       - name: Run - Robot Perf-Suite
