@@ -43,13 +43,30 @@ services:
   # Integration tests will be ready after ehrbase is healthy.
   # Will run `runRobotTests`
   #
-  ehrbase-integration-tests:
-    image: ${EHRBASE_INTEGRATION_TEST_IMAGE:-ehrbase/integration-tests:latest}
-    container_name: "EHRbase-IT"
-    environment:
-      EHRBASE_BASE_URL: http://ehrbase:8080
-      SERVER_NODENAME: "local.ehrbase.org"
-      KEYCLOAK_BASE_URL: http://keycloak:8080
+  #ehrbase-integration-tests:
+  #  image: ${EHRBASE_INTEGRATION_TEST_IMAGE:-ehrbase/integration-tests:latest}
+  #  container_name: "EHRbase-IT"
+  #  environment:
+  #    EHRBASE_BASE_URL: http://ehrbase:8080
+  #    SERVER_NODENAME: "local.ehrbase.org"
+  #    KEYCLOAK_BASE_URL: http://keycloak:8080
+  #  depends_on:
+  #    ehrbase:
+  #      condition: service_healthy
+  #  links:
+  #    - ehrbase
+  #    - ehrdb
+  #  networks:
+  #    - ehrbase-net
+  #  volumes:
+  #    - ./tests/results:/integration-tests/results
+  #    - ./tests/report:/integration-tests/report
+  #  command: bash -c 'echo "ready to run runRobotTest/collectRebotResults"'
+
+
+  ehrbase-performance-tests:
+    image: ehrbase/webtester:feature_cdr_1325
+    container_name: "Perf-Tests"
     depends_on:
       ehrbase:
         condition: service_healthy
@@ -58,7 +75,4 @@ services:
       - ehrdb
     networks:
       - ehrbase-net
-    volumes:
-      - ./tests/results:/integration-tests/results
-      - ./tests/report:/integration-tests/report
-    command: bash -c 'echo "ready to run runRobotTest/collectRebotResults"'
+    command: ls -an
