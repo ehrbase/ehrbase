@@ -65,16 +65,16 @@ services:
 
 
   ehrbase-performance-tests:
-    image: ehrbase/webtester:feature_cdr_1325
-    container_name: "Perf-Tests"
+    image: justb4/jmeter:latest
     ports:
       - "8082:8080"
-    depends_on:
-      ehrbase:
-        condition: service_healthy
+    container_name: jmeter
     links:
       - ehrbase
       - ehrdb
     networks:
       - ehrbase-net
-    command: ls -an
+    volumes:
+      - ./tests:/tests
+      - ./reports:/reports
+    entrypoint: ""

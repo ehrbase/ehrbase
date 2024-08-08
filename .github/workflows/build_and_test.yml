@@ -316,7 +316,7 @@ jobs:
 
       - name: Docker Compose - Starting
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml up -d
 
       - name: Wait for Keycloak to be ready
         run: |
@@ -324,20 +324,38 @@ jobs:
             echo "Waiting for Keycloak..."
             sleep 30
           done
-          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml ps
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
 
       - name: Run Performance Tests
-        uses: QAInsights/PerfAction@v5.6.2
-        with:
-          test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-Jhost=ehrbase -Jport=8080"
+        run: |
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml exec jmeter \
+          jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
+          ls tests
+          ls tests/perf
 
-      - name: Upload Results
+      - name: Upload JTL Results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-results
-          path: result.jtl
-          if-no-files-found: error
+          path: ./reports/result.jtl
+
+      - name: Upload HTML Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: jmeter-html-reports
+          path: ./reports/html/
+      # - name: Run Performance Tests
+      #   uses: QAInsights/PerfAction@v5.6.2
+      #   with:
+      #     test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
+      #     args: "-Jhost=ehrbase -Jport=8080"
+
+      # - name: Upload Results
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: jmeter-results
+      #     path: result.jtl
+      #     if-no-files-found: error
 
       # - name: Upload HTML Reports
       #   uses: actions/upload-artifact@v3
@@ -384,11 +402,11 @@ jobs:
           
       - name: Docker Compose - Logs ehrbase
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs ehrbase
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase
 
       - name: Docker Compose - Logs keycloak
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs keycloak
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
 
       # - name: Docker Compose - Logs ehrbase-performance-tests
       #   if: always()
@@ -397,8 +415,8 @@ jobs:
       - name: Docker Compose - Stopping
         if: always()
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml down --remove-orphans
-          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --force --volumes
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml down --remove-orphans
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml rm --force --volumes
 
       # - name: Upload - Robot results
       #   if: always()
