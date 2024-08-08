@@ -330,13 +330,20 @@ jobs:
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-H localhost -P 8080"
+          args: "-H ehrbase -P 8080 -e -o ./reports/html/"
 
       - name: Upload Results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-results
           path: result.jtl
+          if-no-files-found: error
+
+      - name: Upload HTML Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: jmeter-reports
+          path: reports
           if-no-files-found: error
 
       # - name: Wait for WebTester to be up
