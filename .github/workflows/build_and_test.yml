@@ -316,7 +316,7 @@ jobs:
 
       - name: Docker Compose - Starting
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml up -d
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
 
       - name: Wait for Keycloak to be ready
         run: |
@@ -324,61 +324,74 @@ jobs:
             echo "Waiting for Keycloak..."
             sleep 30
           done
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml ps
 
-      - name: Wait for WebTester to be up
-        run: |
-          echo "Waiting for WebTester to be up..."
-          for i in {1..15}; do
-            if curl -s http://localhost:8082/webtester; then
-              echo "WebTester is up!"
-              break
-            else
-              echo "Still waiting for WebTester..."
-              sleep 10
-            fi
-          done
+      - name: Run Performance Tests
+        uses: QAInsights/PerfAction@v5.6.2
+        with:
+          test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
+          args: "-H localhost -P 8080"
 
-      - name: List available performance test plans
-        run: |
-          curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter/test-plans' --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: jmeter-results
+          path: result.jtl
+          if-no-files-found: error
 
-      - name: Run performance test plan
-        run: |
-          curl --location --request POST 'http://localhost:8082/webtester/rest/jmeter/test-plans/ehrbase_no_auth_scenario/start' \
-          --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}' \
-          --header 'Content-Type: application/json' \
-          --data-raw '{
-          "protocol": "http",
-          "host": "localhost",
-          "port": 8082,
-          "threads": 1,
-          "rampUp": 1,
-          "loopCount": 1
-          }'
+      # - name: Wait for WebTester to be up
+      #   run: |
+      #     echo "Waiting for WebTester to be up..."
+      #     for i in {1..15}; do
+      #       if curl -s http://localhost:8082/webtester; then
+      #         echo "WebTester is up!"
+      #         break
+      #       else
+      #         echo "Still waiting for WebTester..."
+      #         sleep 10
+      #       fi
+      #     done
 
-      - name: Get JMeter status
-        run: |
-          curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter' \
-          --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
+      # - name: List available performance test plans
+      #   run: |
+      #     curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter/test-plans' --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
+
+      # - name: Run performance test plan
+      #   run: |
+      #     curl --location --request POST 'http://localhost:8082/webtester/rest/jmeter/test-plans/ehrbase_no_auth_scenario/start' \
+      #     --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}' \
+      #     --header 'Content-Type: application/json' \
+      #     --data-raw '{
+      #     "protocol": "http",
+      #     "host": "localhost",
+      #     "port": 8082,
+      #     "threads": 1,
+      #     "rampUp": 1,
+      #     "loopCount": 1
+      #     }'
+
+      # - name: Get JMeter status
+      #   run: |
+      #     curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter' \
+      #     --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
           
       - name: Docker Compose - Logs ehrbase
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs ehrbase
 
       - name: Docker Compose - Logs keycloak
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs keycloak
 
-      - name: Docker Compose - Logs ehrbase-performance-tests
-        if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase-performance-tests
+      # - name: Docker Compose - Logs ehrbase-performance-tests
+      #   if: always()
+      #   run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase-performance-tests
 
       - name: Docker Compose - Stopping
         if: always()
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml down --remove-orphans
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml rm --force --volumes
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml down --remove-orphans
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml rm --force --volumes
 
       # - name: Upload - Robot results
       #   if: always()
