@@ -328,7 +328,7 @@ jobs:
 
       - name: Run Performance Tests
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml exec jmeter \
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml exec ehrbase-performance-tests \
           jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
           ls tests
           ls tests/perf
