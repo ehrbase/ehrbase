@@ -77,4 +77,4 @@ services:
     volumes:
       - ./tests:/tests
       - ./reports:/reports
-    entrypoint: ""
+    command: ls -an
