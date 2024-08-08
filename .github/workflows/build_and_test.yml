@@ -336,7 +336,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-results
-          path: ./reports/result.jtl
+          path: result.jtl
           if-no-files-found: error
 
       # - name: Upload HTML Reports
