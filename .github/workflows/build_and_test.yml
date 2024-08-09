@@ -328,7 +328,6 @@ jobs:
 
       - name: Run JMeter Tests
         run: |
-          export DISPLAY=:0
           docker compose exec jmeter jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
           ls tests
           ls tests/perf
