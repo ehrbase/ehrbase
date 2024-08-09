@@ -334,7 +334,7 @@ jobs:
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-e -o ./reports/"
+          args: "-l ./reports/temp.jtl -e -o ./reports/"
 
       - name: Run Performance Tests
         uses: QAInsights/PerfAction@v5.6.2
