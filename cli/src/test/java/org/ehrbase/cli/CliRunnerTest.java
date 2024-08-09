@@ -20,7 +20,7 @@ package org.ehrbase.cli;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -32,26 +32,31 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class CliRunnerTest {
+class CliRunnerTest {
 
-    private CliHelpCommand mockHelpCommand = mock(CliHelpCommand.class);
+    private class TestCliCommand extends CliCommand {
 
-    private static class CliTestCommand extends CliCommand {
+        public List<String> args;
+        public boolean didRun = false;
+        public boolean didPrintUsage = false;
 
-        List<String> args;
-
-        public CliTestCommand(String name) {
+        public TestCliCommand(String name) {
             super(name);
         }
 
         @Override
         public void run(List<String> args) {
+            this.didRun = true;
             this.args = args;
         }
 
         @Override
-        protected void printUsage() {}
+        protected void printUsage() {
+            this.didPrintUsage = true;
+        }
     }
+
+    private CliHelpCommand mockHelpCommand = mock(CliHelpCommand.class);
 
     @BeforeEach
     void setUp() {
@@ -65,8 +70,8 @@ public class CliRunnerTest {
     @Test
     void duplicateCommandError() {
 
-        var cmd1 = new CliTestCommand("duplicate-cmd");
-        var cmd2 = new CliTestCommand("duplicate-cmd");
+        var cmd1 = new TestCliCommand("duplicate-cmd");
+        var cmd2 = new TestCliCommand("duplicate-cmd");
         CliRunner cliRunner = cliRunner(cmd1, cmd2);
         String message =
                 assertThrows(IllegalStateException.class, cliRunner::run).getMessage();
@@ -79,39 +84,50 @@ public class CliRunnerTest {
     void runErrorWithoutArguments() {
 
         cliRunner().run();
-        verify(mockHelpCommand).exitFail(eq("No command specified"));
+        verify(mockHelpCommand).exitFail("No command specified");
     }
 
     @Test
     void runErrorWithoutCliArguments() {
 
         cliRunner().run("--some --other=true --command");
-        verify(mockHelpCommand).exitFail(eq("No command specified"));
+        verify(mockHelpCommand).exitFail("No command specified");
     }
 
     @Test
     void runErrorCommandNotExist() {
 
         cliRunner().run("cli", "does-not-exist");
-        verify(mockHelpCommand).exitFail(eq("Unknown command does-not-exist"));
+        verify(mockHelpCommand).exitFail("Unknown command does-not-exist");
     }
 
     @Test
     void runCommand() {
 
-        var cmd = new CliTestCommand("capture-the-flag");
+        var cmd = new TestCliCommand("capture-the-flag");
         cliRunner(cmd).run(CliRunner.CLI, "capture-the-flag");
 
+        assertTrue(cmd.didRun, "command did not run");
+        assertNotNull(cmd.args);
+    }
+
+    @Test
+    void runCommandHelp() {
+
+        var cmd = new TestCliCommand("capture-the-flag");
+        cliRunner(cmd).run(CliRunner.CLI, "capture-the-flag", "help");
+
+        assertTrue(cmd.didRun, "command did not run");
         assertNotNull(cmd.args);
     }
 
     @Test
     void runCommandWithArgument() {
 
-        var cmd = new CliTestCommand("capture-the-flag");
+        var cmd = new TestCliCommand("capture-the-flag");
         cliRunner(cmd).run(CliRunner.CLI, "capture-the-flag", "--flag=true");
 
-        assertNotNull(cmd.args);
+        assertTrue(cmd.didRun, "command did not run");
         assertEquals(1, cmd.args.size());
         assertEquals("--flag=true", cmd.args.getFirst());
     }
