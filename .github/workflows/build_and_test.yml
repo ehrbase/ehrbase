@@ -316,7 +316,7 @@ jobs:
 
       - name: Docker Compose - Starting
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml up -d
+          docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml up -d
 
       - name: Wait for Keycloak to be ready
         run: |
@@ -324,23 +324,17 @@ jobs:
             echo "Waiting for Keycloak..."
             sleep 30
           done
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
+          docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml ps
           
       - name: Check ehrbase status
         run: |
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
-          
-      - name: Run Performance Tests - Warm Up
-        uses: QAInsights/PerfAction@v5.6.2
-        with:
-          test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-Jhost=ehrbase -Jport=8080 -l ./reports/temp.jtl -e -o ./reports/"
 
       - name: Run Performance Tests
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-Jhost=ehrbase -Jport=8080 -e -o ./reports/html/"
+          args: "-Jhost=localhost -Jport=8080 -e -o ./reports/html/"
 
       - name: Upload JMeter Test Results
         uses: actions/upload-artifact@v3
@@ -406,11 +400,11 @@ jobs:
           
       - name: Docker Compose - Logs ehrbase
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml logs ehrbase
 
       - name: Docker Compose - Logs keycloak
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml logs keycloak
 
       # - name: Docker Compose - jmeter
       #   if: always()
@@ -423,8 +417,8 @@ jobs:
       - name: Docker Compose - Stopping
         if: always()
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml down --remove-orphans
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml rm --force --volumes
+          docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml down --remove-orphans
+          docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml rm --force --volumes
 
       # - name: Upload - Robot results
       #   if: always()
