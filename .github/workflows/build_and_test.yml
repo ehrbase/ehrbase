@@ -326,7 +326,7 @@ jobs:
           done
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
           
-      - name: Check ehrbase status 2
+      - name: Check ehrbase status
         run: |
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
           
@@ -334,13 +334,13 @@ jobs:
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-l ./reports/temp.jtl -e -o ./reports/"
+          args: "-Jhost=ehrbase -Jport=8080 -l ./reports/temp.jtl -e -o ./reports/"
 
       - name: Run Performance Tests
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-e -o ./reports/html/"
+          args: "-Jhost=ehrbase -Jport=8080 -e -o ./reports/html/"
 
       - name: Upload JMeter Test Results
         uses: actions/upload-artifact@v3
