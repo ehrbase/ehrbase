@@ -15,20 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.application;
+package org.ehrbase.configuration;
 
-import java.util.Arrays;
-import org.ehrbase.application.cli.EhrBaseCli;
-import org.ehrbase.application.server.EhrBaseServer;
-import org.ehrbase.cli.CliRunner;
-import org.springframework.boot.SpringApplication;
+import org.ehrbase.ServiceModuleConfiguration;
+import org.ehrbase.configuration.config.flyway.MigrationStrategyConfig;
+import org.ehrbase.openehr.aqlengine.AqlEngineModuleConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
-public class EhrBase {
-
-    public static void main(String[] args) {
-
-        SpringApplication app =
-                Arrays.asList(args).contains(CliRunner.CLI) ? EhrBaseCli.build(args) : EhrBaseServer.build(args);
-        app.run(args);
-    }
-}
+@Configuration
+@Import({ServiceModuleConfiguration.class, AqlEngineModuleConfiguration.class, MigrationStrategyConfig.class})
+public class EhrBaseCliConfiguration {}

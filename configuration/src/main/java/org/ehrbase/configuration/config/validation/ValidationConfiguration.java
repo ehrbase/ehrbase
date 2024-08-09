@@ -54,7 +54,7 @@ import org.springframework.web.reactive.function.client.WebClientException;
 public class ValidationConfiguration {
 
     private static final String ERR_MSG = "External terminology validation is disabled, consider to enable it";
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(ValidationConfiguration.class);
     private final ValidationProperties properties;
     private final CacheProvider cacheProvider;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
@@ -133,7 +133,7 @@ public class ValidationConfiguration {
         return builder.build();
     }
 
-    public ExternalTerminologyValidation nopTerminologyValidation() {
+    public static ExternalTerminologyValidation nopTerminologyValidation() {
         return new ExternalTerminologyValidation() {
 
             private final ConstraintViolation err = new ConstraintViolation(ERR_MSG);
