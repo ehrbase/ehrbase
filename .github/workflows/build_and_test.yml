@@ -336,11 +336,12 @@ jobs:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
           args: "-Jhost=localhost -Jport=8080 -e -o ./reports/html/"
 
-      - name: Upload JMeter Test Results
+      - name: Upload HTML Reports
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-results
-          path: ./reports/
+          name: jmeter-html-reports
+          path: reports
+          if-no-files-found: error
 
       # - name: Run JMeter Tests
       #   run: |
