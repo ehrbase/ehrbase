@@ -327,7 +327,7 @@ jobs:
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
 
       - name: Run JMeter Tests
-        run: |
+        run: | 
           docker compose exec jmeter jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
           ls tests
           ls tests/perf
@@ -401,6 +401,10 @@ jobs:
       - name: Docker Compose - Logs keycloak
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
+
+      - name: Docker Compose - jmeter
+        if: always()
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
 
       # - name: Docker Compose - Logs ehrbase-performance-tests
       #   if: always()
