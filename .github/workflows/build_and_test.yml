@@ -334,20 +334,13 @@ jobs:
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-Jhost=localhost -Jport=8080 -e -o ./reports/html/"
-      
+          args: "-Jhost=localhost -Jport=8080"
+
       - name: Upload Results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-results
           path: result.jtl
-          if-no-files-found: error
-
-      - name: Upload HTML Reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: jmeter-html-reports
-          path: reports
           if-no-files-found: error
 
       # - name: Run JMeter Tests
