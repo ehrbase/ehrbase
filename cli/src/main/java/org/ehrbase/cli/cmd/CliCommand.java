@@ -22,6 +22,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.ehrbase.cli.util.ExceptionFriendlyFunction;
 
+@SuppressWarnings("java:S5803")
 public abstract class CliCommand {
 
     /**
@@ -47,7 +48,7 @@ public abstract class CliCommand {
 
     protected final String name;
 
-    public CliCommand(String name) {
+    protected CliCommand(String name) {
         this.name = name;
     }
 
@@ -55,23 +56,28 @@ public abstract class CliCommand {
         return name;
     }
 
-    public abstract void run(List<String> args) throws Exception;
+    public abstract void run(List<String> args) throws Throwable;
 
-    protected static void println(String line) {
+    @SuppressWarnings("java:S106")
+    void println(String line) {
         System.out.println(line);
-        // logger.info(line);
     }
 
-    protected static void printStep(String line) {
+    protected void printStep(String line) {
         println("---------------------------------------------------------------------------");
         println(line);
         println("---------------------------------------------------------------------------");
     }
 
+    @SuppressWarnings("java:S106")
     public void exitFail(String reason) {
 
         System.err.println(reason);
         printUsage();
+        exit(-1);
+    }
+
+    void exit(int code) {
         System.exit(-1);
     }
 
@@ -82,7 +88,7 @@ public abstract class CliCommand {
 
         Iterator<String> argIter = args.iterator();
         if (!argIter.hasNext()) {
-            exitFail("No import argument provided");
+            exitFail("No argument provided");
             return;
         }
 
@@ -90,13 +96,7 @@ public abstract class CliCommand {
         while (argIter.hasNext()) {
             next = argIter.next();
             String[] split = next.split("=");
-            CliArgument arg = new CliArgument(next, split[0].replaceAll("--", ""), split.length > 1 ? split[1] : null);
-
-            if (arg.key.equals("help")) {
-                printStep("Help");
-                printUsage();
-                return;
-            }
+            CliArgument arg = new CliArgument(next, split[0].replace("--", ""), split.length > 1 ? split[1] : null);
 
             Result result = consumer.apply(arg);
             if (result instanceof Result.Unknown) {

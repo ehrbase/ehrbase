@@ -100,7 +100,7 @@ public class CliRunner {
     private void runCommand(CliCommand command, List<String> args) {
         try {
             command.run(args);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("Failed to execute [%s]".formatted(command.getName()), e);
             helpCommand.exitFail(e.getMessage());
         }

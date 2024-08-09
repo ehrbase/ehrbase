@@ -18,20 +18,13 @@
 package org.ehrbase.configuration.config.validation;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
-import org.ehrbase.openehr.sdk.util.functional.Try;
-import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
-import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationChain;
-import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.service.validation.FhirTerminologyValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,22 +127,7 @@ public class ValidationConfiguration {
     }
 
     public static ExternalTerminologyValidation nopTerminologyValidation() {
-        return new ExternalTerminologyValidation() {
-
-            private final ConstraintViolation err = new ConstraintViolation(ERR_MSG);
-
-            public Try<Boolean, ConstraintViolationException> validate(TerminologyParam param) {
-                return Try.failure(new ConstraintViolationException(List.of(err)));
-            }
-
-            public boolean supports(TerminologyParam param) {
-                return false;
-            }
-
-            public List<DvCodedText> expand(TerminologyParam param) {
-                return Collections.emptyList();
-            }
-        };
+        return new NopExternalTerminologyValidation(ERR_MSG);
     }
 
     private FhirTerminologyValidation fhirTerminologyValidation(String url, WebClient webClient) {

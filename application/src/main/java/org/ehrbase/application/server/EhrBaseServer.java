@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Import;
             SecurityAutoConfiguration.class
         })
 @Import({EhrBaseServerConfiguration.class})
+@SuppressWarnings("java:S1118")
 public class EhrBaseServer {
 
     public static SpringApplication build(String[] args) {

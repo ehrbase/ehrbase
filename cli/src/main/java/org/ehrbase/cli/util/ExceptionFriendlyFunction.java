@@ -20,5 +20,6 @@ package org.ehrbase.cli.util;
 @FunctionalInterface
 public interface ExceptionFriendlyFunction<T, R> {
 
+    @SuppressWarnings("java:S112")
     R apply(T value) throws Exception;
 }
