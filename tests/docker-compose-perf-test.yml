@@ -64,7 +64,7 @@ services:
   #  command: bash -c 'echo "ready to run runRobotTest/collectRebotResults"'
 
 
-  ehrbase-performance-tests:
+  jmeter:
     image: justb4/jmeter:latest
     ports:
       - "8082:8080"
@@ -77,4 +77,3 @@ services:
     volumes:
       - ./tests:/tests
       - ./reports:/reports
-    command: ls -an

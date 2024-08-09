@@ -326,24 +326,18 @@ jobs:
           done
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
 
-      - name: Run Performance Tests
+      - name: Run JMeter Tests
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml exec ehrbase-performance-tests \
-          jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
+          docker-compose exec jmeter jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
           ls tests
           ls tests/perf
 
-      - name: Upload JTL Results
+      - name: Upload JMeter Test Results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-results
-          path: ./reports/result.jtl
+          path: ./reports/
 
-      - name: Upload HTML Reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: jmeter-html-reports
-          path: ./reports/html/
       # - name: Run Performance Tests
       #   uses: QAInsights/PerfAction@v5.6.2
       #   with:
