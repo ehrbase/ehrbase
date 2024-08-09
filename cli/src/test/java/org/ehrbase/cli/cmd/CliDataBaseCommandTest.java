@@ -81,6 +81,17 @@ class CliDataBaseCommandTest {
     }
 
     @Test
+    void runHelp() throws Exception {
+
+        cmd.run(List.of("help"));
+
+        verify(cmd, times(1)).printUsage();
+        verify(cmd, times(1)).printUsage();
+        verify(cmd, never()).exitFail(any());
+        verify(cmd, never()).exit(any(Integer.class));
+    }
+
+    @Test
     void runCheckConnection() throws Exception {
 
         var jdbUrl = "jdbc:test//localhost:1234/db";

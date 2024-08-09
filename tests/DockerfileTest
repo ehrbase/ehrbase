@@ -23,10 +23,14 @@ RUN unzip jacoco-agent.zip && \
 #
 FROM ${EHRBASE_IMAGE}
 
-COPY --from=builder /build/*.jar /app/
-
 USER root
+
+COPY --chown=<user>:<group> --from=builder /build/*.jar /app/
+COPY --chown=<user>:<group> tests/docker-int-test-entrypoint.sh /app/docker-int-test-entrypoint.sh
+
+RUN chmod +x /app/docker-int-test-entrypoint.sh
 
 ENV JACOCO_RESULT_PATH=/app/coverage/jacoco.exec
 
-ENTRYPOINT java -jar -Dspring.profiles.active=docker -javaagent:/app/jacoco-agent.jar=destfile=${JACOCO_RESULT_PATH},append=false,includes=org.ehrbase.* /app/ehrbase.jar
+# wrapped in entrypoint to be able to accept cli args and use jacoco cli env var
+ENTRYPOINT ["/app/docker-int-test-entrypoint.sh"]

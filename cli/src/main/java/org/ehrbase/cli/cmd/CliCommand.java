@@ -56,10 +56,11 @@ public abstract class CliCommand {
         return name;
     }
 
+    @SuppressWarnings("java:S112")
     public abstract void run(List<String> args) throws Throwable;
 
     @SuppressWarnings("java:S106")
-    void println(String line) {
+    protected void println(String line) {
         System.out.println(line);
     }
 
@@ -78,7 +79,7 @@ public abstract class CliCommand {
     }
 
     void exit(int code) {
-        System.exit(-1);
+        System.exit(code);
     }
 
     protected abstract void printUsage();
@@ -95,6 +96,12 @@ public abstract class CliCommand {
         String next;
         while (argIter.hasNext()) {
             next = argIter.next();
+
+            if (next.equals("help")) {
+                printUsage();
+                return;
+            }
+
             String[] split = next.split("=");
             CliArgument arg = new CliArgument(next, split[0].replace("--", ""), split.length > 1 ? split[1] : null);
 

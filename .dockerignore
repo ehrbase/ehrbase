@@ -2,6 +2,7 @@
 *
 
 # Allow files and directories
-!/application/target/ehrbase.jar
+!application/target/ehrbase.jar
+!tests/docker-int-test-entrypoint.sh
 !pom.xml
 !**/pom.xml

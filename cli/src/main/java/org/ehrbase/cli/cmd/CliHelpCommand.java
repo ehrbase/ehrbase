@@ -44,7 +44,7 @@ public class CliHelpCommand extends CliCommand {
                 Run with subcommand
 
                 cli [sub-command] [arguments]
-                s
+
                 Sub-commands:
                     database  database related operation
                     help      print this help message
