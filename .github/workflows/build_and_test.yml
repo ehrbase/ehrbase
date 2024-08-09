@@ -325,10 +325,6 @@ jobs:
             sleep 30
           done
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
-
-      - name: Check ehrbase status 1
-        run: |
-          curl --location --request GET 'http://ehrbase:8080/ehrbase/rest/status'
           
       - name: Check ehrbase status 2
         run: |
