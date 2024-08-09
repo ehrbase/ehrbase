@@ -54,8 +54,9 @@
 
   <modules>
     <module>bom</module>
-    <module>api</module>
     <module>application</module>
+    <module>api</module>
+    <module>cli</module>
     <module>jooq-pg</module>
     <module>rest-ehr-scape</module>
     <module>rest-openehr</module>

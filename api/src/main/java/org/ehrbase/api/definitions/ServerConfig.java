@@ -21,7 +21,5 @@ public interface ServerConfig {
 
     int getPort();
 
-    void setPort(int port);
-
     boolean isDisableStrictValidation();
 }

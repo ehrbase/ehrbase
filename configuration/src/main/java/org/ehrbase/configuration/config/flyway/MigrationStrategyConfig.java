@@ -18,7 +18,6 @@
 package org.ehrbase.configuration.config.flyway;
 
 import java.util.Map;
-import java.util.function.Consumer;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.slf4j.Logger;
@@ -32,22 +31,6 @@ import org.springframework.context.annotation.Configuration;
 public class MigrationStrategyConfig {
 
     private static final Logger log = LoggerFactory.getLogger(MigrationStrategyConfig.class);
-
-    public enum MigrationStrategy {
-        DISABLED(f -> {}),
-        MIGRATE(Flyway::migrate),
-        VALIDATE(Flyway::validate);
-
-        private final Consumer<Flyway> strategy;
-
-        MigrationStrategy(Consumer<Flyway> strategy) {
-            this.strategy = strategy;
-        }
-
-        void applyStrategy(Flyway flyway) {
-            strategy.accept(flyway);
-        }
-    }
 
     @Value("${spring.flyway.ehr-schema:ehr}")
     private String ehrSchema;
@@ -69,6 +52,11 @@ public class MigrationStrategyConfig {
 
     @Bean
     public FlywayMigrationStrategy flywayMigrationStrategy() {
+        return flywayMigrationStrategy(extStrategy, ehrStrategy);
+    }
+
+    public FlywayMigrationStrategy flywayMigrationStrategy(
+            MigrationStrategy extStrategy, MigrationStrategy ehrStrategy) {
         return flyway -> {
             if (extStrategy != MigrationStrategy.DISABLED) {
                 extStrategy.applyStrategy(setSchema(flyway, extSchema)
@@ -93,9 +81,8 @@ public class MigrationStrategyConfig {
     }
 
     private FluentConfiguration setSchema(Flyway flyway, String schema) {
-        FluentConfiguration fluentConfiguration = Flyway.configure()
+        return Flyway.configure()
                 .dataSource(flyway.getConfiguration().getDataSource())
                 .schemas(schema);
-        return fluentConfiguration;
     }
 }

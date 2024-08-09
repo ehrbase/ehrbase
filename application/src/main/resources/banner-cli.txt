@@ -1,0 +1,1 @@
+${AnsiColor.BLUE}EHRbase CLI (Spring Boot ${spring-boot.version} EHRbase ${application.formatted-version} https://ehrbase.org/)${AnsiBackground.DEFAULT}${AnsiColor.DEFAULT}
