@@ -330,11 +330,17 @@ jobs:
         run: |
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
           
+      - name: Run Performance Tests - Warm Up
+        uses: QAInsights/PerfAction@v5.6.2
+        with:
+          test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
+          args: "-e -o ./reports/"
+
       - name: Run Performance Tests
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-Jhost=localhost -Jport=8080 -e -o ./reports/html/"
+          args: "-e -o ./reports/html/"
 
       - name: Upload JMeter Test Results
         uses: actions/upload-artifact@v3
@@ -406,9 +412,9 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
 
-      - name: Docker Compose - jmeter
-        if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
+      # - name: Docker Compose - jmeter
+      #   if: always()
+      #   run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
 
       # - name: Docker Compose - Logs ehrbase-performance-tests
       #   if: always()
