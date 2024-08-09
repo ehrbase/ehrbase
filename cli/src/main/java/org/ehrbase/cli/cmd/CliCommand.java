@@ -56,6 +56,7 @@ public abstract class CliCommand {
         return name;
     }
 
+    @SuppressWarnings("java:S112")
     public abstract void run(List<String> args) throws Throwable;
 
     @SuppressWarnings("java:S106")
@@ -78,7 +79,7 @@ public abstract class CliCommand {
     }
 
     void exit(int code) {
-        System.exit(-1);
+        System.exit(code);
     }
 
     protected abstract void printUsage();
