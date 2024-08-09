@@ -11,4 +11,4 @@ WORKDIR /app
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar /app/ehrbase.jar --spring.profiles.active=docker"]
+ENTRYPOINT ["java", "-jar", "/app/ehrbase.jar", "--spring.profiles.active=docker"]

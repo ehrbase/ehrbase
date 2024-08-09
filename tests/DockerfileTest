@@ -27,6 +27,9 @@ COPY --from=builder /build/*.jar /app/
 
 USER root
 
+COPY tests/docker-compose-int-test.yml /app/docker-int-test-entrypoint.sh
 ENV JACOCO_RESULT_PATH=/app/coverage/jacoco.exec
 
-ENTRYPOINT java -jar -Dspring.profiles.active=docker -javaagent:/app/jacoco-agent.jar=destfile=${JACOCO_RESULT_PATH},append=false,includes=org.ehrbase.* /app/ehrbase.jar
+# wrapped in entrypoint to be able to accept cli args and use jacoco cli
+ENTRYPOINT ["/app/docker-int-test-entrypoint.sh"]
+# ENTRYPOINT java -jar -Dspring.profiles.active=docker -javaagent:/app/jacoco-agent.jar=destfile=${JACOCO_RESULT_PATH},append=false,includes=org.ehrbase.* /app/ehrbase.jar

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr;
+package org.ehrbase.rest.openehr.aql;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
@@ -33,11 +33,11 @@ import org.springframework.web.context.annotation.RequestScope;
 
 /**
  * Holds the metadata for the response to an AQL request.
- *
+ * <p></p>
  * Note: it is expected that per request no more than one AQL query is executed
  */
 @RequestScope
-@Component("requestScopedAqlQueryContext")
+@Component(AqlQueryContext.BEAN_NAME)
 public class RequestScopedAqlQueryContext implements AqlQueryContext {
 
     @Value("${ehrbase.rest.aql.response.generator-details-enabled:false}")
