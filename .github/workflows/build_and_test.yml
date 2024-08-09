@@ -329,7 +329,6 @@ jobs:
       - name: Check ehrbase status 2
         run: |
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
-          mkdir reports
           
       - name: Run Performance Tests
         uses: QAInsights/PerfAction@v5.6.2
