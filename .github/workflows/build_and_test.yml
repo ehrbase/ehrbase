@@ -329,12 +329,13 @@ jobs:
       - name: Check ehrbase status 2
         run: |
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
+          mkdir reports
           
-      - name: Run JMeter Tests
-        run: |
-          docker compose exec jmeter jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
-          ls tests
-          ls tests/perf
+      - name: Run Performance Tests
+        uses: QAInsights/PerfAction@v5.6.2
+        with:
+          test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
+          args: "-Jhost=localhost -Jport=8080 -e -o ./reports/html/"
 
       - name: Upload JMeter Test Results
         uses: actions/upload-artifact@v3
@@ -342,11 +343,11 @@ jobs:
           name: jmeter-results
           path: ./reports/
 
-      # - name: Run Performance Tests
-      #   uses: QAInsights/PerfAction@v5.6.2
-      #   with:
-      #     test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-      #     args: "-Jhost=ehrbase -Jport=8080"
+      # - name: Run JMeter Tests
+      #   run: |
+      #     docker compose exec jmeter jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -l /reports/result.jtl -e -o /reports/html/
+      #     ls tests
+      #     ls tests/perf
 
       # - name: Upload Results
       #   uses: actions/upload-artifact@v3
