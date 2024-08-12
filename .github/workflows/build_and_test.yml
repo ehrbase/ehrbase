@@ -330,7 +330,7 @@ jobs:
         run: |
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
 
-      - name: Wait for EHRbase to be ready and get EHRbase ip
+      - name: Wait for EHRbase to be ready
         run: |
           until curl -s http://localhost:8080/ehrbase/management/info; do
             echo "Waiting for EHRbase..."
@@ -343,7 +343,7 @@ jobs:
           
       - name: Run JMeter Tests
         run: |
-          docker run --rm --network ehrbase-net \
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm --network ehrbase-net \
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
           justb4/jmeter:latest \
