@@ -343,10 +343,10 @@ jobs:
           
       - name: Run JMeter Tests
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm --network ehrbase-net \
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
-          justb4/jmeter:latest \
+          jmeter \
           jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx \
           -Jhost=ehrbase -Jport=8080 \
           -l /reports/result.jtl -e -o /reports/html/ \
