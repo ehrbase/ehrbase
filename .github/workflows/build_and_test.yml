@@ -339,7 +339,7 @@ jobs:
 
       - name: Debug JMeter Test Plan
         run: |
-          docker-compose exec jmeter ls -al /tests
+          docker compose exec jmeter ls -al /tests
           
       - name: Run JMeter Tests
         run: |
