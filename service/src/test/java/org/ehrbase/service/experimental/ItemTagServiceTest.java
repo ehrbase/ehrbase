@@ -17,8 +17,8 @@
  */
 package org.ehrbase.service.experimental;
 
-import static org.ehrbase.api.service.experimental.ItemTag.ItemTagRMType.COMPOSITION;
-import static org.ehrbase.api.service.experimental.ItemTag.ItemTagRMType.EHR_STATUS;
+import static org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.COMPOSITION;
+import static org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.EHR_STATUS;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -35,11 +35,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.api.service.experimental.ItemTag;
 import org.ehrbase.api.service.experimental.ItemTagService;
 import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.util.UuidGenerator;
@@ -71,8 +71,8 @@ class ItemTagServiceTest {
         return new ItemTagServiceImpl(mockIemTagRepository, mockEhrService);
     }
 
-    private ItemTagDto itemTagDto(String key) {
-        return new ItemTagDto(null, null, null, null, null, key, null);
+    private org.ehrbase.api.dto.experimental.ItemTagDto itemTagDto(String key) {
+        return new org.ehrbase.api.dto.experimental.ItemTagDto(null, null, null, null, null, key, null);
     }
 
     @Test
@@ -95,7 +95,7 @@ class ItemTagServiceTest {
     void bulkUpsertEhrNotExistError(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
-        ItemTag.ItemTagRMType targetType = ItemTag.ItemTagRMType.valueOf(type);
+        ItemTagRMType targetType = org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.valueOf(type);
 
         ItemTagService service = service();
         assertThrowsObjectNotFound(
@@ -105,14 +105,15 @@ class ItemTagServiceTest {
     @Test
     void bulkUpdaterChangeOfOwnerError() {
 
-        List<ItemTagDto> itemTags = List.of(new ItemTagDto(
-                UUID.randomUUID(),
-                UUID.fromString("1dc42f91-094a-43e7-8c26-3ca6d43b8833"),
-                SAMPLE_EHR_ID,
-                EHR_STATUS,
-                null,
-                "a:key",
-                null));
+        List<org.ehrbase.api.dto.experimental.ItemTagDto> itemTags =
+                List.of(new org.ehrbase.api.dto.experimental.ItemTagDto(
+                        UUID.randomUUID(),
+                        UUID.fromString("1dc42f91-094a-43e7-8c26-3ca6d43b8833"),
+                        SAMPLE_EHR_ID,
+                        EHR_STATUS,
+                        null,
+                        "a:key",
+                        null));
 
         ItemTagService service = service();
         UnprocessableEntityException exception = assertThrows(
@@ -127,14 +128,15 @@ class ItemTagServiceTest {
     @Test
     void buildUpdateTargetTypeMissmatch() {
 
-        List<ItemTagDto> itemTags = List.of(new ItemTagDto(
-                UUID.randomUUID(),
-                UUID.fromString("f5fe8b05-2fe3-4962-a0b7-d443e0b53304"),
-                SAMPLE_EHR_ID,
-                COMPOSITION,
-                null,
-                "some:key",
-                null));
+        List<org.ehrbase.api.dto.experimental.ItemTagDto> itemTags =
+                List.of(new org.ehrbase.api.dto.experimental.ItemTagDto(
+                        UUID.randomUUID(),
+                        UUID.fromString("f5fe8b05-2fe3-4962-a0b7-d443e0b53304"),
+                        SAMPLE_EHR_ID,
+                        COMPOSITION,
+                        null,
+                        "some:key",
+                        null));
 
         ItemTagService service = service();
         ValidationException exception = assertThrows(
@@ -154,13 +156,14 @@ class ItemTagServiceTest {
     void bulkUpsert(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
-        ItemTag.ItemTagRMType targetType = ItemTag.ItemTagRMType.valueOf(type);
+        ItemTagRMType targetType = org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.valueOf(type);
 
         doNothing().when(mockEhrService).checkEhrExists(SAMPLE_EHR_ID);
 
         UUID tagId = UUID.fromString("49532718-9a4f-4c3c-a1ad-86af95a1751c");
-        List<ItemTagDto> itemTags =
-                List.of(itemTagDto("1:new:key"), new ItemTagDto(tagId, null, null, null, null, "2:existing:key", null));
+        List<org.ehrbase.api.dto.experimental.ItemTagDto> itemTags = List.of(
+                itemTagDto("1:new:key"),
+                new org.ehrbase.api.dto.experimental.ItemTagDto(tagId, null, null, null, null, "2:existing:key", null));
 
         Collection<UUID> fixtureIDs = List.of(UuidGenerator.randomUUID(), tagId);
         doReturn(fixtureIDs).when(mockIemTagRepository).bulkStore(any());
@@ -169,16 +172,18 @@ class ItemTagServiceTest {
         assertSame(fixtureIDs, ids);
 
         @SuppressWarnings("unchecked")
-        final ArgumentCaptor<Collection<ItemTag>> captor = ArgumentCaptor.forClass(Collection.class);
+        final ArgumentCaptor<Collection<ItemTagDto>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(mockIemTagRepository, times(1)).bulkStore(captor.capture()); // for instance
 
-        List<ItemTag> storedTags = captor.getValue().stream()
-                .sorted(Comparator.comparing(ItemTag::key))
+        List<ItemTagDto> storedTags = captor.getValue().stream()
+                .sorted(Comparator.comparing(ItemTagDto::getKey))
                 .toList();
         assertEquals(2, storedTags.size());
-        assertEquals(new ItemTag(null, SAMPLE_EHR_ID, target, targetType, null, "1:new:key", null), storedTags.get(0));
         assertEquals(
-                new ItemTag(tagId, SAMPLE_EHR_ID, target, targetType, null, "2:existing:key", null), storedTags.get(1));
+                new ItemTagDto(null, SAMPLE_EHR_ID, target, targetType, null, "1:new:key", null), storedTags.get(0));
+        assertEquals(
+                new ItemTagDto(tagId, SAMPLE_EHR_ID, target, targetType, null, "2:existing:key", null),
+                storedTags.get(1));
     }
 
     @ParameterizedTest
@@ -192,7 +197,7 @@ class ItemTagServiceTest {
     void findEhrNotExistError(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
-        ItemTag.ItemTagRMType targetType = ItemTag.ItemTagRMType.valueOf(type);
+        ItemTagRMType targetType = org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.valueOf(type);
 
         ItemTagService service = service();
         assertThrowsObjectNotFound(() -> service.findItemTag(SAMPLE_EHR_ID, target, targetType, List.of(), List.of()));
@@ -209,18 +214,20 @@ class ItemTagServiceTest {
     void findItemByTag(String type, String targetId, String key) {
 
         UUID target = UUID.fromString(targetId);
-        ItemTag.ItemTagRMType targetType = ItemTag.ItemTagRMType.valueOf(type);
+        ItemTagRMType targetType = org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.valueOf(type);
         ItemTagService service = service();
 
-        ItemTag itemTag = new ItemTag(UUID.randomUUID(), SAMPLE_EHR_ID, target, targetType, null, key, null);
+        ItemTagDto itemTag = new ItemTagDto(UUID.randomUUID(), SAMPLE_EHR_ID, target, targetType, null, key, null);
         doReturn(List.of(itemTag))
                 .when(mockIemTagRepository)
                 .findForLatestTargetVersion(SAMPLE_EHR_ID, target, targetType, List.of(), List.of(key));
 
-        Collection<ItemTagDto> result = service.findItemTag(SAMPLE_EHR_ID, target, targetType, List.of(), List.of(key));
+        Collection<org.ehrbase.api.dto.experimental.ItemTagDto> result =
+                service.findItemTag(SAMPLE_EHR_ID, target, targetType, List.of(), List.of(key));
         assertEquals(1, result.size());
         assertEquals(
-                new ItemTagDto(itemTag.id(), SAMPLE_EHR_ID, target, targetType, null, key, null),
+                new org.ehrbase.api.dto.experimental.ItemTagDto(
+                        itemTag.getId(), SAMPLE_EHR_ID, target, targetType, null, key, null),
                 result.stream().findFirst().orElseThrow());
     }
 
@@ -244,7 +251,7 @@ class ItemTagServiceTest {
     void bulkDeleteEhrNotExistError(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
-        ItemTag.ItemTagRMType targetType = ItemTag.ItemTagRMType.valueOf(type);
+        ItemTagRMType targetType = org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.valueOf(type);
 
         ItemTagService service = service();
         assertThrowsObjectNotFound(
@@ -262,7 +269,7 @@ class ItemTagServiceTest {
     void bulkDelete(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
-        ItemTag.ItemTagRMType targetType = ItemTag.ItemTagRMType.valueOf(type);
+        ItemTagRMType targetType = org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.valueOf(type);
         ItemTagService service = service();
 
         UUID id = UUID.fromString("247d5155-a4bd-4ad6-ae9a-a8112d1fcd25");

@@ -40,7 +40,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 /**
- * Experimental REST interface specification for {@link <a href="https://specifications.openehr.org/releases/RM/latest/ehr.html#tags">4.2.6. Tags</a>}
+ * Experimental REST interface specification for <a href="https://specifications.openehr.org/releases/RM/development/common.html#tags">Tags</a>
  */
 @SuppressWarnings("java:S107")
 public interface ItemTagApiSpecification {
@@ -192,8 +192,6 @@ public interface ItemTagApiSpecification {
     ResponseEntity<Object> upsertEhrStatusItemTags(
             String openehrVersion,
             String openehrAuditDetails,
-            String contentType,
-            String accept,
             @ParameterPrefer String prefer,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
@@ -205,7 +203,6 @@ public interface ItemTagApiSpecification {
     ResponseEntity<Collection<ItemTagDto>> getEhrStatusItemTags(
             String openehrVersion,
             String openehrAuditDetails,
-            String accept,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterFilterIds List<String> ids,
@@ -217,7 +214,6 @@ public interface ItemTagApiSpecification {
     ResponseEntity<Void> deleteEhrStatusItemTags(
             String openehrVersion,
             String openehrAuditDetails,
-            String contentType,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterDeleteIDs List<Object> itemTagsOrUUIDs
@@ -230,8 +226,6 @@ public interface ItemTagApiSpecification {
     ResponseEntity<Object> upsertCompositionItemTags(
             String openehrVersion,
             String openehrAuditDetails,
-            String contentType,
-            String accept,
             @ParameterPrefer String prefer,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
@@ -243,7 +237,6 @@ public interface ItemTagApiSpecification {
     ResponseEntity<Collection<ItemTagDto>> getCompositionItemTags(
             String openehrVersion,
             String openehrAuditDetails,
-            String accept,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterFilterIds List<String> ids,
@@ -255,7 +248,6 @@ public interface ItemTagApiSpecification {
     ResponseEntity<Void> deleteCompositionItemTags(
             String openehrVersion,
             String openehrAuditDetails,
-            String contentType,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterDeleteIDs List<Object> itemTagsOrUUIDs

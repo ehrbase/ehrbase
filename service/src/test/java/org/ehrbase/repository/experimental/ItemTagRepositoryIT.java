@@ -17,8 +17,8 @@
  */
 package org.ehrbase.repository.experimental;
 
-import static org.ehrbase.api.service.experimental.ItemTag.ItemTagRMType.COMPOSITION;
-import static org.ehrbase.api.service.experimental.ItemTag.ItemTagRMType.EHR_STATUS;
+import static org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.COMPOSITION;
+import static org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.EHR_STATUS;
 import static org.ehrbase.jooq.pg.tables.EhrItemTag.EHR_ITEM_TAG;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,9 +31,9 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.ehrbase.api.dto.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.service.experimental.ItemTag;
-import org.ehrbase.api.service.experimental.ItemTag.ItemTagRMType;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.test.ServiceIntegrationTest;
@@ -85,24 +85,25 @@ class ItemTagRepositoryIT {
         itemTagRepository.adminDeleteAll(ehrId);
     }
 
-    private ItemTag newItemTag(UUID ownerId, UUID target, ItemTagRMType type, String key) {
-        return new ItemTag(null, ownerId, target, type, null, key, null);
+    private ItemTagDto newItemTag(UUID ownerId, UUID target, ItemTagRMType type, String key) {
+        return new ItemTagDto(null, ownerId, target, type, null, key, null);
     }
 
-    private ItemTag copyItemTag(UUID id, ItemTag itemTag, String value) {
-        return new ItemTag(
+    private ItemTagDto copyItemTag(UUID id, ItemTagDto itemTag, String value) {
+        return new ItemTagDto(
                 id,
-                itemTag.ownerId(),
-                itemTag.target(),
-                itemTag.targetType(),
-                itemTag.targetPath(),
-                itemTag.key(),
-                value != null ? value : itemTag.value());
+                itemTag.getOwnerId(),
+                itemTag.getTarget(),
+                itemTag.getTargetType(),
+                itemTag.getTargetPath(),
+                itemTag.getKey(),
+                // XXX
+                value != null ? value : itemTag.getValue());
     }
 
     // --- bulkStore ---
 
-    private Collection<UUID> bulkStore(ItemTag... itemTags) {
+    private Collection<UUID> bulkStore(ItemTagDto... itemTags) {
         return itemTagRepository.bulkStore(List.of(itemTags));
     }
 
@@ -131,14 +132,14 @@ class ItemTagRepositoryIT {
     @Test
     void bulkStoreUpdateTargetExist() {
 
-        ItemTag itemTag = newItemTag(ehrId, compId, COMPOSITION, "update:comp:not_exist:1");
+        ItemTagDto itemTag = newItemTag(ehrId, compId, COMPOSITION, "update:comp:not_exist:1");
 
         Collection<UUID> insertIds = bulkStore(itemTag);
         assertEquals(1, insertIds.size(), "There should be one inserted ItemTag id");
 
         UUID tagId = insertIds.stream().findFirst().orElseThrow();
 
-        ItemTag itemTagToUpdate = copyItemTag(tagId, itemTag, "new value");
+        ItemTagDto itemTagToUpdate = copyItemTag(tagId, itemTag, "new value");
         Collection<UUID> updateIds = bulkStore(itemTagToUpdate);
 
         assertEquals(1, updateIds.size(), "There should be one updated ItemTag id");
@@ -148,7 +149,7 @@ class ItemTagRepositoryIT {
     @Test
     void bulkStoreInsertEhrNotExist() {
 
-        List<ItemTag> itemTags = List.of(new ItemTag(
+        List<ItemTagDto> itemTags = List.of(new ItemTagDto(
                 null,
                 UUID.fromString("7eb0db46-b72e-4db0-9955-05bb91275951"),
                 compId,
@@ -164,7 +165,7 @@ class ItemTagRepositoryIT {
     @Test
     void bulkStoreUpdateItemTagExistError() {
 
-        ItemTag itemTag = copyItemTag(
+        ItemTagDto itemTag = copyItemTag(
                 UUID.fromString("7eb0db46-b72e-4db0-9955-05bb91275951"),
                 newItemTag(ehrId, compId, COMPOSITION, "update:comp:not_exist:1"),
                 null);
@@ -175,7 +176,7 @@ class ItemTagRepositoryIT {
 
     // --- findForLatestTargetVersion ---
 
-    private Collection<ItemTag> findForLatestTargetVersion(
+    private Collection<ItemTagDto> findForLatestTargetVersion(
             UUID target, ItemTagRMType type, Collection<UUID> ids, Collection<String> keys) {
         return itemTagRepository.findForLatestTargetVersion(ehrId, target, type, ids, keys);
     }
@@ -201,30 +202,30 @@ class ItemTagRepositoryIT {
                         .size(),
                 "There should be not match for non existing EHR");
 
-        List<ItemTag> compIdMatch = findForLatestTargetVersion(compId, COMPOSITION, List.of(), List.of()).stream()
+        List<ItemTagDto> compIdMatch = findForLatestTargetVersion(compId, COMPOSITION, List.of(), List.of()).stream()
                 .toList();
         assertEquals(2, compIdMatch.size());
-        assertEquals(insertIds.get(0), compIdMatch.get(0).id());
-        assertEquals(insertIds.get(1), compIdMatch.get(1).id());
+        assertEquals(insertIds.get(0), compIdMatch.get(0).getId());
+        assertEquals(insertIds.get(1), compIdMatch.get(1).getId());
 
-        List<ItemTag> compTagIdMatch =
+        List<ItemTagDto> compTagIdMatch =
                 findForLatestTargetVersion(compId, COMPOSITION, List.of(), List.of("find:composition:tag")).stream()
                         .toList();
         assertEquals(1, compTagIdMatch.size());
-        assertEquals(insertIds.get(0), compIdMatch.getFirst().id());
+        assertEquals(insertIds.get(0), compIdMatch.getFirst().getId());
 
-        List<ItemTag> compTagIdIdMatch =
+        List<ItemTagDto> compTagIdIdMatch =
                 findForLatestTargetVersion(compId, COMPOSITION, List.of(insertIds.get(1)), List.of()).stream()
                         .toList();
         assertEquals(1, compTagIdIdMatch.size());
-        assertEquals(insertIds.get(1), compIdMatch.get(1).id());
+        assertEquals(insertIds.get(1), compIdMatch.get(1).getId());
 
-        List<ItemTag> ehrStatusMatch =
+        List<ItemTagDto> ehrStatusMatch =
                 findForLatestTargetVersion(ehrStatusId, EHR_STATUS, List.of(), List.of()).stream()
                         .toList();
         assertEquals(2, ehrStatusMatch.size());
-        assertEquals(insertIds.get(3), ehrStatusMatch.get(0).id());
-        assertEquals(insertIds.get(4), ehrStatusMatch.get(1).id());
+        assertEquals(insertIds.get(3), ehrStatusMatch.get(0).getId());
+        assertEquals(insertIds.get(4), ehrStatusMatch.get(1).getId());
     }
 
     // --- bulkDelete ---
@@ -274,7 +275,7 @@ class ItemTagRepositoryIT {
     void adminDelete(String type, String id) {
 
         UUID targetId = UUID.fromString(id);
-        ItemTagRMType tagType = ItemTagRMType.valueOf(type);
+        ItemTagRMType tagType = org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.valueOf(type);
 
         Collection<UUID> insertIds = bulkStore(
                 newItemTag(ehrId, targetId, tagType, "some:%s:tag".formatted(type.toLowerCase())),

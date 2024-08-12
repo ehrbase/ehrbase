@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 
 /**
  * Service manages the <a href="https://specifications.openehr.org/releases/RM/latest/common.html#tags">ITEM_TAG</a>
@@ -43,7 +44,7 @@ public interface ItemTagService {
     Collection<UUID> bulkUpsert(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetId,
-            @Nonnull ItemTag.ItemTagRMType targetType,
+            @Nonnull ItemTagRMType targetType,
             @Nonnull Collection<ItemTagDto> itemTagsDto);
 
     /**
@@ -60,7 +61,7 @@ public interface ItemTagService {
     Collection<ItemTagDto> findItemTag(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetId,
-            @Nonnull ItemTag.ItemTagRMType targetType,
+            @Nonnull ItemTagRMType targetType,
             @Nonnull Collection<UUID> ids,
             @Nonnull Collection<String> keys);
 
@@ -76,6 +77,6 @@ public interface ItemTagService {
     void bulkDelete(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetId,
-            @Nonnull ItemTag.ItemTagRMType targetType,
+            @Nonnull ItemTagRMType targetType,
             @Nonnull Collection<UUID> ids);
 }

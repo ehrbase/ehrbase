@@ -38,9 +38,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.api.service.experimental.ItemTag;
 import org.ehrbase.api.service.experimental.ItemTagService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +52,6 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 
@@ -68,7 +67,7 @@ class ItemTagControllerTest {
         return spyController;
     }
 
-    private ItemTagDto itemTagDto(ItemTag.ItemTagRMType type, String targetId) {
+    private ItemTagDto itemTagDto(ItemTagRMType type, String targetId) {
         return new ItemTagDto(
                 UUID.randomUUID(),
                 UUID.fromString(SAMPLE_EHR_ID),
@@ -100,15 +99,15 @@ class ItemTagControllerTest {
     void upsertItemTagsCommonUsed() {
 
         String targetId = "1073d3bd-1490-4f3b-b2ac-95202d18c41d";
-        ItemTagDto tag = itemTagDto(ItemTag.ItemTagRMType.COMPOSITION, targetId);
+        ItemTagDto tag = itemTagDto(ItemTagDto.ItemTagRMType.COMPOSITION, targetId);
 
         // @format:off
         ItemTagController controller = controller();
-        controller.upsertCompositionItemTags(null, null, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE, null, SAMPLE_EHR_ID, targetId, List.of(tag));
-        controller.upsertEhrStatusItemTags(null, null, MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_XML_VALUE, null, SAMPLE_EHR_ID, targetId, List.of(tag));
+        controller.upsertCompositionItemTags(null, null, null, SAMPLE_EHR_ID, targetId, List.of(tag));
+        controller.upsertEhrStatusItemTags(null, null, null, SAMPLE_EHR_ID, targetId, List.of(tag));
 
-        verify(controller, times(1)).upsertItemTags(MediaType.APPLICATION_JSON_VALUE, null, SAMPLE_EHR_ID, targetId, ItemTag.ItemTagRMType.COMPOSITION, "composition", List.of(tag));
-        verify(controller, times(1)).upsertItemTags(MediaType.APPLICATION_XML_VALUE, null, SAMPLE_EHR_ID, targetId, ItemTag.ItemTagRMType.EHR_STATUS, "ehr_status", List.of(tag));
+        verify(controller, times(1)).upsertItemTags(null, SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.COMPOSITION, "composition", List.of(tag));
+        verify(controller, times(1)).upsertItemTags(null, SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.EHR_STATUS, "ehr_status", List.of(tag));
         // @format:on
     }
 
@@ -118,11 +117,10 @@ class ItemTagControllerTest {
         UnprocessableEntityException exception =
                 assertThrowsExactly(UnprocessableEntityException.class, () -> controller()
                         .upsertItemTags(
-                                MediaType.APPLICATION_JSON_VALUE,
                                 null,
                                 SAMPLE_EHR_ID,
                                 "21bfba85-aaa6-4190-b6dd-4968cb84b549",
-                                ItemTag.ItemTagRMType.EHR_STATUS,
+                                ItemTagDto.ItemTagRMType.EHR_STATUS,
                                 "ehr_status",
                                 List.of()));
         assertEquals("ItemTags are empty", exception.getMessage());
@@ -138,11 +136,11 @@ class ItemTagControllerTest {
             delimiterString = "|")
     void upsertItemTagsPreferMinimal(String type, String accept, String prefer, String targetId) {
 
-        ItemTagDto tag = itemTagDto(ItemTag.ItemTagRMType.valueOf(type), targetId);
+        ItemTagDto tag = itemTagDto(ItemTagDto.ItemTagRMType.valueOf(type), targetId);
         List<Object> tags = runUpsertItemTagsBaseTest(type, accept, prefer, targetId, tag);
 
         assertEquals(1, tags.size());
-        assertEquals(tag.id(), tags.getFirst());
+        assertEquals(tag.getId(), tags.getFirst());
     }
 
     @ParameterizedTest
@@ -155,7 +153,7 @@ class ItemTagControllerTest {
             delimiterString = "|")
     void upsertItemTagsPreferRepresentation(String type, String accept, String targetId) {
 
-        ItemTagDto tag = itemTagDto(ItemTag.ItemTagRMType.valueOf(type), targetId);
+        ItemTagDto tag = itemTagDto(ItemTagDto.ItemTagRMType.valueOf(type), targetId);
         List<Object> tags = runUpsertItemTagsBaseTest(type, accept, "return=representation", targetId, tag);
 
         assertEquals(1, tags.size());
@@ -168,18 +166,17 @@ class ItemTagControllerTest {
 
         List<ItemTagDto> tags = Arrays.stream(tagList).toList();
 
-        doReturn(tags.stream().map(ItemTagDto::id).toList())
+        doReturn(tags.stream().map(ItemTagDto::getId).toList())
                 .when(mockItemTagService)
                 .bulkUpsert(any(), any(), any(), any());
         doReturn(tags).when(mockItemTagService).findItemTag(any(), any(), any(), any(), any());
 
         ResponseEntity<Object> response = controller()
                 .upsertItemTags(
-                        accept,
                         prefer,
                         SAMPLE_EHR_ID,
                         targetId,
-                        ItemTag.ItemTagRMType.valueOf(type),
+                        ItemTagDto.ItemTagRMType.valueOf(type),
                         type.toLowerCase(),
                         tags);
 
@@ -197,14 +194,10 @@ class ItemTagControllerTest {
     // --- GET ---
 
     private ResponseEntity<Collection<ItemTagDto>> getItemTags(
-            String accept,
-            String targetId,
-            ItemTag.ItemTagRMType type,
-            @Nullable List<String> ids,
-            @Nullable List<String> keys) {
+            String targetId, ItemTagRMType type, @Nullable List<String> ids, @Nullable List<String> keys) {
 
         return controller()
-                .getItemTag(accept, SAMPLE_EHR_ID, targetId, type, type.name().toLowerCase(), ids, keys);
+                .getItemTag(SAMPLE_EHR_ID, targetId, type, type.name().toLowerCase(), ids, keys);
     }
 
     @Test
@@ -214,11 +207,11 @@ class ItemTagControllerTest {
 
         // @format:off
         ItemTagController controller = controller();
-        controller.getCompositionItemTags(null, null, MediaType.APPLICATION_JSON_VALUE, SAMPLE_EHR_ID, targetId, List.of(), List.of());
-        controller.getEhrStatusItemTags(null, null, MediaType.APPLICATION_XML_VALUE, SAMPLE_EHR_ID, targetId, List.of(), List.of());
+        controller.getCompositionItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(), List.of());
+        controller.getEhrStatusItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(), List.of());
 
-        verify(controller, times(1)).getItemTag(MediaType.APPLICATION_JSON_VALUE, SAMPLE_EHR_ID, targetId, ItemTag.ItemTagRMType.COMPOSITION, "composition", List.of(), List.of());
-        verify(controller, times(1)).getItemTag(MediaType.APPLICATION_XML_VALUE, SAMPLE_EHR_ID, targetId, ItemTag.ItemTagRMType.EHR_STATUS, "ehr_status", List.of(), List.of());
+        verify(controller, times(1)).getItemTag(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.COMPOSITION, "composition", List.of(), List.of());
+        verify(controller, times(1)).getItemTag(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.EHR_STATUS, "ehr_status", List.of(), List.of());
         // @format:on
     }
 
@@ -232,17 +225,15 @@ class ItemTagControllerTest {
         assertThrowsExactly(
                 ObjectNotFoundException.class,
                 () -> getItemTags(
-                        MediaType.APPLICATION_JSON_VALUE,
                         "4074c093-64c5-4511-a10f-813f78a5e1fc",
-                        ItemTag.ItemTagRMType.EHR_STATUS,
+                        ItemTagDto.ItemTagRMType.EHR_STATUS,
                         List.of(),
                         List.of()));
         assertThrowsExactly(
                 ObjectNotFoundException.class,
                 () -> getItemTags(
-                        MediaType.APPLICATION_XML_VALUE,
                         "4074c093-64c5-4511-a10f-813f78a5e1fc",
-                        ItemTag.ItemTagRMType.COMPOSITION,
+                        ItemTagDto.ItemTagRMType.COMPOSITION,
                         List.of(),
                         List.of()));
     }
@@ -257,10 +248,10 @@ class ItemTagControllerTest {
                 COMPOSITION|application/json|6f0eec75-e547-4fc1-ada1-ab872456e000|2::key
             """,
             delimiterString = "|")
-    void getItemTags(String rawType, String accept, String rawIds, String rawKeys) {
+    void getItemTags(String rawType, String rawIds, String rawKeys) {
 
         String targetId = "c143d292-fb07-41f4-8715-ff88f11240d4";
-        ItemTag.ItemTagRMType type = ItemTag.ItemTagRMType.valueOf(rawType);
+        ItemTagRMType type = ItemTagDto.ItemTagRMType.valueOf(rawType);
         List<String> keys = Optional.ofNullable(rawKeys)
                 .map(it -> Arrays.stream(it.split(",")).toList())
                 .orElse(List.of());
@@ -278,7 +269,7 @@ class ItemTagControllerTest {
                         ids.stream().map(UUID::fromString).toList(),
                         keys);
 
-        ResponseEntity<Collection<ItemTagDto>> response = getItemTags(accept, targetId, type, ids, keys);
+        ResponseEntity<Collection<ItemTagDto>> response = getItemTags(targetId, type, ids, keys);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(
@@ -302,11 +293,11 @@ class ItemTagControllerTest {
 
         // @format:off
         ItemTagController controller = controller();
-        controller.deleteCompositionItemTags(null, null, MediaType.APPLICATION_JSON_VALUE, SAMPLE_EHR_ID, targetId, List.of(id));
-        controller.deleteEhrStatusItemTags(null, null, MediaType.APPLICATION_XML_VALUE, SAMPLE_EHR_ID, targetId, List.of(id));
+        controller.deleteCompositionItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(id));
+        controller.deleteEhrStatusItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(id));
 
-        verify(controller, times(1)).deleteTags(SAMPLE_EHR_ID, targetId, ItemTag.ItemTagRMType.COMPOSITION, List.of(id));
-        verify(controller, times(1)).deleteTags(SAMPLE_EHR_ID, targetId, ItemTag.ItemTagRMType.EHR_STATUS, List.of(id));
+        verify(controller, times(1)).deleteTags(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.COMPOSITION, List.of(id));
+        verify(controller, times(1)).deleteTags(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.EHR_STATUS, List.of(id));
         // @format:on
     }
 
@@ -318,14 +309,14 @@ class ItemTagControllerTest {
                         .deleteTags(
                                 SAMPLE_EHR_ID,
                                 "a377d88c-3374-4cea-8149-697b7837de17",
-                                ItemTag.ItemTagRMType.EHR_STATUS,
+                                ItemTagDto.ItemTagRMType.EHR_STATUS,
                                 List.of()));
         assertEquals("ItemTags are empty", exception.getMessage());
     }
 
     @ParameterizedTest
-    @EnumSource(ItemTag.ItemTagRMType.class)
-    void deleteItemTagsByIDs(ItemTag.ItemTagRMType type) {
+    @EnumSource(ItemTagRMType.class)
+    void deleteItemTagsByIDs(ItemTagRMType type) {
 
         String id = "95c1b874-be9e-47d7-97a7-0a647e03e0a6";
         String targetId = "a377d88c-3374-4cea-8149-697b7837de17";
@@ -341,8 +332,8 @@ class ItemTagControllerTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ItemTag.ItemTagRMType.class)
-    void deleteItemTagsByDto(ItemTag.ItemTagRMType type) {
+    @EnumSource(ItemTagRMType.class)
+    void deleteItemTagsByDto(ItemTagRMType type) {
 
         String targetId = "a377d88c-3374-4cea-8149-697b7837de17";
         ItemTagDto tagDto = itemTagDto(type, targetId);
@@ -352,7 +343,8 @@ class ItemTagControllerTest {
                         SAMPLE_EHR_ID,
                         targetId,
                         type,
-                        List.of(Map.of("id", Objects.requireNonNull(tagDto.id()).toString())));
+                        List.of(Map.of(
+                                "id", Objects.requireNonNull(tagDto.getId()).toString())));
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         assertNull(response.getBody());
@@ -362,6 +354,6 @@ class ItemTagControllerTest {
                         UUID.fromString(SAMPLE_EHR_ID),
                         UUID.fromString(targetId),
                         type,
-                        List.of(Objects.requireNonNull(tagDto.id())));
+                        List.of(Objects.requireNonNull(tagDto.getId())));
     }
 }

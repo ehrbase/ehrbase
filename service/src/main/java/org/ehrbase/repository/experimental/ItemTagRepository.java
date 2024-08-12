@@ -27,11 +27,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.ehrbase.api.dto.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.service.experimental.ItemTag;
 import org.ehrbase.jooq.pg.enums.EhrItemTagTargetType;
 import org.ehrbase.jooq.pg.tables.records.EhrItemTagRecord;
-import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
 import org.ehrbase.repository.RepositoryHelper;
 import org.ehrbase.service.TimeProvider;
 import org.ehrbase.util.UuidGenerator;
@@ -60,23 +60,23 @@ public class ItemTagRepository {
     }
 
     /**
-     * Stores the given @{@link ItemTag}s by performing an <code>Insert</code> for tags without an {@link ItemTag#id()}
-     * or <code>Update</code> with existence check for tags with an {@link ItemTag#id()}
+     * Stores the given @{@link ItemTagDto}s by performing an <code>Insert</code> for tags without an {@link ItemTagDto#getId()}
+     * or <code>Update</code> with existence check for tags with an {@link ItemTagDto#getId()}
      *
-     * @param itemTags  @{@link ItemTag}s store using <code>Insert</code> or <code>Update</code>.
-     * @return tagIDs   Sored {@link ItemTag#id()}s.
+     * @param itemTags  @{@link ItemTagDto}s store using <code>Insert</code> or <code>Update</code>.
+     * @return tagIDs   Sored {@link ItemTagDto#getId()}s.
      */
     @Transactional
-    public Collection<UUID> bulkStore(@NonNull Collection<ItemTag> itemTags) {
+    public Collection<UUID> bulkStore(@NonNull Collection<ItemTagDto> itemTags) {
 
         List<EhrItemTagRecord> newTags = itemTags.stream()
-                .filter(tag -> tag.id() == null)
+                .filter(tag -> tag.getId() == null)
                 .map(this::createInsertTagAsRecord)
                 .toList();
 
-        Map<UUID, ItemTag> existingTagsById = itemTags.stream()
-                .filter(tag -> tag.id() != null)
-                .map(tag -> new AbstractMap.SimpleImmutableEntry<>(tag.id(), tag))
+        Map<UUID, ItemTagDto> existingTagsById = itemTags.stream()
+                .filter(tag -> tag.getId() != null)
+                .map(tag -> new AbstractMap.SimpleImmutableEntry<>(tag.getId(), tag))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         if (newTags.isEmpty() && existingTagsById.isEmpty()) {
@@ -94,7 +94,7 @@ public class ItemTagRepository {
 
         if (!existingTagsById.isEmpty()) {
             throw new ObjectNotFoundException(
-                    ItemTag.class.getSimpleName(),
+                    ItemTagDto.class.getSimpleName(),
                     "ItemTag(s) with ID(s) %s does not exist".formatted(existingTagsById.keySet()));
         }
 
@@ -102,7 +102,7 @@ public class ItemTagRepository {
     }
 
     /**
-     * Search @{@link ItemTag}s of <code>ownerId</code>, for the latest version of the given <code>targetVoId</code>
+     * Search @{@link ItemTagDto}s of <code>ownerId</code>, for the latest version of the given <code>targetVoId</code>
      * by applying the optional filter for <code>ids, keys</code>.
      *
      * @param ownerId       Identifier of owner object, such as EHR.
@@ -113,10 +113,10 @@ public class ItemTagRepository {
      * @return itemTgs      <code>ItemTag</code> .
      */
     @Transactional
-    public Collection<ItemTag> findForLatestTargetVersion(
+    public Collection<ItemTagDto> findForLatestTargetVersion(
             @NonNull UUID ownerId,
             @NonNull UUID targetVoId,
-            @NonNull ItemTag.ItemTagRMType targetType,
+            @NonNull ItemTagRMType targetType,
             @NonNull Collection<UUID> ids,
             @NonNull Collection<String> keys) {
 
@@ -136,7 +136,7 @@ public class ItemTagRepository {
     }
 
     /**
-     * Bulk delete @{@link ItemTag}s with the given <code>ids</code>.
+     * Bulk delete @{@link ItemTagDto}s with the given <code>ids</code>.
      *
      * @param ids  Identifier of <code>ItemTag</code> to delete.
      */
@@ -144,7 +144,7 @@ public class ItemTagRepository {
     public void bulkDelete(
             @NonNull UUID ownerId,
             @NonNull UUID targetVoId,
-            @NonNull ItemTag.ItemTagRMType targetType,
+            @NonNull ItemTagRMType targetType,
             @NonNull Collection<UUID> ids) {
 
         if (ids.isEmpty()) {
@@ -196,7 +196,7 @@ public class ItemTagRepository {
         return records.stream().map(EhrItemTagRecord::getId);
     }
 
-    private EhrItemTagRecord createInsertTagAsRecord(ItemTag itemTag) {
+    private EhrItemTagRecord createInsertTagAsRecord(ItemTagDto itemTag) {
 
         EhrItemTagRecord itemTagRecord = context.newRecord(EHR_ITEM_TAG);
         mapItemTag(itemTag, itemTagRecord);
@@ -205,43 +205,40 @@ public class ItemTagRepository {
     }
 
     private EhrItemTagRecord mapExistingTagAsRecord(
-            Map<UUID, ItemTag> existingTagsById, Record1<EhrItemTagRecord> dbRecord) {
+            Map<UUID, ItemTagDto> existingTagsById, Record1<EhrItemTagRecord> dbRecord) {
         EhrItemTagRecord itemTagRecord = dbRecord.component1();
-        ItemTag itemTag = existingTagsById.remove(itemTagRecord.getId());
+        ItemTagDto itemTag = existingTagsById.remove(itemTagRecord.getId());
         mapItemTag(itemTag, itemTagRecord);
         return itemTagRecord;
     }
 
-    private void mapItemTag(ItemTag itemTag, EhrItemTagRecord itemTagRecord) {
-        itemTagRecord.setId(Optional.ofNullable(itemTag.id()).orElseGet(UuidGenerator::randomUUID));
-        itemTagRecord.setEhrId(itemTag.ownerId());
-        itemTagRecord.setTargetVoId(itemTag.target());
-        itemTagRecord.setTargetType(itemTargetTypeToEnum(itemTag.targetType()));
-        itemTagRecord.setKey(itemTag.key());
-        itemTagRecord.setValue(itemTag.value());
-        itemTagRecord.setTargetPath(
-                Optional.ofNullable(itemTag.targetPath()).map(AqlPath::getPath).orElse(null));
+    private void mapItemTag(ItemTagDto itemTag, EhrItemTagRecord itemTagRecord) {
+        itemTagRecord.setId(Optional.ofNullable(itemTag.getId()).orElseGet(UuidGenerator::randomUUID));
+        itemTagRecord.setEhrId(itemTag.getOwnerId());
+        itemTagRecord.setTargetVoId(itemTag.getTarget());
+        itemTagRecord.setTargetType(itemTargetTypeToEnum(itemTag.getTargetType()));
+        itemTagRecord.setKey(itemTag.getKey());
+        itemTagRecord.setValue(itemTag.getValue());
+        itemTagRecord.setTargetPath(itemTag.getTargetPath());
         itemTagRecord.setSysPeriodLower(timeProvider.getNow());
     }
 
-    private static ItemTag recordAsItemTag(Record1<EhrItemTagRecord> dbRecord) {
+    private static ItemTagDto recordAsItemTag(Record1<EhrItemTagRecord> dbRecord) {
         EhrItemTagRecord itemTagRecord = dbRecord.component1();
-        return new ItemTag(
+        return new ItemTagDto(
                 itemTagRecord.getId(),
                 itemTagRecord.getEhrId(),
                 itemTagRecord.getTargetVoId(),
                 switch (itemTagRecord.getTargetType()) {
-                    case ehr_status -> ItemTag.ItemTagRMType.EHR_STATUS;
-                    case composition -> ItemTag.ItemTagRMType.COMPOSITION;
+                    case ehr_status -> org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.EHR_STATUS;
+                    case composition -> org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.COMPOSITION;
                 },
-                Optional.ofNullable(itemTagRecord.getTargetPath())
-                        .map(AqlPath::parse)
-                        .orElse(null),
+                itemTagRecord.getTargetPath(),
                 itemTagRecord.getKey(),
                 itemTagRecord.getValue());
     }
 
-    private static EhrItemTagTargetType itemTargetTypeToEnum(ItemTag.ItemTagRMType type) {
+    private static EhrItemTagTargetType itemTargetTypeToEnum(ItemTagRMType type) {
         return switch (type) {
             case EHR_STATUS -> EhrItemTagTargetType.ehr_status;
             case COMPOSITION -> EhrItemTagTargetType.composition;

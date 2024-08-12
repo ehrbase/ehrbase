@@ -21,16 +21,20 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.api.service.experimental.ItemTag;
 import org.ehrbase.api.service.experimental.ItemTagService;
-import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
+import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
+import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.springframework.stereotype.Service;
 
@@ -52,23 +56,18 @@ public class ItemTagServiceImpl implements ItemTagService {
     public Collection<UUID> bulkUpsert(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetId,
-            @Nonnull ItemTag.ItemTagRMType targetType,
-            @Nonnull Collection<ItemTagDto> itemTagsDto) {
+            @Nonnull ItemTagRMType targetType,
+            @Nonnull Collection<ItemTagDto> itemTags) {
 
-        if (itemTagsDto.isEmpty()) {
+        if (itemTags.isEmpty()) {
             return List.of();
         }
-
-        // Sanity check that tags matching the targetType
-        checkTags(itemTagsDto, targetType);
 
         // sanity check for existing EHR version
         ehrService.checkEhrExists(ownerId);
 
         // validate and collect errors
-        List<ItemTag> itemTags = itemTagsDto.stream()
-                .map(dto -> itemTagFromDto(ownerId, targetId, targetType, dto))
-                .toList();
+        itemTags.forEach(dto -> fillAndValidateDto(dto, ownerId, targetId, targetType));
 
         return itemTagRepository.bulkStore(itemTags);
     }
@@ -77,7 +76,7 @@ public class ItemTagServiceImpl implements ItemTagService {
     public Collection<ItemTagDto> findItemTag(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetVoId,
-            @Nonnull ItemTag.ItemTagRMType targetType,
+            @Nonnull ItemTagRMType targetType,
             @Nonnull Collection<UUID> ids,
             @Nonnull Collection<String> keys) {
 
@@ -85,7 +84,7 @@ public class ItemTagServiceImpl implements ItemTagService {
         ehrService.checkEhrExists(ownerId);
 
         return itemTagRepository.findForLatestTargetVersion(ownerId, targetVoId, targetType, ids, keys).stream()
-                .map(ItemTagServiceImpl::itemTagToDto)
+                .map(itemTag -> itemTag)
                 .toList();
     }
 
@@ -93,7 +92,7 @@ public class ItemTagServiceImpl implements ItemTagService {
     public void bulkDelete(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetVoId,
-            @Nonnull ItemTag.ItemTagRMType targetType,
+            @Nonnull ItemTagRMType targetType,
             @Nonnull Collection<UUID> ids) {
 
         if (ids.isEmpty()) {
@@ -106,26 +105,27 @@ public class ItemTagServiceImpl implements ItemTagService {
         itemTagRepository.bulkDelete(ownerId, targetVoId, targetType, ids);
     }
 
-    private static ItemTag itemTagFromDto(
-            UUID ownerId, UUID targetVoId, ItemTag.ItemTagRMType targetType, ItemTagDto dto) {
+    private static void fillAndValidateDto(ItemTagDto dto, UUID ownerId, UUID targetVoId, ItemTagRMType targetType) {
 
-        final String key = dto.key();
-        final String value = dto.value();
-        final String targetPath = dto.targetPath();
+        final String key = dto.getKey();
+        final String value = dto.getValue();
+        final String targetPath = dto.getTargetPath();
 
         // Changing the owner is not supported - we keep the EHR for the tag
-        if (dto.ownerId() != null && !Objects.equals(dto.ownerId(), ownerId)) {
+        if (dto.getOwnerId() != null && ObjectUtils.notEqual(dto.getOwnerId(), ownerId)) {
             throw new UnprocessableEntityException(
-                    "Can not change owner of ItemTag '%s' from %s to %s".formatted(key, dto.ownerId(), ownerId));
+                    "Owner mismatch for ItemTag '%s': %s vs. %s".formatted(key, dto.getOwnerId(), ownerId));
         }
 
         // tag validation
         validateTagKey(key);
         validateTagValue(key, value);
-        AqlPath path = validateTargetPath(key, targetPath);
+        validateTargetPath(key, targetPath);
+        validateTargetType(dto, targetType);
 
-        // target path not empty
-        return new ItemTag(dto.id(), ownerId, targetVoId, targetType, path, key, value);
+        dto.setOwnerId(ownerId);
+        dto.setTarget(targetVoId);
+        dto.setTargetType(targetType);
     }
 
     /**
@@ -143,8 +143,8 @@ public class ItemTagServiceImpl implements ItemTagService {
     @VisibleForTesting
     static void validateTagKey(String key) {
         // validate given properties
-        if (key == null || key.isEmpty() || key.isBlank()) {
-            throw new UnprocessableEntityException("ItemTag must have a key that can not be empty or blank");
+        if (StringUtils.isBlank(key)) {
+            throw new UnprocessableEntityException("ItemTag must have a key that must not be blank");
         }
         if (!key.matches("^[a-zA-Z0-9/\\-_:]*$")) {
             throw new UnprocessableEntityException(
@@ -158,8 +158,8 @@ public class ItemTagServiceImpl implements ItemTagService {
      */
     @VisibleForTesting
     static void validateTagValue(String key, String value) {
-        if (value != null && (value.isEmpty() || value.isBlank())) {
-            throw new UnprocessableEntityException("ItemTag '%s' value can not be empty or blank".formatted(key));
+        if (StringUtils.isBlank(value) && value != null) {
+            throw new UnprocessableEntityException("ItemTag '%s' value must not be blank".formatted(key));
         }
     }
 
@@ -178,10 +178,10 @@ public class ItemTagServiceImpl implements ItemTagService {
      * </p>
      */
     @VisibleForTesting
-    static AqlPath validateTargetPath(String key, String targetPath) {
+    static void validateTargetPath(String key, String targetPath) {
 
         if (targetPath == null) {
-            return null;
+            return;
         }
 
         if (targetPath.contains("|")) {
@@ -194,45 +194,32 @@ public class ItemTagServiceImpl implements ItemTagService {
                     "ItemTag '%s' target_path '%s' does not start at root".formatted(key, targetPath));
         }
 
-        AqlPath path = AqlPath.parse(targetPath);
-        path.getNodes().forEach(node -> {
-            if (node.getName().contains(" ")) {
+        AqlObjectPath path = AqlObjectPath.parse(targetPath);
+        path.getPathNodes().forEach(node -> {
+            if (node.getPredicateOrOperands().size() > 1) {
                 throw new UnprocessableEntityException(
-                        "ItemTag '%s' target_path '%s' can not contain blank lines".formatted(key, targetPath));
+                        "ItemTag '%s' target_path '%s': OR predicates are not supported".formatted(key, targetPath));
             }
-
-            node.getOtherPredicate().getValues().forEach(value -> {
-                if (!value.getStatement().equals("archetype_node_id")) {
-                    throw new UnprocessableEntityException(
-                            "ItemTag '%s' target_path '%s' additional AND or OR predicates are not supported"
-                                    .formatted(key, targetPath));
-                }
-            });
+            node.getPredicateOrOperands().stream()
+                    .map(AndOperatorPredicate::getOperands)
+                    .flatMap(Collection::stream)
+                    .map(ComparisonOperatorPredicate::getPath)
+                    .filter(p ->
+                            !AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p) && !AqlObjectPathUtil.NAME_VALUE.equals(p))
+                    .findFirst()
+                    .ifPresent(__ -> {
+                        throw new UnprocessableEntityException(
+                                "ItemTag '%s' target_path '%s': only predicates on archetype_node_id and name/value are supported"
+                                        .formatted(key, targetPath));
+                    });
         });
-        return path;
     }
 
-    private static ItemTagDto itemTagToDto(ItemTag itemTag) {
-        return new ItemTagDto(
-                itemTag.id(),
-                itemTag.ownerId(),
-                itemTag.target(),
-                itemTag.targetType(),
-                Optional.ofNullable(itemTag.targetPath()).map(AqlPath::getPath).orElse(null),
-                itemTag.key(),
-                itemTag.value());
-    }
-
-    private static void checkTags(Collection<ItemTagDto> itemTagsDto, ItemTag.ItemTagRMType targetType) {
-
-        List<ItemTag.ItemTagRMType> tagsWithInvalidTarget = itemTagsDto.stream()
-                .map(ItemTagDto::targetType)
-                .filter(t -> t != null && !Objects.equals(t, targetType))
-                .distinct()
-                .toList();
-        if (!tagsWithInvalidTarget.isEmpty()) {
-            throw new ValidationException(
-                    "Tag target_types %s not matching %s".formatted(tagsWithInvalidTarget, targetType.name()));
+    private static void validateTargetType(ItemTagDto itemTag, ItemTagRMType targetType) {
+        ItemTagRMType tagType = itemTag.getTargetType();
+        if (tagType != null && !Objects.equals(tagType, targetType)) {
+            throw new ValidationException("target_type does not match %s".formatted(targetType.name()));
         }
+        ;
     }
 }

@@ -26,14 +26,13 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.api.service.experimental.ItemTag;
 import org.ehrbase.api.service.experimental.ItemTagService;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.experimental.ItemTagApiSpecification;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(
         path = "${ehrbase.rest.experimental.tags.context-path:/rest/experimental/tags}/ehr",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+        produces = {MediaType.APPLICATION_JSON_VALUE})
 @ConditionalOnProperty(name = "ehrbase.rest.experimental.tags.enabled", havingValue = "true")
 public class ItemTagController extends BaseController implements ItemTagApiSpecification {
 
@@ -70,26 +69,18 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
 
     @PutMapping(
             value = "/{ehr_id}/ehr_status/{versioned_object_uid}/item_tag",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+            consumes = {MediaType.APPLICATION_JSON_VALUE})
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<Object> upsertEhrStatusItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.CONTENT_TYPE) String contentType,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestBody Collection<ItemTagDto> itemTags) {
 
         return upsertItemTags(
-                accept,
-                prefer,
-                ehrIdString,
-                versionedObjectUid,
-                ItemTag.ItemTagRMType.EHR_STATUS,
-                EHR_STATUS,
-                itemTags);
+                prefer, ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.EHR_STATUS, EHR_STATUS, itemTags);
     }
 
     @GetMapping(value = "/{ehr_id}/ehr_status/{versioned_object_uid}/item_tag")
@@ -97,14 +88,12 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     public ResponseEntity<Collection<ItemTagDto>> getEhrStatusItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestParam(value = "ids", required = false) List<String> ids,
             @RequestParam(value = "keys", required = false) List<String> keys) {
 
-        return getItemTag(
-                accept, ehrIdString, versionedObjectUid, ItemTag.ItemTagRMType.EHR_STATUS, EHR_STATUS, ids, keys);
+        return getItemTag(ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.EHR_STATUS, EHR_STATUS, ids, keys);
     }
 
     @DeleteMapping(value = "/{ehr_id}/ehr_status/{versioned_object_uid}/item_tag")
@@ -112,38 +101,29 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     public ResponseEntity<Void> deleteEhrStatusItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.CONTENT_TYPE) String contentType,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestBody List<Object> itemTagsOrUUIDs) {
 
-        return deleteTags(ehrIdString, versionedObjectUid, ItemTag.ItemTagRMType.EHR_STATUS, itemTagsOrUUIDs);
+        return deleteTags(ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.EHR_STATUS, itemTagsOrUUIDs);
     }
 
     // --- COMPOSITION ---
 
     @PutMapping(
             value = "/{ehr_id}/composition/{versioned_object_uid}/item_tag",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+            consumes = {MediaType.APPLICATION_JSON_VALUE})
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<Object> upsertCompositionItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.CONTENT_TYPE) String contentType,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestBody Collection<ItemTagDto> itemTags) {
 
         return upsertItemTags(
-                accept,
-                prefer,
-                ehrIdString,
-                versionedObjectUid,
-                ItemTag.ItemTagRMType.COMPOSITION,
-                COMPOSITION,
-                itemTags);
+                prefer, ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.COMPOSITION, COMPOSITION, itemTags);
     }
 
     @GetMapping(value = "/{ehr_id}/composition/{versioned_object_uid}/item_tag")
@@ -151,14 +131,13 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     public ResponseEntity<Collection<ItemTagDto>> getCompositionItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestParam(value = "ids", required = false) List<String> ids,
             @RequestParam(value = "keys", required = false) List<String> keys) {
 
         return getItemTag(
-                accept, ehrIdString, versionedObjectUid, ItemTag.ItemTagRMType.COMPOSITION, COMPOSITION, ids, keys);
+                ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.COMPOSITION, COMPOSITION, ids, keys);
     }
 
     @DeleteMapping(value = "/{ehr_id}/composition/{versioned_object_uid}/item_tag")
@@ -166,32 +145,27 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     public ResponseEntity<Void> deleteCompositionItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.CONTENT_TYPE) String contentType,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestBody List<Object> itemTagsOrUUIDs) {
 
-        return deleteTags(ehrIdString, versionedObjectUid, ItemTag.ItemTagRMType.COMPOSITION, itemTagsOrUUIDs);
+        return deleteTags(ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.COMPOSITION, itemTagsOrUUIDs);
     }
 
     // --- Common Implementation
 
     @VisibleForTesting
     ResponseEntity<Object> upsertItemTags(
-            String accept,
             String prefer,
             String ehrIdString,
             String versionedObjectUid,
-            ItemTag.ItemTagRMType itemTagType,
+            ItemTagRMType itemTagType,
             String locationPart,
             Collection<ItemTagDto> itemTags) {
 
         // obtain path parameter
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID compositionUid = extractVersionedObjectUidFromVersionUid(versionedObjectUid);
-
-        // Obtain header parameter
-        MediaType mediaType = resolveContentType(accept);
 
         // sanity check for input
         if (itemTags.isEmpty()) {
@@ -202,8 +176,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
         Collection<UUID> tagIds = itemTagService.bulkUpsert(ehrId, compositionUid, itemTagType, itemTags);
 
         URI uri = createLocationUri(EHR, ehrId.toString(), locationPart, versionedObjectUid, "item_tag");
-        ResponseEntity.BodyBuilder bodyBuilder =
-                ResponseEntity.ok().contentType(mediaType).location(uri);
+        ResponseEntity.BodyBuilder bodyBuilder = ResponseEntity.ok().location(uri);
 
         if (RETURN_REPRESENTATION.equals(prefer)) {
             Collection<ItemTagDto> tags =
@@ -216,10 +189,9 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
 
     @VisibleForTesting
     ResponseEntity<Collection<ItemTagDto>> getItemTag(
-            String accept,
             String ehrIdString,
             String versionedObjectUid,
-            ItemTag.ItemTagRMType itemTagType,
+            ItemTagRMType itemTagType,
             String locationPart,
             @Nullable List<String> ids,
             @Nullable List<String> keys) {
@@ -232,21 +204,18 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
                 .map(it -> it.stream().map(UUID::fromString).toList())
                 .orElseGet(List::of);
 
-        // Obtain header parameter
-        MediaType mediaType = resolveContentType(accept);
-
         Collection<ItemTagDto> itemTags =
                 itemTagService.findItemTag(ehrId, compositionUid, itemTagType, tagIDs, tagKeys);
 
         URI uri = createLocationUri(EHR, ehrId.toString(), locationPart, versionedObjectUid, "item_tag");
-        return ResponseEntity.ok().contentType(mediaType).location(uri).body(itemTags);
+        return ResponseEntity.ok().location(uri).body(itemTags);
     }
 
     @VisibleForTesting
     ResponseEntity<Void> deleteTags(
             String ehrIdString,
             String versionedObjectUid,
-            ItemTag.ItemTagRMType itemTagType,
+            ItemTagRMType itemTagType,
             @Nonnull List<Object> itemTagsOrUUIDs) {
 
         if (itemTagsOrUUIDs.isEmpty()) {
