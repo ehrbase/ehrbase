@@ -408,7 +408,9 @@ jobs:
           
       - name: Docker Compose - Logs ehrbase
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml logs ehrbase
+        run: |
+          docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ehrbase
+          docker compose -f docker-compose.yml -f tests/docker-compose-ehrbase.yml logs ehrbase
 
       - name: Docker Compose - Logs keycloak
         if: always()
