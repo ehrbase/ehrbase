@@ -65,7 +65,8 @@ services:
 
 
   jmeter:
-    image: justb4/jmeter:latest
+    image: anasoid/docker-jmeter:latest
+    #image: justb4/jmeter:latest
     ports:
       - "8082:8080"
     container_name: jmeter
@@ -81,7 +82,5 @@ services:
     networks:
       - ehrbase-net
     volumes:
-      - ./tests/perf:/tests
+      - ./tests:/tests
       - ./reports:/reports
-    command: >
-      jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx -l /results/jmeter_result.jtl -e -o /results/html
