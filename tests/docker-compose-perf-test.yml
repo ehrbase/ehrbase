@@ -69,6 +69,9 @@ services:
     ports:
       - "8082:8080"
     container_name: jmeter
+    environment:
+      - HEAP=-Xms1g -Xmx1g
+      - JVM_ARGS=-Djava.awt.headless=true
     depends_on:
       ehrbase:
         condition: service_healthy
