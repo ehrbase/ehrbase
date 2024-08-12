@@ -32,6 +32,10 @@ public final class ItemTagDto {
     private String key;
     private String value;
 
+    public ItemTagDto() {
+        // NOOP - For Jackson
+    }
+
     /**
      * @param id          Identifier of the tag
      * @param ownerId     Identifier of owner object, such as EHR.
