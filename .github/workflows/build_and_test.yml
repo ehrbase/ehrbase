@@ -339,16 +339,15 @@ jobs:
 
       - name: Run JMeter Tests
         run: |
-          docker compose exec jmeter jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -Jhost=ehrbase -Jport=8080 -l /reports/result.jtl -e -o /reports/html/
-          ls tests
-          ls tests/perf
+          docker compose exec jmeter \
+          jmeter -n -t /tests/perf/ehrbase_no_auth_scenario.jmx -Jhost=ehrbase -Jport=8080 -l /reports/result.jtl -e -o /reports/html/
 
-      # - name: Upload Results
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: jmeter-results
-      #     path: result.jtl
-      #     if-no-files-found: error
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: jmeter-results
+          path: ./reports/result.jtl
+          if-no-files-found: error
 
       - name: Upload HTML Reports
         uses: actions/upload-artifact@v3
