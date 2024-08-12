@@ -401,9 +401,9 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
 
-      # - name: Docker Compose - jmeter
-      #   if: always()
-      #   run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
+      - name: Docker Compose - jmeter
+        if: always()
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
 
       # - name: Docker Compose - Logs ehrbase-performance-tests
       #   if: always()
