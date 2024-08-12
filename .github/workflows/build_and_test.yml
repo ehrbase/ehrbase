@@ -343,7 +343,7 @@ jobs:
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-Jhost=${{ env.EHRBASE_IP }} -Jport=8080"
+          args: "-Jhost=ehrbase -Jport=8080"
 
       - name: Upload Results
         uses: actions/upload-artifact@v3
