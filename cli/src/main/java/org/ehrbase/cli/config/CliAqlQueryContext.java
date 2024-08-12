@@ -18,18 +18,8 @@
 package org.ehrbase.cli.config;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import org.ehrbase.api.dto.AqlQueryContext;
-import org.ehrbase.api.service.StatusService;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,96 +29,40 @@ import org.springframework.stereotype.Component;
 @Component(AqlQueryContext.BEAN_NAME)
 public class CliAqlQueryContext implements AqlQueryContext {
 
-    private static final Logger logger = LoggerFactory.getLogger(CliAqlQueryContext.class);
-
-    private enum AqlMode {
-        DEFAULT,
-        DRY_RUN,
-        SHOW_EXECUTED_SQL,
-        SHOW_EXECUTED_AQL,
-        SHOW_QUERY_PLAN
-    }
-
-    private final AqlMode mode;
-
-    private final StatusService statusService;
-
-    private String executedAql;
-
-    private final Map<String, Object> metaProperties = new LinkedHashMap<>();
-
-    public CliAqlQueryContext(StatusService statusService, @Value("${aql-mode:default}") String aqlMode) {
-        this.statusService = statusService;
-
-        this.mode = Arrays.stream(AqlMode.values())
-                .filter(it -> it.name().equalsIgnoreCase(aqlMode))
-                .findFirst()
-                .orElseGet(() -> {
-                    logger.warn(
-                            "Unknown --aql-mode={} not in supported {} using fallback {}",
-                            aqlMode,
-                            Arrays.stream(AqlMode.values())
-                                    .map(it -> it.name().toLowerCase(Locale.ROOT))
-                                    .toList(),
-                            AqlMode.DEFAULT.name().toLowerCase(Locale.ROOT));
-                    return AqlMode.DEFAULT;
-                });
-    }
+    private static final String UNSUPPORTED_MSG = "AQL is not supported on CLI";
 
     @Override
     public MetaData createMetaData(URI location) {
-        MetaData metaData = new MetaData();
-        metaData.setCreated(OffsetDateTime.now());
-        metaData.setSchemaVersion(AqlQueryContext.OPENEHR_REST_API_VERSION);
-        metaData.setType(MetaData.RESULTSET);
-
-        metaData.setHref(Optional.ofNullable(location).map(URI::toASCIIString).orElse(null));
-
-        metaData.setGenerator("EHRBase-CLI/%s".formatted(statusService.getEhrbaseVersion()));
-
-        metaData.setExecutedAql(this.executedAql);
-
-        if (isDryRun()) {
-            setMetaProperty(AqlQueryContext.EhrbaseMetaProperty.DRY_RUN, true);
-        }
-
-        metaProperties.forEach(metaData::setAdditionalProperty);
-
-        return metaData;
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 
     @Override
     public boolean isDryRun() {
-        return AqlMode.DRY_RUN == mode;
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 
     @Override
     public boolean showExecutedAql() {
-        return AqlMode.SHOW_EXECUTED_SQL == mode;
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 
     @Override
     public boolean showExecutedSql() {
-        return AqlMode.SHOW_EXECUTED_SQL == mode;
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 
     @Override
     public boolean showQueryPlan() {
-        return AqlMode.SHOW_QUERY_PLAN == mode;
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 
     @Override
     public void setExecutedAql(String executedAql) {
-        this.executedAql = executedAql;
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 
     @Override
     public void setMetaProperty(MetaProperty property, Object value) {
-        String name = property.propertyName();
-        if (value == null) {
-            metaProperties.remove(name);
-        } else {
-            metaProperties.put(name, value);
-        }
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 }

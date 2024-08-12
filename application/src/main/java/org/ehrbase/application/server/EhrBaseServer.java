@@ -40,7 +40,6 @@ public class EhrBaseServer {
     public static SpringApplication build(String[] args) {
         return new SpringApplicationBuilder(EhrBaseServer.class)
                 .web(WebApplicationType.SERVLET)
-                .profiles("cli")
                 .build(args);
     }
 }
