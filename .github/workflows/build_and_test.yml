@@ -331,7 +331,6 @@ jobs:
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
 
       - name: Wait for EHRbase to be ready and get EHRbase ip
-        id: get_ip
         run: |
           until curl -s http://localhost:8080/ehrbase/management/info; do
             echo "Waiting for EHRbase..."
@@ -339,13 +338,12 @@ jobs:
           done
           IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' EHRbase)
           echo "EHRBASE_IP=$IP" >> $GITHUB_ENV
-          echo "::set-output name=ip::$IP"
 
       - name: Run Performance Tests
         uses: QAInsights/PerfAction@v5.6.2
         with:
           test-plan-path: ./tests/perf/ehrbase_no_auth_scenario.jmx
-          args: "-Jhost=${{ steps.get_ip.outputs.ip }} -Jport=8080"
+          args: "-Jhost=${{ env.EHRBASE_IP }} -Jport=8080"
 
       - name: Upload Results
         uses: actions/upload-artifact@v3
