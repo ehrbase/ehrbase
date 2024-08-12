@@ -82,5 +82,5 @@ services:
     networks:
       - ehrbase-net
     volumes:
-      - ./tests:/tests
+      - ./tests/perf:/tests
       - ./reports:/reports
