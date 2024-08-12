@@ -337,10 +337,14 @@ jobs:
             sleep 10
           done
 
+      - name: Debug JMeter Test Plan
+        run: |
+          docker-compose exec jmeter ls -al /tests
+          
       - name: Run JMeter Tests
         run: |
           docker compose exec jmeter \
-          jmeter -n -t ehrbase_no_auth_scenario.jmx -Jhost=ehrbase -Jport=8080 -l /reports/result.jtl -e -o /reports/html/ \
+          jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx -Jhost=ehrbase -Jport=8080 -l /reports/result.jtl -e -o /reports/html/ \
           -Djava.awt.headless=true -Jserver.rmi.ssl.disable=true -Juser.timezone=UTC
 
       - name: Upload Results
