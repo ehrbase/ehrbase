@@ -342,18 +342,22 @@ jobs:
           docker compose exec jmeter ls -al /tests
           
       - name: Run JMeter Tests
+        env:
+          TEST_PLAN_PATH: /tests/ehrbase_no_auth_scenario.jmx
+          REPORTS_DIR: /reports
+          HOST: ehrbase
+          PORT: 8080
         run: |
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
           jmeter \
-          -n -t /tests/ehrbase_no_auth_scenario.jmx \
-          -Jhost=ehrbase -Jport=8080 \
-          -l /reports/result.jtl -e -o /reports/html/ \
+          -n \
+          -t $TEST_PLAN_PATH \
+          -Jhost=$HOST -Jport=$PORT \
+          -l $REPORTS_DIR/result.jtl \
+          -e -o $REPORTS_DIR/html/ \
           -Djava.awt.headless=true
-          #docker compose exec jmeter \
-          #jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx -Jhost=ehrbase -Jport=8080 -l /reports/result.jtl -e -o /reports/html/ \
-          #-Djava.awt.headless=true -Jserver.rmi.ssl.disable=true -Juser.timezone=UTC
 
       - name: Upload Results
         uses: actions/upload-artifact@v3
