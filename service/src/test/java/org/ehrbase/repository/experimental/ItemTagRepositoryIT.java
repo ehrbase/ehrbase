@@ -171,18 +171,18 @@ class ItemTagRepositoryIT {
                 null);
 
         ObjectNotFoundException exec = assertThrows(ObjectNotFoundException.class, () -> bulkStore(itemTag));
-        assertEquals("ItemTag(s) with ID(s) [7eb0db46-b72e-4db0-9955-05bb91275951] does not exist", exec.getMessage());
+        assertEquals("ItemTag(s) with ID(s) [7eb0db46-b72e-4db0-9955-05bb91275951] not found", exec.getMessage());
     }
 
     // --- findForLatestTargetVersion ---
 
-    private Collection<ItemTagDto> findForLatestTargetVersion(
+    private Collection<ItemTagDto> findForOwnerAndTarget(
             UUID target, ItemTagRMType type, Collection<UUID> ids, Collection<String> keys) {
-        return itemTagRepository.findForLatestTargetVersion(ehrId, target, type, ids, keys);
+        return itemTagRepository.findForOwnerAndTarget(ehrId, target, type, ids, keys);
     }
 
     @Test
-    void findForLatestTargetVersion() {
+    void findForOwnerAndTarget() {
 
         List<UUID> insertIds = bulkStore(
                         newItemTag(ehrId, compId, COMPOSITION, "find:composition:tag"),
@@ -197,32 +197,30 @@ class ItemTagRepositoryIT {
         assertEquals(
                 0,
                 itemTagRepository
-                        .findForLatestTargetVersion(
-                                UuidGenerator.randomUUID(), compId, COMPOSITION, List.of(), List.of())
+                        .findForOwnerAndTarget(UuidGenerator.randomUUID(), compId, COMPOSITION, List.of(), List.of())
                         .size(),
                 "There should be not match for non existing EHR");
 
-        List<ItemTagDto> compIdMatch = findForLatestTargetVersion(compId, COMPOSITION, List.of(), List.of()).stream()
+        List<ItemTagDto> compIdMatch = findForOwnerAndTarget(compId, COMPOSITION, List.of(), List.of()).stream()
                 .toList();
         assertEquals(2, compIdMatch.size());
         assertEquals(insertIds.get(0), compIdMatch.get(0).getId());
         assertEquals(insertIds.get(1), compIdMatch.get(1).getId());
 
         List<ItemTagDto> compTagIdMatch =
-                findForLatestTargetVersion(compId, COMPOSITION, List.of(), List.of("find:composition:tag")).stream()
+                findForOwnerAndTarget(compId, COMPOSITION, List.of(), List.of("find:composition:tag")).stream()
                         .toList();
         assertEquals(1, compTagIdMatch.size());
         assertEquals(insertIds.get(0), compIdMatch.getFirst().getId());
 
         List<ItemTagDto> compTagIdIdMatch =
-                findForLatestTargetVersion(compId, COMPOSITION, List.of(insertIds.get(1)), List.of()).stream()
+                findForOwnerAndTarget(compId, COMPOSITION, List.of(insertIds.get(1)), List.of()).stream()
                         .toList();
         assertEquals(1, compTagIdIdMatch.size());
         assertEquals(insertIds.get(1), compIdMatch.get(1).getId());
 
-        List<ItemTagDto> ehrStatusMatch =
-                findForLatestTargetVersion(ehrStatusId, EHR_STATUS, List.of(), List.of()).stream()
-                        .toList();
+        List<ItemTagDto> ehrStatusMatch = findForOwnerAndTarget(ehrStatusId, EHR_STATUS, List.of(), List.of()).stream()
+                .toList();
         assertEquals(2, ehrStatusMatch.size());
         assertEquals(insertIds.get(3), ehrStatusMatch.get(0).getId());
         assertEquals(insertIds.get(4), ehrStatusMatch.get(1).getId());
@@ -254,12 +252,11 @@ class ItemTagRepositoryIT {
 
         assertEquals(
                 0,
-                findForLatestTargetVersion(compId, COMPOSITION, List.of(), List.of())
-                        .size(),
+                findForOwnerAndTarget(compId, COMPOSITION, List.of(), List.of()).size(),
                 "The should be COMPOSITION tags");
         assertEquals(
                 0,
-                findForLatestTargetVersion(ehrStatusId, EHR_STATUS, List.of(), List.of())
+                findForOwnerAndTarget(ehrStatusId, EHR_STATUS, List.of(), List.of())
                         .size(),
                 "The should be EHR_STATUS tags");
     }
@@ -283,11 +280,11 @@ class ItemTagRepositoryIT {
                 newItemTag(ehrId, UuidGenerator.randomUUID(), EHR_STATUS, "some:ehr_status:tag"));
         assertEquals(3, insertIds.size(), "There should be two inserted ItemTag ids");
 
-        itemTagRepository.adminDelete(targetId);
+        itemTagRepository.adminDelete(targetId, tagType);
         assertEquals(
                 0,
                 itemTagRepository
-                        .findForLatestTargetVersion(ehrId, targetId, tagType, List.of(), List.of())
+                        .findForOwnerAndTarget(ehrId, targetId, tagType, List.of(), List.of())
                         .size());
     }
 

@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -444,7 +445,7 @@ public class CompositionServiceImp implements CompositionService {
     @Override
     public void adminDelete(UUID compositionId) {
 
-        itemTagRepository.adminDelete(compositionId);
+        itemTagRepository.adminDelete(compositionId, ItemTagRMType.COMPOSITION);
         compositionRepository.adminDelete(compositionId);
     }
 

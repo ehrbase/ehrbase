@@ -18,6 +18,7 @@
 package org.ehrbase.api.service.experimental;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
@@ -35,30 +36,30 @@ public interface ItemTagService {
      * Performs a <code>bulk</code> update/create operation for the given <code>ItemTag</code> into the tag list
      * of the <code>owner</code>.
      *
-     * @param ownerId       Identifier of owner object, such as EHR.
-     * @param targetId      VERSIONED_OBJECT&lt;T&gt; Identifier of target.
-     * @param targetType    Type of the target object.
-     * @param itemTagsDto   Content of the <code>ItemTag</code> containing the <code>key, value</code> parameter.
+     * @param ownerId     Identifier of owner object, such as EHR.
+     * @param targetId    VERSIONED_OBJECT&lt;T&gt; Identifier of target.
+     * @param targetType  Type of the target object.
+     * @param itemTagsDto Content of the <code>ItemTag</code> containing the <code>key, value</code> parameter.
      * @return tagUUIDs     of the update/create <code>ItemTag</code>s
      */
-    Collection<UUID> bulkUpsert(
+    List<UUID> bulkUpsert(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetId,
             @Nonnull ItemTagRMType targetType,
-            @Nonnull Collection<ItemTagDto> itemTagsDto);
+            @Nonnull List<ItemTagDto> itemTagsDto);
 
     /**
      * Performs a <code>bulk</code> get operation for the given <code>ItemTag</code> <code>IDs</code> and/or
      * <code>keys</code>.
      *
-     * @param ownerId       Identifier of owner object, such as EHR.
-     * @param targetId      VERSIONED_OBJECT&lt;T&gt; Identifier of target.
-     * @param targetType    Type of the target object.
-     * @param ids           Identifier <code>ItemTag</code> to search for.
-     * @param keys          <code>ItemTag</code> keys to search for.
+     * @param ownerId    Identifier of owner object, such as EHR.
+     * @param targetId   VERSIONED_OBJECT&lt;T&gt; Identifier of target.
+     * @param targetType Type of the target object.
+     * @param ids        Identifier <code>ItemTag</code> to search for.
+     * @param keys       <code>ItemTag</code> keys to search for.
      * @return tags         Matching the <code>ownerId, targetId</code> and optional <code>ids, keys</code>
      */
-    Collection<ItemTagDto> findItemTag(
+    List<ItemTagDto> findItemTag(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetId,
             @Nonnull ItemTagRMType targetType,

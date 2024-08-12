@@ -21,12 +21,13 @@ import static org.ehrbase.jooq.pg.tables.EhrItemTag.EHR_ITEM_TAG;
 
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -67,11 +68,15 @@ public class ItemTagRepository {
      * @return tagIDs   Sored {@link ItemTagDto#getId()}s.
      */
     @Transactional
-    public Collection<UUID> bulkStore(@NonNull Collection<ItemTagDto> itemTags) {
+    public List<UUID> bulkStore(@NonNull List<ItemTagDto> itemTags) {
+
+        if (itemTags.isEmpty()) {
+            return List.of();
+        }
 
         List<EhrItemTagRecord> newTags = itemTags.stream()
                 .filter(tag -> tag.getId() == null)
-                .map(this::createInsertTagAsRecord)
+                .map(this::newRecordForTag)
                 .toList();
 
         Map<UUID, ItemTagDto> existingTagsById = itemTags.stream()
@@ -79,26 +84,29 @@ public class ItemTagRepository {
                 .map(tag -> new AbstractMap.SimpleImmutableEntry<>(tag.getId(), tag))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        if (newTags.isEmpty() && existingTagsById.isEmpty()) {
-            return List.of();
-        }
-
         List<EhrItemTagRecord> existingTags =
-                context
-                        .select(EHR_ITEM_TAG)
-                        .from(EHR_ITEM_TAG)
-                        .where(EHR_ITEM_TAG.ID.in(existingTagsById.keySet()))
-                        .stream()
-                        .map(dbRecord -> mapExistingTagAsRecord(existingTagsById, dbRecord))
+                context.selectFrom(EHR_ITEM_TAG).where(EHR_ITEM_TAG.ID.in(existingTagsById.keySet())).stream()
+                        .map(dbRecord -> {
+                            ItemTagDto itemTag = existingTagsById.remove(dbRecord.getId());
+                            mapItemTag(itemTag, dbRecord);
+                            return dbRecord;
+                        })
                         .toList();
 
         if (!existingTagsById.isEmpty()) {
             throw new ObjectNotFoundException(
                     ItemTagDto.class.getSimpleName(),
-                    "ItemTag(s) with ID(s) %s does not exist".formatted(existingTagsById.keySet()));
+                    "ItemTag(s) with ID(s) %s not found".formatted(existingTagsById.keySet()));
         }
+        bulkInsert(newTags);
+        context.batchUpdate(existingTags).execute();
 
-        return Stream.concat(bulkUpdate(existingTags), bulkInsert(newTags)).toList();
+        // retain order of itemTags parameter
+        Iterator<EhrItemTagRecord> it = newTags.iterator();
+        return itemTags.stream()
+                .map(t -> Optional.of(t).map(ItemTagDto::getId).orElseGet(() -> it.next()
+                        .getId()))
+                .toList();
     }
 
     /**
@@ -110,10 +118,10 @@ public class ItemTagRepository {
      * @param targetType    Type of the target object.
      * @param ids           Identifier <code>ItemTag</code> to search for.
      * @param keys          <code>ItemTag</code> keys to search for.
-     * @return itemTgs      <code>ItemTag</code> .
+     * @return itemTags      <code>ItemTag</code> .
      */
     @Transactional
-    public Collection<ItemTagDto> findForLatestTargetVersion(
+    public Collection<ItemTagDto> findForOwnerAndTarget(
             @NonNull UUID ownerId,
             @NonNull UUID targetVoId,
             @NonNull ItemTagRMType targetType,
@@ -123,7 +131,7 @@ public class ItemTagRepository {
         SelectConditionStep<Record1<EhrItemTagRecord>> query = context.select(EHR_ITEM_TAG)
                 .from(EHR_ITEM_TAG)
                 .where(EHR_ITEM_TAG.EHR_ID.eq(ownerId))
-                .and(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToEnum(targetType)))
+                .and(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToDbEnum(targetType)))
                 .and(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetVoId));
 
         if (!ids.isEmpty()) {
@@ -141,27 +149,28 @@ public class ItemTagRepository {
      * @param ids  Identifier of <code>ItemTag</code> to delete.
      */
     @Transactional
-    public void bulkDelete(
+    public int bulkDelete(
             @NonNull UUID ownerId,
             @NonNull UUID targetVoId,
             @NonNull ItemTagRMType targetType,
             @NonNull Collection<UUID> ids) {
 
         if (ids.isEmpty()) {
-            return;
+            return 0;
         }
-        context.delete(EHR_ITEM_TAG)
+        return context.delete(EHR_ITEM_TAG)
                 .where(EHR_ITEM_TAG.EHR_ID.eq(ownerId))
-                .and(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToEnum(targetType)))
+                .and(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToDbEnum(targetType)))
                 .and(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetVoId))
                 .and(EHR_ITEM_TAG.ID.in(ids))
                 .execute();
     }
 
     @Transactional
-    public void adminDelete(UUID targetId) {
+    public void adminDelete(UUID targetId, ItemTagRMType targetType) {
         context.delete(EHR_ITEM_TAG)
                 .where(EHR_ITEM_TAG.TARGET_VO_ID.eq(targetId))
+                .and(EHR_ITEM_TAG.TARGET_TYPE.eq(itemTargetTypeToDbEnum(targetType)))
                 .execute();
     }
 
@@ -170,10 +179,10 @@ public class ItemTagRepository {
         context.delete(EHR_ITEM_TAG).where(EHR_ITEM_TAG.EHR_ID.eq(ehrId)).execute();
     }
 
-    private Stream<UUID> bulkInsert(Collection<EhrItemTagRecord> records) {
+    private void bulkInsert(List<EhrItemTagRecord> records) {
 
         if (records.isEmpty()) {
-            return Stream.empty();
+            return;
         }
         try {
             RepositoryHelper.executeBulkInsert(context.dsl(), records.stream(), EHR_ITEM_TAG);
@@ -183,20 +192,9 @@ public class ItemTagRepository {
             throw new ObjectNotFoundException(
                     "EHR", "EHR with id '%s' does not exist".formatted(details[details.length - 2]));
         }
-        return records.stream().map(EhrItemTagRecord::getId);
     }
 
-    private Stream<UUID> bulkUpdate(Collection<EhrItemTagRecord> records) {
-
-        if (records.isEmpty()) {
-            return Stream.empty();
-        }
-
-        context.batchUpdate(records).execute();
-        return records.stream().map(EhrItemTagRecord::getId);
-    }
-
-    private EhrItemTagRecord createInsertTagAsRecord(ItemTagDto itemTag) {
+    private EhrItemTagRecord newRecordForTag(ItemTagDto itemTag) {
 
         EhrItemTagRecord itemTagRecord = context.newRecord(EHR_ITEM_TAG);
         mapItemTag(itemTag, itemTagRecord);
@@ -204,19 +202,11 @@ public class ItemTagRepository {
         return itemTagRecord;
     }
 
-    private EhrItemTagRecord mapExistingTagAsRecord(
-            Map<UUID, ItemTagDto> existingTagsById, Record1<EhrItemTagRecord> dbRecord) {
-        EhrItemTagRecord itemTagRecord = dbRecord.component1();
-        ItemTagDto itemTag = existingTagsById.remove(itemTagRecord.getId());
-        mapItemTag(itemTag, itemTagRecord);
-        return itemTagRecord;
-    }
-
     private void mapItemTag(ItemTagDto itemTag, EhrItemTagRecord itemTagRecord) {
         itemTagRecord.setId(Optional.ofNullable(itemTag.getId()).orElseGet(UuidGenerator::randomUUID));
         itemTagRecord.setEhrId(itemTag.getOwnerId());
         itemTagRecord.setTargetVoId(itemTag.getTarget());
-        itemTagRecord.setTargetType(itemTargetTypeToEnum(itemTag.getTargetType()));
+        itemTagRecord.setTargetType(itemTargetTypeToDbEnum(itemTag.getTargetType()));
         itemTagRecord.setKey(itemTag.getKey());
         itemTagRecord.setValue(itemTag.getValue());
         itemTagRecord.setTargetPath(itemTag.getTargetPath());
@@ -229,16 +219,20 @@ public class ItemTagRepository {
                 itemTagRecord.getId(),
                 itemTagRecord.getEhrId(),
                 itemTagRecord.getTargetVoId(),
-                switch (itemTagRecord.getTargetType()) {
-                    case ehr_status -> org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.EHR_STATUS;
-                    case composition -> org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType.COMPOSITION;
-                },
+                dbEnumToTargetType(itemTagRecord.getTargetType()),
                 itemTagRecord.getTargetPath(),
                 itemTagRecord.getKey(),
                 itemTagRecord.getValue());
     }
 
-    private static EhrItemTagTargetType itemTargetTypeToEnum(ItemTagRMType type) {
+    private static @Nonnull ItemTagRMType dbEnumToTargetType(final EhrItemTagTargetType dbEnum) {
+        return switch (dbEnum) {
+            case ehr_status -> ItemTagRMType.EHR_STATUS;
+            case composition -> ItemTagRMType.COMPOSITION;
+        };
+    }
+
+    private static EhrItemTagTargetType itemTargetTypeToDbEnum(ItemTagRMType type) {
         return switch (type) {
             case EHR_STATUS -> EhrItemTagTargetType.ehr_status;
             case COMPOSITION -> EhrItemTagTargetType.composition;

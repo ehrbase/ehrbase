@@ -35,6 +35,7 @@ import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
+import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
 import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.springframework.stereotype.Service;
 
@@ -53,11 +54,11 @@ public class ItemTagServiceImpl implements ItemTagService {
         this.ehrService = ehrService;
     }
 
-    public Collection<UUID> bulkUpsert(
+    public List<UUID> bulkUpsert(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetId,
             @Nonnull ItemTagRMType targetType,
-            @Nonnull Collection<ItemTagDto> itemTags) {
+            @Nonnull List<ItemTagDto> itemTags) {
 
         if (itemTags.isEmpty()) {
             return List.of();
@@ -73,7 +74,7 @@ public class ItemTagServiceImpl implements ItemTagService {
     }
 
     @Override
-    public Collection<ItemTagDto> findItemTag(
+    public List<ItemTagDto> findItemTag(
             @Nonnull UUID ownerId,
             @Nonnull UUID targetVoId,
             @Nonnull ItemTagRMType targetType,
@@ -83,7 +84,7 @@ public class ItemTagServiceImpl implements ItemTagService {
         // sanity check for existing EHR version
         ehrService.checkEhrExists(ownerId);
 
-        return itemTagRepository.findForLatestTargetVersion(ownerId, targetVoId, targetType, ids, keys).stream()
+        return itemTagRepository.findForOwnerAndTarget(ownerId, targetVoId, targetType, ids, keys).stream()
                 .map(itemTag -> itemTag)
                 .toList();
     }
@@ -144,7 +145,7 @@ public class ItemTagServiceImpl implements ItemTagService {
     static void validateTagKey(String key) {
         // validate given properties
         if (StringUtils.isBlank(key)) {
-            throw new UnprocessableEntityException("ItemTag must have a key that must not be blank");
+            throw new UnprocessableEntityException("ItemTag key must not be blank");
         }
         if (!key.matches("^[a-zA-Z0-9/\\-_:]*$")) {
             throw new UnprocessableEntityException(
@@ -184,17 +185,12 @@ public class ItemTagServiceImpl implements ItemTagService {
             return;
         }
 
-        if (targetPath.contains("|")) {
-            throw new UnprocessableEntityException(
-                    "ItemTag '%s' target_path '%s' attributes are not supported".formatted(key, targetPath));
+        AqlObjectPath path;
+        try {
+            path = AqlObjectPath.parse(targetPath);
+        } catch (AqlParseException e) {
+            throw new UnprocessableEntityException(e.getMessage(), e);
         }
-        // validate given properties
-        if (!targetPath.startsWith("/")) {
-            throw new UnprocessableEntityException(
-                    "ItemTag '%s' target_path '%s' does not start at root".formatted(key, targetPath));
-        }
-
-        AqlObjectPath path = AqlObjectPath.parse(targetPath);
         path.getPathNodes().forEach(node -> {
             if (node.getPredicateOrOperands().size() > 1) {
                 throw new UnprocessableEntityException(

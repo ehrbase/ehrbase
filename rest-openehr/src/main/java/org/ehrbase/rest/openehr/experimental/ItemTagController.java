@@ -19,7 +19,6 @@ package org.ehrbase.rest.openehr.experimental;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,7 +76,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-            @RequestBody Collection<ItemTagDto> itemTags) {
+            @RequestBody List<ItemTagDto> itemTags) {
 
         return upsertItemTags(
                 prefer, ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.EHR_STATUS, EHR_STATUS, itemTags);
@@ -85,7 +84,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
 
     @GetMapping(value = "/{ehr_id}/ehr_status/{versioned_object_uid}/item_tag")
     @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity<Collection<ItemTagDto>> getEhrStatusItemTags(
+    public ResponseEntity<List<ItemTagDto>> getEhrStatusItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -120,7 +119,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-            @RequestBody Collection<ItemTagDto> itemTags) {
+            @RequestBody List<ItemTagDto> itemTags) {
 
         return upsertItemTags(
                 prefer, ehrIdString, versionedObjectUid, ItemTagDto.ItemTagRMType.COMPOSITION, COMPOSITION, itemTags);
@@ -128,7 +127,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
 
     @GetMapping(value = "/{ehr_id}/composition/{versioned_object_uid}/item_tag")
     @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity<Collection<ItemTagDto>> getCompositionItemTags(
+    public ResponseEntity<List<ItemTagDto>> getCompositionItemTags(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @PathVariable(value = "ehr_id") String ehrIdString,
@@ -161,7 +160,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
             String versionedObjectUid,
             ItemTagRMType itemTagType,
             String locationPart,
-            Collection<ItemTagDto> itemTags) {
+            List<ItemTagDto> itemTags) {
 
         // obtain path parameter
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -173,14 +172,13 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
         }
 
         // perform bulk creation and return based on preferred response type
-        Collection<UUID> tagIds = itemTagService.bulkUpsert(ehrId, compositionUid, itemTagType, itemTags);
+        List<UUID> tagIds = itemTagService.bulkUpsert(ehrId, compositionUid, itemTagType, itemTags);
 
         URI uri = createLocationUri(EHR, ehrId.toString(), locationPart, versionedObjectUid, "item_tag");
         ResponseEntity.BodyBuilder bodyBuilder = ResponseEntity.ok().location(uri);
 
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            Collection<ItemTagDto> tags =
-                    itemTagService.findItemTag(ehrId, compositionUid, itemTagType, tagIds, List.of());
+            List<ItemTagDto> tags = itemTagService.findItemTag(ehrId, compositionUid, itemTagType, tagIds, List.of());
             return bodyBuilder.body(tags);
         } else {
             return bodyBuilder.body(tagIds);
@@ -188,7 +186,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     }
 
     @VisibleForTesting
-    ResponseEntity<Collection<ItemTagDto>> getItemTag(
+    ResponseEntity<List<ItemTagDto>> getItemTag(
             String ehrIdString,
             String versionedObjectUid,
             ItemTagRMType itemTagType,
@@ -204,8 +202,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
                 .map(it -> it.stream().map(UUID::fromString).toList())
                 .orElseGet(List::of);
 
-        Collection<ItemTagDto> itemTags =
-                itemTagService.findItemTag(ehrId, compositionUid, itemTagType, tagIDs, tagKeys);
+        List<ItemTagDto> itemTags = itemTagService.findItemTag(ehrId, compositionUid, itemTagType, tagIDs, tagKeys);
 
         URI uri = createLocationUri(EHR, ehrId.toString(), locationPart, versionedObjectUid, "item_tag");
         return ResponseEntity.ok().location(uri).body(itemTags);

@@ -120,7 +120,7 @@ class ItemTagServiceTest {
                 UnprocessableEntityException.class,
                 () -> service.bulkUpsert(SAMPLE_EHR_ID, SAMPLE_EHR_ID, EHR_STATUS, itemTags));
         assertEquals(
-                "Can not change owner of ItemTag 'a:key' from 1dc42f91-094a-43e7-8c26-3ca6d43b8833 to %s"
+                "Owner mismatch for ItemTag 'a:key': 1dc42f91-094a-43e7-8c26-3ca6d43b8833 vs. %s"
                         .formatted(SAMPLE_EHR_ID.toString()),
                 exception.getMessage());
     }
@@ -131,8 +131,8 @@ class ItemTagServiceTest {
         List<org.ehrbase.api.dto.experimental.ItemTagDto> itemTags =
                 List.of(new org.ehrbase.api.dto.experimental.ItemTagDto(
                         UUID.randomUUID(),
-                        UUID.fromString("f5fe8b05-2fe3-4962-a0b7-d443e0b53304"),
                         SAMPLE_EHR_ID,
+                        UUID.fromString("f5fe8b05-2fe3-4962-a0b7-d443e0b53304"),
                         COMPOSITION,
                         null,
                         "some:key",
@@ -142,7 +142,7 @@ class ItemTagServiceTest {
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> service.bulkUpsert(SAMPLE_EHR_ID, SAMPLE_EHR_ID, EHR_STATUS, itemTags));
-        assertEquals("Tag target_types [COMPOSITION] not matching EHR_STATUS", exception.getMessage());
+        assertEquals("target_type does not match EHR_STATUS", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -172,7 +172,7 @@ class ItemTagServiceTest {
         assertSame(fixtureIDs, ids);
 
         @SuppressWarnings("unchecked")
-        final ArgumentCaptor<Collection<ItemTagDto>> captor = ArgumentCaptor.forClass(Collection.class);
+        final ArgumentCaptor<List<ItemTagDto>> captor = ArgumentCaptor.forClass(List.class);
         verify(mockIemTagRepository, times(1)).bulkStore(captor.capture()); // for instance
 
         List<ItemTagDto> storedTags = captor.getValue().stream()
@@ -220,7 +220,7 @@ class ItemTagServiceTest {
         ItemTagDto itemTag = new ItemTagDto(UUID.randomUUID(), SAMPLE_EHR_ID, target, targetType, null, key, null);
         doReturn(List.of(itemTag))
                 .when(mockIemTagRepository)
-                .findForLatestTargetVersion(SAMPLE_EHR_ID, target, targetType, List.of(), List.of(key));
+                .findForOwnerAndTarget(SAMPLE_EHR_ID, target, targetType, List.of(), List.of(key));
 
         Collection<org.ehrbase.api.dto.experimental.ItemTagDto> result =
                 service.findItemTag(SAMPLE_EHR_ID, target, targetType, List.of(), List.of(key));
@@ -297,7 +297,7 @@ class ItemTagServiceTest {
         var tagKey = "null".equals(key) ? null : key;
         UnprocessableEntityException exception =
                 assertThrows(UnprocessableEntityException.class, () -> ItemTagServiceImpl.validateTagKey(tagKey));
-        assertEquals("ItemTag must have a key that can not be empty or blank", exception.getMessage());
+        assertEquals("ItemTag key must not be blank", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -321,7 +321,7 @@ class ItemTagServiceTest {
 
         UnprocessableEntityException exception = assertThrows(
                 UnprocessableEntityException.class, () -> ItemTagServiceImpl.validateTagValue("key", value));
-        assertEquals("ItemTag 'key' value can not be empty or blank", exception.getMessage());
+        assertEquals("ItemTag 'key' value must not be blank", exception.getMessage());
     }
 
     @Test
@@ -341,27 +341,10 @@ class ItemTagServiceTest {
     @ParameterizedTest
     @ValueSource(
             strings = {
-                ";does not start at root",
-                "/ ;can not contain blank lines",
-                "/value|name;attributes are not supported",
-                "/some[complex stuff = 42];additional AND or OR predicates are not supported"
-            })
-    void invalidTargetPathDeclaration(String input) {
-
-        String[] split = input.split(";");
-
-        UnprocessableEntityException exception = assertThrows(
-                UnprocessableEntityException.class, () -> ItemTagServiceImpl.validateTargetPath("key:path", split[0]));
-        assertEquals("ItemTag 'key:path' target_path '%s' %s".formatted(split[0], split[1]), exception.getMessage());
-    }
-
-    @ParameterizedTest
-    @ValueSource(
-            strings = {
-                "/content",
-                "/content/value/name",
-                "/item[at001]/value/item[at002]",
-                "/content[openEHR-EHR-SECTION.medications.v1]"
+                "content",
+                "content/value/name",
+                "item[at001]/value/item[at002]",
+                "content[openEHR-EHR-SECTION.medications.v1]"
             })
     void validTargetPathDeclaration(String path) {
 

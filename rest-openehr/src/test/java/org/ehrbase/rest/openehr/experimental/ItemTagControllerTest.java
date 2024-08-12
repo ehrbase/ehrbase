@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.net.HttpHeaders;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -130,14 +129,14 @@ class ItemTagControllerTest {
     @CsvSource(
             textBlock =
                     """
-                EHR_STATUS|application/json||87ef3397-8939-4c18-9bb3-d5d9a80d740d
-                COMPOSITION|application/xml|return=minimal|98c09fbf-54ca-496f-9aa1-d9778cc487a8
+                EHR_STATUS||87ef3397-8939-4c18-9bb3-d5d9a80d740d
+                COMPOSITION|return=minimal|98c09fbf-54ca-496f-9aa1-d9778cc487a8
             """,
             delimiterString = "|")
-    void upsertItemTagsPreferMinimal(String type, String accept, String prefer, String targetId) {
+    void upsertItemTagsPreferMinimal(String type, String prefer, String targetId) {
 
         ItemTagDto tag = itemTagDto(ItemTagDto.ItemTagRMType.valueOf(type), targetId);
-        List<Object> tags = runUpsertItemTagsBaseTest(type, accept, prefer, targetId, tag);
+        List<Object> tags = runUpsertItemTagsBaseTest(type, prefer, targetId, tag);
 
         assertEquals(1, tags.size());
         assertEquals(tag.getId(), tags.getFirst());
@@ -147,22 +146,21 @@ class ItemTagControllerTest {
     @CsvSource(
             textBlock =
                     """
-                EHR_STATUS|application/xml|87ef3397-8939-4c18-9bb3-d5d9a80d740d
-                COMPOSITION|application/json|98c09fbf-54ca-496f-9aa1-d9778cc487a8
+                EHR_STATUS|87ef3397-8939-4c18-9bb3-d5d9a80d740d
+                COMPOSITION|98c09fbf-54ca-496f-9aa1-d9778cc487a8
             """,
             delimiterString = "|")
-    void upsertItemTagsPreferRepresentation(String type, String accept, String targetId) {
+    void upsertItemTagsPreferRepresentation(String type, String targetId) {
 
         ItemTagDto tag = itemTagDto(ItemTagDto.ItemTagRMType.valueOf(type), targetId);
-        List<Object> tags = runUpsertItemTagsBaseTest(type, accept, "return=representation", targetId, tag);
+        List<Object> tags = runUpsertItemTagsBaseTest(type, "return=representation", targetId, tag);
 
         assertEquals(1, tags.size());
         assertEquals(tag, tags.getFirst());
     }
 
     @SuppressWarnings("unchecked")
-    private List<Object> runUpsertItemTagsBaseTest(
-            String type, String accept, String prefer, String targetId, ItemTagDto... tagList) {
+    private List<Object> runUpsertItemTagsBaseTest(String type, String prefer, String targetId, ItemTagDto... tagList) {
 
         List<ItemTagDto> tags = Arrays.stream(tagList).toList();
 
@@ -193,7 +191,7 @@ class ItemTagControllerTest {
 
     // --- GET ---
 
-    private ResponseEntity<Collection<ItemTagDto>> getItemTags(
+    private ResponseEntity<List<ItemTagDto>> getItemTags(
             String targetId, ItemTagRMType type, @Nullable List<String> ids, @Nullable List<String> keys) {
 
         return controller()
@@ -242,10 +240,10 @@ class ItemTagControllerTest {
     @CsvSource(
             textBlock =
                     """
-                EHR_STATUS|application/xml||
-                EHR_STATUS|application/json||1::key,2::key
-                COMPOSITION|application/xml|0df4ff20-be70-4416-ae12-c7681459f46e,02fbaf93-b2f1-4880-920c-e6716ca54e03|
-                COMPOSITION|application/json|6f0eec75-e547-4fc1-ada1-ab872456e000|2::key
+                EHR_STATUS||
+                EHR_STATUS||1::key,2::key
+                COMPOSITION|0df4ff20-be70-4416-ae12-c7681459f46e,02fbaf93-b2f1-4880-920c-e6716ca54e03|
+                COMPOSITION|6f0eec75-e547-4fc1-ada1-ab872456e000|2::key
             """,
             delimiterString = "|")
     void getItemTags(String rawType, String rawIds, String rawKeys) {
@@ -260,16 +258,15 @@ class ItemTagControllerTest {
                 .orElse(List.of());
 
         ItemTagDto itemTagDto = itemTagDto(type, targetId);
-        doReturn(List.of(itemTagDto))
-                .when(mockItemTagService)
-                .findItemTag(
+        Mockito.when(mockItemTagService.findItemTag(
                         UUID.fromString(SAMPLE_EHR_ID),
                         UUID.fromString(targetId),
                         type,
                         ids.stream().map(UUID::fromString).toList(),
-                        keys);
+                        keys))
+                .thenReturn(List.of(itemTagDto));
 
-        ResponseEntity<Collection<ItemTagDto>> response = getItemTags(targetId, type, ids, keys);
+        ResponseEntity<List<ItemTagDto>> response = getItemTags(targetId, type, ids, keys);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(

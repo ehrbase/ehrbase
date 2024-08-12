@@ -32,7 +32,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
@@ -195,12 +194,12 @@ public interface ItemTagApiSpecification {
             @ParameterPrefer String prefer,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
-            @RequestBody Collection<ItemTagDto> itemTags
+            @RequestBody List<ItemTagDto> itemTags
     );
 
     @Tag(name = "EHR_STATUS")
     @OperationTagsGet
-    ResponseEntity<Collection<ItemTagDto>> getEhrStatusItemTags(
+    ResponseEntity<List<ItemTagDto>> getEhrStatusItemTags(
             String openehrVersion,
             String openehrAuditDetails,
             @ParameterEhrId String ehrIdString,
@@ -229,12 +228,12 @@ public interface ItemTagApiSpecification {
             @ParameterPrefer String prefer,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
-            @RequestBody Collection<ItemTagDto> itemTags
+            @RequestBody List<ItemTagDto> itemTags
     );
 
     @Tag(name = "ITEM_TAG")
     @OperationTagsGet
-    ResponseEntity<Collection<ItemTagDto>> getCompositionItemTags(
+    ResponseEntity<List<ItemTagDto>> getCompositionItemTags(
             String openehrVersion,
             String openehrAuditDetails,
             @ParameterEhrId String ehrIdString,
