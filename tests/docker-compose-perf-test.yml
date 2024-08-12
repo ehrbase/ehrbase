@@ -81,5 +81,7 @@ services:
     networks:
       - ehrbase-net
     volumes:
-      - ./tests:/tests
+      - ./tests/perf:/tests
       - ./reports:/reports
+    command: >
+      jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx -l /results/jmeter_result.jtl -e -o /results/html
