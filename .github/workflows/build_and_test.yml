@@ -343,9 +343,17 @@ jobs:
           
       - name: Run JMeter Tests
         run: |
-          docker compose exec jmeter \
-          jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx -Jhost=ehrbase -Jport=8080 -l /reports/result.jtl -e -o /reports/html/ \
-          -Djava.awt.headless=true -Jserver.rmi.ssl.disable=true -Juser.timezone=UTC
+          docker run --rm --network ehrbase-net \
+          -v ${{ github.workspace }}/tests/perf:/tests \
+          -v ${{ github.workspace }}/reports:/reports \
+          justb4/jmeter:latest \
+          jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx \
+          -Jhost=ehrbase -Jport=8080 \
+          -l /reports/result.jtl -e -o /reports/html/ \
+          -Djava.awt.headless=true
+          #docker compose exec jmeter \
+          #jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx -Jhost=ehrbase -Jport=8080 -l /reports/result.jtl -e -o /reports/html/ \
+          #-Djava.awt.headless=true -Jserver.rmi.ssl.disable=true -Juser.timezone=UTC
 
       - name: Upload Results
         uses: actions/upload-artifact@v3
