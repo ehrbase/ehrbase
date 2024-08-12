@@ -347,7 +347,7 @@ jobs:
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
           jmeter \
-          jmeter -n -t /tests/ehrbase_no_auth_scenario.jmx \
+          -n -t /tests/ehrbase_no_auth_scenario.jmx \
           -Jhost=ehrbase -Jport=8080 \
           -l /reports/result.jtl -e -o /reports/html/ \
           -Djava.awt.headless=true
