@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.asl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,8 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
+import org.jooq.JSONB;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -41,10 +44,19 @@ import org.mockito.Mockito;
 
 public class AqlSqlLayerTest {
 
+    private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+
+    @BeforeEach
+    void setUp() {
+        Mockito.reset(mockKnowledgeCacheService);
+        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UUID.randomUUID()));
+    }
+
     @Disabled
     @Test
     void printAslGraph() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
+        AslRootQuery aslQuery = buildSqlQuery(
                 """
         SELECT
         c/feeder_audit,
@@ -53,40 +65,22 @@ public class AqlSqlLayerTest {
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
-
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-
-        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
-        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
-
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
-        AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-
         System.out.println(AslGraph.createAslGraph(aslQuery));
     }
 
     @Test
     void testDataQueryPlacedLast() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
+        AslRootQuery aslQuery = buildSqlQuery(
                 """
-        SELECT
-        c/content,
-        c/content[at0001],
-        c[openEHR-EHR-COMPOSITION.test.v0]/content[at0002],
-        c/uid/value,
-        c/context/other_context[at0004]/items[at0014]/value
-        FROM EHR e CONTAINS COMPOSITION c
-        WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
+            SELECT
+            c/content,
+            c/content[at0001],
+            c[openEHR-EHR-COMPOSITION.test.v0]/content[at0002],
+            c/uid/value,
+            c/context/other_context[at0004]/items[at0014]/value
+            FROM EHR e CONTAINS COMPOSITION c
+            WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
-
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-
-        KnowledgeCacheService kcs = Mockito.mock(KnowledgeCacheService.class);
-        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
-
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
-        AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
@@ -96,7 +90,6 @@ public class AqlSqlLayerTest {
         assertThat(queries.get(1)).isInstanceOf(AslStructureQuery.class);
         assertThat(queries.get(2)).isInstanceOf(AslEncapsulatingQuery.class);
         assertThat(queries.get(3)).isInstanceOf(AslEncapsulatingQuery.class);
-
         assertThat(queries.get(4)).isInstanceOf(AslPathDataQuery.class);
 
         // feeder_audit
@@ -113,5 +106,38 @@ public class AqlSqlLayerTest {
         assertThat(((AslSubqueryField) contentField3).getFilterConditions()).hasSize(2);
 
         // assertThat(queries.get(5)).isInstanceOf(AslRmObjectDataQuery.class);
+    }
+
+    @Test
+    void clusterDataSingleSelection() {
+
+        AslRootQuery aslQuery = buildSqlQuery(
+                """
+        SELECT
+            cluster/items[at0001]/value/data
+        FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
+        """);
+        List<AslQuery> queries =
+                aslQuery.getChildren().stream().map(Pair::getLeft).toList();
+
+        assertThat(queries).hasSize(4);
+
+        assertThat(queries.get(0)).isInstanceOf(AslStructureQuery.class);
+        assertThat(queries.get(1)).isInstanceOf(AslStructureQuery.class);
+        assertThat(queries.get(2)).isInstanceOf(AslEncapsulatingQuery.class);
+        assertThat(queries.get(3)).isInstanceOfSatisfying(AslPathDataQuery.class, q -> {
+            assertThat(q.isMultipleValued()).isFalse();
+            assertThat(q.getDataField().getColumnName()).isEqualTo("data");
+            assertThat(q.getDataField().getType()).isSameAs(JSONB.class);
+        });
+    }
+
+    private AslRootQuery buildSqlQuery(String query) {
+
+        AqlQuery aqlQuery = AqlQueryParser.parse(query);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        return aqlSqlLayer.buildAslRootQuery(queryWrapper);
     }
 }

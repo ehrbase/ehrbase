@@ -29,6 +29,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
@@ -263,6 +264,9 @@ public class CompositionController extends BaseController {
     }
 
     private UUID getEhrIdForComposition(UUID compositionUid) {
-        return compositionService.getEhrIdForComposition(compositionUid).orElseThrow();
+        return compositionService
+                .getEhrIdForComposition(compositionUid)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "Composition", "Composition with id %s does not exist".formatted(compositionUid)));
     }
 }

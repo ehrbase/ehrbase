@@ -133,7 +133,7 @@ public class ValidationConfiguration {
         return builder.build();
     }
 
-    private ExternalTerminologyValidation nopTerminologyValidation() {
+    public ExternalTerminologyValidation nopTerminologyValidation() {
         return new ExternalTerminologyValidation() {
 
             private final ConstraintViolation err = new ConstraintViolation(ERR_MSG);
