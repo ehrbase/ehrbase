@@ -68,7 +68,12 @@ class EhrServiceTest {
     private final ItemTagRepository itemTagRepository = mock("Mock Item Tag Repository");
 
     private final EhrService spyEhrService = spy(new EhrServiceImp(
-            validationService, systemService, ehrFolderRepository, compositionRepository, ehrRepository, itemTagRepository));
+            validationService,
+            systemService,
+            ehrFolderRepository,
+            compositionRepository,
+            ehrRepository,
+            itemTagRepository));
 
     @BeforeEach
     void setUp() {
