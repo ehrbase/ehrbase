@@ -330,6 +330,13 @@ jobs:
         run: |
           curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
 
+      - name: Wait for EHRbase to be ready
+        run: |
+          until curl -s http://localhost:8080/ehrbase/management/info; do
+            echo "Waiting for EHRbase..."
+            sleep 10
+          done
+
       - name: Run Performance Tests
         uses: QAInsights/PerfAction@v5.6.2
         with:
