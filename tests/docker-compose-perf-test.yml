@@ -65,7 +65,7 @@ services:
 
 
   jmeter:
-    image: anasoid/docker-jmeter:latest
+    image: anasoid/jmeter:latest-plugins
     #image: justb4/jmeter:latest
     ports:
       - "8082:8080"
