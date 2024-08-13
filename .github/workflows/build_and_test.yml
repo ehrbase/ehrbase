@@ -336,23 +336,10 @@ jobs:
             done
           fi
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
-          
-      # - name: Check EHRbase status
-      #   run: |
-      #     curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
-      # - name: Wait for EHRbase to be ready
-      #   run: |
-      #     until curl -s http://localhost:8080/ehrbase/management/info; do
-      #       echo "Waiting for EHRbase..."
-      #       sleep 10
-      #     done
 
       - name: Show JMeter Test Plans
         run: |
           docker compose exec jmeter ls -al /tests
-      
-      #- name: Create Reports Directory
-      #  run: mkdir -p ${{ github.workspace }}/reports/${{ matrix.test-plan.name }}
           
       - name: Run JMeter Tests
         env:
@@ -362,6 +349,10 @@ jobs:
           PORT: 8080
           KEYCLOAK_HOST: keycloak
           KEYCLOAK_PORT: 8080
+          THREADS: 1
+          RAMP_UP: 1
+          LOOP_COUNT: 1
+          DURATION: 300
         run: |
           docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
           
@@ -371,6 +362,7 @@ jobs:
           jmeter -n -t $TEST_PLAN_PATH \
           -Jhost=$HOST -Jport=$PORT \
           -Jkeycloak_host=$KEYCLOAK_HOST -Jkeycloak_port=$KEYCLOAK_PORT \
+          -Jthreads=$THREADS -JrampUp=$RAMP_UP -JloopCount=$LOOP_COUNT -Jduration=$DURATION \
           -l /reports/${{ matrix.test-plan.name }}/result.jtl \
           -e -o /reports/${{ matrix.test-plan.name }}/html/ \
           -Djava.awt.headless=true
@@ -388,42 +380,6 @@ jobs:
           name: jmeter-reports-${{ matrix.test-plan.name }}
           path: reports/${{ matrix.test-plan.name }}/html
           if-no-files-found: error
-
-      # - name: Wait for WebTester to be up
-      #   run: |
-      #     echo "Waiting for WebTester to be up..."
-      #     for i in {1..15}; do
-      #       if curl -s http://localhost:8082/webtester; then
-      #         echo "WebTester is up!"
-      #         break
-      #       else
-      #         echo "Still waiting for WebTester..."
-      #         sleep 10
-      #       fi
-      #     done
-
-      # - name: List available performance test plans
-      #   run: |
-      #     curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter/test-plans' --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
-
-      # - name: Run performance test plan
-      #   run: |
-      #     curl --location --request POST 'http://localhost:8082/webtester/rest/jmeter/test-plans/ehrbase_no_auth_scenario/start' \
-      #     --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}' \
-      #     --header 'Content-Type: application/json' \
-      #     --data-raw '{
-      #     "protocol": "http",
-      #     "host": "localhost",
-      #     "port": 8082,
-      #     "threads": 1,
-      #     "rampUp": 1,
-      #     "loopCount": 1
-      #     }'
-
-      # - name: Get JMeter status
-      #   run: |
-      #     curl --location --request GET 'http://localhost:8082/webtester/rest/jmeter' \
-      #     --header 'Authorization: Basic ${{ env.WEBTESTER_AUTH_TOKEN }}'
           
       - name: Docker Compose - Logs ehrbase
         if: always()
@@ -436,10 +392,6 @@ jobs:
       - name: Docker Compose - jmeter
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
-
-      # - name: Docker Compose - Logs ehrbase-performance-tests
-      #   if: always()
-      #   run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase-performance-tests
 
       - name: Docker Compose - Stopping
         if: always()
