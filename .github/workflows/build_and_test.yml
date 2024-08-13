@@ -350,6 +350,9 @@ jobs:
       - name: Show JMeter Test Plans
         run: |
           docker compose exec jmeter ls -al /tests
+      
+      - name: Create Reports Directory
+        run: mkdir -p ${{ github.workspace }}/reports/${{ matrix.test-plan.name }}
           
       - name: Run JMeter Tests
         env:
@@ -363,14 +366,14 @@ jobs:
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
-          bash -c "mkdir -p $REPORTS_DIR && jmeter \
+          jmeter \
           -n \
           -t $TEST_PLAN_PATH \
           -Jhost=$HOST -Jport=$PORT \
           -Jkeycloak_host=$KEYCLOAK_HOST -Jkeycloak_port=$KEYCLOAK_PORT \
           -l $REPORTS_DIR/result.jtl \
           -e -o $REPORTS_DIR/html/ \
-          -Djava.awt.headless=true"
+          -Djava.awt.headless=true
 
       - name: Upload Results
         uses: actions/upload-artifact@v3
