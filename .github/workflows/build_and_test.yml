@@ -351,8 +351,8 @@ jobs:
         run: |
           docker compose exec jmeter ls -al /tests
       
-      - name: Create Reports Directory
-        run: mkdir -p ${{ github.workspace }}/reports/${{ matrix.test-plan.name }}
+      #- name: Create Reports Directory
+      #  run: mkdir -p ${{ github.workspace }}/reports/${{ matrix.test-plan.name }}
           
       - name: Run JMeter Tests
         env:
