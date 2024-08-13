@@ -341,10 +341,10 @@ class ItemTagServiceTest {
     @ParameterizedTest
     @ValueSource(
             strings = {
-                "content",
-                "content/value/name",
-                "item[at001]/value/item[at002]",
-                "content[openEHR-EHR-SECTION.medications.v1]"
+                "/content",
+                "/content/value/name",
+                "/item[at001]/value/item[at002]",
+                "/content[openEHR-EHR-SECTION.medications.v1]"
             })
     void validTargetPathDeclaration(String path) {
 
