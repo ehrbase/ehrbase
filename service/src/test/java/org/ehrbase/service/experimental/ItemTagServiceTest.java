@@ -141,7 +141,8 @@ class ItemTagServiceTest {
         ItemTagService service = service();
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> service.bulkUpsert(SAMPLE_EHR_ID, SAMPLE_EHR_ID, EHR_STATUS, itemTags));
+                () -> service.bulkUpsert(
+                        SAMPLE_EHR_ID, UUID.fromString("f5fe8b05-2fe3-4962-a0b7-d443e0b53304"), EHR_STATUS, itemTags));
         assertEquals("target_type does not match EHR_STATUS", exception.getMessage());
     }
 
