@@ -184,10 +184,18 @@ public class ItemTagServiceImpl implements ItemTagService {
         if (targetPath == null) {
             return;
         }
+        if (!targetPath.startsWith("/")) {
+            throw new UnprocessableEntityException(
+                    "ItemTag '%s' target_path '%s' does not start at root".formatted(key, targetPath));
+        }
+        if (targetPath.length() < 2) {
+            throw new UnprocessableEntityException(
+                    "ItemTag '%s' target_path cannot target '/', use null instead".formatted(key));
+        }
 
         AqlObjectPath path;
         try {
-            path = AqlObjectPath.parse(targetPath);
+            path = AqlObjectPath.parse(targetPath.substring(1));
         } catch (AqlParseException e) {
             throw new UnprocessableEntityException(e.getMessage(), e);
         }
