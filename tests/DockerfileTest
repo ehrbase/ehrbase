@@ -1,28 +1,24 @@
 ARG EHRBASE_IMAGE
 
 #
-# Builder to fetch jacoco
+# Builder stage to download Jacoco
 #
-FROM maven:3.9-eclipse-temurin-21-alpine as builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
-ADD ./ /build
+# Download Jacoco and cache the layer
+COPY --from=builder /build/jacoco-agent.zip .  # Cache Jacoco download
+RUN apk --update add unzip && rm -rf /var/cache/apk/* \
+  && export JACOCO_VERSION=$(mvn help:evaluate -Dexpression=maven-jacoco-plugin.version -q -DforceStdout) \
+  && curl -sSL --data-urlencode "filepath=org/jacoco/jacoco/$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" https://search.maven.org/remotecontent > jacoco-agent.zip \
+  && unzip jacoco-agent.zip
 
-RUN apk --update add unzip && rm -rf /var/cache/apk/*
-# download same jacoco version as used in the app
-RUN export JACOCO_VERSION=$(mvn help:evaluate -Dexpression=maven-jacoco-plugin.version -q -DforceStdout) && \
-	echo "Downloading [$JACOCO_VERSION] curl -sGL --data-urlencode 'filepath=org/jacoco/jacoco/$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip' https://search.maven.org/remotecontent > jacoco-agent.zip" && \
-	curl -sGL --data-urlencode "filepath=org/jacoco/jacoco/$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" https://search.maven.org/remotecontent > jacoco-agent.zip
-# unpack aganet
-RUN unzip jacoco-agent.zip && \
-    cp lib/jacocoagent.jar jacoco-agent.jar
-
-#
-# Build test image on top of standard ehrbase image
-#
+# Final image stage
 FROM ${EHRBASE_IMAGE}
 
+# Copy Jacoco agent and application jar
+COPY --from=builder /build/jacoco-agent.jar /app/jacoco-agent.jar
 COPY --from=builder /build/*.jar /app/
 
 USER root
