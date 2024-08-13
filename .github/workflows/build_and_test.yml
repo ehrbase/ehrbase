@@ -13,7 +13,6 @@ on:
 env:
   JAVA_VERSION: 21
   JAVA_DISTRIBUTION: 'temurin'
-  WEBTESTER_AUTH_TOKEN: d2VidGVzdGVyOkRjdG0xMjM0
 
 jobs:
 
@@ -285,6 +284,14 @@ jobs:
       docker-test-image
     ]
     name: Run Performance tests
+    strategy:
+      fail-fast: false # ensure all tests run
+      matrix:
+        test-plan: [
+          { name: 'ehrbase_no_auth_scenario', env: { 'AUTH_TYPE': 'NONE' } },
+          { name: 'ehrbase_basic_auth_scenario', env: { 'AUTH_TYPE': 'BASIC' } },
+          { name: 'ehrbase_oauth_auth_scenario', env: { 'AUTH_TYPE': 'OAUTH' } },
+        ]
 
     steps:
       - name: Checkout
@@ -304,14 +311,16 @@ jobs:
       - name: Docker - Load Image
         run: docker load --input ${{ runner.temp }}/ehrbase-test.tar
 
-      # image used by the docker-compose-perf-test.yml
       - name: Docker Compose - Setup env
         run: |
           echo "EHRBASE_IMAGE=ehrbase/ehrbase:test" >> $GITHUB_ENV
 
       - name: Modify .env.ehrbase file
         run: |
-          echo "SECURITY_AUTHTYPE=NONE" >> .env.ehrbase
+          echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> .env.ehrbase
+          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/ehrbase" >> .env.ehrbase
+          fi
           cat .env.ehrbase
 
       - name: Docker Compose - Starting
@@ -320,33 +329,36 @@ jobs:
 
       - name: Wait for Keycloak to be ready
         run: |
-          until curl -s http://localhost:8081/auth/realms/ehrbase; do
-            echo "Waiting for Keycloak..."
-            sleep 30
-          done
+          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+            until curl -s http://localhost:8081/auth/realms/ehrbase; do
+              echo "Waiting for Keycloak..."
+              sleep 20
+            done
+          fi
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
           
-      - name: Check ehrbase status
-        run: |
-          curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
+      # - name: Check EHRbase status
+      #   run: |
+      #     curl --location --request GET 'http://localhost:8080/ehrbase/rest/status'
+      # - name: Wait for EHRbase to be ready
+      #   run: |
+      #     until curl -s http://localhost:8080/ehrbase/management/info; do
+      #       echo "Waiting for EHRbase..."
+      #       sleep 10
+      #     done
 
-      - name: Wait for EHRbase to be ready
-        run: |
-          until curl -s http://localhost:8080/ehrbase/management/info; do
-            echo "Waiting for EHRbase..."
-            sleep 10
-          done
-
-      - name: Debug JMeter Test Plan
+      - name: Show JMeter Test Plans
         run: |
           docker compose exec jmeter ls -al /tests
           
       - name: Run JMeter Tests
         env:
-          TEST_PLAN_PATH: /tests/ehrbase_no_auth_scenario.jmx
-          REPORTS_DIR: /reports
+          TEST_PLAN_PATH: /tests/${{ matrix.test-plan.name }}.jmx
+          REPORTS_DIR: /reports/${{ matrix.test-plan.name }}
           HOST: ehrbase
           PORT: 8080
+          KEYCLOAK_HOST: keycloak
+          KEYCLOAK_PORT: 8080
         run: |
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
@@ -355,6 +367,7 @@ jobs:
           -n \
           -t $TEST_PLAN_PATH \
           -Jhost=$HOST -Jport=$PORT \
+          -Jkeycloak_host=$KEYCLOAK_HOST -Jkeycloak_port=$KEYCLOAK_PORT \
           -l $REPORTS_DIR/result.jtl \
           -e -o $REPORTS_DIR/html/ \
           -Djava.awt.headless=true
@@ -362,15 +375,15 @@ jobs:
       - name: Upload Results
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-results
-          path: ./reports/result.jtl
+          name: jmeter-results-${{ matrix.test-plan.name }}
+          path: ./reports/${{ matrix.test-plan.name }}/result.jtl
           if-no-files-found: error
 
       - name: Upload HTML Reports
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-reports
-          path: reports
+          name: jmeter-reports-${{ matrix.test-plan.name }}
+          path: reports/${{ matrix.test-plan.name }}/html
           if-no-files-found: error
 
       # - name: Wait for WebTester to be up

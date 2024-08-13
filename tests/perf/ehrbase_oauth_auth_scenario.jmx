@@ -143,8 +143,8 @@ vars.put(&quot;usrname&quot;, usrname)</stringProp>
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${__P(host,localhost)}</stringProp>
-          <stringProp name="HTTPSampler.port">${__P(port,8081)}</stringProp>
+          <stringProp name="HTTPSampler.domain">${__P(keycloak_host,localhost)}</stringProp>
+          <stringProp name="HTTPSampler.port">${__P(keycloak_port,8081)}</stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/auth/realms/ehrbase/protocol/openid-connect/token</stringProp>
