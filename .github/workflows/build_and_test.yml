@@ -362,7 +362,7 @@ jobs:
         run: |
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
-          -v ${{ github.workspace }}/reports:/reports \
+          -v ${{ github.workspace }}/reports:$REPORTS_DIR \
           jmeter \
           -n \
           -t $TEST_PLAN_PATH \
