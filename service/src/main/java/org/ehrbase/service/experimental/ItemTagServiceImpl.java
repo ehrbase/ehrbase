@@ -117,6 +117,11 @@ public class ItemTagServiceImpl implements ItemTagService {
             throw new UnprocessableEntityException(
                     "Owner mismatch for ItemTag '%s': %s vs. %s".formatted(key, dto.getOwnerId(), ownerId));
         }
+        // Changing the owner is not supported - we keep the EHR for the tag
+        if (dto.getTarget() != null && ObjectUtils.notEqual(dto.getTarget(), targetVoId)) {
+            throw new ValidationException(
+                    "Target mismatch for ItemTag '%s': %s vs. %s".formatted(key, dto.getTarget(), targetVoId));
+        }
 
         // tag validation
         validateTagKey(key);
