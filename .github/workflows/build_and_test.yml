@@ -367,7 +367,7 @@ jobs:
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
           jmeter \
-          bash -c "mkdir -p /reports/${{ matrix.test-plan.name }} && \
+          sh -c "mkdir -p /reports/${{ matrix.test-plan.name }} && \
           jmeter -n -t $TEST_PLAN_PATH \
           -Jhost=$HOST -Jport=$PORT \
           -Jkeycloak_host=$KEYCLOAK_HOST -Jkeycloak_port=$KEYCLOAK_PORT \
