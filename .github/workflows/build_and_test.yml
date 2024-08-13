@@ -366,14 +366,17 @@ jobs:
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
-          jmeter \
-          sh -c 'mkdir -p /reports/${{ matrix.test-plan.name }} && \
+          jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
+          
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
+          -v ${{ github.workspace }}/tests/perf:/tests \
+          -v ${{ github.workspace }}/reports:/reports \
           jmeter -n -t $TEST_PLAN_PATH \
           -Jhost=$HOST -Jport=$PORT \
           -Jkeycloak_host=$KEYCLOAK_HOST -Jkeycloak_port=$KEYCLOAK_PORT \
           -l /reports/${{ matrix.test-plan.name }}/result.jtl \
           -e -o /reports/${{ matrix.test-plan.name }}/html/ \
-          -Djava.awt.headless=true'
+          -Djava.awt.headless=true
 
       - name: Upload Results
         uses: actions/upload-artifact@v3
