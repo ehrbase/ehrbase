@@ -363,10 +363,7 @@ jobs:
           KEYCLOAK_HOST: keycloak
           KEYCLOAK_PORT: 8080
         run: |
-          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
-          -v ${{ github.workspace }}/tests/perf:/tests \
-          -v ${{ github.workspace }}/reports:/reports \
-          jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
+          docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
           
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
