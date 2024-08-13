@@ -54,6 +54,7 @@ import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
+import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.service.maping.EhrStatusMapper;
 import org.ehrbase.util.UuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,7 @@ public class EhrServiceImp implements EhrService {
 
     private final EhrFolderRepository ehrFolderRepository;
     private final CompositionRepository compositionRepository;
+    private final ItemTagRepository itemTagRepository;
 
     private final EhrRepository ehrRepository;
     private final SystemService systemService;
@@ -79,13 +81,15 @@ public class EhrServiceImp implements EhrService {
             SystemService systemService,
             EhrFolderRepository ehrFolderRepository,
             CompositionRepository compositionRepository,
-            EhrRepository ehrRepository) {
+            EhrRepository ehrRepository,
+            ItemTagRepository itemTagRepository) {
 
         this.validationService = validationService;
 
         this.ehrFolderRepository = ehrFolderRepository;
         this.compositionRepository = compositionRepository;
         this.ehrRepository = ehrRepository;
+        this.itemTagRepository = itemTagRepository;
 
         this.systemService = systemService;
     }
@@ -314,6 +318,7 @@ public class EhrServiceImp implements EhrService {
 
         ehrFolderRepository.adminDelete(ehrId, null);
         compositionRepository.adminDeleteAll(ehrId);
+        itemTagRepository.adminDeleteAll(ehrId);
         ehrRepository.adminDelete(ehrId);
     }
 

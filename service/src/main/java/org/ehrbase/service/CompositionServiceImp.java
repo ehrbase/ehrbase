@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -60,6 +61,7 @@ import org.ehrbase.openehr.sdk.serialisation.xmlencoding.CanonicalXML;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.templateprovider.TemplateProvider;
 import org.ehrbase.repository.CompositionRepository;
+import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.util.UuidGenerator;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
@@ -80,6 +82,7 @@ public class CompositionServiceImp implements CompositionService {
     private final EhrService ehrService;
 
     private final CompositionRepository compositionRepository;
+    private final ItemTagRepository itemTagRepository;
 
     private final SystemService systemService;
 
@@ -88,12 +91,14 @@ public class CompositionServiceImp implements CompositionService {
             ValidationService validationService,
             EhrService ehrService,
             SystemService systemService,
-            CompositionRepository compositionRepository) {
+            CompositionRepository compositionRepository,
+            ItemTagRepository itemTagRepository) {
 
         this.validationService = validationService;
         this.ehrService = ehrService;
         this.knowledgeCacheService = knowledgeCacheService;
         this.compositionRepository = compositionRepository;
+        this.itemTagRepository = itemTagRepository;
         this.systemService = systemService;
     }
 
@@ -440,6 +445,7 @@ public class CompositionServiceImp implements CompositionService {
     @Override
     public void adminDelete(UUID compositionId) {
 
+        itemTagRepository.adminDelete(compositionId, ItemTagRMType.COMPOSITION);
         compositionRepository.adminDelete(compositionId);
     }
 
