@@ -317,8 +317,8 @@ jobs:
 
       - name: Modify .env.ehrbase file
         run: |
-          echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> .env.ehrbase
-          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+          echo "SECURITY_AUTHTYPE=${{ matrix.test-plan.env['AUTH_TYPE'] }}" >> .env.ehrbase
+          if [ "${{ matrix.test-plan.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
             echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/ehrbase" >> .env.ehrbase
           fi
           cat .env.ehrbase
@@ -329,7 +329,7 @@ jobs:
 
       - name: Wait for Keycloak to be ready
         run: |
-          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+          if [ "${{ matrix.test-plan.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
             until curl -s http://localhost:8081/auth/realms/ehrbase; do
               echo "Waiting for Keycloak..."
               sleep 20
