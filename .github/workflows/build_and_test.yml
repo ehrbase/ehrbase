@@ -362,8 +362,8 @@ jobs:
 
       - name: Copy Previous Results
         run: |
-          mkdir -p ./reports/${{ matrix.test-plan.name }}
-          cp ./previous-reports/${{ matrix.test-plan.name }}/result_*.jtl ./reports/${{ matrix.test-plan.name }}/
+          docker compose exec jmeter mkdir -p ./reports/${{ matrix.test-plan.name }}
+          docker compose exec jmeter cp ./previous-reports/${{ matrix.test-plan.name }}/result_*.jtl ./reports/${{ matrix.test-plan.name }}/
 
       - name: Run JMeter Tests
         env:
@@ -378,19 +378,19 @@ jobs:
           LOOP_COUNT: 10
           DURATION: 300
         run: |
-          docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
+          #docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
 
           # Rename previous results with an incrementing index
           i=3
           while [ $i -ge 1 ]; do
-            if [ -f "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" ]; then
-              mv "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" "/reports/${{ matrix.test-plan.name }}/result_$((i+1)).jtl"
+            if [ docker compose exec jmeter -f "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" ]; then
+              docker compose exec jmeter mv "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" "/reports/${{ matrix.test-plan.name }}/result_$((i+1)).jtl"
             fi
             i=$((i-1))
           done
 
           # Save the current test result as result_1.jtl
-          mv "/reports/${{ matrix.test-plan.name }}/result.jtl" "/reports/${{ matrix.test-plan.name }}/result_1.jtl"
+          docker compose exec jmeter mv "/reports/${{ matrix.test-plan.name }}/result.jtl" "/reports/${{ matrix.test-plan.name }}/result_1.jtl"
           
           # Run the JMeter test
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
