@@ -364,6 +364,7 @@ jobs:
         run: |
           docker compose exec jmeter mkdir -p ./reports/${{ matrix.test-plan.name }}
           docker compose exec jmeter cp ./previous-reports/${{ matrix.test-plan.name }}/result_*.jtl ./reports/${{ matrix.test-plan.name }}/
+        continue-on-error: true
 
       - name: Run JMeter Tests
         env:
