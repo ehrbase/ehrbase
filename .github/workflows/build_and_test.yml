@@ -341,12 +341,24 @@ jobs:
         run: |
           docker compose exec jmeter ls -al /tests
 
+      # - name: Download Previous Results
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: jmeter-results-${{ matrix.test-plan.name }}-previous
+      #     path: ./previous-reports/${{ matrix.test-plan.name }}
+      #     if-no-files-found: ignore
+
       - name: Download Previous Results
+        id: download-results
         uses: actions/download-artifact@v3
         with:
           name: jmeter-results-${{ matrix.test-plan.name }}-previous
           path: ./previous-reports/${{ matrix.test-plan.name }}
-          if-no-files-found: ignore
+        continue-on-error: true
+
+      - name: Check if Previous Results Exist
+        if: steps.download-results.outcome == 'success'
+        run: echo "Previous results downloaded successfully."
 
       - name: Copy Previous Results
         run: |
