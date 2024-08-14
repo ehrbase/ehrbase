@@ -340,7 +340,19 @@ jobs:
       - name: Show JMeter Test Plans
         run: |
           docker compose exec jmeter ls -al /tests
-          
+
+      - name: Download Previous Results
+        uses: actions/download-artifact@v3
+        with:
+          name: jmeter-results-${{ matrix.test-plan.name }}-previous
+          path: ./previous-reports/${{ matrix.test-plan.name }}
+          if-no-files-found: ignore
+
+      - name: Copy Previous Results
+        run: |
+          mkdir -p ./reports/${{ matrix.test-plan.name }}
+          cp ./previous-reports/${{ matrix.test-plan.name }}/result_*.jtl ./reports/${{ matrix.test-plan.name }}/
+
       - name: Run JMeter Tests
         env:
           TEST_PLAN_PATH: /tests/${{ matrix.test-plan.name }}.jmx
@@ -355,7 +367,20 @@ jobs:
           DURATION: 300
         run: |
           docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
+
+          # Rename previous results with an incrementing index
+          i=3
+          while [ $i -ge 1 ]; do
+            if [ -f "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" ]; then
+              mv "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" "/reports/${{ matrix.test-plan.name }}/result_$((i+1)).jtl"
+            fi
+            i=$((i-1))
+          done
+
+          # Save the current test result as result_1.jtl
+          mv "/reports/${{ matrix.test-plan.name }}/result.jtl" "/reports/${{ matrix.test-plan.name }}/result_1.jtl"
           
+          # Run the JMeter test
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
           -v ${{ github.workspace }}/tests/perf:/tests \
           -v ${{ github.workspace }}/reports:/reports \
@@ -370,8 +395,8 @@ jobs:
       - name: Upload Results
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-results-${{ matrix.test-plan.name }}
-          path: ./reports/${{ matrix.test-plan.name }}/result.jtl
+          name: jmeter-res-${{ matrix.test-plan.name }}
+          path: ./reports/${{ matrix.test-plan.name }}/result*.jtl
           if-no-files-found: error
 
       - name: Upload HTML Reports
