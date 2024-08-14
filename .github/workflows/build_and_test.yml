@@ -371,7 +371,7 @@ jobs:
       - name: Upload Results
         uses: actions/upload-artifact@v4
         with:
-          name: jmeter-results-${{ matrix.test-plan.name }}
+          name: jmeter-result-${{ matrix.test-plan.name }}
           path: ./reports/${{ matrix.test-plan.name }}/result.jtl
           if-no-files-found: error
 
@@ -379,7 +379,7 @@ jobs:
         if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: jmeter-reports-${{ matrix.test-plan.name }}
+          name: jmeter-report-${{ matrix.test-plan.name }}
           path: reports/${{ matrix.test-plan.name }}/html
           if-no-files-found: error
           
@@ -408,6 +408,43 @@ jobs:
       #     name: robot-result-${{ matrix.test-suite.name }}
       #     path: ./tests/results/${{ matrix.test-suite.name }}/output.xml
       #     if-no-files-found: error
+
+
+  #
+  # Collect all JMeter results from [performance-test-run], store them in single folder and upload it as artifact.
+  #
+
+  performance-tests-collect:
+    name: JMeter-Collect
+    if: ${{ always() }}
+    needs: [
+      performance-test-run
+    ]
+    runs-on: ubuntu-latest
+    # allow to write comments to the issue
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Download - JMeter results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jmeter-result-*
+          path: ./tests/jmeter-results/
+      
+      - name: Archive and Upload - JMeter results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results-final
+          path: ./tests/jmeter-report
+
+      - name: Cleanup - Test Folder
+        if: always()
+        run: |
+          rm -rf ./tests/jmeter-results | true
+          rm -rf ./tests/jmeter-report | true
+
 
   #
   # Collect all Robot result from [integration-test-run] and generated the final report.
