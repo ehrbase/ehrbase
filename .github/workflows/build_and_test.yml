@@ -341,31 +341,21 @@ jobs:
         run: |
           docker compose exec jmeter ls -al /tests
 
-      # - name: Download Previous Results
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: jmeter-results-${{ matrix.test-plan.name }}-previous
-      #     path: ./previous-reports/${{ matrix.test-plan.name }}
-      #     if-no-files-found: ignore
-
-      - name: Download Previous Results
-        id: download-results
-        uses: actions/download-artifact@v3
-        with:
-          name: jmeter-results-${{ matrix.test-plan.name }}-previous
-          path: ./previous-reports/${{ matrix.test-plan.name }}
-        continue-on-error: true
-
-      - name: Check if Previous Results Exist
-        if: steps.download-results.outcome == 'success'
-        run: echo "Previous results downloaded successfully."
-
-      - name: Copy Previous Results
+      - name: Rotate Old Results
         run: |
-          docker compose exec jmeter mkdir -p ./reports/${{ matrix.test-plan.name }}
-          docker compose exec jmeter cp ./previous-reports/${{ matrix.test-plan.name }}/result_*.jtl ./reports/${{ matrix.test-plan.name }}/
-        continue-on-error: true
-
+          docker compose exec jmeter sh -c "
+            mkdir -p /reports/${{ matrix.test-plan.name }};
+            if [ -f /reports/${{ matrix.test-plan.name }}/result_2.jtl ]; then
+              mv /reports/${{ matrix.test-plan.name }}/result_2.jtl /reports/${{ matrix.test-plan.name }}/result_3.jtl;
+            fi;
+            if [ -f /reports/${{ matrix.test-plan.name }}/result_1.jtl ]; then
+              mv /reports/${{ matrix.test-plan.name }}/result_1.jtl /reports/${{ matrix.test-plan.name }}/result_2.jtl;
+            fi;
+            if [ -f /reports/${{ matrix.test-plan.name }}/result.jtl ]; then
+              mv /reports/${{ matrix.test-plan.name }}/result.jtl /reports/${{ matrix.test-plan.name }}/result_1.jtl;
+            fi;
+          "
+      
       - name: Run JMeter Tests
         env:
           TEST_PLAN_PATH: /tests/${{ matrix.test-plan.name }}.jmx
@@ -379,19 +369,7 @@ jobs:
           LOOP_COUNT: 10
           DURATION: 300
         run: |
-          #docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
-
-          # Rename previous results with an incrementing index
-          i=3
-          while [ $i -ge 1 ]; do
-            if [ docker compose exec jmeter -f "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" ]; then
-              docker compose exec jmeter mv "/reports/${{ matrix.test-plan.name }}/result_$i.jtl" "/reports/${{ matrix.test-plan.name }}/result_$((i+1)).jtl"
-            fi
-            i=$((i-1))
-          done
-
-          # Save the current test result as result_1.jtl
-          docker compose exec jmeter mv "/reports/${{ matrix.test-plan.name }}/result.jtl" "/reports/${{ matrix.test-plan.name }}/result_1.jtl"
+          docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
           
           # Run the JMeter test
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
@@ -408,8 +386,8 @@ jobs:
       - name: Upload Results
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-res-${{ matrix.test-plan.name }}
-          path: ./reports/${{ matrix.test-plan.name }}/result*.jtl
+          name: jmeter-results-${{ matrix.test-plan.name }}
+          path: ./reports/${{ matrix.test-plan.name }}/result.jtl
           if-no-files-found: error
 
       - name: Upload HTML Reports
