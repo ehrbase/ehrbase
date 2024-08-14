@@ -413,7 +413,6 @@ jobs:
   #
   # Collect all JMeter results from [performance-test-run], store them in single folder and upload it as artifact.
   #
-
   performance-tests-collect:
     name: JMeter-Collect
     if: ${{ always() }}
@@ -437,14 +436,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jmeter-results-final
-          path: ./tests/jmeter-report
+          path: ./tests/jmeter-results
 
       - name: Cleanup - Test Folder
         if: always()
         run: |
           rm -rf ./tests/jmeter-results | true
-          rm -rf ./tests/jmeter-report | true
-
 
   #
   # Collect all Robot result from [integration-test-run] and generated the final report.
