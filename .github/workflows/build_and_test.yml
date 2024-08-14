@@ -13,7 +13,7 @@ on:
 env:
   JAVA_VERSION: 21
   JAVA_DISTRIBUTION: 'temurin'
-  UPLOAD_PERF_HTML_REPORTS: false
+  UPLOAD_PERF_HTML_REPORTS: true
 
 jobs:
 
