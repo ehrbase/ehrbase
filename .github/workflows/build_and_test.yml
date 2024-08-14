@@ -345,15 +345,14 @@ jobs:
         run: |
           docker compose exec jmeter sh -c "
             mkdir -p /reports/${{ matrix.test-plan.name }};
+            touch /reports/${{ matrix.test-plan.name }}/result.jtl;
             if [ -f /reports/${{ matrix.test-plan.name }}/result_2.jtl ]; then
               mv /reports/${{ matrix.test-plan.name }}/result_2.jtl /reports/${{ matrix.test-plan.name }}/result_3.jtl;
             fi;
             if [ -f /reports/${{ matrix.test-plan.name }}/result_1.jtl ]; then
               mv /reports/${{ matrix.test-plan.name }}/result_1.jtl /reports/${{ matrix.test-plan.name }}/result_2.jtl;
             fi;
-            if [ -f /reports/${{ matrix.test-plan.name }}/result.jtl ]; then
-              mv /reports/${{ matrix.test-plan.name }}/result.jtl /reports/${{ matrix.test-plan.name }}/result_1.jtl;
-            fi;
+            mv /reports/${{ matrix.test-plan.name }}/result.jtl /reports/${{ matrix.test-plan.name }}/result_1.jtl;
           "
       
       - name: Run JMeter Tests
@@ -369,7 +368,7 @@ jobs:
           LOOP_COUNT: 10
           DURATION: 300
         run: |
-          docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
+          #docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
           
           # Run the JMeter test
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
