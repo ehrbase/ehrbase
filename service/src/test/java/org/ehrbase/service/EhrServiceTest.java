@@ -48,6 +48,7 @@ import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
+import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.service.maping.EhrStatusMapper;
 import org.ehrbase.test.assertions.EhrStatusAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,9 +65,15 @@ class EhrServiceTest {
     private final CompositionRepository compositionRepository = mock("Mock Composition Repository");
 
     private final EhrRepository ehrRepository = mock("Mock Ehr Repository");
+    private final ItemTagRepository itemTagRepository = mock("Mock Item Tag Repository");
 
     private final EhrService spyEhrService = spy(new EhrServiceImp(
-            validationService, systemService, ehrFolderRepository, compositionRepository, ehrRepository));
+            validationService,
+            systemService,
+            ehrFolderRepository,
+            compositionRepository,
+            ehrRepository,
+            itemTagRepository));
 
     @BeforeEach
     void setUp() {

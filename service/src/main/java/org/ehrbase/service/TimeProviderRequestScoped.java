@@ -15,19 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.exception;
+package org.ehrbase.service;
 
-/**
- * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
- * status 422 "Unprocessable Entity" or whatever is appropriate.
- */
-public class UnprocessableEntityException extends RuntimeException {
+import jakarta.annotation.PostConstruct;
+import java.time.OffsetDateTime;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
-    public UnprocessableEntityException(String message) {
-        super(message);
+@RequestScope
+@Component("requestScopedTimeProvider")
+public class TimeProviderRequestScoped implements TimeProvider {
+
+    private OffsetDateTime now;
+
+    @PostConstruct
+    private void init() {
+        now = OffsetDateTime.now();
     }
 
-    public UnprocessableEntityException(String message, Throwable e) {
-        super(message, e);
+    public OffsetDateTime getNow() {
+        return now;
     }
 }
