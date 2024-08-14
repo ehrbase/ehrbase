@@ -614,6 +614,7 @@ jobs:
       coverage-collect,
       integration-test-collect,
       performance-test-run,
+      performance-tests-collect,
       docker-build-push,
       maven-publish
     ]
