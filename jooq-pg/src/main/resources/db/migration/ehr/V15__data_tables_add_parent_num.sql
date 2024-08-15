@@ -164,9 +164,6 @@ BEGIN
     last = clock_timestamp();
 
     WHILE updated_cnt <> 0 LOOP
-            COMMIT;
-            SET TRANSACTION ISOLATION LEVEL SERIALIZABLE READ ONLY DEFERRABLE;
-
             BEGIN
                 rs = ext.mig_retrieve_nums_batch(rel_name::text, id_exp, ehr_id_exp, version_exp, batch_size);
                 updated_cnt = COALESCE(cardinality(rs), 0);
@@ -176,7 +173,6 @@ BEGIN
                 RAISE NOTICE '[%] read 0. Finished pre-migration for %! in %s', rel_name, rel_name, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
                 EXIT;
             ELSEIF updated_cnt <> -1 THEN
-                COMMIT;
                 RAISE NOTICE '[%] read % in %', rel_name, updated_cnt, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
             ELSE
                 ROLLBACK;
