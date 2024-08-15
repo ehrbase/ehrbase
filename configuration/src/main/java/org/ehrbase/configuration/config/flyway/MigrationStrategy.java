@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,20 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.application;
+package org.ehrbase.configuration.config.flyway;
 
-import java.util.Arrays;
-import org.ehrbase.application.cli.EhrBaseCli;
-import org.ehrbase.application.server.EhrBaseServer;
-import org.ehrbase.cli.CliRunner;
-import org.springframework.boot.SpringApplication;
+import java.util.function.Consumer;
+import org.flywaydb.core.Flyway;
 
-public class EhrBase {
+public enum MigrationStrategy {
+    DISABLED(f -> {}),
+    MIGRATE(Flyway::migrate),
+    VALIDATE(Flyway::validate);
 
-    public static void main(String[] args) {
+    private final Consumer<Flyway> strategy;
 
-        SpringApplication app =
-                Arrays.asList(args).contains(CliRunner.CLI) ? EhrBaseCli.build(args) : EhrBaseServer.build(args);
-        app.run(args);
+    MigrationStrategy(Consumer<Flyway> strategy) {
+        this.strategy = strategy;
+    }
+
+    public void applyStrategy(Flyway flyway) {
+        strategy.accept(flyway);
     }
 }

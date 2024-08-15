@@ -125,8 +125,9 @@ jobs:
             --build-arg EHRBASE_IMAGE=ehrbase/ehrbase:build \
             --file tests/DockerfileTest .
 
-      - name: Docker - Save Test Image
-        run: docker save --output ${{ runner.temp }}/ehrbase-test.tar ehrbase/ehrbase:test
+      - name: Docker - Save Images
+        run: |
+          docker save --output ${{ runner.temp }}/ehrbase-test.tar ehrbase/ehrbase:test
 
       - name: Upload - Test Image
         uses: actions/upload-artifact@v4
@@ -139,7 +140,7 @@ jobs:
   #
   # Uses the ehrbase docker image from [build] to run the robot integrations against it.
   #
-  integration-test-run:
+  integration-test-server:
     runs-on: ubuntu-latest
     needs: [
       docker-test-image
@@ -277,13 +278,13 @@ jobs:
           if-no-files-found: error
 
   #
-  # Collect all Robot result from [integration-test-run] and generated the final report.
+  # Collect all Robot result from [integration-test-server] and generated the final report.
   #
-  integration-test-collect:
+  robot-collect:
     name: Robot-Collect
     if: ${{ always() }}
     needs: [
-      integration-test-run
+      integration-test-server
     ]
     runs-on: ubuntu-latest
     # allow to write comments to the issue
@@ -318,13 +319,13 @@ jobs:
           rm -rf ./tests/report | true
 
   #
-  # Collect all Robot result from [integration-test-run] and generated the final report.
+  # Collect all Robot result from [integration-test-server] and generated the final report.
   #
   coverage-collect:
     name: Jacoco-Collect
     if: ${{ always() }}
     needs: [
-      integration-test-run
+      integration-test-server
     ]
     runs-on: ubuntu-latest
     steps:
@@ -383,6 +384,20 @@ jobs:
           path: ./tests/coverage/jacoco-report-final
 
   #
+  # Uses the ehrbase docker image from [build] to run the robot integrations against it.
+  #
+  integration-test-cli:
+    name: IT
+    uses: ./.github/workflows/job-integration-test-cli.yml
+    secrets: inherit
+    needs: [
+      docker-test-image
+    ]
+    with:
+      ehrbase-image-tag: ehrbase/ehrbase:test
+      ehrbase-image-artifact: ehrbase-image-test
+
+  #
   # Build and push docker image
   #
   docker-build-push:
@@ -393,7 +408,8 @@ jobs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
       build-maven, # needed to obtain ehrbase-version from
-      integration-test-run
+      integration-test-server,
+      integration-test-cli
     ]
     with:
       ehrbase-version: ${{ needs.build-maven.outputs.ehrbase-version }}
@@ -410,7 +426,7 @@ jobs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
       build-maven, # only to have them in the same UI group as docker-build-push
-      integration-test-run
+      integration-test-server
     ]
 
   #
@@ -421,7 +437,7 @@ jobs:
     if: ${{ always() }}
     needs: [
       coverage-collect,
-      integration-test-collect,
+      robot-collect,
       docker-build-push,
       maven-publish
     ]
@@ -433,7 +449,7 @@ jobs:
           name: |
             java-class-files
             ehrbase-jar
-            ehrbase-image-test
+            ehrbase-image-*
             robot-result-*
             jacoco-coverage-*
           failOnError: false
