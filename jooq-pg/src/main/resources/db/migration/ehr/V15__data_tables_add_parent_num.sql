@@ -231,6 +231,14 @@ ALTER TABLE comp_data
     ADD COLUMN IF NOT EXISTS parent_num integer NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS num_cap integer NOT NULL DEFAULT -1;
 
+-- Create temporary indices for number cap
+CREATE INDEX IF NOT EXISTS mig_ehr_folder_data_history_num_idx ON ehr_folder_data_history (ehr_id) WHERE num_cap = -1 AND num = 0 AND sys_version = 1;
+CREATE INDEX IF NOT EXISTS mig_ehr_folder_data_num_idx ON ehr_folder_data (ehr_id) WHERE num_cap = -1 AND num = 0;
+CREATE INDEX IF NOT EXISTS mig_ehr_status_data_history_num_idx ON ehr_status_data_history (ehr_id) WHERE num_cap = -1 AND num = 0 AND sys_version = 1;
+CREATE INDEX IF NOT EXISTS mig_ehr_status_data_num_idx ON ehr_status_data (ehr_id) WHERE num_cap = -1 AND num = 0;
+CREATE INDEX IF NOT EXISTS mig_comp_data_history_num_idx ON comp_data_history (vo_id) WHERE num_cap = -1 AND num = 0 AND sys_version = 1;
+CREATE INDEX IF NOT EXISTS mig_comp_data_num_idx ON comp_data (vo_id) WHERE num_cap = -1 AND num = 0;
+
 --
 -- Migrate
 --
@@ -288,6 +296,14 @@ ALTER TABLE ehr_folder_data_history
     DROP COLUMN IF EXISTS entity_idx_cap,
     DROP COLUMN IF EXISTS entity_path,
     DROP COLUMN IF EXISTS entity_path_cap;
+
+-- remove temporary indices
+DROP INDEX IF EXISTS mig_ehr_folder_data_history_num_idx;
+DROP INDEX IF EXISTS mig_ehr_folder_data_num_idx;
+DROP INDEX IF EXISTS mig_ehr_status_data_history_num_idx;
+DROP INDEX IF EXISTS mig_ehr_status_data_num_idx;
+DROP INDEX IF EXISTS mig_comp_data_history_num_idx;
+DROP INDEX IF EXISTS mig_comp_data_num_idx;
 
 -- Cleanup functions, procedures and types used for the migration
 DROP FUNCTION IF EXISTS ext.mig_calc_nums(ext.mig_num_type[]);
