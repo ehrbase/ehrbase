@@ -352,9 +352,9 @@ jobs:
           KEYCLOAK_HOST: keycloak
           KEYCLOAK_PORT: 8080
           THREADS: 10
-          RAMP_UP: 5
-          LOOP_COUNT: 10
-          DURATION: 300
+          RAMP_UP: 1
+          LOOP_COUNT: 50
+          DURATION: 360
         run: |
           docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
           
