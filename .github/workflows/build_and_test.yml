@@ -354,7 +354,7 @@ jobs:
           THREADS: 10
           RAMP_UP: 1
           LOOP_COUNT: 50
-          DURATION: 360
+          DURATION: 180
         run: |
           docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
           
