@@ -403,15 +403,6 @@ jobs:
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml down --remove-orphans
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml rm --force --volumes
 
-      # - name: Upload - Robot results
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: robot-result-${{ matrix.test-suite.name }}
-      #     path: ./tests/results/${{ matrix.test-suite.name }}/output.xml
-      #     if-no-files-found: error
-
-
   #
   # Collect all JMeter results from [performance-test-run], store them in single folder and upload it as artifact.
   #
@@ -458,15 +449,6 @@ jobs:
         run: |
           rm -rf ./tests/jmeter-results | true
           rm -rf ./tests/jmeter-reports | true
-
-      # - name: Upload HTML Reports
-      #   if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: jmeter-report-${{ matrix.test-plan.name }}
-      #     path: reports/${{ matrix.test-plan.name }}/html
-      #     if-no-files-found: error
-
 
   #
   # Collect all Robot result from [integration-test-run] and generated the final report.
