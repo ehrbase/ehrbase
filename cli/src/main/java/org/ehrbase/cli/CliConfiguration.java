@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,20 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.application;
+package org.ehrbase.cli;
 
-import java.util.Arrays;
-import org.ehrbase.application.cli.EhrBaseCli;
-import org.ehrbase.application.server.EhrBaseServer;
-import org.ehrbase.cli.CliRunner;
-import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
-public class EhrBase {
-
-    public static void main(String[] args) {
-
-        SpringApplication app =
-                Arrays.asList(args).contains(CliRunner.CLI) ? EhrBaseCli.build(args) : EhrBaseServer.build(args);
-        app.run(args);
-    }
-}
+@Configuration
+@ComponentScan(basePackages = "org.ehrbase.cli")
+public class CliConfiguration {}
