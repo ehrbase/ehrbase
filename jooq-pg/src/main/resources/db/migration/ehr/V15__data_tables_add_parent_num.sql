@@ -19,8 +19,8 @@
 --
 -- Structure holding the parent and cap numbers as well as query relevant identifier
 --
-DROP TYPE IF EXISTS ext.mig_num_type CASCADE;
-CREATE TYPE ext.mig_num_type AS
+DROP TYPE IF EXISTS pg_temp.mig_num_type CASCADE;
+CREATE TYPE pg_temp.mig_num_type AS
 (
     vo_id uuid,
     num integer,
@@ -32,16 +32,16 @@ CREATE TYPE ext.mig_num_type AS
 );
 
 --
--- Calculates the `parent_num` and `num_cap` for the given `ext.mig_num_type`s
+-- Calculates the `parent_num` and `num_cap` for the given `pg_temp.mig_num_type`s
 --
-CREATE OR REPLACE FUNCTION ext.mig_calc_nums(rs ext.mig_num_type[])
-    RETURNS ext.mig_num_type[]
+CREATE OR REPLACE FUNCTION pg_temp.mig_calc_nums(rs pg_temp.mig_num_type[])
+    RETURNS pg_temp.mig_num_type[]
     LANGUAGE plpgsql
     IMMUTABLE PARALLEL SAFE STRICT
 AS $function$
 DECLARE
-    r ext.mig_num_type;
-    prev_r ext.mig_num_type;
+    r pg_temp.mig_num_type;
+    prev_r pg_temp.mig_num_type;
     h int[];
     i int;
     j int;
@@ -88,18 +88,18 @@ END;$function$;
 --
 -- Select structures from affected table
 --
-CREATE OR REPLACE FUNCTION ext.mig_retrieve_nums_batch(
+CREATE OR REPLACE FUNCTION pg_temp.mig_retrieve_nums_batch(
     table_name text,
     id_exp text,
     ehr_id_exp text,
     version_exp text,
     batch_size integer
-) RETURNS ext.mig_num_type[]
+) RETURNS pg_temp.mig_num_type[]
     LANGUAGE plpgsql
     IMMUTABLE STRICT
 AS $function$
 DECLARE
-    rs ext.mig_num_type[];
+    rs pg_temp.mig_num_type[];
 BEGIN
     EXECUTE format('
         SELECT array_agg(sub.r)
@@ -130,20 +130,18 @@ END;$function$;
 --
 -- Migration procedure
 --
-CREATE OR REPLACE PROCEDURE ext.mig_num_columns(
+CREATE OR REPLACE PROCEDURE pg_temp.mig_num_columns(
     rel_name regclass,
     id_exp text,
     batch_size integer DEFAULT 1000
 ) LANGUAGE plpgsql
 AS $procedure$
 DECLARE
-    rs ext.mig_num_type[];
+    rs pg_temp.mig_num_type[];
     cols text;
     ehr_id_exp text;
     version_exp text;
     updated_cnt integer := -1;
-    err_msg text;
-    err_state text;
     last timestamp;
 BEGIN
 
@@ -151,60 +149,45 @@ BEGIN
 
     SELECT string_agg(attname, ',')
     FROM (
-             SELECT attname
-             FROM pg_attribute
-             WHERE attrelid=rel_name AND NOT attisdropped AND attnum > 0
-             ORDER BY attnum
-         ) att
+         SELECT attname
+         FROM pg_attribute
+         WHERE attrelid=rel_name AND NOT attisdropped AND attnum > 0
+         ORDER BY attnum
+    ) att
     INTO cols;
 
     ehr_id_exp=COALESCE(substring(cols FROM '(?i)ehr_id'),'NULL');
     version_exp=COALESCE(substring(cols FROM '(?i)sys_version'),'1::int');
 
-    last = clock_timestamp();
-
     WHILE updated_cnt <> 0 LOOP
-            BEGIN
-                rs = ext.mig_retrieve_nums_batch(rel_name::text, id_exp, ehr_id_exp, version_exp, batch_size);
-                updated_cnt = COALESCE(cardinality(rs), 0);
-            END;
 
-            IF updated_cnt = 0 THEN
-                RAISE NOTICE '[%] read 0. Finished pre-migration for %! in %s', rel_name, rel_name, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
-                EXIT;
-            ELSEIF updated_cnt <> -1 THEN
-                RAISE NOTICE '[%] read % in %', rel_name, updated_cnt, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
-            ELSE
-                ROLLBACK;
-                RAISE NOTICE '[%] error caught, waiting for 2s: (%) %', rel_name, err_state, err_msg;
-                PERFORM pg_sleep(2);
-                CONTINUE;
-            END IF;
+        last = clock_timestamp();
 
-            last = clock_timestamp();
+        rs = pg_temp.mig_retrieve_nums_batch(rel_name::text, id_exp, ehr_id_exp, version_exp, batch_size);
+        updated_cnt = COALESCE(cardinality(rs), 0);
 
-            BEGIN
-                rs = ext.mig_calc_nums(rs);
-                EXECUTE format('
-                    UPDATE %1$s u
-                    SET parent_num=r.parent_num, num_cap=r.num_cap
-                    FROM unnest($1) r
-                    WHERE u.vo_id=r.vo_id and u.num=r.num
-                ', rel_name) USING rs;
-                GET DIAGNOSTICS updated_cnt := ROW_COUNT;
-            END;
+        IF updated_cnt = 0 THEN
+            RAISE NOTICE '[%] read 0. Finished pre-migration for %! in %s', rel_name, rel_name, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
+            EXIT;
+        ELSE -- updated_cnt <> -1 THEN
+            RAISE NOTICE '[%] read % in %', rel_name, updated_cnt, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
+        END IF;
 
-            IF updated_cnt <> -1 THEN
-                COMMIT;
-                RAISE NOTICE '[%] updated % in %', rel_name, updated_cnt, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
-            ELSE
-                ROLLBACK;
-                RAISE NOTICE '[%] error caught, waiting for 2s: (%) %', rel_name, err_state,err_msg;
-                PERFORM pg_sleep(2);
-            END IF;
+        last = clock_timestamp();
 
-            last = clock_timestamp();
-        END LOOP;
+        rs = pg_temp.mig_calc_nums(rs);
+        EXECUTE format('
+            UPDATE %1$s u
+            SET parent_num=r.parent_num, num_cap=r.num_cap
+            FROM unnest($1) r
+            WHERE u.vo_id=r.vo_id and u.num=r.num
+        ', rel_name) USING rs;
+        GET DIAGNOSTICS updated_cnt := ROW_COUNT;
+
+        COMMIT;
+        RAISE NOTICE '[%] updated % in %', rel_name, updated_cnt, to_char(clock_timestamp() - last, 'HH24:MI:SS:MS');
+
+    END LOOP;
 END;$procedure$;
 
 --
@@ -244,12 +227,12 @@ CREATE INDEX IF NOT EXISTS mig_comp_data_num_idx ON comp_data (vo_id) WHERE num_
 --
 
 --may be executed in parallel
-CALL ext.mig_num_columns('ehr_folder_data_history'::regclass, 'ehr_id',100);
-CALL ext.mig_num_columns('ehr_folder_data'::regclass, 'ehr_id',1000);
-CALL ext.mig_num_columns('ehr_status_data_history'::regclass, 'ehr_id',10000);
-CALL ext.mig_num_columns('ehr_status_data'::regclass, 'ehr_id',10000);
-CALL ext.mig_num_columns('comp_data_history'::regclass, 'vo_id',1000);
-CALL ext.mig_num_columns('comp_data'::regclass, 'vo_id'::text,1000);
+CALL pg_temp.mig_num_columns('ehr_folder_data_history'::regclass, 'ehr_id',100);
+CALL pg_temp.mig_num_columns('ehr_folder_data'::regclass, 'ehr_id',1000);
+CALL pg_temp.mig_num_columns('ehr_status_data_history'::regclass, 'ehr_id',10000);
+CALL pg_temp.mig_num_columns('ehr_status_data'::regclass, 'ehr_id',10000);
+CALL pg_temp.mig_num_columns('comp_data_history'::regclass, 'vo_id',1000);
+CALL pg_temp.mig_num_columns('comp_data'::regclass, 'vo_id'::text,1000);
 
 -- Create new indices for path
 CREATE INDEX IF NOT EXISTS ehr_status_data_path_idx ON ehr_status_data (ehr_id, parent_num, entity_attribute, entity_concept, rm_entity, num, num_cap);
@@ -304,9 +287,3 @@ DROP INDEX IF EXISTS mig_ehr_status_data_history_num_idx;
 DROP INDEX IF EXISTS mig_ehr_status_data_num_idx;
 DROP INDEX IF EXISTS mig_comp_data_history_num_idx;
 DROP INDEX IF EXISTS mig_comp_data_num_idx;
-
--- Cleanup functions, procedures and types used for the migration
-DROP FUNCTION IF EXISTS ext.mig_calc_nums(ext.mig_num_type[]);
-DROP FUNCTION IF EXISTS ext.mig_retrieve_nums_batch(text, text, text, text, text, text, integer);
-DROP PROCEDURE IF EXISTS ext.mig_num_columns(regclass, text, text, integer);
-DROP TYPE IF EXISTS ext.mig_num_type CASCADE;
