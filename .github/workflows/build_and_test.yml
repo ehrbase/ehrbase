@@ -598,7 +598,6 @@ jobs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
       build-maven, # needed to obtain ehrbase-version from
-      performance-test-run,
       integration-test-server,
       integration-test-cli
     ]
