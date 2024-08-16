@@ -129,12 +129,21 @@ jobs:
       - name: Docker - Save Images
         run: |
           docker save --output ${{ runner.temp }}/ehrbase-test.tar ehrbase/ehrbase:test
+          docker save --output ${{ runner.temp }}/ehrbase-build.tar ehrbase/ehrbase:build
 
       - name: Upload - Test Image
         uses: actions/upload-artifact@v4
         with:
           name: ehrbase-image-test
           path: ${{ runner.temp }}/ehrbase-test.tar
+          if-no-files-found: error
+          retention-days: 1
+      
+      - name: Upload - Build Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ehrbase-image-build
+          path: ${{ runner.temp }}/ehrbase-build.tar
           if-no-files-found: error
           retention-days: 1
 
@@ -305,18 +314,18 @@ jobs:
             .env.ehrbase
             docker-compose.yml
 
-      - name: Download - Test Image
+      - name: Download - Build Image
         uses: actions/download-artifact@v4
         with:
-          name: ehrbase-image-test
+          name: ehrbase-image-build
           path: ${{ runner.temp }}
 
       - name: Docker - Load Image
-        run: docker load --input ${{ runner.temp }}/ehrbase-test.tar
+        run: docker load --input ${{ runner.temp }}/ehrbase-build.tar
 
       - name: Docker Compose - Setup env
         run: |
-          echo "EHRBASE_IMAGE=ehrbase/ehrbase:test" >> $GITHUB_ENV
+          echo "EHRBASE_IMAGE=ehrbase/ehrbase:build" >> $GITHUB_ENV
 
       - name: Modify .env.ehrbase file
         run: |
