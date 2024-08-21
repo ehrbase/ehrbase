@@ -39,6 +39,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -238,9 +239,9 @@ final class EncapsulatingQueryUtils {
                 conceptField);
     }
 
-    private static Field templateIdOrderField(Field templateUidField, KnowledgeCacheService knowledgeCache) {
+    private static Field templateIdOrderField(Field templateUidField, TemplateService templateService) {
         // order lexicographically by template id
-        List<TemplateMetaData> templates = knowledgeCache.listAllOperationalTemplates();
+        Map<UUID, String> templates = templateService.findAllTemplateIds();
 
         if (templates.isEmpty()) {
             LOG.warn("No template ids found: Fallback to ordering by internal UUID");
@@ -248,11 +249,11 @@ final class EncapsulatingQueryUtils {
         }
 
         Map<Param<UUID>, Param<Integer>> templateIdOrderMap = new LinkedHashMap<>();
-        Iterator<UUID> it = templates.stream()
+        Iterator<UUID> it = templates.entrySet().stream()
                 .sorted(Comparator.comparing(
-                        u -> u.getOperationaltemplate().getTemplateId().getValue(),
+                        Map.Entry::getValue,
                         Collator.getInstance(Locale.ENGLISH)))
-                .map(TemplateMetaData::getInternalId)
+                .map(Map.Entry::getKey)
                 .iterator();
         int pos = 0;
         while (it.hasNext()) {
@@ -349,13 +350,13 @@ final class EncapsulatingQueryUtils {
     public static Stream<SortField<?>> orderFields(
             AslOrderByField ob,
             AqlSqlQueryBuilder.AslQueryTables aslQueryToTable,
-            KnowledgeCacheService knowledgeCache) {
+            TemplateService templateService) {
         AslField aslField = ob.field();
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
                     case AslDvOrderedColumnField f -> Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(
                             (Field<JSONB>) FieldUtils.field(src, f, true)));
-                    case AslColumnField f -> columnOrderField(f, src, knowledgeCache);
+                    case AslColumnField f -> columnOrderField(f, src, templateService);
                     case AslComplexExtractedColumnField ecf -> complexExtractedColumnOrderByFields(ecf, src);
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "ORDER BY AslAggregatingField is not allowed");
@@ -367,12 +368,12 @@ final class EncapsulatingQueryUtils {
 
     @Nonnull
     private static Stream<Field<?>> columnOrderField(
-            AslColumnField f, Table<?> src, KnowledgeCacheService knowledgeCache) {
+            AslColumnField f, Table<?> src, TemplateService templateService) {
         Field<?> field = FieldUtils.field(src, f, true);
 
         field = switch (f.getExtractedColumn()) {
                 // ensure order by name, not internal ID
-            case TEMPLATE_ID -> templateIdOrderField(field, knowledgeCache);
+            case TEMPLATE_ID -> templateIdOrderField(field, templateService);
             case AD_CHANGE_TYPE_VALUE, AD_CHANGE_TYPE_PREFERRED_TERM -> DSL.lower(field.cast(String.class));
             case AD_CHANGE_TYPE_CODE_STRING -> DSL.case_((Field<ContributionChangeType>) field)
                     .mapValues(JOOQ_CHANGE_TYPE_TO_CODE);

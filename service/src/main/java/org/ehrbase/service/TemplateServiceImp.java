@@ -23,8 +23,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 import org.apache.commons.io.IOUtils;
@@ -69,6 +71,11 @@ public class TemplateServiceImp implements TemplateService {
         return knowledgeCacheService.listAllOperationalTemplates().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<UUID, String> findAllTemplateIds() {
+        return knowledgeCacheService.findAllTemplateIds();
     }
 
     private TemplateMetaDataDto mapToDto(TemplateMetaData data) {
@@ -116,7 +123,7 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     public WebTemplate findTemplate(String templateId) {
         try {
-            return knowledgeCacheService.getQueryOptMetaData(templateId);
+            return knowledgeCacheService.getWebTemplate(templateId);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {
@@ -153,15 +160,13 @@ public class TemplateServiceImp implements TemplateService {
      * {@inheritDoc}
      */
     @Override
-    public boolean adminDeleteTemplate(String templateId) {
-        Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
-        if (existingTemplate.isEmpty()) {
-            throw new ObjectNotFoundException(
-                    "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId));
-        }
+    public void adminDeleteTemplate(String templateId) {
+        OPERATIONALTEMPLATE existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId)
+        .orElseThrow(() -> new ObjectNotFoundException(
+                    "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
 
         // Delete template if not used
-        return knowledgeCacheService.deleteOperationalTemplate(existingTemplate.get());
+        knowledgeCacheService.deleteOperationalTemplate(existingTemplate);
     }
 
     /**
