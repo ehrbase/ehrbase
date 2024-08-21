@@ -62,15 +62,19 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
 
+    @Value("${ehrbase.cache.template-init-on-startup:false}")
+    private boolean initTemplateCache;
+
     public KnowledgeCacheServiceImp(TemplateStorage templateStorage, CacheProvider cacheProvider) {
         this.templateStorage = templateStorage;
         this.cacheProvider = cacheProvider;
     }
 
-    @Override
-    public String addOperationalTemplate(InputStream inputStream) {
-        OPERATIONALTEMPLATE template = buildOperationalTemplate(inputStream);
-        return addOperationalTemplateIntern(template, false);
+    @PostConstruct
+    public void init() {
+        if (initTemplateCache) {
+            listAllOperationalTemplates();
+        }
     }
 
     private static OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
