@@ -21,5 +21,5 @@ import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 
 public interface IntrospectService {
 
-    WebTemplate getQueryOptMetaData(String templateId);
+    WebTemplate getWebTemplate(String templateId);
 }

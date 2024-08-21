@@ -21,11 +21,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.cache.CacheProvider;
@@ -58,7 +63,6 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     private boolean allowTemplateOverwrite;
 
     public KnowledgeCacheServiceImp(TemplateStorage templateStorage, CacheProvider cacheProvider) {
-
         this.templateStorage = templateStorage;
         this.cacheProvider = cacheProvider;
     }
@@ -69,7 +73,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
         return addOperationalTemplateIntern(template, false);
     }
 
-    private OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
+    private static OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
         try {
             TemplateDocument document = TemplateDocument.Factory.parse(content);
             return document.getTemplate();
@@ -101,11 +105,13 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
                     "Operational template with this template ID already exists: " + templateId);
         }
 
-        templateStorage.storeTemplate(template);
-        if (allowTemplateOverwrite && !overwrite) {
-            // Caches might not be containing wrong data
-            invalidateCache(template);
+        TemplateMetaData templateMetaData = templateStorage.storeTemplate(template);
+
+        if (allowTemplateOverwrite || overwrite) {
+            // Caches might be containing wrong data
+            invalidateCaches(templateId, templateMetaData.getInternalId());
         }
+        ensureCached(templateMetaData);
 
         return templateId;
     }
@@ -115,25 +121,37 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
         return addOperationalTemplateIntern(template, true);
     }
 
-    // invalidates some derived caches like the queryOptMetaDataCache which depend on the template
-    private void invalidateCache(OPERATIONALTEMPLATE template) {
+    private void ensureCached(TemplateMetaData template) {
+        cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, template.getInternalId(), () -> {
+            String templateId = TemplateUtils.getTemplateId(template.getOperationaltemplate());
+            cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, template::getInternalId);
+            cacheProvider.get(CacheProvider.INTROSPECT_CACHE, templateId, () -> buildQueryOptMetaData(template.getOperationaltemplate()));
+            return templateId;
+        });
+    }
 
-        String templateId = template.getTemplateId().getValue();
-        UUID uuid = findUuidByTemplateId(templateId).orElseThrow();
+    private void invalidateCaches(String templateId, UUID internalId) {
         cacheProvider.evict(CacheProvider.INTROSPECT_CACHE, templateId);
         cacheProvider.evict(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId);
-        cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid);
+        cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, internalId);
     }
 
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
-        return templateStorage.listAllOperationalTemplates();
+        List<TemplateMetaData> templateMetaData = templateStorage.listAllOperationalTemplates();
+        templateMetaData.forEach(this::ensureCached);
+        return templateMetaData;
+    }
+
+    @Override
+    public Map<UUID, String> findAllTemplateIds() {
+        return templateStorage.findAllTemplateIds();
     }
 
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
-        return templateStorage.readOperationaltemplate(key);
+        return templateStorage.readTemplate(key).map(TemplateMetaData::getOperationaltemplate);
     }
 
     @Override
@@ -145,63 +163,71 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
      * {@inheritDoc}
      */
     @Override
-    public boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
+    public void deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
         // Remove template from storage
-        boolean deleted =
-                this.templateStorage.deleteTemplate(template.getTemplateId().getValue());
+        String templateId = TemplateUtils.getTemplateId(template);
+        Optional<UUID> internalId = findUuidByTemplateId(templateId);
+        templateStorage.deleteTemplate(templateId);
 
-        if (deleted) {
-            // Remove template from caches
-            invalidateCache(template);
-        }
+        cacheProvider.evict(CacheProvider.INTROSPECT_CACHE, templateId);
+        cacheProvider.evict(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId);
 
-        return deleted;
+        internalId.ifPresent(iid -> cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, iid));
     }
 
     @Override
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
-
-            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, () -> templateStorage
-                    .findTemplateIdByUuid(uuid)
-                    .orElseThrow()));
+            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, () -> {
+                String templateId = templateStorage
+                        .findTemplateIdByUuid(uuid)
+                        .orElseThrow();
+                //reverse cache
+                cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> uuid);
+                return templateId;
+            }));
         } catch (Cache.ValueRetrievalException ex) {
-            // No template with that UUID exist
-            return Optional.empty();
+            if (ex.getCause() instanceof NoSuchElementException) {
+                // No template with that UUID exist
+                return Optional.empty();
+            } else {
+                throw ex;
+            }
         }
     }
 
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         try {
-
-            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> templateStorage
-                    .findUuidByTemplateId(templateId)
-                    .orElseThrow()));
+            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> {
+                UUID internalId = templateStorage
+                        .findUuidByTemplateId(templateId)
+                        .orElseThrow();
+                //reverse cache
+                cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, internalId, () -> templateId);
+                return internalId;
+            }));
         } catch (Cache.ValueRetrievalException ex) {
             // No template with that templateId exist
             return Optional.empty();
         }
     }
 
-    @Override
-    public WebTemplate getQueryOptMetaData(String templateId) {
-
+    public WebTemplate getWebTemplate(String templateId) {
         try {
-
             return cacheProvider.get(
-                    CacheProvider.INTROSPECT_CACHE, templateId, () -> buildQueryOptMetaData(templateId));
+                    CacheProvider.INTROSPECT_CACHE, templateId, () -> retrieveWebTemplate(templateId));
         } catch (Cache.ValueRetrievalException ex) {
             throw (RuntimeException) ex.getCause();
         }
     }
 
-    private WebTemplate buildQueryOptMetaData(String templateId) {
+    private WebTemplate retrieveWebTemplate(String templateId) {
 
         return retrieveOperationalTemplate(templateId)
                 .map(this::buildQueryOptMetaData)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Could not retrieve  template for  template Id:" + templateId));
+                        new IllegalArgumentException("Could not retrieve template for template Id: " + templateId));
     }
 
     private WebTemplate buildQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
@@ -215,19 +241,16 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
 
     public int deleteAllOperationalTemplates() {
         // Get all operational templates
-        List<TemplateMetaData> templateList = this.templateStorage.listAllOperationalTemplates();
-        // If list is empty no deletion required
-        if (templateList.isEmpty()) {
-            return 0;
-        }
-        int deleted = 0;
-        for (TemplateMetaData metaData : templateList) {
-            if (deleteOperationalTemplate(metaData.getOperationaltemplate())) {
-                deleted++;
-            }
-        }
-
-        return deleted;
+        return (int) this.templateStorage.listAllOperationalTemplates().stream()
+                .map(TemplateMetaData::getOperationaltemplate)
+                .filter(opt -> {
+                    try {
+                        deleteOperationalTemplate(opt);
+                        return true;
+                    } catch (UnprocessableEntityException | ObjectNotFoundException e) {
+                        return false;
+                    }
+                }).count();
     }
 
     /**

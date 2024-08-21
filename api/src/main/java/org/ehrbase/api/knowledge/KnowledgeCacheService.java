@@ -17,31 +17,20 @@
  */
 package org.ehrbase.api.knowledge;
 
-import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.StateConflictException;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface KnowledgeCacheService {
 
-    /**
-     * Adds operational template to system and also in current cache.
-     *
-     * @param content operational template input
-     * @return resulting template ID, when successful
-     * @throws InvalidApiParameterException when input can't be pared to OPT instance
-     * @throws StateConflictException       when template with same template ID is already in the system
-     * @throws InternalServerException      when an unspecified problem occurs
-     */
-    String addOperationalTemplate(InputStream content);
 
     String addOperationalTemplate(OPERATIONALTEMPLATE template);
 
     List<TemplateMetaData> listAllOperationalTemplates();
+
+    Map<UUID, String> findAllTemplateIds();
 
     /**
      * retrieve an operational template document instance
@@ -68,9 +57,8 @@ public interface KnowledgeCacheService {
      * deleting a template otherwise this causes inconsistencies and no longer deliverable Composition entries.
      *
      * @param template - The template instance to delete
-     * @return - Template has been deleted
      */
-    boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template);
+    void deleteOperationalTemplate(OPERATIONALTEMPLATE template);
 
     Optional<String> findTemplateIdByUuid(UUID uuid);
 

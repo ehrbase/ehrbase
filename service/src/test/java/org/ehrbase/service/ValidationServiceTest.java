@@ -240,7 +240,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getQueryOptMetaData(templateID);
+        doReturn(webTemplate).when(knowledgeCacheService).getWebTemplate(templateID);
         service().check(composition);
     }
 
@@ -274,7 +274,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getQueryOptMetaData(templateID);
+        doReturn(webTemplate).when(knowledgeCacheService).getWebTemplate(templateID);
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(composition)).isInstanceOf(ConstraintViolationException.class);

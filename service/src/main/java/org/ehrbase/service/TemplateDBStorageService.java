@@ -18,12 +18,14 @@
 package org.ehrbase.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.TemplateStoreRepository;
+import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -50,17 +52,22 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     @Override
-    public void storeTemplate(OPERATIONALTEMPLATE template) {
-        if (readOperationaltemplate(template.getTemplateId().getValue()).isEmpty()) {
-            templateStoreRepository.store(template);
+    public Map<UUID, String> findAllTemplateIds() {
+        return templateStoreRepository.findAllTemplateIds();
+    }
+
+    @Override
+    public TemplateMetaData storeTemplate(OPERATIONALTEMPLATE template) {
+        if (findUuidByTemplateId(TemplateUtils.getTemplateId(template)).isEmpty()) {
+            return templateStoreRepository.store(template);
         } else {
             checkUsage(template.getTemplateId().getValue(), "update");
-            templateStoreRepository.update(template);
+            return templateStoreRepository.update(template);
         }
     }
 
     @Override
-    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
+    public Optional<TemplateMetaData> readTemplate(String templateId) {
         return templateStoreRepository.findByTemplateId(templateId);
     }
 
@@ -77,13 +84,12 @@ public class TemplateDBStorageService implements TemplateStorage {
      * {@inheritDoc}
      */
     @Override
-    public boolean deleteTemplate(String templateId) {
+    public void deleteTemplate(String templateId) {
 
         // Check if template is used anymore
         checkUsage(templateId, "delete");
 
         templateStoreRepository.delete(templateId);
-        return true;
     }
 
     @Override
