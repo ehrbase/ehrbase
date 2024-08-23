@@ -161,9 +161,10 @@ public class TemplateServiceImp implements TemplateService {
      */
     @Override
     public void adminDeleteTemplate(String templateId) {
-        OPERATIONALTEMPLATE existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId)
-        .orElseThrow(() -> new ObjectNotFoundException(
-                    "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
+        OPERATIONALTEMPLATE existingTemplate = knowledgeCacheService
+                .retrieveOperationalTemplate(templateId)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
 
         // Delete template if not used
         knowledgeCacheService.deleteOperationalTemplate(existingTemplate);

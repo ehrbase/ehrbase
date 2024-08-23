@@ -60,7 +60,8 @@ public class TemplateStoreRepository {
         setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(UUID.randomUUID()));
         templateStoreRecord.setCreationTime(timeProvider.getNow());
         templateStoreRecord.store();
-        return TemplateStoreRepository.buildMetadata(templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
+        return TemplateStoreRepository.buildMetadata(
+                templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
     }
 
     public TemplateMetaData update(OPERATIONALTEMPLATE operationaltemplate) {
@@ -74,7 +75,8 @@ public class TemplateStoreRepository {
         setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(rec.getId()));
         templateStoreRecord.setCreationTime(timeProvider.getNow());
         templateStoreRecord.update();
-        return TemplateStoreRepository.buildMetadata(templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
+        return TemplateStoreRepository.buildMetadata(
+                templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
     }
 
     public List<TemplateMetaData> findAll() {
@@ -86,9 +88,7 @@ public class TemplateStoreRepository {
     }
 
     public Map<UUID, String> findAllTemplateIds() {
-        return context.select(TEMPLATE_STORE.ID, TEMPLATE_STORE.TEMPLATE_ID)
-                .from(TEMPLATE_STORE)
-                .stream()
+        return context.select(TEMPLATE_STORE.ID, TEMPLATE_STORE.TEMPLATE_ID).from(TEMPLATE_STORE).stream()
                 .collect(Collectors.toMap(Record2::value1, Record2::value2));
     }
 
@@ -96,7 +96,8 @@ public class TemplateStoreRepository {
         return buildMetadata(r.component3(), r.component2(), r.component1());
     }
 
-    private static TemplateMetaData buildMetadata(UUID internalId, OffsetDateTime creationTime, String templateContent) {
+    private static TemplateMetaData buildMetadata(
+            UUID internalId, OffsetDateTime creationTime, String templateContent) {
         TemplateMetaData templateMetaData = new TemplateMetaData();
         templateMetaData.setOperationalTemplate(buildOperationalTemplate(templateContent));
         templateMetaData.setCreatedOn(creationTime);

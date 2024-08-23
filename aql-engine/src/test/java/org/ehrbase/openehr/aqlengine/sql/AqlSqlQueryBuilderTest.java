@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslGraph;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
@@ -48,6 +49,7 @@ import org.mockito.Mockito;
 public class AqlSqlQueryBuilderTest {
 
     private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+    private final TemplateService templateService = mock();
 
     @BeforeEach
     void setUp() {
@@ -79,6 +81,7 @@ public class AqlSqlQueryBuilderTest {
 
         KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
         Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+        TemplateService tplSvc = mock(TemplateService.class);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
@@ -89,7 +92,7 @@ public class AqlSqlQueryBuilderTest {
         System.out.println();
 
         AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), tplSvc, Optional.empty());
 
         SelectQuery<Record> sqlQuery = sqlQueryBuilder.buildSqlQuery(aslQuery);
         System.out.println(sqlQuery);
@@ -109,12 +112,13 @@ public class AqlSqlQueryBuilderTest {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
         KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
+        TemplateService tplSvc = mock(TemplateService.class);
         Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), tplSvc, Optional.empty());
 
         assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
     }
@@ -165,8 +169,8 @@ public class AqlSqlQueryBuilderTest {
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-        AqlSqlQueryBuilder sqlQueryBuilder = new AqlSqlQueryBuilder(
-                new DefaultDSLContext(SQLDialect.POSTGRES), mockKnowledgeCacheService, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder =
+                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), templateService, Optional.empty());
 
         return sqlQueryBuilder.buildSqlQuery(aslQuery);
     }

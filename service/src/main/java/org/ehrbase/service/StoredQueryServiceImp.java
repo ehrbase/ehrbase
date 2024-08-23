@@ -19,7 +19,7 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -38,6 +38,7 @@ import org.ehrbase.util.SemVerUtil;
 import org.ehrbase.util.StoredQueryQualifiedName;
 import org.ehrbase.util.VersionConflictException;
 import org.jooq.exception.DataAccessException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.stereotype.Service;
 
@@ -47,10 +48,29 @@ public class StoredQueryServiceImp implements StoredQueryService {
     private final StoredQueryRepository storedQueryRepository;
     private final CacheProvider cacheProvider;
 
+    @Value("${ehrbase.cache.stored-query-init-on-startup:false}")
+    private boolean initStoredQueryCache = false;
+
     public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository, CacheProvider cacheProvider) {
 
         this.storedQueryRepository = storedQueryRepository;
         this.cacheProvider = cacheProvider;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (initStoredQueryCache) {
+            storedQueryRepository.retrieveAllLatest().forEach(l -> {
+                SemVerUtil.streamAllResolutions(SemVer.parse(l.getVersion())).forEach(v -> {
+                    StoredQueryQualifiedName storedQueryQualifiedName =
+                            StoredQueryQualifiedName.create(l.getQualifiedName(), v);
+                    cacheProvider.get(
+                            CacheProvider.STORED_QUERY_CACHE,
+                            storedQueryQualifiedName.toQualifiedNameString(),
+                            () -> l);
+                });
+            });
+        }
     }
 
     // === DEFINITION: manage stored queries
@@ -146,7 +166,7 @@ public class StoredQueryServiceImp implements StoredQueryService {
         }
 
         // clear partially cached versions
-        evictPartiallyCachedVersions(qualifiedName, newVersion);
+        evictAllResolutions(newQueryQualifiedName);
 
         return retrieveStoredQueryInternal(newQueryQualifiedName);
     }
@@ -196,26 +216,16 @@ public class StoredQueryServiceImp implements StoredQueryService {
         } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
         } finally {
-            cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, storedQueryQualifiedName.toQualifiedNameString());
+            evictAllResolutions(storedQueryQualifiedName);
         }
     }
 
-    private void evictPartiallyCachedVersions(String qualifiedName, SemVer semVer) {
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
-                StoredQueryQualifiedName.create(qualifiedName, semVer).toQualifiedNameString());
-
-        if (!semVer.isPreRelease()) {
-            Stream.of(
-                            SemVer.NO_VERSION,
-                            // major
-                            new SemVer(semVer.major(), null, null, null),
-                            // minor
-                            new SemVer(semVer.major(), semVer.minor(), null, null))
-                    .map(v -> StoredQueryQualifiedName.create(qualifiedName, v))
-                    .map(StoredQueryQualifiedName::toQualifiedNameString)
-                    .forEach(v -> cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, v));
-        }
+    private void evictAllResolutions(StoredQueryQualifiedName qualifiedName) {
+        SemVerUtil.streamAllResolutions(qualifiedName.semVer())
+                .forEach(v -> cacheProvider.evict(
+                        CacheProvider.STORED_QUERY_CACHE,
+                        new StoredQueryQualifiedName(qualifiedName.reverseDomainName(), qualifiedName.semanticId(), v)
+                                .toQualifiedNameString()));
     }
 
     private static SemVer parseRequestSemVer(String version) {

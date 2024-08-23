@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -37,8 +36,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
-import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
@@ -250,9 +247,7 @@ final class EncapsulatingQueryUtils {
 
         Map<Param<UUID>, Param<Integer>> templateIdOrderMap = new LinkedHashMap<>();
         Iterator<UUID> it = templates.entrySet().stream()
-                .sorted(Comparator.comparing(
-                        Map.Entry::getValue,
-                        Collator.getInstance(Locale.ENGLISH)))
+                .sorted(Comparator.comparing(Map.Entry::getValue, Collator.getInstance(Locale.ENGLISH)))
                 .map(Map.Entry::getKey)
                 .iterator();
         int pos = 0;
@@ -348,9 +343,7 @@ final class EncapsulatingQueryUtils {
 
     @Nonnull
     public static Stream<SortField<?>> orderFields(
-            AslOrderByField ob,
-            AqlSqlQueryBuilder.AslQueryTables aslQueryToTable,
-            TemplateService templateService) {
+            AslOrderByField ob, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable, TemplateService templateService) {
         AslField aslField = ob.field();
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
@@ -367,8 +360,7 @@ final class EncapsulatingQueryUtils {
     }
 
     @Nonnull
-    private static Stream<Field<?>> columnOrderField(
-            AslColumnField f, Table<?> src, TemplateService templateService) {
+    private static Stream<Field<?>> columnOrderField(AslColumnField f, Table<?> src, TemplateService templateService) {
         Field<?> field = FieldUtils.field(src, f, true);
 
         field = switch (f.getExtractedColumn()) {

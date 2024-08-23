@@ -25,7 +25,6 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface KnowledgeCacheService {
 
-
     String addOperationalTemplate(OPERATIONALTEMPLATE template);
 
     List<TemplateMetaData> listAllOperationalTemplates();
@@ -46,7 +45,6 @@ public interface KnowledgeCacheService {
      *
      * @param uuid the name of the operational template
      * @return an OPERATIONALTEMPLATE document instance or null
-     * @throws Exception
      * @see org.openehr.schemas.v1.OPERATIONALTEMPLATE
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
