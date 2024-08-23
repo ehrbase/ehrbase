@@ -129,7 +129,10 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
         cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, template.getInternalId(), () -> {
             String templateId = TemplateUtils.getTemplateId(template.getOperationaltemplate());
             cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, template::getInternalId);
-            cacheProvider.get(CacheProvider.INTROSPECT_CACHE, templateId, () -> buildQueryOptMetaData(template.getOperationaltemplate()));
+            cacheProvider.get(
+                    CacheProvider.INTROSPECT_CACHE,
+                    templateId,
+                    () -> buildQueryOptMetaData(template.getOperationaltemplate()));
             return templateId;
         });
     }
@@ -183,10 +186,8 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
             return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, () -> {
-                String templateId = templateStorage
-                        .findTemplateIdByUuid(uuid)
-                        .orElseThrow();
-                //reverse cache
+                String templateId = templateStorage.findTemplateIdByUuid(uuid).orElseThrow();
+                // reverse cache
                 cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> uuid);
                 return templateId;
             }));
@@ -204,10 +205,9 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         try {
             return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> {
-                UUID internalId = templateStorage
-                        .findUuidByTemplateId(templateId)
-                        .orElseThrow();
-                //reverse cache
+                UUID internalId =
+                        templateStorage.findUuidByTemplateId(templateId).orElseThrow();
+                // reverse cache
                 cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, internalId, () -> templateId);
                 return internalId;
             }));
@@ -219,8 +219,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
 
     public WebTemplate getWebTemplate(String templateId) {
         try {
-            return cacheProvider.get(
-                    CacheProvider.INTROSPECT_CACHE, templateId, () -> retrieveWebTemplate(templateId));
+            return cacheProvider.get(CacheProvider.INTROSPECT_CACHE, templateId, () -> retrieveWebTemplate(templateId));
         } catch (Cache.ValueRetrievalException ex) {
             throw (RuntimeException) ex.getCause();
         }
@@ -254,7 +253,8 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
                     } catch (UnprocessableEntityException | ObjectNotFoundException e) {
                         return false;
                     }
-                }).count();
+                })
+                .count();
     }
 
     /**
