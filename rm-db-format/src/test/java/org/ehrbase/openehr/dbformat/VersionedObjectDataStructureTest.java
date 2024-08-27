@@ -23,8 +23,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.datastructures.Element;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.junit.jupiter.api.Test;
@@ -37,7 +44,9 @@ class VersionedObjectDataStructureTest {
     @Test
     void testStructureRmTypeAlias() {
         // duplicate aliases?
-        Arrays.stream(StructureRmType.values()).collect(Collectors.toMap(v -> v.getAlias(), v -> v));
+        Map<String, StructureRmType> result = Arrays.stream(StructureRmType.values())
+                .collect(Collectors.toMap(StructureRmType::getAlias, Function.identity()));
+        assertThat(result).isNotNull();
     }
 
     @ParameterizedTest
@@ -83,5 +92,29 @@ class VersionedObjectDataStructureTest {
         if (type == StructureRmType.ELEMENT) {
             assertEquals(roots.get(1).getJsonNode(), jsonNode.get("feeder_audit"));
         }
+    }
+
+    @Test
+    void valueToTreeDvMultimediaType() {
+
+        var data = "TestData";
+        DvMultimedia multimedia = new DvMultimedia();
+        multimedia.setMediaType(new CodePhrase(new TerminologyId("IANA_media-type"), "application/pdf"));
+        multimedia.setData(data.getBytes());
+        multimedia.setSize(data.getBytes().length);
+
+        List<StructureNode> roots =
+                VersionedObjectDataStructure.createDataStructure(new Element("at0001", new DvText("Test"), multimedia));
+        assertThat(roots).singleElement().satisfies(node -> assertThat(
+                        node.getJsonNode().get("value"))
+                .isInstanceOf(ObjectNode.class)
+                .satisfies(value -> {
+                    ObjectNode jsonNode = (ObjectNode) value;
+                    assertThat(jsonNode.get("data").asText()).isEqualTo("VGVzdERhdGE=");
+                    assertThat(jsonNode)
+                            .hasToString(
+                                    """
+                    {"_type":"DV_MULTIMEDIA","data":"VGVzdERhdGE=","media_type":{"_type":"CODE_PHRASE","terminology_id":{"_type":"TERMINOLOGY_ID","value":"IANA_media-type"},"code_string":"application/pdf"},"size":8}""");
+                }));
     }
 }

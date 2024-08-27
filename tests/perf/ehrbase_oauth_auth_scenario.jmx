@@ -1,0 +1,1873 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="EHRbase OAUTH Auth Scenario" enabled="true">
+      <stringProp name="TestPlan.comments">To run test plan with OAUTH Auth (admin user), use this command: jmeter -n -t ehrbase_oauth_auth_scenario.jmx -JtokenType=admin</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${__P(host,localhost)}</stringProp>
+        <stringProp name="HTTPSampler.port">${__P(port,8080)}</stringProp>
+        <stringProp name="HTTPSampler.protocol"></stringProp>
+        <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+        <stringProp name="HTTPSampler.path"></stringProp>
+        <stringProp name="HTTPSampler.concurrentPool">6</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Content-Type</stringProp>
+            <stringProp name="Header.value">application/json</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Prefer</stringProp>
+            <stringProp name="Header.value">return=representation</stringProp>
+          </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="normalUserAuthToken" elementType="Argument">
+            <stringProp name="Argument.name">normalUserAuthToken</stringProp>
+            <stringProp name="Argument.value">{ 	&quot;client_id&quot;: &quot;ehrbase&quot;, 	&quot;client_secret&quot;: &quot;bT5T4oWn3xNdBytQsl2cfpBDi1pp15Va&quot;, 	&quot;grant_type&quot;: &quot;password&quot;, 	&quot;password&quot;: &quot;SuperSecretPassword1!&quot;, 	&quot;username&quot;: &quot;ehrbase-user&quot; }</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="adminUserAuthToken" elementType="Argument">
+            <stringProp name="Argument.name">adminUserAuthToken</stringProp>
+            <stringProp name="Argument.value">{ 	&quot;client_id&quot;: &quot;ehrbase&quot;, 	&quot;client_secret&quot;: &quot;bT5T4oWn3xNdBytQsl2cfpBDi1pp15Va&quot;, 	&quot;grant_type&quot;: &quot;password&quot;, 	&quot;password&quot;: &quot;EvenMoreSecretPassword1!&quot;, 	&quot;username&quot;: &quot;ehrbase-admin&quot; }</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">${__P(loopCount,1)}</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,1)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampUp,1)}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="true">
+          <stringProp name="TestPlan.comments">Set OAUTH Auth tokenType (normal / admin user token)</stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">import groovy.json.JsonSlurper
+
+// Get the parameter to determine which token to use
+def tokenType = vars.get(&quot;authToken&quot;)
+
+// Set the authToken based on the tokenType parameter
+if (&quot;admin&quot;.equalsIgnoreCase(tokenType)) {
+    vars.put(&quot;authToken&quot;, vars.get(&quot;adminUserAuthToken&quot;))
+} else {
+    vars.put(&quot;authToken&quot;, vars.get(&quot;normalUserAuthToken&quot;))
+}
+
+// Parse the JSON string stored in authToken
+def authTokenJson = new JsonSlurper().parseText(vars.get(&quot;authToken&quot;))
+
+// Extract value and store it in a JMeter variable
+def clientId = authTokenJson.client_id
+def clientSecret = authTokenJson.client_secret
+def grantType = authTokenJson.grant_type
+def passwd = authTokenJson.password
+def usrname = authTokenJson.username
+
+vars.put(&quot;clientId&quot;, clientId)
+vars.put(&quot;clientSecret&quot;, clientSecret)
+vars.put(&quot;grantType&quot;, grantType)
+vars.put(&quot;passwd&quot;, passwd)
+vars.put(&quot;usrname&quot;, usrname)</stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
+        </JSR223PreProcessor>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Access Token" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="client_id" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${clientId}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">client_id</stringProp>
+              </elementProp>
+              <elementProp name="client_secret" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${clientSecret}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">client_secret</stringProp>
+              </elementProp>
+              <elementProp name="grant_type" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${grantType}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">grant_type</stringProp>
+              </elementProp>
+              <elementProp name="password" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${passwd}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">password</stringProp>
+              </elementProp>
+              <elementProp name="username" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${usrname}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">username</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${__P(keycloak_host,localhost)}</stringProp>
+          <stringProp name="HTTPSampler.port">${__P(keycloak_port,8081)}</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/auth/realms/ehrbase/protocol/openid-connect/token</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor - Store access_token" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">access_token</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.access_token</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Authorization</stringProp>
+              <stringProp name="Header.value">Bearer ${access_token}</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="OPT - UPLOAD Minimal Obs" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#xd;
+&lt;!--Operational template XML automatically generated by Ocean Template Designer Version 2.8.94Beta--&gt;&#xd;
+&lt;template xmlns=&quot;http://schemas.openehr.org/v1&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&#xd;
+   &lt;language&gt;&#xd;
+      &lt;terminology_id&gt;&#xd;
+         &lt;value&gt;ISO_639-1&lt;/value&gt;&#xd;
+      &lt;/terminology_id&gt;&#xd;
+      &lt;code_string&gt;en&lt;/code_string&gt;&#xd;
+   &lt;/language&gt;&#xd;
+   &lt;description&gt;&#xd;
+      &lt;original_author id=&quot;Original Author&quot;&gt;Not Specified&lt;/original_author&gt;&#xd;
+      &lt;lifecycle_state&gt;Initial&lt;/lifecycle_state&gt;&#xd;
+      &lt;other_details id=&quot;MetaDataSet:Sample Set &quot;&gt;Template metadata sample set&lt;/other_details&gt;&#xd;
+      &lt;other_details id=&quot;Acknowledgements&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Business Process Level&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Care setting&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Client group&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Clinical Record Element&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Copyright&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Issues&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Owner&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Sign off&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;Speciality&quot; /&gt;&#xd;
+      &lt;other_details id=&quot;User roles&quot; /&gt;&#xd;
+      &lt;details&gt;&#xd;
+         &lt;language&gt;&#xd;
+            &lt;terminology_id&gt;&#xd;
+               &lt;value&gt;ISO_639-1&lt;/value&gt;&#xd;
+            &lt;/terminology_id&gt;&#xd;
+            &lt;code_string&gt;en&lt;/code_string&gt;&#xd;
+         &lt;/language&gt;&#xd;
+         &lt;purpose&gt;Not Specified&lt;/purpose&gt;&#xd;
+      &lt;/details&gt;&#xd;
+   &lt;/description&gt;&#xd;
+   &lt;uid&gt;&#xd;
+      &lt;value&gt;${templateUid}&lt;/value&gt;&#xd;
+   &lt;/uid&gt;&#xd;
+   &lt;template_id&gt;&#xd;
+      &lt;value&gt;minimal_observation.v${templateVersion}&lt;/value&gt;&#xd;
+   &lt;/template_id&gt;&#xd;
+   &lt;concept&gt;Minimal observation&lt;/concept&gt;&#xd;
+   &lt;definition&gt;&#xd;
+      &lt;rm_type_name&gt;COMPOSITION&lt;/rm_type_name&gt;&#xd;
+      &lt;occurrences&gt;&#xd;
+         &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+         &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+         &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+         &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+         &lt;lower&gt;1&lt;/lower&gt;&#xd;
+         &lt;upper&gt;1&lt;/upper&gt;&#xd;
+      &lt;/occurrences&gt;&#xd;
+      &lt;node_id&gt;at0000&lt;/node_id&gt;&#xd;
+      &lt;attributes xsi:type=&quot;C_SINGLE_ATTRIBUTE&quot;&gt;&#xd;
+         &lt;rm_attribute_name&gt;category&lt;/rm_attribute_name&gt;&#xd;
+         &lt;existence&gt;&#xd;
+            &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+            &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+            &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+            &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+            &lt;lower&gt;1&lt;/lower&gt;&#xd;
+            &lt;upper&gt;1&lt;/upper&gt;&#xd;
+         &lt;/existence&gt;&#xd;
+         &lt;children xsi:type=&quot;C_COMPLEX_OBJECT&quot;&gt;&#xd;
+            &lt;rm_type_name&gt;DV_CODED_TEXT&lt;/rm_type_name&gt;&#xd;
+            &lt;occurrences&gt;&#xd;
+               &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+               &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+               &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+               &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+               &lt;lower&gt;1&lt;/lower&gt;&#xd;
+               &lt;upper&gt;1&lt;/upper&gt;&#xd;
+            &lt;/occurrences&gt;&#xd;
+            &lt;node_id /&gt;&#xd;
+            &lt;attributes xsi:type=&quot;C_SINGLE_ATTRIBUTE&quot;&gt;&#xd;
+               &lt;rm_attribute_name&gt;defining_code&lt;/rm_attribute_name&gt;&#xd;
+               &lt;existence&gt;&#xd;
+                  &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                  &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                  &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                  &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                  &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                  &lt;upper&gt;1&lt;/upper&gt;&#xd;
+               &lt;/existence&gt;&#xd;
+               &lt;children xsi:type=&quot;C_CODE_PHRASE&quot;&gt;&#xd;
+                  &lt;rm_type_name&gt;CODE_PHRASE&lt;/rm_type_name&gt;&#xd;
+                  &lt;occurrences&gt;&#xd;
+                     &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                     &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                     &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                     &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                     &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                     &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                  &lt;/occurrences&gt;&#xd;
+                  &lt;node_id /&gt;&#xd;
+                  &lt;terminology_id&gt;&#xd;
+                     &lt;value&gt;openehr&lt;/value&gt;&#xd;
+                  &lt;/terminology_id&gt;&#xd;
+                  &lt;code_list&gt;433&lt;/code_list&gt;&#xd;
+               &lt;/children&gt;&#xd;
+            &lt;/attributes&gt;&#xd;
+         &lt;/children&gt;&#xd;
+      &lt;/attributes&gt;&#xd;
+      &lt;attributes xsi:type=&quot;C_MULTIPLE_ATTRIBUTE&quot;&gt;&#xd;
+         &lt;rm_attribute_name&gt;content&lt;/rm_attribute_name&gt;&#xd;
+         &lt;existence&gt;&#xd;
+            &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+            &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+            &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+            &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+            &lt;lower&gt;0&lt;/lower&gt;&#xd;
+            &lt;upper&gt;1&lt;/upper&gt;&#xd;
+         &lt;/existence&gt;&#xd;
+         &lt;children xsi:type=&quot;C_ARCHETYPE_ROOT&quot;&gt;&#xd;
+            &lt;rm_type_name&gt;OBSERVATION&lt;/rm_type_name&gt;&#xd;
+            &lt;occurrences&gt;&#xd;
+               &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+               &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+               &lt;upper_unbounded&gt;true&lt;/upper_unbounded&gt;&#xd;
+               &lt;lower&gt;0&lt;/lower&gt;&#xd;
+            &lt;/occurrences&gt;&#xd;
+            &lt;node_id&gt;at0000&lt;/node_id&gt;&#xd;
+            &lt;attributes xsi:type=&quot;C_SINGLE_ATTRIBUTE&quot;&gt;&#xd;
+               &lt;rm_attribute_name&gt;data&lt;/rm_attribute_name&gt;&#xd;
+               &lt;existence&gt;&#xd;
+                  &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                  &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                  &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                  &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                  &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                  &lt;upper&gt;1&lt;/upper&gt;&#xd;
+               &lt;/existence&gt;&#xd;
+               &lt;children xsi:type=&quot;C_COMPLEX_OBJECT&quot;&gt;&#xd;
+                  &lt;rm_type_name&gt;HISTORY&lt;/rm_type_name&gt;&#xd;
+                  &lt;occurrences&gt;&#xd;
+                     &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                     &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                     &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                     &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                     &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                     &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                  &lt;/occurrences&gt;&#xd;
+                  &lt;node_id&gt;at0001&lt;/node_id&gt;&#xd;
+                  &lt;attributes xsi:type=&quot;C_MULTIPLE_ATTRIBUTE&quot;&gt;&#xd;
+                     &lt;rm_attribute_name&gt;events&lt;/rm_attribute_name&gt;&#xd;
+                     &lt;existence&gt;&#xd;
+                        &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                        &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                        &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                        &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                        &lt;lower&gt;0&lt;/lower&gt;&#xd;
+                        &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                     &lt;/existence&gt;&#xd;
+                     &lt;children xsi:type=&quot;C_COMPLEX_OBJECT&quot;&gt;&#xd;
+                        &lt;rm_type_name&gt;EVENT&lt;/rm_type_name&gt;&#xd;
+                        &lt;occurrences&gt;&#xd;
+                           &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                           &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                           &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                           &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                           &lt;lower&gt;0&lt;/lower&gt;&#xd;
+                           &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                        &lt;/occurrences&gt;&#xd;
+                        &lt;node_id&gt;at0002&lt;/node_id&gt;&#xd;
+                        &lt;attributes xsi:type=&quot;C_SINGLE_ATTRIBUTE&quot;&gt;&#xd;
+                           &lt;rm_attribute_name&gt;data&lt;/rm_attribute_name&gt;&#xd;
+                           &lt;existence&gt;&#xd;
+                              &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                              &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                              &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                              &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                              &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                              &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                           &lt;/existence&gt;&#xd;
+                           &lt;children xsi:type=&quot;C_COMPLEX_OBJECT&quot;&gt;&#xd;
+                              &lt;rm_type_name&gt;ITEM_TREE&lt;/rm_type_name&gt;&#xd;
+                              &lt;occurrences&gt;&#xd;
+                                 &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                                 &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                                 &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                                 &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                                 &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                                 &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                              &lt;/occurrences&gt;&#xd;
+                              &lt;node_id&gt;at0003&lt;/node_id&gt;&#xd;
+                              &lt;attributes xsi:type=&quot;C_MULTIPLE_ATTRIBUTE&quot;&gt;&#xd;
+                                 &lt;rm_attribute_name&gt;items&lt;/rm_attribute_name&gt;&#xd;
+                                 &lt;existence&gt;&#xd;
+                                    &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                                    &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                                    &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                                    &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                                    &lt;lower&gt;0&lt;/lower&gt;&#xd;
+                                    &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                                 &lt;/existence&gt;&#xd;
+                                 &lt;children xsi:type=&quot;C_COMPLEX_OBJECT&quot;&gt;&#xd;
+                                    &lt;rm_type_name&gt;ELEMENT&lt;/rm_type_name&gt;&#xd;
+                                    &lt;occurrences&gt;&#xd;
+                                       &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                                       &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                                       &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                                       &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                                       &lt;lower&gt;0&lt;/lower&gt;&#xd;
+                                       &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                                    &lt;/occurrences&gt;&#xd;
+                                    &lt;node_id&gt;at0004&lt;/node_id&gt;&#xd;
+                                    &lt;attributes xsi:type=&quot;C_SINGLE_ATTRIBUTE&quot;&gt;&#xd;
+                                       &lt;rm_attribute_name&gt;value&lt;/rm_attribute_name&gt;&#xd;
+                                       &lt;existence&gt;&#xd;
+                                          &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                                          &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                                          &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                                          &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                                          &lt;lower&gt;0&lt;/lower&gt;&#xd;
+                                          &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                                       &lt;/existence&gt;&#xd;
+                                       &lt;children xsi:type=&quot;C_COMPLEX_OBJECT&quot;&gt;&#xd;
+                                          &lt;rm_type_name&gt;DV_TEXT&lt;/rm_type_name&gt;&#xd;
+                                          &lt;occurrences&gt;&#xd;
+                                             &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                                             &lt;upper_included&gt;true&lt;/upper_included&gt;&#xd;
+                                             &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                                             &lt;upper_unbounded&gt;false&lt;/upper_unbounded&gt;&#xd;
+                                             &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                                             &lt;upper&gt;1&lt;/upper&gt;&#xd;
+                                          &lt;/occurrences&gt;&#xd;
+                                          &lt;node_id /&gt;&#xd;
+                                       &lt;/children&gt;&#xd;
+                                    &lt;/attributes&gt;&#xd;
+                                 &lt;/children&gt;&#xd;
+                                 &lt;cardinality&gt;&#xd;
+                                    &lt;is_ordered&gt;false&lt;/is_ordered&gt;&#xd;
+                                    &lt;is_unique&gt;false&lt;/is_unique&gt;&#xd;
+                                    &lt;interval&gt;&#xd;
+                                       &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                                       &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                                       &lt;upper_unbounded&gt;true&lt;/upper_unbounded&gt;&#xd;
+                                       &lt;lower&gt;0&lt;/lower&gt;&#xd;
+                                    &lt;/interval&gt;&#xd;
+                                 &lt;/cardinality&gt;&#xd;
+                              &lt;/attributes&gt;&#xd;
+                           &lt;/children&gt;&#xd;
+                        &lt;/attributes&gt;&#xd;
+                     &lt;/children&gt;&#xd;
+                     &lt;cardinality&gt;&#xd;
+                        &lt;is_ordered&gt;false&lt;/is_ordered&gt;&#xd;
+                        &lt;is_unique&gt;false&lt;/is_unique&gt;&#xd;
+                        &lt;interval&gt;&#xd;
+                           &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+                           &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+                           &lt;upper_unbounded&gt;true&lt;/upper_unbounded&gt;&#xd;
+                           &lt;lower&gt;1&lt;/lower&gt;&#xd;
+                        &lt;/interval&gt;&#xd;
+                     &lt;/cardinality&gt;&#xd;
+                  &lt;/attributes&gt;&#xd;
+               &lt;/children&gt;&#xd;
+            &lt;/attributes&gt;&#xd;
+            &lt;archetype_id&gt;&#xd;
+               &lt;value&gt;openEHR-EHR-OBSERVATION.minimal.v1&lt;/value&gt;&#xd;
+            &lt;/archetype_id&gt;&#xd;
+            &lt;term_definitions code=&quot;at0000&quot;&gt;&#xd;
+               &lt;items id=&quot;description&quot;&gt;unknown&lt;/items&gt;&#xd;
+               &lt;items id=&quot;text&quot;&gt;Minimal&lt;/items&gt;&#xd;
+            &lt;/term_definitions&gt;&#xd;
+            &lt;term_definitions code=&quot;at0001&quot;&gt;&#xd;
+               &lt;items id=&quot;description&quot;&gt;@ internal @&lt;/items&gt;&#xd;
+               &lt;items id=&quot;text&quot;&gt;Event Series&lt;/items&gt;&#xd;
+            &lt;/term_definitions&gt;&#xd;
+            &lt;term_definitions code=&quot;at0002&quot;&gt;&#xd;
+               &lt;items id=&quot;description&quot;&gt;*&lt;/items&gt;&#xd;
+               &lt;items id=&quot;text&quot;&gt;Cualquier evento&lt;/items&gt;&#xd;
+            &lt;/term_definitions&gt;&#xd;
+            &lt;term_definitions code=&quot;at0003&quot;&gt;&#xd;
+               &lt;items id=&quot;description&quot;&gt;@ internal @&lt;/items&gt;&#xd;
+               &lt;items id=&quot;text&quot;&gt;Arbol&lt;/items&gt;&#xd;
+            &lt;/term_definitions&gt;&#xd;
+            &lt;term_definitions code=&quot;at0004&quot;&gt;&#xd;
+               &lt;items id=&quot;description&quot;&gt;*&lt;/items&gt;&#xd;
+               &lt;items id=&quot;text&quot;&gt;text&lt;/items&gt;&#xd;
+            &lt;/term_definitions&gt;&#xd;
+         &lt;/children&gt;&#xd;
+         &lt;cardinality&gt;&#xd;
+            &lt;is_ordered&gt;false&lt;/is_ordered&gt;&#xd;
+            &lt;is_unique&gt;false&lt;/is_unique&gt;&#xd;
+            &lt;interval&gt;&#xd;
+               &lt;lower_included&gt;true&lt;/lower_included&gt;&#xd;
+               &lt;lower_unbounded&gt;false&lt;/lower_unbounded&gt;&#xd;
+               &lt;upper_unbounded&gt;true&lt;/upper_unbounded&gt;&#xd;
+               &lt;lower&gt;0&lt;/lower&gt;&#xd;
+            &lt;/interval&gt;&#xd;
+         &lt;/cardinality&gt;&#xd;
+      &lt;/attributes&gt;&#xd;
+      &lt;archetype_id&gt;&#xd;
+         &lt;value&gt;openEHR-EHR-COMPOSITION.minimal.v1&lt;/value&gt;&#xd;
+      &lt;/archetype_id&gt;&#xd;
+      &lt;template_id&gt;&#xd;
+         &lt;value&gt;minimal_observation.v${templateVersion}&lt;/value&gt;&#xd;
+      &lt;/template_id&gt;&#xd;
+      &lt;term_definitions code=&quot;at0000&quot;&gt;&#xd;
+         &lt;items id=&quot;description&quot;&gt;unknown&lt;/items&gt;&#xd;
+         &lt;items id=&quot;text&quot;&gt;Minimal&lt;/items&gt;&#xd;
+      &lt;/term_definitions&gt;&#xd;
+   &lt;/definition&gt;&#xd;
+&lt;/template&gt;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/definition/template/adl1.4</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">Upload Template with minimal Observation</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/xml</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">vars.put(&quot;templateUid&quot;, UUID.randomUUID().toString());
+vars.put(&quot;templateVersion&quot;, UUID.randomUUID().toString());</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">templateId</stringProp>
+            <stringProp name="RegexExtractor.regex">ETag: &quot;(.+)&quot;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+            <stringProp name="RegexExtractor.match_number"></stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49587">201</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="EHR - CREATE with ehr_status" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;_type&quot;: &quot;EHR_STATUS&quot;,&#xd;
+    &quot;archetype_node_id&quot;: &quot;openEHR-EHR-EHR_STATUS.generic.v1&quot;,&#xd;
+    &quot;name&quot;: {&#xd;
+        &quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+        &quot;value&quot;: &quot;EHR Status&quot;&#xd;
+    },&#xd;
+    &quot;subject&quot;: {&#xd;
+        &quot;external_ref&quot;: {&#xd;
+            &quot;namespace&quot;: &quot;DEMOGRAPHIC&quot;,&#xd;
+            &quot;type&quot;: &quot;PERSON&quot;,&#xd;
+            &quot;id&quot;: {&#xd;
+                &quot;_type&quot;: &quot;HIER_OBJECT_ID&quot;,&#xd;
+                &quot;value&quot;: &quot;${subjectId}&quot;&#xd;
+            }&#xd;
+        }&#xd;
+    },&#xd;
+    &quot;is_modifiable&quot;: true,&#xd;
+    &quot;is_queryable&quot;: true&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/ehr</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">vars.put(&quot;subjectId&quot;, UUID.randomUUID().toString())</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49587">201</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor - Store ehr_status namespace" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">namespace</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.ehr_status.subject.external_ref.namespace</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor - Store ehr_status id" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">idValue</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.ehr_status.subject.external_ref.id.value</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="EHR - CREATE without ehr_status" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/ehr</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">ehrId</stringProp>
+            <stringProp name="RegexExtractor.regex">ETag: &quot;([a-f0-9-]+)&quot;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+            <stringProp name="RegexExtractor.match_number"></stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49587">201</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor - Store ehr_status namespace" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">namespace</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.ehr_status.subject.external_ref.namespace</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor - Store ehr_status id" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">idValue</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.ehr_status.subject.external_ref.id.value</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="COMPO - CREATE min obs" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+	&quot;_type&quot;: &quot;COMPOSITION&quot;,&#xd;
+	&quot;name&quot;: {&#xd;
+		&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+		&quot;value&quot;: &quot;Minimal&quot;&#xd;
+	},&#xd;
+	&quot;uid&quot;: {&#xd;
+		&quot;_type&quot;: &quot;OBJECT_VERSION_ID&quot;,&#xd;
+		&quot;value&quot;: &quot;${generatedCompoUUID}::${system_id}::1&quot;&#xd;
+	},&#xd;
+	&quot;archetype_details&quot;: {&#xd;
+		&quot;archetype_id&quot;: {&#xd;
+			&quot;value&quot;: &quot;openEHR-EHR-COMPOSITION.minimal.v1&quot;&#xd;
+		},&#xd;
+		&quot;template_id&quot;: {&#xd;
+			&quot;value&quot;: &quot;${templateId}&quot;&#xd;
+		},&#xd;
+		&quot;rm_version&quot;: &quot;1.0.4&quot;&#xd;
+	},&#xd;
+	&quot;language&quot;: {&#xd;
+		&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+		&quot;terminology_id&quot;: {&#xd;
+			&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+			&quot;value&quot;: &quot;ISO_639-1&quot;&#xd;
+		},&#xd;
+		&quot;code_string&quot;: &quot;en&quot;&#xd;
+	},&#xd;
+	&quot;territory&quot;: {&#xd;
+		&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+		&quot;terminology_id&quot;: {&#xd;
+			&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+			&quot;value&quot;: &quot;ISO_3166-1&quot;&#xd;
+		},&#xd;
+		&quot;code_string&quot;: &quot;DE&quot;&#xd;
+	},&#xd;
+	&quot;category&quot;: {&#xd;
+		&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+		&quot;value&quot;: &quot;event&quot;,&#xd;
+		&quot;defining_code&quot;: {&#xd;
+			&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+			&quot;terminology_id&quot;: {&#xd;
+				&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+				&quot;value&quot;: &quot;openehr&quot;&#xd;
+			},&#xd;
+			&quot;code_string&quot;: &quot;433&quot;&#xd;
+		}&#xd;
+	},&#xd;
+	&quot;composer&quot;: {&#xd;
+		&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+		&quot;name&quot;: &quot;Max Mustermann${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}&quot;&#xd;
+	},&#xd;
+	&quot;context&quot;: {&#xd;
+		&quot;_type&quot;: &quot;EVENT_CONTEXT&quot;,&#xd;
+		&quot;start_time&quot;: {&#xd;
+			&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+			&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+		},&#xd;
+		&quot;end_time&quot;: {&#xd;
+			&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+			&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+		},&#xd;
+		&quot;setting&quot;: {&#xd;
+			&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+			&quot;value&quot;: &quot;home&quot;,&#xd;
+			&quot;defining_code&quot;: {&#xd;
+				&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+				&quot;terminology_id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;openehr&quot;&#xd;
+				},&#xd;
+				&quot;code_string&quot;: &quot;225&quot;&#xd;
+			}&#xd;
+		},&#xd;
+		&quot;health_care_facility&quot;: {&#xd;
+			&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+			&quot;name&quot;: &quot;Carla Trevor${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}&quot;&#xd;
+		}&#xd;
+	},&#xd;
+	&quot;content&quot;: [&#xd;
+		{&#xd;
+			&quot;_type&quot;: &quot;OBSERVATION&quot;,&#xd;
+			&quot;name&quot;: {&#xd;
+				&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+				&quot;value&quot;: &quot;Minimal&quot;&#xd;
+			},&#xd;
+			&quot;archetype_details&quot;: {&#xd;
+				&quot;archetype_id&quot;: {&#xd;
+					&quot;value&quot;: &quot;openEHR-EHR-OBSERVATION.minimal.v1&quot;&#xd;
+				},&#xd;
+				&quot;rm_version&quot;: &quot;1.0.4&quot;&#xd;
+			},&#xd;
+			&quot;language&quot;: {&#xd;
+				&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+				&quot;terminology_id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;ISO_639-1&quot;&#xd;
+				},&#xd;
+				&quot;code_string&quot;: &quot;en&quot;&#xd;
+			},&#xd;
+			&quot;encoding&quot;: {&#xd;
+				&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+				&quot;terminology_id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;IANA_character-sets&quot;&#xd;
+				},&#xd;
+				&quot;code_string&quot;: &quot;ISO-10646-UTF-1&quot;&#xd;
+			},&#xd;
+			&quot;workflow_id&quot;: {&#xd;
+				&quot;_type&quot;: &quot;OBJECT_REF&quot;,&#xd;
+				&quot;namespace&quot;: &quot;unknown&quot;,&#xd;
+				&quot;type&quot;: &quot;ANY&quot;,&#xd;
+				&quot;id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;GENERIC_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;9d7323a4-527a-3955-9012-d22bb9a3fc19&quot;,&#xd;
+					&quot;scheme&quot;: &quot;scheme&quot;&#xd;
+				}&#xd;
+			},&#xd;
+			&quot;subject&quot;: {&#xd;
+				&quot;_type&quot;: &quot;PARTY_SELF&quot;&#xd;
+			},&#xd;
+			&quot;provider&quot;: {&#xd;
+				&quot;_type&quot;: &quot;PARTY_SELF&quot;&#xd;
+			},&#xd;
+			&quot;guideline_id&quot;: {&#xd;
+				&quot;_type&quot;: &quot;OBJECT_REF&quot;,&#xd;
+				&quot;namespace&quot;: &quot;unknown&quot;,&#xd;
+				&quot;type&quot;: &quot;ANY&quot;,&#xd;
+				&quot;id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;GENERIC_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;3ce03ea6-255e-3b1e-888b-3c15ae800901&quot;,&#xd;
+					&quot;scheme&quot;: &quot;scheme&quot;&#xd;
+				}&#xd;
+			},&#xd;
+			&quot;data&quot;: {&#xd;
+				&quot;name&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+					&quot;value&quot;: &quot;Event Series&quot;&#xd;
+				},&#xd;
+				&quot;origin&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+					&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+				},&#xd;
+				&quot;period&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+					&quot;value&quot;: &quot;PT0S&quot;&#xd;
+				},&#xd;
+				&quot;duration&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+					&quot;value&quot;: &quot;PT0S&quot;&#xd;
+				},&#xd;
+				&quot;events&quot;: [&#xd;
+					{&#xd;
+						&quot;_type&quot;: &quot;INTERVAL_EVENT&quot;,&#xd;
+						&quot;name&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+							&quot;value&quot;: &quot;Cualquier evento&quot;&#xd;
+						},&#xd;
+						&quot;time&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+							&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+						},&#xd;
+						&quot;data&quot;: {&#xd;
+							&quot;_type&quot;: &quot;ITEM_TREE&quot;,&#xd;
+							&quot;name&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+								&quot;value&quot;: &quot;Arbol&quot;&#xd;
+							},&#xd;
+							&quot;items&quot;: [&#xd;
+								{&#xd;
+									&quot;_type&quot;: &quot;ELEMENT&quot;,&#xd;
+									&quot;name&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+										&quot;value&quot;: &quot;text&quot;&#xd;
+									},&#xd;
+									&quot;value&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+										&quot;value&quot;: &quot;Lorem ipsum&quot;&#xd;
+									},&#xd;
+									&quot;archetype_node_id&quot;: &quot;at0004&quot;&#xd;
+								}&#xd;
+							],&#xd;
+							&quot;archetype_node_id&quot;: &quot;at0003&quot;&#xd;
+						},&#xd;
+						&quot;width&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+							&quot;value&quot;: &quot;PT42H&quot;&#xd;
+						},&#xd;
+						&quot;math_function&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+							&quot;value&quot;: &quot;minimum&quot;,&#xd;
+							&quot;defining_code&quot;: {&#xd;
+								&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+								&quot;terminology_id&quot;: {&#xd;
+									&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+									&quot;value&quot;: &quot;openehr&quot;&#xd;
+								},&#xd;
+								&quot;code_string&quot;: &quot;145&quot;&#xd;
+							}&#xd;
+						},&#xd;
+						&quot;archetype_node_id&quot;: &quot;at0002&quot;&#xd;
+					}&#xd;
+				],&#xd;
+				&quot;archetype_node_id&quot;: &quot;at0001&quot;&#xd;
+			},&#xd;
+			&quot;archetype_node_id&quot;: &quot;openEHR-EHR-OBSERVATION.minimal.v1&quot;&#xd;
+		}&#xd;
+	],&#xd;
+	&quot;archetype_node_id&quot;: &quot;openEHR-EHR-COMPOSITION.minimal.v1&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/ehr/${ehrId}/composition</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor - compositionId" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">compositionId</stringProp>
+            <stringProp name="RegexExtractor.regex">ETag: &quot;(.+)&quot;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+            <stringProp name="RegexExtractor.match_number"></stringProp>
+            <stringProp name="TestPlan.comments">Store compositionId</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor - compositionUUID" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">compositionUUID</stringProp>
+            <stringProp name="RegexExtractor.regex">([0-9a-fA-F-]{36})::</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default">NOT_FOUND</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="TestPlan.comments">Store compositionUUID</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">vars.put(&quot;generatedCompoUUID&quot;, UUID.randomUUID().toString());
+vars.put(&quot;system_id&quot;, &quot;local.ehrbase.org&quot;);</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49587">201</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="COMPO - UPDATE min obs" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+	&quot;_type&quot;: &quot;COMPOSITION&quot;,&#xd;
+	&quot;name&quot;: {&#xd;
+		&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+		&quot;value&quot;: &quot;Minimal&quot;&#xd;
+	},&#xd;
+	&quot;archetype_details&quot;: {&#xd;
+		&quot;archetype_id&quot;: {&#xd;
+			&quot;value&quot;: &quot;openEHR-EHR-COMPOSITION.minimal.v1&quot;&#xd;
+		},&#xd;
+		&quot;template_id&quot;: {&#xd;
+			&quot;value&quot;: &quot;${templateId}&quot;&#xd;
+		},&#xd;
+		&quot;rm_version&quot;: &quot;1.0.4&quot;&#xd;
+	},&#xd;
+	&quot;language&quot;: {&#xd;
+		&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+		&quot;terminology_id&quot;: {&#xd;
+			&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+			&quot;value&quot;: &quot;ISO_639-1&quot;&#xd;
+		},&#xd;
+		&quot;code_string&quot;: &quot;en&quot;&#xd;
+	},&#xd;
+	&quot;territory&quot;: {&#xd;
+		&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+		&quot;terminology_id&quot;: {&#xd;
+			&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+			&quot;value&quot;: &quot;ISO_3166-1&quot;&#xd;
+		},&#xd;
+		&quot;code_string&quot;: &quot;DE&quot;&#xd;
+	},&#xd;
+	&quot;category&quot;: {&#xd;
+		&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+		&quot;value&quot;: &quot;event&quot;,&#xd;
+		&quot;defining_code&quot;: {&#xd;
+			&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+			&quot;terminology_id&quot;: {&#xd;
+				&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+				&quot;value&quot;: &quot;openehr&quot;&#xd;
+			},&#xd;
+			&quot;code_string&quot;: &quot;433&quot;&#xd;
+		}&#xd;
+	},&#xd;
+	&quot;composer&quot;: {&#xd;
+		&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+		&quot;name&quot;: &quot;Lenna Klarson${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}&quot;&#xd;
+	},&#xd;
+	&quot;context&quot;: {&#xd;
+		&quot;_type&quot;: &quot;EVENT_CONTEXT&quot;,&#xd;
+		&quot;start_time&quot;: {&#xd;
+			&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+			&quot;value&quot;: &quot;2024-02-03T04:05:06&quot;&#xd;
+		},&#xd;
+		&quot;end_time&quot;: {&#xd;
+			&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+			&quot;value&quot;: &quot;2024-02-03T08:23:12&quot;&#xd;
+		},&#xd;
+		&quot;setting&quot;: {&#xd;
+			&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+			&quot;value&quot;: &quot;home&quot;,&#xd;
+			&quot;defining_code&quot;: {&#xd;
+				&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+				&quot;terminology_id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;openehr&quot;&#xd;
+				},&#xd;
+				&quot;code_string&quot;: &quot;225&quot;&#xd;
+			}&#xd;
+		},&#xd;
+		&quot;health_care_facility&quot;: {&#xd;
+			&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+			&quot;name&quot;: &quot;Jaqueline Johnson${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}&quot;&#xd;
+		}&#xd;
+	},&#xd;
+	&quot;content&quot;: [&#xd;
+		{&#xd;
+			&quot;_type&quot;: &quot;OBSERVATION&quot;,&#xd;
+			&quot;name&quot;: {&#xd;
+				&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+				&quot;value&quot;: &quot;Minimal&quot;&#xd;
+			},&#xd;
+			&quot;archetype_details&quot;: {&#xd;
+				&quot;archetype_id&quot;: {&#xd;
+					&quot;value&quot;: &quot;openEHR-EHR-OBSERVATION.minimal.v1&quot;&#xd;
+				},&#xd;
+				&quot;rm_version&quot;: &quot;1.0.4&quot;&#xd;
+			},&#xd;
+			&quot;language&quot;: {&#xd;
+				&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+				&quot;terminology_id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;ISO_639-1&quot;&#xd;
+				},&#xd;
+				&quot;code_string&quot;: &quot;en&quot;&#xd;
+			},&#xd;
+			&quot;encoding&quot;: {&#xd;
+				&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+				&quot;terminology_id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;IANA_character-sets&quot;&#xd;
+				},&#xd;
+				&quot;code_string&quot;: &quot;ISO-10646-UTF-1&quot;&#xd;
+			},&#xd;
+			&quot;workflow_id&quot;: {&#xd;
+				&quot;_type&quot;: &quot;OBJECT_REF&quot;,&#xd;
+				&quot;namespace&quot;: &quot;unknown&quot;,&#xd;
+				&quot;type&quot;: &quot;ANY&quot;,&#xd;
+				&quot;id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;GENERIC_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;9d7323a4-527a-3955-9012-d22bb9a3fc19&quot;,&#xd;
+					&quot;scheme&quot;: &quot;scheme&quot;&#xd;
+				}&#xd;
+			},&#xd;
+			&quot;subject&quot;: {&#xd;
+				&quot;_type&quot;: &quot;PARTY_SELF&quot;&#xd;
+			},&#xd;
+			&quot;provider&quot;: {&#xd;
+				&quot;_type&quot;: &quot;PARTY_SELF&quot;&#xd;
+			},&#xd;
+			&quot;guideline_id&quot;: {&#xd;
+				&quot;_type&quot;: &quot;OBJECT_REF&quot;,&#xd;
+				&quot;namespace&quot;: &quot;unknown&quot;,&#xd;
+				&quot;type&quot;: &quot;ANY&quot;,&#xd;
+				&quot;id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;GENERIC_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;3ce03ea6-255e-3b1e-888b-3c15ae800901&quot;,&#xd;
+					&quot;scheme&quot;: &quot;scheme&quot;&#xd;
+				}&#xd;
+			},&#xd;
+			&quot;data&quot;: {&#xd;
+				&quot;name&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+					&quot;value&quot;: &quot;Event Series&quot;&#xd;
+				},&#xd;
+				&quot;origin&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+					&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+				},&#xd;
+				&quot;period&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+					&quot;value&quot;: &quot;PT0S&quot;&#xd;
+				},&#xd;
+				&quot;duration&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+					&quot;value&quot;: &quot;PT0S&quot;&#xd;
+				},&#xd;
+				&quot;events&quot;: [&#xd;
+					{&#xd;
+						&quot;_type&quot;: &quot;INTERVAL_EVENT&quot;,&#xd;
+						&quot;name&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+							&quot;value&quot;: &quot;Cualquier evento&quot;&#xd;
+						},&#xd;
+						&quot;time&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+							&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+						},&#xd;
+						&quot;data&quot;: {&#xd;
+							&quot;_type&quot;: &quot;ITEM_TREE&quot;,&#xd;
+							&quot;name&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+								&quot;value&quot;: &quot;Arbol&quot;&#xd;
+							},&#xd;
+							&quot;items&quot;: [&#xd;
+								{&#xd;
+									&quot;_type&quot;: &quot;ELEMENT&quot;,&#xd;
+									&quot;name&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+										&quot;value&quot;: &quot;text&quot;&#xd;
+									},&#xd;
+									&quot;value&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+										&quot;value&quot;: &quot;Lorem ipsum&quot;&#xd;
+									},&#xd;
+									&quot;archetype_node_id&quot;: &quot;at0004&quot;&#xd;
+								}&#xd;
+							],&#xd;
+							&quot;archetype_node_id&quot;: &quot;at0003&quot;&#xd;
+						},&#xd;
+						&quot;width&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+							&quot;value&quot;: &quot;PT42H&quot;&#xd;
+						},&#xd;
+						&quot;math_function&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+							&quot;value&quot;: &quot;minimum&quot;,&#xd;
+							&quot;defining_code&quot;: {&#xd;
+								&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+								&quot;terminology_id&quot;: {&#xd;
+									&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+									&quot;value&quot;: &quot;openehr&quot;&#xd;
+								},&#xd;
+								&quot;code_string&quot;: &quot;145&quot;&#xd;
+							}&#xd;
+						},&#xd;
+						&quot;archetype_node_id&quot;: &quot;at0002&quot;&#xd;
+					}&#xd;
+				],&#xd;
+				&quot;archetype_node_id&quot;: &quot;at0001&quot;&#xd;
+			},&#xd;
+			&quot;archetype_node_id&quot;: &quot;openEHR-EHR-OBSERVATION.minimal.v1&quot;&#xd;
+		}&#xd;
+	],&#xd;
+	&quot;archetype_node_id&quot;: &quot;openEHR-EHR-COMPOSITION.minimal.v1&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/ehr/${ehrId}/composition/${compositionUUID}</stringProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">If-Match</stringProp>
+                <stringProp name="Header.value">${compositionId}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">compositionId</stringProp>
+            <stringProp name="RegexExtractor.regex">ETag: &quot;(.+)&quot;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+            <stringProp name="RegexExtractor.match_number"></stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DIRECTORY - CREATE" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+	&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+	&quot;name&quot;: {&#xd;
+		&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+		&quot;value&quot;: &quot;root&quot;&#xd;
+	},&#xd;
+	&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;,&#xd;
+	&quot;folders&quot;: [&#xd;
+		{&#xd;
+			&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+			&quot;name&quot;: {&#xd;
+				&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+				&quot;value&quot;: &quot;emergency&quot;&#xd;
+			},&#xd;
+			&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;,&#xd;
+			&quot;folders&quot;: [&#xd;
+				{&#xd;
+					&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+					&quot;name&quot;: {&#xd;
+						&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+						&quot;value&quot;: &quot;episode_x&quot;&#xd;
+					},&#xd;
+					&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;,&#xd;
+					&quot;folders&quot;: [&#xd;
+						{&#xd;
+							&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+							&quot;name&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+								&quot;value&quot;: &quot;summary_compo_x&quot;&#xd;
+							},&#xd;
+							&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;&#xd;
+						}&#xd;
+					]&#xd;
+				},&#xd;
+				{&#xd;
+					&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+					&quot;name&quot;: {&#xd;
+						&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+						&quot;value&quot;: &quot;episode_y&quot;&#xd;
+					},&#xd;
+					&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;,&#xd;
+					&quot;folders&quot;: [&#xd;
+						{&#xd;
+							&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+							&quot;name&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+								&quot;value&quot;: &quot;summary_compo_y&quot;&#xd;
+							},&#xd;
+							&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;&#xd;
+						}&#xd;
+					]&#xd;
+				}&#xd;
+			]&#xd;
+		},&#xd;
+		{&#xd;
+			&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+			&quot;name&quot;: {&#xd;
+				&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+				&quot;value&quot;: &quot;hospitalization&quot;&#xd;
+			},&#xd;
+			&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;,&#xd;
+			&quot;folders&quot;: [&#xd;
+				{&#xd;
+					&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+					&quot;name&quot;: {&#xd;
+						&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+						&quot;value&quot;: &quot;summary_compo_z&quot;&#xd;
+					},&#xd;
+					&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;&#xd;
+				}&#xd;
+			]&#xd;
+		},&#xd;
+		{&#xd;
+			&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+			&quot;name&quot;: {&#xd;
+				&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+				&quot;value&quot;: &quot;foldername-w-special-chars&quot;&#xd;
+			},&#xd;
+			&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;&#xd;
+		}&#xd;
+	]&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/ehr/${ehrId}/directory</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor - directoryId" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">directoryId</stringProp>
+            <stringProp name="RegexExtractor.regex">ETag: &quot;(.+)&quot;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+            <stringProp name="RegexExtractor.match_number"></stringProp>
+            <stringProp name="TestPlan.comments">Store directoryId</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor - directoryUUID" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">directoryUUID</stringProp>
+            <stringProp name="RegexExtractor.regex">([0-9a-fA-F-]{36})::</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default">NOT_FOUND</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="TestPlan.comments">Store directoryUUID</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49587">201</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DIRECTORY - UPDATE" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+	&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+	&quot;name&quot;: {&#xd;
+		&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+		&quot;value&quot;: &quot;root&quot;&#xd;
+	},&#xd;
+	&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;,&#xd;
+	&quot;folders&quot;: [&#xd;
+		{&#xd;
+			&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+			&quot;name&quot;: {&#xd;
+				&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+				&quot;value&quot;: &quot;history&quot;&#xd;
+			},&#xd;
+			&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;,&#xd;
+			&quot;folders&quot;: [&#xd;
+				{&#xd;
+					&quot;_type&quot;: &quot;FOLDER&quot;,&#xd;
+					&quot;name&quot;: {&#xd;
+						&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+						&quot;value&quot;: &quot;family&quot;&#xd;
+					},&#xd;
+					&quot;archetype_node_id&quot;: &quot;openEHR-EHR-FOLDER.generic.v1&quot;&#xd;
+				}&#xd;
+			]&#xd;
+		}&#xd;
+	]&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/ehr/${ehrId}/directory</stringProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">If-Match</stringProp>
+                <stringProp name="Header.value">${directoryId}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor - directoryId" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">directoryId</stringProp>
+            <stringProp name="RegexExtractor.regex">ETag: &quot;(.+)&quot;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+            <stringProp name="RegexExtractor.match_number"></stringProp>
+            <stringProp name="TestPlan.comments">Store directoryId</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="CONTR - CREATE (Compo)" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+	&quot;_type&quot;: &quot;CONTRIBUTION&quot;,&#xd;
+	&quot;versions&quot;: [&#xd;
+		{&#xd;
+			&quot;_type&quot;: &quot;ORIGINAL_VERSION&quot;,&#xd;
+			&quot;commit_audit&quot;: {&#xd;
+				&quot;_type&quot;: &quot;AUDIT_DETAILS&quot;,&#xd;
+				&quot;system_id&quot;: &quot;${system_id}&quot;,&#xd;
+				&quot;change_type&quot;: {&#xd;
+					&quot;value&quot;: &quot;creation&quot;,&#xd;
+					&quot;defining_code&quot;: {&#xd;
+						&quot;terminology_id&quot;: {&#xd;
+							&quot;value&quot;: &quot;openehr&quot;&#xd;
+						},&#xd;
+						&quot;code_string&quot;: &quot;249&quot;&#xd;
+					}&#xd;
+				},&#xd;
+				&quot;committer&quot;: {&#xd;
+					&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+					&quot;external_ref&quot;: {&#xd;
+						&quot;id&quot;: {&#xd;
+							&quot;_type&quot;: &quot;HIER_OBJECT_ID&quot;,&#xd;
+							&quot;value&quot;: &quot;${UUID.randomUUID().toString()}&quot;&#xd;
+						},&#xd;
+						&quot;namespace&quot;: &quot;DEMOGRAPHIC&quot;,&#xd;
+						&quot;type&quot;: &quot;PERSON&quot;&#xd;
+					},&#xd;
+					&quot;name&quot;: &quot;Dr. Yamamoto&quot;&#xd;
+				}&#xd;
+			},&#xd;
+			&quot;data&quot;: {&#xd;
+				&quot;_type&quot;: &quot;COMPOSITION&quot;,&#xd;
+				&quot;name&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+					&quot;value&quot;: &quot;Minimal&quot;&#xd;
+				},&#xd;
+				&quot;uid&quot;: {&#xd;
+					&quot;_type&quot;: &quot;OBJECT_VERSION_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;${generatedCompoUUID}::${system_id}::1&quot;&#xd;
+				},&#xd;
+				&quot;archetype_details&quot;: {&#xd;
+					&quot;archetype_id&quot;: {&#xd;
+						&quot;value&quot;: &quot;openEHR-EHR-COMPOSITION.minimal.v1&quot;&#xd;
+					},&#xd;
+					&quot;template_id&quot;: {&#xd;
+						&quot;value&quot;: &quot;${templateId}&quot;&#xd;
+					},&#xd;
+					&quot;rm_version&quot;: &quot;1.0.4&quot;&#xd;
+				},&#xd;
+				&quot;language&quot;: {&#xd;
+					&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+					&quot;terminology_id&quot;: {&#xd;
+						&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+						&quot;value&quot;: &quot;ISO_639-1&quot;&#xd;
+					},&#xd;
+					&quot;code_string&quot;: &quot;en&quot;&#xd;
+				},&#xd;
+				&quot;territory&quot;: {&#xd;
+					&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+					&quot;terminology_id&quot;: {&#xd;
+						&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+						&quot;value&quot;: &quot;ISO_3166-1&quot;&#xd;
+					},&#xd;
+					&quot;code_string&quot;: &quot;DE&quot;&#xd;
+				},&#xd;
+				&quot;category&quot;: {&#xd;
+					&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+					&quot;value&quot;: &quot;event&quot;,&#xd;
+					&quot;defining_code&quot;: {&#xd;
+						&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+						&quot;terminology_id&quot;: {&#xd;
+							&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+							&quot;value&quot;: &quot;openehr&quot;&#xd;
+						},&#xd;
+						&quot;code_string&quot;: &quot;433&quot;&#xd;
+					}&#xd;
+				},&#xd;
+				&quot;composer&quot;: {&#xd;
+					&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+					&quot;name&quot;: &quot;Max Mustermann${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}&quot;&#xd;
+				},&#xd;
+				&quot;context&quot;: {&#xd;
+					&quot;_type&quot;: &quot;EVENT_CONTEXT&quot;,&#xd;
+					&quot;start_time&quot;: {&#xd;
+						&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+						&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+					},&#xd;
+					&quot;end_time&quot;: {&#xd;
+						&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+						&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+					},&#xd;
+					&quot;setting&quot;: {&#xd;
+						&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+						&quot;value&quot;: &quot;home&quot;,&#xd;
+						&quot;defining_code&quot;: {&#xd;
+							&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+							&quot;terminology_id&quot;: {&#xd;
+								&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+								&quot;value&quot;: &quot;openehr&quot;&#xd;
+							},&#xd;
+							&quot;code_string&quot;: &quot;225&quot;&#xd;
+						}&#xd;
+					},&#xd;
+					&quot;health_care_facility&quot;: {&#xd;
+						&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+						&quot;name&quot;: &quot;Carla Trevor${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}&quot;&#xd;
+					}&#xd;
+				},&#xd;
+				&quot;content&quot;: [&#xd;
+					{&#xd;
+						&quot;_type&quot;: &quot;OBSERVATION&quot;,&#xd;
+						&quot;name&quot;: {&#xd;
+							&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+							&quot;value&quot;: &quot;Minimal&quot;&#xd;
+						},&#xd;
+						&quot;archetype_details&quot;: {&#xd;
+							&quot;archetype_id&quot;: {&#xd;
+								&quot;value&quot;: &quot;openEHR-EHR-OBSERVATION.minimal.v1&quot;&#xd;
+							},&#xd;
+							&quot;rm_version&quot;: &quot;1.0.4&quot;&#xd;
+						},&#xd;
+						&quot;language&quot;: {&#xd;
+							&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+							&quot;terminology_id&quot;: {&#xd;
+								&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+								&quot;value&quot;: &quot;ISO_639-1&quot;&#xd;
+							},&#xd;
+							&quot;code_string&quot;: &quot;en&quot;&#xd;
+						},&#xd;
+						&quot;encoding&quot;: {&#xd;
+							&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+							&quot;terminology_id&quot;: {&#xd;
+								&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+								&quot;value&quot;: &quot;IANA_character-sets&quot;&#xd;
+							},&#xd;
+							&quot;code_string&quot;: &quot;ISO-10646-UTF-1&quot;&#xd;
+						},&#xd;
+						&quot;workflow_id&quot;: {&#xd;
+							&quot;_type&quot;: &quot;OBJECT_REF&quot;,&#xd;
+							&quot;namespace&quot;: &quot;unknown&quot;,&#xd;
+							&quot;type&quot;: &quot;ANY&quot;,&#xd;
+							&quot;id&quot;: {&#xd;
+								&quot;_type&quot;: &quot;GENERIC_ID&quot;,&#xd;
+								&quot;value&quot;: &quot;9d7323a4-527a-3955-9012-d22bb9a3fc19&quot;,&#xd;
+								&quot;scheme&quot;: &quot;scheme&quot;&#xd;
+							}&#xd;
+						},&#xd;
+						&quot;subject&quot;: {&#xd;
+							&quot;_type&quot;: &quot;PARTY_SELF&quot;&#xd;
+						},&#xd;
+						&quot;provider&quot;: {&#xd;
+							&quot;_type&quot;: &quot;PARTY_SELF&quot;&#xd;
+						},&#xd;
+						&quot;guideline_id&quot;: {&#xd;
+							&quot;_type&quot;: &quot;OBJECT_REF&quot;,&#xd;
+							&quot;namespace&quot;: &quot;unknown&quot;,&#xd;
+							&quot;type&quot;: &quot;ANY&quot;,&#xd;
+							&quot;id&quot;: {&#xd;
+								&quot;_type&quot;: &quot;GENERIC_ID&quot;,&#xd;
+								&quot;value&quot;: &quot;3ce03ea6-255e-3b1e-888b-3c15ae800901&quot;,&#xd;
+								&quot;scheme&quot;: &quot;scheme&quot;&#xd;
+							}&#xd;
+						},&#xd;
+						&quot;data&quot;: {&#xd;
+							&quot;name&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+								&quot;value&quot;: &quot;Event Series&quot;&#xd;
+							},&#xd;
+							&quot;origin&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+								&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+							},&#xd;
+							&quot;period&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+								&quot;value&quot;: &quot;PT0S&quot;&#xd;
+							},&#xd;
+							&quot;duration&quot;: {&#xd;
+								&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+								&quot;value&quot;: &quot;PT0S&quot;&#xd;
+							},&#xd;
+							&quot;events&quot;: [&#xd;
+								{&#xd;
+									&quot;_type&quot;: &quot;INTERVAL_EVENT&quot;,&#xd;
+									&quot;name&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+										&quot;value&quot;: &quot;Cualquier evento&quot;&#xd;
+									},&#xd;
+									&quot;time&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_DATE_TIME&quot;,&#xd;
+										&quot;value&quot;: &quot;2022-02-03T04:05:06&quot;&#xd;
+									},&#xd;
+									&quot;data&quot;: {&#xd;
+										&quot;_type&quot;: &quot;ITEM_TREE&quot;,&#xd;
+										&quot;name&quot;: {&#xd;
+											&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+											&quot;value&quot;: &quot;Arbol&quot;&#xd;
+										},&#xd;
+										&quot;items&quot;: [&#xd;
+											{&#xd;
+												&quot;_type&quot;: &quot;ELEMENT&quot;,&#xd;
+												&quot;name&quot;: {&#xd;
+													&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+													&quot;value&quot;: &quot;text&quot;&#xd;
+												},&#xd;
+												&quot;value&quot;: {&#xd;
+													&quot;_type&quot;: &quot;DV_TEXT&quot;,&#xd;
+													&quot;value&quot;: &quot;Lorem ipsum&quot;&#xd;
+												},&#xd;
+												&quot;archetype_node_id&quot;: &quot;at0004&quot;&#xd;
+											}&#xd;
+										],&#xd;
+										&quot;archetype_node_id&quot;: &quot;at0003&quot;&#xd;
+									},&#xd;
+									&quot;width&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_DURATION&quot;,&#xd;
+										&quot;value&quot;: &quot;PT42H&quot;&#xd;
+									},&#xd;
+									&quot;math_function&quot;: {&#xd;
+										&quot;_type&quot;: &quot;DV_CODED_TEXT&quot;,&#xd;
+										&quot;value&quot;: &quot;minimum&quot;,&#xd;
+										&quot;defining_code&quot;: {&#xd;
+											&quot;_type&quot;: &quot;CODE_PHRASE&quot;,&#xd;
+											&quot;terminology_id&quot;: {&#xd;
+												&quot;_type&quot;: &quot;TERMINOLOGY_ID&quot;,&#xd;
+												&quot;value&quot;: &quot;openehr&quot;&#xd;
+											},&#xd;
+											&quot;code_string&quot;: &quot;145&quot;&#xd;
+										}&#xd;
+									},&#xd;
+									&quot;archetype_node_id&quot;: &quot;at0002&quot;&#xd;
+								}&#xd;
+							],&#xd;
+							&quot;archetype_node_id&quot;: &quot;at0001&quot;&#xd;
+						},&#xd;
+						&quot;archetype_node_id&quot;: &quot;openEHR-EHR-OBSERVATION.minimal.v1&quot;&#xd;
+					}&#xd;
+				],&#xd;
+				&quot;archetype_node_id&quot;: &quot;openEHR-EHR-COMPOSITION.minimal.v1&quot;&#xd;
+			},&#xd;
+			&quot;lifecycle_state&quot;: {&#xd;
+				&quot;value&quot;: &quot;complete&quot;,&#xd;
+				&quot;defining_code&quot;: {&#xd;
+					&quot;terminology_id&quot;: {&#xd;
+						&quot;value&quot;: &quot;openehr&quot;&#xd;
+					},&#xd;
+					&quot;code_string&quot;: &quot;532&quot;&#xd;
+				}&#xd;
+			}&#xd;
+		}&#xd;
+	],&#xd;
+	&quot;audit&quot;: {&#xd;
+		&quot;_type&quot;: &quot;AUDIT_DETAILS&quot;,&#xd;
+		&quot;system_id&quot;: &quot;${system_id}&quot;,&#xd;
+		&quot;committer&quot;: {&#xd;
+			&quot;_type&quot;: &quot;PARTY_IDENTIFIED&quot;,&#xd;
+			&quot;name&quot;: &quot;Mark Klarke${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}&quot;,&#xd;
+			&quot;external_ref&quot;: {&#xd;
+				&quot;id&quot;: {&#xd;
+					&quot;_type&quot;: &quot;GENERIC_ID&quot;,&#xd;
+					&quot;value&quot;: &quot;${generatedAuditExtRefValue}&quot;,&#xd;
+					&quot;scheme&quot;: &quot;my_custom_scheme_${__RandomString(8,0123456789)}&quot;&#xd;
+				},&#xd;
+				&quot;namespace&quot;: &quot;demographic&quot;,&#xd;
+				&quot;type&quot;: &quot;PERSON&quot;&#xd;
+			}&#xd;
+		},&#xd;
+		&quot;change_type&quot;: {&#xd;
+			&quot;value&quot;: &quot;creation&quot;,&#xd;
+			&quot;defining_code&quot;: {&#xd;
+				&quot;terminology_id&quot;: {&#xd;
+					&quot;value&quot;: &quot;openehr&quot;&#xd;
+				},&#xd;
+				&quot;code_string&quot;: &quot;249&quot;&#xd;
+			}&#xd;
+		},&#xd;
+		&quot;description&quot;: {&#xd;
+			&quot;value&quot;: &quot;My custom description ${__RandomString(50,abcdefghijklmnopqrstuvwxyz)}&quot;&#xd;
+		}&#xd;
+	}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/ehr/${ehrId}/contribution</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">Creation of Composition (Minimal Observation) through Contribution</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="script">vars.put(&quot;generatedCompoUUID&quot;, UUID.randomUUID().toString());
+vars.put(&quot;generatedAuditExtRefValue&quot;, UUID.randomUUID().toString());
+vars.put(&quot;system_id&quot;, &quot;local.ehrbase.org&quot;);</stringProp>
+          </BeanShellPreProcessor>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor - contributionUUID" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">contributionUUID</stringProp>
+            <stringProp name="RegexExtractor.regex">ETag: &quot;(.+)&quot;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default"></stringProp>
+            <stringProp name="RegexExtractor.match_number"></stringProp>
+            <stringProp name="TestPlan.comments">Store contributionUUID</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49587">201</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">16</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="QUERY - Simple" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;q&quot;: &quot;SELECT c/uid/value, e/ehr_id/value FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value = &apos;${ehrId}&apos;&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/query/aql</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="QUERY - Complex" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;q&quot;: &quot;SELECT c/uid/value as compo_value, c/name/value, c/composer/name as composer_name, e/ehr_id/value, e/ehr_status/uid/value, ie/name/value, el/value/value FROM EHR e CONTAINS COMPOSITION c CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.minimal.v1] CONTAINS INTERVAL_EVENT ie CONTAINS ELEMENT el WHERE el/value/value LIKE &apos;*ipsum&apos; OR el/value/value LIKE &apos;Lorem*&apos; ORDER BY c/uid/value DESC LIMIT 2&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/ehrbase/rest/openehr/v1/query/aql</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

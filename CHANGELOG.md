@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0]
+ ### Added
+* Experimental ItemTag REST endpoints for EHR_STATUS and COMPOSITION (configs: `ehrbase.rest.experimental.tags.*`) ([1343](https://github.com/ehrbase/ehrbase/pull/1343))
+* CLI runner with support for flyway pre-migrations ([1387](https://github.com/ehrbase/ehrbase/pull/1387))
+ ### Changed 
+ ### Fixed 
+* Require EHR_STATUS `is_queryable` and `is_modifiable` to be present ([#1377](https://github.com/ehrbase/ehrbase/pull/1377)) 
+
 ## [2.6.0]
  ### Added
  ### Changed 
@@ -76,3 +84,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.4.0]: https://github.com/ehrbase/ehrbase/compare/v2.3.0...v2.4.0
 [2.5.0]: https://github.com/ehrbase/ehrbase/compare/v2.4.0...v2.5.0
 [2.6.0]: https://github.com/ehrbase/ehrbase/compare/v2.5.0...v2.6.0
+[2.7.0]: https://github.com/ehrbase/ehrbase/compare/v2.6.0...v2.7.0

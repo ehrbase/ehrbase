@@ -1,0 +1,60 @@
+#
+# Extended setup for EHRbase for integration tests.
+#
+services:
+
+  #
+  # Configure ehrbase container to contain a healthcheck.
+  #
+  ehrbase:
+    # ensure image is provided externally and prevent pulling of remote while running tests
+    image: ${EHRBASE_IMAGE?error}
+    pull_policy: never
+    container_name: "EHRbase"
+    # adjust env as needed
+    environment:
+      MANAGEMENT_ENDPOINTS_WEB_ACCESS: "PUBLIC"
+      MANAGEMENT_ENDPOINT_INFO_ENABLED: "true"
+      SERVER_NODENAME: "local.ehrbase.org"
+      EHRBASE_REST_AQL_RESPONSE_GENERATOR_DETAILS_ENABLED: "true"
+      EHRBASE_REST_AQL_RESPONSE_EXECUTION_OPTIONS_ENABLED: "true"
+      ADMINAPI_ACTIVE: "true"
+      ADMINAPI_ALLOWDELETEALL: "true"
+      JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage/jacoco.exec}"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ehrbase/management/info || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - ./tests/coverage:/app/coverage
+    networks:
+      - ehrbase-net
+
+  #
+  # Change container name for better readability of logs
+  #
+  ehrdb:
+    container_name: "EHRbase-PG"
+    networks:
+      - ehrbase-net
+
+  #
+  # jmeter docker service will be ready after ehrbase is healthy.
+  #
+  jmeter:
+    image: justb4/jmeter:latest
+    ports:
+      - "8082:8080"
+    container_name: jmeter
+    depends_on:
+      ehrbase:
+        condition: service_healthy
+    links:
+      - ehrbase
+      - ehrdb
+    networks:
+      - ehrbase-net
+    volumes:
+      - ./tests/perf:/tests
+      - ./reports:/reports

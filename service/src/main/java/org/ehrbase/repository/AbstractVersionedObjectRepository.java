@@ -325,7 +325,7 @@ public abstract class AbstractVersionedObjectRepository<
                 "complete", new CodePhrase("532")); // TODO: once lifecycle state is supported, get it here dynamically
         AuditDetails commitAudit =
                 contributionRepository.findAuditDetails(versionRecord.get(VERSION_HISTORY_PROTOTYPE.AUDIT_ID));
-        ObjectRef<HierObjectId> contribution = new ObjectRef<>(
+        ObjectRef<HierObjectId> objectRef = new ObjectRef<>(
                 new HierObjectId(versionRecord
                         .get(VERSION_HISTORY_PROTOTYPE.CONTRIBUTION_ID)
                         .toString()),
@@ -341,18 +341,18 @@ public abstract class AbstractVersionedObjectRepository<
         }
 
         Optional<O> composition = findByVersion(condition, historyCondition, version);
-        OriginalVersion<O> versionComposition = new OriginalVersion<>(
+        OriginalVersion<O> originalVersion = new OriginalVersion<>(
                 versionId,
                 precedingVersionId,
                 composition.orElse(null),
                 lifecycleState,
                 commitAudit,
-                contribution,
+                objectRef,
                 null,
                 null,
                 null);
 
-        return Optional.of(versionComposition);
+        return Optional.of(originalVersion);
     }
 
     protected abstract Class<O> getLocatableClass();

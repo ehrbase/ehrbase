@@ -34,6 +34,8 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.dto.EhrStatusDto;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
@@ -52,6 +54,7 @@ import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.service.contribution.ContributionServiceHelper;
+import org.ehrbase.service.contribution.ContributionWrapper;
 import org.ehrbase.util.UuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -128,7 +131,8 @@ public class ContributionServiceImp implements ContributionService {
             throw new ObjectNotFoundException(RmConstants.EHR, "No EHR found with given ID: " + ehrId.toString());
         }
 
-        ContributionCreateDto contribution = ContributionServiceHelper.unmarshalContribution(content);
+        ContributionWrapper contributionWrapper = ContributionServiceHelper.unmarshalContribution(content);
+        ContributionCreateDto contribution = contributionWrapper.getContributionCreateDto();
 
         validationService.check(contribution);
 
@@ -144,9 +148,10 @@ public class ContributionServiceImp implements ContributionService {
         UUID contributionId = contributionRepository.createContribution(
                 ehrId, contributionUuid, ContributionDataType.other, auditUuid);
 
-        // go through those RM objects and execute the action of it (as listed in its audit) and connect it to new
-        // contribution
-        for (Version<? extends RMObject> version : contribution.getVersions()) {
+        // go through those RM objects versions and execute the action of it (as listed in its audit) and connect it to
+        // new
+        // contribution. Prefer to use the DTOs objects instead of the RMObjects.
+        contributionWrapper.forEachVersion((version, dto) -> {
             RMObject versionRmObject = version.getData();
 
             // the version contains the optional "data" attribute (i.e. payload),
@@ -154,15 +159,23 @@ public class ContributionServiceImp implements ContributionService {
             // This must be in sync with SupportedVersionedObject.
 
             switch (versionRmObject) {
-                case Composition c -> {
+                case Composition composition -> {
                     try {
-                        processCompositionVersion(ehrId, contributionId, version, c);
+                        processCompositionVersion(ehrId, contributionId, version, composition);
                     } catch (UnprocessableEntityException e) {
                         throw new ValidationException(e.getMessage());
                     }
                 }
-                case EhrStatus e -> processEhrStatusVersion(ehrId, contributionId, version, e);
-                case Folder f -> processFolderVersion(ehrId, contributionId, version, f);
+                case Folder folder -> processFolderVersion(ehrId, contributionId, version, folder);
+                case EhrStatus ignored -> {
+                    // Here we use the EHRStatusDto to be able to apply a better validation
+                    EhrStatusDto ehrStatusDto = Optional.ofNullable(dto)
+                            .filter(EhrStatusDto.class::isInstance)
+                            .map(EhrStatusDto.class::cast)
+                            .orElseThrow(() -> new InternalServerException(
+                                    "Expected DTO to exist for Contribution of EHR_STATUS"));
+                    processEhrStatusVersion(ehrId, contributionId, version, ehrStatusDto);
+                }
                 case null -> {
                     // version doesn't contain "data", so it is only a metadata one to, for
                     // instance, delete a specific object via ID regardless of type
@@ -178,7 +191,7 @@ public class ContributionServiceImp implements ContributionService {
                         .orElseGet(
                                 () -> versionRmObject.getClass().getSimpleName().toUpperCase())));
             }
-        }
+        });
 
         return contributionId;
     }
@@ -193,48 +206,10 @@ public class ContributionServiceImp implements ContributionService {
      * @param ehrId           ID of given EHR scope
      * @param contributionId  Top level contribution this version is part of
      * @param version         The version wrapper object
-     * @param versionRmObject The actual composition payload
+     * @param ehrStatus       The actual EhrStatus payload
      * @throws IllegalArgumentException when input is missing precedingVersionUid in case of modification
      */
-    private void processCompositionVersion(
-            UUID ehrId, UUID contributionId, Version<?> version, Composition versionRmObject) {
-        // access audit and extract method, e.g. CREATION
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
-
-        checkContributionRules(version, changeType); // evaluate and check contribution rules
-
-        UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
-
-        switch (changeType) {
-            case CREATION ->
-            // call creation of a new composition with given input
-            compositionService.create(ehrId, versionRmObject, contributionId, audit);
-            case AMENDMENT,
-                    // triggers the same processing as modification
-                    // :TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
-                    MODIFICATION ->
-            // call modification of the given composition
-            compositionService.update(ehrId, version.getPrecedingVersionUid(), versionRmObject, contributionId, audit);
-            case DELETED ->
-            // case of deletion change type, but request also has payload
-            // :TODO: should that be even allowed? specification-wise it's not forbidden)
-            compositionService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
-            case SYNTHESIS, UNKNOWN -> throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
-        }
-    }
-
-    /**
-     * Helper function to process a version of composition type
-     *
-     * @param ehrId           ID of given EHR scope
-     * @param contributionId  Top level contribution this version is part of
-     * @param version         The version wrapper object
-     * @param versionRmObject The actual EhrStatus payload
-     * @throws IllegalArgumentException when input is missing precedingVersionUid in case of modification
-     */
-    private void processEhrStatusVersion(
-            UUID ehrId, UUID contributionId, Version<?> version, EhrStatus versionRmObject) {
+    private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version<?> version, EhrStatusDto ehrStatus) {
         // access audit and extract method, e.g. CREATION
         ContributionChangeType changeType =
                 ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
@@ -250,7 +225,7 @@ public class ContributionServiceImp implements ContributionService {
                 // triggers the same processing as modification
                 // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
             case AMENDMENT, MODIFICATION -> ehrService.updateStatus(
-                    ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId, audit);
+                    ehrId, ehrStatus, version.getPrecedingVersionUid(), contributionId, audit);
             case DELETED ->
             // deleting a STATUS versioned object is invalid
             throw new ValidationException("Invalid change type. EHR_STATUS cannot be deleted.");
@@ -260,7 +235,44 @@ public class ContributionServiceImp implements ContributionService {
         }
     }
 
-    private void processFolderVersion(UUID ehrId, UUID contributionId, Version<?> version, Folder versionRmObject) {
+    /**
+     * Helper function to process a version of composition type
+     *
+     * @param ehrId           ID of given EHR scope
+     * @param contributionId  Top level contribution this version is part of
+     * @param version         The version wrapper object
+     * @param composition     The actual composition payload
+     * @throws IllegalArgumentException when input is missing precedingVersionUid in case of modification
+     */
+    private void processCompositionVersion(
+            UUID ehrId, UUID contributionId, Version<?> version, Composition composition) {
+        // access audit and extract method, e.g. CREATION
+        ContributionChangeType changeType =
+                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+
+        checkContributionRules(version, changeType); // evaluate and check contribution rules
+
+        UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
+
+        switch (changeType) {
+            case CREATION ->
+            // call creation of a new composition with given input
+            compositionService.create(ehrId, composition, contributionId, audit);
+            case AMENDMENT,
+                    // triggers the same processing as modification
+                    // :TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
+                    MODIFICATION ->
+            // call modification of the given composition
+            compositionService.update(ehrId, version.getPrecedingVersionUid(), composition, contributionId, audit);
+            case DELETED ->
+            // case of deletion change type, but request also has payload
+            // :TODO: should that be even allowed? specification-wise it's not forbidden)
+            compositionService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
+            case SYNTHESIS, UNKNOWN -> throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
+        }
+    }
+
+    private void processFolderVersion(UUID ehrId, UUID contributionId, Version<?> version, Folder folder) {
         // access audit and extract method, e.g. CREATION
         ContributionChangeType changeType =
                 ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
@@ -272,14 +284,14 @@ public class ContributionServiceImp implements ContributionService {
         switch (changeType) {
             case CREATION ->
             // call creation of a new folder version with given input
-            folderService.create(ehrId, versionRmObject, contributionId, audit);
+            folderService.create(ehrId, folder, contributionId, audit);
 
                 // triggers the same processing as modification
                 // :TODO-396: so far so good, but should use the type"AMENDMENT" for audit in access layer
             case AMENDMENT, MODIFICATION ->
             // preceding_version_uid check call
             // modification of the given folder
-            folderService.update(ehrId, versionRmObject, version.getPrecedingVersionUid(), contributionId, audit);
+            folderService.update(ehrId, folder, version.getPrecedingVersionUid(), contributionId, audit);
             case DELETED ->
             // case of deletion change type, but request
             // also has payload
