@@ -17,6 +17,7 @@
  */
 package org.ehrbase.api.knowledge;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,4 +62,8 @@ public interface KnowledgeCacheService {
     Optional<String> findTemplateIdByUuid(UUID uuid);
 
     Optional<UUID> findUuidByTemplateId(String templateId);
+
+    String adminUpdateOperationalTemplate(InputStream content);
+
+    int deleteAllOperationalTemplates();
 }

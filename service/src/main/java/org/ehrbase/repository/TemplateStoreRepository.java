@@ -17,6 +17,7 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.tables.TemplateStore.TEMPLATE_STORE;
 
 import java.io.ByteArrayInputStream;
@@ -161,5 +162,13 @@ public class TemplateStoreRepository {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
         templateStoreRecord.setContent(template.xmlText(opts));
+    }
+
+    public List<String> getTemplateUsages() {
+        return context.selectDistinct(TEMPLATE_STORE.TEMPLATE_ID)
+                .from(TEMPLATE_STORE)
+                .join(COMP_VERSION)
+                .on(COMP_VERSION.TEMPLATE_ID.eq(TEMPLATE_STORE.ID))
+                .fetch(TEMPLATE_STORE.TEMPLATE_ID);
     }
 }

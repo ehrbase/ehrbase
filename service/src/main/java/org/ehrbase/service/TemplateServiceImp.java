@@ -36,6 +36,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorConfig;
@@ -59,11 +60,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TemplateServiceImp implements TemplateService {
 
-    private final KnowledgeCacheServiceImp knowledgeCacheService;
+    private final KnowledgeCacheService knowledgeCacheService;
 
-    public TemplateServiceImp(KnowledgeCacheServiceImp knowledgeCacheService) {
+    private final IntrospectService introspectService;
 
+    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, IntrospectService introspectService) {
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
+        this.introspectService = Objects.requireNonNull(introspectService);
     }
 
     @Override
@@ -123,7 +126,7 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     public WebTemplate findTemplate(String templateId) {
         try {
-            return knowledgeCacheService.getWebTemplate(templateId);
+            return introspectService.getWebTemplate(templateId);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {
