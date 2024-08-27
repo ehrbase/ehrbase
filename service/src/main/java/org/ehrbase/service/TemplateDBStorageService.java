@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.repository.CompositionRepository;
@@ -115,7 +114,8 @@ public class TemplateDBStorageService implements TemplateStorage {
                     String templateId = TemplateUtils.getTemplateId(t.getOperationaltemplate());
                     templateStoreRepository.delete(templateId);
                     return Pair.of(t.getInternalId(), templateId);
-                }).toList();
+                })
+                .toList();
     }
 
     @Override
