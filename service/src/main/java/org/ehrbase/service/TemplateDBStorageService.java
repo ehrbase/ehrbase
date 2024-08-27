@@ -85,7 +85,7 @@ public class TemplateDBStorageService implements TemplateStorage {
         List<String> usedTemplateIds = templateStoreRepository.getTemplateUsages();
         if (!usedTemplateIds.isEmpty()) {
             boolean single = usedTemplateIds.size() == 1;
-            throw new UnprocessableEntityException("Cannot delete %s %s, since %s used by at least one composition"
+            throw new UnprocessableEntityException("Cannot delete %s %s since %s used by at least one composition"
                     .formatted(
                             single ? "template" : "templates",
                             String.join(", ", usedTemplateIds),
