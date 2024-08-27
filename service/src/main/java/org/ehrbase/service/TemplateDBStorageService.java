@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.repository.CompositionRepository;
@@ -80,6 +82,18 @@ public class TemplateDBStorageService implements TemplateStorage {
         }
     }
 
+    private void checkUsages() {
+        List<String> usedTemplateIds = templateStoreRepository.getTemplateUsages();
+        if (!usedTemplateIds.isEmpty()) {
+            boolean single = usedTemplateIds.size() == 1;
+            throw new UnprocessableEntityException("Cannot delete %s %s, since %s used by at least one composition"
+                    .formatted(
+                            single ? "template" : "templates",
+                            String.join(", ", usedTemplateIds),
+                            single ? "it is" : "they are"));
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -90,6 +104,18 @@ public class TemplateDBStorageService implements TemplateStorage {
         checkUsage(templateId, "delete");
 
         templateStoreRepository.delete(templateId);
+    }
+
+    @Override
+    public List<Pair<UUID, String>> deleteAllTemplates() {
+        checkUsages();
+
+        return templateStoreRepository.findAll().stream()
+                .map(t -> {
+                    String templateId = TemplateUtils.getTemplateId(t.getOperationaltemplate());
+                    templateStoreRepository.delete(templateId);
+                    return Pair.of(t.getInternalId(), templateId);
+                }).toList();
     }
 
     @Override

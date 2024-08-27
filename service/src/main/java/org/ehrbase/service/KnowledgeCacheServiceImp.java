@@ -26,11 +26,10 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.cache.CacheProvider;
@@ -120,6 +119,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
         return templateId;
     }
 
+    @Override
     public String adminUpdateOperationalTemplate(InputStream content) {
         OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
         return addOperationalTemplateIntern(template, true);
@@ -183,6 +183,18 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     }
 
     @Override
+    public int deleteAllOperationalTemplates() {
+        List<Pair<UUID, String>> deletedTemplates = templateStorage.deleteAllTemplates();
+
+        deletedTemplates.forEach(t -> {
+            cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, t.getKey());
+            cacheProvider.evict(CacheProvider.INTROSPECT_CACHE, t.getValue());
+            cacheProvider.evict(CacheProvider.TEMPLATE_ID_UUID_CACHE, t.getValue());
+        });
+        return deletedTemplates.size();
+    }
+
+    @Override
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
             return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, () -> {
@@ -240,21 +252,6 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
-    }
-
-    public int deleteAllOperationalTemplates() {
-        // Get all operational templates
-        return (int) this.templateStorage.listAllOperationalTemplates().stream()
-                .map(TemplateMetaData::getOperationaltemplate)
-                .filter(opt -> {
-                    try {
-                        deleteOperationalTemplate(opt);
-                        return true;
-                    } catch (UnprocessableEntityException | ObjectNotFoundException e) {
-                        return false;
-                    }
-                })
-                .count();
     }
 
     /**

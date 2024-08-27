@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -57,6 +58,8 @@ public interface TemplateStorage {
      * @param templateId - Template id to delete from storage, e.g. "IDCR Allergies List.v0"
      */
     void deleteTemplate(String templateId);
+
+    List<Pair<UUID, String>> deleteAllTemplates();
 
     Optional<String> findTemplateIdByUuid(UUID uuid);
 
