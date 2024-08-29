@@ -114,6 +114,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
             // Caches might be containing wrong data
             invalidateCaches(templateId, templateMetaData.getInternalId());
         }
+        log.info("Updating WebTemplate cache for template: {}", templateId);
         ensureCached(templateMetaData);
 
         return templateId;
@@ -146,6 +147,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
         List<TemplateMetaData> templateMetaData = templateStorage.listAllOperationalTemplates();
+        log.info("Updating WebTemplate cache for all {} templates", templateMetaData.size());
         templateMetaData.forEach(this::ensureCached);
         return templateMetaData;
     }
@@ -231,7 +233,10 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
 
     public WebTemplate getWebTemplate(String templateId) {
         try {
-            return cacheProvider.get(CacheProvider.INTROSPECT_CACHE, templateId, () -> retrieveWebTemplate(templateId));
+            return cacheProvider.get(CacheProvider.INTROSPECT_CACHE, templateId, () -> {
+                log.info("Updating WebTemplate cache for template: {}", templateId);
+                return retrieveWebTemplate(templateId);
+            });
         } catch (Cache.ValueRetrievalException ex) {
             throw (RuntimeException) ex.getCause();
         }
@@ -246,10 +251,9 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     }
 
     private WebTemplate buildQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
-        log.info("Updating WebTemplate cache for template: {}", TemplateUtils.getTemplateId(operationaltemplate));
         try {
             return new OPTParser(operationaltemplate).parse();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
     }
