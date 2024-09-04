@@ -20,25 +20,42 @@ package org.ehrbase.cache;
 import com.jayway.jsonpath.DocumentContext;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.springframework.cache.Cache;
 
 public interface CacheProvider {
-    EhrBaseCache<String, WebTemplate> INTROSPECT_CACHE =
-            new EhrBaseCache<>("introspectCache", String.class, WebTemplate.class);
-    EhrBaseCache<String, UUID> TEMPLATE_ID_UUID_CACHE =
-            new EhrBaseCache<>("TemplateIdUuidCache", String.class, UUID.class);
-    EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE =
-            new EhrBaseCache<>("TemplateUuidIdCache", UUID.class, String.class);
-    EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache", String.class, UUID.class);
+    EhrBaseCache<String, WebTemplate> INTROSPECT_CACHE = new EhrBaseCache<>("introspectCache");
+    EhrBaseCache<String, UUID> TEMPLATE_ID_UUID_CACHE = new EhrBaseCache<>("TemplateIdUuidCache");
+    EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE = new EhrBaseCache<>("TemplateUuidIdCache");
+    EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache");
     EhrBaseCache<String, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =
-            new EhrBaseCache<>("externalFhirTerminologyCache", String.class, DocumentContext.class);
-    EhrBaseCache<String, QueryDefinitionResultDto> STORED_QUERY_CACHE =
-            new EhrBaseCache<>("StoredQueryCache", String.class, QueryDefinitionResultDto.class);
+            new EhrBaseCache<>("externalFhirTerminologyCache");
+    EhrBaseCache<String, QueryDefinitionResultDto> STORED_QUERY_CACHE = new EhrBaseCache<>("StoredQueryCache");
 
-    record EhrBaseCache<K, V>(String name, Class<K> kexClass, Class<V> valueClass) {}
+    static Supplier<InternalServerException> getExceptionSupplier(EhrBaseCache<?, ?> cache) {
+        return () -> new InternalServerException("Non existing cache : %s".formatted(cache.name()));
+    }
 
-    <V, K> V get(EhrBaseCache<K, V> cache, K key, Callable<V> valueLoader);
+    record EhrBaseCache<KEY, VALUE>(String name) {
+        public VALUE get(CacheProvider cacheProvider, KEY key, Callable<VALUE> valueLoader) {
+            return cacheProvider.getCache(this).get(key, valueLoader);
+        }
 
-    <V, K> void evict(EhrBaseCache<K, V> cache, K key);
+        public void evict(CacheProvider cacheProvider, KEY key) {
+            cacheProvider.getCache(this).evict(key);
+        }
+
+        public void put(CacheProvider cacheProvider, KEY key, VALUE value) {
+            cacheProvider.getCache(this).put(key, value);
+        }
+
+        public void clear(CacheProvider cacheProvider) {
+            cacheProvider.getCache(this).clear();
+        }
+    }
+
+    Cache getCache(EhrBaseCache<?, ?> cache);
 }

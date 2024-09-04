@@ -68,7 +68,7 @@ public class CacheConfiguration {
                 Caffeine.newBuilder().build());
     }
 
-    private static Caffeine<Object, Object> configureCache(
+    protected static Caffeine<Object, Object> configureCache(
             Caffeine<Object, Object> caffeine, CacheProperties.CacheConfig cacheConfig) {
 
         if (cacheConfig.getExpireAfterWrite() != null) {

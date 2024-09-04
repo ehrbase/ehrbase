@@ -120,9 +120,9 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
 
         String templateId = template.getTemplateId().getValue();
         UUID uuid = findUuidByTemplateId(templateId).orElseThrow();
-        cacheProvider.evict(CacheProvider.INTROSPECT_CACHE, templateId);
-        cacheProvider.evict(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId);
-        cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid);
+        CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, uuid);
     }
 
     @Override
@@ -162,7 +162,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
 
-            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, () -> templateStorage
+            return Optional.of(CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, uuid, () -> templateStorage
                     .findTemplateIdByUuid(uuid)
                     .orElseThrow()));
         } catch (Cache.ValueRetrievalException ex) {
@@ -175,7 +175,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         try {
 
-            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> templateStorage
+            return Optional.of(CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> templateStorage
                     .findUuidByTemplateId(templateId)
                     .orElseThrow()));
         } catch (Cache.ValueRetrievalException ex) {
@@ -189,8 +189,8 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
 
         try {
 
-            return cacheProvider.get(
-                    CacheProvider.INTROSPECT_CACHE, templateId, () -> buildQueryOptMetaData(templateId));
+            return CacheProvider.INTROSPECT_CACHE.get(
+                    cacheProvider, templateId, () -> buildQueryOptMetaData(templateId));
         } catch (Cache.ValueRetrievalException ex) {
             throw (RuntimeException) ex.getCause();
         }

@@ -74,8 +74,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
         StoredQueryQualifiedName storedQueryQualifiedName =
                 StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
         try {
-            return cacheProvider.get(
-                    CacheProvider.STORED_QUERY_CACHE,
+            return CacheProvider.STORED_QUERY_CACHE.get(
+                    cacheProvider,
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
@@ -192,7 +192,7 @@ public class StoredQueryServiceImp implements StoredQueryService {
         } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
         } finally {
-            cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, storedQueryQualifiedName.toQualifiedNameString());
+            CacheProvider.STORED_QUERY_CACHE.evict(cacheProvider, storedQueryQualifiedName.toQualifiedNameString());
         }
     }
 
@@ -201,11 +201,11 @@ public class StoredQueryServiceImp implements StoredQueryService {
         SemVer versionMajor = new SemVer(semVer.major(), null, null, null);
         SemVer versionMajorMinor = new SemVer(semVer.major(), semVer.minor(), null, null);
 
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
+        CacheProvider.STORED_QUERY_CACHE.evict(
+                cacheProvider,
                 StoredQueryQualifiedName.create(qualifiedName, versionMajor).toQualifiedNameString());
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
+        CacheProvider.STORED_QUERY_CACHE.evict(
+                cacheProvider,
                 StoredQueryQualifiedName.create(qualifiedName, versionMajorMinor)
                         .toQualifiedNameString());
     }
