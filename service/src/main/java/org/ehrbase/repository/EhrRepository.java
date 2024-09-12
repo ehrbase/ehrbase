@@ -22,7 +22,6 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION_HISTORY;
-import static org.ehrbase.repository.EhrFolderRepository.NOT_MATCH_LATEST_VERSION;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
@@ -31,11 +30,14 @@ import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
@@ -50,7 +52,6 @@ import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
-import org.jooq.Result;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
@@ -74,13 +75,10 @@ public class EhrRepository
     public static final String[] SUBJECT_NAMESPACE_JSON_PATH =
             RmAttributeAlias.rmToJsonPathParts("subject/external_ref/namespace");
 
-    private final PartyProxyRepository partyProxyRepository;
-
     public EhrRepository(
             DSLContext context,
             ContributionRepository contributionRepository,
             SystemService systemService,
-            PartyProxyRepository partyProxyRepository,
             TimeProvider timeProvider) {
 
         super(
@@ -93,7 +91,6 @@ public class EhrRepository
                 contributionRepository,
                 systemService,
                 timeProvider);
-        this.partyProxyRepository = partyProxyRepository;
     }
 
     @Override
@@ -149,15 +146,6 @@ public class EhrRepository
         return dataRootCondition(dataTable)
                 .and(jsonDataField(dataTable, SUBJECT_ID_JSON_PATH).eq(subjectId))
                 .and(jsonDataField(dataTable, SUBJECT_NAMESPACE_JSON_PATH).eq(nameSpace));
-    }
-
-    public Optional<EhrStatus> findByVersion(UUID ehrId, UUID statusVersion, int version) {
-
-        return findByVersion(
-                        singleEhrStatusCondition(ehrId, tables.dataHead()),
-                        singleEhrStatusCondition(ehrId, tables.dataHistory()),
-                        version)
-                .filter(e -> UUID.fromString(e.getUid().getRoot().getValue()).equals(statusVersion));
     }
 
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, OffsetDateTime time) {
@@ -217,13 +205,11 @@ public class EhrRepository
     @Transactional
     public void update(UUID ehrId, EhrStatus ehrStatus, @Nullable UUID contributionId, @Nullable UUID auditId) {
 
-        Result<EhrStatusVersionHistoryRecord> headRecords =
-                findVersionHeadRecords(singleEhrStatusCondition(ehrId, tables.versionHead()));
+        EhrStatusVersionHistoryRecord versionHead = findVersionHeadRecord(ehrId)
+                .orElseThrow(() -> new ObjectNotFoundException("EHR", "EHR %s does not exist".formatted(ehrId)));
 
-        EhrStatusVersionHistoryRecord versionHead = headRecords.getFirst();
-        if (versionHead.getSysVersion() + 1 != extractVersion(ehrStatus.getUid())) {
-            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
-        }
+        // pre-step: check for valid next ehr status
+        checkIsNextHeadRevisionUid(versionHead, ehrStatus.getUid());
 
         copyHeadToHistory(versionHead, timeProvider.getNow());
         deleteHead(
@@ -267,5 +253,26 @@ public class EhrRepository
     @Override
     protected Class<EhrStatus> getLocatableClass() {
         return EhrStatus.class;
+    }
+
+    protected Optional<EhrStatusVersionHistoryRecord> findVersionHeadRecord(UUID ehrId) {
+        return findVersionHeadRecords(singleEhrStatusCondition(ehrId, tables.versionHead())).stream()
+                .findFirst();
+    }
+
+    private static void checkIsNextHeadRevisionUid(EhrStatusVersionHistoryRecord versionHead, UIDBasedId uid) {
+        final UUID headVoid = versionHead.getVoId();
+        final int headVersion = versionHead.getSysVersion();
+
+        final UUID nextVoid = extractUid(uid);
+        final int nextVersion = extractVersion(uid);
+
+        // Sanity checks
+        if (!Objects.equals(headVoid, nextVoid)) {
+            throw new PreconditionFailedException("No EHR_STATUS exist for If-Match version_uid %s".formatted(uid));
+        }
+        if ((headVersion + 1) != nextVersion) {
+            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
+        }
     }
 }

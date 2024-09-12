@@ -293,7 +293,7 @@ class EhrServiceTest {
 
         assertThatThrownBy(() -> service.updateStatus(ehrId, ehrStatusDto, ifMatch, null, null))
                 .isInstanceOf(ObjectNotFoundException.class)
-                .hasMessage("No EHR found with given ID: ccf560ea-06dd-4c0b-815f-89b076de674a");
+                .hasMessage("EHR with id ccf560ea-06dd-4c0b-815f-89b076de674a not found");
     }
 
     @Test
