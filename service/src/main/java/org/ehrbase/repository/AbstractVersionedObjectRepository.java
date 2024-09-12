@@ -17,8 +17,6 @@
  */
 package org.ehrbase.repository;
 
-import static org.ehrbase.repository.EhrFolderRepository.NOT_MATCH_LATEST_VERSION;
-
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -78,6 +76,8 @@ public abstract class AbstractVersionedObjectRepository<
         VH extends UpdatableRecord,
         DH extends UpdatableRecord,
         O extends Locatable> {
+
+    public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version";
 
     protected static final ObjectVersionTablePrototype VERSION_PROTOTYPE = ObjectVersionTablePrototype.INSTANCE;
     protected static final ObjectVersionHistoryTablePrototype VERSION_HISTORY_PROTOTYPE =

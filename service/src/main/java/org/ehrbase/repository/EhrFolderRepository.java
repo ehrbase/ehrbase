@@ -22,11 +22,15 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
 
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -59,8 +63,6 @@ public class EhrFolderRepository
                 EhrFolderDataHistoryRecord,
                 Folder> {
 
-    public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version.";
-
     public EhrFolderRepository(
             DSLContext context,
             ContributionRepository contributionRepository,
@@ -89,7 +91,7 @@ public class EhrFolderRepository
      * @param ehrId
      * @param folder
      * @param contributionId   If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
     public void commit(
@@ -110,14 +112,21 @@ public class EhrFolderRepository
     /**
      * Update a Folder in the DB
      *
-     * @param ehrId
-     * @param folder
+     * @param ehrId            Affected <code>EHR</code>
+     * @param folder           Affected <code>Folder</code> with new head system version
      * @param contributionId   If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
     public void update(
             UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId, int ehrFoldersIdx) {
+
+        EhrFolderVersionHistoryRecord versionHead = findVersionHeadRecord(ehrId, ehrFoldersIdx)
+                .orElseThrow(() -> new ObjectNotFoundException("EHR", "EHR %s does not exist".formatted(ehrId)));
+
+        // pre-step: check for valid next ehr status
+        checkIsNextHeadRevisionUid(versionHead, folder.getUid());
+
         update(
                 ehrId,
                 folder,
@@ -145,7 +154,7 @@ public class EhrFolderRepository
      * @param version        Version to be deleted. Must match latest.
      * @param ehrFoldersIdx
      * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
     public void delete(
@@ -222,5 +231,26 @@ public class EhrFolderRepository
     public List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId) {
 
         return findVersionIdsByContribution(ehrId, contributionId);
+    }
+
+    protected Optional<EhrFolderVersionHistoryRecord> findVersionHeadRecord(UUID ehrId, int folderIdx) {
+        return findVersionHeadRecords(singleFolderCondition(ehrId, folderIdx, tables.versionHead())).stream()
+                .findFirst();
+    }
+
+    private static void checkIsNextHeadRevisionUid(EhrFolderVersionHistoryRecord versionHead, UIDBasedId uid) {
+        final UUID headVoid = versionHead.getVoId();
+        final int headVersion = versionHead.getSysVersion();
+
+        final UUID nextVoid = extractUid(uid);
+        final int nextVersion = extractVersion(uid);
+
+        // Sanity checks
+        if (!Objects.equals(headVoid, nextVoid)) {
+            throw new PreconditionFailedException("No FOLDER exist for If-Match version_uid %s".formatted(uid));
+        }
+        if ((headVersion + 1) != nextVersion) {
+            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
+        }
     }
 }
