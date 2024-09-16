@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.AbstractThrowableAssert;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
@@ -214,6 +215,11 @@ class AqlParameterReplacementTest {
                 "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d",
                 Map.of("foo", "at0001", "baz", 42),
                 "SELECT d[at0001]/e[bar='at0001' AND ba/z=42] FROM DUMMY d");
+        assertReplaceParametersRejected(
+                        "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d",
+                        Map.of("foo", List.of("at0001"), "baz", List.of(42, 24)))
+                .isInstanceOf(AqlParseException.class)
+                .hasMessageContaining("One of the parameters does not support multiple values");
 
         assertReplaceParameters(
                 "SELECT SUM(d[$foo]/e[bar=$foo AND ba/z=$baz]), LENGTH(d[$foo]/e[bar=$foo AND ba/z=$baz]) FROM DUMMY d",
@@ -252,5 +258,30 @@ class AqlParameterReplacementTest {
             String srcAql, Map<String, Object> parameterMap) {
         AqlQuery query = AqlQuery.parse(srcAql);
         return assertThatThrownBy(() -> AqlParameterReplacement.replaceParameters(query, parameterMap));
+    }
+
+    @Test
+    void replaceMatchesParameters() {
+        assertReplaceParameters(
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$m}",
+                Map.of("m", "v1"),
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1'}");
+        assertReplaceParameters(
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$m1, $m2}",
+                Map.of("m1", "v1", "m2", "v2"),
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2'}");
+        assertReplaceParameters(
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a}",
+                Map.of("a", List.of("v1", "v2")),
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2'}");
+        assertReplaceParameters(
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a, $b, $c}",
+                Map.of("a", List.of("v1", "v2"), "b", List.of(), "c", "v3"),
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2', 'v3'}");
+        assertReplaceParametersRejected(
+                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a}",
+                Map.of("a", List.of()))
+                .isInstanceOf(AqlParseException.class)
+                .hasMessageContaining("Parameter replacement resulted in empty operand list");
     }
 }

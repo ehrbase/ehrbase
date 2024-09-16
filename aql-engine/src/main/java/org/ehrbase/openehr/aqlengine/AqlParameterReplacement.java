@@ -19,11 +19,13 @@ package org.ehrbase.openehr.aqlengine;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -107,7 +109,7 @@ public final class AqlParameterReplacement {
                 .flatMap(List::stream)
                 .map(AndOperatorPredicate::getOperands)
                 .flatMap(List::stream)
-                .forEach(co -> ObjectPathParams.replaceComparisonOperatorParameters(co, true, parameterMap));
+                .forEach(co -> ObjectPathParams.replaceComparisonOperatorParameters(co, parameterMap));
         ObjectPathParams.replaceParameters(identifiedPath.getPath(), parameterMap)
                 .ifPresent(identifiedPath::setPath);
     }
@@ -115,22 +117,22 @@ public final class AqlParameterReplacement {
     /**
      * @param operand
      * @param parameterMap
-     * @return the new primitive, if the operand needs to be replaced
+     * @return a Stream of new primitive, if the operand needs to be replaced
      */
-    private static Optional<Primitive> replaceOperandParameters(Operand operand, Map<String, Object> parameterMap) {
+    private static Stream<Primitive> replaceOperandParameters(Operand operand, Map<String, Object> parameterMap) {
 
         return switch (operand) {
-            case QueryParameter qp -> resolveParameter(qp, parameterMap);
+            case QueryParameter qp -> resolveParameters(qp, parameterMap);
             case IdentifiedPath path -> {
                 replaceIdentifiedPathParameters(path, parameterMap);
-                yield Optional.empty();
+                yield null;
             }
             case SingleRowFunction func -> {
                 replaceFunctionParameters(func, parameterMap);
-                yield Optional.empty();
+                yield null;
             }
-            case TerminologyFunction __ -> Optional.empty();
-            case Primitive __ -> Optional.empty();
+            case TerminologyFunction __ -> null;
+            case Primitive __ -> null;
         };
     }
 
@@ -138,23 +140,29 @@ public final class AqlParameterReplacement {
         Utils.reviseList(func.getOperandList(), o -> replaceOperandParameters(o, parameterMap));
     }
 
-    private static Optional<Primitive> resolveParameter(QueryParameter param, Map<String, Object> parameterMap) {
+    private static Stream<Primitive> resolveParameters(QueryParameter param, Map<String, Object> parameterMap) {
         String paramName = param.getName();
         Object paramValue = parameterMap.get(paramName);
 
-        return Optional.of(
-                switch (paramValue) {
-                    case null -> throw new AqlParseException("Missing parameter '%s'".formatted(paramName));
-                    case Integer i -> new LongPrimitive(i.longValue());
-                    case Long i -> new LongPrimitive(i);
-                    case Number nr -> new DoublePrimitive(nr.doubleValue());
-                    case String str -> Utils.stringToPrimitive(str);
-                    case Boolean b -> new BooleanPrimitive(b);
-                    default -> {
-                        throw new IllegalArgumentException(
-                                "Type of parameter '%s' is not supported".formatted(paramName));
-                    }
-                });
+        return switch (paramValue) {
+            case Collection<?> c -> c.stream().map(e -> toPrimitive(param.getName(), e));
+            case null -> throw new AqlParseException("Missing parameter '%s'".formatted(paramName));
+            default -> Stream.of(toPrimitive(param.getName(), paramValue));
+        };
+    }
+
+    private static Primitive toPrimitive(String name, Object paramValue) {
+        return switch (paramValue) {
+            case null -> throw new AqlParseException("Missing parameter '%s'".formatted(name));
+            case Integer i -> new LongPrimitive(i.longValue());
+            case Long i -> new LongPrimitive(i);
+            case Number nr -> new DoublePrimitive(nr.doubleValue());
+            case String str -> Utils.stringToPrimitive(str);
+            case Boolean b -> new BooleanPrimitive(b);
+            default -> {
+                throw new IllegalArgumentException("Type of parameter '%s' is not supported".formatted(name));
+            }
+        };
     }
 
     private record ModifiedElement<T>(int index, T node) {}
@@ -201,7 +209,7 @@ public final class AqlParameterReplacement {
                 }
                 case ComparisonOperatorCondition c -> {
                     replaceComparisonLeftOperandParameters(c.getStatement(), parameterMap);
-                    replaceOperandParameters(c.getValue(), parameterMap).ifPresent(c::setValue);
+                    ensureSingleElement(replaceOperandParameters(c.getValue(), parameterMap), c::setValue);
                 }
                 case NotCondition c -> replaceParameters(c.getConditionDto(), parameterMap);
                 case MatchesCondition c -> Utils.reviseList(
@@ -229,12 +237,12 @@ public final class AqlParameterReplacement {
             }
         }
 
-        private static Optional<Primitive> replaceMatchesParameters(
+        private static Stream<Primitive> replaceMatchesParameters(
                 MatchesOperand operand, Map<String, Object> parameterMap) {
             if (operand instanceof QueryParameter qp) {
-                return resolveParameter(qp, parameterMap);
+                return resolveParameters(qp, parameterMap);
             } else {
-                return Optional.empty();
+                return null;
             }
         }
 
@@ -267,7 +275,7 @@ public final class AqlParameterReplacement {
         private static void replaceContainmentClassExpressionParameters(
                 ContainmentClassExpression cce, Map<String, Object> parameterMap) {
             streamComparisonOperatorPredicates(cce)
-                    .forEach(op -> ObjectPathParams.replaceComparisonOperatorParameters(op, true, parameterMap));
+                    .forEach(op -> ObjectPathParams.replaceComparisonOperatorParameters(op, parameterMap));
             replaceParameters(cce.getContains(), parameterMap);
         }
 
@@ -275,7 +283,7 @@ public final class AqlParameterReplacement {
                 ContainmentVersionExpression cve, Map<String, Object> parameterMap) {
             Optional.of(cve)
                     .map(ContainmentVersionExpression::getPredicate)
-                    .ifPresent(op -> ObjectPathParams.replaceComparisonOperatorParameters(op, true, parameterMap));
+                    .ifPresent(op -> ObjectPathParams.replaceComparisonOperatorParameters(op, parameterMap));
             replaceParameters(cve.getContains(), parameterMap);
         }
 
@@ -296,7 +304,7 @@ public final class AqlParameterReplacement {
         /**
          * Replaces all parameters.
          * If parameters were replaced, the modified AqlObjectPath is returned.
-         * The provided <code>path</code> remains unchanged.
+         * The provided <code>path</code> object remains unchanged.
          *
          * @param path
          * @param parameterMap
@@ -317,11 +325,8 @@ public final class AqlParameterReplacement {
 
             Optional<PathPredicateOperand> replacedValue =
                     switch (n.getValue()) {
-                        case QueryParameter qp -> {
-                            Optional<Primitive> newPrimitive = resolveParameter(qp, parameterMap);
-                            newPrimitive.ifPresent(p -> validateParameterSyntax(n.getPath(), p));
-                            yield newPrimitive.map(PathPredicateOperand.class::cast);
-                        }
+                        case QueryParameter qp -> Optional.of((PathPredicateOperand) ensureSingleElement(
+                                resolveParameters(qp, parameterMap), p -> validateParameterSyntax(n.getPath(), p)));
                         case Primitive __ -> Optional.empty();
                         case AqlObjectPath p -> replaceParameters(p, parameterMap)
                                 .map(PathPredicateOperand.class::cast);
@@ -387,45 +392,30 @@ public final class AqlParameterReplacement {
          *     <li>code>ComparisonOperatorPredicate.value</code> (recursively via PathPredicateOperand implementation AqlObjectPath)</li>
          * </ul>
          *
-         * XXX In case of ComparisonOperatorPredicate, AqlObjectPath and ContainmentVersionExpression
-         * the replacement may not be performed in-place. Here the data structure has to be replaced.
-         *
          * @param op
-         * @param inPlace
          * @param parameterMap
          */
-        public static Optional<ComparisonOperatorPredicate> replaceComparisonOperatorParameters(
-                ComparisonOperatorPredicate op, boolean inPlace, Map<String, Object> parameterMap) {
-
+        public static void replaceComparisonOperatorParameters(
+                ComparisonOperatorPredicate op, Map<String, Object> parameterMap) {
             Optional<AqlObjectPath> newPath = replaceParameters(op.getPath(), parameterMap);
 
-            Optional<PathPredicateOperand> newValue =
+            PathPredicateOperand newValue = (PathPredicateOperand)
                     switch (op.getValue()) {
                         case null -> throw new NullPointerException(
                                 "Missing value for path " + op.getPath().render());
                         case QueryParameter qp -> {
-                            Optional<Primitive> primitive = resolveParameter(qp, parameterMap);
-                            primitive.ifPresent(p -> validateParameterSyntax(op.getPath(), p));
-                            yield primitive.map(PathPredicateOperand.class::cast);
+                            yield ensureSingleElement(
+                                    resolveParameters(qp, parameterMap), p -> validateParameterSyntax(op.getPath(), p));
                         }
-                        case Primitive __ -> Optional.empty();
-                        case AqlObjectPath path -> replaceParameters(path, parameterMap)
-                                .map(PathPredicateOperand.class::cast);
+                        case Primitive __ -> null;
+                        case AqlObjectPath path -> replaceParameters(path, parameterMap);
                         default -> throw new IllegalArgumentException("Unexpected type of value: "
                                 + op.getValue().getClass().getSimpleName());
                     };
 
-            if (inPlace) {
-                newPath.ifPresent(op::setPath);
-                newValue.ifPresent(op::setValue);
-                return Optional.empty();
-
-            } else if (newPath.isPresent() || newValue.isPresent()) {
-                return Optional.of(new ComparisonOperatorPredicate(
-                        newPath.orElseGet(op::getPath), op.getOperator(), newValue.orElseGet(op::getValue)));
-
-            } else {
-                return Optional.empty();
+            newPath.ifPresent(op::setPath);
+            if (newValue != null) {
+                op.setValue(newValue);
             }
         }
     }
@@ -493,16 +483,26 @@ public final class AqlParameterReplacement {
 
         /**
          * For each entry of the list the <code>replacementFunc</code> is called.
-         * It if returns a new entry, the old one is replaced.
+         * It if returns new entries, the old one is replaced.
          *
          * @param list
          * @param replacementFunc
          * @param <T>
          */
-        public static <T> void reviseList(List<T> list, Function<T, Optional<? extends T>> replacementFunc) {
+        public static <T> void reviseList(List<T> list, Function<T, Stream<? extends T>> replacementFunc) {
+            if (list.isEmpty()) {
+                return;
+            }
             final ListIterator<T> li = list.listIterator();
             while (li.hasNext()) {
-                replacementFunc.apply(li.next()).ifPresent(li::set);
+                Stream<? extends T> replacementsStream = replacementFunc.apply(li.next());
+                if (replacementsStream != null) {
+                    li.remove();
+                    replacementsStream.forEach(li::add);
+                }
+            }
+            if (list.isEmpty()) {
+                throw new AqlParseException("Parameter replacement resulted in empty operand list");
             }
         }
 
@@ -537,6 +537,32 @@ public final class AqlParameterReplacement {
                 newChildren[modifiedNode.index()] = modifiedNode.node();
             }
             return Optional.of(List.of(newChildren));
+        }
+    }
+
+    /**
+     * Makes sure that if singleElementStream is not null, it contains exactly one element.
+     * The element is presented to the elementConsumer and then returned.
+     *
+     * @param singleElementStream
+     * @param elementConsumer
+     * @return
+     * @param <T>
+     */
+    private static <T> T ensureSingleElement(Stream<T> singleElementStream, Consumer<T> elementConsumer) {
+        if (singleElementStream == null) {
+            return null;
+        }
+        Iterator<T> it = singleElementStream.iterator();
+        if (it.hasNext()) {
+            T first = it.next();
+            if (it.hasNext()) {
+                throw new AqlParseException("One of the parameters does not support multiple values");
+            }
+            elementConsumer.accept(first);
+            return first;
+        } else {
+            throw new AqlParseException("Empty parameter replacement results");
         }
     }
 }
