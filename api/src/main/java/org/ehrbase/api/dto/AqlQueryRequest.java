@@ -20,8 +20,6 @@ package org.ehrbase.api.dto;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.ehrbase.api.service.AqlQueryService;
@@ -75,20 +73,20 @@ public record AqlQueryRequest(
                 result = switch (type) {
                     case "int" -> intValue(paramValue, m, "").orElse(paramValue);
                     case "num" -> numValue(paramValue, m, "").orElse(paramValue);
-                    default -> handleExplicitParameterTypes(m.get(""));
-                };
+                    default -> handleExplicitParameterTypes(m.get(""));};
             } else if (m.get("") instanceof List children && !children.isEmpty()) {
-                result = children.stream().map(AqlQueryRequest::handleExplicitParameterTypes).toList();
+                result = children.stream()
+                        .map(AqlQueryRequest::handleExplicitParameterTypes)
+                        .toList();
             } else {
                 result = intValue(paramValue, m, "int")
-                        .orElseGet(() -> numValue(paramValue, m, "num")
-                                .orElse(paramValue));
+                        .orElseGet(() -> numValue(paramValue, m, "num").orElse(paramValue));
             }
         } else if (paramValue instanceof List l) {
             for (int i = 0, s = l.size(); i < s; i++) {
                 var v = l.get(i);
                 var n = handleExplicitParameterTypes(v);
-                if ( v != n) {
+                if (v != n) {
                     l.set(i, n);
                 }
             }
@@ -100,15 +98,10 @@ public record AqlQueryRequest(
     }
 
     private static Optional<Object> intValue(Object paramValue, Map<?, ?> m, String key) {
-        return Optional.of(key)
-                .map(m::get)
-                .map(Object::toString)
-                .<Object>map(Integer::parseInt);
+        return Optional.of(key).map(m::get).map(Object::toString).<Object>map(Integer::parseInt);
     }
+
     private static Optional<Object> numValue(Object paramValue, Map<?, ?> m, String key) {
-        return Optional.of(key)
-                .map(m::get)
-                .map(Object::toString)
-                .<Object>map(Double::parseDouble);
+        return Optional.of(key).map(m::get).map(Object::toString).<Object>map(Double::parseDouble);
     }
 }
