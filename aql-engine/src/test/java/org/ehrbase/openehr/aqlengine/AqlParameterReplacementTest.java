@@ -278,9 +278,7 @@ class AqlParameterReplacementTest {
                 "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a, $b, $c}",
                 Map.of("a", List.of("v1", "v2"), "b", List.of(), "c", "v3"),
                 "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2', 'v3'}");
-        assertReplaceParametersRejected(
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a}",
-                Map.of("a", List.of()))
+        assertReplaceParametersRejected("SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a}", Map.of("a", List.of()))
                 .isInstanceOf(AqlParseException.class)
                 .hasMessageContaining("Parameter replacement resulted in empty operand list");
     }
