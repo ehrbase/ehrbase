@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+* AQL: Support query parameter with multiple values ([1399](https://github.com/ehrbase/ehrbase/pull/1399))
  ### Changed 
  ### Fixed 
 
