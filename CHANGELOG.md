@@ -11,6 +11,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
 * Enable user access to the welcome page while authentication is enabled ([#1400](https://github.com/ehrbase/ehrbase/pull/1400))
  ### Fixed 
+* Updating an `EHR_STATUS` or `FOLDER` did not check the `If-Match header` ([1398](https://github.com/ehrbase/ehrbase/pull/1398))
 
 ## [2.7.0]
  ### Added
