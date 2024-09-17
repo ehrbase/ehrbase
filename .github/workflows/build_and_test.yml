@@ -507,7 +507,7 @@ jobs:
   # Collect all Robot result from [integration-test-server] and generated the final report.
   #
   coverage-collect:
-    name: Jacoco-Collect
+    name: Coverage-Collect
     if: ${{ always() }}
     needs: [
       integration-test-server
@@ -532,7 +532,7 @@ jobs:
       - name: Docker - Build Jacoco-CLI
         uses: docker/build-push-action@v6
         env:
-          DOCKER_BUILD_NO_SUMMARY: true
+          DOCKER_BUILD_SUMMARY: false
         with:
           context: .
           file: tests/DockerfileJacocoCLI
