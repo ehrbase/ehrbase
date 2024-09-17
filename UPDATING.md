@@ -11,3 +11,23 @@ new version over an older data structure.
 
 To support the migrating of data from systems `pre-2.0.0` to `2.0.0`, a migration tool and instructions are provided 
 at https://github.com/ehrbase/migration-tool. 
+
+
+## EHRbase 2.7.0
+
+### EHR_STATUS and FOLDER consistency check
+
+Updating an `EHR_STATUS` or `FOLDER` did not check the `If-Match header` against the DB. This allowed to pass an uid 
+contained header that does not match the existing uid in the DB.
+This may have lead to inconsistent data in some systems. A manual migration script is provided to, first check if a
+data fix is needed and secondly run a migration to fix the uid issues.
+
+To check if any `EHR_STATUS` or `FOLDER` is affected run [ehrbase_2.7.0_check_ehr_status_and_folder_void](scripts/db/ehrbase_2.7.0_check_ehr_status_and_folder_void.sql).
+If you see an output like this:
+
+```sql
+[ehr_status] batch 0 - matches(0) exit migration
+[ehr_folder] batch 0 - matches(0) exit migration
+```
+
+No migration is needed. Otherwise run [ehrbase_2.7.0_fix_ehr_status_and_folder_void](scripts/db/ehrbase_2.7.0_fix_ehr_status_and_folder_void.sql).
