@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+* Updating an `EHR_STATUS` or `FOLDER` did not check the `If-Match header` ([1398](https://github.com/ehrbase/ehrbase/pull/1398))
 
 ## [2.7.0]
  ### Added
