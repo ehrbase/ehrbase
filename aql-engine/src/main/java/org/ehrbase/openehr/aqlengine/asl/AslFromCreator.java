@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -60,6 +61,15 @@ import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
 final class AslFromCreator {
+
+    //    private static final Set<String> ROOT_RM_TYPES = Set.of(
+    //            RmConstants.EHR_STATUS,
+    //            RmConstants.COMPOSITION,
+    //            // Folder may be root, but is recursive
+    //            RmConstants.FOLDER);
+
+    private static final Set<String> ROOT_RM_TYPES = Set.of(RmConstants.EHR_STATUS, RmConstants.COMPOSITION);
+
     private final AliasProvider aliasProvider;
     private final KnowledgeCacheService knowledgeCacheService;
 
@@ -285,7 +295,7 @@ final class AslFromCreator {
                             () -> List.of(containsWrapper.getStructureRmType().name()));
 
             // Folder may be root, but is recursive
-            isRoot = RmConstants.COMPOSITION.equals(rmType) || RmConstants.EHR_STATUS.equals(rmType);
+            isRoot = ROOT_RM_TYPES.contains(rmType);
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
 

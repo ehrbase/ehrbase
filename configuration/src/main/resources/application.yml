@@ -98,6 +98,8 @@ ehrbase:
       tags:
         enabled: false
         context-path: /rest/experimental/tags
+      aql-on-folder:
+        enabled: true
   security:
     # Configuration of actuator for reporting and health endpoints
     management:

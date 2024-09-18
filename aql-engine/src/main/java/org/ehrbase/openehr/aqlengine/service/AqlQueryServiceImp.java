@@ -349,12 +349,19 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
     /**
      * Rephrases EHR.composition and EHR.status CONTAINS statements so that they can be handled regularly by the aql engine.
-     * E.g. <code>SELECT e/ehr_status FROM EHR</code> is rewritten as <code>SELECT s FROM EHR e CONTAINS EHR_STATUS s</code>,
-     * <code>SELECT e/composition FROM EHR</code> is rewritten as <code>SELECT c FROM EHR e CONTAINS COMPOSITION c</code>.
+     * E.g.
+     * <ul>
+     *   <li><code>SELECT e/ehr_status FROM EHR</code> is rewritten as <code>SELECT s FROM EHR e CONTAINS EHR_STATUS s</code></li>
+     *   <li><code>SELECT e/composition FROM EHR</code> is rewritten as <code>SELECT c FROM EHR e CONTAINS COMPOSITION c</code></li>
+     *   <li><code>SELECT e/folder FROM EHR</code> is rewritten as <code>SELECT f FROM EHR e CONTAINS FOLDER f</code></li>
+     * </ul>
      */
     static void replaceEhrPaths(AqlQuery aqlQuery) {
-        replaceEhrPath(aqlQuery, "compositions", "COMPOSITION", "c");
-        replaceEhrPath(aqlQuery, "ehr_status", "EHR_STATUS", "s");
+        replaceEhrPath(aqlQuery, "compositions", RmConstants.COMPOSITION, "c");
+        replaceEhrPath(aqlQuery, "ehr_status", RmConstants.EHR_STATUS, "s");
+        // FIXME(AQL_FOLDER) in case we want to use this we need to add a test to
+        //                   https://github.com/ehrbase/conformance-testing-documentation/pull/25
+        replaceEhrPath(aqlQuery, "folder", RmConstants.FOLDER, "f");
     }
 
     /**

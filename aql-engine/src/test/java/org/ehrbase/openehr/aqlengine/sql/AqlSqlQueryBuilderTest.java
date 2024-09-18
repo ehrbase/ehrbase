@@ -31,6 +31,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 import org.jooq.Record;
@@ -120,7 +121,7 @@ public class AqlSqlQueryBuilderTest {
     }
 
     @Test
-    void testDataQuery() {
+    void queryOnData() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
         SELECT
@@ -133,6 +134,32 @@ public class AqlSqlQueryBuilderTest {
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
+    }
+
+    @Test
+    void queryOnFolder() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+        SELECT
+        f/uid/value
+        FROM EHR
+        CONTAINS FOLDER f
+        """);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        assertThat(queryWrapper.pathInfos()).hasSize(1);
+        assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
+            assertThat(select.type()).isEqualTo(SelectWrapper.SelectType.PATH);
+            assertThat(select.getSelectPath()).hasValueSatisfying(path -> {
+                assertThat(path).isEqualTo("f/uid/value");
+            });
+            assertThat(select.root()).satisfies(root -> {
+                assertThat(root.getRmType()).isEqualTo("FOLDER");
+                assertThat(root.alias()).isEqualTo("f");
+            });
+        });
 
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }

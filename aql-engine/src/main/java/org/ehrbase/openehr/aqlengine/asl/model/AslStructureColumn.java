@@ -41,6 +41,9 @@ public enum AslStructureColumn {
     TEMPLATE_ID(COMP_VERSION.TEMPLATE_ID, UUID.class, AslExtractedColumn.TEMPLATE_ID, true),
     SYS_VERSION(ObjectVersionTablePrototype.INSTANCE.SYS_VERSION, Integer.class, true),
 
+    // Columns for FOLDER querying
+    EHR_FOLDER_IDX(ObjectDataTablePrototype.INSTANCE.EHR_FOLDERS_IDX, Integer.class, true),
+
     // Columns for VERSION querying
     AUDIT_ID(ObjectVersionTablePrototype.INSTANCE.AUDIT_ID, UUID.class, true),
     CONTRIBUTION_ID(ObjectVersionTablePrototype.INSTANCE.CONTRIBUTION_ID, UUID.class, null, true),
