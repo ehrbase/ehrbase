@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
@@ -46,13 +45,17 @@ import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
+import org.springframework.util.CollectionUtils;
 
 final class FromCheck implements FeatureCheck {
 
     private final SystemService systemService;
 
-    public FromCheck(SystemService systemService) {
+    private final AqlFeature aqlFeature;
+
+    public FromCheck(SystemService systemService, AqlFeature aqlFeature) {
         this.systemService = systemService;
+        this.aqlFeature = aqlFeature;
     }
 
     @Override
@@ -74,7 +77,7 @@ final class FromCheck implements FeatureCheck {
         AqlUtil.streamContainments(aqlQuery.getFrom()).forEach(this::ensureContainmentPredicateSupported);
     }
 
-    private static Pair<Containment, StructureRoot> ensureStructureContainsSupported(
+    private Pair<Containment, StructureRoot> ensureStructureContainsSupported(
             ContainmentClassExpression nextContainment, StructureRoot structure) {
 
         Set<StructureRmType> structureRmTypes = StructureRmType.byTypeName(nextContainment.getType())
@@ -83,9 +86,10 @@ final class FromCheck implements FeatureCheck {
                         .map(AncestorStructureRmType::getDescendants))
                 .orElseThrow(() -> cremateUnsupportedType(nextContainment));
 
-        if (CollectionUtils.containsAny(structureRmTypes, EnumSet.of(StructureRmType.FOLDER))) {
-            throw new AqlFeatureNotImplementedException(
-                    "CONTAINS %s is not supported".formatted(nextContainment.getType()));
+        if (!aqlFeature.aqlOnFolderEnabled()
+                && CollectionUtils.containsAny(structureRmTypes, EnumSet.of(StructureRmType.FOLDER))) {
+            throw new AqlFeatureNotImplementedException("CONTAINS %s is an experimental feature and currently disabled."
+                    .formatted(nextContainment.getType()));
         }
 
         if (!structureRmTypes.stream().allMatch(StructureRmType::isStructureEntry)) {
@@ -126,7 +130,7 @@ final class FromCheck implements FeatureCheck {
                                 .collect(Collectors.joining(", "))));
     }
 
-    private static void ensureContainmentSupported(Containment c, final StructureRoot parentStructure) {
+    private void ensureContainmentSupported(Containment c, final StructureRoot parentStructure) {
         switch (c) {
             case null -> {
                 /*NOOP*/
@@ -139,16 +143,16 @@ final class FromCheck implements FeatureCheck {
 
                 ensureContainmentStructureSupported(parentStructure, cce, structureRoot);
             }
-            case ContainmentVersionExpression cve -> ensureVersionContaimentSupported(cve);
+            case ContainmentVersionExpression cve -> ensureVersionContainmentSupported(cve);
             case ContainmentSetOperator cso -> cso.getValues()
                     .forEach(nc -> ensureContainmentSupported(nc, parentStructure));
-            case ContainmentNotOperator __ -> throw new AqlFeatureNotImplementedException("NOT CONTAINS");
+            case ContainmentNotOperator ignored -> throw new AqlFeatureNotImplementedException("NOT CONTAINS");
             default -> throw new IllegalAqlException(
                     "Unknown containment type: %s".formatted(c.getClass().getSimpleName()));
         }
     }
 
-    private static void ensureVersionContaimentSupported(ContainmentVersionExpression cve) {
+    private void ensureVersionContainmentSupported(ContainmentVersionExpression cve) {
         Containment nextContainment = cve.getContains();
         if (nextContainment == null) {
             throw new IllegalAqlException("VERSION containment must be followed by another CONTAINS expression");

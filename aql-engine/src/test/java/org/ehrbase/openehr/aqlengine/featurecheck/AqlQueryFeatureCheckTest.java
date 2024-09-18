@@ -17,15 +17,26 @@
  */
 package org.ehrbase.openehr.aqlengine.featurecheck;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class AqlQueryFeatureCheckTest {
+
+    private static AqlQueryFeatureCheck aqlFeatureCheck() {
+        return aqlFeatureCheck(new AqlFeature(false));
+    }
+
+    private static AqlQueryFeatureCheck aqlFeatureCheck(AqlFeature aqlFeature) {
+        return new AqlQueryFeatureCheck(() -> "node", aqlFeature);
+    }
 
     @ParameterizedTest
     @ValueSource(
@@ -178,7 +189,16 @@ class AqlQueryFeatureCheckTest {
             })
     void ensureQuerySupported(String aql) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery);
+        aqlFeatureCheck().ensureQuerySupported(aqlQuery);
+    }
+
+    @Test
+    void ensureQuerySupportedAqlOnFolderEnabled() {
+        AqlQuery aqlQuery = AqlQueryParser.parse("""
+           SELECT f
+           FROM FOLDER f
+        """);
+        aqlFeatureCheck(new AqlFeature(true)).ensureQuerySupported(aqlQuery);
     }
 
     @ParameterizedTest
@@ -186,6 +206,10 @@ class AqlQueryFeatureCheckTest {
             strings = {
                 "SELECT e FROM EHR e",
                 "SELECT e/ehr_id FROM EHR e",
+                """
+                   SELECT f
+                   FROM FOLDER f
+                """,
                 """
                    SELECT c
                    FROM COMPOSITION c
@@ -244,8 +268,8 @@ class AqlQueryFeatureCheckTest {
             })
     void ensureQueryNotSupported(String aql) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(AqlFeatureNotImplementedException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                .ensureQuerySupported(aqlQuery));
+        assertThrows(
+                AqlFeatureNotImplementedException.class, () -> aqlFeatureCheck().ensureQuerySupported(aqlQuery));
     }
 
     @ParameterizedTest
@@ -264,10 +288,9 @@ class AqlQueryFeatureCheckTest {
     void ensureInvalidPathRejected(String aql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        org.assertj.core.api.Assertions.assertThat(
-                        Assertions.assertThrows(IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                                        .ensureQuerySupported(aqlQuery))
-                                .getMessage())
+        org.assertj.core.api.Assertions.assertThat(assertThrows(IllegalAqlException.class, () -> aqlFeatureCheck()
+                                .ensureQuerySupported(aqlQuery))
+                        .getMessage())
                 .endsWith(" is not a valid RM path");
     }
 
@@ -292,8 +315,7 @@ class AqlQueryFeatureCheckTest {
             })
     void ensureInvalidConditionRejected(String aql) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(
-                IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery));
+        assertThrows(IllegalAqlException.class, () -> aqlFeatureCheck().ensureQuerySupported(aqlQuery));
     }
 
     @ParameterizedTest
@@ -316,10 +338,9 @@ class AqlQueryFeatureCheckTest {
             })
     void ensureContainsRejected(String aql) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        org.assertj.core.api.Assertions.assertThat(
-                        Assertions.assertThrows(IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                                        .ensureQuerySupported(aqlQuery))
-                                .getMessage())
+        org.assertj.core.api.Assertions.assertThat(assertThrows(IllegalAqlException.class, () -> aqlFeatureCheck()
+                                .ensureQuerySupported(aqlQuery))
+                        .getMessage())
                 .contains(" cannot CONTAIN ");
     }
 
@@ -390,7 +411,7 @@ class AqlQueryFeatureCheckTest {
             })
     void ensureVersionSupported(String aql) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery);
+        aqlFeatureCheck().ensureQuerySupported(aqlQuery);
     }
 
     @ParameterizedTest
@@ -415,8 +436,7 @@ class AqlQueryFeatureCheckTest {
             })
     void checkIllegalVersion(String aql) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(
-                IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery));
+        assertThrows(IllegalAqlException.class, () -> aqlFeatureCheck().ensureQuerySupported(aqlQuery));
     }
 
     @ParameterizedTest
@@ -473,7 +493,17 @@ class AqlQueryFeatureCheckTest {
             })
     void ensureVersionNotSupported(String aql) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(AqlFeatureNotImplementedException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                .ensureQuerySupported(aqlQuery));
+        assertThrows(
+                AqlFeatureNotImplementedException.class, () -> aqlFeatureCheck().ensureQuerySupported(aqlQuery));
+    }
+
+    @Test
+    void ensureVersionSupportedAqlOnFolderEnabled() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+                   SELECT f/uid/value
+                   FROM VERSION cv[LATEST_VERSION] CONTAINS FOLDER f
+                """);
+        assertDoesNotThrow(() -> aqlFeatureCheck(new AqlFeature(true)).ensureQuerySupported(aqlQuery));
     }
 }

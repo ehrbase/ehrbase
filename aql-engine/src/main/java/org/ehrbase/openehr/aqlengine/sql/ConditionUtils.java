@@ -77,6 +77,17 @@ import org.jooq.impl.DSL;
 final class ConditionUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_PARENT_RELATIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER,
+            AslSourceRelation.EHR);
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_CONDITIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER // FOLDER CONTAINS FOLDER
+    );
+
     private ConditionUtils() {}
 
     public static Condition buildJoinCondition(AslJoin aslJoin, AslQueryTables aslQueryToTable) {
@@ -113,9 +124,9 @@ final class ConditionUtils {
     private static void addDelegatingJoinConditions(
             AslDelegatingJoinCondition joinCondition, List<Condition> conditions, Table<?> sqlLeft, Table<?> sqlRight) {
         (switch (joinCondition.getDelegate()) {
+                    case AslPathChildCondition c -> pathChildConditions(c, sqlLeft, sqlRight, true);
                     case AslEntityIdxOffsetCondition c -> entityIdxOffsetConditions(c, sqlLeft, sqlRight, true);
                     case AslDescendantCondition c -> descendantConditions(c, sqlLeft, sqlRight, true);
-                    case AslPathChildCondition c -> pathChildConditions(c, sqlLeft, sqlRight, true);
                 })
                 .forEach(conditions::add);
     }
@@ -126,21 +137,21 @@ final class ConditionUtils {
             final Table<?> sqlRight,
             final boolean isJoinCondition) {
         AslSourceRelation parentRelation = dc.getParentRelation();
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
+        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.FOLDER)
                 .contains(parentRelation)) {
             throw new IllegalArgumentException("unexpected parent relation type %s".formatted(parentRelation));
         }
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
+        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.FOLDER)
                 .contains(dc.getChildRelation())) {
             throw new IllegalArgumentException(
                     "unexpected descendant relation type %s".formatted(dc.getChildRelation()));
         }
 
         return switch (parentRelation) {
-            case COMPOSITION, EHR_STATUS -> {
-                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.COMPOSITION
-                        ? AslStructureColumn.VO_ID
-                        : AslStructureColumn.EHR_ID;
+            case EHR_STATUS, COMPOSITION, FOLDER -> {
+                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.EHR_STATUS
+                        ? AslStructureColumn.EHR_ID
+                        : AslStructureColumn.VO_ID;
                 yield Stream.of(
                         // l.pKey == r.pKey
                         FieldUtils.field(
@@ -173,7 +184,7 @@ final class ConditionUtils {
                                         Integer.class,
                                         isJoinCondition)));
             }
-            case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
+                //            case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Path child condition not applicable to AUDIT_DETAILS");
             case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
@@ -204,14 +215,12 @@ final class ConditionUtils {
 
         // TODO cleanup
         AslSourceRelation parentRelation = dc.getParentRelation();
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.EHR)
-                .contains(parentRelation)) {
+        if (!SUPPORTED_DESCENDANT_PARENT_RELATIONS.contains(parentRelation)) {
             throw new IllegalArgumentException("unexpected parent relation type %s".formatted(parentRelation));
         }
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
-                .contains(dc.getDescendantRelation())) {
-            throw new IllegalArgumentException(
-                    "unexpected descendant relation type %s".formatted(dc.getDescendantRelation()));
+        AslSourceRelation descendantRelation = dc.getDescendantRelation();
+        if (!SUPPORTED_DESCENDANT_CONDITIONS.contains(descendantRelation)) {
+            throw new IllegalArgumentException("unexpected descendant relation type %s".formatted(descendantRelation));
         }
 
         return switch (parentRelation) {
@@ -224,55 +233,68 @@ final class ConditionUtils {
                                     AslStructureColumn.EHR_ID.getFieldName(),
                                     UUID.class,
                                     isJoinCondition)));
-            case COMPOSITION, EHR_STATUS -> {
-                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.COMPOSITION
-                        ? AslStructureColumn.VO_ID
-                        : AslStructureColumn.EHR_ID;
-                yield Stream.of(
-                        // l.pKey == r.pKey
-                        FieldUtils.field(
-                                        sqlLeft,
-                                        dc.getLeftProvider(),
-                                        dc.getLeftOwner(),
-                                        pKeyField.getFieldName(),
-                                        UUID.class,
-                                        true)
-                                .eq(FieldUtils.field(
-                                        sqlRight,
-                                        dc.getRightProvider(),
-                                        dc.getRightOwner(),
-                                        pKeyField.getFieldName(),
-                                        UUID.class,
-                                        isJoinCondition)),
-                        // l.num < r.num <= l.num_cap
-                        FieldUtils.field(
-                                        sqlRight,
-                                        dc.getRightProvider(),
-                                        dc.getRightOwner(),
-                                        AslStructureColumn.NUM.getFieldName(),
-                                        Integer.class,
-                                        true)
-                                .between(
-                                        FieldUtils.field(
-                                                        sqlLeft,
-                                                        dc.getLeftProvider(),
-                                                        dc.getLeftOwner(),
-                                                        AslStructureColumn.NUM.getFieldName(),
-                                                        Integer.class,
-                                                        isJoinCondition)
-                                                .add(DSL.inline(1)),
-                                        FieldUtils.field(
-                                                sqlLeft,
-                                                dc.getLeftProvider(),
-                                                dc.getLeftOwner(),
-                                                AslStructureColumn.NUM_CAP.getFieldName(),
-                                                Integer.class,
-                                                isJoinCondition)));
+            case EHR_STATUS, COMPOSITION, FOLDER -> {
+                // FIXME(AQL_FOLDER) catch in FeatureCheck CONTAINS
+                // if (descendantRelation == AslSourceRelation.FOLDER) {
+                //     throw new NotImplementedException("Descendant condition not applicable from %s to
+                // FOLDER".formatted(parentRelation.name()));
+                // }
+                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.EHR_STATUS
+                        ? AslStructureColumn.EHR_ID
+                        : AslStructureColumn.VO_ID;
+                yield descendantEhrStatusOrCompositionJoin(pKeyField, dc, sqlLeft, sqlRight, isJoinCondition);
             }
-            case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
+                //            case FOLDER -> {
+                //                // FIXME(AQL_FOLDER) catch in FeatureCheck CONTAINS
+                //                if (descendantRelation == AslSourceRelation.FOLDER) {
+                //                    yield descendantEhrStatusOrCompositionJoin(AslStructureColumn.VO_ID, dc, sqlLeft,
+                // sqlRight, isJoinCondition);
+                //                }
+                //                if(descendantRelation == AslSourceRelation.COMPOSITION) {
+                //                    yield descendantFolderToCompositionJoin(dc, sqlLeft, sqlRight, isJoinCondition);
+                //                }
+                //                throw new NotImplementedException("Descendant condition not applicable from FOLDER to
+                // %s".formatted(descendantRelation.name()));
+                //            }
+                //            case FOLDER -> throw new NotImplementedException("Descendant condition not applicable to
+                // FOLDER");
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Descendant condition not applicable to AUDIT_DETAILS");
         };
+    }
+
+    private static Stream<Condition> descendantEhrStatusOrCompositionJoin(
+            AslStructureColumn pKeyField,
+            AslDescendantCondition dc,
+            Table<?> sqlLeft,
+            Table<?> sqlRight,
+            boolean isJoinCondition) {
+
+        String pkFieldName = pKeyField.getFieldName();
+
+        AslQuery leftProvider = dc.getLeftProvider();
+        AslQuery leftOwner = dc.getLeftOwner();
+
+        AslQuery rightProvider = dc.getRightProvider();
+        AslQuery rightOwner = dc.getRightOwner();
+
+        // l.pKey == r.pKey
+        Condition onPkField = FieldUtils.field(sqlLeft, leftProvider, leftOwner, pkFieldName, UUID.class, true)
+                .eq(FieldUtils.field(sqlRight, rightProvider, rightOwner, pkFieldName, UUID.class, isJoinCondition));
+
+        String numFieldName = AslStructureColumn.NUM.getFieldName();
+        String numCapFieldName = AslStructureColumn.NUM_CAP.getFieldName();
+
+        // l.num < r.num <= l.num_cap
+        Condition andLowerNumCap = FieldUtils.field(
+                        sqlRight, rightProvider, rightOwner, numFieldName, Integer.class, true)
+                .between(
+                        FieldUtils.field(sqlLeft, leftProvider, leftOwner, numFieldName, Integer.class, isJoinCondition)
+                                .add(DSL.inline(1)),
+                        FieldUtils.field(
+                                sqlLeft, leftProvider, leftOwner, numCapFieldName, Integer.class, isJoinCondition));
+
+        return Stream.of(onPkField, andLowerNumCap);
     }
 
     public static Condition buildCondition(AslQueryCondition c, AslQueryTables tables, boolean useAliases) {

@@ -66,6 +66,21 @@ class AqlQueryServiceImpTest {
     @CsvSource(
             textBlock =
                     """
+            SELECT e/folder AS f FROM EHR e=>SELECT f AS f FROM EHR e CONTAINS FOLDER f
+            SELECT s/uid/value, e/folder/uid/value FROM EHR e CONTAINS COMPOSITION s WHERE e/folder/name = 'root'=>SELECT s/uid/value, f/uid/value FROM EHR e CONTAINS (FOLDER f AND COMPOSITION s) WHERE f/name = 'root'
+            """,
+            delimiterString = "=>")
+    void resolveEhrFolder(String srcAql, String expectedAql) {
+
+        AqlQuery aqlQuery = AqlQueryParser.parse(srcAql);
+        AqlQueryServiceImp.replaceEhrPaths(aqlQuery);
+        assertThat(aqlQuery.render()).isEqualTo(expectedAql.replaceAll(" +", " "));
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+            textBlock =
+                    """
                 5||10||REJECT||||Query contains a LIMIT clause, fetch and offset parameters must not be used (with fetch precedence REJECT)
                 5|20||40|REJECT||||Query parameter for offset provided, but no fetch parameter
                 5|20||40|MIN_FETCH||||Query parameter for offset provided, but no fetch parameter

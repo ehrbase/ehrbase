@@ -50,7 +50,10 @@ public enum FieldPrototype {
     ENTITY_ATTRIBUTE(SQLDataType.CLOB, false, false, true, true),
     ENTITY_IDX(SQLDataType.CLOB.nullable(false), false, false, true, true),
     ENTITY_IDX_LEN(SQLDataType.INTEGER.nullable(false), false, false, true, true),
-    DATA(SQLDataType.JSONB.nullable(false), false, false, true, true);
+    DATA(SQLDataType.JSONB.nullable(false), false, false, true, true),
+
+    // FOLDER
+    EHR_FOLDERS_IDX(SQLDataType.INTEGER.nullable(false), true, true, true, true);
 
     private final DataType<?> type;
     private final Name fieldName;

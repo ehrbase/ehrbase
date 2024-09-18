@@ -26,9 +26,9 @@ public final class AqlQueryFeatureCheck {
 
     private final FeatureCheck[] featureChecks;
 
-    public AqlQueryFeatureCheck(SystemService systemService) {
+    public AqlQueryFeatureCheck(SystemService systemService, AqlFeature feature) {
         this.featureChecks = new FeatureCheck[] {
-            new FromCheck(systemService),
+            new FromCheck(systemService, feature),
             new SelectCheck(systemService),
             new WhereCheck(systemService),
             new OrderByCheck(systemService)

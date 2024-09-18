@@ -120,7 +120,8 @@ final class AslPathCreator {
 
         query.pathInfos().forEach((contains, pathInfo) -> {
             if (RmConstants.EHR.equals(contains.getRmType())) {
-                throw new IllegalArgumentException("Only paths within [EHR_STATUS,COMPOSITION,CLUSTER] are supported");
+                throw new IllegalArgumentException(
+                        "Only paths within [EHR_STATUS,COMPOSITION,FOLDER,CLUSTER] are supported");
             }
 
             OwnerProviderTuple parent = containsToStructureSubQuery.get(contains);
