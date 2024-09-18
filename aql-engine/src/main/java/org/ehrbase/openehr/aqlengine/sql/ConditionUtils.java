@@ -187,7 +187,6 @@ final class ConditionUtils {
                                         Integer.class,
                                         isJoinCondition)));
             }
-                //            case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Path child condition not applicable to AUDIT_DETAILS");
             case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");

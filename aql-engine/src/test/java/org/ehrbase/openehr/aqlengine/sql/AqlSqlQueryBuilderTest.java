@@ -194,6 +194,32 @@ public class AqlSqlQueryBuilderTest {
     }
 
     @Test
+    void queryOnFolder() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+        SELECT
+        f/uid/value
+        FROM EHR
+        CONTAINS FOLDER f
+        """);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        assertThat(queryWrapper.pathInfos()).hasSize(1);
+        assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
+            assertThat(select.type()).isEqualTo(SelectWrapper.SelectType.PATH);
+            assertThat(select.getSelectPath()).hasValueSatisfying(path -> {
+                assertThat(path).isEqualTo("f/uid/value");
+            });
+            assertThat(select.root()).satisfies(root -> {
+                assertThat(root.getRmType()).isEqualTo("FOLDER");
+                assertThat(root.alias()).isEqualTo("f");
+            });
+        });
+
+        assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
+    }
+
+    @Test
     void clusterWithDataMultiplicitySelectSingle() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
