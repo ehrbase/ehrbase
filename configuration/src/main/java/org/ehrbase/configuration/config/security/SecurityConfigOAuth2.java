@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+
+import jakarta.servlet.DispatcherType;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
@@ -78,11 +80,11 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
         return http.addFilterBefore(new SecurityFilter(), BearerTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> {
 
-                    // respond with proper 404 instead of 401 when reaching a route that does not exist. To understand
-                    // this case, since Spring 6 all paths are secured, when you use any path doesn't exist that will
-                    // match to "/error" but "/error" have been secured, so you need to add "/error" to your permitAll()
-                    // config to respond with a proper 404.
-                    auth = auth.requestMatchers(antMatcher("/error/**")).permitAll();
+                    // Permit dispatcher types forward and error
+                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll();
+
+                    // Permit welcome page and img
+                    auth.requestMatchers("/", "/img/**").permitAll();
 
                     // secure /rest/admin/** so that only admins can access it
                     auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(adminRole);
