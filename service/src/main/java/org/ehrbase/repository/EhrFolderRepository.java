@@ -22,15 +22,11 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
 
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -121,12 +117,6 @@ public class EhrFolderRepository
     public void update(
             UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId, int ehrFoldersIdx) {
 
-        EhrFolderVersionHistoryRecord versionHead = findVersionHeadRecord(ehrId, ehrFoldersIdx)
-                .orElseThrow(() -> new ObjectNotFoundException("EHR", "EHR %s does not exist".formatted(ehrId)));
-
-        // pre-step: check for valid next ehr status
-        checkIsNextHeadRevisionUid(versionHead, folder.getUid());
-
         update(
                 ehrId,
                 folder,
@@ -139,7 +129,7 @@ public class EhrFolderRepository
                     r.setEhrId(ehrId);
                     r.setEhrFoldersIdx(ehrFoldersIdx);
                 },
-                "No Directory in ehr: %s".formatted(ehrId));
+                "No FOLDER in ehr: %s".formatted(ehrId));
     }
 
     public Optional<Folder> findHead(UUID ehrId, int ehrFoldersIdx) {
@@ -231,26 +221,5 @@ public class EhrFolderRepository
     public List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId) {
 
         return findVersionIdsByContribution(ehrId, contributionId);
-    }
-
-    protected Optional<EhrFolderVersionHistoryRecord> findVersionHeadRecord(UUID ehrId, int folderIdx) {
-        return findVersionHeadRecords(singleFolderCondition(ehrId, folderIdx, tables.versionHead())).stream()
-                .findFirst();
-    }
-
-    private static void checkIsNextHeadRevisionUid(EhrFolderVersionHistoryRecord versionHead, UIDBasedId uid) {
-        final UUID headVoid = versionHead.getVoId();
-        final int headVersion = versionHead.getSysVersion();
-
-        final UUID nextVoid = extractUid(uid);
-        final int nextVersion = extractVersion(uid);
-
-        // Sanity checks
-        if (!Objects.equals(headVoid, nextVoid)) {
-            throw new PreconditionFailedException("No FOLDER exist for If-Match version_uid %s".formatted(uid));
-        }
-        if ((headVersion + 1) != nextVersion) {
-            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
-        }
     }
 }
