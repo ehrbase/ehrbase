@@ -23,11 +23,5 @@ This may have lead to inconsistent data in some systems. A manual migration scri
 data fix is needed and secondly run a migration to fix the uid issues.
 
 To check if any `EHR_STATUS` or `FOLDER` is affected run [ehrbase_2.7.0_check_ehr_status_and_folder_void](scripts/db/ehrbase_2.7.0_check_ehr_status_and_folder_void.sql).
-If you see an output like this:
-
-```sql
-[ehr_status] batch 0 - matches(0) exit migration
-[ehr_folder] batch 0 - matches(0) exit migration
-```
-
-No migration is needed. Otherwise run [ehrbase_2.7.0_fix_ehr_status_and_folder_void](scripts/db/ehrbase_2.7.0_fix_ehr_status_and_folder_void.sql).
+If you see an output like this `Inconsistent EHR_STATUS found` or `Inconsistent FOLDER found` run 
+[ehrbase_2.7.0_fix_ehr_status_and_folder_void](scripts/db/ehrbase_2.7.0_fix_ehr_status_and_folder_void.sql), otherwise no migration is needed.
