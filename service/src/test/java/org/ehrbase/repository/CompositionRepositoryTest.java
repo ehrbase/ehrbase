@@ -18,6 +18,7 @@
 package org.ehrbase.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -34,8 +35,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
@@ -148,6 +151,36 @@ class CompositionRepositoryTest {
         @Override
         protected void callUpdate(CompositionRepository repository, UUID ehrId, Composition versionedObject) {
             repository.update(ehrId, versionedObject, null, null);
+        }
+
+        @Test
+        void updateErrorArchetypeDetailsNotDefined() {
+
+            runUnknownOrMissingTemplateTest(comp -> comp.setArchetypeDetails(null));
+        }
+
+        @Test
+        void updateErrorTemplateIdNotDefined() {
+
+            runUnknownOrMissingTemplateTest(
+                    comp -> Objects.requireNonNull(comp.getArchetypeDetails()).setTemplateId(null));
+        }
+
+        @Test
+        void updateErrorTemplateIdValueNotDefined() {
+
+            runUnknownOrMissingTemplateTest(
+                    comp -> Objects.requireNonNull(comp.getArchetypeDetails().getTemplateId())
+                            .setValue(null));
+        }
+
+        private void runUnknownOrMissingTemplateTest(Consumer<Composition> block) {
+            Composition composition = versionedObject(objectVersionId(1));
+            block.accept(composition);
+
+            assertThatThrownBy(() -> repository.update(EHR_ID, composition, null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Unknown or missing template in composition to be stored");
         }
     }
 

@@ -113,6 +113,7 @@ public class EhrRepository
                 r -> r.setEhrId(ehrId));
     }
 
+    @Override
     public boolean hasEhr(UUID ehrId) {
         return super.hasEhr(ehrId);
     }
