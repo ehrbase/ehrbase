@@ -97,7 +97,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
     @Value("${ehrbase.rest.aql.max-fetch:}")
     private Long maxFetch;
 
-    enum FetchPrecedence {
+    public enum FetchPrecedence {
         /**
          * Fail if both fetch and limit are present
          */
@@ -248,8 +248,8 @@ public class AqlQueryServiceImp implements AqlQueryService {
             throw new IllegalAqlException(errorMessage("Could not parse AQL query", e), e);
         }
     }
-
-    static AqlQuery buildAqlQuery(
+    // TODO could make sense to pre-warm the method
+    public static AqlQuery buildAqlQuery(
             AqlQueryRequest aqlQueryRequest,
             FetchPrecedence fetchPrecedence,
             Long defaultLimit,
@@ -292,18 +292,18 @@ public class AqlQueryServiceImp implements AqlQueryService {
             PreparedQuery preparedQuery, AqlQueryWrapper queryWrapper, List<SelectWrapper> nonPrimitiveSelects) {
 
         List<List<Object>> resultData = aqlQueryRepository.executeQuery(preparedQuery);
+        List<SelectWrapper> selects = queryWrapper.selects();
 
         if (nonPrimitiveSelects.isEmpty()) {
             // only primitives selected: only a count() was performed, so the list must be constructed
             resultData = LongStream.range(0, (long) resultData.getFirst().getFirst())
-                    .<List<Object>>mapToObj(i -> new ArrayList<>())
+                    .<List<Object>>mapToObj(i -> new ArrayList<>(selects.size()))
                     .toList();
         }
 
-        List<SelectWrapper> selects = queryWrapper.selects();
         // Since we do not add primitive value selects to the SQL query, we add them after the query was
         // executed
-        for (int i = 0; i < selects.size(); i++) {
+        for (int i = 0, s = selects.size(); i < s; i++) {
             SelectWrapper sd = selects.get(i);
             if (sd.type() == SelectType.PRIMITIVE) {
                 Constable value = sd.getPrimitive().getValue();
@@ -317,33 +317,27 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
     private QueryResultDto formatResult(List<SelectWrapper> selectFields, List<List<Object>> resultData) {
 
+        String[] columnNames = new String[selectFields.size()];
         Map<String, String> columns = new LinkedHashMap<>();
-        for (int i = 0; i < selectFields.size(); i++) {
+        for (int i = 0, s = selectFields.size(); i < s; i++) {
             SelectWrapper namePath = selectFields.get(i);
-            columns.put(
-                    Optional.of(namePath).map(SelectWrapper::getSelectAlias).orElse("#" + i),
-                    namePath.getSelectPath().orElse(null));
+            columnNames[i] =
+                    Optional.of(namePath).map(SelectWrapper::getSelectAlias).orElse("#" + i);
+            columns.put(columnNames[i], namePath.getSelectPath().orElse(null));
         }
 
         QueryResultDto dto = new QueryResultDto();
         dto.setVariables(columns);
 
-        List<ResultHolder> resultList = resultData.stream()
+        dto.setResultSet(resultData.stream()
                 .map(r -> {
                     ResultHolder fieldMap = new ResultHolder();
-                    for (int i = 0; i < r.size(); i++) {
-                        Object c = r.get(i);
-                        fieldMap.putResult(
-                                Optional.ofNullable(selectFields.get(i).getSelectAlias())
-                                        .orElse("#" + i),
-                                c);
+                    for (int i = 0, s = r.size(); i < s; i++) {
+                        fieldMap.putResult(columnNames[i], r.get(i));
                     }
-
                     return fieldMap;
                 })
-                .toList();
-
-        dto.setResultSet(resultList);
+                .toList());
         return dto;
     }
 
