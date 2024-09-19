@@ -44,15 +44,14 @@ public record AqlQueryRequest(
             @Nullable Long fetch,
             @Nullable Long offset) {
         this.queryString = queryString;
-        rewriteExplicitParameterTypes(parameters);
-        this.parameters = parameters;
+        this.parameters = rewriteExplicitParameterTypes(parameters);
         this.fetch = fetch;
         this.offset = offset;
     }
 
-    public static void rewriteExplicitParameterTypes(Map<String, Object> parameters) {
+    public static Map<String, Object> rewriteExplicitParameterTypes(Map<String, Object> parameters) {
         if (parameters == null) {
-            return;
+            return Map.of();
         }
         parameters.entrySet().forEach(e -> {
             Object ov = e.getValue();
@@ -61,6 +60,7 @@ public record AqlQueryRequest(
                 e.setValue(nv);
             }
         });
+        return parameters;
     }
 
     /**
