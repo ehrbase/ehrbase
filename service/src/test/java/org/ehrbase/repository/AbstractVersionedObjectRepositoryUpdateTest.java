@@ -42,7 +42,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes", "java:S119" // VH is ok
+})
 public abstract class AbstractVersionedObjectRepositoryUpdateTest<
         R extends AbstractVersionedObjectRepository, O extends Locatable, VH extends UpdatableRecord> {
 
@@ -129,8 +130,8 @@ public abstract class AbstractVersionedObjectRepositoryUpdateTest<
 
         O versionedObject = versionedObject(objectVersionId(1));
 
-        VH versionRecord = versionRecord(record -> {
-            record.set(
+        VH versionRecord = versionRecord(r -> {
+            r.set(
                     AbstractVersionedObjectRepository.VERSION_PROTOTYPE.VO_ID,
                     UUID.fromString("fb97d05e-612a-42f1-888f-6e2ffa7f3290"));
         });
@@ -147,7 +148,7 @@ public abstract class AbstractVersionedObjectRepositoryUpdateTest<
     void updateFolderErrorSystemIdMissmatch() {
 
         O versionedObject = versionedObject(objectVersionId(1, "other-system"));
-        VH versionRecord = versionRecord(record -> {});
+        VH versionRecord = versionRecord(r -> {});
 
         doReturn(true).when(repository).hasEhr(EHR_ID);
         doReturn(mockResult(versionRecord)).when(repository).findVersionHeadRecords(any());
@@ -162,8 +163,8 @@ public abstract class AbstractVersionedObjectRepositoryUpdateTest<
     void updateFolderErrorVersionMatch(int version) {
 
         O versionedObject = versionedObject(objectVersionId(version));
-        VH versionRecord = versionRecord(record -> {
-            record.set(AbstractVersionedObjectRepository.VERSION_PROTOTYPE.SYS_VERSION, 1);
+        VH versionRecord = versionRecord(r -> {
+            r.set(AbstractVersionedObjectRepository.VERSION_PROTOTYPE.SYS_VERSION, 1);
         });
 
         doReturn(true).when(repository).hasEhr(EHR_ID);
@@ -178,8 +179,8 @@ public abstract class AbstractVersionedObjectRepositoryUpdateTest<
     void updateFolderSucceed() {
 
         O versionedObject = versionedObject(objectVersionId(2));
-        VH versionRecord = versionRecord(record -> {
-            record.set(AbstractVersionedObjectRepository.VERSION_PROTOTYPE.SYS_VERSION, 1);
+        VH versionRecord = versionRecord(r -> {
+            r.set(AbstractVersionedObjectRepository.VERSION_PROTOTYPE.SYS_VERSION, 1);
         });
 
         doReturn(true).when(repository).hasEhr(EHR_ID);
