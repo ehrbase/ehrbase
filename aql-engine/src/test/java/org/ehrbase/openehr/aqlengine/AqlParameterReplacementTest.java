@@ -23,11 +23,13 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.assertj.core.api.AbstractThrowableAssert;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class AqlParameterReplacementTest {
@@ -110,128 +112,138 @@ class AqlParameterReplacementTest {
                 .isFalse();
     }
 
-    @Test
-    void replaceWhereParameters() {
-        // Simple string replacement
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d/foo = $bar",
-                Map.of("bar", "baz"),
-                "SELECT d FROM DUMMY d WHERE d/foo = 'baz'");
+    @ParameterizedTest
+    @MethodSource("replaceWhereParametersSrc")
+    void replaceWhereParameters(ReplacementTestParam check) {
+        check.doAssert();
+    }
 
-        // Data types
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE (d/int = $int AND d/bool = $bool AND d/double = $double AND d/str = $str AND d/date = $date)",
-                Map.of("int", 42, "bool", true, "double", 1., "str", "foo", "date", "2012-12-31"),
-                "SELECT d FROM DUMMY d WHERE (d/int = 42 AND d/bool = true AND d/double = 1.0 AND d/str = 'foo' AND d/date = '2012-12-31')");
+    static Stream<ReplacementTestParam> replaceWhereParametersSrc() {
+        return Stream.of(
+                // Simple string replacement
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d/foo = $bar",
+                        Map.of("bar", "baz"),
+                        "SELECT d FROM DUMMY d WHERE d/foo = 'baz'"),
 
-        // IdentifiedPath: archetype_node_id
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d[$ani]/foo[$ani2] = 42",
-                Map.of("ani", "at0001", "ani2", "at0002"),
-                "SELECT d FROM DUMMY d WHERE d[at0001]/foo[at0002] = 42");
+                // Data types
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE (d/int = $int AND d/bool = $bool AND d/double = $double AND d/str = $str AND d/date = $date)",
+                        Map.of("int", 42, "bool", true, "double", 1., "str", "foo", "date", "2012-12-31"),
+                        "SELECT d FROM DUMMY d WHERE (d/int = 42 AND d/bool = true AND d/double = 1.0 AND d/str = 'foo' AND d/date = '2012-12-31')"),
 
-        // IdentifiedPath: nodeConstraint + name
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d[at0001,$nameConstraint]/foo[at0002,$nameConstraint2] = 42",
-                Map.of("nameConstraint", "Results", "nameConstraint2", "Results2"),
-                "SELECT d FROM DUMMY d WHERE d[at0001, 'Results']/foo[at0002, 'Results2'] = 42");
+                // IdentifiedPath: archetype_node_id
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d[$ani]/foo[$ani2] = 42",
+                        Map.of("ani", "at0001", "ani2", "at0002"),
+                        "SELECT d FROM DUMMY d WHERE d[at0001]/foo[at0002] = 42"),
 
-        // IdentifiedPath: nodeConstraint + local terminology => interpreted as String
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d[at0001,$nameConstraint]/foo[at0002,$nameConstraint2] = 42",
-                Map.of("nameConstraint", "at0002", "nameConstraint2", "at0003"),
-                "SELECT d FROM DUMMY d WHERE d[at0001, 'at0002']/foo[at0002, 'at0003'] = 42");
+                // IdentifiedPath: nodeConstraint + name
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d[at0001,$nameConstraint]/foo[at0002,$nameConstraint2] = 42",
+                        Map.of("nameConstraint", "Results", "nameConstraint2", "Results2"),
+                        "SELECT d FROM DUMMY d WHERE d[at0001, 'Results']/foo[at0002, 'Results2'] = 42"),
 
-        // IdentifiedPath: nodeConstraint + TERM_CODE => interpreted as String
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d[at0001,$nameConstraint]/foo[at0002,$nameConstraint2] = 42",
-                Map.of("nameConstraint", "ISO_639-1::en", "nameConstraint2", "ISO_639-1::de"),
-                "SELECT d FROM DUMMY d WHERE d[at0001, 'ISO_639-1::en']/foo[at0002, 'ISO_639-1::de'] = 42");
+                // IdentifiedPath: nodeConstraint + local terminology => interpreted as String
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d[at0001,$nameConstraint]/foo[at0002,$nameConstraint2] = 42",
+                        Map.of("nameConstraint", "at0002", "nameConstraint2", "at0003"),
+                        "SELECT d FROM DUMMY d WHERE d[at0001, 'at0002']/foo[at0002, 'at0003'] = 42"),
 
-        // IdentifiedPath: standard predicates
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d[foo=$foo AND bar=$bar]/foo[foo=$foo2 AND bar=$bar2] = 42",
-                Map.of("foo", "FOO", "bar", 13, "foo2", "FOO2", "bar2", 31),
-                "SELECT d FROM DUMMY d WHERE d[foo='FOO' AND bar=13]/foo[foo='FOO2' AND bar=31] = 42");
+                // IdentifiedPath: nodeConstraint + TERM_CODE => interpreted as String
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d[at0001,$nameConstraint]/foo[at0002,$nameConstraint2] = 42",
+                        Map.of("nameConstraint", "ISO_639-1::en", "nameConstraint2", "ISO_639-1::de"),
+                        "SELECT d FROM DUMMY d WHERE d[at0001, 'ISO_639-1::en']/foo[at0002, 'ISO_639-1::de'] = 42"),
 
-        // ignored + duplicate usage
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE (d/f1 = $bar AND d/f2 = $bar AND d/f3 = $baz)",
-                Map.of("foo", "bob", "bar", "alice", "baz", "charly"),
-                "SELECT d FROM DUMMY d WHERE (d/f1 = 'alice' AND d/f2 = 'alice' AND d/f3 = 'charly')");
+                // IdentifiedPath: standard predicates
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d[foo=$foo AND bar=$bar]/foo[foo=$foo2 AND bar=$bar2] = 42",
+                        Map.of("foo", "FOO", "bar", 13, "foo2", "FOO2", "bar2", 31),
+                        "SELECT d FROM DUMMY d WHERE d[foo='FOO' AND bar=13]/foo[foo='FOO2' AND bar=31] = 42"),
 
-        // missing
-        assertReplaceParametersRejected(
+                // ignored + duplicate usage
+                ReplacementTestParam.success(
                         "SELECT d FROM DUMMY d WHERE (d/f1 = $bar AND d/f2 = $bar AND d/f3 = $baz)",
-                        Map.of("foo", "bob", "bar", "alice"))
-                .isExactlyInstanceOf(AqlParseException.class)
-                .hasMessageContaining("Missing parameter")
-                .hasMessageContaining("baz");
+                        Map.of("foo", "bob", "bar", "alice", "baz", "charly"),
+                        "SELECT d FROM DUMMY d WHERE (d/f1 = 'alice' AND d/f2 = 'alice' AND d/f3 = 'charly')"),
+
+                // missing
+                ReplacementTestParam.rejected(
+                        "SELECT d FROM DUMMY d WHERE (d/f1 = $bar AND d/f2 = $bar AND d/f3 = $baz)",
+                        Map.of("foo", "bob", "bar", "alice"),
+                        "Missing parameter"));
     }
 
-    @Test
-    void replaceFromParameters() {
-
-        // archetype_node_id
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d[$ani]", Map.of("ani", "at0001"), "SELECT d FROM DUMMY d[at0001]");
-        assertReplaceParametersRejected("SELECT d FROM DUMMY d[$ani]", Map.of("ani", "invalid-id"))
-                .isInstanceOf(AqlParseException.class);
-
-        // nodeConstraint + name
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d[at0001,$nameConstraint]",
-                Map.of("nameConstraint", "Results"),
-                "SELECT d FROM DUMMY d[at0001, 'Results']");
-
-        // nodeConstraint + local terminology => interpreted as String
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d[at0001,$nameConstraint]",
-                Map.of("nameConstraint", "at0002"),
-                "SELECT d FROM DUMMY d[at0001, 'at0002']");
-
-        // nodeConstraint + TERM_CODE => interpreted as String
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d[at0001,$nameConstraint]",
-                Map.of("nameConstraint", "ISO_639-1::en"),
-                "SELECT d FROM DUMMY d[at0001, 'ISO_639-1::en']");
-
-        // standard predicates
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d[foo=$foo AND bar=$bar]",
-                Map.of("foo", "FOO", "bar", 42),
-                "SELECT d FROM DUMMY d[foo='FOO' AND bar=42]");
-
-        // VERSION
-        assertReplaceParameters(
-                "SELECT v FROM VERSION v[commit_audit/time_committed>$time_committed]",
-                Map.of("time_committed", "2021-12-03T16:05:19.514097+01:00"),
-                "SELECT v FROM VERSION v[commit_audit/time_committed>'2021-12-03T16:05:19.514097+01:00']");
+    @ParameterizedTest
+    @MethodSource("replaceFromParametersSrc")
+    void replaceFromParameters(ReplacementTestParam check) {
+        check.doAssert();
     }
 
-    @Test
-    void replaceSelectParameters() {
-        assertReplaceParameters(
-                "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d",
-                Map.of("foo", "at0001", "baz", 42),
-                "SELECT d[at0001]/e[bar='at0001' AND ba/z=42] FROM DUMMY d");
-        assertReplaceParametersRejected(
+    static Stream<ReplacementTestParam> replaceFromParametersSrc() {
+        return Stream.of(
+                // archetype_node_id
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d[$ani]", Map.of("ani", "at0001"), "SELECT d FROM DUMMY d[at0001]"),
+                ReplacementTestParam.rejected("SELECT d FROM DUMMY d[$ani]", Map.of("ani", "invalid-id"), null),
+
+                // nodeConstraint + name
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d[at0001,$nameConstraint]",
+                        Map.of("nameConstraint", "Results"),
+                        "SELECT d FROM DUMMY d[at0001, 'Results']"),
+
+                // nodeConstraint + local terminology => interpreted as String
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d[at0001,$nameConstraint]",
+                        Map.of("nameConstraint", "at0002"),
+                        "SELECT d FROM DUMMY d[at0001, 'at0002']"),
+
+                // nodeConstraint + TERM_CODE => interpreted as String
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d[at0001,$nameConstraint]",
+                        Map.of("nameConstraint", "ISO_639-1::en"),
+                        "SELECT d FROM DUMMY d[at0001, 'ISO_639-1::en']"),
+
+                // standard predicates
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d[foo=$foo AND bar=$bar]",
+                        Map.of("foo", "FOO", "bar", 42),
+                        "SELECT d FROM DUMMY d[foo='FOO' AND bar=42]"),
+
+                // VERSION
+                ReplacementTestParam.success(
+                        "SELECT v FROM VERSION v[commit_audit/time_committed>$time_committed]",
+                        Map.of("time_committed", "2021-12-03T16:05:19.514097+01:00"),
+                        "SELECT v FROM VERSION v[commit_audit/time_committed>'2021-12-03T16:05:19.514097+01:00']"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("replaceSelectParametersSrc")
+    void replaceSelectParameters(ReplacementTestParam check) {
+        check.doAssert();
+    }
+
+    static Stream<ReplacementTestParam> replaceSelectParametersSrc() {
+        return Stream.of(
+                ReplacementTestParam.success(
                         "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d",
-                        Map.of("foo", List.of("at0001"), "baz", List.of(42, 24)))
-                .isInstanceOf(AqlParseException.class)
-                .hasMessageContaining("One of the parameters does not support multiple values");
-
-        assertReplaceParameters(
-                "SELECT SUM(d[$foo]/e[bar=$foo AND ba/z=$baz]), LENGTH(d[$foo]/e[bar=$foo AND ba/z=$baz]) FROM DUMMY d",
-                Map.of("foo", "at0001", "baz", 42),
-                "SELECT SUM(d[at0001]/e[bar='at0001' AND ba/z=42]), LENGTH(d[at0001]/e[bar='at0001' AND ba/z=42]) FROM DUMMY d");
-
-        assertReplaceParametersRejected(
-                        "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d", Map.of("foo", "invalid-id", "baz", 42))
-                .isInstanceOf(AqlParseException.class);
-
-        assertReplaceParametersRejected("SELECT d/e[$foo] FROM DUMMY d", Map.of("foo", 42))
-                .isInstanceOf(AqlParseException.class);
+                        Map.of("foo", "at0001", "baz", 42),
+                        "SELECT d[at0001]/e[bar='at0001' AND ba/z=42] FROM DUMMY d"),
+                ReplacementTestParam.rejected(
+                        "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d",
+                        Map.of("foo", List.of("at0001"), "baz", List.of(42, 24)),
+                        "One of the parameters does not support multiple values"),
+                ReplacementTestParam.success(
+                        "SELECT SUM(d[$foo]/e[bar=$foo AND ba/z=$baz]), LENGTH(d[$foo]/e[bar=$foo AND ba/z=$baz]) FROM DUMMY d",
+                        Map.of("foo", "at0001", "baz", 42),
+                        "SELECT SUM(d[at0001]/e[bar='at0001' AND ba/z=42]), LENGTH(d[at0001]/e[bar='at0001' AND ba/z=42]) FROM DUMMY d"),
+                ReplacementTestParam.rejected(
+                        "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d",
+                        Map.of("foo", "invalid-id", "baz", 42),
+                        null),
+                ReplacementTestParam.rejected("SELECT d/e[$foo] FROM DUMMY d", Map.of("foo", 42), null));
     }
 
     @Test
@@ -240,6 +252,36 @@ class AqlParameterReplacementTest {
                 "SELECT d[$foo]/e[bar=$foo AND ba/z=$baz] FROM DUMMY d ORDER BY d[$foo]/e[bar=$foo AND ba/z=$baz] DESC",
                 Map.of("foo", "at0001", "baz", 42),
                 "SELECT d[at0001]/e[bar='at0001' AND ba/z=42] FROM DUMMY d ORDER BY d[at0001]/e[bar='at0001' AND ba/z=42] DESC");
+    }
+
+    @ParameterizedTest
+    @MethodSource("replaceMatchesParametersSrc")
+    void replaceMatchesParameters(ReplacementTestParam check) {
+        check.doAssert();
+    }
+
+    static Stream<ReplacementTestParam> replaceMatchesParametersSrc() {
+        return Stream.of(
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$m}",
+                        Map.of("m", "v1"),
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1'}"),
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$m1, $m2}",
+                        Map.of("m1", "v1", "m2", "v2"),
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2'}"),
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$ma}",
+                        Map.of("ma", List.of("v1", "v2")),
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2'}"),
+                ReplacementTestParam.success(
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a, $b, $c}",
+                        Map.of("a", List.of("v1", "v2"), "b", List.of(), "c", "v3"),
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2', 'v3'}"),
+                ReplacementTestParam.rejected(
+                        "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a}",
+                        Map.of("a", List.of()),
+                        "Parameter replacement resulted in empty operand list"));
     }
 
     private static void assertReplaceParameters(String srcAql, Map<String, Object> parameterMap, String expected) {
@@ -260,26 +302,30 @@ class AqlParameterReplacementTest {
         return assertThatThrownBy(() -> AqlParameterReplacement.replaceParameters(query, parameterMap));
     }
 
-    @Test
-    void replaceMatchesParameters() {
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$m}",
-                Map.of("m", "v1"),
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1'}");
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$m1, $m2}",
-                Map.of("m1", "v1", "m2", "v2"),
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2'}");
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a}",
-                Map.of("a", List.of("v1", "v2")),
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2'}");
-        assertReplaceParameters(
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a, $b, $c}",
-                Map.of("a", List.of("v1", "v2"), "b", List.of(), "c", "v3"),
-                "SELECT d FROM DUMMY d WHERE d/name/value MATCHES {'v1', 'v2', 'v3'}");
-        assertReplaceParametersRejected("SELECT d FROM DUMMY d WHERE d/name/value MATCHES {$a}", Map.of("a", List.of()))
-                .isInstanceOf(AqlParseException.class)
-                .hasMessageContaining("Parameter replacement resulted in empty operand list");
+    record ReplacementTestParam(
+            String srcAql,
+            Map<String, Object> parameterMap,
+            Class<? extends RuntimeException> expectedException,
+            String expected) {
+
+        static ReplacementTestParam success(String srcAql, Map<String, Object> parameterMap, String expectedAql) {
+            return new ReplacementTestParam(srcAql, parameterMap, null, expectedAql);
+        }
+
+        static ReplacementTestParam rejected(
+                String srcAql, Map<String, Object> parameterMap, String expectedMessage) {
+            return new ReplacementTestParam(srcAql, parameterMap, AqlParseException.class, expectedMessage);
+        }
+
+        void doAssert() {
+            if (expectedException == null) {
+                assertReplaceParameters(srcAql, parameterMap, expected);
+            } else {
+                var ta = assertReplaceParametersRejected(srcAql, parameterMap).isInstanceOf(expectedException);
+                if (expected != null) {
+                    ta.hasMessageContaining(expected);
+                }
+            }
+        }
     }
 }
