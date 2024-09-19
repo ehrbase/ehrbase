@@ -30,6 +30,7 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CompositionRepository
         extends AbstractVersionedObjectRepository<
                 CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, CompDataHistoryRecord, Composition> {
+
+    private static Composition composition(ObjectVersionId versionId) {
+        Composition composition = new Composition();
+        composition.setUid(versionId);
+        return composition;
+    }
 
     private final KnowledgeCacheService knowledgeCache;
 
