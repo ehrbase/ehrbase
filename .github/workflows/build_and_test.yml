@@ -338,7 +338,6 @@ jobs:
       - name: Docker Compose - Starting
         run: |
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml up -d
-          sleep 10
 
       - name: Wait for Keycloak to be ready
         run: |
@@ -349,14 +348,6 @@ jobs:
             done
           fi
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
-          #status=$(docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps jmeter | grep -c "Exited (1)")
-          #if [ "$status" -gt 0 ]; then
-          #  echo "Restarting jmeter service..."
-          #  docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml restart jmeter
-          #  sleep 10
-          #else
-          #  echo "jmeter service is running fine."
-          #fi
 
       - name: Show JMeter Test Plans
         run: |
