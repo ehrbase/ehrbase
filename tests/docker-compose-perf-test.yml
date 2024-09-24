@@ -39,6 +39,10 @@ services:
     networks:
       - ehrbase-net
 
+  keycloak:
+    networks:
+      - ehrbase-net
+    
   #
   # jmeter docker service will be ready after ehrbase is healthy.
   #
@@ -50,6 +54,7 @@ services:
     links:
       - ehrbase
       - ehrdb
+      - keycloak
     networks:
       - ehrbase-net
     volumes:
