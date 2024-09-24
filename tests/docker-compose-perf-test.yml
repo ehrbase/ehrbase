@@ -23,9 +23,9 @@ services:
       JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage/jacoco.exec}"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ehrbase/management/info || exit 1" ]
-      interval: 5s
-      timeout: 5s
-      retries: 12
+      interval: 10s
+      timeout: 10s
+      retries: 15
     volumes:
       - ./tests/coverage:/app/coverage
     networks:
@@ -62,4 +62,4 @@ services:
       test: [ "CMD-SHELL", "apk add --no-cache curl && curl --fail http://localhost:8080 || exit 1" ]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
