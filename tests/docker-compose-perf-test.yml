@@ -58,3 +58,8 @@ services:
     volumes:
       - ./tests/perf:/tests
       - ./reports:/reports
+    healthcheck:
+      test: [ "CMD-SHELL", "apk add --no-cache curl && curl --fail http://localhost:8080 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
