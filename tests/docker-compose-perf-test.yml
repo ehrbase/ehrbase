@@ -46,7 +46,10 @@ services:
     image: justb4/jmeter:latest
     ports:
       - "8082:8080"
-    container_name: jmeter
+    container_name: JMeter
+    depends_on:
+      ehrbase:
+        condition: service_healthy
     links:
       - ehrbase
       - ehrdb
@@ -56,7 +59,7 @@ services:
       - ./tests/perf:/tests
       - ./reports:/reports
     healthcheck:
-      test: [ "CMD-SHELL", "apk add --no-cache curl && curl --fail http://localhost:8080 || exit 1" ]
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1" ]
       interval: 10s
       timeout: 10s
       retries: 10
