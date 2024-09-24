@@ -312,8 +312,7 @@ class AqlParameterReplacementTest {
             return new ReplacementTestParam(srcAql, parameterMap, null, expectedAql);
         }
 
-        static ReplacementTestParam rejected(
-                String srcAql, Map<String, Object> parameterMap, String expectedMessage) {
+        static ReplacementTestParam rejected(String srcAql, Map<String, Object> parameterMap, String expectedMessage) {
             return new ReplacementTestParam(srcAql, parameterMap, AqlParseException.class, expectedMessage);
         }
 
