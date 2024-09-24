@@ -405,7 +405,9 @@ jobs:
 
       - name: Docker Compose - jmeter
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
+        run: | 
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
+          docker compose ps -a
 
       - name: Docker Compose - Stopping
         if: always()
