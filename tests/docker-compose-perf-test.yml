@@ -63,3 +63,4 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    entrypoint: ["sh", "-c", "sleep 10 && /entrypoint.sh"]
