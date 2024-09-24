@@ -19,14 +19,13 @@ package org.ehrbase.configuration.config.security;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
+import jakarta.servlet.DispatcherType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-
-import jakarta.servlet.DispatcherType;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
@@ -81,7 +80,8 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
                 .authorizeHttpRequests(auth -> {
 
                     // Permit dispatcher types forward and error
-                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll();
+                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
+                            .permitAll();
 
                     // Permit welcome page and img
                     auth.requestMatchers("/", "/img/**").permitAll();
