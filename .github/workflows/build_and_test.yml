@@ -348,13 +348,6 @@ jobs:
             done
           fi
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
-          
-      #- name: Wait for JMeter to be ready
-      #  run: |
-      #    until docker compose exec jmeter ls / > /dev/null 2>&1; do
-      #      echo "Waiting for JMeter service to be ready..."
-      #      sleep 10
-      #    done
 
       - name: Show JMeter Test Plans
         run: |
