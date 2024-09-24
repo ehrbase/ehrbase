@@ -47,9 +47,9 @@ services:
     ports:
       - "8082:8080"
     container_name: jmeter
-    depends_on:
-      ehrbase:
-        condition: service_healthy
+    #depends_on:
+    #  ehrbase:
+    #    condition: service_healthy
     links:
       - ehrbase
       - ehrdb
