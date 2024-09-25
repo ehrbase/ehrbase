@@ -71,16 +71,16 @@ public record AqlQueryRequest(
         if (paramValue instanceof Map<?, ?> m) {
             if (m.get("type") instanceof String type) {
                 result = switch (type) {
-                    case "int" -> intValue(paramValue, m, "").orElse(paramValue);
-                    case "num" -> numValue(paramValue, m, "").orElse(paramValue);
+                    case "int" -> intValue(m, "").orElse(paramValue);
+                    case "num" -> numValue(m, "").orElse(paramValue);
                     default -> handleExplicitParameterTypes(m.get(""));};
             } else if (m.get("") instanceof List children && !children.isEmpty()) {
                 result = children.stream()
                         .map(AqlQueryRequest::handleExplicitParameterTypes)
                         .toList();
             } else {
-                result = intValue(paramValue, m, "int")
-                        .orElseGet(() -> numValue(paramValue, m, "num").orElse(paramValue));
+                result = intValue(m, "int")
+                        .orElseGet(() -> numValue(m, "num").orElse(paramValue));
             }
         } else if (paramValue instanceof List l) {
             for (int i = 0, s = l.size(); i < s; i++) {
@@ -97,11 +97,11 @@ public record AqlQueryRequest(
         return result;
     }
 
-    private static Optional<Object> intValue(Object paramValue, Map<?, ?> m, String key) {
-        return Optional.of(key).map(m::get).map(Object::toString).<Object>map(Integer::parseInt);
+    private static Optional<Object> intValue(Map<?, ?> paramValues, String key) {
+        return Optional.of(key).map(paramValues::get).map(Object::toString).map(Integer::parseInt);
     }
 
-    private static Optional<Object> numValue(Object paramValue, Map<?, ?> m, String key) {
-        return Optional.of(key).map(m::get).map(Object::toString).<Object>map(Double::parseDouble);
+    private static Optional<Object> numValue(Map<?, ?> paramValues, String key) {
+        return Optional.of(key).map(paramValues::get).map(Object::toString).map(Double::parseDouble);
     }
 }

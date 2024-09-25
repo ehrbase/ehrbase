@@ -132,7 +132,7 @@ public final class AqlParameterReplacement {
                 yield null;
             }
             case TerminologyFunction __ -> null;
-            case Primitive __ -> null;
+            case Primitive<?, ?> __ -> null;
         };
     }
 
@@ -190,7 +190,7 @@ public final class AqlParameterReplacement {
                                     aFunc.getIdentifiedPath(), parameterMap);
                             case IdentifiedPath identifiedPath -> replaceIdentifiedPathParameters(
                                     identifiedPath, parameterMap);
-                            case Primitive __ -> {
+                            case Primitive<?, ?> __ -> {
                                 /* No parameters */
                             }
                             case TerminologyFunction __ -> {
@@ -399,15 +399,13 @@ public final class AqlParameterReplacement {
                 ComparisonOperatorPredicate op, Map<String, Object> parameterMap) {
             Optional<AqlObjectPath> newPath = replaceParameters(op.getPath(), parameterMap);
 
-            PathPredicateOperand newValue = (PathPredicateOperand)
+            Object newValue =
                     switch (op.getValue()) {
                         case null -> throw new NullPointerException(
                                 "Missing value for path " + op.getPath().render());
-                        case QueryParameter qp -> {
-                            yield ensureSingleElement(
-                                    resolveParameters(qp, parameterMap), p -> validateParameterSyntax(op.getPath(), p));
-                        }
-                        case Primitive __ -> null;
+                        case QueryParameter qp -> ensureSingleElement(
+                                resolveParameters(qp, parameterMap), p -> validateParameterSyntax(op.getPath(), p));
+                        case Primitive<?, ?> __ -> null;
                         case AqlObjectPath path -> replaceParameters(path, parameterMap);
                         default -> throw new IllegalArgumentException("Unexpected type of value: "
                                 + op.getValue().getClass().getSimpleName());
@@ -415,7 +413,7 @@ public final class AqlParameterReplacement {
 
             newPath.ifPresent(op::setPath);
             if (newValue != null) {
-                op.setValue(newValue);
+                op.setValue((PathPredicateOperand<?>) newValue);
             }
         }
     }
