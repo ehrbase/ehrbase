@@ -79,8 +79,7 @@ public record AqlQueryRequest(
                         .map(AqlQueryRequest::handleExplicitParameterTypes)
                         .toList();
             } else {
-                result = intValue(m, "int")
-                        .orElseGet(() -> numValue(m, "num").orElse(paramValue));
+                result = intValue(m, "int").orElseGet(() -> numValue(m, "num").orElse(paramValue));
             }
         } else if (paramValue instanceof List l) {
             for (int i = 0, s = l.size(); i < s; i++) {
