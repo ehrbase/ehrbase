@@ -351,7 +351,7 @@ jobs:
 
       - name: Show JMeter Test Plans
         run: |
-          docker compose exec jmeter ls -al /tests
+          docker compose exec jmeter ls -al /tests || (docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml restart jmeter && sleep 10)
       
       - name: Run JMeter Tests
         env:
