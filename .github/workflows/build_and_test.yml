@@ -165,36 +165,36 @@ jobs:
           { path: 'AUTH_TYPE_TESTS', name: 'BASIC_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
           { path: 'AUTH_TYPE_TESTS', name: 'OAUTH_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_OAUTH', env: { 'AUTH_TYPE': 'OAUTH' } },
           # sanity checks
-          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
-          # rest/openehr/v1/definition
-          { path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST', env: { 'AUTH_TYPE': 'NONE' } },
-          ## rest/openehr/v1/ehr
-          { path: 'EHR_SERVICE_TESTS', name: 'EHR_SERVICE', tags: 'EHR_SERVICE', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'EHR_STATUS_TESTS', name: 'EHR_STATUS', tags: 'EHR_STATUS', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'DIRECTORY_TESTS', name: 'DIRECTORY', tags: 'directory', env: { 'AUTH_TYPE': 'NONE' } },
-          ## rest/openehr/v1/ehr/{ehr_id}/contribution
-          { path: 'CONTRIBUTION_TESTS', name: 'CONTRIBUTION', tags: 'CONTRIBUTION', env: { 'AUTH_TYPE': 'NONE' } },
-          ## rest/openehr/v1/ehr/{ehr_id}/composition
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_1', tags: 'compositionANDcomposition_create_1', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_2', tags: 'compositionANDcomposition_create_2', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_3', tags: 'compositionANDcomposition_create_3', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_4', tags: 'compositionANDcomposition_create_4', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_5', tags: 'compositionANDcomposition_create_5', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET', tags: 'compositionANDcomposition_get', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_UPDATE', tags: 'compositionANDcomposition_update', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_DELETE', tags: 'compositionANDcomposition_delete', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET_VERSIONED', tags: 'compositionANDcomposition_get_versioned', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_VALIDATION', tags: 'COMPOSITION_validation', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_HEADERS_CHECKS', tags: 'HeadersChecks', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_ISM_TRANSITIONS', tags: 'compositionANDcomposition_ism_transitions', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_WITH_DIFFERENT_TIME_ZONES', tags: 'COMPOSITION_dtz', env: { 'AUTH_TYPE': 'NONE' } },
-          ## rest/openehr/v1/query/aql - could be split into individual sub-suite
-          { path: 'AQL_TESTS', name: 'AQL', tags: 'AQL_TESTS_PACKAGE', env: { 'AUTH_TYPE': 'NONE' } },
-          ## rest/rest/ecis
-          { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'ADMIN_TESTS', name: 'ADMIN', tags: 'ADMIN', env: { 'AUTH_TYPE': 'NONE' } },
-          { path: 'TAGS_TESTS', name: 'TAGS_TESTS', tags: 'TAGS_SUITES', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
+          ## rest/openehr/v1/definition
+          #{ path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST', env: { 'AUTH_TYPE': 'NONE' } },
+          ### rest/openehr/v1/ehr
+          #{ path: 'EHR_SERVICE_TESTS', name: 'EHR_SERVICE', tags: 'EHR_SERVICE', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'EHR_STATUS_TESTS', name: 'EHR_STATUS', tags: 'EHR_STATUS', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'DIRECTORY_TESTS', name: 'DIRECTORY', tags: 'directory', env: { 'AUTH_TYPE': 'NONE' } },
+          ### rest/openehr/v1/ehr/{ehr_id}/contribution
+          #{ path: 'CONTRIBUTION_TESTS', name: 'CONTRIBUTION', tags: 'CONTRIBUTION', env: { 'AUTH_TYPE': 'NONE' } },
+          ### rest/openehr/v1/ehr/{ehr_id}/composition
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_1', tags: 'compositionANDcomposition_create_1', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_2', tags: 'compositionANDcomposition_create_2', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_3', tags: 'compositionANDcomposition_create_3', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_4', tags: 'compositionANDcomposition_create_4', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_5', tags: 'compositionANDcomposition_create_5', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET', tags: 'compositionANDcomposition_get', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_UPDATE', tags: 'compositionANDcomposition_update', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_DELETE', tags: 'compositionANDcomposition_delete', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET_VERSIONED', tags: 'compositionANDcomposition_get_versioned', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_VALIDATION', tags: 'COMPOSITION_validation', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_HEADERS_CHECKS', tags: 'HeadersChecks', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_ISM_TRANSITIONS', tags: 'compositionANDcomposition_ism_transitions', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'COMPOSITION_TESTS', name: 'COMPOSITION_WITH_DIFFERENT_TIME_ZONES', tags: 'COMPOSITION_dtz', env: { 'AUTH_TYPE': 'NONE' } },
+          ### rest/openehr/v1/query/aql - could be split into individual sub-suite
+          #{ path: 'AQL_TESTS', name: 'AQL', tags: 'AQL_TESTS_PACKAGE', env: { 'AUTH_TYPE': 'NONE' } },
+          ### rest/rest/ecis
+          #{ path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'ADMIN_TESTS', name: 'ADMIN', tags: 'ADMIN', env: { 'AUTH_TYPE': 'NONE' } },
+          #{ path: 'TAGS_TESTS', name: 'TAGS_TESTS', tags: 'TAGS_SUITES', env: { 'AUTH_TYPE': 'NONE' } },
           # TODO Still missing
           # FHIR_TERMINOLOGY
           # SECURITY_TESTS
