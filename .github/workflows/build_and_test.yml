@@ -159,14 +159,14 @@ jobs:
       fail-fast: false # ensure all tests run
       matrix:
         test-suite: [
-          # Swagger EHRBase API endpoints checks
+          ## Swagger EHRBase API endpoints checks
           { path: 'SWAGGER_TESTS', name: 'SWAGGER_TESTS', tags: 'SWAGGER_EHRBASE', env: { 'AUTH_TYPE': 'NONE' } },
-          # Basic and OUATH authorization type checks
+          ## Basic and OUATH authorization type checks
           { path: 'AUTH_TYPE_TESTS', name: 'BASIC_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
           { path: 'AUTH_TYPE_TESTS', name: 'OAUTH_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_OAUTH', env: { 'AUTH_TYPE': 'OAUTH' } },
-          # sanity checks
+          ## sanity checks
           { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
-          # rest/openehr/v1/definition
+          ## rest/openehr/v1/definition
           { path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template', env: { 'AUTH_TYPE': 'NONE' } },
           { path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST', env: { 'AUTH_TYPE': 'NONE' } },
           ## rest/openehr/v1/ehr
@@ -195,9 +195,9 @@ jobs:
           { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag', env: { 'AUTH_TYPE': 'NONE' } },
           { path: 'ADMIN_TESTS', name: 'ADMIN', tags: 'ADMIN', env: { 'AUTH_TYPE': 'NONE' } },
           { path: 'TAGS_TESTS', name: 'TAGS_TESTS', tags: 'TAGS_SUITES', env: { 'AUTH_TYPE': 'NONE' } },
-          # TODO Still missing
-          # FHIR_TERMINOLOGY
-          # SECURITY_TESTS
+          ## TODO Still missing
+          ## FHIR_TERMINOLOGY
+          ## SECURITY_TESTS
         ]
     name: Robot (${{ matrix.test-suite.name }})
 
@@ -344,21 +344,14 @@ jobs:
           if [ "${{ matrix.test-plan.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
             until curl -s http://localhost:8081/auth/realms/ehrbase; do
               echo "Waiting for Keycloak..."
-              sleep 20
+              sleep 10
             done
           fi
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
-          
-      - name: Wait for JMeter to be ready
-        run: |
-          until docker compose exec jmeter ls / > /dev/null 2>&1; do
-            echo "Waiting for JMeter service to be ready..."
-            sleep 10
-          done
 
-      - name: Show JMeter Test Plans
+      - name: Restart jmeter if not started
         run: |
-          docker compose exec jmeter ls -al /tests
+          docker compose exec jmeter ls -al /tests || docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml restart jmeter
       
       - name: Run JMeter Tests
         env:
@@ -410,9 +403,11 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
 
-      - name: Docker Compose - jmeter
+      - name: Docker Compose - Logs jmeter
         if: always()
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
+        run: | 
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
+          #docker compose ps -a
 
       - name: Docker Compose - Stopping
         if: always()
