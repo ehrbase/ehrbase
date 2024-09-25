@@ -344,7 +344,7 @@ jobs:
           if [ "${{ matrix.test-plan.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
             until curl -s http://localhost:8081/auth/realms/ehrbase; do
               echo "Waiting for Keycloak..."
-              sleep 20
+              sleep 10
             done
           fi
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
