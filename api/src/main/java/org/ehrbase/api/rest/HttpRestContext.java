@@ -28,7 +28,7 @@ public class HttpRestContext {
         <T> T get(CtxAttr<T> attr);
     }
 
-    public static final class CtxAttr<T> { }
+    public static final class CtxAttr<T> {}
 
     public static CtxAttr<String> QUERY = new CtxAttr<>();
     public static CtxAttr<String> QUERY_ID = new CtxAttr<>();
@@ -67,7 +67,14 @@ public class HttpRestContext {
     }
 
     public static <V0, V1, V2, V3> void register(
-            CtxAttr<V0> key0, V0 value0, CtxAttr<V1> key1, V1 value1, CtxAttr<V2> key2, V2 value2, CtxAttr<V3> key3, V3 value3) {
+            CtxAttr<V0> key0,
+            V0 value0,
+            CtxAttr<V1> key1,
+            V1 value1,
+            CtxAttr<V2> key2,
+            V2 value2,
+            CtxAttr<V3> key3,
+            V3 value3) {
         Map<CtxAttr<?>, Object> map = httpContext.get();
         map.put(key0, value0);
         map.put(key1, value1);
