@@ -77,10 +77,10 @@
                   <port>${database.port}:5432</port>
                 </ports>
                 <wait>
-                  <!-- The log entry is not usable as indicator since the DB restarts multiple times during init -->
-                  <!-- Possilbe log entry(?): PostgreSQL init process complete; ready for start up. -->
+                  <!-- The log message is not usable as indicator since the DB restarts multiple times during init -->
                   <!--<log>database system is ready to accept connections</log>-->
-                  <time>10000</time>
+                  <log>listening on IPv.*</log>
+                  <time>120000</time>
                 </wait>
                 <log>
                   <enabled>true</enabled>
