@@ -349,7 +349,7 @@ jobs:
           fi
           docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
 
-      - name: Show JMeter Test Plans
+      - name: Restart jmeter if not started
         run: |
           docker compose exec jmeter ls -al /tests || docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml restart jmeter
       
