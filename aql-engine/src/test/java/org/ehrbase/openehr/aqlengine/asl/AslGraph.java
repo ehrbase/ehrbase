@@ -34,6 +34,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
@@ -45,6 +46,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
@@ -210,6 +212,14 @@ public class AslGraph {
                                     c.getLeftOwner().getAlias(),
                                     c.getChildRelation(),
                                     c.getRightOwner().getAlias()));
+            case AslFolderItemJoinCondition c -> indented(
+                    level,
+                    "FolderJoinObjectRef %s -> %s [%s.data.items[].id.value = %s.vo_id]"
+                            .formatted(
+                                    c.getParentRelation(),
+                                    c.descendantRelation(),
+                                    c.getLeftOwner().getAlias(),
+                                    c.getRightOwner().getAlias()));
         };
     }
 
@@ -266,6 +276,12 @@ public class AslGraph {
                                             .map(c -> conditionToGraph(level + 2, c))
                                             .collect(Collectors.joining("\n", "", "")));
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
+            case AslFolderItemIdValuesColumnField f -> providerAlias
+                    + f.aliasedName()
+                    + Optional.of(f)
+                            .map(AslFolderItemIdValuesColumnField::getExtractedColumn)
+                            .map(e -> " -- " + e.name() + " " + e.getPath().render())
+                            .orElse("");
         };
     }
 

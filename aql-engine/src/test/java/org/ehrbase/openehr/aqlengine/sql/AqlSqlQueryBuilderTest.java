@@ -138,7 +138,7 @@ public class AqlSqlQueryBuilderTest {
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }
 
-    @Test
+    @ParameterizedTest
     void queryOnFolder() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
@@ -160,6 +160,35 @@ public class AqlSqlQueryBuilderTest {
                 assertThat(root.alias()).isEqualTo("f");
             });
         });
+
+        assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
+    }
+
+    @Test
+    void queryOnFolderWithComposition() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+            SELECT
+              c/uid/value
+            FROM FOLDER CONTAINS COMPOSITION c
+        """);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AslRootQuery rootQuery = new AqlSqlLayer(null, () -> "node").buildAslRootQuery(queryWrapper);
+
+        assertThat(queryWrapper.pathInfos()).hasSize(1);
+        assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
+            assertThat(select.type()).isEqualTo(SelectWrapper.SelectType.PATH);
+            assertThat(select.getSelectPath()).hasValueSatisfying(path -> {
+                assertThat(path).isEqualTo("c/uid/value");
+            });
+            assertThat(select.root()).satisfies(root -> {
+                assertThat(root.getRmType()).isEqualTo("COMPOSITION");
+                assertThat(root.alias()).isEqualTo("c");
+            });
+        });
+
+        SelectQuery<Record> selectQuery = buildSqlQuery(queryWrapper);
+        assertThat(selectQuery.toString()).contains("join jsonb_array_elements((\"ehr\".\"ehr_folder_data\".\"data\"->'i')) as \"items\"");
 
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }

@@ -20,14 +20,24 @@ package org.ehrbase.jooq.pg.util;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import org.jooq.AggregateFunction;
+import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.impl.DSL;
+import org.jooq.impl.QOM;
 import org.jooq.impl.SQLDataType;
 
 public final class AdditionalSQLFunctions {
     private AdditionalSQLFunctions() {
         // NOOP
+    }
+
+    public static String join_jsonb_array_elements(Field<JSONB> jsonbArrayAggregate) {
+
+        if (!(jsonbArrayAggregate instanceof QOM.FieldAlias<JSONB> alias)) {
+            throw new IllegalStateException("join jsonb_array_elements field must be aliased");
+        }
+        return "%s as %s".formatted(alias.$aliased(), alias);
     }
 
     public static Field<JSONB> jsonb_array_elements(Field<JSONB> jsonbArray) {
@@ -44,12 +54,26 @@ public final class AdditionalSQLFunctions {
     public static Field<JSONB> jsonb_dv_ordered_magnitude(Field<JSONB> dvOrderedField) {
         return DSL.function("jsonb_dv_ordered_magnitude", JSONB.class, dvOrderedField);
     }
-    /*
-       data -> path[0] -> … -> path[n] ->> 0
-    */
+
+    /**
+     * @see #jsonbAttributePathText
+     */
     public static Field<String> jsonbAttributePathText(Field<JSONB> jsonb, String... path) {
+        return jsonbAttributePathText(jsonb, Arrays.stream(path));
+    }
+
+    /**
+     * Extract the text value from the given <code>JSONB</code> at the requested <code>path</code>
+     * </p>
+     * <code>data -> path[0] -> … -> path[n] ->> 0</code>
+     *
+     * @param jsonb to extract text as path from
+     * @param path json path of the text
+     * @return textValue as field
+     */
+    public static Field<String> jsonbAttributePathText(Field<JSONB> jsonb, Stream<String> path) {
         Field<JSONB> jsonbField = jsonb;
-        for (String att : path) {
+        for (String att : path.toList()) {
             jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(att));
         }
         return DSL.jsonbGetElementAsText(jsonbField, DSL.inline(0));
@@ -87,5 +111,22 @@ public final class AdditionalSQLFunctions {
         return distinct
                 ? DSL.aggregateDistinct("count", SQLDataType.BIGINT, f)
                 : DSL.aggregate("count", SQLDataType.BIGINT, f == null ? DSL.field(DSL.raw("*")) : f);
+    }
+
+    /**
+     * Creates a case-sensitive regex match clause that is compatible with Postgres.
+     * </p>
+     * Examples:
+     * <ul>
+     *    <li>jsonb text is uuid psql <code>some_text_value ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$'</code> </li>
+     *    <li>jsonb text is uuid jooq <code>regexMatches(Field<String> field, "^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$")</code></li>
+     * </ul>
+     *
+     * @param field to check
+     * @param regex to match against
+     * @return condition
+     */
+    public static Condition regexMatches(Field<String> field, String regex) {
+        return DSL.condition("{0} ~ E{1}", field, DSL.inline(regex));
     }
 }
