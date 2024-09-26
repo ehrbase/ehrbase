@@ -146,7 +146,7 @@ class AqlSqlQueryBuilderTest {
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }
 
-    @ParameterizedTest
+    @Test
     void queryOnFolder() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
@@ -201,32 +201,6 @@ class AqlSqlQueryBuilderTest {
                 .contains("and \"descendant\".\"num\" between \"base\".\"num\" and \"base\".\"num_cap\"")
                 // compositions are joined on item_id_value
                 .contains("on \"sCO_c_0\".\"sCO_c_0_vo_id\" = \"sF_0\".\"sF_0_item_id_value\"");
-    }
-
-    @Test
-    void queryOnFolder() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
-                """
-        SELECT
-        f/uid/value
-        FROM EHR
-        CONTAINS FOLDER f
-        """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-
-        assertThat(queryWrapper.pathInfos()).hasSize(1);
-        assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
-            assertThat(select.type()).isEqualTo(SelectWrapper.SelectType.PATH);
-            assertThat(select.getSelectPath()).hasValueSatisfying(path -> {
-                assertThat(path).isEqualTo("f/uid/value");
-            });
-            assertThat(select.root()).satisfies(root -> {
-                assertThat(root.getRmType()).isEqualTo("FOLDER");
-                assertThat(root.alias()).isEqualTo("f");
-            });
-        });
-
-        assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }
 
     @Test
