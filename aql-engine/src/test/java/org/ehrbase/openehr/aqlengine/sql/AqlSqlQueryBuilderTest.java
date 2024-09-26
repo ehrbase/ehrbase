@@ -146,7 +146,7 @@ class AqlSqlQueryBuilderTest {
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }
 
-    @Test
+    @ParameterizedTest
     void queryOnFolder() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """

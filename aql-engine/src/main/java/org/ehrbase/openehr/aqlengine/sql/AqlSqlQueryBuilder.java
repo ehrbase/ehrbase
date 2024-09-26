@@ -50,6 +50,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslFilteringQuery;
@@ -61,6 +62,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
 import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.jooq.Condition;
@@ -424,6 +426,53 @@ public class AqlSqlQueryBuilder {
             step = structureQueryBaseUsingDataTable(aq, primaryTable, columnFields, folderFields);
         }
         return step;
+    }
+
+    /**
+     * Structure sub-query that aggregate all <code>FOLDER.items[].id.value</code> attributes.
+     * </p>
+     * select
+     *   *,
+     *   cast(((("items"->'X')->'V')->>0) as uuid) "item_id_value"      -- Folder.items[].id.value
+     * from "ehr"."ehr_folder_data"
+     *   join jsonb_array_elements(("ehr"."ehr_folder_data"."data"->'i')) as "items"
+     *     on (
+     *       ((("items"->'X')->'T')->>0) = 'HX'                         -- Folder.items[].id._type = HIER_OBJECT_ID
+     *       and (((("items"->'X')->'V')->>0) ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$') -- is UUID
+     *     )
+     *
+     * @return folderItemIdAggregate sub-selection
+     */
+    @Nonnull
+    private static Pair<SelectJoinStep<Record>, Field<UUID>> structureQueryFolderItems(String itemIdValues) {
+
+        Field<JSONB> itemsField = DSL.jsonbGetAttribute(
+                EHR_FOLDER_DATA.field(ObjectDataTablePrototype.INSTANCE.DATA),
+                DSL.inline(RmAttributeAlias.getAlias("items")));
+
+        Field<JSONB> items =
+                AdditionalSQLFunctions.jsonb_array_elements(itemsField).as("items");
+        Field<String> itemIdValue = AdditionalSQLFunctions.jsonbAttributePathText(
+                items, Stream.of("id", "value").map(RmAttributeAlias::getAlias));
+        Field<String> itemIdType = AdditionalSQLFunctions.jsonbAttributePathText(
+                items, Stream.of("id", "_type").map(RmAttributeAlias::getAlias));
+        Field<UUID> itemIdField = itemIdValue.cast(UUID.class).as(itemIdValues);
+
+        SelectSelectStep<Record> select = DSL.select(
+                DSL.asterisk(), // we need all fields at this point
+                // cast((("items"->'X')->>'V') as uuid) "item_id_value"
+                itemIdField);
+        SelectJoinStep<Record> step = select.from(EHR_FOLDER_DATA
+                .join(AdditionalSQLFunctions.join_jsonb_array_elements(items))
+                // (("items"->'X')->>'T') = 'HX'
+                // FIXME not sure if we need this - we could also assume it's an HIER_OBJECT_ID because we check the
+                //       uuid any way.
+                .on(itemIdType.eq(DSL.inline(RmTypeAlias.getAlias("HIER_OBJECT_ID"))))
+                // (((("items"->'X')->'V')->>0) ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
+                .and(AdditionalSQLFunctions.regexMatches(
+                        itemIdValue, "^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$")));
+
+        return Pair.of(step, itemIdField);
     }
 
     @Nonnull
