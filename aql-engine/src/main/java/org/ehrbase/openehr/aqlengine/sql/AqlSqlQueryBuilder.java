@@ -428,6 +428,13 @@ public class AqlSqlQueryBuilder {
         return step;
     }
 
+    private static <T extends AslField> Stream<T> aslFieldOfType(
+            Map<Class<? extends AslField>, List<AslField>> aslFields, Class<T> type) {
+        return Optional.ofNullable(aslFields.remove(type)).orElseGet(List::of).stream()
+                .filter(type::isInstance)
+                .map(type::cast);
+    }
+
     /**
      * Structure sub-query that aggregate all <code>FOLDER.items[].id.value</code> attributes.
      * </p>
@@ -444,7 +451,17 @@ public class AqlSqlQueryBuilder {
      * @return folderItemIdAggregate sub-selection
      */
     @Nonnull
-    private static Pair<SelectJoinStep<Record>, Field<UUID>> structureQueryFolderItems(String itemIdValues) {
+    private static Pair<Table<?>, Field<?>> structureQueryFolderItems(
+            Table<?> dataTable, List<AslFolderItemIdValuesColumnField> folderItemColumns) {
+
+        if (folderItemColumns.size() != 1) {
+            throw new IllegalStateException(
+                    "StructureQueryBase on FOLDER does only support a single AslFolderItemIdValuesColumnField but received %s"
+                            .formatted(folderItemColumns.stream().map(AslVirtualField::getExtractedColumn)));
+        }
+
+        AslFolderItemIdValuesColumnField column = folderItemColumns.getFirst();
+        String columnName = column.getColumnName();
 
         Field<JSONB> itemsField = DSL.jsonbGetAttribute(
                 EHR_FOLDER_DATA.field(ObjectDataTablePrototype.INSTANCE.DATA),
@@ -456,7 +473,7 @@ public class AqlSqlQueryBuilder {
                 items, Stream.of("id", "value").map(RmAttributeAlias::getAlias));
         Field<String> itemIdType = AdditionalSQLFunctions.jsonbAttributePathText(
                 items, Stream.of("id", "_type").map(RmAttributeAlias::getAlias));
-        Field<UUID> itemIdField = itemIdValue.cast(UUID.class).as(itemIdValues);
+        Field<UUID> itemIdField = itemIdValue.cast(UUID.class).as(columnName);
 
         SelectSelectStep<Record> select = DSL.select(
                 DSL.asterisk(), // we need all fields at this point
@@ -465,14 +482,17 @@ public class AqlSqlQueryBuilder {
         SelectJoinStep<Record> step = select.from(EHR_FOLDER_DATA
                 .join(AdditionalSQLFunctions.join_jsonb_array_elements(items))
                 // (("items"->'X')->>'T') = 'HX'
-                // FIXME not sure if we need this - we could also assume it's an HIER_OBJECT_ID because we check the
-                //       uuid any way.
+                // FIXME(AQL_FOLDER) not sure if we need this - we could also assume it's an HIER_OBJECT_ID because we
+                //                   check the uuid any way.
                 .on(itemIdType.eq(DSL.inline(RmTypeAlias.getAlias("HIER_OBJECT_ID"))))
                 // (((("items"->'X')->'V')->>0) ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
                 .and(AdditionalSQLFunctions.regexMatches(
                         itemIdValue, "^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$")));
 
-        return Pair.of(step, itemIdField);
+        Table<Record> joinTable = step.asTable(dataTable);
+        Field<?> itemIdAliasField = FieldUtils.virtualAliasedField(joinTable, itemIdField, column, columnName);
+
+        return Pair.of(joinTable, itemIdAliasField);
     }
 
     @Nonnull
