@@ -20,8 +20,6 @@ package org.ehrbase.openehr.aqlengine.asl.model.condition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 
-import java.util.Objects;
-
 /**
  * Specialized Join condition used to <code>COMPOSITION</code>s by <code>FOLDER.items[].id.value</code>
  */
@@ -35,9 +33,12 @@ public final class AslFolderItemJoinCondition implements AslProvidesJoinConditio
     /**
      *
      */
-    public AslFolderItemJoinCondition(AslQuery leftProvider, AslQuery leftOwner,
-                                      AslSourceRelation descendantRelation, AslQuery rightProvider,
-                                      AslQuery rightOwner) {
+    public AslFolderItemJoinCondition(
+            AslQuery leftProvider,
+            AslQuery leftOwner,
+            AslSourceRelation descendantRelation,
+            AslQuery rightProvider,
+            AslQuery rightOwner) {
         this.leftProvider = leftProvider;
         this.leftOwner = leftOwner;
         this.descendantRelation = descendantRelation;
@@ -49,7 +50,7 @@ public final class AslFolderItemJoinCondition implements AslProvidesJoinConditio
         return AslSourceRelation.FOLDER;
     }
 
-    public AslQuery leftProvider() {
+    public AslQuery getLeftProvider() {
         return leftProvider;
     }
 
@@ -70,32 +71,4 @@ public final class AslFolderItemJoinCondition implements AslProvidesJoinConditio
     public AslQuery getRightOwner() {
         return rightOwner;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (AslFolderItemJoinCondition) obj;
-        return Objects.equals(this.leftProvider, that.leftProvider) &&
-                Objects.equals(this.leftOwner, that.leftOwner) &&
-                Objects.equals(this.descendantRelation, that.descendantRelation) &&
-                Objects.equals(this.rightProvider, that.rightProvider) &&
-                Objects.equals(this.rightOwner, that.rightOwner);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(leftProvider, leftOwner, descendantRelation, rightProvider, rightOwner);
-    }
-
-    @Override
-    public String toString() {
-        return "AslFolderItemJoinCondition[" +
-                "leftProvider=" + leftProvider + ", " +
-                "leftOwner=" + leftOwner + ", " +
-                "descendantRelation=" + descendantRelation + ", " +
-                "rightProvider=" + rightProvider + ", " +
-                "rightOwner=" + rightOwner + ']';
-    }
-
 }

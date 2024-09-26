@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.asl.model;
 
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
+import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -42,7 +43,7 @@ public enum AslStructureColumn {
     SYS_VERSION(ObjectVersionTablePrototype.INSTANCE.SYS_VERSION, Integer.class, true),
 
     // Columns for FOLDER querying
-    EHR_FOLDER_IDX(ObjectDataTablePrototype.INSTANCE.EHR_FOLDERS_IDX, Integer.class, true),
+    EHR_FOLDER_IDX(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX, Integer.class, true),
 
     // Columns for VERSION querying
     AUDIT_ID(ObjectVersionTablePrototype.INSTANCE.AUDIT_ID, UUID.class, true),

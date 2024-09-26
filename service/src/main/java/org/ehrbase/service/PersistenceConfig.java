@@ -17,6 +17,7 @@
  */
 package org.ehrbase.service;
 
+import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.jooq.ExecuteContext;
 import org.jooq.ExecuteListener;
@@ -47,10 +48,11 @@ public class PersistenceConfig {
         @Override
         public void exception(ExecuteContext context) {
             SQLDialect dialect = context.configuration().dialect();
-
-            SQLExceptionTranslator translator = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
-            context.exception(
-                    translator.translate("Access database using Jooq", context.sql(), context.sqlException()));
+            SQLException throwable = context.sqlException();
+            if (throwable != null) {
+                SQLExceptionTranslator translator = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
+                context.exception(translator.translate("Access database using Jooq", context.sql(), throwable));
+            }
         }
     }
 

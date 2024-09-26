@@ -28,17 +28,17 @@ import org.jooq.impl.QOM;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("UnstableApiUsage")
-public class FieldUtilsTest {
+class FieldUtilsTest {
 
     @Test
-    void complexAliasedField() {
+    void virtualAliasedField() {
 
         String columnName = "items_id_value";
 
         AslFolderItemIdValuesColumnField aslField = mock(AslFolderItemIdValuesColumnField.class);
         doReturn("aliased_" + columnName).when(aslField).aliasedName(columnName);
 
-        Field<?> field = FieldUtils.complexAliasedField(
+        Field<?> field = FieldUtils.virtualAliasedField(
                 DSL.table("test_table"), DSL.field("some_field_on_table"), aslField, columnName);
 
         assertThat(field)

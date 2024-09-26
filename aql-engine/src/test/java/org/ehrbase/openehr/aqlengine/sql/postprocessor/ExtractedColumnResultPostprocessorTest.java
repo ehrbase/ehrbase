@@ -43,10 +43,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
-public class ExtractedColumnResultPostprocessorTest {
+class ExtractedColumnResultPostprocessorTest {
 
     private final KnowledgeCacheService knowledgeCacheService = mock(KnowledgeCacheService.class);
-    private final Record record = mock(Record.class);
+    private final Record dbRecord = mock(Record.class);
 
     private ExtractedColumnResultPostprocessor processor(AslExtractedColumn extractedColumn) {
         return new ExtractedColumnResultPostprocessor(extractedColumn, knowledgeCacheService, "test-node");
@@ -55,7 +55,7 @@ public class ExtractedColumnResultPostprocessorTest {
     @BeforeEach
     void setUp() {
 
-        Mockito.reset(knowledgeCacheService, record);
+        Mockito.reset(knowledgeCacheService, dbRecord);
     }
 
     @Test
@@ -89,20 +89,20 @@ public class ExtractedColumnResultPostprocessorTest {
     @Test
     void archetypeNodeId() {
 
-        doReturn(".entityConcept").when(record).get(0);
-        doReturn("HX").when(record).get(1);
+        doReturn(".entityConcept").when(dbRecord).get(0);
+        doReturn("HX").when(dbRecord).get(1);
 
-        assertThat(processor(AslExtractedColumn.ARCHETYPE_NODE_ID).postProcessColumn(record))
+        assertThat(processor(AslExtractedColumn.ARCHETYPE_NODE_ID).postProcessColumn(dbRecord))
                 .isEqualTo("openEHR-EHR-HIER_OBJECT_ID.entityConcept");
     }
 
     @Test
     void vo_id() {
 
-        doReturn("c0817101-94fd-48e5-b4f9-cb8f0556923a").when(record).get(0);
-        doReturn("42").when(record).get(1);
+        doReturn("c0817101-94fd-48e5-b4f9-cb8f0556923a").when(dbRecord).get(0);
+        doReturn("42").when(dbRecord).get(1);
 
-        assertThat(processor(AslExtractedColumn.VO_ID).postProcessColumn(record))
+        assertThat(processor(AslExtractedColumn.VO_ID).postProcessColumn(dbRecord))
                 .isEqualTo("c0817101-94fd-48e5-b4f9-cb8f0556923a::test-node::42");
     }
 

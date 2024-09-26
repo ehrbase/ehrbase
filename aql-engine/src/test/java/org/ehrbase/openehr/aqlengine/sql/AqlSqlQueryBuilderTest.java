@@ -46,7 +46,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-public class AqlSqlQueryBuilderTest {
+class AqlSqlQueryBuilderTest {
 
     private final KnowledgeCacheService mockKnowledgeCacheService = mock();
 
@@ -173,7 +173,6 @@ public class AqlSqlQueryBuilderTest {
             FROM FOLDER CONTAINS COMPOSITION c
         """);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-        AslRootQuery rootQuery = new AqlSqlLayer(null, () -> "node").buildAslRootQuery(queryWrapper);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
@@ -188,7 +187,11 @@ public class AqlSqlQueryBuilderTest {
         });
 
         SelectQuery<Record> selectQuery = buildSqlQuery(queryWrapper);
-        assertThat(selectQuery.toString()).contains("join jsonb_array_elements((\"ehr\".\"ehr_folder_data\".\"data\"->'i')) as \"items\"");
+        assertThat(selectQuery.toString())
+                // items_id_value are selected from folder
+                .contains("\"sF_0sq\".\"items_id_value\" as \"sF_0_items_id_value\"")
+                // compositions are joined on items_id_value
+                .contains("on \"sCO_c_0\".\"sCO_c_0_vo_id\" = \"sF_0\".\"sF_0_items_id_value\"");
 
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }

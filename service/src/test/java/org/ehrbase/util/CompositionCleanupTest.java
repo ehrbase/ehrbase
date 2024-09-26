@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 public class CompositionCleanupTest {
+
     @Test
     void cleanup() throws IOException {
         String cleaned = CompositionCleanup.cleanup(COMP, false, true);
@@ -31,8 +32,6 @@ public class CompositionCleanupTest {
                 .contains(
                         "\"template_id\" : \"aql-conformance-ehrbase.org.v0\"",
                         "\"items\" : [ \"ELEMENT[at0004,'DV_TEXT']\" ]");
-
-        System.out.append(cleaned);
     }
 
     static final String COMP =

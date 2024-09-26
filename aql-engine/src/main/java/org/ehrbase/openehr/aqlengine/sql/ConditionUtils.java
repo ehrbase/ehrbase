@@ -326,7 +326,7 @@ final class ConditionUtils {
         // comp.vo_id == folder.data /items/id/value
         Condition omCompVoidEqItemIdValue = FieldUtils.field(
                         sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(), UUID.class, true)
-                .eq(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID.class, true)); // isJoinCondition));
+                .eq(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID.class, true));
 
         // on "sCO_c_0_vo_id" = "sF_0_data_item_id_value"
         return Stream.of(omCompVoidEqItemIdValue);
