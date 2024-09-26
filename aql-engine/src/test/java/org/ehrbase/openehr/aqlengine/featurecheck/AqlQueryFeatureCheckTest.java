@@ -192,12 +192,32 @@ class AqlQueryFeatureCheckTest {
         aqlFeatureCheck().ensureQuerySupported(aqlQuery);
     }
 
-    @Test
-    void ensureQuerySupportedAqlOnFolderEnabled() {
-        AqlQuery aqlQuery = AqlQueryParser.parse("""
-           SELECT f
-           FROM FOLDER f
-        """);
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "SELECT f FROM FOLDER f",
+                """
+                  SELECT f/uid/value, f/name/value, f/archetype_node_id
+                  FROM FOLDER f[openEHR-EHR-FOLDER.generic.v1]
+                """,
+                """
+                  SELECT f2/uid/value, f2/name/value
+                  FROM FOLDER f1[openEHR-EHR-FOLDER.generic.v1,'root']
+                  CONTAINS FOLDER f2[openEHR-EHR-FOLDER.generic.v1,'Encounter']
+                """,
+                """
+                  SELECT e/ehr_id/value, f/uid/value
+                  FROM EHR e
+                  CONTAINS FOLDER f[openEHR-EHR-FOLDER.generic.v1,'Encounter']
+                """,
+                """
+                  SELECT c/uid/value, f/name/value
+                  FROM FOLDER f
+                  CONTAINS COMPOSITION c
+                """
+            })
+    void ensureQuerySupportedAqlOnFolderEnabled(String aql) {
+        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         aqlFeatureCheck(new AqlFeature(true)).ensureQuerySupported(aqlQuery);
     }
 

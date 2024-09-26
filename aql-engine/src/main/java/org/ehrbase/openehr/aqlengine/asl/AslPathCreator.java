@@ -314,6 +314,8 @@ final class AslPathCreator {
             case AD_SYSTEM_ID, EHR_SYSTEM_ID, EHR_SYSTEM_ID_DV -> new AslConstantField<>(
                     String.class, systemId, fieldSource, ec);
             case VO_ID, ARCHETYPE_NODE_ID -> new AslComplexExtractedColumnField(ec, fieldSource);
+            case FOLDER_ITEM_ID -> throw new IllegalArgumentException(
+                    "Unexpected extracted column field %s".formatted(ec));
         };
     }
 

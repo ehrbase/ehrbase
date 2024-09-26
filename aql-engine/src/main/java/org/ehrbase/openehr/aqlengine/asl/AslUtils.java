@@ -274,7 +274,8 @@ public final class AslUtils {
                             EHR_TIME_CREATED,
                             EHR_TIME_CREATED_DV,
                             EHR_SYSTEM_ID,
-                            EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
+                            EHR_SYSTEM_ID_DV,
+                            FOLDER_ITEM_ID -> throw new IllegalArgumentException(
                             "Unexpected structure predicate on %s".formatted(extractedColumn));
                 };
         if (condition.getValues().isEmpty()) {
