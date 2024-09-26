@@ -22,6 +22,5 @@ contained header that does not match the existing uid in the DB.
 This may have lead to inconsistent data in some systems. A manual migration script is provided to, first check if a
 data fix is needed and secondly run a migration to fix the uid issues.
 
-To check if any `EHR_STATUS` or `FOLDER` is affected run [ehrbase_2.7.0_check_ehr_status_and_folder_void](scripts/db/ehrbase_2.7.0_check_ehr_status_and_folder_void.sql).
-If you see an output like this `Inconsistent EHR_STATUS found` or `Inconsistent FOLDER found` run 
-[ehrbase_2.7.0_fix_ehr_status_and_folder_void](scripts/db/ehrbase_2.7.0_fix_ehr_status_and_folder_void.sql), otherwise no migration is needed.
+To check if any `EHR_STATUS` or `FOLDER` is affected run [ehrbase_2.7.0_check_ehr_status_and_folder_void](../db_scripts/ehrbase_2.7.0_check_ehr_status_and_folder_void.sql).
+please open an issue so that a fix can be provided.
