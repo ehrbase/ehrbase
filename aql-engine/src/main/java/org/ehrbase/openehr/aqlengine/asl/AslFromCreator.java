@@ -67,12 +67,6 @@ import org.jooq.JoinType;
 
 final class AslFromCreator {
 
-    //    private static final Set<String> ROOT_RM_TYPES = Set.of(
-    //            RmConstants.EHR_STATUS,
-    //            RmConstants.COMPOSITION,
-    //            // Folder may be root, but is recursive
-    //            RmConstants.FOLDER);
-
     private static final Set<String> ROOT_RM_TYPES = Set.of(RmConstants.EHR_STATUS, RmConstants.COMPOSITION);
 
     private final AliasProvider aliasProvider;

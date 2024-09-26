@@ -86,7 +86,7 @@ final class FieldUtils {
         return field(target, aslData.getBase(), aslData.getBase(), fieldName, fieldType, true);
     }
 
-    public static Field<?> complexAliasedField(
+    public static Field<?> virtualAliasedField(
             Table<?> target, Field<?> field, AslVirtualField column, String columnName) {
         return DSL.field("{0}.{1}", target, field).as(column.aliasedName(columnName));
     }
