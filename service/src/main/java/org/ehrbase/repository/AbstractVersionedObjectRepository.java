@@ -432,11 +432,6 @@ public abstract class AbstractVersionedObjectRepository<
             Consumer<DR> addDataFieldsFunction,
             String notFoundErrorMessage) {
 
-        // pre-step: sanity check for existing ehr uid
-        if (!hasEhr(ehrId)) {
-            throw new ObjectNotFoundException("EHR", "EHR %s does not exist".formatted(ehrId));
-        }
-
         UIDBasedId nextUid = versionedObject.getUid();
 
         Result<VH> versionHeads = findVersionHeadRecords(condition);
@@ -453,6 +448,12 @@ public abstract class AbstractVersionedObjectRepository<
 
             Optional<VH> latestHistoryRoot = findLatestHistoryRoot(historyCondition);
             if (latestHistoryRoot.isEmpty()) {
+
+                // sanity check for existing ehr uid - this provides a more precise error
+                if (!hasEhr(ehrId)) {
+                    throw new ObjectNotFoundException("EHR", "EHR %s does not exist".formatted(ehrId));
+                }
+
                 // not found
                 throw new ObjectNotFoundException(getLocatableClass().getSimpleName(), notFoundErrorMessage);
             }

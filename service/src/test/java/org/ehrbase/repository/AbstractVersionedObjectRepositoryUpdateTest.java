@@ -104,6 +104,10 @@ public abstract class AbstractVersionedObjectRepositoryUpdateTest<
     void updateErrorEhrNotExist() {
 
         O versionedObject = versionedObject(objectVersionId(1));
+
+        doReturn(true).when(repository).hasEhr(EHR_ID);
+        doReturn(mockResult()).when(repository).findVersionHeadRecords(any());
+        doReturn(Optional.empty()).when(repository).findLatestHistoryRoot(any());
         doReturn(false).when(repository).hasEhr(EHR_ID);
 
         assertThatThrownBy(() -> callUpdate(repository, EHR_ID, versionedObject))
