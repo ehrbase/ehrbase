@@ -11,6 +11,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
 * Enable user access to the welcome page while authentication is enabled ([#1400](https://github.com/ehrbase/ehrbase/pull/1400))
  ### Fixed 
+* Stored AQL queries: Correctly clean up query cache when storing queries ([#1405](https://github.com/ehrbase/ehrbase/pull/1405))
 
 ## [2.7.0]
  ### Added
