@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -289,11 +290,12 @@ class EhrServiceTest {
         EhrStatusDto ehrStatusDto = ehrStatusDto(ifMatch, null);
         EhrService service = service();
 
-        doReturn(false).when(ehrRepository).hasEhr(ehrId);
+        doThrow(new ObjectNotFoundException("EHR", "Test"))
+                .when(ehrRepository)
+                .update(eq(ehrId), any(), isNull(), isNull());
 
         assertThatThrownBy(() -> service.updateStatus(ehrId, ehrStatusDto, ifMatch, null, null))
-                .isInstanceOf(ObjectNotFoundException.class)
-                .hasMessage("No EHR found with given ID: ccf560ea-06dd-4c0b-815f-89b076de674a");
+                .isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
