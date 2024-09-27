@@ -207,15 +207,14 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         if (!semVer.isPreRelease()) {
             Stream.of(
-                    SemVer.NO_VERSION,
-                    //major
-                    new SemVer(semVer.major(), null, null, null),
-                    //minor
-                    new SemVer(semVer.major(), semVer.minor(), null, null)
-            ).map(v -> StoredQueryQualifiedName.create(qualifiedName, v))
-            .map(StoredQueryQualifiedName::toQualifiedNameString)
-            .forEach(v -> cacheProvider.evict(
-                    CacheProvider.STORED_QUERY_CACHE, v));
+                            SemVer.NO_VERSION,
+                            // major
+                            new SemVer(semVer.major(), null, null, null),
+                            // minor
+                            new SemVer(semVer.major(), semVer.minor(), null, null))
+                    .map(v -> StoredQueryQualifiedName.create(qualifiedName, v))
+                    .map(StoredQueryQualifiedName::toQualifiedNameString)
+                    .forEach(v -> cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, v));
         }
     }
 
