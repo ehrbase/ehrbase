@@ -86,12 +86,6 @@ final class FromCheck implements FeatureCheck {
                         .map(AncestorStructureRmType::getDescendants))
                 .orElseThrow(() -> cremateUnsupportedType(nextContainment));
 
-        if (!aqlFeature.aqlOnFolderEnabled()
-                && CollectionUtils.containsAny(structureRmTypes, EnumSet.of(StructureRmType.FOLDER))) {
-            throw new AqlFeatureNotImplementedException("CONTAINS %s is an experimental feature and currently disabled."
-                    .formatted(nextContainment.getType()));
-        }
-
         if (!structureRmTypes.stream().allMatch(StructureRmType::isStructureEntry)) {
             throw new AqlFeatureNotImplementedException(
                     "CONTAINS %s is currently not supported".formatted(nextContainment.getType()));
@@ -103,6 +97,21 @@ final class FromCheck implements FeatureCheck {
                         .anyMatch(Objects::isNull)) {
             throw new IllegalAqlException(
                     "It is unclear if %s targets a COMPOSITION or EHR_STATUS".formatted(nextContainment.getType()));
+        }
+
+        // check FOLDERS enabled and contains is supported
+        if (aqlFeature.aqlOnFolderEnabled()) {
+            if (structure == StructureRoot.FOLDER
+                    && !CollectionUtils.containsAny(
+                            structureRmTypes, EnumSet.of(StructureRmType.FOLDER, StructureRmType.COMPOSITION))) {
+                throw new AqlFeatureNotImplementedException(
+                        "FOLDER CONTAINS %s is currently not supported".formatted(nextContainment.getType()));
+            }
+        }
+        // otherwise ensure we are not querying folders
+        else if (CollectionUtils.containsAny(structureRmTypes, EnumSet.of(StructureRmType.FOLDER))) {
+            throw new AqlFeatureNotImplementedException("CONTAINS %s is an experimental feature and currently disabled."
+                    .formatted(nextContainment.getType()));
         }
 
         StructureRoot structureRoot = structureRmTypes.stream()
@@ -175,6 +184,7 @@ final class FromCheck implements FeatureCheck {
                     case COMPOSITION, EHR_STATUS -> parentStructure == structure;
                     default -> throw new RuntimeException("%s is not root structure".formatted(parentStructure));
                 };
+
         if (!containmentStructureSupported) {
             throw new IllegalAqlException("Structure %s cannot CONTAIN %s (of structure %s)"
                     .formatted(
@@ -238,4 +248,6 @@ final class FromCheck implements FeatureCheck {
 
         return abstractType;
     }
+
+    private static void ensureContainmentOnFolderSupported() {}
 }
