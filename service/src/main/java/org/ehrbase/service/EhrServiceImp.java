@@ -136,7 +136,6 @@ public class EhrServiceImp implements EhrService {
 
         // pre-step: validate + check for valid ehrId
         check(status);
-        checkEhrExists(ehrId);
         checkEhrExistForParty(ehrId, status);
 
         UUID ehrStatusId = UUID.fromString(ifMatch.getObjectId().getValue());

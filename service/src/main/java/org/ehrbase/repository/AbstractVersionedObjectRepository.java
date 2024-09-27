@@ -475,7 +475,7 @@ public abstract class AbstractVersionedObjectRepository<
         }
 
         // sanity check: valid next uid in system with version
-        checkIsNextHeadRevisionUid(headVoId, headVersion, nextUid);
+        checkIsNextHeadVoId(headVoId, headVersion, nextUid);
 
         if (delRecord != null) {
             // update delete record period
@@ -682,9 +682,9 @@ public abstract class AbstractVersionedObjectRepository<
         return lowerBound.plusNanos(1_000);
     }
 
-    protected void checkIsNextHeadRevisionUid(UUID headVoid, int headVersion, UIDBasedId uid) {
+    protected void checkIsNextHeadVoId(UUID headVoid, int headVersion, UIDBasedId uid) {
 
-        // uid missmatch
+        // uuid missmatch
         if (!Objects.equals(headVoid, extractUid(uid))) {
             throw new PreconditionFailedException(NOT_MATCH_UID);
         }

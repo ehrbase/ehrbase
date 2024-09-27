@@ -220,14 +220,7 @@ public class EhrRepository
                         singleEhrStatusCondition(ehrId, tables.versionHead()),
                         singleEhrStatusCondition(ehrId, tables.versionHistory()),
                         1)
-                .map(root -> {
-                    VersionedEhrStatus versionedComposition = new VersionedEhrStatus();
-                    versionedComposition.setUid(new HierObjectId(root.getVoId().toString()));
-                    versionedComposition.setOwnerId(
-                            new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"));
-                    versionedComposition.setTimeCreated(new DvDateTime(root.getSysPeriodLower()));
-                    return versionedComposition;
-                });
+                .map(root -> recordToVersionedEhrStatus(ehrId, root));
     }
 
     private Condition singleEhrStatusCondition(UUID ehrId, Table<?> table) {
@@ -238,5 +231,13 @@ public class EhrRepository
     @Override
     protected Class<EhrStatus> getLocatableClass() {
         return EhrStatus.class;
+    }
+
+    private static VersionedEhrStatus recordToVersionedEhrStatus(UUID ehrId, EhrStatusVersionHistoryRecord record) {
+        VersionedEhrStatus versionedComposition = new VersionedEhrStatus();
+        versionedComposition.setUid(new HierObjectId(record.getVoId().toString()));
+        versionedComposition.setOwnerId(new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"));
+        versionedComposition.setTimeCreated(new DvDateTime(record.getSysPeriodLower()));
+        return versionedComposition;
     }
 }
