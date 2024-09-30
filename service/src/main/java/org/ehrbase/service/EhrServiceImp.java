@@ -136,22 +136,19 @@ public class EhrServiceImp implements EhrService {
 
         // pre-step: validate + check for valid ehrId
         check(status);
-        ensureEhrExist(ehrId);
-
-        // set uuid to validate it
-        status = ehrStatusDtoWithId(status, ifMatch);
         checkEhrExistForParty(ehrId, status);
 
-        UUID compId = UUID.fromString(ifMatch.getObjectId().getValue());
+        UUID ehrStatusId = UUID.fromString(ifMatch.getObjectId().getValue());
         int version = Integer.parseInt(ifMatch.getVersionTreeId().getValue());
 
-        // set correct uuid with changed version
-        ObjectVersionId statusVersionId = buildObjectVersionId(compId, version + 1, systemService);
-        status = ehrStatusDtoWithId(status, statusVersionId);
+        // set correct next id with incremented version
+        ObjectVersionId statusVersionId = buildObjectVersionId(ehrStatusId, version + 1, systemService);
+        EhrStatusDto updatedEhrStatus = ehrStatusDtoWithId(status, statusVersionId);
 
-        ehrRepository.update(ehrId, EhrStatusMapper.fromDto(status), contributionId, audit);
+        // perform update
+        ehrRepository.update(ehrId, EhrStatusMapper.fromDto(updatedEhrStatus), contributionId, audit);
 
-        return new EhrResult(ehrId, statusVersionId, status);
+        return new EhrResult(ehrId, statusVersionId, updatedEhrStatus);
     }
 
     @Override

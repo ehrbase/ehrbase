@@ -172,9 +172,10 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         FolderUtils.checkSiblingNameConflicts(folder);
 
+        UUID uuid = UUID.fromString(ifMatches.getObjectId().getValue());
         int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
 
-        updateUuid(folder, true, UUID.fromString(ifMatches.getObjectId().getValue()), version + 1);
+        updateUuid(folder, true, uuid, version + 1);
         ehrFolderRepository.update(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
 
         return get(ehrId, null, null).orElseThrow();
