@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+ ### Changed 
+ ### Fixed 
+
+## [2.8.0]
+ ### Added
 * AQL: Support query parameter with multiple values ([1399](https://github.com/ehrbase/ehrbase/pull/1399))
  ### Changed 
 * Enable user access to the welcome page while authentication is enabled ([#1400](https://github.com/ehrbase/ehrbase/pull/1400))
@@ -94,4 +99,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.5.0]: https://github.com/ehrbase/ehrbase/compare/v2.4.0...v2.5.0
 [2.6.0]: https://github.com/ehrbase/ehrbase/compare/v2.5.0...v2.6.0
 [2.7.0]: https://github.com/ehrbase/ehrbase/compare/v2.6.0...v2.7.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...HEAD
+[2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...HEAD
