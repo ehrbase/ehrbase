@@ -17,8 +17,6 @@
  */
 package org.ehrbase.repository;
 
-import static org.ehrbase.repository.EhrFolderRepository.NOT_MATCH_LATEST_VERSION;
-
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
@@ -31,6 +29,7 @@ import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -43,6 +42,7 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.AbstractRecordPrototype;
@@ -78,6 +78,10 @@ public abstract class AbstractVersionedObjectRepository<
         VH extends UpdatableRecord,
         DH extends UpdatableRecord,
         O extends Locatable> {
+
+    public static final String NOT_MATCH_UID = "If-Match version_uid does not match uid";
+    public static final String NOT_MATCH_SYSTEM_ID = "If-Match version_uid does not match system id";
+    public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version";
 
     protected static final ObjectVersionTablePrototype VERSION_PROTOTYPE = ObjectVersionTablePrototype.INSTANCE;
     protected static final ObjectVersionHistoryTablePrototype VERSION_HISTORY_PROTOTYPE =
@@ -355,16 +359,23 @@ public abstract class AbstractVersionedObjectRepository<
         return Optional.of(originalVersion);
     }
 
-    protected abstract Class<O> getLocatableClass();
-
-    public static int extractVersion(UIDBasedId compositionUid) {
-        return Integer.parseInt(
-                ((ObjectVersionId) compositionUid).getVersionTreeId().getValue());
+    protected boolean hasEhr(UUID ehrId) {
+        return context.fetchExists(Ehr.EHR_, Ehr.EHR_.ID.eq(ehrId));
     }
 
-    public static UUID extractUid(UIDBasedId compositionUid) {
+    protected abstract Class<O> getLocatableClass();
 
-        return UUID.fromString(compositionUid.getRoot().getValue());
+    public static int extractVersion(UIDBasedId uid) {
+        return Integer.parseInt(((ObjectVersionId) uid).getVersionTreeId().getValue());
+    }
+
+    public static UUID extractUid(UIDBasedId uid) {
+
+        return UUID.fromString(uid.getRoot().getValue());
+    }
+
+    public static String extractSystemId(UIDBasedId uid) {
+        return ((ObjectVersionId) uid).getCreatingSystemId().getValue();
     }
 
     protected void commitHead(
@@ -412,7 +423,7 @@ public abstract class AbstractVersionedObjectRepository<
 
     public void update(
             UUID ehrId,
-            O composition,
+            O versionedObject,
             Condition condition,
             Condition historyCondition,
             @Nullable UUID contributionId,
@@ -421,9 +432,15 @@ public abstract class AbstractVersionedObjectRepository<
             Consumer<DR> addDataFieldsFunction,
             String notFoundErrorMessage) {
 
-        Result<VH> versionHeads = findVersionHeadRecords(condition);
+        UIDBasedId nextUid = versionedObject.getUid();
 
-        int oldVersion;
+        Result<VH> versionHeads = findVersionHeadRecords(condition);
+        if (versionHeads.size() > 1) {
+            throw new IllegalArgumentException("%d versions were returned".formatted(versionHeads.size()));
+        }
+
+        int headVersion;
+        UUID headVoId;
         OffsetDateTime now;
         VH delRecord;
 
@@ -431,6 +448,12 @@ public abstract class AbstractVersionedObjectRepository<
 
             Optional<VH> latestHistoryRoot = findLatestHistoryRoot(historyCondition);
             if (latestHistoryRoot.isEmpty()) {
+
+                // sanity check for existing ehr uid - this provides a more precise error
+                if (!hasEhr(ehrId)) {
+                    throw new ObjectNotFoundException("EHR", "EHR %s does not exist".formatted(ehrId));
+                }
+
                 // not found
                 throw new ObjectNotFoundException(getLocatableClass().getSimpleName(), notFoundErrorMessage);
             }
@@ -439,24 +462,20 @@ public abstract class AbstractVersionedObjectRepository<
                     .filter(r -> r.get(VERSION_HISTORY_PROTOTYPE.SYS_DELETED))
                     .orElseThrow(() -> new PreconditionFailedException(NOT_MATCH_LATEST_VERSION));
 
-            oldVersion = delRecord.get(VERSION_HISTORY_PROTOTYPE.SYS_VERSION);
+            headVersion = delRecord.get(VERSION_HISTORY_PROTOTYPE.SYS_VERSION);
+            headVoId = delRecord.get(VERSION_HISTORY_PROTOTYPE.VO_ID);
             now = createCurrentTime(delRecord.get(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER));
-
-        } else if (versionHeads.size() > 1) {
-            throw new IllegalArgumentException("%d versions were returned".formatted(versionHeads.size()));
 
         } else {
             delRecord = null;
             VH root = versionHeads.getFirst();
-            oldVersion = root.get(VERSION_HISTORY_PROTOTYPE.SYS_VERSION);
-
+            headVersion = root.get(VERSION_HISTORY_PROTOTYPE.SYS_VERSION);
+            headVoId = root.get(VERSION_HISTORY_PROTOTYPE.VO_ID);
             now = createCurrentTime(root.get(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER));
         }
 
-        // versions not consecutive
-        if (oldVersion + 1 != extractVersion(composition.getUid())) {
-            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
-        }
+        // sanity check: valid next uid in system with version
+        checkIsNextHeadVoId(headVoId, headVersion, nextUid);
 
         if (delRecord != null) {
             // update delete record period
@@ -469,13 +488,13 @@ public abstract class AbstractVersionedObjectRepository<
 
         } else {
             copyHeadToHistory(versionHeads.getFirst(), now);
-            deleteHead(condition, oldVersion, PreconditionFailedException::new);
+            deleteHead(condition, headVersion, PreconditionFailedException::new);
         }
 
         // commit new version
         commitHead(
                 ehrId,
-                composition,
+                versionedObject,
                 contributionId,
                 auditId,
                 ContributionChangeType.modification,
@@ -661,5 +680,21 @@ public abstract class AbstractVersionedObjectRepository<
         // Resolution of postgres timestamps is 1 microsecond
         // https://www.postgresql.org/docs/14/datatype-datetime.html#DATATYPE-DATETIME-TABLE
         return lowerBound.plusNanos(1_000);
+    }
+
+    protected void checkIsNextHeadVoId(UUID headVoid, int headVersion, UIDBasedId uid) {
+
+        // uuid missmatch
+        if (!Objects.equals(headVoid, extractUid(uid))) {
+            throw new PreconditionFailedException(NOT_MATCH_UID);
+        }
+        // system id missmatch
+        if (!Objects.equals(systemService.getSystemId(), extractSystemId(uid))) {
+            throw new PreconditionFailedException(NOT_MATCH_SYSTEM_ID);
+        }
+        // versions not consecutive
+        if ((headVersion + 1) != extractVersion(uid)) {
+            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
+        }
     }
 }

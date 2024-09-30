@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -79,9 +80,12 @@ public class StoredQueryServiceImp implements StoredQueryService {
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
-            // No template with that templateId exist
-            throw new GeneralRequestProcessingException(
-                    "Cache Access Error: " + e.getCause().getMessage(), e);
+            if (e.getCause() instanceof GeneralRequestProcessingException cause) {
+                // No template with that templateId exist
+                throw cause;
+            } else {
+                throw e;
+            }
         }
     }
 
@@ -197,17 +201,21 @@ public class StoredQueryServiceImp implements StoredQueryService {
     }
 
     private void evictPartiallyCachedVersions(String qualifiedName, SemVer semVer) {
-
-        SemVer versionMajor = new SemVer(semVer.major(), null, null, null);
-        SemVer versionMajorMinor = new SemVer(semVer.major(), semVer.minor(), null, null);
-
         cacheProvider.evict(
                 CacheProvider.STORED_QUERY_CACHE,
-                StoredQueryQualifiedName.create(qualifiedName, versionMajor).toQualifiedNameString());
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
-                StoredQueryQualifiedName.create(qualifiedName, versionMajorMinor)
-                        .toQualifiedNameString());
+                StoredQueryQualifiedName.create(qualifiedName, semVer).toQualifiedNameString());
+
+        if (!semVer.isPreRelease()) {
+            Stream.of(
+                            SemVer.NO_VERSION,
+                            // major
+                            new SemVer(semVer.major(), null, null, null),
+                            // minor
+                            new SemVer(semVer.major(), semVer.minor(), null, null))
+                    .map(v -> StoredQueryQualifiedName.create(qualifiedName, v))
+                    .map(StoredQueryQualifiedName::toQualifiedNameString)
+                    .forEach(v -> cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, v));
+        }
     }
 
     private static SemVer parseRequestSemVer(String version) {

@@ -194,8 +194,14 @@ class ValidationServiceTest {
 
         assertThatThrownBy(() -> runCheckComposition(composition -> {}))
                 .isInstanceOf(ConstraintViolationException.class)
-                .hasMessage(
-                        "/: Invariant Category_validity failed on type COMPOSITION, /: Invariant Language_valid failed on type COMPOSITION, /archetype_details/template_id/value: Attribute value of class TEMPLATE_ID does not match existence 1..1, /territory: Attribute territory of class COMPOSITION does not match existence 1..1");
+                .extracting(t -> ((ConstraintViolationException) t).getConstraintViolations())
+                .asList()
+                .extracting(Object::toString)
+                .containsExactlyInAnyOrder(
+                        "ConstraintViolation{aqlPath='/', message='Invariant Language_valid failed on type COMPOSITION'}",
+                        "ConstraintViolation{aqlPath='/', message='Invariant Category_validity failed on type COMPOSITION'}",
+                        "ConstraintViolation{aqlPath='/archetype_details/template_id/value', message='Attribute value of class TEMPLATE_ID does not match existence 1..1'}",
+                        "ConstraintViolation{aqlPath='/territory', message='Attribute territory of class COMPOSITION does not match existence 1..1'}");
     }
 
     private void runCheckComposition(Consumer<Composition> consumer) {
