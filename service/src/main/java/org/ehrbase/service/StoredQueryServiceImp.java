@@ -74,19 +74,18 @@ public class StoredQueryServiceImp implements StoredQueryService {
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName storedQueryQualifiedName =
                 StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
+
+        QueryDefinitionResultDto result;
         try {
-            return cacheProvider.get(
+            result = cacheProvider.get(
                     CacheProvider.STORED_QUERY_CACHE,
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
-            if (e.getCause() instanceof GeneralRequestProcessingException cause) {
-                // No template with that templateId exist
-                throw cause;
-            } else {
-                throw e;
-            }
+            // retrieveStoredQueryInternal could not find the requested query
+            throw e.getCause() instanceof RuntimeException cause ? cause : e;
         }
+        return result;
     }
 
     private QueryDefinitionResultDto retrieveStoredQueryInternal(StoredQueryQualifiedName storedQueryQualifiedName) {
@@ -101,8 +100,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
             throw new InternalServerException(e.getMessage());
         }
 
-        return storedQueryAccess.orElseThrow(() -> new IllegalArgumentException(
-                "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
+        return storedQueryAccess.orElseThrow(() -> new ObjectNotFoundException(
+                "QUERY", "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
     }
 
     @Override
