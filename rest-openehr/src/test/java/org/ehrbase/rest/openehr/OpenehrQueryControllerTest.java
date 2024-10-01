@@ -29,6 +29,8 @@ import static org.mockito.Mockito.verify;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
+
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -88,7 +90,7 @@ public class OpenehrQueryControllerTest {
         QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
         queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
         queryDefinitionResultDto.setQualifiedName("test_query");
-        doReturn(queryDefinitionResultDto).when(mockStoredQueryService).retrieveStoredQuery(any(), any());
+        doReturn(Optional.of(queryDefinitionResultDto)).when(mockStoredQueryService).retrieveStoredQuery(any(), any());
         return controller();
     }
 

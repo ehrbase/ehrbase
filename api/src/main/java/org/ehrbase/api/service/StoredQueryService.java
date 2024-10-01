@@ -18,6 +18,8 @@
 package org.ehrbase.api.service;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 
 public interface StoredQueryService {
@@ -25,7 +27,7 @@ public interface StoredQueryService {
     // === DEFINITION: manage stored queries
     List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);
 
-    QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version);
+    Optional<QueryDefinitionResultDto> retrieveStoredQuery(String qualifiedName, String version);
 
     // === DEFINITION: manage stored queries
     QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString);

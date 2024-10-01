@@ -176,7 +176,9 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         createRestContext(qualifiedQueryName, version);
 
         // retrieve the stored query for execution
-        QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
+        QueryDefinitionResultDto queryDefinition = storedQueryService
+                .retrieveStoredQuery(qualifiedQueryName, version)
+                .orElseThrow(() -> new ObjectNotFoundException("QUERY", "Stored query '%s' with version '%s' does not exist".formatted(qualifiedQueryName, version)));
 
         String queryString = queryDefinition.getQueryText();
 
@@ -221,7 +223,9 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         // Enriches request attributes with aql for later audit processing
         createRestContext(qualifiedQueryName, version);
 
-        QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
+        QueryDefinitionResultDto queryDefinition = storedQueryService
+                .retrieveStoredQuery(qualifiedQueryName, version)
+                .orElseThrow(() -> new ObjectNotFoundException("QUERY", "Stored query '%s' with version '%s' does not exist".formatted(qualifiedQueryName, version)));
 
         String queryString = queryDefinition.getQueryText();
 
