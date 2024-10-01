@@ -30,9 +30,6 @@ public final class AslFolderItemJoinCondition implements AslProvidesJoinConditio
     private final AslQuery rightProvider;
     private final AslQuery rightOwner;
 
-    /**
-     *
-     */
     public AslFolderItemJoinCondition(
             AslQuery leftProvider,
             AslQuery leftOwner,
