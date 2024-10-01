@@ -42,8 +42,7 @@ public class HttpRestContext {
     public static final CtxAttr<Set<String>> REMOVED_PATIENTS = new CtxAttr<>();
     public static final CtxAttr<Boolean> QUERY_EXECUTE_ENDPOINT = new CtxAttr<>();
 
-    private static final ThreadLocal<Map<CtxAttr<?>, Object>> httpContext =
-            ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<Map<CtxAttr<?>, Object>> httpContext = ThreadLocal.withInitial(HashMap::new);
 
     public static void clear() {
         httpContext.remove();
