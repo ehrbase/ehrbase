@@ -8,7 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
- ### Fixed 
+ ### Fixed
+* Improved transaction-awareness of caches ([1407](https://github.com/ehrbase/ehrbase/pull/1407))
 
 ## [2.8.0]
  ### Added
