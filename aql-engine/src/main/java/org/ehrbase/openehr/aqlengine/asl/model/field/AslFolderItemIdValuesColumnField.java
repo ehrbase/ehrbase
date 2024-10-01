@@ -17,6 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
+import java.util.UUID;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
@@ -27,25 +28,37 @@ public final class AslFolderItemIdValuesColumnField extends AslVirtualField {
 
     private final String columnName;
 
+    private final String rmType;
+
+    private final String idType;
+
     public AslFolderItemIdValuesColumnField() {
-        this(AslExtractedColumn.FOLDER_ITEM_ID, null, "items_id_value");
+        this(AslExtractedColumn.FOLDER_ITEM_ID, null, "items_id_value", "VERSIONED_COMPOSITION", "HIER_OBJECT_ID");
     }
 
     public AslFolderItemIdValuesColumnField(
-            AslExtractedColumn extractedColumn, FieldSource fieldSource, String columnName) {
-        super(extractedColumn.getColumnType(), fieldSource, extractedColumn);
+            AslExtractedColumn extractedColumn,
+            FieldSource fieldSource,
+            String columnName,
+            String rmType,
+            String idType) {
+        super(UUID[].class, fieldSource, extractedColumn);
         this.extractedColumn = extractedColumn;
         this.columnName = columnName;
+        this.rmType = rmType;
+        this.idType = idType;
     }
 
     @Override
     public AslFolderItemIdValuesColumnField withProvider(AslQuery provider) {
-        return new AslFolderItemIdValuesColumnField(extractedColumn, fieldSource.withProvider(provider), columnName);
+        return new AslFolderItemIdValuesColumnField(
+                extractedColumn, fieldSource.withProvider(provider), columnName, rmType, idType);
     }
 
     @Override
     public AslFolderItemIdValuesColumnField copyWithOwner(AslQuery owner) {
-        return new AslFolderItemIdValuesColumnField(extractedColumn, FieldSource.withOwner(owner), columnName);
+        return new AslFolderItemIdValuesColumnField(
+                extractedColumn, FieldSource.withOwner(owner), columnName, rmType, idType);
     }
 
     public String getColumnName() {
@@ -54,5 +67,13 @@ public final class AslFolderItemIdValuesColumnField extends AslVirtualField {
 
     public String aliasedName() {
         return super.aliasedName(columnName);
+    }
+
+    public String getRmType() {
+        return rmType;
+    }
+
+    public String getIdType() {
+        return idType;
     }
 }
