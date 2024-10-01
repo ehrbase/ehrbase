@@ -28,19 +28,19 @@ public class HttpRestContext {
         <T> T get(CtxAttr<T> attr);
     }
 
-    public static final class CtxAttr<T> {}
+    public record CtxAttr<T>() {}
 
-    public static CtxAttr<String> QUERY = new CtxAttr<>();
-    public static CtxAttr<String> QUERY_ID = new CtxAttr<>();
-    public static CtxAttr<String> LOCATION = new CtxAttr<>();
-    public static CtxAttr<Integer> VERSION = new CtxAttr<>();
-    public static CtxAttr<UUID> EHR_ID = new CtxAttr<>();
-    public static CtxAttr<String> TEMPLATE_ID = new CtxAttr<>();
-    public static CtxAttr<UUID> COMPOSITION_ID = new CtxAttr<>();
-    public static CtxAttr<String> DIRECTORY_ID = new CtxAttr<>();
-    public static CtxAttr<UUID> CONTRIBUTION_ID = new CtxAttr<>();
-    public static CtxAttr<Set<String>> REMOVED_PATIENTS = new CtxAttr<>();
-    public static CtxAttr<Boolean> QUERY_EXECUTE_ENDPOINT = new CtxAttr<>();
+    public static final CtxAttr<String> QUERY = new CtxAttr<>();
+    public static final CtxAttr<String> QUERY_ID = new CtxAttr<>();
+    public static final CtxAttr<String> LOCATION = new CtxAttr<>();
+    public static final CtxAttr<Integer> VERSION = new CtxAttr<>();
+    public static final CtxAttr<UUID> EHR_ID = new CtxAttr<>();
+    public static final CtxAttr<String> TEMPLATE_ID = new CtxAttr<>();
+    public static final CtxAttr<UUID> COMPOSITION_ID = new CtxAttr<>();
+    public static final CtxAttr<String> DIRECTORY_ID = new CtxAttr<>();
+    public static final CtxAttr<UUID> CONTRIBUTION_ID = new CtxAttr<>();
+    public static final CtxAttr<Set<String>> REMOVED_PATIENTS = new CtxAttr<>();
+    public static final CtxAttr<Boolean> QUERY_EXECUTE_ENDPOINT = new CtxAttr<>();
 
     private static final ThreadLocal<Map<CtxAttr<?>, Object>> httpContext = ThreadLocal.withInitial(HashMap::new);
 

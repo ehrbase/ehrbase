@@ -39,16 +39,16 @@ public interface CacheProvider {
         return () -> new InternalServerException("Non existing cache : %s".formatted(cache.name()));
     }
 
-    record EhrBaseCache<KEY, VALUE>(String name) {
-        public VALUE get(CacheProvider cacheProvider, KEY key, Callable<VALUE> valueLoader) {
+    record EhrBaseCache<K, V>(String name) {
+        public V get(CacheProvider cacheProvider, K key, Callable<V> valueLoader) {
             return cacheProvider.getCache(this).get(key, valueLoader);
         }
 
-        public void evict(CacheProvider cacheProvider, KEY key) {
+        public void evict(CacheProvider cacheProvider, K key) {
             cacheProvider.getCache(this).evict(key);
         }
 
-        public void put(CacheProvider cacheProvider, KEY key, VALUE value) {
+        public void put(CacheProvider cacheProvider, K key, V value) {
             cacheProvider.getCache(this).put(key, value);
         }
 
