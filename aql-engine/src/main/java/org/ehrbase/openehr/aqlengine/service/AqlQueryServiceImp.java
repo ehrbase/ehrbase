@@ -248,7 +248,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
             throw new IllegalAqlException(errorMessage("Could not parse AQL query", e), e);
         }
     }
-    // TODO could make sense to pre-warm the method
+
     public static AqlQuery buildAqlQuery(
             AqlQueryRequest aqlQueryRequest,
             FetchPrecedence fetchPrecedence,
