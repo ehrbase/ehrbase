@@ -173,7 +173,7 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
     private static void checkVersionCombination(SemVer requestSemVer, SemVer dbSemVer) {
         if (dbSemVer.isNoVersion()) {
-            // Noop: no issue
+            // NOOP: no issue
         } else if (dbSemVer.isPartial()) {
             throw new IllegalStateException("The database contains stored queries with partial versions");
 
