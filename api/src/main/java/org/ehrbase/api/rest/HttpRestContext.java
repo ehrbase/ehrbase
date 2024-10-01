@@ -17,7 +17,7 @@
  */
 package org.ehrbase.api.rest;
 
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -43,7 +43,7 @@ public class HttpRestContext {
     public static final CtxAttr<Boolean> QUERY_EXECUTE_ENDPOINT = new CtxAttr<>();
 
     private static final ThreadLocal<Map<CtxAttr<?>, Object>> httpContext =
-            ThreadLocal.withInitial(IdentityHashMap::new);
+            ThreadLocal.withInitial(HashMap::new);
 
     public static void clear() {
         httpContext.remove();
