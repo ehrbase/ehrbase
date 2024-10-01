@@ -17,7 +17,7 @@
  */
 package org.ehrbase.api.rest;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -28,7 +28,7 @@ public class HttpRestContext {
         <T> T get(CtxAttr<T> attr);
     }
 
-    public record CtxAttr<T>() {}
+    public static final class CtxAttr<T> {}
 
     public static final CtxAttr<String> QUERY = new CtxAttr<>();
     public static final CtxAttr<String> QUERY_ID = new CtxAttr<>();
@@ -42,7 +42,8 @@ public class HttpRestContext {
     public static final CtxAttr<Set<String>> REMOVED_PATIENTS = new CtxAttr<>();
     public static final CtxAttr<Boolean> QUERY_EXECUTE_ENDPOINT = new CtxAttr<>();
 
-    private static final ThreadLocal<Map<CtxAttr<?>, Object>> httpContext = ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<Map<CtxAttr<?>, Object>> httpContext =
+            ThreadLocal.withInitial(IdentityHashMap::new);
 
     public static void clear() {
         httpContext.remove();
