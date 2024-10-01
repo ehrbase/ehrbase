@@ -7,8 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+* Revived option to pre-fill template cache ([#1394](https://github.com/ehrbase/ehrbase/pull/1394))
  ### Changed 
- ### Fixed 
+ ### Fixed
 
 ## [2.8.0]
  ### Added
