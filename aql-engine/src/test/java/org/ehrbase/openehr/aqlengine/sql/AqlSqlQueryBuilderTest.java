@@ -190,10 +190,13 @@ class AqlSqlQueryBuilderTest {
         assertThat(selectQuery.toString())
                 // items_id_value are selected from folder
                 .contains("\"sF_0sq\".\"items_id_value\" as \"sF_0_items_id_value\"")
+                .contains("and \"nested_folders\".\"num\" between \"root\".\"num\" and \"root\".\"num_cap\"")
                 // compositions are joined on items_id_value
-                .contains("on \"sCO_c_0\".\"sCO_c_0_vo_id\" = \"sF_0\".\"sF_0_items_id_value\"");
-
-        assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
+                .contains(
+                        """
+                        on "sCO_c_0"."sCO_c_0_vo_id" = any (
+                              "sF_0"."sF_0_items_id_value"
+                            )""");
     }
 
     @Test

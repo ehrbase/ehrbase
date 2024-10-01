@@ -236,30 +236,11 @@ final class ConditionUtils {
                                     UUID.class,
                                     isJoinCondition)));
             case EHR_STATUS, COMPOSITION, FOLDER -> {
-                // FIXME(AQL_FOLDER) catch in FeatureCheck CONTAINS
-                // if (descendantRelation == AslSourceRelation.FOLDER) {
-                //     throw new NotImplementedException("Descendant condition not applicable from %s to
-                // FOLDER".formatted(parentRelation.name()));
-                // }
                 AslStructureColumn pKeyField = parentRelation == AslSourceRelation.EHR_STATUS
                         ? AslStructureColumn.EHR_ID
                         : AslStructureColumn.VO_ID;
                 yield descendantEhrStatusOrCompositionJoin(pKeyField, dc, sqlLeft, sqlRight, isJoinCondition);
             }
-                //            case FOLDER -> {
-                //                // FIXME(AQL_FOLDER) catch in FeatureCheck CONTAINS
-                //                if (descendantRelation == AslSourceRelation.FOLDER) {
-                //                    yield descendantEhrStatusOrCompositionJoin(AslStructureColumn.VO_ID, dc, sqlLeft,
-                // sqlRight, isJoinCondition);
-                //                }
-                //                if(descendantRelation == AslSourceRelation.COMPOSITION) {
-                //                    yield descendantFolderToCompositionJoin(dc, sqlLeft, sqlRight, isJoinCondition);
-                //                }
-                //                throw new NotImplementedException("Descendant condition not applicable from FOLDER to
-                // %s".formatted(descendantRelation.name()));
-                //            }
-                //            case FOLDER -> throw new NotImplementedException("Descendant condition not applicable to
-                // FOLDER");
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Descendant condition not applicable to AUDIT_DETAILS");
         };
@@ -301,7 +282,7 @@ final class ConditionUtils {
 
     /**
      * Provides the FOLDER contains COMPOSITION join condition
-     * <code>on "sCO_c_0_vo_id" = "sF_0_data_item_id_value"</code>
+     * <code>on "sCO_c_0_vo_id" = any("sF_0_data_item_id_value")</code>
      *
      * @param dc {@link AslFolderItemJoinCondition}
      * @param sqlLeft structure query on <code>folder_data</code>
@@ -326,9 +307,9 @@ final class ConditionUtils {
         // comp.vo_id == folder.data /items/id/value
         Condition omCompVoidEqItemIdValue = FieldUtils.field(
                         sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(), UUID.class, true)
-                .eq(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID.class, true));
+                .eq(DSL.any(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID[].class, true)));
 
-        // on "sCO_c_0_vo_id" = "sF_0_data_item_id_value"
+        // on "sCO_c_0_vo_id" = any("sF_0_data_item_id_value")
         return Stream.of(omCompVoidEqItemIdValue);
     }
 

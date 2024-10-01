@@ -214,12 +214,12 @@ public class AslGraph {
                                     c.getRightOwner().getAlias()));
             case AslFolderItemJoinCondition c -> indented(
                     level,
-                    "FolderJoinObjectRef %s -> %s [%s.data.items[].id.value = %s.vo_id]"
+                    "FolderJoinObjectRef %s -> %s [%s.vo_id in %s.data.items[].id.value]"
                             .formatted(
                                     c.getParentRelation(),
                                     c.descendantRelation(),
-                                    c.getLeftOwner().getAlias(),
-                                    c.getRightOwner().getAlias()));
+                                    c.getRightOwner().getAlias(),
+                                    c.getLeftOwner().getAlias()));
         };
     }
 
@@ -280,7 +280,8 @@ public class AslGraph {
                     + f.aliasedName()
                     + Optional.of(f)
                             .map(AslFolderItemIdValuesColumnField::getExtractedColumn)
-                            .map(e -> " -- " + e.name() + " " + e.getPath().render())
+                            .map(e -> " -- " + e.name() + " " + e.getPath().render() + " [type=" + f.getRmType()
+                                    + " _type=" + f.getIdType() + "]")
                             .orElse("");
         };
     }

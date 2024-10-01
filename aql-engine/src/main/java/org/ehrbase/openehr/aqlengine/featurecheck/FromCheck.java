@@ -248,6 +248,4 @@ final class FromCheck implements FeatureCheck {
 
         return abstractType;
     }
-
-    private static void ensureContainmentOnFolderSupported() {}
 }
