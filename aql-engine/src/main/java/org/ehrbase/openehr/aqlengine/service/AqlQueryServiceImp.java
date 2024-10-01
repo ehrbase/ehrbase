@@ -249,7 +249,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
         }
     }
 
-    static AqlQuery buildAqlQuery(
+    public static AqlQuery buildAqlQuery(
             AqlQueryRequest aqlQueryRequest,
             FetchPrecedence fetchPrecedence,
             Long defaultLimit,
@@ -301,7 +301,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
                     .toList();
         }
 
-        List<SelectWrapper> selects = queryWrapper.selects();
         // Since we do not add primitive value selects to the SQL query, we add them after the query was
         // executed
         for (int i = 0, s = selects.size(); i < s; i++) {
