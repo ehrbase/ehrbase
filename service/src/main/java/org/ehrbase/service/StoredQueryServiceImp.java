@@ -69,7 +69,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
     }
 
     @Override
-    public Optional<QueryDefinitionResultDto> retrieveStoredQuery(String qualifiedName, String version) {
+    public QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version)
+            throws ObjectNotFoundException {
 
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName storedQueryQualifiedName =
@@ -83,7 +84,7 @@ public class StoredQueryServiceImp implements StoredQueryService {
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
             // retrieveStoredQueryInternal could not find the requested query
-            if(e.getCause() instanceof ObjectNotFoundException) {
+            if (e.getCause() instanceof ObjectNotFoundException) {
                 result = null;
             }
             // forward root cause or the error itself
@@ -91,7 +92,13 @@ public class StoredQueryServiceImp implements StoredQueryService {
                 throw (e.getCause() instanceof GeneralRequestProcessingException cause ? cause : e);
             }
         }
-        return Optional.ofNullable(result);
+
+        if (result == null) {
+            throw new ObjectNotFoundException(
+                    "QUERY", "Stored query '%s' with version '%s' does not exist".formatted(qualifiedName, version));
+        } else {
+            return result;
+        }
     }
 
     private QueryDefinitionResultDto retrieveStoredQueryInternal(StoredQueryQualifiedName storedQueryQualifiedName) {
@@ -106,8 +113,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
             throw new InternalServerException(e.getMessage());
         }
 
-        return storedQueryAccess.orElseThrow(() -> new ObjectNotFoundException("QUERY",
-                "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
+        return storedQueryAccess.orElseThrow(() -> new ObjectNotFoundException(
+                "QUERY", "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
     }
 
     @Override

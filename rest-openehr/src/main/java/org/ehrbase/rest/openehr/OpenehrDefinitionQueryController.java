@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.Optional;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.rest.HttpRestContext;
@@ -118,8 +117,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         registerLocation(qualifiedQueryName, version.orElse(null));
 
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(
-                storedQueryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null))
-                        .orElseThrow(() -> new ObjectNotFoundException("QUERY", "Stored query '%s' with version '%s' does not exist".formatted(qualifiedQueryName, version.orElse(null)))));
+                storedQueryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
 
         HttpRestContext.register(QUERY_ID, qualifiedQueryName);
 
