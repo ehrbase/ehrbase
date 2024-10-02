@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -175,10 +176,9 @@ public class StoredQueryServiceTest {
 
         StoredQueryService service = service();
 
-        String message = assertThrows(
-                        ObjectNotFoundException.class, () -> service.retrieveStoredQuery("test::cached", "1.4.2"))
-                .getMessage();
-        assertThat(message).isEqualTo("Could not retrieve stored query for qualified name: test::cached");
+        assertThatThrownBy(() -> service.retrieveStoredQuery("test::cached", "1.4.2"))
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage("Could not retrieve stored query for qualified name: test::cached");
     }
 
     @Test

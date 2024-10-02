@@ -163,7 +163,7 @@ public class OpenehrDefinitionQueryControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto.size())
-                .isEqualTo(0));
+                .isZero());
     }
 
     @ParameterizedTest
