@@ -82,7 +82,6 @@ public class StoredQueryServiceImp implements StoredQueryService {
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
-            // retrieveStoredQueryInternal could not find the requested query
             throw e.getCause() instanceof RuntimeException cause ? cause : e;
         }
         return result;
