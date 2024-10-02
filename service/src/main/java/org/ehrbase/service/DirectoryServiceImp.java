@@ -139,16 +139,18 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         }
 
         FolderUtils.checkSiblingNameConflicts(folder);
+        UUID folderUid = Optional.ofNullable(folder.getUid())
+                .map(UIDBasedId::getRoot)
+                .map(UID::getValue)
+                .map(UUID::fromString)
+                .orElse(UuidGenerator.randomUUID());
 
-        updateUuid(
-                folder,
-                true,
-                Optional.ofNullable(folder.getUid())
-                        .map(UIDBasedId::getRoot)
-                        .map(UID::getValue)
-                        .map(UUID::fromString)
-                        .orElse(UuidGenerator.randomUUID()),
-                1);
+        // sanity check to prevent deduplicate FOLDER UIDs
+        if (ehrFolderRepository.folderUidExist(folderUid)) {
+            throw new StateConflictException("FOLDER with uid %s already exist.".formatted(folderUid));
+        }
+
+        updateUuid(folder, true, folderUid, 1);
 
         ehrFolderRepository.commit(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
 
