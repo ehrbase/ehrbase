@@ -18,7 +18,6 @@
 package org.ehrbase.openehr.aqlengine.repository;
 
 import java.util.List;
-import java.util.Map;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlResultPostprocessor;
 import org.jooq.Record;
@@ -34,9 +33,9 @@ import org.jooq.SelectQuery;
 public final class PreparedQuery {
 
     final SelectQuery<Record> selectQuery;
-    final Map<Integer, AqlSqlResultPostprocessor> postProcessors;
+    final AqlSqlResultPostprocessor[] postProcessors;
 
-    public PreparedQuery(SelectQuery<Record> selectQuery, Map<Integer, AqlSqlResultPostprocessor> postProcessors) {
+    public PreparedQuery(SelectQuery<Record> selectQuery, AqlSqlResultPostprocessor[] postProcessors) {
         this.selectQuery = selectQuery;
         this.postProcessors = postProcessors;
     }

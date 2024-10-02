@@ -31,12 +31,22 @@ public class CacheProperties {
      */
     private boolean templateInitOnStartup = true;
 
+    private boolean storedQueryInitOnStartup = true;
+
     public boolean isTemplateInitOnStartup() {
         return templateInitOnStartup;
     }
 
     public void setTemplateInitOnStartup(boolean templateInitOnStartup) {
         this.templateInitOnStartup = templateInitOnStartup;
+    }
+
+    public boolean isStoredQueryInitOnStartup() {
+        return storedQueryInitOnStartup;
+    }
+
+    public void setStoredQueryInitOnStartup(boolean storedQueryInitOnStartup) {
+        this.storedQueryInitOnStartup = storedQueryInitOnStartup;
     }
 
     private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
