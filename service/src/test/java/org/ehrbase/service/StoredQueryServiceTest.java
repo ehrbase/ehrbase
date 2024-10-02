@@ -32,6 +32,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.cache.CacheProvider;
@@ -159,8 +160,7 @@ public class StoredQueryServiceTest {
 
         StoredQueryService service = service(record);
 
-        QueryDefinitionResultDto result =
-                service.retrieveStoredQuery("test::name", "1.0.0").orElseThrow();
+        QueryDefinitionResultDto result = service.retrieveStoredQuery("test::name", "1.0.0");
         assertEquals("test::name::id", result.getQualifiedName());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("test", result.getType());
@@ -175,7 +175,10 @@ public class StoredQueryServiceTest {
 
         StoredQueryService service = service();
 
-        assertThat(service.retrieveStoredQuery("test::cached", "1.4.2")).isEmpty();
+        String message = assertThrows(
+                        ObjectNotFoundException.class, () -> service.retrieveStoredQuery("test::cached", "1.4.2"))
+                .getMessage();
+        assertThat(message).isEqualTo("Could not retrieve stored query for qualified name: test::cached");
     }
 
     @Test
@@ -184,10 +187,8 @@ public class StoredQueryServiceTest {
         StoredQueryService service = service(new StoredQueryRecord(
                 "test::cached", "id", "1.4.2", "SELECT es FROM EHR_STATUS es", "test", OffsetDateTime.now()));
 
-        QueryDefinitionResultDto result =
-                service.retrieveStoredQuery("test::cached", "1.4.2").orElseThrow();
-        QueryDefinitionResultDto result2 =
-                service.retrieveStoredQuery("test::cached", "1.4.2").orElseThrow();
+        QueryDefinitionResultDto result = service.retrieveStoredQuery("test::cached", "1.4.2");
+        QueryDefinitionResultDto result2 = service.retrieveStoredQuery("test::cached", "1.4.2");
 
         assertSame(result, result2, "Expected result to be cached");
         assertSame(
@@ -239,7 +240,7 @@ public class StoredQueryServiceTest {
         when(mockStoredQueryRepository.retrieveQualified(v05))
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
 
-        result = service.retrieveStoredQuery("test::name", "0.5").orElseThrow();
+        result = service.retrieveStoredQuery("test::name", "0.5");
         assertThat(result.getVersion()).isEqualTo("0.5.0");
 
         // #2 create version 0.5.1
@@ -255,7 +256,7 @@ public class StoredQueryServiceTest {
         when(mockStoredQueryRepository.retrieveQualified(any()))
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record2)));
 
-        result = service.retrieveStoredQuery("test::name", "0.5").orElseThrow();
+        result = service.retrieveStoredQuery("test::name", "0.5");
         assertThat(result.getVersion()).isEqualTo("0.5.1");
     }
 
