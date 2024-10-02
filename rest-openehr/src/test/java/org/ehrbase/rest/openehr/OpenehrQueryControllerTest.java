@@ -20,9 +20,11 @@ package org.ehrbase.rest.openehr;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -32,6 +34,7 @@ import java.util.Map;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
@@ -94,7 +97,7 @@ public class OpenehrQueryControllerTest {
 
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25"})
-    void GETexecuteAddHocQuery(Integer fetch, Integer offset) {
+    void executeAddHocQueryUsingGET(Integer fetch, Integer offset) {
         ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(SAMPLE_QUERY, offset, fetch, SAMPLE_PARAMETER_MAP, MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
@@ -113,7 +116,7 @@ public class OpenehrQueryControllerTest {
 
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25", "'1','2'"})
-    void POSTexecuteAddHocQuery(Object fetch, Object offset) {
+    void executeAddHocQueryUsingPOST(Object fetch, Object offset) {
         ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(
                         sampleAqlQuery(fetch, offset),
@@ -142,7 +145,7 @@ public class OpenehrQueryControllerTest {
     }
 
     @Test
-    void POSTexecuteAddHocQueryWithFetchInvalid() {
+    void executeAddHocQueryUsingPOSTWithFetchInvalid() {
 
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
                         .executeAdHocQuery(
@@ -154,7 +157,7 @@ public class OpenehrQueryControllerTest {
     }
 
     @Test
-    void POSTexecuteAddHocQueryWithOffsetInvalid() {
+    void executeAddHocQueryUsingPOSTWithOffsetInvalid() {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
                         .executeAdHocQuery(
                                 sampleAqlQuery(null, "invalid"),
@@ -166,7 +169,7 @@ public class OpenehrQueryControllerTest {
 
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25"})
-    void GETexecuteStoredQuery(Integer fetch, Integer offset) {
+    void executeStoredQueryUsingGET(Integer fetch, Integer offset) {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
@@ -179,9 +182,30 @@ public class OpenehrQueryControllerTest {
         assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
+    @Test
+    void executeStoredQueryUsingGETNoExist() {
+
+        OpenehrQueryController openehrQueryController = controllerStoredQuery();
+        doThrow(new ObjectNotFoundException(
+                        "QUERY", "Stored query 'does_not_exist' with version 'v1.0.0' does not exist"))
+                .when(mockStoredQueryService)
+                .retrieveStoredQuery(any(), any());
+        String message = assertThrows(
+                        ObjectNotFoundException.class,
+                        () -> openehrQueryController.executeStoredQuery(
+                                "does_not_exist",
+                                "v1.0.0",
+                                null,
+                                null,
+                                SAMPLE_PARAMETER_MAP,
+                                MediaType.APPLICATION_JSON_VALUE))
+                .getMessage();
+        assertEquals(message, "Stored query 'does_not_exist' with version 'v1.0.0' does not exist");
+    }
+
     @ParameterizedTest
     @CsvSource({",", "10,0", "0,25", "'1','2'"})
-    void POSTexecuteStoredQuery(Object fetch, Object offset) {
+    void executeStoredQueryUsingPOST(Object fetch, Object offset) {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
@@ -194,7 +218,7 @@ public class OpenehrQueryControllerTest {
     }
 
     @Test
-    void POSTexecuteStoredQueryWithFetchInvalid() {
+    void executeStoredQueryUsingPOSTWithFetchInvalid() {
 
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
@@ -208,7 +232,7 @@ public class OpenehrQueryControllerTest {
     }
 
     @Test
-    void POSTexecuteStoredQueryWithOffsetInvalid() {
+    void executeStoredQueryUsingPOSTWithOffsetInvalid() {
 
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
