@@ -11,6 +11,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Fixed
 * Improved transaction-awareness of caches ([1407](https://github.com/ehrbase/ehrbase/pull/1407))
 
+## [2.8.1]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [2.8.0]
  ### Added
 * AQL: Support query parameter with multiple values ([1399](https://github.com/ehrbase/ehrbase/pull/1399))
@@ -101,4 +106,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.6.0]: https://github.com/ehrbase/ehrbase/compare/v2.5.0...v2.6.0
 [2.7.0]: https://github.com/ehrbase/ehrbase/compare/v2.6.0...v2.7.0
 [2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...HEAD
+[2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...HEAD

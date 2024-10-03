@@ -42,8 +42,6 @@ import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
@@ -68,8 +66,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
 
     private static final String AQL = "AQL";
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final StoredQueryService storedQueryService;
 
     @Autowired
@@ -93,8 +89,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
 
-        logger.debug("getStoredQueryList invoked with the following input: {}", qualifiedQueryName);
-
         registerLocation(qualifiedQueryName, null);
         QueryDefinitionListResponseData responseData =
                 new QueryDefinitionListResponseData(storedQueryService.retrieveStoredQueries(qualifiedQueryName));
@@ -110,9 +104,6 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(value = "version") Optional<String> version) {
-
-        logger.debug(
-                "getStoredQueryVersion invoked with the following input: {}, version:{}", qualifiedQueryName, version);
 
         registerLocation(qualifiedQueryName, version.orElse(null));
 
@@ -161,7 +152,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
             aql = queryPayload;
         } else {
-            throw new UnsupportedMediaTypeException(mediaType.getType());
+            throw new UnsupportedMediaTypeException(mediaType.toString());
         }
 
         if (isBlank(aql)) {
