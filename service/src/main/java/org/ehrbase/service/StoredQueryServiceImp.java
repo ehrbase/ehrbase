@@ -77,8 +77,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         QueryDefinitionResultDto result;
         try {
-            result = cacheProvider.get(
-                    CacheProvider.STORED_QUERY_CACHE,
+            result = CacheProvider.STORED_QUERY_CACHE.get(
+                    cacheProvider,
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
