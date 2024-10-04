@@ -15,7 +15,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
-* Fixed HTTP 500 in case stored query does not exist [#1409](https://github.com/ehrbase/ehrbase/pull/1409/files)
+* Fixed HTTP 500 in case stored query does not exist [#1409](https://github.com/ehrbase/ehrbase/pull/1409)
 
 ## [2.8.0]
  ### Added
