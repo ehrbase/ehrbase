@@ -93,7 +93,7 @@ public class SwaggerConfiguration {
                                 "EHRbase implements the [official openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/) and "
                                         + "a subset of the [EhrScape API](https://www.ehrscape.com/). "
                                         + "Additionally, EHRbase provides a custom `status` heartbeat endpoint, "
-                                        + "an [Admin API](https://ehrbase.readthedocs.io/en/latest/03_development/07_admin/index.html) (if activated) "
+                                        + "an [Admin API](https://docs.ehrbase.org/docs/EHRbase/Explore/Admin-REST) (if activated) "
                                         + "and a [Status and Metrics API](https://ehrbase.readthedocs.io/en/latest/03_development/08_status_and_metrics/index.html?highlight=status) (if activated) "
                                         + "for monitoring and maintenance. "
                                         + "Please select the definition in the top right."
@@ -105,6 +105,6 @@ public class SwaggerConfiguration {
                                 .url("https://github.com/ehrbase/ehrbase/blob/develop/LICENSE.md")))
                 .externalDocs(new ExternalDocumentation()
                         .description("EHRbase Documentation")
-                        .url("https://ehrbase.readthedocs.io/"));
+                        .url("https://docs.ehrbase.org/"));
     }
 }

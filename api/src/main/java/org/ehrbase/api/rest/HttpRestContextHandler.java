@@ -17,9 +17,9 @@
  */
 package org.ehrbase.api.rest;
 
-import org.ehrbase.api.rest.HttpRestContext.HttpCtxMap;
+import org.ehrbase.api.rest.HttpRestContext.HttpCtx;
 
 public interface HttpRestContextHandler {
 
-    public void handle(HttpCtxMap context);
+    void handle(HttpCtx context);
 }

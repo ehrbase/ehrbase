@@ -27,7 +27,7 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.8.1</version>
+    <version>2.9.0</version>
   </parent>
 
   <artifactId>service</artifactId>
@@ -152,6 +152,11 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ethlo.cache</groupId>
+      <artifactId>spring-tx-cache-decorator</artifactId>
     </dependency>
 
     <!-- test dependencies -->

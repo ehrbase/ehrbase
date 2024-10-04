@@ -5,10 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0]
+ ### Added
+ ### Changed 
+ ### Fixed
+* Improved transaction-awareness of caches ([#1407](https://github.com/ehrbase/ehrbase/pull/1407))
+
 ## [2.8.1]
  ### Added
  ### Changed 
  ### Fixed 
+* Fixed HTTP 500 in case stored query does not exist [#1409](https://github.com/ehrbase/ehrbase/pull/1409)
 
 ## [2.8.0]
  ### Added
@@ -101,3 +108,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.7.0]: https://github.com/ehrbase/ehrbase/compare/v2.6.0...v2.7.0
 [2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
 [2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
+[2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0

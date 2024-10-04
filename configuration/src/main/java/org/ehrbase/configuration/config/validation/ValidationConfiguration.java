@@ -136,8 +136,8 @@ public class ValidationConfiguration {
             @Override
             protected DocumentContext internalGet(String uri) throws WebClientException {
                 try {
-                    return cacheProvider.get(
-                            CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE, uri, () -> super.internalGet(uri));
+                    return CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE.get(
+                            cacheProvider, uri, () -> super.internalGet(uri));
                 } catch (Cache.ValueRetrievalException e) {
                     final Throwable cause = e.getCause();
                     // Something went wrong during downstream request - Forward as bad Gateway. We could also catch
