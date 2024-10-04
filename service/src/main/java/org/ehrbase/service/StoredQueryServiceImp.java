@@ -77,8 +77,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         QueryDefinitionResultDto result;
         try {
-            result = cacheProvider.get(
-                    CacheProvider.STORED_QUERY_CACHE,
+            result = CacheProvider.STORED_QUERY_CACHE.get(
+                    cacheProvider,
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
@@ -194,13 +194,13 @@ public class StoredQueryServiceImp implements StoredQueryService {
         } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
         } finally {
-            cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, storedQueryQualifiedName.toQualifiedNameString());
+            CacheProvider.STORED_QUERY_CACHE.evict(cacheProvider, storedQueryQualifiedName.toQualifiedNameString());
         }
     }
 
     private void evictPartiallyCachedVersions(String qualifiedName, SemVer semVer) {
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
+        CacheProvider.STORED_QUERY_CACHE.evict(
+                cacheProvider,
                 StoredQueryQualifiedName.create(qualifiedName, semVer).toQualifiedNameString());
 
         if (!semVer.isPreRelease()) {
@@ -212,7 +212,7 @@ public class StoredQueryServiceImp implements StoredQueryService {
                             new SemVer(semVer.major(), semVer.minor(), null, null))
                     .map(v -> StoredQueryQualifiedName.create(qualifiedName, v))
                     .map(StoredQueryQualifiedName::toQualifiedNameString)
-                    .forEach(v -> cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, v));
+                    .forEach(v -> CacheProvider.STORED_QUERY_CACHE.evict(cacheProvider, v));
         }
     }
 

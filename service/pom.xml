@@ -154,6 +154,11 @@
       <artifactId>spring-context-support</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.ethlo.cache</groupId>
+      <artifactId>spring-tx-cache-decorator</artifactId>
+    </dependency>
+
     <!-- test dependencies -->
     <dependency>
       <groupId>org.ehrbase.openehr.sdk</groupId>
