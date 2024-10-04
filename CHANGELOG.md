@@ -8,6 +8,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [2.9.0]
+ ### Added
+ ### Changed 
  ### Fixed
 * Improved transaction-awareness of caches ([#1407](https://github.com/ehrbase/ehrbase/pull/1407))
 
@@ -108,4 +113,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.7.0]: https://github.com/ehrbase/ehrbase/compare/v2.6.0...v2.7.0
 [2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
 [2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...HEAD
+[2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...HEAD
