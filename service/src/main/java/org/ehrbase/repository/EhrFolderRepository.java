@@ -42,6 +42,8 @@ import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.Record1;
+import org.jooq.SelectConditionStep;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
@@ -196,6 +198,19 @@ public class EhrFolderRepository
                 .where(singleFolderCondition(ehrId, ehrFolderIdx, tables.versionHistory()));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
+    }
+
+    public boolean folderUidExist(UUID folderId) {
+
+        var headQuery = folderUidExistCondition(tables.versionHead(), folderId);
+        var historyQuery = folderUidExistCondition(tables.versionHistory(), folderId);
+        return context.fetchExists(headQuery.unionAll(historyQuery));
+    }
+
+    private SelectConditionStep<Record1<Integer>> folderUidExistCondition(Table<?> table, UUID folderId) {
+        return context.selectOne()
+                .from(table)
+                .where(table.field(VERSION_PROTOTYPE.VO_ID).eq(folderId));
     }
 
     @Transactional
