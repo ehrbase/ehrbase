@@ -32,6 +32,7 @@ import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
@@ -127,7 +128,7 @@ public class TemplateServiceImp implements TemplateService {
     public String findOperationalTemplate(String templateId, OperationalTemplateFormat format)
             throws ObjectNotFoundException, InvalidApiParameterException, InternalServerException {
         if (format != OperationalTemplateFormat.XML) {
-            throw new InvalidApiParameterException("Requested operational template type not supported");
+            throw new NotAcceptableException("Requested operational template type not supported");
         }
 
         Optional<OPERATIONALTEMPLATE> existingTemplate =

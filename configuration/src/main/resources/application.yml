@@ -61,6 +61,8 @@ spring:
     ext-schema: ext
     ehr-location: classpath:db/migration/ehr
     ext-location: classpath:db/migration/ext
+    ehr-strategy: MIGRATE
+    ext-strategy: MIGRATE
     user: ehrbase
     password: ehrbase
 
@@ -81,6 +83,8 @@ security:
 
 
 ehrbase:
+  aql:
+    pg-llj-workaround: true
   rest:
     aql:
       # allows to control query execution using debug params
@@ -90,6 +94,10 @@ ehrbase:
         generator-details-enabled: false
         # include executed_aql in the AQL meta information
         executed-aql-enabled: true
+    experimental:
+      tags:
+        enabled: false
+        context-path: /rest/experimental/tags
   security:
     # Configuration of actuator for reporting and health endpoints
     management:
@@ -132,6 +140,7 @@ logging:
     org.jooq: info
     org.jooq.Constants: warn
     org.springframework: info
+    org.springframework.security.web.DefaultSecurityFilterChain: warn
     org.flywaydb.core.internal.license.VersionPrinter: warn
   pattern:
     console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X]){faint} %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'

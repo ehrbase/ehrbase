@@ -29,9 +29,11 @@ import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.dto.VersionedCompositionDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -42,7 +44,6 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
-import org.ehrbase.openehr.sdk.response.dto.VersionedObjectResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
@@ -91,7 +92,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     @GetMapping(path = "/{versioned_object_uid}")
     @Override
-    public ResponseEntity<VersionedObjectResponseData<Composition>> retrieveVersionedCompositionByVersionedObjectUid(
+    public ResponseEntity<VersionedCompositionDto> retrieveVersionedCompositionByVersionedObjectUid(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid) {
@@ -105,7 +106,11 @@ public class OpenehrVersionedCompositionController extends BaseController
         VersionedComposition versionedComposition =
                 compositionService.getVersionedComposition(ehrId, versionedCompoUid);
 
-        VersionedObjectResponseData<Composition> response = new VersionedObjectResponseData<>(versionedComposition);
+        VersionedCompositionDto versionedCompositionDto = new VersionedCompositionDto(
+                versionedComposition.getUid(),
+                versionedComposition.getOwnerId(),
+                DateTimeFormatter.ISO_DATE_TIME.format(
+                        versionedComposition.getTimeCreated().getValue()));
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0);
         createRestContext(ehrId, versionedCompoUid, auditLocation);
@@ -113,7 +118,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        return ResponseEntity.ok().headers(respHeaders).body(response);
+        return ResponseEntity.ok().headers(respHeaders).body(versionedCompositionDto);
     }
 
     @GetMapping(path = "/{versioned_object_uid}/revision_history")

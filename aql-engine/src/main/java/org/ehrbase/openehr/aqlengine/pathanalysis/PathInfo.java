@@ -236,7 +236,9 @@ public final class PathInfo {
                                 .map(p -> Pair.of(p, QueryClause.ORDER_BY)))
                 .flatMap(s -> s)
                 .collect(Collectors.groupingBy(
-                        Pair::getLeft, Collectors.mapping(Pair::getRight, Collectors.toUnmodifiableSet()))));
+                        Pair::getLeft,
+                        LinkedHashMap::new,
+                        Collectors.mapping(Pair::getRight, Collectors.toUnmodifiableSet()))));
 
         return containsDescs.entrySet().stream()
                 .filter(e -> pathCohesion.containsKey(e.getKey()))
@@ -291,7 +293,8 @@ public final class PathInfo {
     public boolean isMultipleValued(PathCohesionTreeNode node) {
         return Optional.of(node)
                 .map(nodeTypeInfo::get)
-                .map(NodeInfo::multipleValued)
+                // BYTES are multivalued, but we store them as single JSONB Base64 value
+                .map(info -> !info.rmTypes.contains("BYTE") && info.multipleValued)
                 .orElseThrow();
     }
 

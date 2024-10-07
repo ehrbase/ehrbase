@@ -22,13 +22,16 @@ import static org.ehrbase.jooq.pg.tables.Plugin.PLUGIN;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.ehrbase.api.repository.KeyValuePair;
+import org.ehrbase.api.repository.KeyValuePairRepository;
 import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
+public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
     private final DSLContext ctx;
 
     public KeyValueEntryRepositoryImpl(DSLContext ctx) {
@@ -36,23 +39,23 @@ public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
     }
 
     @Override
-    public List<KeyValueEntry> findByPluginId(String pid) {
-        return ctx.fetchStream(PLUGIN, PLUGIN.PLUGINID.eq(pid))
-                .map(rec -> KeyValueEntry.of(rec))
+    public List<KeyValuePair> findAllBy(String context) {
+        return ctx.fetchStream(PLUGIN, PLUGIN.PLUGINID.eq(context))
+                .map(rec -> toKvp.apply(rec))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<KeyValueEntry> findByPluginIdAndKey(String id, String key) {
-        return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(id).and(PLUGIN.KEY.eq(key)))
-                .map(rec -> KeyValueEntry.of(rec));
+    public Optional<KeyValuePair> findBy(String context, String key) {
+        return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(context).and(PLUGIN.KEY.eq(key)))
+                .map(rec -> toKvp.apply(rec));
     }
 
     @Override
-    public KeyValueEntry save(KeyValueEntry kve) {
+    public KeyValuePair save(KeyValuePair kve) {
         PluginRecord rec = ctx.newRecord(PLUGIN);
         rec.setId(kve.getId());
-        rec.setPluginid(kve.getPluginId());
+        rec.setPluginid(kve.getContext());
         rec.setKey(kve.getKey());
         rec.setValue(kve.getValue());
 
@@ -61,8 +64,8 @@ public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
     }
 
     @Override
-    public Optional<KeyValueEntry> findBy(UUID uid) {
-        return ctx.fetchOptional(PLUGIN, PLUGIN.ID.eq(uid)).map(rec -> KeyValueEntry.of(rec));
+    public Optional<KeyValuePair> findBy(UUID uid) {
+        return ctx.fetchOptional(PLUGIN, PLUGIN.ID.eq(uid)).map(rec -> toKvp.apply(rec));
     }
 
     @Override
@@ -70,4 +73,7 @@ public class KeyValueEntryRepositoryImpl implements KeyValueEntryRepository {
         int res = ctx.delete(PLUGIN).where(PLUGIN.ID.eq(uid)).execute();
         return res > 0;
     }
+
+    private Function<PluginRecord, KeyValuePair> toKvp =
+            rec -> KeyValuePair.of(rec.getId(), rec.getPluginid(), rec.getKey(), rec.getValue());
 }

@@ -24,10 +24,12 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -41,6 +43,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslFilteringQuery;
@@ -88,8 +91,8 @@ public class AqlSqlQueryBuilder {
     private final KnowledgeCacheService knowledgeCache;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
 
-    @Value("${ehrbase.aql.pg-llj-workaround:true}")
-    private boolean pgLljWorkaround = true;
+    @Value("${ehrbase.aql.pg-llj-workaround}")
+    private boolean pgLljWorkaround = false;
 
     public AqlSqlQueryBuilder(
             DSLContext context,
@@ -228,7 +231,7 @@ public class AqlSqlQueryBuilder {
         return switch (aslQuery) {
             case AslStructureQuery aq -> buildStructureQuery(aq, aslQueryToTable)
                     .asTable(aq.getAlias());
-            case AslEncapsulatingQuery aq -> DSL.lateral(buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable))
+            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable)
                     .asTable(aq.getAlias());
             case AslRmObjectDataQuery aq -> DSL.lateral(
                     buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));
@@ -345,9 +348,11 @@ public class AqlSqlQueryBuilder {
                     case AslComplexExtractedColumnField src -> src.getExtractedColumn().getColumns().stream()
                             .map(fieldName -> FieldUtils.field(target, src, fieldName, true)
                                     .as(src.aliasedName(fieldName)));
-                    case AslConstantField cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
+                    case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "Filtering queries cannot be based on AslAggregatingField");
+                    case AslSubqueryField __ -> throw new IllegalArgumentException(
+                            "Filtering queries cannot be based on AslSubqueryField");
                 };
         return DSL.select(fields.toArray(Field[]::new));
     }
@@ -419,12 +424,12 @@ public class AqlSqlQueryBuilder {
      * where
      * c2."ehr_id" = "d2"."ehr_id"
      * and c2."VO_ID" = "d2"."VO_ID"
-     * and c2."entity_idx" <= "d2"."entity_idx"
-     * and c2."entity_idx_cap" > "d2"."entity_idx"
+     * and c2."num" <= "d2"."num"
+     * and c2."num_cap" >= "d2"."num"
      * group by "d2"."VO_ID"
      */
-    private static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
-            AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable) {
+    static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
+            AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition... additionalConditions) {
         AslQuery target = aslData.getBaseProvider();
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
         AslSourceRelation type = getTargetType(aslData.getBase());
@@ -449,17 +454,21 @@ public class AqlSqlQueryBuilder {
                 })
                 .toList();
 
-        return from.where(
+        Condition[] conditions = Stream.concat(
                         // TODO can be skipped for roots
-                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX)
-                                .le(data.field(COMP_DATA.ENTITY_IDX)),
-                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX_CAP)
-                                .gt(data.field(COMP_DATA.ENTITY_IDX)))
-                .groupBy(pKeyFields);
+                        // TODO can be set to == for leafs (ELEMENT)
+                        Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
+                                .between(
+                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
+                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),
+                        Arrays.stream(additionalConditions))
+                .toArray(Condition[]::new);
+
+        return from.where(conditions).groupBy(pKeyFields);
     }
 
     /**
-     * The aggregated jsonb can be processed by JsonDataParsing::toComposition
+     * The aggregated jsonb can be processed by DbToRmFormat::reconstructFromDbFormat
      *
      * @return
      */

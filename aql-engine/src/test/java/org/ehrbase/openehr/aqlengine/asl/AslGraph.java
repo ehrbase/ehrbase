@@ -37,6 +37,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondi
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
@@ -45,6 +46,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslCommitterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
@@ -201,6 +203,14 @@ public class AslGraph {
                                     c.getLeftOwner().getAlias(),
                                     c.getDescendantRelation(),
                                     c.getRightOwner().getAlias()));
+            case AslPathChildCondition c -> indented(
+                    level,
+                    "PathChildCondition %s %s -> %s %s"
+                            .formatted(
+                                    c.getParentRelation(),
+                                    c.getLeftOwner().getAlias(),
+                                    c.getChildRelation(),
+                                    c.getRightOwner().getAlias()));
         };
     }
 
@@ -253,6 +263,13 @@ public class AslGraph {
                                     .map(AslAggregatingField::getBaseField)
                                     .map(bf -> fieldToGraph(level, bf))
                                     .orElse("*"));
+            case AslSubqueryField f -> sqToGraph(level + 1, f.getBaseQuery(), null)
+                    + (f.getFilterConditions().isEmpty()
+                            ? ""
+                            : indented(level + 1, "Filter:")
+                                    + f.getFilterConditions().stream()
+                                            .map(c -> conditionToGraph(level + 2, c))
+                                            .collect(Collectors.joining("\n", "", "")));
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
         };
     }

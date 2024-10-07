@@ -30,8 +30,11 @@ import com.nedap.archie.rm.composition.Observation;
 import com.nedap.archie.rm.composition.Section;
 import com.nedap.archie.rm.datastructures.Element;
 import com.nedap.archie.rm.datastructures.ItemTree;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rm.datavalues.quantity.DvCount;
 import com.nedap.archie.rm.generic.PartyIdentified;
+import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -278,5 +281,19 @@ class DbToRmFormatTest {
                         new DbToRmFormat.PathComponent("def", 6),
                         new DbToRmFormat.PathComponent("gh", null),
                         new DbToRmFormat.PathComponent("ij", 0));
+    }
+
+    @Test
+    void reconstructRmObjectDvMultimediaType() {
+
+        DvMultimedia rmObject = DbToRmFormat.reconstructRmObject(
+                DvMultimedia.class,
+                """
+                {"T": "mu", "d": "VGVzdERhdGE=", "mt": {"T": "C", "cd": "application/pdf", "te": {"T": "T", "V": "IANA_media-types"}}, "si": 8}
+                """);
+        assertThat(rmObject.getMediaType())
+                .isEqualTo(new CodePhrase(new TerminologyId("IANA_media-types"), "application/pdf"));
+        assertThat(rmObject.getSize()).isEqualTo(8);
+        assertThat(rmObject.getData()).containsExactly("TestData".getBytes());
     }
 }

@@ -25,13 +25,16 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 
+import com.nedap.archie.rm.archetyped.Locatable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,8 +60,10 @@ import org.jooq.TableField;
  * select
  *       "sCOMPOSITIONsq"."vo_id" as "sCOMPOSITIONc0_vo_id",
  *       "sCOMPOSITIONsq"."ehr_id" as "sCOMPOSITIONc0_ehr_id",
+ *       "sCOMPOSITIONsq"."parent_num" as "sCOMPOSITIONc0_parent_num",
+ *       "sCOMPOSITIONsq"."num" as "sCOMPOSITIONc0_num",
+ *       "sCOMPOSITIONsq"."num_cap" as "sCOMPOSITIONc0_num_cap",
  *       "sCOMPOSITIONsq"."entity_idx" as "sCOMPOSITIONc0_entity_idx",
- *       "sCOMPOSITIONsq"."entity_idx_cap" as "sCOMPOSITIONc0_entity_idx_cap",
  *       "sCOMPOSITIONsq"."entity_idx_len" as "sCOMPOSITIONc0_entity_idx_len",
  *       "sCOMPOSITIONsq"."entity_concept" as "sCOMPOSITIONc0_entity_concept",
  *       "sCOMPOSITIONsq"."entity_name" as "sCOMPOSITIONc0_entity_name",
@@ -140,6 +145,12 @@ public final class AslStructureQuery extends AslQuery {
         }
     }
 
+    private static final Set<String> NON_LOCATABLE_STRUCTURE_RM_TYPES = Arrays.stream(StructureRmType.values())
+            .filter(StructureRmType::isStructureEntry)
+            .filter(s -> !Locatable.class.isAssignableFrom(s.type))
+            .map(StructureRmType::getAlias)
+            .collect(Collectors.toSet());
+
     private final Map<IdentifiedPath, AslPathFilterJoinCondition> joinConditionsForFiltering = new HashMap<>();
     private final AslSourceRelation type;
     private final Collection<String> rmTypes;
@@ -153,6 +164,7 @@ public final class AslStructureQuery extends AslQuery {
             AslSourceRelation type,
             List<AslField> fields,
             Collection<String> rmTypes,
+            Collection<String> rmTypesConstraint,
             String attribute,
             boolean requiresVersionTableJoin) {
         super(alias, new ArrayList<>());
@@ -165,6 +177,17 @@ public final class AslStructureQuery extends AslQuery {
                 .contains(type)) {
             if (!rmTypes.isEmpty()) {
                 List<String> aliasedRmTypes = rmTypes.stream()
+                        .map(StructureRmType::getAliasOrTypeName)
+                        .toList();
+                if (NON_LOCATABLE_STRUCTURE_RM_TYPES.containsAll(aliasedRmTypes)) {
+                    this.structureConditions.add(new AslFieldValueQueryCondition(
+                            AslUtils.findFieldForOwner(AslStructureColumn.ENTITY_CONCEPT, this.getSelect(), this),
+                            AslConditionOperator.IS_NULL,
+                            List.of()));
+                }
+            }
+            if (!rmTypesConstraint.isEmpty()) {
+                List<String> aliasedRmTypes = rmTypesConstraint.stream()
                         .map(StructureRmType::getAliasOrTypeName)
                         .toList();
                 this.structureConditions.add(new AslFieldValueQueryCondition(

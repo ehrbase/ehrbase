@@ -29,12 +29,15 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -209,8 +212,24 @@ final class AslFromCreator {
                 // OR operands with chaining inside need to be mapped to their own subquery.
                 // Else the nested contains chain would not be isolated from the parent
                 // and the outer left join would bleed into it.
-                var orSq = buildOrOperandAsEncapsulatingQuery(containsToStructureSubQuery, currentParent, operand);
-                currentQuery.addChild(orSq, new AslJoin(currentParent, JoinType.LEFT_OUTER_JOIN, orSq));
+                AslEncapsulatingQuery orSq =
+                        buildOrOperandAsEncapsulatingQuery(containsToStructureSubQuery, currentParent, operand);
+                AslStructureQuery child =
+                        (AslStructureQuery) orSq.getChildren().getFirst().getLeft();
+                currentQuery.addChild(
+                        orSq,
+                        new AslJoin(
+                                currentParent,
+                                JoinType.LEFT_OUTER_JOIN,
+                                orSq,
+                                new AslDescendantCondition(
+                                                currentParent.getType(),
+                                                currentParent,
+                                                currentParent,
+                                                child.getType(),
+                                                orSq,
+                                                child)
+                                        .provideJoinCondition()));
             } else {
                 // AND operands and simple (no chaining inside) OR operands can be joined directly
                 addContainsChain(
@@ -234,11 +253,6 @@ final class AslFromCreator {
 
         // add contains condition to orSq
         buildContainsCondition(operand, false, subQueryMap).ifPresent(orSq::addStructureCondition);
-        // constrain first structure query as descendant
-        AslStructureQuery child =
-                ((AslStructureQuery) orSq.getChildren().getFirst().getLeft());
-        child.addConditionAnd(new AslDescendantCondition(
-                currentParent.getType(), currentParent, currentParent, child.getType(), child, child));
 
         // provider must be orSq
         subQueryMap.forEach((k, v) -> containsToStructureSubQuery.put(k, new OwnerProviderTuple(v.owner(), orSq)));
@@ -249,32 +263,47 @@ final class AslFromCreator {
     private AslStructureQuery containsSubquery(
             RmContainsWrapper containsWrapper, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         // e.g. "sCO_c_1"
+        String rmType = containsWrapper.getRmType();
         final String sAlias = aliasProvider.uniqueAlias("s"
-                + RmType.optionalAlias(containsWrapper.getRmType()).orElse(containsWrapper.getRmType())
+                + RmType.optionalAlias(rmType).orElse(rmType)
                 + Optional.of(containsWrapper)
                         .map(ContainsWrapper::alias)
                         .map(a -> "_" + a)
                         .orElse(""));
 
         final List<String> rmTypes;
-        if (RmConstants.EHR.equals(containsWrapper.getRmType())) {
+        boolean isRoot;
+        if (RmConstants.EHR.equals(rmType)) {
             rmTypes = List.of(RmConstants.EHR);
+            isRoot = false;
         } else {
             // We only support structure types therefore we can ignore all non-structure descendants
-            rmTypes = AncestorStructureRmType.byTypeName(containsWrapper.getRmType())
+            rmTypes = AncestorStructureRmType.byTypeName(rmType)
                     .map(AncestorStructureRmType::getDescendants)
                     .map(s -> s.stream().distinct().map(StructureRmType::name).toList())
                     .orElseGet(
                             () -> List.of(containsWrapper.getStructureRmType().name()));
+
+            // Folder may be root, but is recursive
+            isRoot = RmConstants.COMPOSITION.equals(rmType) || RmConstants.EHR_STATUS.equals(rmType);
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
-        AslStructureQuery aslStructureQuery =
-                new AslStructureQuery(sAlias, sourceRelation, fields, rmTypes, null, requiresVersionJoin);
+
+        AslStructureQuery aslStructureQuery = new AslStructureQuery(
+                sAlias, sourceRelation, fields, rmTypes, isRoot ? List.of() : rmTypes, null, requiresVersionJoin);
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
                                 c, aslStructureQuery, knowledgeCacheService::findUuidByTemplateId))
                 .ifPresent(aslStructureQuery::addConditionAnd);
+        if (isRoot) {
+            aslStructureQuery.addConditionAnd(new AslFieldValueQueryCondition<>(
+                    AslUtils.findFieldForOwner(
+                            AslStructureColumn.NUM, aslStructureQuery.getSelect(), aslStructureQuery),
+                    AslConditionOperator.EQ,
+                    List.of(0)));
+        }
+
         return aslStructureQuery;
     }
 
@@ -301,6 +330,16 @@ final class AslFromCreator {
                             .isPresent())
                     .map(AslStructureColumn::field)
                     .forEach(fields::add);
+
+            // (Only) for Compositions version.root_concept mirrors the data.entity_concept of the COMPOSITION row
+            if (requiresVersionJoin && RmConstants.COMPOSITION.equals(nextDesc.getRmType())) {
+                fields.add(new AslColumnField(
+                        String.class,
+                        Tables.COMP_VERSION.ROOT_CONCEPT.getName(),
+                        null,
+                        true,
+                        AslExtractedColumn.ROOT_CONCEPT));
+            }
         }
         return fields;
     }

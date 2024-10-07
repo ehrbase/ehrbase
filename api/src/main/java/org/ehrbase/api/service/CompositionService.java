@@ -31,14 +31,6 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 
 public interface CompositionService extends VersionedObjectService<Composition, UUID> {
-    /**
-     * @param compositionId The {@link UUID} of the composition to be returned.
-     * @param ehrId         The {@link UUID} of the ehr wich contains the composition
-     * @param version       The version to returned. If null return the latest
-     * @return
-     * @throws InternalServerException
-     */
-    Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version);
 
     static CompositionDto from(UUID ehrId, Composition composition) {
 
@@ -48,6 +40,15 @@ public interface CompositionService extends VersionedObjectService<Composition, 
                 UUID.fromString(composition.getUid().getRoot().getValue()),
                 ehrId);
     }
+
+    /**
+     * @param compositionId The {@link UUID} of the composition to be returned.
+     * @param ehrId         The {@link UUID} of the ehr wich contains the composition
+     * @param version       The version to returned. If null return the latest
+     * @return
+     * @throws InternalServerException
+     */
+    Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version);
 
     /**
      * Public serializer entry point which will be called with composition dto fetched from database
@@ -60,16 +61,13 @@ public interface CompositionService extends VersionedObjectService<Composition, 
      */
     StructuredString serialize(CompositionDto composition, CompositionFormat format);
 
-    int getLastVersionNumber(UUID compositionId);
-
     /**
-     * Helper function to read the template ID from given composition input in stated format.
+     * Retrieve the latest version number for the given composition ID.
      *
-     * @param content Composition input
-     * @param format  Composition format
-     * @return The UUID or null when not available.
+     * @param compositionId   The {@link UUID} of the composition to be returned.
+     * @return latestVersion  of the existing composition.
      */
-    String getTemplateIdFromInputComposition(String content, CompositionFormat format);
+    int getLastVersionNumber(UUID compositionId);
 
     /**
      * Retrieves the template ID associated with a given composition ID.
@@ -99,9 +97,9 @@ public interface CompositionService extends VersionedObjectService<Composition, 
     /**
      * Checks if given composition ID is ID of a logically deleted composition.
      *
-     * @param ehrId
+     * @param ehrId             EHRid to delete composition for
      * @param versionedObjectId ID to check
-     * @param version
+     * @param version           Version to delete, option uses head as default
      * @return True if deleted, false if not
      */
     boolean isDeleted(UUID ehrId, UUID versionedObjectId, @Nullable Integer version);
@@ -117,18 +115,18 @@ public interface CompositionService extends VersionedObjectService<Composition, 
      * Gets version container Composition associated with given EHR and Composition ID.
      *
      * @param ehrUid      Given EHR ID
-     * @param composition Given Composition ID
+     * @param compositionId Given Composition ID
      * @return Version container object
      */
-    VersionedComposition getVersionedComposition(UUID ehrUid, UUID composition);
+    VersionedComposition getVersionedComposition(UUID ehrUid, UUID compositionId);
 
     /**
      * Gets revision history of given composition.
      *
-     * @param composition Given composition.
+     * @param compositionId Given composition.
      * @return Revision history
      */
-    RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition);
+    RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID compositionId);
 
     /**
      * Gets Original Version container class representation of the given composition at given version.
@@ -142,5 +140,11 @@ public interface CompositionService extends VersionedObjectService<Composition, 
 
     Composition buildComposition(String content, CompositionFormat format, String templateId);
 
-    UUID getEhrId(UUID compositionId);
+    /**
+     * Gets the EHR id for the given Composition id.
+     *
+     * @param compositionId Given composition Uid.
+     * @return EHR UID for the given Composition
+     */
+    Optional<UUID> getEhrIdForComposition(UUID compositionId);
 }

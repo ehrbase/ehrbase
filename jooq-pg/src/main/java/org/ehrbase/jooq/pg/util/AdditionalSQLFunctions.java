@@ -52,7 +52,7 @@ public final class AdditionalSQLFunctions {
         for (String att : path) {
             jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(att));
         }
-        return DSL.jsonbGetElementAsText(jsonbField, 0);
+        return DSL.jsonbGetElementAsText(jsonbField, DSL.inline(0));
     }
 
     public static Field<JSONB> to_jsonb(Object value) {

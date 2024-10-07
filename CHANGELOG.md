@@ -11,6 +11,73 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 
+## [2.9.0]
+ ### Added
+ ### Changed 
+ ### Fixed
+* Improved transaction-awareness of caches ([#1407](https://github.com/ehrbase/ehrbase/pull/1407))
+
+## [2.8.1]
+ ### Added
+ ### Changed 
+ ### Fixed 
+* Fixed HTTP 500 in case stored query does not exist [#1409](https://github.com/ehrbase/ehrbase/pull/1409)
+
+## [2.8.0]
+ ### Added
+* AQL: Support query parameter with multiple values ([1399](https://github.com/ehrbase/ehrbase/pull/1399))
+ ### Changed 
+* Enable user access to the welcome page while authentication is enabled ([#1400](https://github.com/ehrbase/ehrbase/pull/1400))
+ ### Fixed 
+* Stored AQL queries: Correctly clean up query cache when storing queries ([#1405](https://github.com/ehrbase/ehrbase/pull/1405))
+* Updating an `EHR_STATUS` or `FOLDER` did not check the `If-Match header` ([1398](https://github.com/ehrbase/ehrbase/pull/1398))
+
+## [2.7.0]
+ ### Added
+* Experimental ItemTag REST endpoints for EHR_STATUS and COMPOSITION (configs: `ehrbase.rest.experimental.tags.*`) ([1343](https://github.com/ehrbase/ehrbase/pull/1343))
+* CLI runner with support for flyway pre-migrations ([1387](https://github.com/ehrbase/ehrbase/pull/1387))
+ ### Changed 
+ ### Fixed 
+* Require EHR_STATUS `is_queryable` and `is_modifiable` to be present ([#1377](https://github.com/ehrbase/ehrbase/pull/1377)) 
+
+## [2.6.0]
+ ### Added
+ ### Changed 
+* Improved data structure for hierarchy of versioned objects ([#1359](https://github.com/ehrbase/ehrbase/pull/1359))
+* Upgrade openEHR_SDK to version 2.15.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ ### Fixed 
+
+## [2.5.0]
+ ### Added
+* Create a `ehrbase` user to run the Docker container ([#1336](https://github.com/ehrbase/ehrbase/pull/1336))
+ ### Changed
+* Deprecate plugin aspects ([#1344](https://github.com/ehrbase/ehrbase/pull/1344))
+* Add simplified JSON-based “web template” format support for GET Template ADL 1.4 using header `Accept: application/openehr.wt+json` ([1334](https://github.com/ehrbase/ehrbase/pull/1334))
+* Improved AQL performance ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
+* Upgrade openEHR_SDK to version 2.14.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+
+ ### Fixed
+* Return `201` instead of `204` for EHR creation ([1371](https://github.com/ehrbase/ehrbase/pull/1371))
+* Fixed AQL predicate reduction logic ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
+* Respect AQL root predicates ([#1358](https://github.com/ehrbase/ehrbase/pull/1358))
+
+## [2.4.0]
+ ### Added
+- Configurable flyway migration strategy
+- Configurable fetch limit checks + default limit for AQL queries
+- Configurable fetch limit precedence strategy for AQL queries
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.13.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md 
+ ### Fixed 
+
+## [2.3.0]
+ ### Added
+ ### Changed 
+ - Upgrade openEHR_SDK to version 2.12.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+* AQL-Performance: paths containing non-locatable structure attributes (EVENT_CONTEXT, FEEDER_AUDIT) ([#1341](https://github.com/ehrbase/ehrbase/pull/1341))
+* Removed `@Schema(MediaType.class)` Header declaration from swagger UI ([#1333](https://github.com/ehrbase/ehrbase/pull/1333))
+ ### Fixed
+
 ## [2.2.0]
 ### Added
 * Added AQL debug support ([#1296](https://github.com/ehrbase/ehrbase/pull/1296))
@@ -40,4 +107,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 [2.1.0]: https://github.com/ehrbase/ehrbase/compare/v2.0.0...v2.1.0
 [2.2.0]: https://github.com/ehrbase/ehrbase/compare/v2.1.0...v2.2.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.2.0...HEAD
+[2.3.0]: https://github.com/ehrbase/ehrbase/compare/v2.2.0...v2.3.0
+[2.4.0]: https://github.com/ehrbase/ehrbase/compare/v2.3.0...v2.4.0
+[2.5.0]: https://github.com/ehrbase/ehrbase/compare/v2.4.0...v2.5.0
+[2.6.0]: https://github.com/ehrbase/ehrbase/compare/v2.5.0...v2.6.0
+[2.7.0]: https://github.com/ehrbase/ehrbase/compare/v2.6.0...v2.7.0
+[2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
+[2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
+[2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...HEAD

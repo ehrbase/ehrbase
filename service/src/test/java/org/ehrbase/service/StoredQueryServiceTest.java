@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -32,6 +33,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.cache.CacheProvider;
@@ -167,6 +169,16 @@ public class StoredQueryServiceTest {
         assertEquals(
                 record.getCreationDate().atZoneSameInstant(ZoneOffset.UTC),
                 result.getSaved().toOffsetDateTime().atZoneSameInstant(ZoneOffset.UTC));
+    }
+
+    @Test
+    void retrieveStoredQueryDoesNotExist() {
+
+        StoredQueryService service = service();
+
+        assertThatThrownBy(() -> service.retrieveStoredQuery("test::cached", "1.4.2"))
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage("Could not retrieve stored query for qualified name: test::cached");
     }
 
     @Test

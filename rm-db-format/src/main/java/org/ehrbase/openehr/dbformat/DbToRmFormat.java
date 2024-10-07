@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.CharSequenceHelper;
 
 /**
@@ -61,7 +61,7 @@ public final class DbToRmFormat {
 
     private static JsonNode parseJson(String dbJsonStr) {
         try {
-            return CanonicalJson.MARSHAL_OM.readTree(dbJsonStr);
+            return RmDbJson.MARSHAL_OM.readTree(dbJsonStr);
         } catch (JsonProcessingException e) {
             throw new InternalServerException(e.getMessage(), e);
         }
@@ -77,8 +77,8 @@ public final class DbToRmFormat {
      * FROM comp_data as d
      * WHERE (
      *   p.vo_id = d.vo_id
-     *   AND p.entity_idx <= d.entity_idx
-     *   AND p.entity_idx_cap > d.entity_idx
+     *   AND p.num <= d.num
+     *   AND p.num_cap >= d.entity_idx
      * )
      * GROUP BY d.vo_id
      * </pre></code>
@@ -102,8 +102,8 @@ public final class DbToRmFormat {
      * FROM comp_data as d
      * WHERE (
      *   p.vo_id = d.vo_id
-     *   AND p.entity_idx <= d.entity_idx
-     *   AND p.entity_idx_cap > d.entity_idx
+     *   AND p.num <= d.num
+     *   AND p.num_cap > d.num
      * )
      * GROUP BY d.vo_id
      * </pre></code>
@@ -138,7 +138,7 @@ public final class DbToRmFormat {
 
         ObjectNode decoded = decodeKeys(dbRoot);
 
-        return CanonicalJson.MARSHAL_OM.convertValue(decoded, rmType);
+        return RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
     }
 
     static DbJsonPath remainingPath(int prefixLen, String fullPathStr) {

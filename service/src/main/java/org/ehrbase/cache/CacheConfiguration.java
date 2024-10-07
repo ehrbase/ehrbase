@@ -78,7 +78,7 @@ public class CacheConfiguration {
                 Caffeine.newBuilder().build());
     }
 
-    private static Caffeine<Object, Object> configureCache(
+    protected static Caffeine<Object, Object> configureCache(
             Caffeine<Object, Object> caffeine, CacheProperties.CacheConfig cacheConfig) {
 
         if (cacheConfig.getExpireAfterWrite() != null) {
@@ -110,7 +110,7 @@ public class CacheConfiguration {
     }
 
     public static class CustomTxAwareCacheManagerProxy implements CacheManager {
-        private CacheManager targetCacheManager;
+        private final CacheManager targetCacheManager;
 
         /**
          * Create a new TransactionAwareCacheManagerProxy for the given target CacheManager.
@@ -122,6 +122,10 @@ public class CacheConfiguration {
                 throw new IllegalArgumentException("Property 'targetCacheManager' is required");
             }
             this.targetCacheManager = targetCacheManager;
+        }
+
+        public CacheManager getTargetCacheManager() {
+            return targetCacheManager;
         }
 
         @Override

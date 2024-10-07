@@ -17,24 +17,18 @@
  */
 package org.ehrbase.application;
 
-import org.ehrbase.configuration.EhrBaseConfiguration;
+import java.util.Arrays;
+import org.ehrbase.application.cli.EhrBaseCli;
+import org.ehrbase.application.server.EhrBaseServer;
+import org.ehrbase.cli.CliRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(
-        exclude = {
-            ManagementWebSecurityAutoConfiguration.class,
-            R2dbcAutoConfiguration.class,
-            SecurityAutoConfiguration.class
-        })
-@Import({EhrBaseConfiguration.class})
 public class EhrBase {
 
     public static void main(String[] args) {
-        SpringApplication.run(EhrBase.class, args);
+
+        SpringApplication app =
+                Arrays.asList(args).contains(CliRunner.CLI) ? EhrBaseCli.build(args) : EhrBaseServer.build(args);
+        app.run(args);
     }
 }

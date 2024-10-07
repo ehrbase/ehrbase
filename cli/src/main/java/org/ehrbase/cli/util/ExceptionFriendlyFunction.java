@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,20 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.plugin.repository;
+package org.ehrbase.cli.util;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+@FunctionalInterface
+public interface ExceptionFriendlyFunction<T, R> {
 
-public interface KeyValueEntryRepository {
-    public List<KeyValueEntry> findByPluginId(String uid);
-
-    public Optional<KeyValueEntry> findByPluginIdAndKey(String id, String key);
-
-    public Optional<KeyValueEntry> findBy(UUID uid);
-
-    public KeyValueEntry save(KeyValueEntry kve);
-
-    public boolean deleteBy(UUID uid);
+    @SuppressWarnings("java:S112")
+    R apply(T value) throws Exception;
 }

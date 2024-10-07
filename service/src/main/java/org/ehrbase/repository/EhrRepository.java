@@ -22,7 +22,6 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION_HISTORY;
-import static org.ehrbase.repository.EhrFolderRepository.NOT_MATCH_LATEST_VERSION;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
@@ -50,7 +48,6 @@ import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
-import org.jooq.Result;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
@@ -73,13 +70,10 @@ public class EhrRepository
     public static final String[] SUBJECT_NAMESPACE_JSON_PATH =
             RmAttribute.rmToJsonPathParts("subject/external_ref/namespace");
 
-    private final PartyProxyRepository partyProxyRepository;
-
     public EhrRepository(
             DSLContext context,
             ContributionRepository contributionRepository,
             SystemService systemService,
-            PartyProxyRepository partyProxyRepository,
             TimeProvider timeProvider) {
 
         super(
@@ -92,7 +86,6 @@ public class EhrRepository
                 contributionRepository,
                 systemService,
                 timeProvider);
-        this.partyProxyRepository = partyProxyRepository;
     }
 
     @Override
@@ -119,8 +112,9 @@ public class EhrRepository
                 r -> r.setEhrId(ehrId));
     }
 
+    @Override
     public boolean hasEhr(UUID ehrId) {
-        return context.fetchExists(Ehr.EHR_, Ehr.EHR_.ID.eq(ehrId));
+        return super.hasEhr(ehrId);
     }
 
     public Boolean fetchIsModifiable(UUID ehrId) {
@@ -148,15 +142,6 @@ public class EhrRepository
         return dataRootCondition(dataTable)
                 .and(jsonDataField(dataTable, SUBJECT_ID_JSON_PATH).eq(subjectId))
                 .and(jsonDataField(dataTable, SUBJECT_NAMESPACE_JSON_PATH).eq(nameSpace));
-    }
-
-    public Optional<EhrStatus> findByVersion(UUID ehrId, UUID statusVersion, int version) {
-
-        return findByVersion(
-                        singleEhrStatusCondition(ehrId, tables.dataHead()),
-                        singleEhrStatusCondition(ehrId, tables.dataHistory()),
-                        version)
-                .filter(e -> UUID.fromString(e.getUid().getRoot().getValue()).equals(statusVersion));
     }
 
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, OffsetDateTime time) {
@@ -216,46 +201,25 @@ public class EhrRepository
     @Transactional
     public void update(UUID ehrId, EhrStatus ehrStatus, @Nullable UUID contributionId, @Nullable UUID auditId) {
 
-        Result<EhrStatusVersionHistoryRecord> headRecords =
-                findVersionHeadRecords(singleEhrStatusCondition(ehrId, tables.versionHead()));
-
-        EhrStatusVersionHistoryRecord versionHead = headRecords.getFirst();
-        if (versionHead.getSysVersion() + 1 != extractVersion(ehrStatus.getUid())) {
-            throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
-        }
-
-        copyHeadToHistory(versionHead, timeProvider.getNow());
-        deleteHead(
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                versionHead.getSysVersion(),
-                PreconditionFailedException::new);
-
-        commitHead(
+        update(
                 ehrId,
                 ehrStatus,
+                singleEhrStatusCondition(ehrId, tables.versionHead()),
+                singleEhrStatusCondition(ehrId, tables.versionHistory()),
                 contributionId,
                 auditId,
-                ContributionChangeType.modification,
                 r -> {},
-                r -> r.setEhrId(ehrId));
+                r -> r.setEhrId(ehrId),
+                "No EHR_STATUS in ehr: %s".formatted(ehrId));
     }
 
     public Optional<VersionedEhrStatus> getVersionedEhrStatus(UUID ehrId) {
 
-        return findRootRecordByVersion(ehrId, 1).map(root -> {
-            VersionedEhrStatus versionedComposition = new VersionedEhrStatus();
-            versionedComposition.setUid(new HierObjectId(root.getVoId().toString()));
-            versionedComposition.setOwnerId(new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"));
-            versionedComposition.setTimeCreated(new DvDateTime(root.getSysPeriodLower()));
-            return versionedComposition;
-        });
-    }
-
-    private Optional<EhrStatusVersionHistoryRecord> findRootRecordByVersion(UUID ehrId, int version) {
         return findRootRecordByVersion(
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()),
-                version);
+                        singleEhrStatusCondition(ehrId, tables.versionHead()),
+                        singleEhrStatusCondition(ehrId, tables.versionHistory()),
+                        1)
+                .map(root -> recordToVersionedEhrStatus(ehrId, root));
     }
 
     private Condition singleEhrStatusCondition(UUID ehrId, Table<?> table) {
@@ -266,5 +230,13 @@ public class EhrRepository
     @Override
     protected Class<EhrStatus> getLocatableClass() {
         return EhrStatus.class;
+    }
+
+    private static VersionedEhrStatus recordToVersionedEhrStatus(UUID ehrId, EhrStatusVersionHistoryRecord record) {
+        VersionedEhrStatus versionedComposition = new VersionedEhrStatus();
+        versionedComposition.setUid(new HierObjectId(record.getVoId().toString()));
+        versionedComposition.setOwnerId(new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"));
+        versionedComposition.setTimeCreated(new DvDateTime(record.getSysPeriodLower()));
+        return versionedComposition;
     }
 }

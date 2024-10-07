@@ -22,6 +22,8 @@ import org.ehrbase.openehr.sdk.response.dto.MetaData;
 
 public interface AqlQueryContext {
 
+    String BEAN_NAME = "scopedAqlQueryContext";
+
     interface MetaProperty {
         String propertyName();
     }
@@ -29,6 +31,9 @@ public interface AqlQueryContext {
     enum EhrbaseMetaProperty implements MetaProperty {
         OFFSET("offset"),
         FETCH("fetch"),
+        DEFAULT_LIMIT("default-limit"),
+        MAX_LIMIT("max-limit"),
+        MAX_FETCH("max-fetch"),
         RESULT_SIZE("resultsize"),
         DRY_RUN("dry_run"),
         EXECUTED_SQL("executed_sql"),

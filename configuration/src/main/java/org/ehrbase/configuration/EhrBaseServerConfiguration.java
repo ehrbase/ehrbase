@@ -29,8 +29,9 @@ import org.springframework.context.annotation.Import;
 @ComponentScan
 @Import({
     ServiceModuleConfiguration.class,
-    RestEHRScapeModuleConfiguration.class,
     RestModuleConfiguration.class,
-    AqlEngineModuleConfiguration.class
+    RestEHRScapeModuleConfiguration.class,
+    AqlEngineModuleConfiguration.class,
 })
-public class EhrBaseConfiguration {}
+// @ComponentScan("org.ehrbase.configuration")
+public class EhrBaseServerConfiguration {}

@@ -88,12 +88,14 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
     public void addOrderBy(AslField field, SortOrder sortOrder, boolean usesAggregateFunctionOrDistinct) {
         getOrderByFields().add(new AslOrderByField(field, sortOrder));
 
-        if (usesAggregateFunctionOrDistinct && !getGroupByFields().contains(field)) {
-            if (field instanceof AslDvOrderedColumnField f) {
-                getGroupByDvOrderedMagnitudeFields().add(f);
-            } else {
-                getGroupByFields().add(field);
+        field.fieldsForAggregation(this).forEach(f -> {
+            if (usesAggregateFunctionOrDistinct && !getGroupByFields().contains(f)) {
+                if (field instanceof AslDvOrderedColumnField df) {
+                    getGroupByDvOrderedMagnitudeFields().add(df);
+                } else {
+                    getGroupByFields().add(f);
+                }
             }
-        }
+        });
     }
 }
