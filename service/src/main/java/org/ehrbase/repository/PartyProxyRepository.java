@@ -32,6 +32,7 @@ import javax.annotation.Nonnull;
 import org.ehrbase.jooq.pg.tables.records.CommitterRecord;
 import org.ehrbase.jooq.pg.tables.records.UsersRecord;
 import org.ehrbase.openehr.dbformat.VersionedObjectDataStructure;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.service.UserService.UserAndCommitterId;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
@@ -94,8 +95,7 @@ public class PartyProxyRepository {
     @Transactional(propagation = Propagation.MANDATORY)
     public UUID findOrCreateCommitter(PartyProxy party) {
 
-        String dbJson = VersionedObjectDataStructure.applyRmAliases(
-                        VersionedObjectDataStructure.MARSHAL_OM.valueToTree(party))
+        String dbJson = VersionedObjectDataStructure.applyRmAliases(RmDbJson.MARSHAL_OM.valueToTree(party))
                 .toString();
 
         return context.select(COMMITTER.ID)

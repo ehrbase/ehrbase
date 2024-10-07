@@ -204,10 +204,8 @@ public class ContributionServiceImp implements ContributionService {
     private UUID saveAuditDetails(final AuditDetails audit, final AuditDetailsTargetType targetType) {
 
         PartyProxy committer = audit.getCommitter();
-        UUID committerId = cacheProvider.get(
-                CacheProvider.COMMITTER_ID_CACHE,
-                committer,
-                () -> partyProxyRepository.findOrCreateCommitter(committer));
+        UUID committerId = CacheProvider.COMMITTER_ID_CACHE.get(
+                cacheProvider, committer, () -> partyProxyRepository.findOrCreateCommitter(committer));
         return contributionRepository.createAudit(committerId, audit, targetType);
     }
 
@@ -267,7 +265,7 @@ public class ContributionServiceImp implements ContributionService {
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
-        UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
+        UUID audit = saveAuditDetails(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
 
         switch (changeType) {
             case CREATION ->

@@ -46,19 +46,6 @@ public final class VersionedObjectDataStructure {
      */
     public static final String MAGNITUDE_FIELD = "_magnitude";
 
-    public static final ObjectMapper MARSHAL_OM = CanonicalJson.MARSHAL_OM
-            .copy()
-            .setDefaultTyping(
-                    new ObjectMapper.DefaultTypeResolverBuilder(ObjectMapper.DefaultTyping.EVERYTHING) {
-                        @Override
-                        public boolean useForType(JavaType t) {
-                            return OpenEHRBase.class.isAssignableFrom(t.getRawClass());
-                        }
-                    }.init(JsonTypeInfo.Id.NAME, new CanonicalJson.CJOpenEHRTypeNaming())
-                            .typeProperty(RmAttribute.OBJ_TYPE.attribute())
-                            .typeIdVisibility(true)
-                            .inclusion(JsonTypeInfo.As.PROPERTY));
-
     private VersionedObjectDataStructure() {}
 
     public static List<StructureNode> createDataStructure(RMObject rmObject) {

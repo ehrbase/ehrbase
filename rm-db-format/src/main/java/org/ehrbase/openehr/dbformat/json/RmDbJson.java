@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.nedap.archie.base.OpenEHRBase;
-import org.ehrbase.openehr.dbformat.DbToRmFormat;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 
 public class RmDbJson {
@@ -52,7 +52,7 @@ public class RmDbJson {
         public static TypeResolverBuilder build() {
             return new OpenEHRBaseTypeResolverBuilder()
                     .init(JsonTypeInfo.Id.NAME, new CanonicalJson.CJOpenEHRTypeNaming())
-                    .typeProperty(DbToRmFormat.TYPE_ATTRIBUTE)
+                    .typeProperty(RmAttribute.OBJ_TYPE.attribute())
                     .typeIdVisibility(true)
                     .inclusion(JsonTypeInfo.As.PROPERTY);
         }

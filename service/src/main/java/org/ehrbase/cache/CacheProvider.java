@@ -25,13 +25,15 @@ import java.util.function.Supplier;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.service.UserService.UserAndCommitterId;
 import org.springframework.cache.Cache;
 
 public interface CacheProvider {
     EhrBaseCache<String, WebTemplate> INTROSPECT_CACHE = new EhrBaseCache<>("introspectCache");
     EhrBaseCache<String, UUID> TEMPLATE_ID_UUID_CACHE = new EhrBaseCache<>("TemplateIdUuidCache");
     EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE = new EhrBaseCache<>("TemplateUuidIdCache");
-    EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache");
+    EhrBaseCache<String, UserAndCommitterId> USER_ID_CACHE = new EhrBaseCache<>("userIdCache");
+    EhrBaseCache<PartyProxy, UUID> COMMITTER_ID_CACHE = new EhrBaseCache<>("CommitterIdCache");
     EhrBaseCache<String, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =
             new EhrBaseCache<>("externalFhirTerminologyCache");
     EhrBaseCache<String, QueryDefinitionResultDto> STORED_QUERY_CACHE = new EhrBaseCache<>("StoredQueryCache");

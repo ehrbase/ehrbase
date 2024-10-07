@@ -67,10 +67,10 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
+import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
 import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.RmType;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
-import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -187,6 +187,8 @@ final class ConditionUtils {
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Path child condition not applicable to AUDIT_DETAILS");
             case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
+            case COMMITTER -> throw new IllegalArgumentException(
+                    "Path child condition not applicable to AUDIT_DETAILS.committer");
         };
     }
 
