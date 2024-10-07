@@ -467,10 +467,12 @@ public class AqlSqlQueryBuilder {
 
             if (!aslFields.isEmpty()) {
                 throw new IllegalStateException(
-                        "StructureQueryBase without version can only contains AslColumnFields columns %s"
+                        "StructureQueryBase without version can only contains AslColumnFields columns %s are not allowed"
                                 .formatted(aslFields.values().stream()
                                         .flatMap(Collection::stream)
-                                        .map(AslField::getExtractedColumn)));
+                                        .map(Object::getClass)
+                                        .map(Class::getSimpleName)
+                                        .toList()));
             }
 
             step = DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
