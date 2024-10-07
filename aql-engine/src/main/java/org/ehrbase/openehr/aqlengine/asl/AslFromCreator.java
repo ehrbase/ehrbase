@@ -165,8 +165,8 @@ final class AslFromCreator {
         if (isOriginalVersion || parentType == AslSourceRelation.EHR) {
             requiresVersionJoin = true;
         }
-        // FOLDER CONTAINS COMPOSITION requires Composition version
-        else if (sourceRelation == AslSourceRelation.COMPOSITION && parentType == AslSourceRelation.FOLDER) {
+        // FOLDER CONTAINS FOLDER/COMPOSITION requires either Folder or Composition version to be present
+        else if (parentType == AslSourceRelation.FOLDER) {
             requiresVersionJoin = true;
         } else if (currentParent != null || sourceRelation == AslSourceRelation.EHR) {
             requiresVersionJoin = false;
