@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import java.util.Optional;
-import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.repository.PartyProxyRepository;
@@ -53,21 +52,21 @@ public class UserServiceImp implements UserService {
      * @return UUID of default user, derived from authenticated user.
      */
     @Override
-    public UUID getCurrentUserId() {
+    public UserAndCommitterId getCurrentUserAndCommitterId() {
         String key = authenticationFacade.getAuthentication().getName();
-        return CacheProvider.USER_ID_CACHE.get(cacheProvider, key, () -> getOrCreateCurrentUserIdSync(key));
+        return CacheProvider.USER_ID_CACHE.get(cacheProvider, key, () -> getOrCreateCurrentUserId(key));
     }
 
-    private UUID getOrCreateCurrentUserIdSync(String key) {
+    private UserAndCommitterId getOrCreateCurrentUserId(String key) {
 
         return partyProxyRepository
-                .findInternalUserId(key)
+                .findInternalUserAndCommitterId(key)
                 .or(() -> {
                     try {
                         return Optional.of(partyProxyRepository.createInternalUser(key));
-                    } catch (DataIntegrityViolationException ex) {
-                        logger.info(ex.getMessage(), ex.getMessage());
-                        return partyProxyRepository.findInternalUserId(key);
+                    } catch (DataIntegrityViolationException e) {
+                        logger.info(e.getMessage(), e);
+                        return partyProxyRepository.findInternalUserAndCommitterId(key);
                     }
                 })
                 .orElseThrow(() -> new InternalServerException("Cannot create User"));

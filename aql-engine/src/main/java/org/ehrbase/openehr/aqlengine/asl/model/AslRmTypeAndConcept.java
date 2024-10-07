@@ -17,7 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model;
 
-import org.ehrbase.openehr.dbformat.RmTypeAlias;
+import org.ehrbase.openehr.dbformat.RmType;
 
 /**
  * archetypeNodeId maps to rm entity and entity concept columns
@@ -39,7 +39,7 @@ public record AslRmTypeAndConcept(String aliasedRmType, String concept) {
             if (pos < 0) {
                 throw new IllegalArgumentException("Archetype id is not valid: " + archetypeNodeId);
             }
-            String alias = RmTypeAlias.optionalAlias(archetypeNodeId.substring(ARCHETYPE_PREFIX.length(), pos))
+            String alias = RmType.optionalAlias(archetypeNodeId.substring(ARCHETYPE_PREFIX.length(), pos))
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Archetype id for unsupported/unknown RM type: " + archetypeNodeId));
             String concept = archetypeNodeId.substring(pos);

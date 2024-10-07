@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+* Support for AQL on `VERSION.commit_audit.committer` paths ([#1264](https://github.com/ehrbase/ehrbase/pull/1264))
  ### Changed 
  ### Fixed 
 

@@ -23,6 +23,7 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
@@ -43,6 +44,7 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
@@ -53,6 +55,7 @@ import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
+import org.ehrbase.repository.PartyProxyRepository;
 import org.ehrbase.service.contribution.ContributionServiceHelper;
 import org.ehrbase.service.contribution.ContributionWrapper;
 import org.ehrbase.util.UuidGenerator;
@@ -65,18 +68,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ContributionServiceImp implements ContributionService {
 
-    // the version list in a contribution adds a type tag to each item, so the specific object is distinguishable
     private final CompositionService compositionService;
     private final EhrService ehrService;
     private final InternalDirectoryService folderService;
-
     private final ValidationService validationService;
+
     private final ContributionRepository contributionRepository;
     private final CompositionRepository compositionRepository;
-
     private final EhrFolderRepository ehrFolderRepository;
-
     private final EhrRepository ehrRepository;
+    private final PartyProxyRepository partyProxyRepository;
+
+    private final CacheProvider cacheProvider;
 
     public enum SupportedVersionedObject {
         COMPOSITION,
@@ -93,7 +96,9 @@ public class ContributionServiceImp implements ContributionService {
             ContributionRepository contributionRepository,
             CompositionRepository compositionRepository,
             EhrFolderRepository ehrFolderRepository,
-            EhrRepository ehrRepository) {
+            EhrRepository ehrRepository,
+            PartyProxyRepository partyProxyRepository,
+            CacheProvider cacheProvider) {
 
         this.compositionService = compositionService;
         this.ehrService = ehrService;
@@ -103,6 +108,8 @@ public class ContributionServiceImp implements ContributionService {
         this.compositionRepository = compositionRepository;
         this.ehrFolderRepository = ehrFolderRepository;
         this.ehrRepository = ehrRepository;
+        this.partyProxyRepository = partyProxyRepository;
+        this.cacheProvider = cacheProvider;
     }
 
     /**
@@ -136,15 +143,13 @@ public class ContributionServiceImp implements ContributionService {
 
         validationService.check(contribution);
 
-        UUID auditUuid =
-                contributionRepository.createAudit(contribution.getAudit(), AuditDetailsTargetType.CONTRIBUTION);
-
         UUID contributionUuid = Optional.of(contribution)
                 .map(ContributionCreateDto::getUid)
                 .map(ObjectId::getValue)
                 .map(UUID::fromString)
                 .orElseGet(UuidGenerator::randomUUID);
 
+        UUID auditUuid = saveAuditDetails(contribution.getAudit(), AuditDetailsTargetType.CONTRIBUTION);
         UUID contributionId = contributionRepository.createContribution(
                 ehrId, contributionUuid, ContributionDataType.other, auditUuid);
 
@@ -196,6 +201,14 @@ public class ContributionServiceImp implements ContributionService {
         return contributionId;
     }
 
+    private UUID saveAuditDetails(final AuditDetails audit, final AuditDetailsTargetType targetType) {
+
+        PartyProxy committer = audit.getCommitter();
+        UUID committerId = CacheProvider.COMMITTER_ID_CACHE.get(
+                cacheProvider, committer, () -> partyProxyRepository.findOrCreateCommitter(committer));
+        return contributionRepository.createAudit(committerId, audit, targetType);
+    }
+
     private static final String ERR_VER_INVALID = "Invalid version object in contribution: %s not supported.";
 
     private static final String ERR_UNSUP_CHANGE_TYPE = "ChangeType[%s] not Supported.";
@@ -215,7 +228,7 @@ public class ContributionServiceImp implements ContributionService {
                 ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
-        UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.EHR_STATUS);
+        UUID audit = saveAuditDetails(version.getCommitAudit(), AuditDetailsTargetType.EHR_STATUS);
 
         switch (changeType) {
             case CREATION ->
@@ -252,7 +265,7 @@ public class ContributionServiceImp implements ContributionService {
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
-        UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
+        UUID audit = saveAuditDetails(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
 
         switch (changeType) {
             case CREATION ->
@@ -279,7 +292,7 @@ public class ContributionServiceImp implements ContributionService {
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
-        UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.EHR_FOLDER);
+        UUID audit = saveAuditDetails(version.getCommitAudit(), AuditDetailsTargetType.EHR_FOLDER);
 
         switch (changeType) {
             case CREATION ->
@@ -356,14 +369,12 @@ public class ContributionServiceImp implements ContributionService {
 
         // COMPOSITION?
         if (compositionService.exists(objectUid)) {
-            UUID audit =
-                    contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
+            UUID audit = saveAuditDetails(version.getCommitAudit(), AuditDetailsTargetType.COMPOSITION);
             compositionService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
 
             // FOLDER?
         } else if (isFolderPresent(ehrId, version.getPrecedingVersionUid())) {
-            UUID audit =
-                    contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.EHR_FOLDER);
+            UUID audit = saveAuditDetails(version.getCommitAudit(), AuditDetailsTargetType.EHR_FOLDER);
             compositionService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
         } else {
             throw new ObjectNotFoundException(

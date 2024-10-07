@@ -44,6 +44,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.pathanalysis.ANode;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathAnalysis;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
@@ -203,15 +204,21 @@ final class FeatureCheckUtils {
                                     .formatted(clauseType, path.render(), containmentType)));
         }
 
-        List<String> pathAttributes = path.getPathNodes().stream()
+        List<String> attributePath = path.getPathNodes().stream()
                 .map(AqlObjectPath.PathNode::getAttribute)
                 .toList();
         // if VERSION check supported paths list first
         if (isVersionPath
-                && SUPPORTED_VERSION_PATHS.stream()
-                        .filter(p -> p.getRight().contains(clauseType))
-                        .map(Pair::getLeft)
-                        .noneMatch(p -> p.equals(pathAttributes))) {
+                && !(SUPPORTED_VERSION_PATHS.stream()
+                                .filter(p -> p.getRight().contains(clauseType))
+                                .map(Pair::getLeft)
+                                .anyMatch(p -> p.equals(attributePath))
+                        ||
+                        // path starts with commit_audit/committer
+                        attributePath
+                                .subList(0, Math.min(2, attributePath.size()))
+                                .equals(List.of(
+                                        RmAttribute.COMMIT_AUDIT.attribute(), RmAttribute.COMMITTER.attribute())))) {
             throw new AqlFeatureNotImplementedException("%s: VERSION path %s/%s is not supported"
                     .formatted(clauseType, root.getIdentifier(), path.render()));
         }
@@ -232,7 +239,7 @@ final class FeatureCheckUtils {
         final List<AqlObjectPath.PathNode> pathNodes = path.getPathNodes();
         for (int i = 0; i < pathNodes.size(); i++) {
             AqlObjectPath.PathNode pathNode = pathNodes.get(i);
-            String attribute = pathAttributes.get(i);
+            String attribute = attributePath.get(i);
             ANode analyzedParent = analyzed;
             analyzed = analyzed.getAttribute(attribute);
             level++;

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRoot;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
@@ -94,7 +95,8 @@ public final class AslStructureQuery extends AslQuery {
         EHR_STATUS(StructureRoot.EHR_STATUS, EHR_STATUS_VERSION, EHR_STATUS_DATA),
         COMPOSITION(StructureRoot.COMPOSITION, COMP_VERSION, COMP_DATA),
         FOLDER(StructureRoot.FOLDER, EHR_FOLDER_VERSION, EHR_FOLDER_DATA),
-        AUDIT_DETAILS(null, null, Tables.AUDIT_DETAILS);
+        AUDIT_DETAILS(null, null, Tables.AUDIT_DETAILS),
+        COMMITTER(null, null, Tables.COMMITTER);
 
         private static final Map<StructureRoot, AslSourceRelation> BY_STRUCTURE_ROOT =
                 new EnumMap<>(StructureRoot.class);
@@ -171,7 +173,8 @@ public final class AslStructureQuery extends AslQuery {
         this.requiresVersionTableJoin = requiresVersionTableJoin;
         fields.forEach(this::addField);
         this.alias = alias;
-        if (type != AslSourceRelation.EHR && type != AslSourceRelation.AUDIT_DETAILS) {
+        if (!EnumSet.of(AslSourceRelation.EHR, AslSourceRelation.AUDIT_DETAILS, AslSourceRelation.COMMITTER)
+                .contains(type)) {
             if (!rmTypes.isEmpty()) {
                 List<String> aliasedRmTypes = rmTypes.stream()
                         .map(StructureRmType::getAliasOrTypeName)
@@ -196,7 +199,7 @@ public final class AslStructureQuery extends AslQuery {
                 this.structureConditions.add(new AslFieldValueQueryCondition(
                         new AslColumnField(String.class, ENTITY_ATTRIBUTE, FieldSource.withOwner(this), false),
                         AslConditionOperator.EQ,
-                        List.of(RmAttributeAlias.getAlias(attribute))));
+                        List.of(RmAttribute.getAlias(attribute))));
             }
         }
     }

@@ -31,7 +31,7 @@ import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
-import org.ehrbase.openehr.dbformat.RmTypeAlias;
+import org.ehrbase.openehr.dbformat.RmType;
 import org.ehrbase.openehr.sdk.util.OpenEHRDateTimeSerializationUtils;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.Record;
@@ -93,7 +93,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
             // at or id code
             return entityConcept;
         }
-        String rmType = RmTypeAlias.getRmType((String) srcRow.get(1));
+        String rmType = RmType.getRmType((String) srcRow.get(1));
         return AslRmTypeAndConcept.ARCHETYPE_PREFIX + rmType + entityConcept;
     }
 

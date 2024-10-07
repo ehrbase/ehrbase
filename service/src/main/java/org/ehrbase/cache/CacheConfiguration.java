@@ -66,6 +66,10 @@ public class CacheConfiguration {
                 configureCache(Caffeine.newBuilder(), cacheProperties.getUserIdCacheConfig())
                         .build());
         cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.COMMITTER_ID_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getCommitterIdCacheConfig())
+                        .build());
+        cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE),
                 configureCache(Caffeine.newBuilder(), cacheProperties.getExternalFhirTerminologyCacheConfig())
                         .build());

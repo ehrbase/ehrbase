@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 /**
  * For the database: Shorter aliases for RmObject types
  */
-public record RmTypeAlias(String type, String alias, boolean structureAlias) {
+public record RmType(String type, String alias, boolean structureAlias) {
 
-    static final List<RmTypeAlias> values = List.of(
+    static final List<RmType> values = List.of(
             structureAlias(StructureRmType.COMPOSITION),
             structureAlias(StructureRmType.FOLDER),
             structureAlias(StructureRmType.EHR_STATUS),
@@ -102,16 +102,16 @@ public record RmTypeAlias(String type, String alias, boolean structureAlias) {
     private static Map<String, String> alias2type;
 
     static {
-        type2alias = values.stream().collect(Collectors.toMap(RmTypeAlias::type, RmTypeAlias::alias));
-        alias2type = values.stream().collect(Collectors.toMap(RmTypeAlias::alias, RmTypeAlias::type));
+        type2alias = values.stream().collect(Collectors.toMap(RmType::type, RmType::alias));
+        alias2type = values.stream().collect(Collectors.toMap(RmType::alias, RmType::type));
     }
 
-    private static RmTypeAlias structureAlias(StructureRmType sType) {
-        return new RmTypeAlias(sType.name(), sType.getAlias(), true);
+    private static RmType structureAlias(StructureRmType sType) {
+        return new RmType(sType.name(), sType.getAlias(), true);
     }
 
-    private static RmTypeAlias alias(String type, String alias) {
-        return new RmTypeAlias(type, alias, false);
+    private static RmType alias(String type, String alias) {
+        return new RmType(type, alias, false);
     }
 
     public static String getAlias(String type) {

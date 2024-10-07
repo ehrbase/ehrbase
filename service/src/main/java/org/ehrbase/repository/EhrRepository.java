@@ -43,7 +43,7 @@ import org.ehrbase.jooq.pg.tables.records.EhrStatusDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionRecord;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -65,11 +65,10 @@ public class EhrRepository
                 EhrStatusDataHistoryRecord,
                 EhrStatus> {
 
-    public static final String[] IS_MODIFIABLE_JSON_PATH = RmAttributeAlias.rmToJsonPathParts("is_modifiable");
-    public static final String[] SUBJECT_ID_JSON_PATH =
-            RmAttributeAlias.rmToJsonPathParts("subject/external_ref/id/value");
+    public static final String[] IS_MODIFIABLE_JSON_PATH = RmAttribute.rmToJsonPathParts("is_modifiable");
+    public static final String[] SUBJECT_ID_JSON_PATH = RmAttribute.rmToJsonPathParts("subject/external_ref/id/value");
     public static final String[] SUBJECT_NAMESPACE_JSON_PATH =
-            RmAttributeAlias.rmToJsonPathParts("subject/external_ref/namespace");
+            RmAttribute.rmToJsonPathParts("subject/external_ref/namespace");
 
     public EhrRepository(
             DSLContext context,

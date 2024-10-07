@@ -54,7 +54,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.jooq.Condition;
@@ -280,7 +280,7 @@ public class AqlSqlQueryBuilder {
 
         Table<?> data;
         Function<String, Field<JSONB>> dataFieldProvider;
-        if (base instanceof AslStructureQuery baseSq) {
+        if (base instanceof AslStructureQuery baseSq && baseSq.getType() != AslSourceRelation.COMMITTER) {
             data = baseSq.getType().getDataTable().as(subqueryAlias(aslData));
             dataFieldProvider = __ -> data.field(ObjectDataTablePrototype.INSTANCE.DATA);
         } else {
@@ -293,7 +293,7 @@ public class AqlSqlQueryBuilder {
                 .map(f -> pathDataField(aslData, f, dataFieldProvider))
                 .toList());
 
-        if (base instanceof AslStructureQuery) {
+        if (base instanceof AslStructureQuery baseSq && baseSq.getType() != AslSourceRelation.COMMITTER) {
             // primary key condition
             List<Condition> pkeyCondition = data.getPrimaryKey().getFields().stream()
                     .map(f -> FieldUtils.aliasedField(targetTable, aslData, f).eq((Field) data.field(f)))
@@ -324,7 +324,7 @@ public class AqlSqlQueryBuilder {
             List<PathNode> pathNodes, boolean multipleValued, Field<JSONB> jsonbField) {
         Iterator<String> attributeIt = pathNodes.stream()
                 .map(PathNode::getAttribute)
-                .map(RmAttributeAlias::getAlias)
+                .map(RmAttribute::getAlias)
                 .iterator();
 
         Field<JSONB> field = jsonbField;
@@ -397,7 +397,7 @@ public class AqlSqlQueryBuilder {
         if (hasVersionTable) {
             // join version and data table
             step = switch (aq.getType()) {
-                case EHR, AUDIT_DETAILS -> throw new IllegalArgumentException(
+                case EHR, AUDIT_DETAILS, COMMITTER -> throw new IllegalArgumentException(
                         "%s has no version table".formatted(aq.getType()));
                 case EHR_STATUS -> step.join(dataTable, JoinType.JOIN)
                         .on(primaryTable.field(EHR_STATUS_VERSION.EHR_ID).eq(dataTable.field(EHR_STATUS_DATA.EHR_ID)));

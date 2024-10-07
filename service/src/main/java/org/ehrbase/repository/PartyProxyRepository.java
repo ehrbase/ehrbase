@@ -17,6 +17,7 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.Tables.COMMITTER;
 import static org.ehrbase.jooq.pg.Tables.USERS;
 
 import com.nedap.archie.rm.datavalues.DvIdentifier;
@@ -27,10 +28,18 @@ import com.nedap.archie.rm.support.identification.PartyRef;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nonnull;
+import org.ehrbase.jooq.pg.tables.records.CommitterRecord;
 import org.ehrbase.jooq.pg.tables.records.UsersRecord;
+import org.ehrbase.openehr.dbformat.VersionedObjectDataStructure;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
+import org.ehrbase.service.UserService.UserAndCommitterId;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.jooq.Record1;
+import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,13 +62,13 @@ public class PartyProxyRepository {
      * @param username
      * @return
      */
-    public Optional<UUID> findInternalUserId(String username) {
+    public Optional<UserAndCommitterId> findInternalUserAndCommitterId(String username) {
 
-        return context.select(USERS.ID)
+        return context.select(USERS.ID, USERS.COMMITTER_ID)
                 .from(USERS)
                 .where(USERS.USERNAME.eq(username))
                 .fetchOptional()
-                .map(Record1::value1);
+                .map(r -> new UserAndCommitterId(r.value1(), r.value2()));
     }
 
     /**
@@ -69,7 +78,7 @@ public class PartyProxyRepository {
      * @return
      */
     @Transactional(propagation = Propagation.MANDATORY)
-    public UUID createInternalUser(String username) {
+    public UserAndCommitterId createInternalUser(String username) {
 
         UUID uuid = UuidGenerator.randomUUID();
 
@@ -77,20 +86,40 @@ public class PartyProxyRepository {
 
         usersRecord.setId(uuid);
         usersRecord.setUsername(username);
+        usersRecord.setCommitterId(findOrCreateCommitter(partyIdentifiedForUser(uuid, username)));
         usersRecord.store();
 
-        return uuid;
+        return new UserAndCommitterId(uuid, usersRecord.getCommitterId());
     }
 
-    public PartyProxy fromUser(UUID userId) {
+    @Transactional(propagation = Propagation.MANDATORY)
+    public UUID findOrCreateCommitter(PartyProxy party) {
 
-        String username = context.select(USERS.USERNAME)
-                .from(USERS)
-                .where(USERS.ID.eq(userId))
-                .fetchOptional()
-                .map(Record1::value1)
-                .orElseThrow();
+        String dbJson = VersionedObjectDataStructure.applyRmAliases(RmDbJson.MARSHAL_OM.valueToTree(party))
+                .toString();
 
+        return context.select(COMMITTER.ID)
+                .from(COMMITTER)
+                // SQLDataType.CLOB is resolved to PostgresDataType.TEXT, which is necessary to enable index usage
+                .where(COMMITTER
+                        .DATA
+                        .cast(SQLDataType.CLOB)
+                        .eq(DSL.inline(dbJson).cast(JSONB.class).cast(SQLDataType.CLOB)))
+                // The migration did not necessarily eliminate all duplicates, so choose the first matching one
+                .limit(1)
+                .fetchOptional(Record1::value1)
+                .orElseGet(() -> {
+                    CommitterRecord committerRecord = context.newRecord(COMMITTER);
+                    committerRecord.setId(UuidGenerator.randomUUID());
+                    committerRecord.setData(JSONB.valueOf(dbJson));
+                    committerRecord.store();
+
+                    return committerRecord.getId();
+                });
+    }
+
+    @Nonnull
+    private static PartyIdentified partyIdentifiedForUser(UUID userId, String username) {
         DvIdentifier identifier = new DvIdentifier();
 
         identifier.setId(username);

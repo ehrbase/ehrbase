@@ -57,11 +57,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 class DbToRmFormatTest {
 
     @Test
-    void testTypeAlias() {
-        assertThat(DbToRmFormat.TYPE_ALIAS).isEqualTo(RmAttributeAlias.getAlias(DbToRmFormat.TYPE_ATTRIBUTE));
-    }
-
-    @Test
     void toCompositionFromTestIPS() throws IOException {
 
         String data = loadDbOneJson("ips");

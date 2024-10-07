@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.sdk.aql.dto.operand.LongPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
@@ -254,8 +254,8 @@ class PathAnalysisTest {
     @Test
     void testRmAttributeAlias() {
 
-        List<String> rmAttributes = RmAttributeAlias.VALUES.stream()
-                .map(RmAttributeAlias::attribute)
+        List<String> rmAttributes = RmAttribute.VALUES.stream()
+                .map(RmAttribute::attribute)
                 .filter(s -> !List.of(
                                 // synthetic
                                 "_magnitude", "details", "folders", "_type", "_index")

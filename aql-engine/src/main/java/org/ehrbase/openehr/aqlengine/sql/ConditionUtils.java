@@ -18,9 +18,9 @@
 package org.ehrbase.openehr.aqlengine.sql;
 
 import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
+import static org.ehrbase.jooq.pg.Tables.COMMITTER;
 import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
-import static org.ehrbase.openehr.dbformat.DbToRmFormat.TYPE_ATTRIBUTE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +58,9 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslAbstractJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslCommitterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
@@ -66,8 +68,9 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
-import org.ehrbase.openehr.dbformat.RmTypeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
+import org.ehrbase.openehr.dbformat.RmType;
+import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -90,24 +93,31 @@ final class ConditionUtils {
                         desc, conditions, sqlLeft, sqlRight);
                 case AslPathFilterJoinCondition filterCondition -> conditions.add(
                         buildCondition(filterCondition.getCondition(), aslQueryToTable, true));
-                case AslAuditDetailsJoinCondition ac -> conditions.add(FieldUtils.field(
-                                sqlLeft,
-                                aslJoin.getLeft(),
-                                ac.getLeftOwner(),
-                                AslStructureColumn.AUDIT_ID.getFieldName(),
-                                UUID.class,
-                                true)
-                        .eq(FieldUtils.field(
-                                sqlRight,
-                                aslJoin.getRight(),
-                                ac.getRightOwner(),
-                                AUDIT_DETAILS.ID.getName(),
-                                UUID.class,
-                                true)));
+                case AslAuditDetailsJoinCondition ac -> conditions.add(buildForeignKeyJoinCondition(
+                        sqlLeft,
+                        ObjectVersionTablePrototype.INSTANCE.AUDIT_ID,
+                        sqlRight,
+                        AUDIT_DETAILS.ID,
+                        aslJoin,
+                        ac));
+                case AslCommitterJoinCondition cc -> conditions.add(buildForeignKeyJoinCondition(
+                        sqlLeft, AUDIT_DETAILS.COMMITTER_ID, sqlRight, COMMITTER.ID, aslJoin, cc));
             }
         }
 
         return conditions.stream().reduce(DSL.noCondition(), DSL::and);
+    }
+
+    private static Condition buildForeignKeyJoinCondition(
+            Table<?> left,
+            Field<UUID> leftField,
+            Table<?> right,
+            Field<UUID> rightField,
+            AslJoin join,
+            AslAbstractJoinCondition condition) {
+        return FieldUtils.field(left, join.getLeft(), condition.getLeftOwner(), leftField.getName(), UUID.class, true)
+                .eq(FieldUtils.field(
+                        right, join.getRight(), condition.getRightOwner(), rightField.getName(), UUID.class, true));
     }
 
     private static void addDelegatingJoinConditions(
@@ -177,6 +187,8 @@ final class ConditionUtils {
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Path child condition not applicable to AUDIT_DETAILS");
             case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
+            case COMMITTER -> throw new IllegalArgumentException(
+                    "Path child condition not applicable to AUDIT_DETAILS.committer");
         };
     }
 
@@ -270,8 +282,8 @@ final class ConditionUtils {
                                                 isJoinCondition)));
             }
             case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
-            case AUDIT_DETAILS -> throw new IllegalArgumentException(
-                    "Descendant condition not applicable to AUDIT_DETAILS");
+            case AUDIT_DETAILS, COMMITTER -> throw new IllegalArgumentException(
+                    "Descendant condition not applicable to " + parentRelation.name());
         };
     }
 
@@ -342,10 +354,9 @@ final class ConditionUtils {
             Field<JSONB> sqlDvOrderedField = FieldUtils.field(
                     tables.getDataTable(internalProvider), (AslColumnField) field, JSONB.class, useAliases);
             Field<JSONB> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField);
-            Field<String> sqlTypeField =
-                    DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttributeAlias.getAlias(TYPE_ATTRIBUTE));
+            Field<String> sqlTypeField = DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttribute.OBJ_TYPE.alias());
             List<String> types =
-                    dvc.getTypesToCompare().stream().map(RmTypeAlias::getAlias).toList();
+                    dvc.getTypesToCompare().stream().map(RmType::getAlias).toList();
             return applyOperator(AslConditionOperator.IN, sqlTypeField, types)
                     .and(applyOperator(dvc.getOperator(), sqlMagnitudeField, dvc.getValues()));
         }

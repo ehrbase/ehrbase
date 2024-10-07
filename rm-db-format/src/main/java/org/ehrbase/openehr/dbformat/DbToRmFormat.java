@@ -44,10 +44,6 @@ public final class DbToRmFormat {
 
     private DbToRmFormat() {}
 
-    public static final String TYPE_ALIAS = "T";
-
-    public static final String TYPE_ATTRIBUTE = "_type";
-
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, String dbJsonStr) {
         JsonNode jsonNode = parseJson(dbJsonStr);
 
@@ -115,7 +111,7 @@ public final class DbToRmFormat {
     public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, ObjectNode jsonObject) {
 
         ObjectNode dbRoot;
-        if (jsonObject.has(TYPE_ALIAS)) {
+        if (jsonObject.has(RmAttribute.OBJ_TYPE.alias())) {
             // plain object
             dbRoot = jsonObject;
 
@@ -208,7 +204,7 @@ public final class DbToRmFormat {
     }
 
     private static ObjectNode decodeKeys(ObjectNode dbJson) {
-        if (dbJson.has(RmAttributeAlias.getAlias(TYPE_ATTRIBUTE))) {
+        if (dbJson.has(RmAttribute.OBJ_TYPE.alias())) {
             revertNodeAliasesInPlace(dbJson);
         } else {
             dbJson.forEach(DbToRmFormat::revertNodeAliasesInPlace);
@@ -228,12 +224,11 @@ public final class DbToRmFormat {
                 // replace attribute aliases
                 for (Map.Entry<String, JsonNode> property : nodes) {
                     String alias = property.getKey();
-                    String attribute = RmAttributeAlias.getAttribute(alias);
+                    String attribute = RmAttribute.getAttribute(alias);
                     JsonNode value;
-                    if (TYPE_ATTRIBUTE.equals(attribute)) {
+                    if (RmAttribute.OBJ_TYPE.attribute().equals(attribute)) {
                         // revert type aliases
-                        String rmType =
-                                RmTypeAlias.getRmType(property.getValue().textValue());
+                        String rmType = RmType.getRmType(property.getValue().textValue());
                         value = TextNode.valueOf(rmType);
                     } else {
                         value = property.getValue();
