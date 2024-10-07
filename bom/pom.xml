@@ -89,7 +89,7 @@
     <maven-jar-plugin-version>3.4.1</maven-jar-plugin-version>
     <maven-dependency-plugin.version>3.7.1</maven-dependency-plugin.version>
     <maven-failsafe-plugin.version>3.3.0</maven-failsafe-plugin.version>
-    <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
     <maven-spotless-maven-plugin.version>2.43.0</maven-spotless-maven-plugin.version>
     <maven-nexus-staging-plugin.version>1.7.0</maven-nexus-staging-plugin.version>
