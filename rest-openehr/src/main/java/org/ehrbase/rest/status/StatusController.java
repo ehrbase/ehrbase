@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest;
+package org.ehrbase.rest.status;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.openehr.sdk.response.dto.StatusResponseData;
+import org.ehrbase.rest.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
