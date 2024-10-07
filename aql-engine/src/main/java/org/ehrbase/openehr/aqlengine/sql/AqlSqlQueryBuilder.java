@@ -229,6 +229,7 @@ public class AqlSqlQueryBuilder {
                     .forEach(query::addOrderBy);
         }
 
+        System.out.println(from);
         return from;
     }
 
@@ -489,6 +490,7 @@ public class AqlSqlQueryBuilder {
     }
 
     /**
+     * TODO temporary solution until item[].id.value are extracted into it's own column for direct access
      * Nested array select for all item[].id.value
      * <code>
      * array(
@@ -498,9 +500,10 @@ public class AqlSqlQueryBuilder {
      *             on (items ->> 'tp') = 'VERSIONED_COMPOSITION'                                          -- items[].type == VERSIONED_COMPOSITION
      *            and items -> 'X' ->> 'T' = 'HX'                                                         -- items[].id._type == HIER_OBJECT_ID
      *            and (items -> 'X' ->> 'V') ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$' -- items[].id.value is UUID;
-     *    where "nested_folders".vo_id = "root".vo_id                                                     -- for folder void
-     *      and "nested_folders.num >= "root".num                                                         -- each sub-folder starting from num
-     * ) as item_ids
+     *    where "nested_folders"."ehr_id" = "root"."ehr_id"                                               -- for folder ehr_id
+     *      and "nested_folders"."ehr_folders_idx" = "root"."ehr_folders_idx"                             -- with matching ehr_folders_idx
+     *      and "nested_folders"."num" between "root"."num" and "root"."num_cap"                          -- each sub-folder starting in range (num .. num_cap)
+     * ) as "items_id_value"
      * </code>
      */
     private static SelectConditionStep<Record1<UUID>> buildFolderItemIdsNestedArray(
@@ -525,7 +528,7 @@ public class AqlSqlQueryBuilder {
         return DSL.select(itemIdField)
                 .from(nestedFolders)
                 .join(AdditionalSQLFunctions.join_jsonb_array_elements(items))
-                // FIXME(AQL_FOLDER) not sure if we need this - we could also assume it's an HIER_OBJECT_ID  for an
+                // FIXME(AQL_FOLDER) not sure if we need this - we could also assume it's an HIER_OBJECT_ID for a
                 //                   VERSIONED_COMPOSITION because we check the uuid any way.
                 // ("items"->>'tp') = 'VERSIONED_COMPOSITION'
                 .on(itemType.eq(DSL.inline(column.getRmType())))
@@ -534,7 +537,11 @@ public class AqlSqlQueryBuilder {
                 // (((("items"->'X')->'V')->>0) ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
                 .and(AdditionalSQLFunctions.regexMatches(
                         itemIdValue, "^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$"))
-                .where(nestedFolders.VO_ID.eq(root.field(ObjectDataTablePrototype.INSTANCE.VO_ID)))
+                // where "nested_folders"."ehr_id" = "root"."ehr_id"
+                //   and "nested_folders"."ehr_folders_idx" = "root"."ehr_folders_idx"
+                .where(nestedFolders.EHR_ID.eq(root.field(EHR_FOLDER_DATA.EHR_ID)))
+                .and(nestedFolders.EHR_FOLDERS_IDX.eq(root.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)))
+                //   and "nested_folders"."num" between "root"."num" and "root"."num_cap"
                 .and(nestedFolders.NUM.between(
                         root.field(ObjectDataTablePrototype.INSTANCE.NUM),
                         root.field(ObjectDataTablePrototype.INSTANCE.NUM_CAP)));
