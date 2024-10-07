@@ -93,7 +93,7 @@
     <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
     <maven-spotless-maven-plugin.version>2.43.0</maven-spotless-maven-plugin.version>
     <maven-nexus-staging-plugin.version>1.7.0</maven-nexus-staging-plugin.version>
-    <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+    <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
     <maven-versions-maven-plugin.version>2.17.0</maven-versions-maven-plugin.version>
     <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
     <maven-sonar.scanner.version>3.11.0.3922</maven-sonar.scanner.version>
