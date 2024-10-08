@@ -228,8 +228,6 @@ public class AqlSqlQueryBuilder {
                     .flatMap(ob -> EncapsulatingQueryUtils.orderFields(ob, aslQueryToTable, knowledgeCache))
                     .forEach(query::addOrderBy);
         }
-
-        System.out.println(from);
         return from;
     }
 
