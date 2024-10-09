@@ -488,14 +488,14 @@ public class AqlSqlQueryBuilder {
      *     cast((("items"->'X')->>'V') as uuid) as "items_id_value"
      * from "ehr"."ehr_folder_data" as "parent"
      *     -- 2nd join on folder data where the folders are subfolder of the parent one
-     *     join "ehr"."ehr_folder_data" as "sibling"
+     *     join "ehr"."ehr_folder_data" as "descendant"
      *     on (
-     *        "sibling"."ehr_id" = "parent"."ehr_id"
-     *        and "sibling"."ehr_folders_idx" = "parent"."ehr_folders_idx"
-     *        and "sibling"."num" between "parent"."num" and "parent"."num_cap"
+     *        "descendant"."ehr_id" = "parent"."ehr_id"
+     *        and "descendant"."ehr_folders_idx" = "parent"."ehr_folders_idx"
+     *        and "descendant"."num" between "parent"."num" and "parent"."num_cap"
      *     )
      *     -- take the items[] as flat list for each sub-folder where the id is an HIER_OBJECT UUID
-     *     join jsonb_array_elements("sibling"."data"->'i') as "items"
+     *     join jsonb_array_elements("descendant"."data"->'i') as "items"
      *     on (
      * 	       ("items"->>'tp') = 'VERSIONED_COMPOSITION'
      * 	       and (("items"->'X')->>'T') = 'HX'
@@ -509,9 +509,9 @@ public class AqlSqlQueryBuilder {
         String columnName = column.getColumnName();
 
         EhrFolderData parentFolderTable = EHR_FOLDER_DATA.as("parent");
-        EhrFolderData siblingFolderTable = EHR_FOLDER_DATA.as("sibling");
+        EhrFolderData descendantFolderTable = EHR_FOLDER_DATA.as("descendant");
         Table<Record> itemsJsonbArrayElementTable = AdditionalSQLFunctions.table_jsonb_array_elements(
-                        siblingFolderTable.DATA, RmAttributeAlias.getAlias("items"))
+                        descendantFolderTable.DATA, RmAttributeAlias.getAlias("items"))
                 .as("items");
 
         Field<JSONB> items = DSL.field("{0}", JSONB.class, itemsJsonbArrayElementTable);
@@ -529,10 +529,10 @@ public class AqlSqlQueryBuilder {
         Table<?> joinTable = DSL.select(parentFolderTable.asterisk(), itemIdValueUUID)
                 .from(parentFolderTable)
                 // -- 1st join on folder data where the folders are subfolder of the root one
-                .join(siblingFolderTable)
-                    .on(siblingFolderTable.EHR_ID.eq(parentFolderTable.EHR_ID))
-                    .and(siblingFolderTable.EHR_FOLDERS_IDX.eq(parentFolderTable.EHR_FOLDERS_IDX))
-                    .and(siblingFolderTable.NUM.between(parentFolderTable.NUM, parentFolderTable.NUM_CAP))
+                .join(descendantFolderTable)
+                    .on(descendantFolderTable.EHR_ID.eq(parentFolderTable.EHR_ID))
+                    .and(descendantFolderTable.EHR_FOLDERS_IDX.eq(parentFolderTable.EHR_FOLDERS_IDX))
+                    .and(descendantFolderTable.NUM.between(parentFolderTable.NUM, parentFolderTable.NUM_CAP))
                 // -- 2nd take the items[] as flat list for each sub-folder where the id is an HIER_OBJECT UUID
                 .join(itemsJsonbArrayElementTable)
                     // ("items"->>'tp') = 'VERSIONED_COMPOSITION'
