@@ -23,21 +23,14 @@ import org.jooq.AggregateFunction;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.QOM;
 import org.jooq.impl.SQLDataType;
 
 public final class AdditionalSQLFunctions {
     private AdditionalSQLFunctions() {
         // NOOP
-    }
-
-    public static String join_jsonb_array_elements(Field<JSONB> jsonbArrayAggregate) {
-
-        if (!(jsonbArrayAggregate instanceof QOM.FieldAlias<JSONB> alias)) {
-            throw new IllegalStateException("join jsonb_array_elements field must be aliased");
-        }
-        return "%s as %s".formatted(alias.$aliased(), alias);
     }
 
     public static Field<JSONB> jsonb_array_elements(Field<JSONB> jsonbArray) {
@@ -128,5 +121,17 @@ public final class AdditionalSQLFunctions {
      */
     public static Condition regexMatches(Field<String> field, String regex) {
         return DSL.condition("{0} ~ E{1}", field, DSL.inline(regex));
+    }
+
+    /**
+     * Provides <code>jsonb_array_elements</code> as a table select that allows to join by jsonb elements in postgres
+     *
+     * @param field JSONB field to select elements from
+     * @param attr path of the JSONB elements
+     * @return jsonb_array_elements_table_like
+     */
+    public static Table<Record> table_jsonb_array_elements(Field<JSONB> field, String attr) {
+
+        return DSL.table("jsonb_array_elements({0})", DSL.jsonbGetAttribute(field, attr));
     }
 }

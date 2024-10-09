@@ -62,14 +62,9 @@ class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-        SELECT
-        c/content,
-        c/content[at0001],
-        c/content[at0002],
-        c/uid/value,
-        c/context/other_context[at0004]/items[at0014]/value
-        FROM EHR e CONTAINS COMPOSITION c
-        WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
+            SELECT
+              c/uid/value
+            FROM FOLDER CONTAINS COMPOSITION c
         """);
 
         System.out.println("/*");
@@ -189,14 +184,10 @@ class AqlSqlQueryBuilderTest {
         SelectQuery<Record> selectQuery = buildSqlQuery(queryWrapper);
         assertThat(selectQuery.toString())
                 // items_id_value are selected from folder
-                .contains("\"sF_0sq\".\"items_id_value\" as \"sF_0_items_id_value\"")
-                .contains("and \"nested_folders\".\"num\" between \"root\".\"num\" and \"root\".\"num_cap\"")
-                // compositions are joined on items_id_value
-                .contains(
-                        """
-                        on "sCO_c_0"."sCO_c_0_vo_id" = any (
-                              "sF_0"."sF_0_items_id_value"
-                            )""");
+                .contains("\"sF_0sq\".\"item_id_value\" as \"sF_0_item_id_value\"")
+                .contains("and \"sibling\".\"num\" between \"parent\".\"num\" and \"parent\".\"num_cap\"")
+                // compositions are joined on item_id_value
+                .contains("on \"sCO_c_0\".\"sCO_c_0_vo_id\" = \"sF_0\".\"sF_0_item_id_value\"");
     }
 
     @Test

@@ -282,7 +282,7 @@ final class ConditionUtils {
 
     /**
      * Provides the FOLDER contains COMPOSITION join condition
-     * <code>on "sCO_c_0_vo_id" = any("sF_0_data_item_id_value")</code>
+     * <code>on "sCO_c_0_vo_id" = "sF_0"."sF_0_item_id_value"</code>
      *
      * @param dc {@link AslFolderItemJoinCondition}
      * @param sqlLeft structure query on <code>folder_data</code>
@@ -304,13 +304,22 @@ final class ConditionUtils {
                 .orElseThrow(() -> new IllegalStateException(
                         "AslFolderItemJoinCondition requires an AslFolderItemIdValuesColumnField"));
 
+        //        // comp.vo_id == folder.data /items/id/value
+        //        Condition omCompVoidEqItemIdValue = FieldUtils.field(
+        //                        sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(),
+        // UUID.class, true)
+        //                .eq(DSL.any(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID[].class, true)));
+        //
+        //        // on "sCO_c_0_vo_id" = any("sF_0_data_item_id_value")
+        //        return Stream.of(omCompVoidEqItemIdValue);
+
         // comp.vo_id == folder.data /items/id/value
-        Condition omCompVoidEqItemIdValue = FieldUtils.field(
+        Condition onCompVoidEqItemIdValue = FieldUtils.field(
                         sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(), UUID.class, true)
-                .eq(DSL.any(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID[].class, true)));
+                .eq(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID.class, true));
 
         // on "sCO_c_0_vo_id" = any("sF_0_data_item_id_value")
-        return Stream.of(omCompVoidEqItemIdValue);
+        return Stream.of(onCompVoidEqItemIdValue);
     }
 
     public static Condition buildCondition(AslQueryCondition c, AslQueryTables tables, boolean useAliases) {
