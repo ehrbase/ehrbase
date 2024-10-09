@@ -405,7 +405,7 @@ public class AqlSqlQueryBuilder {
 
             final Table<?> joinTable;
             final Condition onCondition;
-            final List<Field<?>> selectFields;
+            final List<SelectFieldOrAsterisk> selectFields;
 
             // join version and data table
             switch (aq.getType()) {
@@ -432,20 +432,12 @@ public class AqlSqlQueryBuilder {
                     } else {
 
                         AslFolderItemIdValuesColumnField column = folderItemColumns.getFirst();
-                        String columnName = column.getColumnName();
-
-                        EhrFolderData folderDataRoot = EHR_FOLDER_DATA.as("root");
-                        SelectConditionStep<Record1<UUID>> itemIdArraySelect =
-                                buildFolderItemIdsNestedArray(folderDataRoot, column);
-
-                        Field<UUID[]> itemIds = DSL.array(itemIdArraySelect).as(columnName);
+                        Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
+                                buildFolderItemIdNestedSelect(dataTable, column);
 
                         // we need all fields at this point + the item id array
-                        joinTable = DSL.select(DSL.asterisk(), itemIds)
-                                .from(folderDataRoot)
-                                .asTable(dataTable);
-
-                        selectFields = List.of(FieldUtils.virtualAliasedField(joinTable, itemIds, column, columnName));
+                        joinTable = tableToSelect.getLeft();
+                        selectFields = tableToSelect.getRight();
                     }
 
                     onCondition = primaryTable
@@ -489,60 +481,74 @@ public class AqlSqlQueryBuilder {
 
     /**
      * TODO temporary solution until item[].id.value are extracted into it's own column for direct access
-     * Nested array select for all item[].id.value
+     * Nested array element select for all item[].id.value(s)
      * <code>
-     * array(
-     *    select cast((items -> 'X' ->> 'V') as uuid)                                                     -- items[].id.value as UUID;
-     *    from ehr.ehr_folder_data as nested_items
-     *        join jsonb_array_elements(data -> 'i') as items                                             -- items[]
-     *             on (items ->> 'tp') = 'VERSIONED_COMPOSITION'                                          -- items[].type == VERSIONED_COMPOSITION
-     *            and items -> 'X' ->> 'T' = 'HX'                                                         -- items[].id._type == HIER_OBJECT_ID
-     *            and (items -> 'X' ->> 'V') ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$' -- items[].id.value is UUID;
-     *    where "nested_folders"."ehr_id" = "root"."ehr_id"                                               -- for folder ehr_id
-     *      and "nested_folders"."ehr_folders_idx" = "root"."ehr_folders_idx"                             -- with matching ehr_folders_idx
-     *      and "nested_folders"."num" between "root"."num" and "root"."num_cap"                          -- each sub-folder starting in range (num .. num_cap)
-     * ) as "items_id_value"
+     * select
+     *     "parent".*,
+     *     cast((("items"->'X')->>'V') as uuid) as "items_id_value"
+     * from "ehr"."ehr_folder_data" as "parent"
+     *     -- 2nd join on folder data where the folders are subfolder of the parent one
+     *     join "ehr"."ehr_folder_data" as "sibling"
+     *     on (
+     *        "sibling"."ehr_id" = "parent"."ehr_id"
+     *        and "sibling"."ehr_folders_idx" = "parent"."ehr_folders_idx"
+     *        and "sibling"."num" between "parent"."num" and "parent"."num_cap"
+     *     )
+     *     -- take the items[] as flat list for each sub-folder where the id is an HIER_OBJECT UUID
+     *     join jsonb_array_elements("sibling"."data"->'i') as "items"
+     *     on (
+     * 	       ("items"->>'tp') = 'VERSIONED_COMPOSITION'
+     * 	       and (("items"->'X')->>'T') = 'HX'
+     * 	       and ((("items"->'X')->>'V') ~ E'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+     *     )
      * </code>
      */
-    private static SelectConditionStep<Record1<UUID>> buildFolderItemIdsNestedArray(
-            Table<?> root, AslFolderItemIdValuesColumnField column) {
+    private static Pair<Table<?>, List<SelectFieldOrAsterisk>> buildFolderItemIdNestedSelect(
+            Table<?> dataTable, AslFolderItemIdValuesColumnField column) {
 
-        EhrFolderData nestedFolders = EHR_FOLDER_DATA.as("nested_folders");
+        String columnName = column.getColumnName();
 
-        Field<JSONB> itemsField =
-                DSL.jsonbGetAttribute(nestedFolders.DATA, DSL.inline(RmAttributeAlias.getAlias("items")));
+        EhrFolderData parentFolderTable = EHR_FOLDER_DATA.as("parent");
+        EhrFolderData siblingFolderTable = EHR_FOLDER_DATA.as("sibling");
+        Table<Record> itemsJsonbArrayElementTable = AdditionalSQLFunctions.table_jsonb_array_elements(
+                        siblingFolderTable.DATA, RmAttributeAlias.getAlias("items"))
+                .as("items");
 
-        Field<JSONB> items =
-                AdditionalSQLFunctions.jsonb_array_elements(itemsField).as("items");
+        Field<JSONB> items = DSL.field("{0}", JSONB.class, itemsJsonbArrayElementTable);
+        Field<String> itemIdValue = AdditionalSQLFunctions.jsonbAttributePathText(
+                items, Stream.of("id", "value").map(RmAttributeAlias::getAlias));
+        Field<UUID> itemIdValueUUID = DSL.cast(itemIdValue, UUID.class).as(columnName);
 
         Field<String> itemType = AdditionalSQLFunctions.jsonbAttributePathText(
                 items, Stream.of("type").map(RmAttributeAlias::getAlias));
-        Field<String> itemIdValue = AdditionalSQLFunctions.jsonbAttributePathText(
-                items, Stream.of("id", "value").map(RmAttributeAlias::getAlias));
-        Field<String> itemIdType = AdditionalSQLFunctions.jsonbAttributePathText(
+        Field<String> itemRmType = AdditionalSQLFunctions.jsonbAttributePathText(
                 items, Stream.of("id", "_type").map(RmAttributeAlias::getAlias));
-        Field<UUID> itemIdField = itemIdValue.cast(UUID.class);
 
-        return DSL.select(itemIdField)
-                .from(nestedFolders)
-                .join(AdditionalSQLFunctions.join_jsonb_array_elements(items))
-                // FIXME(AQL_FOLDER) not sure if we need this - we could also assume it's an HIER_OBJECT_ID for a
-                //                   VERSIONED_COMPOSITION because we check the uuid any way.
-                // ("items"->>'tp') = 'VERSIONED_COMPOSITION'
-                .on(itemType.eq(DSL.inline(column.getRmType())))
-                // (("items"->'X')->>'T') = 'HX'
-                .and(itemIdType.eq(DSL.inline(RmTypeAlias.getAlias(column.getIdType()))))
-                // (((("items"->'X')->'V')->>0) ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
-                .and(AdditionalSQLFunctions.regexMatches(
-                        itemIdValue, "^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$"))
-                // where "nested_folders"."ehr_id" = "root"."ehr_id"
-                //   and "nested_folders"."ehr_folders_idx" = "root"."ehr_folders_idx"
-                .where(nestedFolders.EHR_ID.eq(root.field(EHR_FOLDER_DATA.EHR_ID)))
-                .and(nestedFolders.EHR_FOLDERS_IDX.eq(root.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)))
-                //   and "nested_folders"."num" between "root"."num" and "root"."num_cap"
-                .and(nestedFolders.NUM.between(
-                        root.field(ObjectDataTablePrototype.INSTANCE.NUM),
-                        root.field(ObjectDataTablePrototype.INSTANCE.NUM_CAP)));
+        // @format:off
+        // we need all fields at this point + the item id array
+        Table<?> joinTable = DSL.select(parentFolderTable.asterisk(), itemIdValueUUID)
+                .from(parentFolderTable)
+                // -- 1st join on folder data where the folders are subfolder of the root one
+                .join(siblingFolderTable)
+                    .on(siblingFolderTable.EHR_ID.eq(parentFolderTable.EHR_ID))
+                    .and(siblingFolderTable.EHR_FOLDERS_IDX.eq(parentFolderTable.EHR_FOLDERS_IDX))
+                    .and(siblingFolderTable.NUM.between(parentFolderTable.NUM, parentFolderTable.NUM_CAP))
+                // -- 2nd take the items[] as flat list for each sub-folder where the id is an HIER_OBJECT UUID
+                .join(itemsJsonbArrayElementTable)
+                    // ("items"->>'tp') = 'VERSIONED_COMPOSITION'
+                    .on(itemType.eq(DSL.inline(column.getRmType())))
+                    // (("items"->'X')->>'T') = 'HX'
+                    .and(itemRmType.eq(DSL.inline(RmTypeAlias.getAlias(column.getIdType()))))
+                    // (((("items"->'X')->'V')->>0) ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
+                    .and(AdditionalSQLFunctions.regexMatches(itemIdValue, "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
+                    // .and(AdditionalSQLFunctions.regexMatches(itemIdValue,
+                    // "^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$"))
+                .asTable(dataTable);
+        // @format:on
+
+        List<SelectFieldOrAsterisk> selectFields =
+                List.of(FieldUtils.virtualAliasedField(joinTable, itemIdValueUUID, column, columnName));
+        return Pair.of(joinTable, selectFields);
     }
 
     /**
