@@ -33,7 +33,7 @@ public final class AslFolderItemIdValuesColumnField extends AslVirtualField {
     private final String idType;
 
     public AslFolderItemIdValuesColumnField() {
-        this(AslExtractedColumn.FOLDER_ITEM_ID, null, "items_id_value", "VERSIONED_COMPOSITION", "HIER_OBJECT_ID");
+        this(AslExtractedColumn.FOLDER_ITEM_ID, null, "item_id_value", "VERSIONED_COMPOSITION", "HIER_OBJECT_ID");
     }
 
     public AslFolderItemIdValuesColumnField(
