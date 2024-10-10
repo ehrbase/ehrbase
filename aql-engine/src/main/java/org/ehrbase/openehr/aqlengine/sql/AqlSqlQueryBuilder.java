@@ -427,6 +427,7 @@ public class AqlSqlQueryBuilder {
         return step;
     }
 
+    // FIXME(AQL_FOLDER) better naming or other logic
     private static <T extends AslField> Stream<T> aslFieldOfType(
             Map<Class<? extends AslField>, List<AslField>> aslFields, Class<T> type) {
         return Optional.ofNullable(aslFields.remove(type)).orElseGet(List::of).stream()

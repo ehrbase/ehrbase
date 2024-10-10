@@ -21,7 +21,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 public sealed interface AslProvidesJoinCondition extends AslQueryCondition
-        permits AslDescendantCondition, AslEntityIdxOffsetCondition, AslPathChildCondition, AslFolderItemJoinCondition {
+        permits AslDescendantCondition, AslEntityIdxOffsetCondition, AslPathChildCondition {
 
     AslQuery getLeftOwner();
 

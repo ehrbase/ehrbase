@@ -83,8 +83,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
                     AD_SYSTEM_ID,
                     AD_DESCRIPTION_VALUE,
                     AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE,
-                    EHR_SYSTEM_ID,
-                    FOLDER_ITEM_ID -> columnValue;
+                    EHR_SYSTEM_ID -> columnValue;
         };
     }
 
