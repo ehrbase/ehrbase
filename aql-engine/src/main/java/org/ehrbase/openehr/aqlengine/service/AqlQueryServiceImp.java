@@ -359,8 +359,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
     static void replaceEhrPaths(AqlQuery aqlQuery) {
         replaceEhrPath(aqlQuery, "compositions", RmConstants.COMPOSITION, "c");
         replaceEhrPath(aqlQuery, "ehr_status", RmConstants.EHR_STATUS, "s");
-        // FIXME(AQL_FOLDER) in case we want to use this we need to add a test to
-        //                   https://github.com/ehrbase/conformance-testing-documentation/pull/25
         replaceEhrPath(aqlQuery, "folder", RmConstants.FOLDER, "f");
     }
 

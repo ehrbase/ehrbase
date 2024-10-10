@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -36,14 +35,14 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslAbstractJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
@@ -66,8 +65,6 @@ import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
 final class AslFromCreator {
-
-    private static final Set<String> ROOT_RM_TYPES = Set.of(RmConstants.EHR_STATUS, RmConstants.COMPOSITION);
 
     private final AliasProvider aliasProvider;
     private final KnowledgeCacheService knowledgeCacheService;
@@ -166,6 +163,7 @@ final class AslFromCreator {
             requiresVersionJoin = true;
         }
         // FOLDER CONTAINS FOLDER/COMPOSITION requires either Folder or Composition version to be present
+        // FIXME(AQL_FOLDER) not needed - needs change in structure query generation
         else if (parentType == AslSourceRelation.FOLDER) {
             requiresVersionJoin = true;
         } else if (currentParent != null || sourceRelation == AslSourceRelation.EHR) {
@@ -198,29 +196,25 @@ final class AslFromCreator {
             AslStructureQuery joinParent,
             boolean asLeftJoin) {
 
-        AslJoin join;
+        final AslJoin join;
         if (joinParent == null || container.getChildren().isEmpty()) {
             join = null;
         } else {
-            AslProvidesJoinCondition joinCondition = aslProvidesJoinCondition(toAdd, joinParent);
-            join = new AslJoin(
-                    joinParent,
-                    asLeftJoin ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN,
-                    toAdd,
-                    joinCondition.provideJoinCondition());
+            JoinType joinType = asLeftJoin ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN;
+            join = new AslJoin(joinParent, joinType, toAdd, aslJoinCondition(toAdd, joinParent));
         }
         container.addChild(toAdd, join);
     }
 
-    private static AslProvidesJoinCondition aslProvidesJoinCondition(
-            AslStructureQuery toAdd, AslStructureQuery joinParent) {
+    private static AslAbstractJoinCondition aslJoinCondition(AslStructureQuery toAdd, AslStructureQuery joinParent) {
 
         AslSourceRelation parentType = joinParent.getType();
         AslSourceRelation targetType = toAdd.getType();
         if (parentType == AslSourceRelation.FOLDER && targetType == AslSourceRelation.COMPOSITION) {
             return new AslFolderItemJoinCondition(joinParent, joinParent, targetType, toAdd, toAdd);
         }
-        return new AslDescendantCondition(parentType, joinParent, joinParent, targetType, toAdd, toAdd);
+        return new AslDescendantCondition(parentType, joinParent, joinParent, targetType, toAdd, toAdd)
+                .provideJoinCondition();
     }
 
     private void addContainsChainSetOperator(
@@ -311,7 +305,7 @@ final class AslFromCreator {
                             () -> List.of(containsWrapper.getStructureRmType().name()));
 
             // Folder may be root, but is recursive
-            isRoot = ROOT_RM_TYPES.contains(rmType);
+            isRoot = RmConstants.EHR_STATUS.equals(rmType) || RmConstants.COMPOSITION.equals(rmType);
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
 

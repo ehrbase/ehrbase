@@ -34,7 +34,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
@@ -51,6 +50,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
@@ -212,14 +212,6 @@ public class AslGraph {
                                     c.getLeftOwner().getAlias(),
                                     c.getChildRelation(),
                                     c.getRightOwner().getAlias()));
-            case AslFolderItemJoinCondition c -> indented(
-                    level,
-                    "FolderJoinObjectRef %s -> %s [%s.vo_id in %s.data.items[].id.value]"
-                            .formatted(
-                                    c.getParentRelation(),
-                                    c.descendantRelation(),
-                                    c.getRightOwner().getAlias(),
-                                    c.getLeftOwner().getAlias()));
         };
     }
 
@@ -234,6 +226,12 @@ public class AslGraph {
                             .formatted(
                                     c.getLeftOwner().getAlias(),
                                     c.getRightOwner().getAlias());
+                    case AslFolderItemJoinCondition
+                    c -> "FolderItemJoinCondition FOLDER -> %s [%s.vo_id in %s.data.items[].id.value]"
+                            .formatted(
+                                    c.descendantRelation(),
+                                    c.getRightOwner().getAlias(),
+                                    c.getLeftOwner().getAlias());
                 })
                 .map(s -> indented(level, s))
                 .collect(Collectors.joining());

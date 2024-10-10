@@ -34,7 +34,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
@@ -45,7 +44,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryC
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
@@ -62,6 +60,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumn
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
@@ -117,6 +116,7 @@ final class ConditionUtils {
                                 AUDIT_DETAILS.ID.getName(),
                                 UUID.class,
                                 true)));
+                case AslFolderItemJoinCondition c -> conditions.add(folderJoinObjectRefCondition(c, sqlLeft, sqlRight));
             }
         }
 
@@ -129,7 +129,6 @@ final class ConditionUtils {
                     case AslPathChildCondition c -> pathChildConditions(c, sqlLeft, sqlRight, true);
                     case AslEntityIdxOffsetCondition c -> entityIdxOffsetConditions(c, sqlLeft, sqlRight, true);
                     case AslDescendantCondition c -> descendantConditions(c, sqlLeft, sqlRight, true);
-                    case AslFolderItemJoinCondition c -> folderJoinObjectRefCondition(c, sqlLeft, sqlRight);
                 })
                 .forEach(conditions::add);
     }
@@ -152,9 +151,10 @@ final class ConditionUtils {
 
         return switch (parentRelation) {
             case EHR_STATUS, COMPOSITION, FOLDER -> {
-                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.EHR_STATUS
-                        ? AslStructureColumn.EHR_ID
-                        : AslStructureColumn.VO_ID;
+                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.COMPOSITION
+                        ? AslStructureColumn.VO_ID
+                        : AslStructureColumn.EHR_ID;
+                // FIXME(AQL_FOLDER) add folder_idx as pk_field + and folder
                 yield Stream.of(
                         // l.pKey == r.pKey
                         FieldUtils.field(
@@ -236,17 +236,18 @@ final class ConditionUtils {
                                     UUID.class,
                                     isJoinCondition)));
             case EHR_STATUS, COMPOSITION, FOLDER -> {
-                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.EHR_STATUS
-                        ? AslStructureColumn.EHR_ID
-                        : AslStructureColumn.VO_ID;
-                yield descendantEhrStatusOrCompositionJoin(pKeyField, dc, sqlLeft, sqlRight, isJoinCondition);
+                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.COMPOSITION
+                        ? AslStructureColumn.VO_ID
+                        : AslStructureColumn.EHR_ID;
+                // FIXME(AQL_FOLDER) add folder_idx as pk_field + and folder
+                yield descendantVersionedObjectJoinCondition(pKeyField, dc, sqlLeft, sqlRight, isJoinCondition);
             }
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Descendant condition not applicable to AUDIT_DETAILS");
         };
     }
 
-    private static Stream<Condition> descendantEhrStatusOrCompositionJoin(
+    private static Stream<Condition> descendantVersionedObjectJoinCondition(
             AslStructureColumn pKeyField,
             AslDescendantCondition dc,
             Table<?> sqlLeft,
@@ -289,7 +290,7 @@ final class ConditionUtils {
      * @param sqlRight structure query on <code>comp_data</code>
      * @return joinByItemId matching the composition void against the folder item id
      */
-    private static Stream<Condition> folderJoinObjectRefCondition(
+    private static Condition folderJoinObjectRefCondition(
             AslFolderItemJoinCondition dc, Table<?> sqlLeft, Table<?> sqlRight) {
 
         AslQuery leftOwner = dc.getLeftOwner();
@@ -304,22 +305,11 @@ final class ConditionUtils {
                 .orElseThrow(() -> new IllegalStateException(
                         "AslFolderItemJoinCondition requires an AslFolderItemIdValuesColumnField"));
 
-        //        // comp.vo_id == folder.data /items/id/value
-        //        Condition omCompVoidEqItemIdValue = FieldUtils.field(
-        //                        sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(),
-        // UUID.class, true)
-        //                .eq(DSL.any(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID[].class, true)));
-        //
-        //        // on "sCO_c_0_vo_id" = any("sF_0_data_item_id_value")
-        //        return Stream.of(omCompVoidEqItemIdValue);
-
         // comp.vo_id == folder.data /items/id/value
-        Condition onCompVoidEqItemIdValue = FieldUtils.field(
+        // on "sCO_c_0_vo_id" = "sF_0_data_item_id_value"
+        return FieldUtils.field(
                         sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(), UUID.class, true)
                 .eq(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID.class, true));
-
-        // on "sCO_c_0_vo_id" = any("sF_0_data_item_id_value")
-        return Stream.of(onCompVoidEqItemIdValue);
     }
 
     public static Condition buildCondition(AslQueryCondition c, AslQueryTables tables, boolean useAliases) {
@@ -358,7 +348,6 @@ final class ConditionUtils {
                                     : tables.getDataTable(dc.getRightProvider()),
                             false)
                     .toList());
-            case AslFolderItemJoinCondition dc -> throw new NotImplementedException("buildCondition FOLDER " + dc);
         };
     }
 
@@ -467,8 +456,7 @@ final class ConditionUtils {
                     EHR_TIME_CREATED_DV,
                     EHR_TIME_CREATED,
                     EHR_SYSTEM_ID,
-                    EHR_SYSTEM_ID_DV,
-                    FOLDER_ITEM_ID -> throw new IllegalArgumentException(
+                    EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
                     "Extracted column %s is not complex".formatted(ecf.getExtractedColumn()));
         };
     }
