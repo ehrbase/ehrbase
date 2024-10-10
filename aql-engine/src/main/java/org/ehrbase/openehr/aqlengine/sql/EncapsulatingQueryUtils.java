@@ -135,8 +135,7 @@ final class EncapsulatingQueryUtils {
                             EHR_TIME_CREATED_DV,
                             EHR_TIME_CREATED,
                             EHR_SYSTEM_ID,
-                            EHR_SYSTEM_ID_DV,
-                            FOLDER_ITEM_ID -> throw new IllegalArgumentException(
+                            EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
                             "%s is not a complex extracted column".formatted(ecf.getExtractedColumn()));
                 };
             }
@@ -189,8 +188,7 @@ final class EncapsulatingQueryUtils {
                     EHR_TIME_CREATED_DV,
                     EHR_TIME_CREATED,
                     EHR_SYSTEM_ID,
-                    EHR_SYSTEM_ID_DV,
-                    FOLDER_ITEM_ID -> throw new IllegalArgumentException(
+                    EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
                     "Extracted column %s is not complex".formatted(ecf.getExtractedColumn()));
         };
     }

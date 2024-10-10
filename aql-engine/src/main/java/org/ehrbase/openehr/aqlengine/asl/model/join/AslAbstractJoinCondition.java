@@ -20,7 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.join;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 public abstract sealed class AslAbstractJoinCondition implements AslJoinCondition
-        permits AslDelegatingJoinCondition, AslPathFilterJoinCondition {
+        permits AslDelegatingJoinCondition, AslPathFilterJoinCondition, AslFolderItemJoinCondition {
     protected AslQuery leftOwner;
     protected AslQuery rightOwner;
 

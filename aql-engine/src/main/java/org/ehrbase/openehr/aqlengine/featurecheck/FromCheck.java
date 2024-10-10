@@ -155,7 +155,7 @@ final class FromCheck implements FeatureCheck {
             case ContainmentVersionExpression cve -> ensureVersionContainmentSupported(cve);
             case ContainmentSetOperator cso -> cso.getValues()
                     .forEach(nc -> ensureContainmentSupported(nc, parentStructure));
-            case ContainmentNotOperator ignored -> throw new AqlFeatureNotImplementedException("NOT CONTAINS");
+            case ContainmentNotOperator __ -> throw new AqlFeatureNotImplementedException("NOT CONTAINS");
             default -> throw new IllegalAqlException(
                     "Unknown containment type: %s".formatted(c.getClass().getSimpleName()));
         }

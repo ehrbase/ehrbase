@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine.asl.model.condition;
+package org.ehrbase.openehr.aqlengine.asl.model.join;
 
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
@@ -23,12 +23,10 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSource
 /**
  * Specialized Join condition used to <code>COMPOSITION</code>s by <code>FOLDER.items[].id.value</code>
  */
-public final class AslFolderItemJoinCondition implements AslProvidesJoinCondition {
+public final class AslFolderItemJoinCondition extends AslAbstractJoinCondition {
     private final AslQuery leftProvider;
-    private final AslQuery leftOwner;
     private final AslSourceRelation descendantRelation;
     private final AslQuery rightProvider;
-    private final AslQuery rightOwner;
 
     public AslFolderItemJoinCondition(
             AslQuery leftProvider,
@@ -36,24 +34,14 @@ public final class AslFolderItemJoinCondition implements AslProvidesJoinConditio
             AslSourceRelation descendantRelation,
             AslQuery rightProvider,
             AslQuery rightOwner) {
+        super(leftOwner, rightOwner);
         this.leftProvider = leftProvider;
-        this.leftOwner = leftOwner;
         this.descendantRelation = descendantRelation;
         this.rightProvider = rightProvider;
-        this.rightOwner = rightOwner;
-    }
-
-    public AslSourceRelation getParentRelation() {
-        return AslSourceRelation.FOLDER;
     }
 
     public AslQuery getLeftProvider() {
         return leftProvider;
-    }
-
-    @Override
-    public AslQuery getLeftOwner() {
-        return leftOwner;
     }
 
     public AslSourceRelation descendantRelation() {
@@ -62,10 +50,5 @@ public final class AslFolderItemJoinCondition implements AslProvidesJoinConditio
 
     public AslQuery rightProvider() {
         return rightProvider;
-    }
-
-    @Override
-    public AslQuery getRightOwner() {
-        return rightOwner;
     }
 }

@@ -90,10 +90,6 @@ public enum AslExtractedColumn {
     EHR_TIME_CREATED(
             AqlObjectPath.parse("time_created/value"), EHR_.CREATION_DATE, String.class, false, RmConstants.EHR),
 
-    // FOLDER
-    FOLDER_ITEM_ID(
-            AqlObjectPath.parse("items/id/value"), Collections.emptyList(), UUID.class, false, RmConstants.FOLDER),
-
     // ORIGINAL_VERSION
     OV_CONTRIBUTION_ID(
             AqlObjectPath.parse("contribution/id/value"),
