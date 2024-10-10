@@ -27,6 +27,10 @@ public sealed interface AslProvidesJoinCondition extends AslQueryCondition
 
     AslQuery getRightOwner();
 
+    AslQuery getLeftProvider();
+
+    AslQuery getRightProvider();
+
     default AslDelegatingJoinCondition provideJoinCondition() {
         return new AslDelegatingJoinCondition(this);
     }

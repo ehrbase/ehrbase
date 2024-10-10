@@ -26,10 +26,61 @@ import org.junit.jupiter.params.provider.EnumSource;
 class AncestorStructureRmTypeTest {
 
     @Test
+    void contentItem() {
+        assertThat(AncestorStructureRmType.CONTENT_ITEM.getNonStructureDescendants())
+                .isEmpty();
+        assertThat(AncestorStructureRmType.CONTENT_ITEM.getDescendants())
+                .containsExactlyInAnyOrder(
+                        StructureRmType.OBSERVATION,
+                        StructureRmType.ACTION,
+                        StructureRmType.ADMIN_ENTRY,
+                        StructureRmType.SECTION,
+                        StructureRmType.EVALUATION,
+                        StructureRmType.GENERIC_ENTRY,
+                        StructureRmType.INSTRUCTION);
+    }
+
+    @Test
     void entry() {
         assertThat(AncestorStructureRmType.ENTRY.getNonStructureDescendants()).isEmpty();
         assertThat(AncestorStructureRmType.ENTRY.getDescendants())
-                .containsAll(AncestorStructureRmType.CARE_ENTRY.getDescendants());
+                .containsExactlyInAnyOrder(
+                        StructureRmType.OBSERVATION,
+                        StructureRmType.INSTRUCTION,
+                        StructureRmType.EVALUATION,
+                        StructureRmType.ADMIN_ENTRY,
+                        StructureRmType.ACTION);
+    }
+
+    @Test
+    void carEntry() {
+        assertThat(AncestorStructureRmType.CARE_ENTRY.getNonStructureDescendants())
+                .isEmpty();
+        assertThat(AncestorStructureRmType.CARE_ENTRY.getDescendants())
+                .containsExactlyInAnyOrder(
+                        StructureRmType.INSTRUCTION,
+                        StructureRmType.ACTION,
+                        StructureRmType.EVALUATION,
+                        StructureRmType.OBSERVATION);
+    }
+
+    @Test
+    void event() {
+        assertThat(AncestorStructureRmType.EVENT.getNonStructureDescendants()).isEmpty();
+        assertThat(AncestorStructureRmType.EVENT.getDescendants())
+                .containsExactlyInAnyOrder(StructureRmType.INTERVAL_EVENT, StructureRmType.POINT_EVENT);
+    }
+
+    @Test
+    void itemStructure() {
+        assertThat(AncestorStructureRmType.ITEM_STRUCTURE.getNonStructureDescendants())
+                .isEmpty();
+        assertThat(AncestorStructureRmType.ITEM_STRUCTURE.getDescendants())
+                .containsExactlyInAnyOrder(
+                        StructureRmType.ITEM_TABLE,
+                        StructureRmType.ITEM_LIST,
+                        StructureRmType.ITEM_TREE,
+                        StructureRmType.ITEM_SINGLE);
     }
 
     @Test

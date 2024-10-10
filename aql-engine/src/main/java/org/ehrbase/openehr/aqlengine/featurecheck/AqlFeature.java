@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,18 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine.asl.model.field;
+package org.ehrbase.openehr.aqlengine.featurecheck;
 
-import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-public abstract sealed class AslVirtualField extends AslField
-        permits AslAggregatingField, AslComplexExtractedColumnField, AslFolderItemIdValuesColumnField {
-    public AslVirtualField(Class<?> type, FieldSource fieldSource, AslExtractedColumn extractedColumn) {
-        super(type, fieldSource, extractedColumn);
-    }
-
-    @Override
-    public String aliasedName(String name) {
-        return super.aliasedName(name);
-    }
-}
+/**
+ * AQL features that can be optionally enabled.
+ *
+ * @param aqlOnFolderEnabled    if enabled allow to query <code>EHR</code> <code>FOLDER</code> using AQL, default <code>false</code>
+ */
+@Component
+public record AqlFeature(
+        @Value("${ehrbase.rest.experimental.aql-on-folder.enabled:false}") boolean aqlOnFolderEnabled) {}

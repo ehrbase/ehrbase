@@ -40,6 +40,9 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslAbstractJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
@@ -55,11 +58,14 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.Logical
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.ehrbase.openehr.dbformat.StructureRmType;
+import org.ehrbase.openehr.sdk.aql.dto.containment.Containment;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperatorSymbol;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
 final class AslFromCreator {
+
     private final AliasProvider aliasProvider;
     private final KnowledgeCacheService knowledgeCacheService;
 
@@ -147,13 +153,20 @@ final class AslFromCreator {
             }
         }
 
-        boolean hasEhrParent = currentParent != null && currentParent.getType() == AslSourceRelation.EHR;
-
+        AslSourceRelation parentType = Optional.ofNullable(currentParent)
+                .map(AslStructureQuery::getType)
+                .orElse(null);
         AslSourceRelation sourceRelation = getSourceRelation(usedWrapper, currentParent);
+
         boolean requiresVersionJoin;
-        if (hasEhrParent || isOriginalVersion) {
+        if (isOriginalVersion || parentType == AslSourceRelation.EHR) {
             requiresVersionJoin = true;
-        } else if (sourceRelation == AslSourceRelation.EHR || currentParent != null) {
+        }
+        // FOLDER CONTAINS FOLDER/COMPOSITION requires either Folder or Composition version to be present
+        // FIXME(AQL_FOLDER) not needed - needs change in structure query generation
+        else if (parentType == AslSourceRelation.FOLDER) {
+            requiresVersionJoin = true;
+        } else if (currentParent != null || sourceRelation == AslSourceRelation.EHR) {
             requiresVersionJoin = false;
         } else {
             // Some paths for structure roots require access to the version table
@@ -182,19 +195,26 @@ final class AslFromCreator {
             AslStructureQuery toAdd,
             AslStructureQuery joinParent,
             boolean asLeftJoin) {
-        AslJoin join;
+
+        final AslJoin join;
         if (joinParent == null || container.getChildren().isEmpty()) {
             join = null;
         } else {
-            join = new AslJoin(
-                    joinParent,
-                    asLeftJoin ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN,
-                    toAdd,
-                    new AslDescendantCondition(
-                                    joinParent.getType(), joinParent, joinParent, toAdd.getType(), toAdd, toAdd)
-                            .provideJoinCondition());
+            JoinType joinType = asLeftJoin ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN;
+            join = new AslJoin(joinParent, joinType, toAdd, aslJoinCondition(toAdd, joinParent));
         }
         container.addChild(toAdd, join);
+    }
+
+    private static AslAbstractJoinCondition aslJoinCondition(AslStructureQuery toAdd, AslStructureQuery joinParent) {
+
+        AslSourceRelation parentType = joinParent.getType();
+        AslSourceRelation targetType = toAdd.getType();
+        if (parentType == AslSourceRelation.FOLDER && targetType == AslSourceRelation.COMPOSITION) {
+            return new AslFolderItemJoinCondition(joinParent, joinParent, targetType, toAdd, toAdd);
+        }
+        return new AslDescendantCondition(parentType, joinParent, joinParent, targetType, toAdd, toAdd)
+                .provideJoinCondition();
     }
 
     private void addContainsChainSetOperator(
@@ -285,7 +305,7 @@ final class AslFromCreator {
                             () -> List.of(containsWrapper.getStructureRmType().name()));
 
             // Folder may be root, but is recursive
-            isRoot = RmConstants.COMPOSITION.equals(rmType) || RmConstants.EHR_STATUS.equals(rmType);
+            isRoot = RmConstants.EHR_STATUS.equals(rmType) || RmConstants.COMPOSITION.equals(rmType);
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
 
@@ -296,6 +316,7 @@ final class AslFromCreator {
                         c -> AslUtils.structurePredicateCondition(
                                 c, aslStructureQuery, knowledgeCacheService::findUuidByTemplateId))
                 .ifPresent(aslStructureQuery::addConditionAnd);
+
         if (isRoot) {
             aslStructureQuery.addConditionAnd(new AslFieldValueQueryCondition<>(
                     AslUtils.findFieldForOwner(
@@ -339,6 +360,14 @@ final class AslFromCreator {
                         null,
                         true,
                         AslExtractedColumn.ROOT_CONCEPT));
+            }
+
+            // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value as complex extracted column
+            Containment containment = nextDesc.containment().getContains();
+            if (RmConstants.FOLDER.equals(nextDesc.getRmType())
+                    && containment instanceof ContainmentClassExpression cs
+                    && Objects.equals(cs.getType(), RmConstants.COMPOSITION)) {
+                fields.add(new AslFolderItemIdValuesColumnField());
             }
         }
         return fields;

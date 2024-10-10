@@ -44,7 +44,6 @@ public class ExternalTerminologyValidationServerTest {
         tp.setParameter("http://hl7.org/fhir/ValueSet/surface");
 
         List<DvCodedText> result = tsserver.expand(tp);
-        result.forEach((e) -> System.out.println(e.getValue()));
         // 1: Buccal
         assertThat(result.get(0).getDefiningCode().getCodeString()).isEqualTo("B");
         assertThat(result.get(0).getValue()).isEqualTo("Buccal");
