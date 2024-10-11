@@ -17,9 +17,11 @@
  */
 package org.ehrbase.rest.ehrscape;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan(basePackages = "org.ehrbase.rest.ehrscape")
+@ConditionalOnProperty(prefix = "ehrbase.rest.ehrscape", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class RestEHRScapeModuleConfiguration {}
