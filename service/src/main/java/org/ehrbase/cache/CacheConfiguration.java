@@ -93,7 +93,7 @@ public class CacheConfiguration {
     }
 
     @Bean
-    public BeanPostProcessor cacheManagerTxProxyBeanPostProcessor() {
+    public static BeanPostProcessor cacheManagerTxProxyBeanPostProcessor() {
         return new BeanPostProcessor() {
             @Override
             public Object postProcessAfterInitialization(final Object bean, final String beanName) {
