@@ -132,6 +132,6 @@ public final class AdditionalSQLFunctions {
      */
     public static Table<Record> table_jsonb_array_elements(Field<JSONB> field, String attr) {
 
-        return DSL.table("jsonb_array_elements({0})", DSL.jsonbGetAttribute(field, attr));
+        return DSL.table("jsonb_array_elements({0})", DSL.jsonbGetAttribute(field, DSL.inline(attr)));
     }
 }

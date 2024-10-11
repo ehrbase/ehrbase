@@ -162,9 +162,10 @@ final class AslFromCreator {
         if (isOriginalVersion || parentType == AslSourceRelation.EHR) {
             requiresVersionJoin = true;
         }
-        // FOLDER CONTAINS FOLDER/COMPOSITION requires either Folder or Composition version to be present
-        // FIXME(AQL_FOLDER) not needed - needs change in structure query generation
-        else if (parentType == AslSourceRelation.FOLDER) {
+        // In case we have FOLDER CONTAINS COMPOSITION c it could be that the c/uid/value is selected. In such cases
+        // EncapsulatingQueryUtils.sqlSelectFieldForExtractedColumn uses the VO_ID and adds the COMP_VERSION.SYS_VERSION
+        // field what is only available in the comp_version table.
+        else if (parentType == AslSourceRelation.FOLDER && sourceRelation == AslSourceRelation.COMPOSITION) {
             requiresVersionJoin = true;
         } else if (currentParent != null || sourceRelation == AslSourceRelation.EHR) {
             requiresVersionJoin = false;

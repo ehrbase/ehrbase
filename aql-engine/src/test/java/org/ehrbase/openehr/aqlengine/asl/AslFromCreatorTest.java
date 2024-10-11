@@ -89,8 +89,10 @@ class AslFromCreatorTest {
             // CONTAINS FOLDER f2
             assertThat(aslQuery.getChildren())
                     .element(1)
-                    .satisfies(isStructureQueryWithVersionContains(
-                            AslStructureQuery.AslSourceRelation.FOLDER, AslStructureQuery.AslSourceRelation.FOLDER));
+                    .satisfies(isStructureQueryWithDataContains(
+                            AslStructureQuery.AslSourceRelation.FOLDER,
+                            AslStructureQuery.AslSourceRelation.FOLDER,
+                            false));
         }
 
         @Test
@@ -109,9 +111,10 @@ class AslFromCreatorTest {
             // CONTAINS COMPOSITION c
             assertThat(aslQuery.getChildren())
                     .element(1)
-                    .satisfies(isStructureQueryWithVersionContains(
+                    .satisfies(isStructureQueryWithDataContains(
                             AslStructureQuery.AslSourceRelation.FOLDER,
-                            AslStructureQuery.AslSourceRelation.COMPOSITION));
+                            AslStructureQuery.AslSourceRelation.COMPOSITION,
+                            true));
         }
 
         @Test
@@ -130,22 +133,27 @@ class AslFromCreatorTest {
             // CONTAINS FOLDER f2
             assertThat(aslQuery.getChildren())
                     .element(1)
-                    .satisfies(isStructureQueryWithVersionContains(
-                            AslStructureQuery.AslSourceRelation.FOLDER, AslStructureQuery.AslSourceRelation.FOLDER));
+                    .satisfies(isStructureQueryWithDataContains(
+                            AslStructureQuery.AslSourceRelation.FOLDER,
+                            AslStructureQuery.AslSourceRelation.FOLDER,
+                            false));
             // FOLDER f2 CONTAINS COMPOSITION c
             assertThat(aslQuery.getChildren())
                     .element(2)
-                    .satisfies(isStructureQueryWithVersionContains(
+                    .satisfies(isStructureQueryWithDataContains(
                             AslStructureQuery.AslSourceRelation.FOLDER,
-                            AslStructureQuery.AslSourceRelation.COMPOSITION));
+                            AslStructureQuery.AslSourceRelation.COMPOSITION,
+                            true));
         }
 
         private static ThrowingConsumer<Pair<AslQuery, AslJoin>> isStructureQueryRootWithVersionOnFolder() {
             return isStructureQueryRootWithVersion(AslStructureQuery.AslSourceRelation.FOLDER);
         }
 
-        private static ThrowingConsumer<Pair<AslQuery, AslJoin>> isStructureQueryWithVersionContains(
-                AslStructureQuery.AslSourceRelation leftType, AslStructureQuery.AslSourceRelation rightType) {
+        private static ThrowingConsumer<Pair<AslQuery, AslJoin>> isStructureQueryWithDataContains(
+                AslStructureQuery.AslSourceRelation leftType,
+                AslStructureQuery.AslSourceRelation rightType,
+                boolean requiresVersionJoin) {
             return pair -> {
                 assertThat(pair.getValue()).isNotNull().satisfies(join -> {
                     assertThat(join.getJoinType()).isSameAs(JoinType.JOIN);
@@ -160,7 +168,7 @@ class AslFromCreatorTest {
 
                     // Source relation FOLDER with version table join and no condition
                     assertThat(sq.getType()).isSameAs(rightType);
-                    assertThat(sq.isRequiresVersionTableJoin()).isTrue();
+                    assertThat(sq.isRequiresVersionTableJoin()).isEqualTo(requiresVersionJoin);
                 });
             };
         }
