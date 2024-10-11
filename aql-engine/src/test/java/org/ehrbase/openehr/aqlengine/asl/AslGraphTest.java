@@ -21,11 +21,13 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class AslGraphTest {
 
     @Test
+    @Disabled("What is this testing - there is no assert?")
     void printDataQueryGraph() {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(

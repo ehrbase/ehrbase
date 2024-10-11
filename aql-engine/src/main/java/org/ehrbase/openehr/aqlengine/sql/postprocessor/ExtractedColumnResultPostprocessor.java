@@ -98,10 +98,11 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
     }
 
     private static String restoreVoId(Record srcRow, String nodeName) {
-        if (srcRow.get(0) == null) {
+        Object id = srcRow.get(0);
+        if (id == null) {
             return null;
         }
-        return srcRow.get(0) + "::" + nodeName + "::" + srcRow.get(1);
+        return id + "::" + nodeName + "::" + srcRow.get(1);
     }
 
     @Nonnull

@@ -85,6 +85,9 @@ security:
 ehrbase:
   aql:
     pg-llj-workaround: true
+    experimental:
+      aql-on-folder:
+        enabled: true
   rest:
     aql:
       # allows to control query execution using debug params

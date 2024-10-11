@@ -54,6 +54,12 @@
       <artifactId>spring-web</artifactId>
     </dependency>
 
+    <!-- Spring-Boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
+    </dependency>
+
 
     <dependency>
       <groupId>org.apache.commons</groupId>

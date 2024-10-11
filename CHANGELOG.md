@@ -8,7 +8,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
 * Feature toggle for ehrscape API (ehrbase.rest.ehrscape.enabled, default: false) ([#1415](https://github.com/ehrbase/ehrbase/pull/1415))
+* Add basic support for `AQL` on `FOLDER` ([#1401](https://github.com/ehrbase/ehrbase/pull/1401))
  ### Changed
+ ### Changed 
  ### Fixed 
 
 ## [2.9.0]
