@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
@@ -560,18 +561,25 @@ class AqlQueryFeatureCheckTest {
 
     private void runEnsureQuerySupported(String aql) {
 
-        runEnsureQuerySupported(new AqlFeature(false), aql);
+        runEnsureQuerySupported(propertiesWithAqlOnFolderEnabled(false), aql);
     }
 
     private void runEnsureQuerySupportedAqlOnFolderEnabled(String aql) {
 
-        runEnsureQuerySupported(new AqlFeature(true), aql);
+        runEnsureQuerySupported(propertiesWithAqlOnFolderEnabled(true), aql);
     }
 
-    private void runEnsureQuerySupported(AqlFeature aqlFeature, String aql) {
+    private void runEnsureQuerySupported(AqlConfigurationProperties aqlFeature, String aql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryFeatureCheck aqlQueryFeatureCheck = new AqlQueryFeatureCheck(() -> "node", aqlFeature);
         aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
+    }
+
+    private AqlConfigurationProperties propertiesWithAqlOnFolderEnabled(boolean aqlOnFolderEnabled) {
+        return new AqlConfigurationProperties(
+                false,
+                new AqlConfigurationProperties.Experimental(
+                        new AqlConfigurationProperties.Experimental.AqlOnFolder(aqlOnFolderEnabled)));
     }
 }

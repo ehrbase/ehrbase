@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRmType;
@@ -51,11 +52,11 @@ final class FromCheck implements FeatureCheck {
 
     private final SystemService systemService;
 
-    private final AqlFeature aqlFeature;
+    private final AqlConfigurationProperties.Experimental aqlExperimentalProps;
 
-    public FromCheck(SystemService systemService, AqlFeature aqlFeature) {
+    public FromCheck(SystemService systemService, AqlConfigurationProperties.Experimental aqlExperimentalProps) {
         this.systemService = systemService;
-        this.aqlFeature = aqlFeature;
+        this.aqlExperimentalProps = aqlExperimentalProps;
     }
 
     @Override
@@ -100,7 +101,7 @@ final class FromCheck implements FeatureCheck {
         }
 
         // check FOLDERS enabled and contains is supported
-        if (aqlFeature.aqlOnFolderEnabled()) {
+        if (aqlExperimentalProps.aqlOnFolder().enabled()) {
             if (structure == StructureRoot.FOLDER
                     && !CollectionUtils.containsAny(
                             structureRmTypes, EnumSet.of(StructureRmType.FOLDER, StructureRmType.COMPOSITION))) {

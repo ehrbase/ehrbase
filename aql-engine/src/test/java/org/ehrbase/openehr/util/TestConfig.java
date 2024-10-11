@@ -15,16 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine.featurecheck;
+package org.ehrbase.openehr.util;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 
-/**
- * AQL features that can be optionally enabled.
- *
- * @param aqlOnFolderEnabled    if enabled allow to query <code>EHR</code> <code>FOLDER</code> using AQL, default <code>false</code>
- */
-@Component
-public record AqlFeature(
-        @Value("${ehrbase.rest.experimental.aql-on-folder.enabled:false}") boolean aqlOnFolderEnabled) {}
+public class TestConfig {
+
+    public static AqlConfigurationProperties aqlConfigurationProperties() {
+        return new AqlConfigurationProperties(
+                false,
+                new AqlConfigurationProperties.Experimental(
+                        new AqlConfigurationProperties.Experimental.AqlOnFolder(false)));
+    }
+}

@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.featurecheck;
 
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.springframework.stereotype.Component;
 
@@ -26,9 +27,9 @@ public final class AqlQueryFeatureCheck {
 
     private final FeatureCheck[] featureChecks;
 
-    public AqlQueryFeatureCheck(SystemService systemService, AqlFeature feature) {
+    public AqlQueryFeatureCheck(SystemService systemService, AqlConfigurationProperties aqlConfigurationProperties) {
         this.featureChecks = new FeatureCheck[] {
-            new FromCheck(systemService, feature),
+            new FromCheck(systemService, aqlConfigurationProperties.experimental()),
             new SelectCheck(systemService),
             new WhereCheck(systemService),
             new OrderByCheck(systemService)

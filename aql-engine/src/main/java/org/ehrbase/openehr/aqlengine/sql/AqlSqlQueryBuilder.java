@@ -42,6 +42,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
@@ -84,7 +85,6 @@ import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -93,17 +93,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class AqlSqlQueryBuilder {
 
+    private final AqlConfigurationProperties aqlConfigurationProperties;
     private final DSLContext context;
     private final KnowledgeCacheService knowledgeCache;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
 
-    @Value("${ehrbase.aql.pg-llj-workaround}")
-    private boolean pgLljWorkaround = false;
-
     public AqlSqlQueryBuilder(
+            AqlConfigurationProperties aqlConfigurationProperties,
             DSLContext context,
             KnowledgeCacheService knowledgeCache,
             Optional<AqlSqlQueryPostProcessor> queryPostProcessor) {
+        this.aqlConfigurationProperties = aqlConfigurationProperties;
         this.context = context;
         this.knowledgeCache = knowledgeCache;
         this.queryPostProcessor = queryPostProcessor;
@@ -191,7 +191,7 @@ public class AqlSqlQueryBuilder {
             AslQuery target = join.getLeft();
             Table<?> toJoin = buildQuery(childQuery, target, aslQueryToTable);
 
-            if (pgLljWorkaround) {
+            if (aqlConfigurationProperties.pgLljWorkaround()) {
                 EncapsulatingQueryUtils.applyPgLljWorkaround(childQuery, join, toJoin);
             }
 

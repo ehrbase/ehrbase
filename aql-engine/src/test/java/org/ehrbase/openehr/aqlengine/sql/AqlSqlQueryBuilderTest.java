@@ -34,6 +34,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
+import org.ehrbase.openehr.util.TestConfig;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectQuery;
@@ -49,6 +50,14 @@ import org.mockito.Mockito;
 class AqlSqlQueryBuilderTest {
 
     private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+
+    private AqlSqlQueryBuilder aqlSqlQueryBuilder() {
+        return new AqlSqlQueryBuilder(
+                TestConfig.aqlConfigurationProperties(),
+                new DefaultDSLContext(SQLDialect.POSTGRES),
+                mockKnowledgeCacheService,
+                Optional.empty());
+    }
 
     @BeforeEach
     void setUp() {
@@ -73,10 +82,10 @@ class AqlSqlQueryBuilderTest {
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
 
-        KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
-        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UUID.randomUUID()));
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
 
         System.out.println("/*");
@@ -84,8 +93,7 @@ class AqlSqlQueryBuilderTest {
         System.out.println("*/");
         System.out.println();
 
-        AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
         SelectQuery<Record> sqlQuery = sqlQueryBuilder.buildSqlQuery(aslQuery);
         System.out.println(sqlQuery);
@@ -104,13 +112,12 @@ class AqlSqlQueryBuilderTest {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-        KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
-        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UUID.randomUUID()));
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-        AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
         assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
     }
@@ -218,8 +225,7 @@ class AqlSqlQueryBuilderTest {
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-        AqlSqlQueryBuilder sqlQueryBuilder = new AqlSqlQueryBuilder(
-                new DefaultDSLContext(SQLDialect.POSTGRES), mockKnowledgeCacheService, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
         return sqlQueryBuilder.buildSqlQuery(aslQuery);
     }
