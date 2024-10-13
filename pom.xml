@@ -131,6 +131,11 @@
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <skipTests>true</skipTests>
+          <!-- Ensure tests have a stable local to prevent localized XML parsing error messages -->
+          <systemPropertyVariables>
+            <user.language>en</user.language>
+            <user.region>US</user.region>
+          </systemPropertyVariables>
           <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
           <argLine>${surefireArgLine}</argLine>
         </configuration>
