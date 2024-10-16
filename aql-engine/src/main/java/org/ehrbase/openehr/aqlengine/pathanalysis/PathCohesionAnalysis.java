@@ -207,10 +207,8 @@ public final class PathCohesionAnalysis {
 
         private static String getStringValue(AndOperatorPredicate and, AqlObjectPath archetypeNodeId) {
             return getOperand(and, archetypeNodeId)
-                    .map(ComparisonOperatorPredicate::getValue)
-                    .map(Primitive.class::cast)
-                    .map(p -> (String) p.getValue())
                     .findFirst()
+                    .map(p -> (String) ((Primitive) p.getValue()).getValue())
                     .orElse(null);
         }
 

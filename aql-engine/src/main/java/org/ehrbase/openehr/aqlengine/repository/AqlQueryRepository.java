@@ -21,10 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -79,22 +77,21 @@ public class AqlQueryRepository {
 
         final SelectQuery<Record> selectQuery = queryBuilder.buildSqlQuery(aslQuery);
 
-        final Map<Integer, AqlSqlResultPostprocessor> postProcessors;
+        AqlSqlResultPostprocessor[] postProcessors;
         if (selects.isEmpty()) {
             // one column with COUNT: see AqlSqlLayer::addSyntheticSelect
-            postProcessors = Map.of(0, NOOP_POSTPROCESSOR);
+            postProcessors = new AqlSqlResultPostprocessor[] {NOOP_POSTPROCESSOR};
         } else {
-            postProcessors = IntStream.range(0, selects.size())
-                    .boxed()
-                    .collect(Collectors.toMap(i -> i, i -> getPostProcessor(selects.get(i))));
+            postProcessors = selects.stream().map(this::getPostProcessor).toArray(AqlSqlResultPostprocessor[]::new);
         }
         return new PreparedQuery(selectQuery, postProcessors);
     }
 
     public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
-        return preparedQuery.selectQuery.stream()
-                .map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
-                .toList();
+        try (Stream<Record> stream = preparedQuery.selectQuery.stream()) {
+            return stream.map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
+                    .toList();
+        }
     }
 
     public static String getQuerySql(PreparedQuery preparedQuery) {
@@ -136,10 +133,10 @@ public class AqlQueryRepository {
                 .orElseGet(DefaultResultPostprocessor::new);
     }
 
-    private static List<Object> postProcessDbRecord(Record r, Map<Integer, AqlSqlResultPostprocessor> postProcessors) {
+    private static List<Object> postProcessDbRecord(Record r, AqlSqlResultPostprocessor[] postProcessors) {
         List<Object> resultRow = new ArrayList<>(r.size());
         for (int i = 0; i < r.size(); i++) {
-            resultRow.add(postProcessors.get(i).postProcessColumn(r.get(i)));
+            resultRow.add(postProcessors[i].postProcessColumn(r.get(i)));
         }
         return resultRow;
     }

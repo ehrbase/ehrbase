@@ -119,9 +119,9 @@ public class AdminTemplateController extends BaseController {
                     @PathVariable(value = "template_id")
                     String templateId) {
 
-        int deleted = this.templateService.adminDeleteTemplate(templateId) ? 1 : 0;
+        this.templateService.adminDeleteTemplate(templateId);
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
+        return ResponseEntity.ok().body(new AdminDeleteResponseData(1));
     }
 
     @DeleteMapping(path = "/all")

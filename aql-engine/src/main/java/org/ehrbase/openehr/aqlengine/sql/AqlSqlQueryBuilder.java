@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
@@ -88,7 +88,7 @@ import org.springframework.stereotype.Component;
 public class AqlSqlQueryBuilder {
 
     private final DSLContext context;
-    private final KnowledgeCacheService knowledgeCache;
+    private final TemplateService templateService;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
 
     @Value("${ehrbase.aql.pg-llj-workaround}")
@@ -96,10 +96,10 @@ public class AqlSqlQueryBuilder {
 
     public AqlSqlQueryBuilder(
             DSLContext context,
-            KnowledgeCacheService knowledgeCache,
+            TemplateService templateService,
             Optional<AqlSqlQueryPostProcessor> queryPostProcessor) {
         this.context = context;
-        this.knowledgeCache = knowledgeCache;
+        this.templateService = templateService;
         this.queryPostProcessor = queryPostProcessor;
     }
 
@@ -220,7 +220,7 @@ public class AqlSqlQueryBuilder {
                     .forEach(query::addGroupBy);
 
             rq.getOrderByFields().stream()
-                    .flatMap(ob -> EncapsulatingQueryUtils.orderFields(ob, aslQueryToTable, knowledgeCache))
+                    .flatMap(ob -> EncapsulatingQueryUtils.orderFields(ob, aslQueryToTable, templateService))
                     .forEach(query::addOrderBy);
         }
 
