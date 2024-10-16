@@ -97,8 +97,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         QueryDefinitionResultDto result;
         try {
-            result = cacheProvider.get(
-                    CacheProvider.STORED_QUERY_CACHE,
+            result = CacheProvider.STORED_QUERY_CACHE.get(
+                    cacheProvider,
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
@@ -220,8 +220,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
     private void evictAllResolutions(StoredQueryQualifiedName qualifiedName) {
         SemVerUtil.streamAllResolutions(qualifiedName.semVer())
-                .forEach(v -> cacheProvider.evict(
-                        CacheProvider.STORED_QUERY_CACHE,
+                .forEach(v -> CacheProvider.STORED_QUERY_CACHE.evict(
+                        cacheProvider,
                         new StoredQueryQualifiedName(qualifiedName.reverseDomainName(), qualifiedName.semanticId(), v)
                                 .toQualifiedNameString()));
     }

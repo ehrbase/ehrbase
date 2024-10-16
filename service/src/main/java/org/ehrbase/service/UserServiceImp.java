@@ -55,7 +55,7 @@ public class UserServiceImp implements UserService {
     @Override
     public UUID getCurrentUserId() {
         String key = authenticationFacade.getAuthentication().getName();
-        return cacheProvider.get(CacheProvider.USER_ID_CACHE, key, () -> getOrCreateCurrentUserIdSync(key));
+        return CacheProvider.USER_ID_CACHE.get(cacheProvider, key, () -> getOrCreateCurrentUserIdSync(key));
     }
 
     private UUID getOrCreateCurrentUserIdSync(String key) {

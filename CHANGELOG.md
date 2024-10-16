@@ -10,6 +10,21 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Revived option to pre-fill template cache ([#1394](https://github.com/ehrbase/ehrbase/pull/1394))
  ### Changed 
  ### Fixed
+* Feature toggle for ehrscape API (ehrbase.rest.ehrscape.enabled, default: false) ([#1415](https://github.com/ehrbase/ehrbase/pull/1415))
+ ### Changed
+ ### Fixed 
+
+## [2.9.0]
+ ### Added
+ ### Changed 
+ ### Fixed
+* Improved transaction-awareness of caches ([#1407](https://github.com/ehrbase/ehrbase/pull/1407))
+
+## [2.8.1]
+ ### Added
+ ### Changed 
+ ### Fixed 
+* Fixed HTTP 500 in case stored query does not exist [#1409](https://github.com/ehrbase/ehrbase/pull/1409)
 
 ## [2.8.0]
  ### Added
@@ -101,4 +116,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.6.0]: https://github.com/ehrbase/ehrbase/compare/v2.5.0...v2.6.0
 [2.7.0]: https://github.com/ehrbase/ehrbase/compare/v2.6.0...v2.7.0
 [2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...HEAD
+[2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
+[2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...HEAD

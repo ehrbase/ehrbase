@@ -39,7 +39,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@ComponentScan(basePackages = {"org.ehrbase.rest", "org.ehrbase.rest.admin", "org.ehrbase.rest.openehr"})
+@ComponentScan(basePackages = {"org.ehrbase.rest.admin", "org.ehrbase.rest.openehr", "org.ehrbase.rest.status"})
 @EnableAspectJAutoProxy
 public class RestModuleConfiguration implements WebMvcConfigurer {
     public static final String NONE = "none";

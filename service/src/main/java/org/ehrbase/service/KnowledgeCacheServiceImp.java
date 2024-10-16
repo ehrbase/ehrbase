@@ -139,9 +139,9 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     }
 
     private void invalidateCaches(String templateId, UUID internalId) {
-        cacheProvider.evict(CacheProvider.INTROSPECT_CACHE, templateId);
-        cacheProvider.evict(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId);
-        cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, internalId);
+        CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
     }
 
     @Override
@@ -199,10 +199,10 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     @Override
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
-            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, () -> {
+            return Optional.of(CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, uuid, () -> {
                 String templateId = templateStorage.findTemplateIdByUuid(uuid).orElseThrow();
                 // reverse cache
-                cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> uuid);
+                CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> uuid);
                 return templateId;
             }));
         } catch (Cache.ValueRetrievalException ex) {
@@ -218,11 +218,11 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         try {
-            return Optional.of(cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, () -> {
+            return Optional.of(CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> {
                 UUID internalId =
                         templateStorage.findUuidByTemplateId(templateId).orElseThrow();
                 // reverse cache
-                cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, internalId, () -> templateId);
+                CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, internalId, () -> templateId);
                 return internalId;
             }));
         } catch (Cache.ValueRetrievalException ex) {
@@ -233,7 +233,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
 
     public WebTemplate getWebTemplate(String templateId) {
         try {
-            return cacheProvider.get(CacheProvider.INTROSPECT_CACHE, templateId, () -> {
+            return CacheProvider.INTROSPECT_CACHE.get(cacheProvider, templateId, () -> {
                 log.info("Updating WebTemplate cache for template: {}", templateId);
                 return retrieveWebTemplate(templateId);
             });

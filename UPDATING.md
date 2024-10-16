@@ -27,3 +27,7 @@ Inconsistent EHR_STATUS found
 Inconsistent FOLDER found
 ```
 Please open an issue so that a fix can be provided.
+
+## EHRbase 2.10.0
+
+Starting from version 2.0.0 the ehrscape scape API was Deprecated. With the release of version 2.10.0, the API is now disabled and can be enabled by switching the configuration `ehrbase.rest.ehrscape.enabled` or as env var `EHRBASE_REST_EHRSCAPE_ENABLED` to `true`.
