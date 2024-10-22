@@ -588,7 +588,7 @@ final class ConditionUtils {
         // on "sCO_c_0_vo_id" = "sF_0_data_item_id_value"
         return FieldUtils.field(
                         sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(), UUID.class, true)
-                .eq(FieldUtils.field(sqlLeft, column, column.getColumnName(), UUID.class, true));
+                .eq(FieldUtils.field(sqlLeft, column, column.getFieldName(), UUID.class, true));
     }
 
     static String escapeAsJsonString(String string) {

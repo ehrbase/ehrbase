@@ -274,9 +274,7 @@ public class AslGraph {
                                             .map(c -> conditionToGraph(level + 2, c))
                                             .collect(Collectors.joining("\n", "", "")));
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
-            case AslFolderItemIdValuesColumnField f -> providerAlias
-                    + f.aliasedName()
-                    + " -- FOLDER.items";
+            case AslFolderItemIdValuesColumnField f -> providerAlias + f.aliasedName() + " -- FOLDER.items";
         };
     }
 

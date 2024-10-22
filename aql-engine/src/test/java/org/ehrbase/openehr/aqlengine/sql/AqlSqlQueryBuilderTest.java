@@ -72,8 +72,13 @@ class AqlSqlQueryBuilderTest {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
             SELECT
+              enc/name/value,
               c/uid/value
-            FROM FOLDER CONTAINS COMPOSITION c
+            FROM EHR e
+              CONTAINS FOLDER[name/value="Encounter"]
+              CONTAINS FOLDER enc
+              CONTAINS COMPOSITION c
+            WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
 
         System.out.println("/*");

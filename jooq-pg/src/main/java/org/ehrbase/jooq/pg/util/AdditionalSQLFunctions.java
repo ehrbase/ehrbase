@@ -18,13 +18,11 @@
 package org.ehrbase.jooq.pg.util;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.Stream;
 import org.jooq.AggregateFunction;
-import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
-import org.jooq.Record;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -66,8 +64,9 @@ public final class AdditionalSQLFunctions {
      */
     public static Field<String> jsonbAttributePathText(Field<JSONB> jsonb, Stream<String> path) {
         Field<JSONB> jsonbField = jsonb;
-        for (String att : path.toList()) {
-            jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(att));
+        Iterator<String> it = path.iterator();
+        while (it.hasNext()) {
+            jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(it.next()));
         }
         return DSL.jsonbGetElementAsText(jsonbField, DSL.inline(0));
     }
@@ -104,34 +103,5 @@ public final class AdditionalSQLFunctions {
         return distinct
                 ? DSL.aggregateDistinct("count", SQLDataType.BIGINT, f)
                 : DSL.aggregate("count", SQLDataType.BIGINT, f == null ? DSL.field(DSL.raw("*")) : f);
-    }
-
-    /**
-     * Creates a case-sensitive regex match clause that is compatible with Postgres.
-     * </p>
-     * Examples:
-     * <ul>
-     *    <li>jsonb text is uuid psql <code>some_text_value ~ E'^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$'</code> </li>
-     *    <li>jsonb text is uuid jooq <code>regexMatches(Field<String> field, "^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$")</code></li>
-     * </ul>
-     *
-     * @param field to check
-     * @param regex to match against
-     * @return condition
-     */
-    public static Condition regexMatches(Field<String> field, String regex) {
-        return DSL.condition("{0} ~ E{1}", field, DSL.inline(regex));
-    }
-
-    /**
-     * Provides <code>jsonb_array_elements</code> as a table select that allows to join by jsonb elements in postgres
-     *
-     * @param field JSONB field to select elements from
-     * @param attr path of the JSONB elements
-     * @return jsonb_array_elements_table_like
-     */
-    public static Table<Record> table_jsonb_array_elements(Field<JSONB> field, String attr) {
-
-        return DSL.table("jsonb_array_elements({0})", DSL.jsonbGetAttribute(field, DSL.inline(attr)));
     }
 }

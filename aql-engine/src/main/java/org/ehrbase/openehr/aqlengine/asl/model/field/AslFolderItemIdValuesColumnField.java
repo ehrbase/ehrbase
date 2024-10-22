@@ -18,7 +18,6 @@
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
 import java.util.UUID;
-import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 /**
@@ -26,54 +25,31 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
  */
 public final class AslFolderItemIdValuesColumnField extends AslVirtualField {
 
-    private final String columnName;
-
-    private final String rmType;
-
-    private final String idType;
+    private static final String FIELD_NAME = "item_id_value";
 
     public AslFolderItemIdValuesColumnField() {
-        this(null, null, "item_id_value", "VERSIONED_COMPOSITION", "HIER_OBJECT_ID");
+        this(null);
     }
 
-    public AslFolderItemIdValuesColumnField(
-            AslExtractedColumn extractedColumn,
-            FieldSource fieldSource,
-            String columnName,
-            String rmType,
-            String idType) {
-        super(UUID[].class, fieldSource, extractedColumn);
-        this.extractedColumn = extractedColumn;
-        this.columnName = columnName;
-        this.rmType = rmType;
-        this.idType = idType;
+    public AslFolderItemIdValuesColumnField(FieldSource fieldSource) {
+        super(UUID[].class, fieldSource, null);
     }
 
     @Override
     public AslFolderItemIdValuesColumnField withProvider(AslQuery provider) {
-        return new AslFolderItemIdValuesColumnField(
-                extractedColumn, fieldSource.withProvider(provider), columnName, rmType, idType);
+        return new AslFolderItemIdValuesColumnField(fieldSource.withProvider(provider));
     }
 
     @Override
     public AslFolderItemIdValuesColumnField copyWithOwner(AslQuery owner) {
-        return new AslFolderItemIdValuesColumnField(
-                extractedColumn, FieldSource.withOwner(owner), columnName, rmType, idType);
+        return new AslFolderItemIdValuesColumnField(FieldSource.withOwner(owner));
     }
 
-    public String getColumnName() {
-        return columnName;
+    public String getFieldName() {
+        return FIELD_NAME;
     }
 
     public String aliasedName() {
-        return super.aliasedName(columnName);
-    }
-
-    public String getRmType() {
-        return rmType;
-    }
-
-    public String getIdType() {
-        return idType;
+        return super.aliasedName(FIELD_NAME);
     }
 }

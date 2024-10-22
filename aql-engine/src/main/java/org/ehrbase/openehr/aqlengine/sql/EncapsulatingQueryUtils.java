@@ -141,7 +141,8 @@ final class EncapsulatingQueryUtils {
             }
             case AslConstantField cf -> DSL.inline(cf.getValue(), cf.getType());
             case AslSubqueryField sqfd -> subqueryField(sqfd, aslQueryToTable);
-            case AslAggregatingField __ -> throw new IllegalArgumentException("Cannot aggregate on AslAggregatingField");
+            case AslAggregatingField __ -> throw new IllegalArgumentException(
+                    "Cannot aggregate on AslAggregatingField");
             case AslFolderItemIdValuesColumnField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate on AslFolderItemIdValuesColumnField");
         };
