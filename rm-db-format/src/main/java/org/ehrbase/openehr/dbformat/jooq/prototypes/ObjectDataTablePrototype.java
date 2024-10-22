@@ -42,6 +42,8 @@ public final class ObjectDataTablePrototype
 
     public final TableField<ObjectDataRecordPrototype, Integer> PARENT_NUM = getField(FieldPrototype.PARENT_NUM);
 
+    public final TableField<ObjectDataRecordPrototype, Integer> CITEM_NUM = getField(FieldPrototype.CITEM_NUM);
+
     public final TableField<ObjectDataRecordPrototype, Integer> NUM_CAP = getField(FieldPrototype.NUM_CAP);
 
     public final TableField<ObjectDataRecordPrototype, String> RM_ENTITY = getField(FieldPrototype.RM_ENTITY);
@@ -49,6 +51,9 @@ public final class ObjectDataTablePrototype
     public final TableField<ObjectDataRecordPrototype, String> ENTITY_CONCEPT = getField(FieldPrototype.ENTITY_CONCEPT);
 
     public final TableField<ObjectDataRecordPrototype, String> ENTITY_NAME = getField(FieldPrototype.ENTITY_NAME);
+
+    public final TableField<ObjectDataRecordPrototype, String> ENTITY_ATTRIBUTE =
+            getField(FieldPrototype.ENTITY_ATTRIBUTE);
 
     public final TableField<ObjectDataRecordPrototype, String> ENTITY_IDX = getField(FieldPrototype.ENTITY_IDX);
 
