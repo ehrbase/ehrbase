@@ -432,7 +432,7 @@ public class AqlSqlQueryBuilder {
             Table<?> primaryTable,
             Table<?> dataTable,
             Stream<Field<?>> columnFields,
-            Stream<AslFolderItemIdValuesColumnField> folderFields) {
+            Stream<AslFolderItemIdVirtualField> folderFields) {
 
         return switch (aq.getType()) {
             case EHR_STATUS -> DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
@@ -444,7 +444,7 @@ public class AqlSqlQueryBuilder {
                     .join(dataTable)
                     .on(primaryTable.field(COMP_VERSION.VO_ID).eq(dataTable.field(COMP_DATA.VO_ID)));
             case FOLDER -> {
-                Optional<AslFolderItemIdValuesColumnField> folderItemColumn = folderFields.findFirst();
+                Optional<AslFolderItemIdVirtualField> folderItemColumn = folderFields.findFirst();
 
                 final Condition onCondition = primaryTable
                         .field(EHR_FOLDER_VERSION.EHR_ID)
@@ -459,7 +459,7 @@ public class AqlSqlQueryBuilder {
                             .join(dataTable)
                             .on(onCondition);
                 } else {
-                    AslFolderItemIdValuesColumnField column = folderItemColumn.get();
+                    AslFolderItemIdVirtualField column = folderItemColumn.get();
                     Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
                             buildFolderItemIdNestedSelect(dataTable, column, false);
 
@@ -483,13 +483,13 @@ public class AqlSqlQueryBuilder {
             AslStructureQuery aq,
             Table<?> primaryTable,
             Stream<Field<?>> columnFields,
-            Stream<AslFolderItemIdValuesColumnField> folderFields) {
+            Stream<AslFolderItemIdVirtualField> folderFields) {
 
         if (aq.getType() == AslSourceRelation.FOLDER) {
 
-            Optional<AslFolderItemIdValuesColumnField> columnField = folderFields.findFirst();
+            Optional<AslFolderItemIdVirtualField> columnField = folderFields.findFirst();
             if (columnField.isPresent()) {
-                AslFolderItemIdValuesColumnField column = columnField.get();
+                AslFolderItemIdVirtualField column = columnField.get();
                 Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
                         buildFolderItemIdNestedSelect(primaryTable, column, true);
 
@@ -562,7 +562,7 @@ public class AqlSqlQueryBuilder {
      * </code>
      */
     private static Pair<Table<?>, List<SelectFieldOrAsterisk>> buildFolderItemIdNestedSelect(
-            Table<?> dataTable, AslFolderItemIdValuesColumnField column, boolean subAlias) {
+            Table<?> dataTable, AslFolderItemIdVirtualField column, boolean subAlias) {
 
         String fieldName = column.getFieldName();
 
