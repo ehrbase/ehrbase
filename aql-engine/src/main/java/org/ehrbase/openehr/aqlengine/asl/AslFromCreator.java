@@ -40,7 +40,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAbstractJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -368,7 +368,7 @@ final class AslFromCreator {
             if (RmConstants.FOLDER.equals(nextDesc.getRmType())
                     && containment instanceof ContainmentClassExpression cs
                     && Objects.equals(cs.getType(), RmConstants.COMPOSITION)) {
-                fields.add(new AslFolderItemIdValuesColumnField());
+                fields.add(new AslFolderItemIdVirtualField());
             }
         }
         return fields;

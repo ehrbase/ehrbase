@@ -21,28 +21,28 @@ import java.util.UUID;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 /**
- * A virtual column field representing a <code>FOLDER.items[].id.value</code> path.
+ * A virtual field representing a <code>FOLDER.items[].id.value</code> path.
  */
-public final class AslFolderItemIdValuesColumnField extends AslVirtualField {
+public final class AslFolderItemIdVirtualField extends AslVirtualField {
 
     private static final String FIELD_NAME = "item_id_value";
 
-    public AslFolderItemIdValuesColumnField() {
+    public AslFolderItemIdVirtualField() {
         this(null);
     }
 
-    public AslFolderItemIdValuesColumnField(FieldSource fieldSource) {
+    public AslFolderItemIdVirtualField(FieldSource fieldSource) {
         super(UUID[].class, fieldSource, null);
     }
 
     @Override
-    public AslFolderItemIdValuesColumnField withProvider(AslQuery provider) {
-        return new AslFolderItemIdValuesColumnField(fieldSource.withProvider(provider));
+    public AslFolderItemIdVirtualField withProvider(AslQuery provider) {
+        return new AslFolderItemIdVirtualField(fieldSource.withProvider(provider));
     }
 
     @Override
-    public AslFolderItemIdValuesColumnField copyWithOwner(AslQuery owner) {
-        return new AslFolderItemIdValuesColumnField(FieldSource.withOwner(owner));
+    public AslFolderItemIdVirtualField copyWithOwner(AslQuery owner) {
+        return new AslFolderItemIdVirtualField(FieldSource.withOwner(owner));
     }
 
     public String getFieldName() {

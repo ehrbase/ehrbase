@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.jooq.impl.QOM;
@@ -35,7 +35,7 @@ class FieldUtilsTest {
 
         String columnName = "items_id_value";
 
-        AslFolderItemIdValuesColumnField aslField = mock(AslFolderItemIdValuesColumnField.class);
+        AslFolderItemIdVirtualField aslField = mock(AslFolderItemIdVirtualField.class);
         doReturn("aliased_" + columnName).when(aslField).aliasedName(columnName);
 
         Field<?> field = FieldUtils.virtualAliasedField(

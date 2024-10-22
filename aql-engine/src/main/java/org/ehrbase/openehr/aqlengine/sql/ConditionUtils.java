@@ -57,7 +57,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
@@ -326,7 +326,7 @@ final class ConditionUtils {
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "AslAggregatingField cannot be used in WHERE");
             case AslSubqueryField __ -> throw new IllegalArgumentException("AslSubqueryField cannot be used in WHERE");
-            case AslFolderItemIdValuesColumnField __ -> throw new IllegalArgumentException(
+            case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "AslFolderItemIdValuesColumnField cannot be used in WHERE");
         };
     }
@@ -577,9 +577,9 @@ final class ConditionUtils {
         AslQuery rightProvider = dc.rightProvider();
         AslQuery rightOwner = dc.getRightOwner();
 
-        AslFolderItemIdValuesColumnField column = leftOwner.getSelect().stream()
-                .filter(AslFolderItemIdValuesColumnField.class::isInstance)
-                .map(AslFolderItemIdValuesColumnField.class::cast)
+        AslFolderItemIdVirtualField column = leftOwner.getSelect().stream()
+                .filter(AslFolderItemIdVirtualField.class::isInstance)
+                .map(AslFolderItemIdVirtualField.class::cast)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
                         "AslFolderItemJoinCondition requires an AslFolderItemIdValuesColumnField"));

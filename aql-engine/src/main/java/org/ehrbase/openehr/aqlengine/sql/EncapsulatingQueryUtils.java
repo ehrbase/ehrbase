@@ -48,7 +48,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdValuesColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -143,7 +143,7 @@ final class EncapsulatingQueryUtils {
             case AslSubqueryField sqfd -> subqueryField(sqfd, aslQueryToTable);
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate on AslAggregatingField");
-            case AslFolderItemIdValuesColumnField __ -> throw new IllegalArgumentException(
+            case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate on AslFolderItemIdValuesColumnField");
         };
     }
@@ -304,7 +304,7 @@ final class EncapsulatingQueryUtils {
             case AslAggregatingField af -> sqlAggregatingField(af, src, aslQueryToTable);
             case AslConstantField<?> cf -> DSL.inline(cf.getValue(), cf.getType());
             case AslSubqueryField sqf -> subqueryField(sqf, aslQueryToTable);
-            case AslFolderItemIdValuesColumnField fidv -> throw new IllegalArgumentException(
+            case AslFolderItemIdVirtualField fidv -> throw new IllegalArgumentException(
                     "%s is not support as select field".formatted(fidv.getExtractedColumn()));
         };
     }
@@ -334,7 +334,7 @@ final class EncapsulatingQueryUtils {
             case AslConstantField __ -> Stream.empty();
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslAggregatingField");
-            case AslFolderItemIdValuesColumnField __ -> throw new IllegalArgumentException(
+            case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslFolderItemIdValuesColumnField");
         };
     }
@@ -369,7 +369,7 @@ final class EncapsulatingQueryUtils {
                     case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "ORDER BY AslAggregatingField is not allowed");
-                    case AslFolderItemIdValuesColumnField __ -> throw new IllegalArgumentException(
+                    case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                             "ORDER BY AslFolderItemIdValuesColumnField is not allowed");
                 })
                 .map(f -> f.sort(ob.direction()));
