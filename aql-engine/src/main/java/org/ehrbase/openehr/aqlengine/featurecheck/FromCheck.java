@@ -52,11 +52,11 @@ final class FromCheck implements FeatureCheck {
 
     private final SystemService systemService;
 
-    private final AqlConfigurationProperties.Experimental aqlExperimentalProps;
+    private final AqlConfigurationProperties aqlConfiguration;
 
-    public FromCheck(SystemService systemService, AqlConfigurationProperties.Experimental aqlExperimentalProps) {
+    public FromCheck(SystemService systemService, AqlConfigurationProperties aqlConfiguration) {
         this.systemService = systemService;
-        this.aqlExperimentalProps = aqlExperimentalProps;
+        this.aqlConfiguration = aqlConfiguration;
     }
 
     @Override
@@ -101,7 +101,7 @@ final class FromCheck implements FeatureCheck {
         }
 
         // check FOLDERS enabled and contains is supported
-        if (aqlExperimentalProps.aqlOnFolder().enabled()) {
+        if (aqlConfiguration.experimental().aqlOnFolder().enabled()) {
             if (structure == StructureRoot.FOLDER
                     && !CollectionUtils.containsAny(
                             structureRmTypes, EnumSet.of(StructureRmType.FOLDER, StructureRmType.COMPOSITION))) {
@@ -110,7 +110,7 @@ final class FromCheck implements FeatureCheck {
             }
         }
         // otherwise ensure we are not querying folders
-        else if (CollectionUtils.containsAny(structureRmTypes, EnumSet.of(StructureRmType.FOLDER))) {
+        else if (structureRmTypes.contains(StructureRmType.FOLDER)) {
             throw new AqlFeatureNotImplementedException("CONTAINS %s is an experimental feature and currently disabled."
                     .formatted(nextContainment.getType()));
         }

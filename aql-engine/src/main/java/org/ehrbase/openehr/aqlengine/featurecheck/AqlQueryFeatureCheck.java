@@ -29,7 +29,7 @@ public final class AqlQueryFeatureCheck {
 
     public AqlQueryFeatureCheck(SystemService systemService, AqlConfigurationProperties aqlConfigurationProperties) {
         this.featureChecks = new FeatureCheck[] {
-            new FromCheck(systemService, aqlConfigurationProperties.experimental()),
+            new FromCheck(systemService, aqlConfigurationProperties),
             new SelectCheck(systemService),
             new WhereCheck(systemService),
             new OrderByCheck(systemService)

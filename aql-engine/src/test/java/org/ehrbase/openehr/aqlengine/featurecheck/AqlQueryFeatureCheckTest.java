@@ -222,6 +222,11 @@ class AqlQueryFeatureCheckTest {
             strings = {
                 "SELECT e FROM EHR e",
                 "SELECT e/ehr_id FROM EHR e",
+                // ehr_status is rewritten as CONTAINS
+                "SELECT e/ehr_status FROM EHR e",
+                "SELECT e/compositions FROM EHR e",
+                "SELECT e/directory FROM EHR e",
+                "SELECT e/folders FROM EHR e",
                 """
                    SELECT f
                    FROM FOLDER f

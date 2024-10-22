@@ -23,9 +23,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * AQL features that can be optionally enabled.
  *
  * <ul>
- *     <li><code>pg-llj-workaround: true</code> Enabled fix for a bug postgresql where filters in lateral left joins inside a left join are not respected.</li>
- *     <li><code>experimental.aql-on-folder.enabled: false</code> if enabled allow to query <code>EHR</code> <code>FOLDER</code> using AQL, default <code>false</code></li>
- * </ul>>
+ *     <li><code>pg-llj-workaround</code> Enables fix for an old postgresql bug where filters in lateral left joins inside a left join are not respected, default: <code>true</code></li>
+ *     <li><code>experimental.aql-on-folder.enabled</code> if enabled allow to query <code>EHR</code> <code>FOLDER</code> using AQL, default: <code>false</code></li>
+ * </ul>
  */
 @ConfigurationProperties(prefix = "ehrbase.aql")
 public record AqlConfigurationProperties(boolean pgLljWorkaround, Experimental experimental) {

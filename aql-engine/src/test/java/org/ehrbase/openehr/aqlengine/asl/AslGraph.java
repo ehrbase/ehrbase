@@ -276,11 +276,7 @@ public class AslGraph {
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
             case AslFolderItemIdValuesColumnField f -> providerAlias
                     + f.aliasedName()
-                    + Optional.of(f)
-                            .map(AslFolderItemIdValuesColumnField::getExtractedColumn)
-                            .map(e -> " -- " + e.name() + " " + e.getPath().render() + " [type=" + f.getRmType()
-                                    + " _type=" + f.getIdType() + "]")
-                            .orElse("");
+                    + " -- FOLDER.items";
         };
     }
 
