@@ -25,24 +25,30 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.jooq.pg.tables.EhrFolderData;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
@@ -62,8 +68,8 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.JSONObjectAggNullStep;
-import org.jooq.JoinType;
 import org.jooq.Operator;
+import org.jooq.Param;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Result;
@@ -72,13 +78,13 @@ import org.jooq.SelectField;
 import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectHavingStep;
 import org.jooq.SelectJoinStep;
+import org.jooq.SelectOnConditionStep;
 import org.jooq.SelectQuery;
 import org.jooq.SelectSelectStep;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -87,17 +93,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class AqlSqlQueryBuilder {
 
+    private static final Param<?>[] FOLDER_OBJECT_REF_TYPES =
+            new Param[] {DSL.inline("VERSIONED_COMPOSITION"), DSL.inline("COMPOSITION")};
+
+    private final AqlConfigurationProperties aqlConfigurationProperties;
     private final DSLContext context;
     private final KnowledgeCacheService knowledgeCache;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
 
-    @Value("${ehrbase.aql.pg-llj-workaround}")
-    private boolean pgLljWorkaround = false;
-
     public AqlSqlQueryBuilder(
+            AqlConfigurationProperties aqlConfigurationProperties,
             DSLContext context,
             KnowledgeCacheService knowledgeCache,
             Optional<AqlSqlQueryPostProcessor> queryPostProcessor) {
+        this.aqlConfigurationProperties = aqlConfigurationProperties;
         this.context = context;
         this.knowledgeCache = knowledgeCache;
         this.queryPostProcessor = queryPostProcessor;
@@ -116,8 +125,8 @@ public class AqlSqlQueryBuilder {
      */
     static class AslQueryTables {
 
-        private Map<AslQuery, Table<?>> dataTables = new HashMap<>();
-        private Map<AslQuery, Table<?>> versionTables = new HashMap<>();
+        private final Map<AslQuery, Table<?>> dataTables = new HashMap<>();
+        private final Map<AslQuery, Table<?>> versionTables = new HashMap<>();
 
         private AslQueryTables() {}
 
@@ -185,7 +194,7 @@ public class AqlSqlQueryBuilder {
             AslQuery target = join.getLeft();
             Table<?> toJoin = buildQuery(childQuery, target, aslQueryToTable);
 
-            if (pgLljWorkaround) {
+            if (aqlConfigurationProperties.pgLljWorkaround()) {
                 EncapsulatingQueryUtils.applyPgLljWorkaround(childQuery, join, toJoin);
             }
 
@@ -223,7 +232,6 @@ public class AqlSqlQueryBuilder {
                     .flatMap(ob -> EncapsulatingQueryUtils.orderFields(ob, aslQueryToTable, knowledgeCache))
                     .forEach(query::addOrderBy);
         }
-
         return from;
     }
 
@@ -353,6 +361,8 @@ public class AqlSqlQueryBuilder {
                             "Filtering queries cannot be based on AslAggregatingField");
                     case AslSubqueryField __ -> throw new IllegalArgumentException(
                             "Filtering queries cannot be based on AslSubqueryField");
+                    case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
+                            "Filtering queries cannot be based on AslFolderItemIdValuesColumnField");
                 };
         return DSL.select(fields.toArray(Field[]::new));
     }
@@ -384,34 +394,222 @@ public class AqlSqlQueryBuilder {
     @Nonnull
     private static SelectJoinStep<Record> structureQueryBase(
             AslStructureQuery aq, Table<?> primaryTable, Table<?> dataTable, boolean hasVersionTable) {
-        SelectJoinStep<Record> step = DSL.select(aq.getSelect().stream()
-                        .map(AslColumnField.class::cast)
-                        .map(f -> ((aq.isRequiresVersionTableJoin() && f.isVersionTableField())
-                                        ? primaryTable
-                                        : dataTable)
-                                .field(f.getColumnName())
-                                .as(f.getAliasedName()))
-                        .toArray(SelectFieldOrAsterisk[]::new))
-                .from(primaryTable);
 
+        Map<Class<? extends AslField>, List<AslField>> aslFields =
+                aq.getSelect().stream().collect(Collectors.groupingBy(AslField::getClass));
+
+        Stream<Field<?>> columnFields = consumeFieldsOfType(
+                aslFields,
+                AslColumnField.class,
+                cf -> ((aq.isRequiresVersionTableJoin() && cf.isVersionTableField()) ? primaryTable : dataTable)
+                        .field(cf.getColumnName())
+                        .as(cf.getAliasedName()));
+
+        Stream<AslFolderItemIdVirtualField> folderFields =
+                consumeFieldsOfType(aslFields, AslFolderItemIdVirtualField.class, Function.identity());
+
+        if (!aslFields.isEmpty()) {
+            throw new IllegalStateException("StructureQueryBase could not handle AslFields of type %s"
+                    .formatted(aslFields.values().stream()
+                            .flatMap(Collection::stream)
+                            .map(Object::getClass)
+                            .map(Class::getSimpleName)
+                            .toList()));
+        }
+
+        final SelectJoinStep<Record> step;
         if (hasVersionTable) {
-            // join version and data table
-            step = switch (aq.getType()) {
-                case EHR, AUDIT_DETAILS -> throw new IllegalArgumentException(
-                        "%s has no version table".formatted(aq.getType()));
-                case EHR_STATUS -> step.join(dataTable, JoinType.JOIN)
-                        .on(primaryTable.field(EHR_STATUS_VERSION.EHR_ID).eq(dataTable.field(EHR_STATUS_DATA.EHR_ID)));
-                case COMPOSITION -> step.join(dataTable, JoinType.JOIN)
-                        .on(primaryTable.field(COMP_VERSION.VO_ID).eq(dataTable.field(COMP_DATA.VO_ID)));
-                case FOLDER -> step.join(dataTable, JoinType.JOIN)
-                        .on(primaryTable
-                                .field(EHR_FOLDER_VERSION.EHR_ID)
-                                .eq(dataTable.field(EHR_FOLDER_DATA.EHR_ID))
-                                .and(primaryTable
-                                        .field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
-                                        .eq(dataTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX))));};
+            step = structureQueryBaseVersionToDataTable(aq, primaryTable, dataTable, columnFields, folderFields);
+        } else {
+            step = structureQueryBaseUsingDataTable(aq, primaryTable, columnFields, folderFields);
         }
         return step;
+    }
+
+    @Nonnull
+    private static SelectJoinStep<Record> structureQueryBaseVersionToDataTable(
+            AslStructureQuery aq,
+            Table<?> primaryTable,
+            Table<?> dataTable,
+            Stream<Field<?>> columnFields,
+            Stream<AslFolderItemIdVirtualField> folderFields) {
+
+        return switch (aq.getType()) {
+            case EHR_STATUS -> DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+                    .from(primaryTable)
+                    .join(dataTable)
+                    .on(primaryTable.field(EHR_STATUS_VERSION.EHR_ID).eq(dataTable.field(EHR_STATUS_DATA.EHR_ID)));
+            case COMPOSITION -> DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+                    .from(primaryTable)
+                    .join(dataTable)
+                    .on(primaryTable.field(COMP_VERSION.VO_ID).eq(dataTable.field(COMP_DATA.VO_ID)));
+            case FOLDER -> {
+                Optional<AslFolderItemIdVirtualField> folderItemColumn = folderFields.findFirst();
+
+                final Condition onCondition = primaryTable
+                        .field(EHR_FOLDER_VERSION.EHR_ID)
+                        .eq(dataTable.field(EHR_FOLDER_DATA.EHR_ID))
+                        .and(primaryTable
+                                .field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
+                                .eq(dataTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
+
+                if (folderItemColumn.isEmpty()) {
+                    yield DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+                            .from(primaryTable)
+                            .join(dataTable)
+                            .on(onCondition);
+                } else {
+                    AslFolderItemIdVirtualField column = folderItemColumn.get();
+                    Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
+                            buildFolderItemIdNestedSelect(dataTable, column, false);
+
+                    // we need all fields at this point + the item id array
+                    Table<?> joinTable = tableToSelect.getLeft();
+                    List<SelectFieldOrAsterisk> selectFields = tableToSelect.getRight();
+
+                    yield DSL.select(Stream.concat(columnFields, selectFields.stream())
+                                    .toArray(SelectFieldOrAsterisk[]::new))
+                            .from(primaryTable)
+                            .join(joinTable)
+                            .on(onCondition);
+                }
+            }
+            default -> throw new IllegalArgumentException("%s has no version table".formatted(aq.getType()));
+        };
+    }
+
+    @Nonnull
+    private static SelectJoinStep<Record> structureQueryBaseUsingDataTable(
+            AslStructureQuery aq,
+            Table<?> primaryTable,
+            Stream<Field<?>> columnFields,
+            Stream<AslFolderItemIdVirtualField> folderFields) {
+
+        if (aq.getType() == AslSourceRelation.FOLDER) {
+
+            Optional<AslFolderItemIdVirtualField> columnField = folderFields.findFirst();
+            if (columnField.isPresent()) {
+                AslFolderItemIdVirtualField column = columnField.get();
+                Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
+                        buildFolderItemIdNestedSelect(primaryTable, column, true);
+
+                // we need all fields at this point + the item id array
+                Table<?> joinTable = tableToSelect.getLeft();
+                List<SelectFieldOrAsterisk> selectFields = tableToSelect.getRight();
+
+                // We join by num to reduce the parent child scanning to a single folder
+                // on "sF_f2_0_data_sq"."num" = "sF_f2_0sq"."num"
+                // and "sF_f2_0_data_sq"."ehr_id" = "sF_f2_0sq"."ehr_id"
+                // and "sF_f2_0_data_sq"."ehr_folders_idx" = "sF_f2_0sq"."ehr_folders_idx"
+                Condition onCondition = primaryTable
+                        .field(EHR_FOLDER_DATA.NUM)
+                        .eq(joinTable.field(EHR_FOLDER_DATA.NUM))
+                        .and(primaryTable.field(EHR_FOLDER_DATA.EHR_ID).eq(joinTable.field(EHR_FOLDER_DATA.EHR_ID)))
+                        .and(primaryTable
+                                .field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)
+                                .eq(joinTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
+
+                return DSL.select(Stream.concat(columnFields, selectFields.stream())
+                                .toArray(SelectFieldOrAsterisk[]::new))
+                        .from(primaryTable)
+                        .join(joinTable)
+                        .on(onCondition);
+            }
+        }
+
+        return DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new)).from(primaryTable);
+    }
+
+    private static <T extends AslField, R> Stream<R> consumeFieldsOfType(
+            Map<Class<? extends AslField>, List<AslField>> aslFields,
+            Class<T> type,
+            Function<? super T, ? extends R> mapper) {
+        return Optional.ofNullable(aslFields.remove(type)).orElseGet(List::of).stream()
+                .filter(type::isInstance)
+                .map(type::cast)
+                .map(mapper);
+    }
+
+    private static <T> SelectJoinStep<Record> structureQueryBaseVersion(
+            Stream<Field<?>> columnFields, Table<?> primaryTable, Table<?> dataTable, TableField<?, T> tableField) {
+        return DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+                .from(primaryTable)
+                .join(dataTable)
+                .on(Objects.requireNonNull(primaryTable.field(tableField)).eq(dataTable.field(tableField)));
+    }
+
+    /**
+     * TODO temporary solution until item[].id.value are extracted into its own column for direct access
+     * Nested array element select for all item[].id.value(s)
+     * <code>
+     * select
+     *     "parent".*,
+     *     cast((("items"->'X')->>'V') as uuid) as "items_id_value"
+     * from "ehr"."ehr_folder_data" as "parent"
+     *     -- 2nd join on folder data where the folders are subfolder of the parent one
+     *     join "ehr"."ehr_folder_data" as "descendant"
+     *     on (
+     *        "descendant"."ehr_id" = "parent"."ehr_id"
+     *        and "descendant"."ehr_folders_idx" = "parent"."ehr_folders_idx"
+     *        and "descendant"."num" between "parent"."num" and "parent"."num_cap"
+     *     )
+     *     -- take the items[] as flat list for each sub-folder where the id is an HIER_OBJECT UUID
+     *     join jsonb_array_elements("descendant"."data"->'i') as "items"
+     *     on (
+     * 	       ("items"->>'tp') IN ('COMPOSITION', 'VERSIONED_COMPOSITION')
+     * 	       and ((("items"->'X')->>'V') ~ E'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+     *     )
+     * </code>
+     */
+    private static Pair<Table<?>, List<SelectFieldOrAsterisk>> buildFolderItemIdNestedSelect(
+            Table<?> dataTable, AslFolderItemIdVirtualField column, boolean subAlias) {
+
+        String fieldName = column.getFieldName();
+
+        EhrFolderData baseFolderTable = EHR_FOLDER_DATA.as("base");
+        EhrFolderData descendantFolderTable = EHR_FOLDER_DATA.as("descendant");
+        String attr = RmAttributeAlias.getAlias("items");
+        Table<Record> itemsJsonbArrayElementTable = DSL.table(
+                        "jsonb_array_elements({0})",
+                        DSL.jsonbGetAttribute(descendantFolderTable.DATA, DSL.inline(attr)))
+                .as("items");
+
+        // Field<JSONB> items = DSL.field("{0}", JSONB.class, itemsJsonbArrayElementTable);
+        Field<JSONB> items = DSL.field(itemsJsonbArrayElementTable.getQualifiedName(), JSONB.class);
+
+        Field<String> itemIdValue = AdditionalSQLFunctions.jsonbAttributePathText(
+                items, Stream.of("id", "value").map(RmAttributeAlias::getAlias));
+        Field<UUID> itemIdValueUUID = DSL.cast(itemIdValue, UUID.class).as(fieldName);
+
+        Field<String> itemType = AdditionalSQLFunctions.jsonbAttributePathText(
+                items, Stream.of("type").map(RmAttributeAlias::getAlias));
+        Field<String> itemRmType = AdditionalSQLFunctions.jsonbAttributePathText(
+                items, Stream.of("id", "_type").map(RmAttributeAlias::getAlias));
+
+        // @format:off
+        // we need all fields at this point + the item id array
+        SelectOnConditionStep<Record> selectOnConditionStep = DSL.select(baseFolderTable.asterisk(), itemIdValueUUID)
+                .from(baseFolderTable)
+                // -- 1st join on folder data where the folders are subfolder of the root one
+                .join(descendantFolderTable)
+                    .on(descendantFolderTable.EHR_ID.eq(baseFolderTable.EHR_ID))
+                    .and(descendantFolderTable.EHR_FOLDERS_IDX.eq(baseFolderTable.EHR_FOLDERS_IDX))
+                    .and(descendantFolderTable.NUM.between(baseFolderTable.NUM, baseFolderTable.NUM_CAP))
+                // -- 2nd take the items[] as flat list for each sub-folder where the id is an UUID
+                .join(itemsJsonbArrayElementTable)
+                    // ("items"->>'tp') IN( 'VERSIONED_COMPOSITION', 'COMPOSITION')
+                    .on(itemType.in(FOLDER_OBJECT_REF_TYPES))
+                    // (((("items"->'X')->'V')->>0) ~ '^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
+                    .and(itemIdValue.likeRegex(DSL.inline("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")));
+        // in case we join using the folder_data table we need to pick a dedicated alias for the items to prevent clashes
+        Table<?> joinTable = subAlias
+                ? selectOnConditionStep.asTable(dataTable.getName() + "_items")
+                :  selectOnConditionStep.asTable(dataTable);
+
+        // @format:on
+        List<SelectFieldOrAsterisk> selectFields =
+                List.of(FieldUtils.virtualAliasedField(joinTable, itemIdValueUUID, column, fieldName));
+        return Pair.of(joinTable, selectFields);
     }
 
     /**

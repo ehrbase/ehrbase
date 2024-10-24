@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,18 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine.asl.model.field;
+package org.ehrbase.openehr.util;
 
-import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 
-public abstract sealed class AslVirtualField extends AslField
-        permits AslAggregatingField, AslComplexExtractedColumnField, AslFolderItemIdVirtualField {
-    public AslVirtualField(Class<?> type, FieldSource fieldSource, AslExtractedColumn extractedColumn) {
-        super(type, fieldSource, extractedColumn);
-    }
+public class TestConfig {
 
-    @Override
-    public String aliasedName(String name) {
-        return super.aliasedName(name);
+    public static AqlConfigurationProperties aqlConfigurationProperties() {
+        return new AqlConfigurationProperties(
+                false,
+                new AqlConfigurationProperties.Experimental(
+                        new AqlConfigurationProperties.Experimental.AqlOnFolder(false)));
     }
 }

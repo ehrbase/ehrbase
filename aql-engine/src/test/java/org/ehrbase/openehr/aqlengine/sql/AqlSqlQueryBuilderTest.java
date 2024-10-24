@@ -31,8 +31,10 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
+import org.ehrbase.openehr.util.TestConfig;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectQuery;
@@ -45,9 +47,17 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-public class AqlSqlQueryBuilderTest {
+class AqlSqlQueryBuilderTest {
 
     private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+
+    private AqlSqlQueryBuilder aqlSqlQueryBuilder() {
+        return new AqlSqlQueryBuilder(
+                TestConfig.aqlConfigurationProperties(),
+                new DefaultDSLContext(SQLDialect.POSTGRES),
+                mockKnowledgeCacheService,
+                Optional.empty());
+    }
 
     @BeforeEach
     void setUp() {
@@ -61,14 +71,14 @@ public class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-        SELECT
-        c/content,
-        c/content[at0001],
-        c/content[at0002],
-        c/uid/value,
-        c/context/other_context[at0004]/items[at0014]/value
-        FROM EHR e CONTAINS COMPOSITION c
-        WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
+            SELECT
+              enc/name/value,
+              c/uid/value
+            FROM EHR e
+              CONTAINS FOLDER[name/value="Encounter"]
+              CONTAINS FOLDER enc
+              CONTAINS COMPOSITION c
+            WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
 
         System.out.println("/*");
@@ -77,10 +87,10 @@ public class AqlSqlQueryBuilderTest {
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
 
-        KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
-        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UUID.randomUUID()));
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
 
         System.out.println("/*");
@@ -88,8 +98,7 @@ public class AqlSqlQueryBuilderTest {
         System.out.println("*/");
         System.out.println();
 
-        AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
         SelectQuery<Record> sqlQuery = sqlQueryBuilder.buildSqlQuery(aslQuery);
         System.out.println(sqlQuery);
@@ -108,19 +117,18 @@ public class AqlSqlQueryBuilderTest {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-        KnowledgeCacheService kcs = mock(KnowledgeCacheService.class);
-        Mockito.when(kcs.findUuidByTemplateId(ArgumentMatchers.anyString())).thenReturn(Optional.of(UUID.randomUUID()));
+        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UUID.randomUUID()));
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(kcs, () -> "node");
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-        AqlSqlQueryBuilder sqlQueryBuilder =
-                new AqlSqlQueryBuilder(new DefaultDSLContext(SQLDialect.POSTGRES), kcs, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
         assertDoesNotThrow(() -> sqlQueryBuilder.buildSqlQuery(aslQuery));
     }
 
     @Test
-    void testDataQuery() {
+    void queryOnData() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
         SELECT
@@ -135,6 +143,63 @@ public class AqlSqlQueryBuilderTest {
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
 
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
+    }
+
+    @Test
+    void queryOnFolder() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+        SELECT
+        f/uid/value
+        FROM EHR
+        CONTAINS FOLDER f
+        """);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        assertThat(queryWrapper.pathInfos()).hasSize(1);
+        assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
+            assertThat(select.type()).isEqualTo(SelectWrapper.SelectType.PATH);
+            assertThat(select.getSelectPath()).hasValueSatisfying(path -> {
+                assertThat(path).isEqualTo("f/uid/value");
+            });
+            assertThat(select.root()).satisfies(root -> {
+                assertThat(root.getRmType()).isEqualTo("FOLDER");
+                assertThat(root.alias()).isEqualTo("f");
+            });
+        });
+
+        assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
+    }
+
+    @Test
+    void queryOnFolderWithComposition() {
+        AqlQuery aqlQuery = AqlQueryParser.parse(
+                """
+            SELECT
+              c/uid/value
+            FROM FOLDER CONTAINS COMPOSITION c
+        """);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+
+        assertThat(queryWrapper.pathInfos()).hasSize(1);
+        assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
+            assertThat(select.type()).isEqualTo(SelectWrapper.SelectType.PATH);
+            assertThat(select.getSelectPath()).hasValueSatisfying(path -> {
+                assertThat(path).isEqualTo("c/uid/value");
+            });
+            assertThat(select.root()).satisfies(root -> {
+                assertThat(root.getRmType()).isEqualTo("COMPOSITION");
+                assertThat(root.alias()).isEqualTo("c");
+            });
+        });
+
+        SelectQuery<Record> selectQuery = buildSqlQuery(queryWrapper);
+        assertThat(selectQuery.toString())
+                // items_id_value are selected from folder
+                .contains("\"sF_0sq\".\"item_id_value\" as \"sF_0_item_id_value\"")
+                .contains("and \"descendant\".\"num\" between \"base\".\"num\" and \"base\".\"num_cap\"")
+                // compositions are joined on item_id_value
+                .contains("on \"sCO_c_0\".\"sCO_c_0_vo_id\" = \"sF_0\".\"sF_0_item_id_value\"");
     }
 
     @Test
@@ -165,8 +230,7 @@ public class AqlSqlQueryBuilderTest {
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-        AqlSqlQueryBuilder sqlQueryBuilder = new AqlSqlQueryBuilder(
-                new DefaultDSLContext(SQLDialect.POSTGRES), mockKnowledgeCacheService, Optional.empty());
+        AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
         return sqlQueryBuilder.buildSqlQuery(aslQuery);
     }

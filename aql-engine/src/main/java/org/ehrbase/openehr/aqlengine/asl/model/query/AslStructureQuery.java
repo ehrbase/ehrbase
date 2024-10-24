@@ -77,18 +77,6 @@ public final class AslStructureQuery extends AslQuery {
 
     public static final String ENTITY_ATTRIBUTE = "entity_attribute";
 
-    public boolean isRequiresVersionTableJoin() {
-        return requiresVersionTableJoin;
-    }
-
-    public boolean isRepresentsOriginalVersionExpression() {
-        return representsOriginalVersionExpression;
-    }
-
-    public void setRepresentsOriginalVersionExpression(boolean representsOriginalVersionExpression) {
-        this.representsOriginalVersionExpression = representsOriginalVersionExpression;
-    }
-
     public enum AslSourceRelation {
         EHR(StructureRoot.EHR, null, EHR_),
         EHR_STATUS(StructureRoot.EHR_STATUS, EHR_STATUS_VERSION, EHR_STATUS_DATA),
@@ -231,5 +219,17 @@ public final class AslStructureQuery extends AslQuery {
 
     public AslSourceRelation getType() {
         return type;
+    }
+
+    public boolean isRequiresVersionTableJoin() {
+        return requiresVersionTableJoin;
+    }
+
+    public boolean isRepresentsOriginalVersionExpression() {
+        return representsOriginalVersionExpression;
+    }
+
+    public void setRepresentsOriginalVersionExpression(boolean representsOriginalVersionExpression) {
+        this.representsOriginalVersionExpression = representsOriginalVersionExpression;
     }
 }
