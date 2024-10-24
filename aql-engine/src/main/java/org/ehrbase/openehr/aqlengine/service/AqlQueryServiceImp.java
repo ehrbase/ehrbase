@@ -348,13 +348,12 @@ public class AqlQueryServiceImp implements AqlQueryService {
     }
 
     /**
-     * Rephrases EHR.composition and EHR.status CONTAINS statements so that they can be handled regularly by the aql engine.
-     * E.g. <code>SELECT e/ehr_status FROM EHR</code> is rewritten as <code>SELECT s FROM EHR e CONTAINS EHR_STATUS s</code>,
-     * <code>SELECT e/composition FROM EHR</code> is rewritten as <code>SELECT c FROM EHR e CONTAINS COMPOSITION c</code>.
+     * Rephrases EHR.status to CONTAINS statements so that they can be handled regularly by the aql engine.
+     * I.e. <code>SELECT e/ehr_status FROM EHR</code> is rewritten as <code>SELECT s FROM EHR e CONTAINS EHR_STATUS s</code>.
+     * EHR/composition, EHR/directory, and EHR/folders are not supported because the path syntax implies that the objects are optional (vs. CONTAINS).
      */
     static void replaceEhrPaths(AqlQuery aqlQuery) {
-        replaceEhrPath(aqlQuery, "compositions", "COMPOSITION", "c");
-        replaceEhrPath(aqlQuery, "ehr_status", "EHR_STATUS", "s");
+        replaceEhrPath(aqlQuery, "ehr_status", RmConstants.EHR_STATUS, "s");
     }
 
     /**

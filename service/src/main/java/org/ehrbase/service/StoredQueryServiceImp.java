@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -73,16 +74,17 @@ public class StoredQueryServiceImp implements StoredQueryService {
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName storedQueryQualifiedName =
                 StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
+
+        QueryDefinitionResultDto result;
         try {
-            return cacheProvider.get(
-                    CacheProvider.STORED_QUERY_CACHE,
+            result = CacheProvider.STORED_QUERY_CACHE.get(
+                    cacheProvider,
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
-            // No template with that templateId exist
-            throw new GeneralRequestProcessingException(
-                    "Cache Access Error: " + e.getCause().getMessage(), e);
+            throw e.getCause() instanceof RuntimeException cause ? cause : e;
         }
+        return result;
     }
 
     private QueryDefinitionResultDto retrieveStoredQueryInternal(StoredQueryQualifiedName storedQueryQualifiedName) {
@@ -97,8 +99,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
             throw new InternalServerException(e.getMessage());
         }
 
-        return storedQueryAccess.orElseThrow(() -> new IllegalArgumentException(
-                "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
+        return storedQueryAccess.orElseThrow(() -> new ObjectNotFoundException(
+                "QUERY", "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
     }
 
     @Override
@@ -192,22 +194,26 @@ public class StoredQueryServiceImp implements StoredQueryService {
         } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
         } finally {
-            cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, storedQueryQualifiedName.toQualifiedNameString());
+            CacheProvider.STORED_QUERY_CACHE.evict(cacheProvider, storedQueryQualifiedName.toQualifiedNameString());
         }
     }
 
     private void evictPartiallyCachedVersions(String qualifiedName, SemVer semVer) {
+        CacheProvider.STORED_QUERY_CACHE.evict(
+                cacheProvider,
+                StoredQueryQualifiedName.create(qualifiedName, semVer).toQualifiedNameString());
 
-        SemVer versionMajor = new SemVer(semVer.major(), null, null, null);
-        SemVer versionMajorMinor = new SemVer(semVer.major(), semVer.minor(), null, null);
-
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
-                StoredQueryQualifiedName.create(qualifiedName, versionMajor).toQualifiedNameString());
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
-                StoredQueryQualifiedName.create(qualifiedName, versionMajorMinor)
-                        .toQualifiedNameString());
+        if (!semVer.isPreRelease()) {
+            Stream.of(
+                            SemVer.NO_VERSION,
+                            // major
+                            new SemVer(semVer.major(), null, null, null),
+                            // minor
+                            new SemVer(semVer.major(), semVer.minor(), null, null))
+                    .map(v -> StoredQueryQualifiedName.create(qualifiedName, v))
+                    .map(StoredQueryQualifiedName::toQualifiedNameString)
+                    .forEach(v -> CacheProvider.STORED_QUERY_CACHE.evict(cacheProvider, v));
+        }
     }
 
     private static SemVer parseRequestSemVer(String version) {

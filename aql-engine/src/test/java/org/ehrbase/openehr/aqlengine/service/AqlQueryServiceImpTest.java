@@ -51,21 +51,6 @@ class AqlQueryServiceImpTest {
     @CsvSource(
             textBlock =
                     """
-            SELECT e/compositions AS c FROM EHR e=>SELECT c AS c FROM EHR e CONTAINS COMPOSITION c
-            SELECT c/uid/value, e/compositions/uid/value FROM EHR e CONTAINS COMPOSITION c WHERE e/compositions/archetype_details/template_id/value = 'tpl.v0'=>SELECT c/uid/value, c1/uid/value FROM EHR e CONTAINS (COMPOSITION c1 AND COMPOSITION c) WHERE c1/archetype_details/template_id/value = 'tpl.v0'
-            """,
-            delimiterString = "=>")
-    void resolveEhrCompositions(String srcAql, String expectedAql) {
-
-        AqlQuery aqlQuery = AqlQueryParser.parse(srcAql);
-        AqlQueryServiceImp.replaceEhrPaths(aqlQuery);
-        assertThat(aqlQuery.render()).isEqualTo(expectedAql.replaceAll(" +", " "));
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
                 5||10||REJECT||||Query contains a LIMIT clause, fetch and offset parameters must not be used (with fetch precedence REJECT)
                 5|20||40|REJECT||||Query parameter for offset provided, but no fetch parameter
                 5|20||40|MIN_FETCH||||Query parameter for offset provided, but no fetch parameter

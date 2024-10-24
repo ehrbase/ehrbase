@@ -17,12 +17,19 @@
  */
 package org.ehrbase.openehr.aqlengine.featurecheck;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
+import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class AqlQueryFeatureCheckTest {
@@ -177,8 +184,37 @@ class AqlQueryFeatureCheckTest {
                 """
             })
     void ensureQuerySupported(String aql) {
-        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery);
+
+        assertDoesNotThrow(() -> runEnsureQuerySupported(aql));
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "SELECT f FROM FOLDER f",
+                """
+                  SELECT f/uid/value, f/name/value, f/archetype_node_id
+                  FROM FOLDER f[openEHR-EHR-FOLDER.generic.v1]
+                """,
+                """
+                  SELECT f2/uid/value, f2/name/value
+                  FROM FOLDER f1[openEHR-EHR-FOLDER.generic.v1,'root']
+                  CONTAINS FOLDER f2[openEHR-EHR-FOLDER.generic.v1,'Encounter']
+                """,
+                """
+                  SELECT e/ehr_id/value, f/uid/value
+                  FROM EHR e
+                  CONTAINS FOLDER f[openEHR-EHR-FOLDER.generic.v1,'Encounter']
+                """,
+                """
+                  SELECT c/uid/value, f/name/value
+                  FROM FOLDER f
+                  CONTAINS COMPOSITION c
+                """
+            })
+    void ensureQuerySupportedAqlOnFolderEnabled(String aql) {
+
+        assertDoesNotThrow(() -> runEnsureQuerySupportedAqlOnFolderEnabled(aql));
     }
 
     @ParameterizedTest
@@ -186,6 +222,15 @@ class AqlQueryFeatureCheckTest {
             strings = {
                 "SELECT e FROM EHR e",
                 "SELECT e/ehr_id FROM EHR e",
+                // ehr_status is rewritten as CONTAINS
+                "SELECT e/ehr_status FROM EHR e",
+                "SELECT e/compositions FROM EHR e",
+                "SELECT e/directory FROM EHR e",
+                "SELECT e/folders FROM EHR e",
+                """
+                   SELECT f
+                   FROM FOLDER f
+                """,
                 """
                    SELECT c
                    FROM COMPOSITION c
@@ -243,32 +288,28 @@ class AqlQueryFeatureCheckTest {
                 "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created/value"
             })
     void ensureQueryNotSupported(String aql) {
-        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(AqlFeatureNotImplementedException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                .ensureQuerySupported(aqlQuery));
+
+        assertThrows(AqlFeatureNotImplementedException.class, () -> runEnsureQuerySupported(aql));
     }
 
     @ParameterizedTest
     @ValueSource(
             strings = {
                 """
-                       SELECT c/content/content/name/value
-                       FROM COMPOSITION c
-                    """,
+                   SELECT c/content/content/name/value
+                   FROM COMPOSITION c
+                """,
                 """
-                       SELECT c
-                       FROM COMPOSITION c
-                       WHERE c/content/content/name/value = 'invalid'
-                    """
+                   SELECT c
+                   FROM COMPOSITION c
+                   WHERE c/content/content/name/value = 'invalid'
+                """
             })
     void ensureInvalidPathRejected(String aql) {
 
-        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        org.assertj.core.api.Assertions.assertThat(
-                        Assertions.assertThrows(IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                                        .ensureQuerySupported(aqlQuery))
-                                .getMessage())
-                .endsWith(" is not a valid RM path");
+        assertThatThrownBy(() -> runEnsureQuerySupported(aql))
+                .isInstanceOf(IllegalAqlException.class)
+                .hasMessageEndingWith(" is not a valid RM path");
     }
 
     @ParameterizedTest
@@ -291,36 +332,68 @@ class AqlQueryFeatureCheckTest {
                 "SELECT c FROM COMPOSITION c WHERE c/uid/value = 'b037bf7c-0ecb-40fb-aada-fc7d559815ea::::0'"
             })
     void ensureInvalidConditionRejected(String aql) {
-        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(
-                IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery));
+
+        assertThrows(IllegalAqlException.class, () -> runEnsureQuerySupported(aql));
     }
 
     @ParameterizedTest
     @ValueSource(
             strings = {
-                """
-                   SELECT c
-                   FROM COMPOSITION c CONTAINS EHR_STATUS
-                """,
-                """
-                   SELECT c
-                   FROM COMPOSITION c CONTAINS ELEMENT CONTAINS EHR_STATUS
-                """,
-                """
-                   SELECT el/name/value
-                   FROM EHR CONTAINS COMPOSITION
-                   CONTAINS EHR_STATUS
-                   CONTAINS ELEMENT el
-                """
+                "SELECT c FROM COMPOSITION c CONTAINS EHR_STATUS",
+                "SELECT c FROM COMPOSITION c CONTAINS ELEMENT CONTAINS EHR_STATUS",
+                "SELECT e FROM EHR CONTAINS COMPOSITION CONTAINS EHR_STATUS CONTAINS ELEMENT e"
             })
     void ensureContainsRejected(String aql) {
-        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        org.assertj.core.api.Assertions.assertThat(
-                        Assertions.assertThrows(IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                                        .ensureQuerySupported(aqlQuery))
-                                .getMessage())
-                .contains(" cannot CONTAIN ");
+
+        assertThatThrownBy(() -> runEnsureQuerySupported(aql))
+                .isInstanceOf(IllegalAqlException.class)
+                .hasMessageContainingAll("Structure ", " cannot CONTAIN ", " (of structure ");
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = StructureRmType.class,
+            mode = EnumSource.Mode.INCLUDE,
+            names = {"INSTRUCTION_DETAILS", "FEEDER_AUDIT_DETAILS"})
+    void ensureContainsRejectedNonStructureEntries(StructureRmType structureRmType) {
+
+        String aql = "SELECT f FROM COMPOSITION f CONTAINS %s".formatted(structureRmType.name());
+        assertThatThrownBy(() -> runEnsureQuerySupported(aql))
+                .isInstanceOf(AqlFeatureNotImplementedException.class)
+                .hasMessage(
+                        "Not implemented: CONTAINS %s is currently not supported".formatted(structureRmType.name()));
+    }
+
+    @Test
+    void ensureContainsRejectedExperimentalAqlOnFolderDisabled() {
+
+        assertThatThrownBy(() -> runEnsureQuerySupported("SELECT f FROM FOLDER f"))
+                .isInstanceOf(AqlFeatureNotImplementedException.class)
+                .hasMessageContainingAll("CONTAINS FOLDER is an experimental feature and currently disabled.");
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {"SELECT f FROM COMPOSITION CONTAINS FOLDER f", "SELECT f FROM EHR_STATUS CONTAINS FOLDER f"})
+    void ensureContainsRejectedExperimentalAqlOnFolder(String aql) {
+
+        assertThatThrownBy(() -> runEnsureQuerySupportedAqlOnFolderEnabled(aql))
+                .isInstanceOf(IllegalAqlException.class)
+                .hasMessageContainingAll("Structure ", " cannot CONTAIN ", " (of structure ");
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = StructureRmType.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"FOLDER", "COMPOSITION", "INSTRUCTION_DETAILS", "FEEDER_AUDIT_DETAILS"})
+    void ensureContainsExperimentalAqlOnFolderRestrictedToTypes(StructureRmType structureRmType) {
+
+        String aql = "SELECT f FROM FOLDER f CONTAINS %s".formatted(structureRmType.name());
+        assertThatThrownBy(() -> runEnsureQuerySupportedAqlOnFolderEnabled(aql))
+                .isInstanceOf(AqlFeatureNotImplementedException.class)
+                .hasMessage("Not implemented: FOLDER CONTAINS %s is currently not supported"
+                        .formatted(structureRmType.name()));
     }
 
     @ParameterizedTest
@@ -389,8 +462,8 @@ class AqlQueryFeatureCheckTest {
                 """,
             })
     void ensureVersionSupported(String aql) {
-        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery);
+
+        assertDoesNotThrow(() -> runEnsureQuerySupported(aql));
     }
 
     @ParameterizedTest
@@ -414,9 +487,11 @@ class AqlQueryFeatureCheckTest {
                 """
             })
     void checkIllegalVersion(String aql) {
-        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(
-                IllegalAqlException.class, () -> new AqlQueryFeatureCheck(() -> "node").ensureQuerySupported(aqlQuery));
+
+        assertThatThrownBy(() -> runEnsureQuerySupported(aql))
+                .isInstanceOf(IllegalAqlException.class)
+                .message()
+                .isNotBlank();
     }
 
     @ParameterizedTest
@@ -472,8 +547,44 @@ class AqlQueryFeatureCheckTest {
                 """
             })
     void ensureVersionNotSupported(String aql) {
+
+        assertThatThrownBy(() -> runEnsureQuerySupported(aql))
+                .isInstanceOf(AqlFeatureNotImplementedException.class)
+                .hasMessageStartingWith("Not implemented: ");
+    }
+
+    @Test
+    void ensureVersionSupportedAqlOnFolderEnabled() {
+
+        assertDoesNotThrow(
+                () -> runEnsureQuerySupportedAqlOnFolderEnabled(
+                        """
+                   SELECT f/uid/value
+                   FROM VERSION cv[LATEST_VERSION] CONTAINS FOLDER f
+                """));
+    }
+
+    private void runEnsureQuerySupported(String aql) {
+
+        runEnsureQuerySupported(propertiesWithAqlOnFolderEnabled(false), aql);
+    }
+
+    private void runEnsureQuerySupportedAqlOnFolderEnabled(String aql) {
+
+        runEnsureQuerySupported(propertiesWithAqlOnFolderEnabled(true), aql);
+    }
+
+    private void runEnsureQuerySupported(AqlConfigurationProperties aqlFeature, String aql) {
+
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        Assertions.assertThrows(AqlFeatureNotImplementedException.class, () -> new AqlQueryFeatureCheck(() -> "node")
-                .ensureQuerySupported(aqlQuery));
+        AqlQueryFeatureCheck aqlQueryFeatureCheck = new AqlQueryFeatureCheck(() -> "node", aqlFeature);
+        aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
+    }
+
+    private AqlConfigurationProperties propertiesWithAqlOnFolderEnabled(boolean aqlOnFolderEnabled) {
+        return new AqlConfigurationProperties(
+                false,
+                new AqlConfigurationProperties.Experimental(
+                        new AqlConfigurationProperties.Experimental.AqlOnFolder(aqlOnFolderEnabled)));
     }
 }

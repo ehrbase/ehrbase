@@ -17,15 +17,21 @@
  */
 package org.ehrbase.cache;
 
+import com.ethlo.cache.spring.EnhancedTransactionAwareCacheDecorator;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.Collection;
 import java.util.function.Function;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 
 /**
  * {@link Configuration} for EhCache using JCache.
@@ -68,7 +74,7 @@ public class CacheConfiguration {
                 Caffeine.newBuilder().build());
     }
 
-    private static Caffeine<Object, Object> configureCache(
+    protected static Caffeine<Object, Object> configureCache(
             Caffeine<Object, Object> caffeine, CacheProperties.CacheConfig cacheConfig) {
 
         if (cacheConfig.getExpireAfterWrite() != null) {
@@ -84,5 +90,50 @@ public class CacheConfiguration {
         }
 
         return caffeine;
+    }
+
+    @Bean
+    public static BeanPostProcessor cacheManagerTxProxyBeanPostProcessor() {
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessAfterInitialization(final Object bean, final String beanName) {
+                if (bean instanceof CacheManager cm) {
+                    return new CustomTxAwareCacheManagerProxy(cm);
+                }
+                return bean;
+            }
+        };
+    }
+
+    public static class CustomTxAwareCacheManagerProxy implements CacheManager {
+        private final CacheManager targetCacheManager;
+
+        /**
+         * Create a new TransactionAwareCacheManagerProxy for the given target CacheManager.
+         * @param targetCacheManager the target CacheManager to proxy
+         */
+        public CustomTxAwareCacheManagerProxy(CacheManager targetCacheManager) {
+
+            if (targetCacheManager == null) {
+                throw new IllegalArgumentException("Property 'targetCacheManager' is required");
+            }
+            this.targetCacheManager = targetCacheManager;
+        }
+
+        public CacheManager getTargetCacheManager() {
+            return targetCacheManager;
+        }
+
+        @Override
+        @Nullable
+        public Cache getCache(String name) {
+            Cache targetCache = this.targetCacheManager.getCache(name);
+            return (targetCache != null ? new EnhancedTransactionAwareCacheDecorator(targetCache, true, false) : null);
+        }
+
+        @Override
+        public Collection<String> getCacheNames() {
+            return this.targetCacheManager.getCacheNames();
+        }
     }
 }

@@ -213,7 +213,7 @@ public class ItemTagRepository {
         itemTagRecord.setSysPeriodLower(timeProvider.getNow());
     }
 
-    private static ItemTagDto recordAsItemTag(Record1<EhrItemTagRecord> dbRecord) {
+    public static ItemTagDto recordAsItemTag(Record1<EhrItemTagRecord> dbRecord) {
         EhrItemTagRecord itemTagRecord = dbRecord.component1();
         return new ItemTagDto(
                 itemTagRecord.getId(),

@@ -59,8 +59,6 @@ public class EhrFolderRepository
                 EhrFolderDataHistoryRecord,
                 Folder> {
 
-    public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version.";
-
     public EhrFolderRepository(
             DSLContext context,
             ContributionRepository contributionRepository,
@@ -89,7 +87,7 @@ public class EhrFolderRepository
      * @param ehrId
      * @param folder
      * @param contributionId   If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
     public void commit(
@@ -110,14 +108,15 @@ public class EhrFolderRepository
     /**
      * Update a Folder in the DB
      *
-     * @param ehrId
-     * @param folder
+     * @param ehrId            Affected <code>EHR</code>
+     * @param folder           Affected <code>Folder</code> with new head system version
      * @param contributionId   If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
     public void update(
             UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId, int ehrFoldersIdx) {
+
         update(
                 ehrId,
                 folder,
@@ -130,7 +129,7 @@ public class EhrFolderRepository
                     r.setEhrId(ehrId);
                     r.setEhrFoldersIdx(ehrFoldersIdx);
                 },
-                "No Directory in ehr: %s".formatted(ehrId));
+                "No FOLDER in ehr: %s".formatted(ehrId));
     }
 
     public Optional<Folder> findHead(UUID ehrId, int ehrFoldersIdx) {
@@ -145,7 +144,7 @@ public class EhrFolderRepository
      * @param version        Version to be deleted. Must match latest.
      * @param ehrFoldersIdx
      * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
+     * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
     public void delete(
