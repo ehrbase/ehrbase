@@ -55,7 +55,7 @@
 
   <properties>
     <!-- antlr4 and archie versions should be sync with sdk antlr4 and archie versions  -->
-    <archie.version>3.11.0</archie.version>
+    <archie.version>3.12.0</archie.version>
     <commons-io.version>2.16.1</commons-io.version>
     <commons-lang3.version>3.14.0</commons-lang3.version>
     <ehrbase.openehr.sdk.version>2.18.0</ehrbase.openehr.sdk.version>
