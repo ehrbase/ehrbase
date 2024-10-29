@@ -133,11 +133,9 @@ public class ValidationServiceImp implements ValidationService {
 
     private static RMObjectValidator getRmObjectValidator(CompositionValidator validator) {
         try {
-            Field rmObjectValidator = CompositionValidator.class
-                    .getDeclaredField("rmObjectValidator");
+            Field rmObjectValidator = CompositionValidator.class.getDeclaredField("rmObjectValidator");
             rmObjectValidator.setAccessible(true);
-            return (RMObjectValidator) rmObjectValidator
-                    .get(validator);
+            return (RMObjectValidator) rmObjectValidator.get(validator);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
