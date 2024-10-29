@@ -110,9 +110,9 @@ public class ValidationServiceImp implements ValidationService {
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             boolean disableStrictValidation,
             APathQueryCache delegator) {
-        CompositionValidator validator = new CompositionValidator();
+        CompositionValidator validator = new CompositionValidator(null, true, !disableStrictValidation, null);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
-        validator.setRunInvariantChecks(!disableStrictValidation);
+
         setSharedAPathQueryCache(validator, delegator);
         return validator;
     }
@@ -125,9 +125,19 @@ public class ValidationServiceImp implements ValidationService {
             // as RMObjectValidator.queryCache is hard-coded, it is replaced via reflection
             Field queryCacheField = RMObjectValidator.class.getDeclaredField("queryCache");
             queryCacheField.setAccessible(true);
-            queryCacheField.set(validator.getRmObjectValidator(), delegator);
+            queryCacheField.set(getRmObjectValidator(validator), delegator);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new InternalServerException("Failed to inject shared RMPathQuery cache", e);
+        }
+    }
+
+    private static RMObjectValidator getRmObjectValidator(CompositionValidator validator) {
+        try {
+            return (RMObjectValidator) CompositionValidator.class
+                    .getDeclaredField("rmObjectValidator")
+                    .get(validator);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -183,7 +193,7 @@ public class ValidationServiceImp implements ValidationService {
     public void check(@Nonnull EhrStatusDto ehrStatus) {
 
         // second, additional specific checks and other mandatory attributes
-        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
+        RMObjectValidator rmObjectValidator = getRmObjectValidator(compositionValidator.get());
         List<RMObjectValidationMessage> validationIssues = Stream.of(
                         // RM-DTO required
                         require(ehrStatus.type(), "/subject", "subject", ehrStatus.subject()),
@@ -218,7 +228,7 @@ public class ValidationServiceImp implements ValidationService {
     public void check(ContributionCreateDto contribution) {
 
         // first, check the built EhrStatus using the general Archie RM-Validator
-        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
+        RMObjectValidator rmObjectValidator = getRmObjectValidator(compositionValidator.get());
 
         // UID does not have to be validated
 
