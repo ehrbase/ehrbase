@@ -20,13 +20,15 @@ package org.ehrbase.repository;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
 
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+
 import javax.annotation.Nullable;
+
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -39,6 +41,7 @@ import org.ehrbase.jooq.pg.tables.records.EhrFolderDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionRecord;
 import org.ehrbase.service.TimeProvider;
+import org.ehrbase.util.NullSafeFuncWrapper;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
@@ -46,6 +49,11 @@ import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 /**
  * Handles DB-Access to {@link org.ehrbase.jooq.pg.tables.EhrFolderVersion} etc.
@@ -90,8 +98,7 @@ public class EhrFolderRepository
      * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
-    public void commit(
-            UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId, int ehrFoldersIdx) {
+    public void commit(UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId, int ehrFoldersIdx) {
         commitHead(
                 ehrId,
                 folder,
@@ -100,11 +107,38 @@ public class EhrFolderRepository
                 ContributionChangeType.creation,
                 r -> r.setEhrFoldersIdx(ehrFoldersIdx),
                 r -> {
-                    r.setEhrId(ehrId);
-                    r.setEhrFoldersIdx(ehrFoldersIdx);
-                });
+						List<String> uuids = uuidExtract.apply(r.getData().data());
+						if(uuids == null)
+							r.setItemUuids(new UUID[0]);
+						else
+							r.setItemUuids(uuids.stream().map(UUID::fromString).toArray(UUID[]::new));
+	                    r.setEhrId(ehrId);
+	                    r.setEhrFoldersIdx(ehrFoldersIdx);
+				});
     }
-
+    
+	@SuppressWarnings("unchecked")
+    private static final Function<String,Map<String, Object>> toMap = f -> {
+		try {
+			return (Map<String, Object>) new ObjectMapper().readValue(f, Map.class);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException();
+		}
+	};
+	
+	private static final String PERSISTED_ITEMS_MEM = "i";
+	private static final String PERSISTED_ID_MEM = "X";
+	private static final String PERSISTED_VALUE_MEM = "V";
+	
+	@SuppressWarnings("unchecked")
+	private static final NullSafeFuncWrapper<String,List<String>> uuidExtract =
+		NullSafeFuncWrapper
+			.of(EhrFolderRepository.toMap)
+			.after(m -> (List<Map<String,Object>>) m.get(PERSISTED_ITEMS_MEM))
+			.after(l -> l.stream().map(s -> (Map<String,Object>) s.get(PERSISTED_ID_MEM)).toList())
+			.after(l -> l.stream().map(s -> (String) s.get(PERSISTED_VALUE_MEM)).toList())
+			.after(l -> l.stream().filter(s -> null != s).toList());
+	
     /**
      * Update a Folder in the DB
      *

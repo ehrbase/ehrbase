@@ -44,6 +44,37 @@
       <groupId>org.ehrbase.openehr</groupId>
       <artifactId>cli</artifactId>
     </dependency>
+    
+    
+    
+    <dependency>
+        <artifactId>client</artifactId>
+        <groupId>org.ehrbase.openehr.sdk</groupId>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.ehrbase.openehr.sdk</groupId>
+      <artifactId>test-data</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>net.java</groupId>
+      <artifactId>quickcheck</artifactId>
+      <version>0.6</version>
+      <scope>test</scope>
+    </dependency>    
   </dependencies>
 
   <build>
