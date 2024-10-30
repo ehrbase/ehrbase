@@ -37,7 +37,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
@@ -530,35 +532,21 @@ public class AqlSqlQueryBuilder {
                 .map(mapper);
     }
 
-    private static <T> SelectJoinStep<Record> structureQueryBaseVersion(
-            Stream<Field<?>> columnFields, Table<?> primaryTable, Table<?> dataTable, TableField<?, T> tableField) {
-        return DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
-                .from(primaryTable)
-                .join(dataTable)
-                .on(Objects.requireNonNull(primaryTable.field(tableField)).eq(dataTable.field(tableField)));
-    }
-
     /**
      * TODO temporary solution until item[].id.value are extracted into its own column for direct access
      * Nested array element select for all item[].id.value(s)
      * <code>
      * select
-     *     "parent".*,
-     *     cast((("items"->'X')->>'V') as uuid) as "items_id_value"
-     * from "ehr"."ehr_folder_data" as "parent"
-     *     -- 2nd join on folder data where the folders are subfolder of the parent one
-     *     join "ehr"."ehr_folder_data" as "descendant"
-     *     on (
-     *        "descendant"."ehr_id" = "parent"."ehr_id"
-     *        and "descendant"."ehr_folders_idx" = "parent"."ehr_folders_idx"
-     *        and "descendant"."num" between "parent"."num" and "parent"."num_cap"
-     *     )
-     *     -- take the items[] as flat list for each sub-folder where the id is an HIER_OBJECT UUID
-     *     join jsonb_array_elements("descendant"."data"->'i') as "items"
-     *     on (
-     * 	       ("items"->>'tp') IN ('COMPOSITION', 'VERSIONED_COMPOSITION')
-     * 	       and ((("items"->'X')->>'V') ~ E'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
-     *     )
+	 *   "base".*, "fi_uuids"
+	 * from "ehr"."ehr_folder_data" as "base"
+	 * join "ehr"."ehr_folder_data" as "descendant"
+	 * on (
+	 *      "descendant"."ehr_id" = "base"."ehr_id"
+	 *      and "descendant"."ehr_folders_idx" = "base"."ehr_folders_idx"
+	 *      and "descendant"."num" between "base"."num" and "base"."num_cap"
+	 * )
+	 * join UNNEST("descendant"."item_uuids") as "fi_uuids"
+	 * on (1=1)
      * </code>
      */
     private static Pair<Table<?>, List<SelectFieldOrAsterisk>> buildFolderItemIdNestedSelect(
@@ -568,39 +556,23 @@ public class AqlSqlQueryBuilder {
 
         EhrFolderData baseFolderTable = EHR_FOLDER_DATA.as("base");
         EhrFolderData descendantFolderTable = EHR_FOLDER_DATA.as("descendant");
-        String attr = RmAttributeAlias.getAlias("items");
-        Table<Record> itemsJsonbArrayElementTable = DSL.table(
-                        "jsonb_array_elements({0})",
-                        DSL.jsonbGetAttribute(descendantFolderTable.DATA, DSL.inline(attr)))
-                .as("items");
-
-        // Field<JSONB> items = DSL.field("{0}", JSONB.class, itemsJsonbArrayElementTable);
-        Field<JSONB> items = DSL.field(itemsJsonbArrayElementTable.getQualifiedName(), JSONB.class);
-
-        Field<String> itemIdValue = AdditionalSQLFunctions.jsonbAttributePathText(
-                items, Stream.of("id", "value").map(RmAttributeAlias::getAlias));
-        Field<UUID> itemIdValueUUID = DSL.cast(itemIdValue, UUID.class).as(fieldName);
-
-        Field<String> itemType = AdditionalSQLFunctions.jsonbAttributePathText(
-                items, Stream.of("type").map(RmAttributeAlias::getAlias));
-        Field<String> itemRmType = AdditionalSQLFunctions.jsonbAttributePathText(
-                items, Stream.of("id", "_type").map(RmAttributeAlias::getAlias));
-
+        
+        //--------------------------------------------------------------
+        Table<Record> itemsUUIDArrayTable = DSL.table("UNNEST(\"descendant\".\"item_uuids\")").as("fi_uuids");
+        Field<UUID> itemUUIDs = DSL.field("\"fi_uuids\"", UUID.class, itemsUUIDArrayTable);
         // @format:off
         // we need all fields at this point + the item id array
-        SelectOnConditionStep<Record> selectOnConditionStep = DSL.select(baseFolderTable.asterisk(), itemIdValueUUID)
+        SelectOnConditionStep<Record> selectOnConditionStep = DSL.select(baseFolderTable.asterisk(), itemUUIDs)
                 .from(baseFolderTable)
                 // -- 1st join on folder data where the folders are subfolder of the root one
                 .join(descendantFolderTable)
                     .on(descendantFolderTable.EHR_ID.eq(baseFolderTable.EHR_ID))
                     .and(descendantFolderTable.EHR_FOLDERS_IDX.eq(baseFolderTable.EHR_FOLDERS_IDX))
                     .and(descendantFolderTable.NUM.between(baseFolderTable.NUM, baseFolderTable.NUM_CAP))
-                // -- 2nd take the items[] as flat list for each sub-folder where the id is an UUID
-                .join(itemsJsonbArrayElementTable)
-                    // ("items"->>'tp') IN( 'VERSIONED_COMPOSITION', 'COMPOSITION')
-                    .on(itemType.in(FOLDER_OBJECT_REF_TYPES))
-                    // (((("items"->'X')->'V')->>0) ~ '^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
-                    .and(itemIdValue.likeRegex(DSL.inline("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")));
+                // -- take the item_uuids column, unnest them and then join with the each column 
+                .join(itemsUUIDArrayTable)
+                .on("1=1");
+        
         // in case we join using the folder_data table we need to pick a dedicated alias for the items to prevent clashes
         Table<?> joinTable = subAlias
                 ? selectOnConditionStep.asTable(dataTable.getName() + "_items")
@@ -608,7 +580,7 @@ public class AqlSqlQueryBuilder {
 
         // @format:on
         List<SelectFieldOrAsterisk> selectFields =
-                List.of(FieldUtils.virtualAliasedField(joinTable, itemIdValueUUID, column, fieldName));
+                List.of(FieldUtils.virtualAliasedField(joinTable, itemUUIDs, column, fieldName));
         return Pair.of(joinTable, selectFields);
     }
 
