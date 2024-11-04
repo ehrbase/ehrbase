@@ -15,11 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.definitions;
+package org.ehrbase.service.validation;
 
-public interface ServerConfig {
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-    int getPort();
-
-    boolean isDisableStrictValidation();
-}
+@ConfigurationProperties(prefix = "ehrbase.validation")
+public record ValidationProperties(boolean validateRmConstraints, boolean checkForExtraNodes) {}

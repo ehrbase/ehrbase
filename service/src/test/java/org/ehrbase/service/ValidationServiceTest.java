@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
@@ -67,6 +66,7 @@ import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.ehrbase.service.contribution.ContributionServiceHelperTest;
+import org.ehrbase.service.validation.ValidationProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -80,7 +80,7 @@ class ValidationServiceTest {
 
     private final KnowledgeCacheServiceImp knowledgeCacheService = mock();
 
-    private final ServerConfig serverConfig = mock();
+    private final ValidationProperties serverConfig = mock();
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 

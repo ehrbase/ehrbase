@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
@@ -52,6 +51,7 @@ import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.service.validation.ValidationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -79,13 +79,13 @@ public class ValidationServiceImp implements ValidationService {
     public ValidationServiceImp(
             KnowledgeCacheServiceImp knowledgeCacheService,
             TerminologyService terminologyService,
-            ServerConfig serverConfig,
+            ValidationProperties validationProperties,
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
 
-        boolean disableStrictValidation = serverConfig.isDisableStrictValidation();
+        boolean disableStrictValidation = !validationProperties.validateRmConstraints();
         if (disableStrictValidation) {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
         }
@@ -102,15 +102,17 @@ public class ValidationServiceImp implements ValidationService {
             logger.warn("shared RMPathQueryCache is disabled");
             delegator = null;
         }
-        compositionValidator = ThreadLocal.withInitial(
-                () -> createCompositionValidator(objectProvider, disableStrictValidation, delegator));
+        compositionValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
+                objectProvider, disableStrictValidation, delegator, validationProperties.checkForExtraNodes()));
     }
 
     private static CompositionValidator createCompositionValidator(
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             boolean disableStrictValidation,
-            APathQueryCache delegator) {
-        CompositionValidator validator = new CompositionValidator(null, true, !disableStrictValidation, null);
+            APathQueryCache delegator,
+            boolean checkForChildrenNotInTemplate) {
+        CompositionValidator validator =
+                new CompositionValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
 
         setSharedAPathQueryCache(validator, delegator);
