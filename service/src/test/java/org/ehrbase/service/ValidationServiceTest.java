@@ -80,7 +80,7 @@ class ValidationServiceTest {
 
     private final KnowledgeCacheServiceImp knowledgeCacheService = mock();
 
-    private final ValidationProperties serverConfig = mock();
+    private final ValidationProperties serverConfig = new ValidationProperties(true, true);
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 
@@ -106,7 +106,7 @@ class ValidationServiceTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(knowledgeCacheService, serverConfig, objectProvider, spyService);
+        Mockito.reset(knowledgeCacheService, objectProvider, spyService);
         doReturn(new NopTerminologyValidation()).when(objectProvider).getIfAvailable();
     }
 
