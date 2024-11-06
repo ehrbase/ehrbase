@@ -55,12 +55,12 @@
 
   <properties>
     <!-- antlr4 and archie versions should be sync with sdk antlr4 and archie versions  -->
-    <archie.version>3.11.0</archie.version>
-    <commons-io.version>2.16.1</commons-io.version>
-    <commons-lang3.version>3.14.0</commons-lang3.version>
-    <ehrbase.openehr.sdk.version>2.19.0</ehrbase.openehr.sdk.version>
+    <archie.version>3.12.0</archie.version>
+    <commons-io.version>2.17.0</commons-io.version>
+    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <ehrbase.openehr.sdk.version>2.20.0</ehrbase.openehr.sdk.version>
     <flyway.version>8.5.13</flyway.version>
-    <jackson-bom.version>2.17.2</jackson-bom.version>
+    <jackson-bom.version>2.18.1</jackson-bom.version>
     <javamelody.version>1.99.0</javamelody.version>
     <jooq.version>3.19.10</jooq.version>
     <json-path.version>2.9.0</json-path.version>

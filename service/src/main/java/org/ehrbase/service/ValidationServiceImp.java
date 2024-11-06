@@ -50,6 +50,7 @@ import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
+import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.service.validation.ValidationProperties;
 import org.slf4j.Logger;
@@ -123,23 +124,18 @@ public class ValidationServiceImp implements ValidationService {
         if (delegator == null) {
             return;
         }
-        try {
-            // as RMObjectValidator.queryCache is hard-coded, it is replaced via reflection
-            Field queryCacheField = RMObjectValidator.class.getDeclaredField("queryCache");
-            queryCacheField.setAccessible(true);
-            queryCacheField.set(getRmObjectValidator(validator), delegator);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            throw new InternalServerException("Failed to inject shared RMPathQuery cache", e);
-        }
-    }
-
-    private static RMObjectValidator getRmObjectValidator(CompositionValidator validator) {
-        try {
-            Field rmObjectValidator = CompositionValidator.class.getDeclaredField("rmObjectValidator");
-            rmObjectValidator.setAccessible(true);
-            return (RMObjectValidator) rmObjectValidator.get(validator);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            throw new RuntimeException(e);
+        RMObjectValidator rmObjectValidator = validator.getRmObjectValidator();
+        if (rmObjectValidator instanceof FastRMObjectValidator val) {
+            val.setQueryCache(delegator);
+        } else {
+            try {
+                // as RMObjectValidator.queryCache is hard-coded, it is replaced via reflection
+                Field queryCacheField = RMObjectValidator.class.getDeclaredField("queryCache");
+                queryCacheField.setAccessible(true);
+                queryCacheField.set(rmObjectValidator, delegator);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new InternalServerException("Failed to inject shared RMPathQuery cache", e);
+            }
         }
     }
 
@@ -195,7 +191,7 @@ public class ValidationServiceImp implements ValidationService {
     public void check(@Nonnull EhrStatusDto ehrStatus) {
 
         // second, additional specific checks and other mandatory attributes
-        RMObjectValidator rmObjectValidator = getRmObjectValidator(compositionValidator.get());
+        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
         List<RMObjectValidationMessage> validationIssues = Stream.of(
                         // RM-DTO required
                         require(ehrStatus.type(), "/subject", "subject", ehrStatus.subject()),
@@ -230,7 +226,7 @@ public class ValidationServiceImp implements ValidationService {
     public void check(ContributionCreateDto contribution) {
 
         // first, check the built EhrStatus using the general Archie RM-Validator
-        RMObjectValidator rmObjectValidator = getRmObjectValidator(compositionValidator.get());
+        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
 
         // UID does not have to be validated
 
