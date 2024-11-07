@@ -65,9 +65,7 @@ public class StoredQueryServiceImp implements StoredQueryService {
                     StoredQueryQualifiedName storedQueryQualifiedName =
                             StoredQueryQualifiedName.create(l.getQualifiedName(), v);
                     CacheProvider.STORED_QUERY_CACHE.get(
-                            cacheProvider,
-                            storedQueryQualifiedName.toQualifiedNameString(),
-                            () -> l);
+                            cacheProvider, storedQueryQualifiedName.toQualifiedNameString(), () -> l);
                 });
             });
         }

@@ -131,9 +131,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
             String templateId = TemplateUtils.getTemplateId(template.getOperationaltemplate());
             CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, template::getInternalId);
             CacheProvider.INTROSPECT_CACHE.get(
-                    cacheProvider,
-                    templateId,
-                    () -> buildWebTemplate(template.getOperationaltemplate()));
+                    cacheProvider, templateId, () -> buildWebTemplate(template.getOperationaltemplate()));
             return templateId;
         });
     }
