@@ -127,13 +127,13 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     }
 
     private void ensureCached(TemplateMetaData template) {
-        cacheProvider.get(CacheProvider.TEMPLATE_UUID_ID_CACHE, template.getInternalId(), () -> {
+        CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, template.getInternalId(), () -> {
             String templateId = TemplateUtils.getTemplateId(template.getOperationaltemplate());
-            cacheProvider.get(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, template::getInternalId);
-            cacheProvider.get(
-                    CacheProvider.INTROSPECT_CACHE,
+            CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, template::getInternalId);
+            CacheProvider.INTROSPECT_CACHE.get(
+                    cacheProvider,
                     templateId,
-                    () -> buildQueryOptMetaData(template.getOperationaltemplate()));
+                    () -> buildWebTemplate(template.getOperationaltemplate()));
             return templateId;
         });
     }
@@ -178,10 +178,10 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
         Optional<UUID> internalId = findUuidByTemplateId(templateId);
         templateStorage.deleteTemplate(templateId);
 
-        cacheProvider.evict(CacheProvider.INTROSPECT_CACHE, templateId);
-        cacheProvider.evict(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId);
+        CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
 
-        internalId.ifPresent(iid -> cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, iid));
+        internalId.ifPresent(iid -> CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, iid));
     }
 
     @Override
@@ -189,9 +189,9 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
         List<Pair<UUID, String>> deletedTemplates = templateStorage.deleteAllTemplates();
 
         deletedTemplates.forEach(t -> {
-            cacheProvider.evict(CacheProvider.TEMPLATE_UUID_ID_CACHE, t.getKey());
-            cacheProvider.evict(CacheProvider.INTROSPECT_CACHE, t.getValue());
-            cacheProvider.evict(CacheProvider.TEMPLATE_ID_UUID_CACHE, t.getValue());
+            CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, t.getKey());
+            CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, t.getValue());
+            CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, t.getValue());
         });
         return deletedTemplates.size();
     }
@@ -245,12 +245,12 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     private WebTemplate retrieveWebTemplate(String templateId) {
 
         return retrieveOperationalTemplate(templateId)
-                .map(this::buildQueryOptMetaData)
+                .map(this::buildWebTemplate)
                 .orElseThrow(() ->
                         new IllegalArgumentException("Could not retrieve template for template Id: " + templateId));
     }
 
-    private WebTemplate buildQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
+    private WebTemplate buildWebTemplate(OPERATIONALTEMPLATE operationaltemplate) {
         try {
             return new OPTParser(operationaltemplate).parse();
         } catch (RuntimeException e) {

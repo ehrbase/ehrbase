@@ -64,8 +64,8 @@ public class StoredQueryServiceImp implements StoredQueryService {
                 SemVerUtil.streamAllResolutions(SemVer.parse(l.getVersion())).forEach(v -> {
                     StoredQueryQualifiedName storedQueryQualifiedName =
                             StoredQueryQualifiedName.create(l.getQualifiedName(), v);
-                    cacheProvider.get(
-                            CacheProvider.STORED_QUERY_CACHE,
+                    CacheProvider.STORED_QUERY_CACHE.get(
+                            cacheProvider,
                             storedQueryQualifiedName.toQualifiedNameString(),
                             () -> l);
                 });
