@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface KnowledgeCacheService {
@@ -41,14 +42,7 @@ public interface KnowledgeCacheService {
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key);
 
-    /**
-     * retrieve a <b>cached</b> operational template document instance using its unique Id
-     *
-     * @param uuid the name of the operational template
-     * @return an OPERATIONALTEMPLATE document instance or null
-     * @see org.openehr.schemas.v1.OPERATIONALTEMPLATE
-     */
-    Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
+    WebTemplate getWebTemplate(String templateId);
 
     /**
      * Deletes a given operational template physically from cache and from template storage and from cache. Should only

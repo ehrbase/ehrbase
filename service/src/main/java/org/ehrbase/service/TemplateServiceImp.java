@@ -62,11 +62,8 @@ public class TemplateServiceImp implements TemplateService {
 
     private final KnowledgeCacheService knowledgeCacheService;
 
-    private final IntrospectService introspectService;
-
-    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, IntrospectService introspectService) {
+    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService) {
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
-        this.introspectService = Objects.requireNonNull(introspectService);
     }
 
     @Override
@@ -126,7 +123,7 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     public WebTemplate findTemplate(String templateId) {
         try {
-            return introspectService.getWebTemplate(templateId);
+            return knowledgeCacheService.getWebTemplate(templateId);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {

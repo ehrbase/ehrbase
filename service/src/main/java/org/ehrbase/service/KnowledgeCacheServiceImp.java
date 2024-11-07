@@ -50,7 +50,7 @@ import org.springframework.stereotype.Service;
 @Service
 // This service is not @Transactional since we only want to get DB connections when we really need to and an already
 // running transaction is propagated anyway
-public class KnowledgeCacheServiceImp implements KnowledgeCacheService, IntrospectService {
+public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
 
     public static final String ELEMENT = "ELEMENT";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -161,11 +161,6 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
         return templateStorage.readTemplate(key).map(TemplateMetaData::getOperationaltemplate);
-    }
-
-    @Override
-    public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid) {
-        return findTemplateIdByUuid(uuid).flatMap(this::retrieveOperationalTemplate);
     }
 
     /**
