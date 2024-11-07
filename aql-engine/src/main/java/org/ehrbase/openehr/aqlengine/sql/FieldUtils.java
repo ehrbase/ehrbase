@@ -19,12 +19,13 @@ package org.ehrbase.openehr.aqlengine.sql;
 
 import java.util.Iterator;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.jooq.Field;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.jooq.impl.DSL;
 
 final class FieldUtils {
 
@@ -58,9 +59,13 @@ final class FieldUtils {
         return field;
     }
 
-    public static Field<?> field(
-            Table<?> table, AslComplexExtractedColumnField aslField, String fieldName, boolean aliased) {
+    public static Field<?> field(Table<?> table, AslVirtualField aslField, String fieldName, boolean aliased) {
         return table.field(aliased ? aslField.aliasedName(fieldName) : fieldName);
+    }
+
+    public static <T> Field<T> field(
+            Table<?> table, AslVirtualField aslField, String fieldName, Class<T> type, boolean aliased) {
+        return table.field(aliased ? aslField.aliasedName(fieldName) : fieldName, type);
     }
 
     public static Field<?> field(Table<?> table, AslColumnField aslField, boolean aliased) {
@@ -79,5 +84,10 @@ final class FieldUtils {
     public static <T> Field<T> aliasedField(
             Table<?> target, AslDataQuery aslData, String fieldName, Class<T> fieldType) {
         return field(target, aslData.getBase(), aslData.getBase(), fieldName, fieldType, true);
+    }
+
+    public static Field<?> virtualAliasedField(
+            Table<?> target, Field<?> field, AslVirtualField column, String columnName) {
+        return DSL.field("{0}.{1}", target, field).as(column.aliasedName(columnName));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,11 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.api.definitions;
+package org.ehrbase.openehr.util;
 
-public interface ServerConfig {
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 
-    int getPort();
+public class TestConfig {
 
-    boolean isDisableStrictValidation();
+    public static AqlConfigurationProperties aqlConfigurationProperties() {
+        return new AqlConfigurationProperties(
+                false,
+                new AqlConfigurationProperties.Experimental(
+                        new AqlConfigurationProperties.Experimental.AqlOnFolder(false)));
+    }
 }

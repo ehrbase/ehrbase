@@ -83,8 +83,14 @@ security:
 
 
 ehrbase:
+  validation:
+    check-for-extra-nodes: true
+    validate-rm-constraints: true
   aql:
     pg-llj-workaround: true
+    experimental:
+      aql-on-folder:
+        enabled: false
   rest:
     aql:
       # allows to control query execution using debug params

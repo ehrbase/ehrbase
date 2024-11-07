@@ -55,12 +55,12 @@
 
   <properties>
     <!-- antlr4 and archie versions should be sync with sdk antlr4 and archie versions  -->
-    <archie.version>3.11.0</archie.version>
-    <commons-io.version>2.16.1</commons-io.version>
-    <commons-lang3.version>3.14.0</commons-lang3.version>
-    <ehrbase.openehr.sdk.version>2.18.0</ehrbase.openehr.sdk.version>
+    <archie.version>3.12.0</archie.version>
+    <commons-io.version>2.17.0</commons-io.version>
+    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <ehrbase.openehr.sdk.version>2.20.0</ehrbase.openehr.sdk.version>
     <flyway.version>8.5.13</flyway.version>
-    <jackson-bom.version>2.17.2</jackson-bom.version>
+    <jackson-bom.version>2.18.1</jackson-bom.version>
     <javamelody.version>1.99.0</javamelody.version>
     <jooq.version>3.19.10</jooq.version>
     <json-path.version>2.9.0</json-path.version>
@@ -76,7 +76,7 @@
     <!-- not used ehrbase but needed for the version plugin -->
     <log4j.version>2.23.1</log4j.version>
     <pf4j-spring.version>0.9.0</pf4j-spring.version>
-    <pf4j.version>3.11.1</pf4j.version>
+    <pf4j.version>3.12.1</pf4j.version>
     <commons-collections4.version>4.4</commons-collections4.version>
 
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
@@ -88,12 +88,12 @@
     <maven-compiler-plugin-version>3.13.0</maven-compiler-plugin-version>
     <maven-jar-plugin-version>3.4.1</maven-jar-plugin-version>
     <maven-dependency-plugin.version>3.7.1</maven-dependency-plugin.version>
-    <maven-failsafe-plugin.version>3.3.0</maven-failsafe-plugin.version>
-    <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
+    <maven-failsafe-plugin.version>3.5.1</maven-failsafe-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
     <maven-spotless-maven-plugin.version>2.43.0</maven-spotless-maven-plugin.version>
     <maven-nexus-staging-plugin.version>1.7.0</maven-nexus-staging-plugin.version>
-    <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+    <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
     <maven-versions-maven-plugin.version>2.17.0</maven-versions-maven-plugin.version>
     <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
     <maven-sonar.scanner.version>3.11.0.3922</maven-sonar.scanner.version>

@@ -25,11 +25,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRmType;
@@ -46,13 +46,17 @@ import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
+import org.springframework.util.CollectionUtils;
 
 final class FromCheck implements FeatureCheck {
 
     private final SystemService systemService;
 
-    public FromCheck(SystemService systemService) {
+    private final AqlConfigurationProperties aqlConfiguration;
+
+    public FromCheck(SystemService systemService, AqlConfigurationProperties aqlConfiguration) {
         this.systemService = systemService;
+        this.aqlConfiguration = aqlConfiguration;
     }
 
     @Override
@@ -74,7 +78,7 @@ final class FromCheck implements FeatureCheck {
         AqlUtil.streamContainments(aqlQuery.getFrom()).forEach(this::ensureContainmentPredicateSupported);
     }
 
-    private static Pair<Containment, StructureRoot> ensureStructureContainsSupported(
+    private Pair<Containment, StructureRoot> ensureStructureContainsSupported(
             ContainmentClassExpression nextContainment, StructureRoot structure) {
 
         Set<StructureRmType> structureRmTypes = StructureRmType.byTypeName(nextContainment.getType())
@@ -82,11 +86,6 @@ final class FromCheck implements FeatureCheck {
                 .or(() -> ensureAbstractStructureContainsSupported(nextContainment, structure)
                         .map(AncestorStructureRmType::getDescendants))
                 .orElseThrow(() -> cremateUnsupportedType(nextContainment));
-
-        if (CollectionUtils.containsAny(structureRmTypes, EnumSet.of(StructureRmType.FOLDER))) {
-            throw new AqlFeatureNotImplementedException(
-                    "CONTAINS %s is not supported".formatted(nextContainment.getType()));
-        }
 
         if (!structureRmTypes.stream().allMatch(StructureRmType::isStructureEntry)) {
             throw new AqlFeatureNotImplementedException(
@@ -99,6 +98,21 @@ final class FromCheck implements FeatureCheck {
                         .anyMatch(Objects::isNull)) {
             throw new IllegalAqlException(
                     "It is unclear if %s targets a COMPOSITION or EHR_STATUS".formatted(nextContainment.getType()));
+        }
+
+        // check FOLDERS enabled and contains is supported
+        if (aqlConfiguration.experimental().aqlOnFolder().enabled()) {
+            if (structure == StructureRoot.FOLDER
+                    && !CollectionUtils.containsAny(
+                            structureRmTypes, EnumSet.of(StructureRmType.FOLDER, StructureRmType.COMPOSITION))) {
+                throw new AqlFeatureNotImplementedException(
+                        "FOLDER CONTAINS %s is currently not supported".formatted(nextContainment.getType()));
+            }
+        }
+        // otherwise ensure we are not querying folders
+        else if (structureRmTypes.contains(StructureRmType.FOLDER)) {
+            throw new AqlFeatureNotImplementedException("CONTAINS %s is an experimental feature and currently disabled."
+                    .formatted(nextContainment.getType()));
         }
 
         StructureRoot structureRoot = structureRmTypes.stream()
@@ -126,7 +140,7 @@ final class FromCheck implements FeatureCheck {
                                 .collect(Collectors.joining(", "))));
     }
 
-    private static void ensureContainmentSupported(Containment c, final StructureRoot parentStructure) {
+    private void ensureContainmentSupported(Containment c, final StructureRoot parentStructure) {
         switch (c) {
             case null -> {
                 /*NOOP*/
@@ -139,7 +153,7 @@ final class FromCheck implements FeatureCheck {
 
                 ensureContainmentStructureSupported(parentStructure, cce, structureRoot);
             }
-            case ContainmentVersionExpression cve -> ensureVersionContaimentSupported(cve);
+            case ContainmentVersionExpression cve -> ensureVersionContainmentSupported(cve);
             case ContainmentSetOperator cso -> cso.getValues()
                     .forEach(nc -> ensureContainmentSupported(nc, parentStructure));
             case ContainmentNotOperator __ -> throw new AqlFeatureNotImplementedException("NOT CONTAINS");
@@ -148,7 +162,7 @@ final class FromCheck implements FeatureCheck {
         }
     }
 
-    private static void ensureVersionContaimentSupported(ContainmentVersionExpression cve) {
+    private void ensureVersionContainmentSupported(ContainmentVersionExpression cve) {
         Containment nextContainment = cve.getContains();
         if (nextContainment == null) {
             throw new IllegalAqlException("VERSION containment must be followed by another CONTAINS expression");
@@ -171,6 +185,7 @@ final class FromCheck implements FeatureCheck {
                     case COMPOSITION, EHR_STATUS -> parentStructure == structure;
                     default -> throw new RuntimeException("%s is not root structure".formatted(parentStructure));
                 };
+
         if (!containmentStructureSupported) {
             throw new IllegalAqlException("Structure %s cannot CONTAIN %s (of structure %s)"
                     .formatted(

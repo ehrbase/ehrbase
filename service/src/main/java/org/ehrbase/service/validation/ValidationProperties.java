@@ -15,18 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine.asl.model.field;
+package org.ehrbase.service.validation;
 
-import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-public abstract sealed class AslVirtualField extends AslField
-        permits AslAggregatingField, AslComplexExtractedColumnField, AslFolderItemIdVirtualField {
-    public AslVirtualField(Class<?> type, FieldSource fieldSource, AslExtractedColumn extractedColumn) {
-        super(type, fieldSource, extractedColumn);
-    }
-
-    @Override
-    public String aliasedName(String name) {
-        return super.aliasedName(name);
-    }
-}
+@ConfigurationProperties(prefix = "ehrbase.validation")
+public record ValidationProperties(boolean validateRmConstraints, boolean checkForExtraNodes) {}
