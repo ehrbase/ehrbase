@@ -78,6 +78,7 @@ import org.jooq.SelectField;
 import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectHavingStep;
 import org.jooq.SelectJoinStep;
+import org.jooq.SelectOnConditionStep;
 import org.jooq.SelectQuery;
 import org.jooq.SelectSelectStep;
 import org.jooq.Table;

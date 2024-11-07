@@ -51,9 +51,12 @@ import org.mockito.Mockito;
 class AqlSqlQueryBuilderTest {
 
     private final KnowledgeCacheService mockKnowledgeCacheService = mock();
-    private final TemplateService templateService = mock();
 
     private AqlSqlQueryBuilder aqlSqlQueryBuilder() {
+        TemplateService templateService = mock();
+        Mockito.when(templateService.findAllTemplateIds())
+                .thenReturn(Map.of(UUID.randomUUID(), "template1.v1", UUID.randomUUID(), "template2.v3"));
+
         return new AqlSqlQueryBuilder(
                 TestConfig.aqlConfigurationProperties(),
                 new DefaultDSLContext(SQLDialect.POSTGRES),
@@ -80,7 +83,8 @@ class AqlSqlQueryBuilderTest {
               CONTAINS FOLDER[name/value="Encounter"]
               CONTAINS FOLDER enc
               CONTAINS COMPOSITION c
-            WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
+            WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f' and c/archetype_details/template_id/value = 'template1.v1'
+            order by c/archetype_details/template_id/value
         """);
 
         System.out.println("/*");
@@ -88,9 +92,6 @@ class AqlSqlQueryBuilderTest {
         System.out.println("*/");
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-
-        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(UUID.randomUUID()));
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
@@ -100,7 +101,6 @@ class AqlSqlQueryBuilderTest {
         System.out.println("*/");
         System.out.println();
 
-        TemplateService tplSvc = mock(TemplateService.class);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
         SelectQuery<Record> sqlQuery = sqlQueryBuilder.buildSqlQuery(aslQuery);
@@ -120,8 +120,6 @@ class AqlSqlQueryBuilderTest {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(UUID.randomUUID()));
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
