@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+* Revived option to pre-fill template cache ([#1394](https://github.com/ehrbase/ehrbase/pull/1394))
+ ### Changed 
+ ### Fixed
 * Feature toggle for ehrscape API (ehrbase.rest.ehrscape.enabled, default: false) ([#1415](https://github.com/ehrbase/ehrbase/pull/1415))
 * Add experimental `AQL` support for `FOLDER` ([#1401](https://github.com/ehrbase/ehrbase/pull/1401))
 * Validate that a composition does not contain Nodes not in the template  ([#1424](https://github.com/ehrbase/ehrbase/pull/1424))

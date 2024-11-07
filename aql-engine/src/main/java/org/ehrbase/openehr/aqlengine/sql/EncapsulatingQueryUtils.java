@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -37,8 +36,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
-import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -242,9 +240,9 @@ final class EncapsulatingQueryUtils {
                 conceptField);
     }
 
-    private static Field templateIdOrderField(Field templateUidField, KnowledgeCacheService knowledgeCache) {
+    private static Field templateIdOrderField(Field templateUidField, TemplateService templateService) {
         // order lexicographically by template id
-        List<TemplateMetaData> templates = knowledgeCache.listAllOperationalTemplates();
+        Map<UUID, String> templates = templateService.findAllTemplateIds();
 
         if (templates.isEmpty()) {
             LOG.warn("No template ids found: Fallback to ordering by internal UUID");
@@ -252,11 +250,9 @@ final class EncapsulatingQueryUtils {
         }
 
         Map<Param<UUID>, Param<Integer>> templateIdOrderMap = new LinkedHashMap<>();
-        Iterator<UUID> it = templates.stream()
-                .sorted(Comparator.comparing(
-                        u -> u.getOperationaltemplate().getTemplateId().getValue(),
-                        Collator.getInstance(Locale.ENGLISH)))
-                .map(TemplateMetaData::getInternalId)
+        Iterator<UUID> it = templates.entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getValue, Collator.getInstance(Locale.ENGLISH)))
+                .map(Map.Entry::getKey)
                 .iterator();
         int pos = 0;
         while (it.hasNext()) {
@@ -355,15 +351,13 @@ final class EncapsulatingQueryUtils {
 
     @Nonnull
     public static Stream<SortField<?>> orderFields(
-            AslOrderByField ob,
-            AqlSqlQueryBuilder.AslQueryTables aslQueryToTable,
-            KnowledgeCacheService knowledgeCache) {
+            AslOrderByField ob, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable, TemplateService templateService) {
         AslField aslField = ob.field();
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
                     case AslDvOrderedColumnField f -> Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(
                             (Field<JSONB>) FieldUtils.field(src, f, true)));
-                    case AslColumnField f -> columnOrderField(f, src, knowledgeCache);
+                    case AslColumnField f -> columnOrderField(f, src, templateService);
                     case AslComplexExtractedColumnField ecf -> complexExtractedColumnOrderByFields(ecf, src);
                     case AslConstantField __ -> Stream.<Field<?>>empty();
                     case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
@@ -376,13 +370,12 @@ final class EncapsulatingQueryUtils {
     }
 
     @Nonnull
-    private static Stream<Field<?>> columnOrderField(
-            AslColumnField f, Table<?> src, KnowledgeCacheService knowledgeCache) {
+    private static Stream<Field<?>> columnOrderField(AslColumnField f, Table<?> src, TemplateService templateService) {
         Field<?> field = FieldUtils.field(src, f, true);
 
         field = switch (f.getExtractedColumn()) {
                 // ensure order by name, not internal ID
-            case TEMPLATE_ID -> templateIdOrderField(field, knowledgeCache);
+            case TEMPLATE_ID -> templateIdOrderField(field, templateService);
             case AD_CHANGE_TYPE_VALUE, AD_CHANGE_TYPE_PREFERRED_TERM -> DSL.lower(field.cast(String.class));
             case AD_CHANGE_TYPE_CODE_STRING -> DSL.case_((Field<ContributionChangeType>) field)
                     .mapValues(JOOQ_CHANGE_TYPE_TO_CODE);
