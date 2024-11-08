@@ -79,6 +79,7 @@
     <database.user>ehrbase</database.user>
     <database.pass>ehrbase</database.pass>
     <database.name>ehrbase</database.name>
+    <database.timeout>120000</database.timeout>
     <database.external>false</database.external>
     <test.profile>unit</test.profile>
   </properties>
