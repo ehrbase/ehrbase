@@ -21,8 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -46,7 +50,7 @@ import org.springframework.stereotype.Service;
 @Service
 // This service is not @Transactional since we only want to get DB connections when we really need to and an already
 // running transaction is propagated anyway
-public class KnowledgeCacheServiceImp implements KnowledgeCacheService, IntrospectService {
+public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
 
     public static final String ELEMENT = "ELEMENT";
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -57,19 +61,22 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
     @Value("${system.allow-template-overwrite:false}")
     private boolean allowTemplateOverwrite;
 
-    public KnowledgeCacheServiceImp(TemplateStorage templateStorage, CacheProvider cacheProvider) {
+    @Value("${ehrbase.cache.template-init-on-startup:false}")
+    private boolean initTemplateCache;
 
+    public KnowledgeCacheServiceImp(TemplateStorage templateStorage, CacheProvider cacheProvider) {
         this.templateStorage = templateStorage;
         this.cacheProvider = cacheProvider;
     }
 
-    @Override
-    public String addOperationalTemplate(InputStream inputStream) {
-        OPERATIONALTEMPLATE template = buildOperationalTemplate(inputStream);
-        return addOperationalTemplateIntern(template, false);
+    @PostConstruct
+    public void init() {
+        if (initTemplateCache) {
+            listAllOperationalTemplates();
+        }
     }
 
-    private OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
+    private static OPERATIONALTEMPLATE buildOperationalTemplate(InputStream content) {
         try {
             TemplateDocument document = TemplateDocument.Factory.parse(content);
             return document.getTemplate();
@@ -101,134 +108,147 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService, Introspe
                     "Operational template with this template ID already exists: " + templateId);
         }
 
-        templateStorage.storeTemplate(template);
-        if (allowTemplateOverwrite && !overwrite) {
-            // Caches might not be containing wrong data
-            invalidateCache(template);
+        TemplateMetaData templateMetaData = templateStorage.storeTemplate(template);
+
+        if (allowTemplateOverwrite || overwrite) {
+            // Caches might be containing wrong data
+            invalidateCaches(templateId, templateMetaData.getInternalId());
         }
+        log.info("Updating WebTemplate cache for template: {}", templateId);
+        ensureCached(templateMetaData);
 
         return templateId;
     }
 
+    @Override
     public String adminUpdateOperationalTemplate(InputStream content) {
         OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
         return addOperationalTemplateIntern(template, true);
     }
 
-    // invalidates some derived caches like the queryOptMetaDataCache which depend on the template
-    private void invalidateCache(OPERATIONALTEMPLATE template) {
+    private void ensureCached(TemplateMetaData template) {
+        CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, template.getInternalId(), () -> {
+            String templateId = TemplateUtils.getTemplateId(template.getOperationaltemplate());
+            CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, template::getInternalId);
+            CacheProvider.INTROSPECT_CACHE.get(
+                    cacheProvider, templateId, () -> buildWebTemplate(template.getOperationaltemplate()));
+            return templateId;
+        });
+    }
 
-        String templateId = template.getTemplateId().getValue();
+    private void invalidateCaches(String templateId, UUID internalId) {
         CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, templateId);
-        Optional.of(templateId)
-                .map(t -> CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, t, () -> null))
-                .ifPresent(uuid -> CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, uuid));
         CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
     }
 
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
-        return templateStorage.listAllOperationalTemplates();
+        List<TemplateMetaData> templateMetaData = templateStorage.listAllOperationalTemplates();
+        log.info("Updating WebTemplate cache for all {} templates", templateMetaData.size());
+        templateMetaData.forEach(this::ensureCached);
+        return templateMetaData;
+    }
+
+    @Override
+    public Map<UUID, String> findAllTemplateIds() {
+        return templateStorage.findAllTemplateIds();
     }
 
     @Override
     public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
         log.debug("retrieveOperationalTemplate({})", key);
-        return templateStorage.readOperationaltemplate(key);
-    }
-
-    @Override
-    public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid) {
-        return findTemplateIdByUuid(uuid).flatMap(this::retrieveOperationalTemplate);
+        return templateStorage.readTemplate(key).map(TemplateMetaData::getOperationaltemplate);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
+    public void deleteOperationalTemplate(OPERATIONALTEMPLATE template) {
         // Remove template from storage
-        boolean deleted =
-                this.templateStorage.deleteTemplate(template.getTemplateId().getValue());
+        String templateId = TemplateUtils.getTemplateId(template);
+        Optional<UUID> internalId = findUuidByTemplateId(templateId);
+        templateStorage.deleteTemplate(templateId);
 
-        if (deleted) {
-            // Remove template from caches
-            invalidateCache(template);
-        }
+        CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
 
-        return deleted;
+        internalId.ifPresent(iid -> CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, iid));
+    }
+
+    @Override
+    public int deleteAllOperationalTemplates() {
+        List<Pair<UUID, String>> deletedTemplates = templateStorage.deleteAllTemplates();
+
+        deletedTemplates.forEach(t -> {
+            CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, t.getKey());
+            CacheProvider.INTROSPECT_CACHE.evict(cacheProvider, t.getValue());
+            CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, t.getValue());
+        });
+        return deletedTemplates.size();
     }
 
     @Override
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
-
-            return Optional.of(CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, uuid, () -> templateStorage
-                    .findTemplateIdByUuid(uuid)
-                    .orElseThrow()));
+            return Optional.of(CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, uuid, () -> {
+                String templateId = templateStorage.findTemplateIdByUuid(uuid).orElseThrow();
+                // reverse cache
+                CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> uuid);
+                return templateId;
+            }));
         } catch (Cache.ValueRetrievalException ex) {
-            // No template with that UUID exist
-            return Optional.empty();
+            if (ex.getCause() instanceof NoSuchElementException) {
+                // No template with that UUID exist
+                return Optional.empty();
+            } else {
+                throw ex;
+            }
         }
     }
 
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         try {
-
-            return Optional.of(CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> templateStorage
-                    .findUuidByTemplateId(templateId)
-                    .orElseThrow()));
+            return Optional.of(CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> {
+                UUID internalId =
+                        templateStorage.findUuidByTemplateId(templateId).orElseThrow();
+                // reverse cache
+                CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, internalId, () -> templateId);
+                return internalId;
+            }));
         } catch (Cache.ValueRetrievalException ex) {
             // No template with that templateId exist
             return Optional.empty();
         }
     }
 
-    @Override
-    public WebTemplate getQueryOptMetaData(String templateId) {
-
+    public WebTemplate getWebTemplate(String templateId) {
         try {
-
-            return CacheProvider.INTROSPECT_CACHE.get(
-                    cacheProvider, templateId, () -> buildQueryOptMetaData(templateId));
+            return CacheProvider.INTROSPECT_CACHE.get(cacheProvider, templateId, () -> {
+                log.info("Updating WebTemplate cache for template: {}", templateId);
+                return retrieveWebTemplate(templateId);
+            });
         } catch (Cache.ValueRetrievalException ex) {
             throw (RuntimeException) ex.getCause();
         }
     }
 
-    private WebTemplate buildQueryOptMetaData(String templateId) {
+    private WebTemplate retrieveWebTemplate(String templateId) {
 
         return retrieveOperationalTemplate(templateId)
-                .map(this::buildQueryOptMetaData)
+                .map(this::buildWebTemplate)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Could not retrieve  template for  template Id:" + templateId));
+                        new IllegalArgumentException("Could not retrieve template for template Id: " + templateId));
     }
 
-    private WebTemplate buildQueryOptMetaData(OPERATIONALTEMPLATE operationaltemplate) {
-        log.info("Updating WebTemplate cache for template: {}", TemplateUtils.getTemplateId(operationaltemplate));
+    private WebTemplate buildWebTemplate(OPERATIONALTEMPLATE operationaltemplate) {
         try {
             return new OPTParser(operationaltemplate).parse();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
-    }
-
-    public int deleteAllOperationalTemplates() {
-        // Get all operational templates
-        List<TemplateMetaData> templateList = this.templateStorage.listAllOperationalTemplates();
-        // If list is empty no deletion required
-        if (templateList.isEmpty()) {
-            return 0;
-        }
-        int deleted = 0;
-        for (TemplateMetaData metaData : templateList) {
-            if (deleteOperationalTemplate(metaData.getOperationaltemplate())) {
-                deleted++;
-            }
-        }
-
-        return deleted;
     }
 
     /**

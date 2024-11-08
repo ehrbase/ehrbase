@@ -61,4 +61,25 @@ class SemVerUtilTest {
         assertThat(SemVerUtil.determineVersion(req, SemVer.NO_VERSION)).isEqualTo(SemVer.parse("3.42.0"));
         assertThat(SemVerUtil.determineVersion(req, SemVer.parse("3.42.5"))).isEqualTo(SemVer.parse("3.42.6"));
     }
+
+    @Test
+    void streamAllResolutions() {
+        assertThat(SemVerUtil.streamAllResolutions(SemVer.NO_VERSION)).containsExactly(SemVer.NO_VERSION);
+
+        assertThat(SemVerUtil.streamAllResolutions(new SemVer(3, null, null, null)))
+                .containsExactly(new SemVer(3, null, null, null), SemVer.NO_VERSION);
+
+        assertThat(SemVerUtil.streamAllResolutions(new SemVer(3, 42, null, null)))
+                .containsExactly(new SemVer(3, 42, null, null), new SemVer(3, null, null, null), SemVer.NO_VERSION);
+
+        assertThat(SemVerUtil.streamAllResolutions(new SemVer(3, 42, 6, null)))
+                .containsExactly(
+                        new SemVer(3, 42, 6, null),
+                        new SemVer(3, 42, null, null),
+                        new SemVer(3, null, null, null),
+                        SemVer.NO_VERSION);
+
+        assertThat(SemVerUtil.streamAllResolutions(new SemVer(3, 42, 6, "SNAPSHOT")))
+                .containsExactly(new SemVer(3, 42, 6, "SNAPSHOT"));
+    }
 }
