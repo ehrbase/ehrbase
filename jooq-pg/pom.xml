@@ -80,7 +80,7 @@
                   <!-- The log message is not usable as indicator since the DB restarts multiple times during init -->
                   <!--<log>database system is ready to accept connections</log>-->
                   <log>listening on IPv.*</log>
-                  <time>120000</time>
+                  <time>${database.timeout}</time>
                 </wait>
                 <log>
                   <enabled>true</enabled>
