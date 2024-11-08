@@ -37,9 +37,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
@@ -71,7 +69,6 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.JSONObjectAggNullStep;
 import org.jooq.Operator;
-import org.jooq.Param;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Result;
@@ -94,9 +91,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AqlSqlQueryBuilder {
-
-    private static final Param<?>[] FOLDER_OBJECT_REF_TYPES =
-            new Param[] {DSL.inline("VERSIONED_COMPOSITION"), DSL.inline("COMPOSITION")};
 
     private final AqlConfigurationProperties aqlConfigurationProperties;
     private final DSLContext context;
@@ -428,125 +422,21 @@ public class AqlSqlQueryBuilder {
         return step;
     }
 
-    @Nonnull
-    private static SelectJoinStep<Record> structureQueryBaseVersionToDataTable(
-            AslStructureQuery aq,
-            Table<?> primaryTable,
-            Table<?> dataTable,
-            Stream<Field<?>> columnFields,
-            Stream<AslFolderItemIdVirtualField> folderFields) {
-
-        return switch (aq.getType()) {
-            case EHR_STATUS -> DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
-                    .from(primaryTable)
-                    .join(dataTable)
-                    .on(primaryTable.field(EHR_STATUS_VERSION.EHR_ID).eq(dataTable.field(EHR_STATUS_DATA.EHR_ID)));
-            case COMPOSITION -> DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
-                    .from(primaryTable)
-                    .join(dataTable)
-                    .on(primaryTable.field(COMP_VERSION.VO_ID).eq(dataTable.field(COMP_DATA.VO_ID)));
-            case FOLDER -> {
-                Optional<AslFolderItemIdVirtualField> folderItemColumn = folderFields.findFirst();
-
-                final Condition onCondition = primaryTable
-                        .field(EHR_FOLDER_VERSION.EHR_ID)
-                        .eq(dataTable.field(EHR_FOLDER_DATA.EHR_ID))
-                        .and(primaryTable
-                                .field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
-                                .eq(dataTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
-
-                if (folderItemColumn.isEmpty()) {
-                    yield DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
-                            .from(primaryTable)
-                            .join(dataTable)
-                            .on(onCondition);
-                } else {
-                    AslFolderItemIdVirtualField column = folderItemColumn.get();
-                    Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
-                            buildFolderItemIdNestedSelect(dataTable, column, false);
-
-                    // we need all fields at this point + the item id array
-                    Table<?> joinTable = tableToSelect.getLeft();
-                    List<SelectFieldOrAsterisk> selectFields = tableToSelect.getRight();
-
-                    yield DSL.select(Stream.concat(columnFields, selectFields.stream())
-                                    .toArray(SelectFieldOrAsterisk[]::new))
-                            .from(primaryTable)
-                            .join(joinTable)
-                            .on(onCondition);
-                }
-            }
-            default -> throw new IllegalArgumentException("%s has no version table".formatted(aq.getType()));
-        };
-    }
-
-    @Nonnull
-    private static SelectJoinStep<Record> structureQueryBaseUsingDataTable(
-            AslStructureQuery aq,
-            Table<?> primaryTable,
-            Stream<Field<?>> columnFields,
-            Stream<AslFolderItemIdVirtualField> folderFields) {
-
-        if (aq.getType() == AslSourceRelation.FOLDER) {
-
-            Optional<AslFolderItemIdVirtualField> columnField = folderFields.findFirst();
-            if (columnField.isPresent()) {
-                AslFolderItemIdVirtualField column = columnField.get();
-                Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
-                        buildFolderItemIdNestedSelect(primaryTable, column, true);
-
-                // we need all fields at this point + the item id array
-                Table<?> joinTable = tableToSelect.getLeft();
-                List<SelectFieldOrAsterisk> selectFields = tableToSelect.getRight();
-
-                // We join by num to reduce the parent child scanning to a single folder
-                // on "sF_f2_0_data_sq"."num" = "sF_f2_0sq"."num"
-                // and "sF_f2_0_data_sq"."ehr_id" = "sF_f2_0sq"."ehr_id"
-                // and "sF_f2_0_data_sq"."ehr_folders_idx" = "sF_f2_0sq"."ehr_folders_idx"
-                Condition onCondition = primaryTable
-                        .field(EHR_FOLDER_DATA.NUM)
-                        .eq(joinTable.field(EHR_FOLDER_DATA.NUM))
-                        .and(primaryTable.field(EHR_FOLDER_DATA.EHR_ID).eq(joinTable.field(EHR_FOLDER_DATA.EHR_ID)))
-                        .and(primaryTable
-                                .field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)
-                                .eq(joinTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
-
-                return DSL.select(Stream.concat(columnFields, selectFields.stream())
-                                .toArray(SelectFieldOrAsterisk[]::new))
-                        .from(primaryTable)
-                        .join(joinTable)
-                        .on(onCondition);
-            }
-        }
-
-        return DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new)).from(primaryTable);
-    }
-
-    private static <T extends AslField, R> Stream<R> consumeFieldsOfType(
-            Map<Class<? extends AslField>, List<AslField>> aslFields,
-            Class<T> type,
-            Function<? super T, ? extends R> mapper) {
-        return Optional.ofNullable(aslFields.remove(type)).orElseGet(List::of).stream()
-                .filter(type::isInstance)
-                .map(type::cast)
-                .map(mapper);
-    }
-
     /**
      * TODO temporary solution until item[].id.value are extracted into its own column for direct access
      * Nested array element select for all item[].id.value(s)
      * <code>
      * select
-	 *   "base".*, "fi_uuids"
-	 * from "ehr"."ehr_folder_data" as "base"
-	 * join "ehr"."ehr_folder_data" as "descendant"
-	 * on (
-	 *      "descendant"."ehr_id" = "base"."ehr_id"
-	 *      and "descendant"."ehr_folders_idx" = "base"."ehr_folders_idx"
-	 *      and "descendant"."num" between "base"."num" and "base"."num_cap"
-	 * )
-	 * join UNNEST("descendant"."item_uuids") as "fi_uuids"
-	 * on (1=1)
+     *   "base".*, "fi_uuids"
+     * from "ehr"."ehr_folder_data" as "base"
+     * join "ehr"."ehr_folder_data" as "descendant"
+     * on (
+     *      "descendant"."ehr_id" = "base"."ehr_id"
+     *      and "descendant"."ehr_folders_idx" = "base"."ehr_folders_idx"
+     *      and "descendant"."num" between "base"."num" and "base"."num_cap"
+     * )
+     * join UNNEST("descendant"."item_uuids") as "fi_uuids"
+     * on (1=1)
      * </code>
      */
     private static Pair<Table<?>, List<SelectFieldOrAsterisk>> buildFolderItemIdNestedSelect(
@@ -556,9 +446,10 @@ public class AqlSqlQueryBuilder {
 
         EhrFolderData baseFolderTable = EHR_FOLDER_DATA.as("base");
         EhrFolderData descendantFolderTable = EHR_FOLDER_DATA.as("descendant");
-        
-        //--------------------------------------------------------------
-        Table<Record> itemsUUIDArrayTable = DSL.table("UNNEST(\"descendant\".\"item_uuids\")").as("fi_uuids");
+
+        // --------------------------------------------------------------
+        Table<Record> itemsUUIDArrayTable =
+                DSL.table("UNNEST(\"descendant\".\"item_uuids\")").as("fi_uuids");
         Field<UUID> itemUUIDs = DSL.field("\"fi_uuids\"", UUID.class, itemsUUIDArrayTable);
         // @format:off
         // we need all fields at this point + the item id array
@@ -694,80 +585,6 @@ public class AqlSqlQueryBuilder {
                 .from(primaryTable)
                 .join(dataTable)
                 .on(Objects.requireNonNull(primaryTable.field(tableField)).eq(dataTable.field(tableField)));
-    }
-
-    /**
-     * TODO temporary solution until item[].id.value are extracted into its own column for direct access
-     * Nested array element select for all item[].id.value(s)
-     * <code>
-     * select
-     *     "parent".*,
-     *     cast((("items"->'X')->>'V') as uuid) as "items_id_value"
-     * from "ehr"."ehr_folder_data" as "parent"
-     *     -- 2nd join on folder data where the folders are subfolder of the parent one
-     *     join "ehr"."ehr_folder_data" as "descendant"
-     *     on (
-     *        "descendant"."ehr_id" = "parent"."ehr_id"
-     *        and "descendant"."ehr_folders_idx" = "parent"."ehr_folders_idx"
-     *        and "descendant"."num" between "parent"."num" and "parent"."num_cap"
-     *     )
-     *     -- take the items[] as flat list for each sub-folder where the id is an HIER_OBJECT UUID
-     *     join jsonb_array_elements("descendant"."data"->'i') as "items"
-     *     on (
-     * 	       ("items"->>'tp') IN ('COMPOSITION', 'VERSIONED_COMPOSITION')
-     * 	       and ((("items"->'X')->>'V') ~ E'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
-     *     )
-     * </code>
-     */
-    private static Pair<Table<?>, List<SelectFieldOrAsterisk>> buildFolderItemIdNestedSelect(
-            Table<?> dataTable, AslFolderItemIdVirtualField column, boolean subAlias) {
-
-        String fieldName = column.getFieldName();
-
-        EhrFolderData baseFolderTable = EHR_FOLDER_DATA.as("base");
-        EhrFolderData descendantFolderTable = EHR_FOLDER_DATA.as("descendant");
-        String attr = RmAttributeAlias.getAlias("items");
-        Table<Record> itemsJsonbArrayElementTable = DSL.table(
-                        "jsonb_array_elements({0})",
-                        DSL.jsonbGetAttribute(descendantFolderTable.DATA, DSL.inline(attr)))
-                .as("items");
-
-        // Field<JSONB> items = DSL.field("{0}", JSONB.class, itemsJsonbArrayElementTable);
-        Field<JSONB> items = DSL.field(itemsJsonbArrayElementTable.getQualifiedName(), JSONB.class);
-
-        Field<String> itemIdValue = AdditionalSQLFunctions.jsonbAttributePathText(
-                items, Stream.of("id", "value").map(RmAttributeAlias::getAlias));
-        Field<UUID> itemIdValueUUID = DSL.cast(itemIdValue, UUID.class).as(fieldName);
-
-        Field<String> itemType = AdditionalSQLFunctions.jsonbAttributePathText(
-                items, Stream.of("type").map(RmAttributeAlias::getAlias));
-        Field<String> itemRmType = AdditionalSQLFunctions.jsonbAttributePathText(
-                items, Stream.of("id", "_type").map(RmAttributeAlias::getAlias));
-
-        // @format:off
-        // we need all fields at this point + the item id array
-        SelectOnConditionStep<Record> selectOnConditionStep = DSL.select(baseFolderTable.asterisk(), itemIdValueUUID)
-                .from(baseFolderTable)
-                // -- 1st join on folder data where the folders are subfolder of the root one
-                .join(descendantFolderTable)
-                    .on(descendantFolderTable.EHR_ID.eq(baseFolderTable.EHR_ID))
-                    .and(descendantFolderTable.EHR_FOLDERS_IDX.eq(baseFolderTable.EHR_FOLDERS_IDX))
-                    .and(descendantFolderTable.NUM.between(baseFolderTable.NUM, baseFolderTable.NUM_CAP))
-                // -- 2nd take the items[] as flat list for each sub-folder where the id is an UUID
-                .join(itemsJsonbArrayElementTable)
-                    // ("items"->>'tp') IN( 'VERSIONED_COMPOSITION', 'COMPOSITION')
-                    .on(itemType.in(FOLDER_OBJECT_REF_TYPES))
-                    // (((("items"->'X')->'V')->>0) ~ '^[[:xdigit:]]{8}-([[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$')
-                    .and(itemIdValue.likeRegex(DSL.inline("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")));
-        // in case we join using the folder_data table we need to pick a dedicated alias for the items to prevent clashes
-        Table<?> joinTable = subAlias
-                ? selectOnConditionStep.asTable(dataTable.getName() + "_items")
-                :  selectOnConditionStep.asTable(dataTable);
-
-        // @format:on
-        List<SelectFieldOrAsterisk> selectFields =
-                List.of(FieldUtils.virtualAliasedField(joinTable, itemIdValueUUID, column, fieldName));
-        return Pair.of(joinTable, selectFields);
     }
 
     /**
