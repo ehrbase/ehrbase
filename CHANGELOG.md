@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [2.10.0]
  ### Added
 * Revived option to pre-fill template cache (`ehrbase.cache.template-init-on-startup`, default: `false`) ([#1394](https://github.com/ehrbase/ehrbase/pull/1394))
@@ -119,3 +124,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
 [2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0
 [2.10.0]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...v2.10.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.10.0...HEAD
