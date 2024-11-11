@@ -25,7 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * {@link ConfigurationProperties} for external terminology validation.
  */
 @ConfigurationProperties(prefix = "validation.external-terminology")
-public class ValidationProperties {
+public class ExternalValidationProperties {
 
     private boolean enabled = false;
 

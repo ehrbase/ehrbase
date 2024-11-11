@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2019-2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,11 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.service;
+package org.ehrbase.openehr.util;
 
-import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 
-public interface IntrospectService {
+public class TestConfig {
 
-    WebTemplate getQueryOptMetaData(String templateId);
+    public static AqlConfigurationProperties aqlConfigurationProperties() {
+        return new AqlConfigurationProperties(
+                false,
+                new AqlConfigurationProperties.Experimental(
+                        new AqlConfigurationProperties.Experimental.AqlOnFolder(false)));
+    }
 }

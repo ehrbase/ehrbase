@@ -18,8 +18,10 @@
 package org.ehrbase.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -32,29 +34,32 @@ public interface TemplateStorage {
      */
     List<TemplateMetaData> listAllOperationalTemplates();
 
+    Map<UUID, String> findAllTemplateIds();
+
     /**
      * Save a template in the store
      *
      * @param template @see {@link OPERATIONALTEMPLATE}
      * @throws RuntimeException template Id or uuid are not unique
      */
-    void storeTemplate(OPERATIONALTEMPLATE template);
+    TemplateMetaData storeTemplate(OPERATIONALTEMPLATE template);
 
     /**
      * Find and return a saved Template by templateId
      * @param templateId
      * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
      */
-    Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId);
+    Optional<TemplateMetaData> readTemplate(String templateId);
 
     /**
      * Deletes an operational template from template storage. The template will be removed physically so ensure that
      * there are no compositions referencing the template.
      *
      * @param templateId - Template id to delete from storage, e.g. "IDCR Allergies List.v0"
-     * @return - Deletion was successful or not
      */
-    boolean deleteTemplate(String templateId);
+    void deleteTemplate(String templateId);
+
+    List<Pair<UUID, String>> deleteAllTemplates();
 
     Optional<String> findTemplateIdByUuid(UUID uuid);
 

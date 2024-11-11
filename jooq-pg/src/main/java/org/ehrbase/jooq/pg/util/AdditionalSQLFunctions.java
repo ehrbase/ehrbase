@@ -18,6 +18,7 @@
 package org.ehrbase.jooq.pg.util;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.Stream;
 import org.jooq.AggregateFunction;
 import org.jooq.Field;
@@ -44,13 +45,28 @@ public final class AdditionalSQLFunctions {
     public static Field<JSONB> jsonb_dv_ordered_magnitude(Field<JSONB> dvOrderedField) {
         return DSL.function("jsonb_dv_ordered_magnitude", JSONB.class, dvOrderedField);
     }
-    /*
-       data -> path[0] -> … -> path[n] ->> 0
-    */
+
+    /**
+     * @see #jsonbAttributePathText
+     */
     public static Field<String> jsonbAttributePathText(Field<JSONB> jsonb, String... path) {
+        return jsonbAttributePathText(jsonb, Arrays.stream(path));
+    }
+
+    /**
+     * Extract the text value from the given <code>JSONB</code> at the requested <code>path</code>
+     * </p>
+     * <code>data -> path[0] -> … -> path[n] ->> 0</code>
+     *
+     * @param jsonb to extract text as path from
+     * @param path json path of the text
+     * @return textValue as field
+     */
+    public static Field<String> jsonbAttributePathText(Field<JSONB> jsonb, Stream<String> path) {
         Field<JSONB> jsonbField = jsonb;
-        for (String att : path) {
-            jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(att));
+        Iterator<String> it = path.iterator();
+        while (it.hasNext()) {
+            jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(it.next()));
         }
         return DSL.jsonbGetElementAsText(jsonbField, DSL.inline(0));
     }

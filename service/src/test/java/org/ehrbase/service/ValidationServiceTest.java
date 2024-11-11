@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
@@ -67,6 +66,7 @@ import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.ehrbase.service.contribution.ContributionServiceHelperTest;
+import org.ehrbase.service.validation.ValidationProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -80,7 +80,7 @@ class ValidationServiceTest {
 
     private final KnowledgeCacheServiceImp knowledgeCacheService = mock();
 
-    private final ServerConfig serverConfig = mock();
+    private final ValidationProperties serverConfig = new ValidationProperties(true, true);
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 
@@ -106,7 +106,7 @@ class ValidationServiceTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(knowledgeCacheService, serverConfig, objectProvider, spyService);
+        Mockito.reset(knowledgeCacheService, objectProvider, spyService);
         doReturn(new NopTerminologyValidation()).when(objectProvider).getIfAvailable();
     }
 
@@ -246,7 +246,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getQueryOptMetaData(templateID);
+        doReturn(webTemplate).when(knowledgeCacheService).getWebTemplate(templateID);
         service().check(composition);
     }
 
@@ -280,7 +280,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getQueryOptMetaData(templateID);
+        doReturn(webTemplate).when(knowledgeCacheService).getWebTemplate(templateID);
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(composition)).isInstanceOf(ConstraintViolationException.class);

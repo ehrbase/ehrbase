@@ -15,33 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.cli.config;
+package org.ehrbase.openehr.aqlengine;
 
-import org.ehrbase.api.definitions.ServerConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-@ConfigurationProperties(prefix = "server")
-public class NopServerConfig implements ServerConfig {
+/**
+ * AQL features that can be optionally enabled.
+ *
+ * <ul>
+ *     <li><code>pg-llj-workaround</code> Enables fix for an old postgresql bug where filters in lateral left joins inside a left join are not respected, default: <code>true</code></li>
+ *     <li><code>experimental.aql-on-folder.enabled</code> if enabled allow to query <code>EHR</code> <code>FOLDER</code> using AQL, default: <code>false</code></li>
+ * </ul>
+ */
+@ConfigurationProperties(prefix = "ehrbase.aql")
+public record AqlConfigurationProperties(boolean pgLljWorkaround, Experimental experimental) {
+    public record Experimental(AqlOnFolder aqlOnFolder) {
 
-    private boolean disableStrictValidation = false;
-
-    @Override
-    public int getPort() {
-        return -1;
-    }
-
-    public void setPort(@SuppressWarnings("unused") int port) {
-        // ignored
-    }
-
-    public void setDisableStrictValidation(boolean disableStrictValidation) {
-        this.disableStrictValidation = disableStrictValidation;
-    }
-
-    @Override
-    public boolean isDisableStrictValidation() {
-        return this.disableStrictValidation;
+        public record AqlOnFolder(boolean enabled) {}
     }
 }

@@ -42,18 +42,18 @@ import org.springframework.web.reactive.function.client.WebClientException;
  * {@link Configuration} for external terminology validation.
  */
 @Configuration
-@EnableConfigurationProperties(ValidationProperties.class)
+@EnableConfigurationProperties(ExternalValidationProperties.class)
 @SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
 
     private static final String ERR_MSG = "External terminology validation is disabled, consider to enable it";
     private final Logger logger = LoggerFactory.getLogger(ValidationConfiguration.class);
-    private final ValidationProperties properties;
+    private final ExternalValidationProperties properties;
     private final CacheProvider cacheProvider;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
 
     public ValidationConfiguration(
-            ValidationProperties properties,
+            ExternalValidationProperties properties,
             CacheProvider cacheProvider,
             @Nullable OAuth2AuthorizedClientManager authorizedClientManager) {
         this.properties = properties;
@@ -68,7 +68,7 @@ public class ValidationConfiguration {
             return nopTerminologyValidation();
         }
 
-        final Map<String, ValidationProperties.Provider> providers = properties.getProvider();
+        final Map<String, ExternalValidationProperties.Provider> providers = properties.getProvider();
 
         if (providers.isEmpty()) {
             throw new IllegalStateException("At least one external terminology provider must be defined "
@@ -78,7 +78,7 @@ public class ValidationConfiguration {
                     providers.entrySet().iterator().next());
         } else {
             ExternalTerminologyValidationChain chain = new ExternalTerminologyValidationChain();
-            for (Map.Entry<String, ValidationProperties.Provider> namedProvider : providers.entrySet()) {
+            for (Map.Entry<String, ExternalValidationProperties.Provider> namedProvider : providers.entrySet()) {
                 chain.addExternalTerminologyValidationSupport(buildExternalTerminologyValidation(namedProvider));
             }
             return chain;
@@ -86,10 +86,10 @@ public class ValidationConfiguration {
     }
 
     private ExternalTerminologyValidation buildExternalTerminologyValidation(
-            Map.Entry<String, ValidationProperties.Provider> namedProvider) {
+            Map.Entry<String, ExternalValidationProperties.Provider> namedProvider) {
 
         final String name = namedProvider.getKey();
-        final ValidationProperties.Provider provider = namedProvider.getValue();
+        final ExternalValidationProperties.Provider provider = namedProvider.getValue();
         String oauth2Client = provider.getOauth2Client();
 
         logger.info(
@@ -103,7 +103,7 @@ public class ValidationConfiguration {
 
         final WebClient webClient = buildWebClient(oauth2Client);
 
-        if (provider.getType() == ValidationProperties.ProviderType.FHIR) {
+        if (provider.getType() == ExternalValidationProperties.ProviderType.FHIR) {
             return fhirTerminologyValidation(provider.getUrl(), webClient);
         }
         throw new IllegalArgumentException("Invalid provider type: " + provider.getType());

@@ -83,8 +83,14 @@ security:
 
 
 ehrbase:
+  validation:
+    check-for-extra-nodes: true
+    validate-rm-constraints: true
   aql:
     pg-llj-workaround: true
+    experimental:
+      aql-on-folder:
+        enabled: false
   rest:
     aql:
       # allows to control query execution using debug params
@@ -98,6 +104,8 @@ ehrbase:
       tags:
         enabled: false
         context-path: /rest/experimental/tags
+    ehrscape:
+      enabled: false
   security:
     # Configuration of actuator for reporting and health endpoints
     management:
@@ -112,7 +120,8 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  template-init-on-startup: true
+  template-init-on-startup: false
+  stored-query-init-on-startup: false
   user-id-cache-config:
     expire-after-access:
       duration: 300
