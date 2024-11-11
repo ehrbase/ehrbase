@@ -67,7 +67,7 @@
     <junit.version>5.10.2</junit.version>
 
     <!-- jooq -->
-    <postgresql.version>42.7.3</postgresql.version>
+    <postgresql.version>42.7.4</postgresql.version>
 
     <!-- spring -->
     <spring-boot.version>3.2.11</spring-boot.version>
