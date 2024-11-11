@@ -7,14 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
-* Revived option to pre-fill template cache ([#1394](https://github.com/ehrbase/ehrbase/pull/1394))
  ### Changed 
- ### Fixed
-* Feature toggle for ehrscape API (ehrbase.rest.ehrscape.enabled, default: false) ([#1415](https://github.com/ehrbase/ehrbase/pull/1415))
-* Add experimental `AQL` support for `FOLDER` ([#1401](https://github.com/ehrbase/ehrbase/pull/1401))
-* Validate that a composition does not contain Nodes not in the template  ([#1424](https://github.com/ehrbase/ehrbase/pull/1424))
- ### Changed
  ### Fixed 
+
+## [2.10.0]
+ ### Added
+* Revived option to pre-fill template cache (`ehrbase.cache.template-init-on-startup`, default: `false`) ([#1394](https://github.com/ehrbase/ehrbase/pull/1394))
+* Added experimental `AQL` support for `FOLDER` (`ehrbase.aql.experimental.aqlOnFolder`, default: `false`) ([#1401](https://github.com/ehrbase/ehrbase/pull/1401))
+ ### Changed
+* Feature toggle for ehrscape API (`ehrbase.rest.ehrscape.enabled`, default: `false`) ([#1415](https://github.com/ehrbase/ehrbase/pull/1415))
+ ### Fixed
+* Validate that compositions only contain nodes that are defined by the template (`ehrbase.validation.checkForExtraNodes`, default: `true`)  ([#1424](https://github.com/ehrbase/ehrbase/pull/1424))
 
 ## [2.9.0]
  ### Added
@@ -120,4 +123,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
 [2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
 [2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...HEAD
+[2.10.0]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...v2.10.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.10.0...HEAD
