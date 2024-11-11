@@ -26,6 +26,11 @@ Check out the Installation guide at https://docs.ehrbase.org/docs/EHRbase/instal
 
 ## Building and Installing EHRbase
 
+> [!TIP]
+> The fastest way to get started with EHRbase and openEHR is the **EHRbase Sandbox** available at https://sandkiste.ehrbase.org/.
+> 
+> For a deployment on premise read below.
+
 These instructions will get you a copy of the project up and running on your local machine **for development and testing
 purposes**. Please read these instructions carefully. See [deployment](#deployment) for notes on how to deploy the
 project on a live system.
