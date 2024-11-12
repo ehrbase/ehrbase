@@ -423,8 +423,6 @@ public class AqlSqlQueryBuilder {
     }
 
     /**
-     * TODO temporary solution until item[].id.value are extracted into its own column for direct access
-     * Nested array element select for all item[].id.value(s)
      * <code>
      * select
      *   "base".*, "fi_uuids"
@@ -448,9 +446,12 @@ public class AqlSqlQueryBuilder {
         EhrFolderData descendantFolderTable = EHR_FOLDER_DATA.as("descendant");
 
         // --------------------------------------------------------------
-        Table<Record> itemsUUIDArrayTable =
-                DSL.table("UNNEST(\"descendant\".\"item_uuids\")").as("fi_uuids");
-        Field<UUID> itemUUIDs = DSL.field("\"fi_uuids\"", UUID.class, itemsUUIDArrayTable);
+        Table<?> itemsUUIDArrayTable = DSL.table("UNNEST(%s)"
+                        .formatted(DSL.name("descendant", "item_uuids").quotedName()))
+                .as("fi_uuids");
+
+        Field<UUID> itemUUIDs =
+                DSL.field(DSL.name("fi_uuids").quotedName().toString(), UUID.class, itemsUUIDArrayTable);
         // @format:off
         // we need all fields at this point + the item id array
         SelectOnConditionStep<Record> selectOnConditionStep = DSL.select(baseFolderTable.asterisk(), itemUUIDs)
