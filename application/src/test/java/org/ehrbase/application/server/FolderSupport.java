@@ -17,9 +17,9 @@
  */
 package org.ehrbase.application.server;
 
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -27,6 +27,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.entity.ContentType;
 import org.ehrbase.openehr.sdk.client.openehrclient.OpenEhrClientConfig;
 import org.ehrbase.openehr.sdk.client.openehrclient.defaultrestclient.DefaultRestClient;
+
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 public class FolderSupport {
     static String FOLDER_ID = "_FOLDER_ID_";
@@ -73,19 +75,6 @@ public class FolderSupport {
     }
 
     public UUID create(UUID ehrId, String folder) {
-        //    	http://localhost:8080/ehrbase/rest/openehr/v1/ehr/{{ehr_id}}/directory
-
-        //        updatedVersion = defaultRestClient.httpPut(
-        //                defaultRestClient
-        //                        .getConfig()
-        //                        .getBaseUri()
-        //                        .resolve(EHR_PATH
-        //                                + ehrId.toString()
-        //                                + COMPOSITION_PATH
-        //                                + versionUid.getObjectId().getValue()),
-        //                composition,
-        //                versionUid);
-
         var restClient = new DefaultRestClient(cfg) {
             ObjectVersionId doHttpPost(URI uri, String body) {
                 HttpResponse response = internalPost(

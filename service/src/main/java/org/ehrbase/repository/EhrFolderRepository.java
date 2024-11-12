@@ -19,6 +19,7 @@ package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
+import static org.ehrbase.openehr.dbformat.RmAttributeAlias.getAlias;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,7 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -122,9 +124,9 @@ public class EhrFolderRepository
         }
     };
 
-    private static final String PERSISTED_ITEMS_MEM = "i";
-    private static final String PERSISTED_ID_MEM = "X";
-    private static final String PERSISTED_VALUE_MEM = "V";
+    private static final String PERSISTED_ITEMS_MEM = getAlias("items");
+    private static final String PERSISTED_ID_MEM = getAlias("id");
+    private static final String PERSISTED_VALUE_MEM = getAlias("value");
 
     @SuppressWarnings("unchecked")
     private static final NullSafeFuncWrapper<String, List<String>> uuidExtract = NullSafeFuncWrapper.of(
@@ -134,7 +136,7 @@ public class EhrFolderRepository
                     .map(s -> (Map<String, Object>) s.get(PERSISTED_ID_MEM))
                     .toList())
             .after(l -> l.stream().map(s -> (String) s.get(PERSISTED_VALUE_MEM)).toList())
-            .after(l -> l.stream().filter(s -> null != s).toList());
+            .after(l -> l.stream().filter(Objects::nonNull).toList());
 
     /**
      * Update a Folder in the DB
