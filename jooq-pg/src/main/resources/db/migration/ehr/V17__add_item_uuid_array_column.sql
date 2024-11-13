@@ -39,8 +39,8 @@ BEGIN
 
         EXECUTE format($$
         UPDATE %1$I
-        SET item_uuids = array(select (jsonb_array_elements(data -> 'i') -> 'x' ->> 'V')::uuid),
-        data = data - 'i'
+        SET item_uuids = array(select (jsonb_array_elements(data -> 'i') -> 'x' ->> 'V')::uuid) --,
+        --data = data - 'i' -- XXX omitting removing items from json for now
         WHERE item_uuids is null and ehr_id IN (SELECT ehr_id FROM %1$I WHERE item_uuids is null LIMIT $1);
         $$, rel_name::text)
         USING batch_size;
