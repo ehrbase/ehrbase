@@ -1224,7 +1224,7 @@
       },
       "archetype_details": {
         "archetype_id": {
-          "value": "openEHR-EHR-OBSERVATION.story.v2"
+          "value": "openEHR-EHR-OBSERVATION.story.v1"
         },
         "rm_version": "1.0.4"
       },
@@ -1294,7 +1294,7 @@
         ],
         "archetype_node_id": "at0001"
       },
-      "archetype_node_id": "openEHR-EHR-OBSERVATION.story.v2"
+      "archetype_node_id": "openEHR-EHR-OBSERVATION.story.v1"
     }
   ],
   "archetype_node_id": "openEHR-EHR-COMPOSITION.report.v1"

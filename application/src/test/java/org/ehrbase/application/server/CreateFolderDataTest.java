@@ -22,7 +22,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.java.quickcheck.generator.PrimitiveGenerators;
-import org.ehrbase.application.EhrBase;
 import org.ehrbase.openehr.sdk.client.openehrclient.OpenEhrClientConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -56,7 +55,7 @@ class CreateFolderDataTest {
 
     @BeforeAll
     public static void setup() {
-        EhrBase.main(new String[] {});
+        // EhrBase.main(new String[] {});
     }
 
     public class TestDataGenerator {
