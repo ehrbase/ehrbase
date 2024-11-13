@@ -17,9 +17,9 @@
  */
 package org.ehrbase.application.server;
 
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -27,8 +27,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.entity.ContentType;
 import org.ehrbase.openehr.sdk.client.openehrclient.OpenEhrClientConfig;
 import org.ehrbase.openehr.sdk.client.openehrclient.defaultrestclient.DefaultRestClient;
-
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 public class FolderSupport {
     static String FOLDER_ID = "_FOLDER_ID_";
