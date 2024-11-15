@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 import org.jooq.AggregateFunction;
 import org.jooq.Field;
+import org.jooq.JSON;
 import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -33,6 +34,33 @@ public final class AdditionalSQLFunctions {
 
     public static Field<JSONB> jsonb_array_elements(Field<JSONB> jsonbArray) {
         return DSL.function("jsonb_array_elements", JSONB.class, jsonbArray);
+    }
+
+    /**
+     * Jooq does not support this for postgres.
+     * Also, Jooq would not inline the path
+     * <p>Note: the signature deviates from
+     * <code>jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb</code>
+     * so path can be specified as varargs.</p>
+     *
+     *
+     * @param target
+     * @param new_value
+     * @param path
+     * @return
+     */
+    public static Field<JSONB> jsonb_set(Field<JSONB> target, Field<JSONB> new_value, String... path) {
+        return DSL.function("jsonb_set", JSONB.class, target, DSL.inline(path), new_value);
+    }
+
+    /**
+     * Postgres only knows array_to_json
+     * @param src
+     * @return
+     * @param <T>
+     */
+    public static <T> Field<JSONB> array_to_jsonb(Field<T[]> src) {
+        return DSL.function("array_to_json", JSON.class, src).cast(JSONB.class);
     }
 
     public static <T> Field<T> jsonb_extract_path_text(Class<T> aClass, Field<JSONB> jsonb, String... path) {

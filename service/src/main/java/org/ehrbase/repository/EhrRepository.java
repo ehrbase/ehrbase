@@ -110,7 +110,7 @@ public class EhrRepository
                 auditId,
                 ContributionChangeType.creation,
                 r -> {},
-                r -> r.setEhrId(ehrId));
+                (n, r) -> r.setEhrId(ehrId));
     }
 
     @Override
@@ -210,7 +210,7 @@ public class EhrRepository
                 contributionId,
                 auditId,
                 r -> {},
-                r -> r.setEhrId(ehrId),
+                (n, r) -> r.setEhrId(ehrId),
                 "No EHR_STATUS in ehr: %s".formatted(ehrId));
     }
 
