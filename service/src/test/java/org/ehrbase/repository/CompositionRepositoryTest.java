@@ -195,7 +195,8 @@ class CompositionRepositoryTest {
         VersionDataDbRecord versionData = repo.toRecords(EHR_ID, versionDataObject, CONTRIBUTION_ID, AUDIT_ID);
 
         String versionCsv = toCsv(context, List.of(versionData.versionRecord()));
-        String dataCsv = toCsv(context, versionData.dataRecords().get().map(Pair::getValue).toList());
+        String dataCsv = toCsv(
+                context, versionData.dataRecords().get().map(Pair::getValue).toList());
         return Pair.of(versionCsv, dataCsv);
     }
 
