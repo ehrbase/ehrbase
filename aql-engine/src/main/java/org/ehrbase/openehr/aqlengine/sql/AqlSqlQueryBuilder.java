@@ -60,6 +60,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
+import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.openehr.dbformat.RmAttributeAlias;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
@@ -612,7 +613,7 @@ public class AqlSqlQueryBuilder {
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);
         // XXX Data aggregation is not needed for "terminal" structure nodes, e.g. ELEMENT
         Field<JSONB> jsonbField = dataAggregation(
-                        data, FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX))
+                        data, FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX), type)
                 .as(DSL.name(dataFieldName));
 
         SelectJoinStep<Record1<JSONB>> from = DSL.select(jsonbField).from(data);
@@ -646,11 +647,27 @@ public class AqlSqlQueryBuilder {
      *
      * @return
      */
-    private static JSONObjectAggNullStep<JSONB> dataAggregation(Table<?> dataTable, Field<String> baseEntityIndex) {
-        return DSL.jsonbObjectAgg(
-                DSL.substring(
-                        dataTable.field(COMP_DATA.ENTITY_IDX),
-                        DSL.length(baseEntityIndex).plus(DSL.inline(1))),
-                dataTable.field(COMP_DATA.DATA));
+    private static JSONObjectAggNullStep<JSONB> dataAggregation(
+            Table<?> dataTable, Field<String> baseEntityIndex, AslSourceRelation type) {
+
+        Field<String> keyField = DSL.substring(
+                dataTable.field(COMP_DATA.ENTITY_IDX),
+                DSL.length(baseEntityIndex).plus(DSL.inline(1)));
+        Field<JSONB> dataField = dataTable.field(COMP_DATA.DATA);
+
+        Field<JSONB> valueField;
+        if (type == AslSourceRelation.FOLDER) {
+            // TODO add items
+            Field<UUID[]> uuidsField = dataTable.field(EhrFolderData.EHR_FOLDER_DATA.ITEM_UUIDS);
+            valueField = DSL.case_()
+                    .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
+                    .else_(AdditionalSQLFunctions.jsonb_set(
+                            dataField,
+                            AdditionalSQLFunctions.array_to_jsonb(uuidsField),
+                            DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS));
+        } else {
+            valueField = dataField;
+        }
+        return DSL.jsonbObjectAgg(keyField, valueField);
     }
 }
