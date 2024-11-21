@@ -447,8 +447,7 @@ public class AqlSqlQueryBuilder {
         EhrFolderData descendantFolderTable = EHR_FOLDER_DATA.as("descendant");
 
         // --------------------------------------------------------------
-        Table<?> itemsUUIDArrayTable = DSL.table("UNNEST(%s)"
-                        .formatted(DSL.name("descendant", "item_uuids").quotedName()))
+        Table<?> itemsUUIDArrayTable = DSL.unnest(descendantFolderTable.field(EHR_FOLDER_DATA.ITEM_UUIDS))
                 .as("fi_uuids");
 
         Field<UUID> itemUUIDs =

@@ -15,9 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.application.server;
-
-import org.hibernate.validator.constraints.UUID;
+package org.ehrbase.openehr.aqlengine.testdata;
 
 public class ItemSupport {
     static String ITEM_ID = "_ITEM_ID_";
@@ -33,11 +31,7 @@ public class ItemSupport {
       "namespace": "ITEM_NS",
       "type": "VERSIONED_COMPOSITION"
     }
-	""";
-
-    public static String create(UUID itemUUID, String namespace) {
-        return ITEM_TEMPLATE.replace(ITEM_ID, itemUUID.toString()).replace(ITEM_NS, namespace);
-    }
+    """;
 
     public static String create(String itemUUID, String namespace) {
         return ITEM_TEMPLATE.replace(ITEM_ID, itemUUID).replace(ITEM_NS, namespace);

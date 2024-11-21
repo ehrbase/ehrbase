@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.application.server;
+package org.ehrbase.openehr.aqlengine.testdata;
 
 import com.nedap.archie.rm.composition.Composition;
 import java.io.IOException;
