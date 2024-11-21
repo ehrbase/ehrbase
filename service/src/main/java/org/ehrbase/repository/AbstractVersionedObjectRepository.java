@@ -559,7 +559,7 @@ public abstract class AbstractVersionedObjectRepository<
                 .as(DSL.name("data"));
     }
 
-    protected <S extends SelectFromStep<R>, R extends Record> SelectOnConditionStep<R> fromJoinedVersionData(
+    protected <R extends Record> SelectOnConditionStep<R> fromJoinedVersionData(
             SelectFromStep<R> select, boolean head) {
         Table<?> versionTable = tables.get(true, head);
         Table<?> dataTable = tables.get(false, head);

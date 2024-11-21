@@ -25,10 +25,10 @@ import org.ehrbase.openehr.sdk.client.openehrclient.defaultrestclient.DefaultRes
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 
 public class EhrSupport {
-    static String PARTY_REF_ID = "_REF_ID_";
-    static String EHR_NS = "_EHR_NS_";
+    private static final String PARTY_REF_ID = "_REF_ID_";
+    private static final String EHR_NS = "_EHR_NS_";
 
-    static String EHR_TEMPLATE =
+	private static final String EHR_TEMPLATE =
             """
 	{
 	  "_type": "EHR_STATUS",

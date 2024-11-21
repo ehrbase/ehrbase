@@ -18,10 +18,10 @@
 package org.ehrbase.openehr.aqlengine.testdata;
 
 public class ItemSupport {
-    static String ITEM_ID = "_ITEM_ID_";
-    static String ITEM_NS = "_ITEM_NS_";
+    private static final String ITEM_ID = "_ITEM_ID_";
+    private static final String ITEM_NS = "_ITEM_NS_";
 
-    static String ITEM_TEMPLATE =
+    private static final String ITEM_TEMPLATE =
             """
     {
       "id": {

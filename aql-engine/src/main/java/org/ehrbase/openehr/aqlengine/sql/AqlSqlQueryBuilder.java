@@ -656,7 +656,6 @@ public class AqlSqlQueryBuilder {
 
         Field<JSONB> valueField;
         if (type == AslSourceRelation.FOLDER) {
-            // TODO add items
             Field<UUID[]> uuidsField = dataTable.field(EhrFolderData.EHR_FOLDER_DATA.ITEM_UUIDS);
             valueField = DSL.case_()
                     .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)

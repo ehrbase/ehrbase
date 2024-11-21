@@ -53,11 +53,6 @@ class CreateFolderDataTest {
     private static final String RESULT = "Created EHR[%s] With Root-Folder[%s]";
     private static final String FOLDER_ITEMS = "Creating %ds Items For Folder[%s]";
 
-    @BeforeAll
-    public static void setup() {
-        // EhrBase.main(new String[] {});
-    }
-
     public class TestDataGenerator {
         private final OpenEhrClientConfig cfg = new OpenEhrClientConfig(URI.create("http://localhost:8080/ehrbase/"));
         private final CompositionSupport compositionSupport = new CompositionSupport(cfg);
@@ -133,7 +128,7 @@ class CreateFolderDataTest {
     }
 
     private String createItems(CompositionSupport compositionSupport, UUID ehrId, int numItems) {
-        String allItems = IntStream.range(0, numItems)
+        return IntStream.range(0, numItems)
                 .mapToObj(i2 -> {
                     ItemSpec item = new ItemSpec(compositionSupport, "localNS") {
                         String build() {
@@ -145,7 +140,6 @@ class CreateFolderDataTest {
                     return item.build();
                 })
                 .collect(Collectors.joining(","));
-        return allItems;
     }
 
     abstract static class EhrSpec {

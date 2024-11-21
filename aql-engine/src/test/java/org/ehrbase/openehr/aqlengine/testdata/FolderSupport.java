@@ -29,12 +29,12 @@ import org.ehrbase.openehr.sdk.client.openehrclient.OpenEhrClientConfig;
 import org.ehrbase.openehr.sdk.client.openehrclient.defaultrestclient.DefaultRestClient;
 
 public class FolderSupport {
-    static String FOLDER_ID = "_FOLDER_ID_";
-    static String FOLDER_NAME = "_FOLDER_NAME_";
-    static String SUB_FOLDER = "_SUB_FOLDER_";
-    static String FOLDER_ITEM = "_FOLDER_ITEM_";
+    private static final String FOLDER_ID = "_FOLDER_ID_";
+    private static final String FOLDER_NAME = "_FOLDER_NAME_";
+    private static final String SUB_FOLDER = "_SUB_FOLDER_";
+    private static final String FOLDER_ITEM = "_FOLDER_ITEM_";
 
-    static String FOLDER_TEMPLATE =
+    private static final String FOLDER_TEMPLATE =
             """
 	{
 	  "_type": "FOLDER",

@@ -38,12 +38,12 @@ public class CompositionSupport {
 
     private final TemplateSupport templateSupport;
 
-    private static final String compo;
+    private static final String COMPOSITION;
 
     static {
         try {
             URL url = CompositionSupport.class.getResource("composition.json");
-            compo = IOUtils.toString(url, StandardCharsets.UTF_8);
+            COMPOSITION = IOUtils.toString(url, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -55,7 +55,7 @@ public class CompositionSupport {
     }
 
     public ObjectVersionId create(UUID ehrId) {
-        Composition composition = json.unmarshal(compo, Composition.class);
+        Composition composition = json.unmarshal(COMPOSITION, Composition.class);
         templateSupport.ensureTemplateExistence(composition);
         return endpoint.apply(ehrId).mergeRaw(composition);
     }
