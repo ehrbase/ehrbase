@@ -28,7 +28,7 @@ public class EhrSupport {
     private static final String PARTY_REF_ID = "_REF_ID_";
     private static final String EHR_NS = "_EHR_NS_";
 
-	private static final String EHR_TEMPLATE =
+    private static final String EHR_TEMPLATE =
             """
 	{
 	  "_type": "EHR_STATUS",

@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.java.quickcheck.generator.PrimitiveGenerators;
 import org.ehrbase.openehr.sdk.client.openehrclient.OpenEhrClientConfig;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
