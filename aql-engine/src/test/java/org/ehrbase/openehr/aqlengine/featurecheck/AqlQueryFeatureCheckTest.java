@@ -193,28 +193,41 @@ class AqlQueryFeatureCheckTest {
             strings = {
                 "SELECT f FROM FOLDER f",
                 """
-                  SELECT f/uid/value, f/name/value, f/archetype_node_id
-                  FROM FOLDER f[openEHR-EHR-FOLDER.generic.v1]
-                """,
+                      SELECT f/uid/value, f/name/value, f/archetype_node_id
+                      FROM FOLDER f[openEHR-EHR-FOLDER.generic.v1]
+                    """,
                 """
-                  SELECT f2/uid/value, f2/name/value
-                  FROM FOLDER f1[openEHR-EHR-FOLDER.generic.v1,'root']
-                  CONTAINS FOLDER f2[openEHR-EHR-FOLDER.generic.v1,'Encounter']
-                """,
+                      SELECT f2/uid/value, f2/name/value
+                      FROM FOLDER f1[openEHR-EHR-FOLDER.generic.v1,'root']
+                      CONTAINS FOLDER f2[openEHR-EHR-FOLDER.generic.v1,'Encounter']
+                    """,
                 """
-                  SELECT e/ehr_id/value, f/uid/value
-                  FROM EHR e
-                  CONTAINS FOLDER f[openEHR-EHR-FOLDER.generic.v1,'Encounter']
-                """,
+                      SELECT e/ehr_id/value, f/uid/value
+                      FROM EHR e
+                      CONTAINS FOLDER f[openEHR-EHR-FOLDER.generic.v1,'Encounter']
+                    """,
                 """
-                  SELECT c/uid/value, f/name/value
-                  FROM FOLDER f
-                  CONTAINS COMPOSITION c
-                """
+                      SELECT c/uid/value, f/name/value
+                      FROM FOLDER f
+                      CONTAINS COMPOSITION c
+                    """
             })
     void ensureQuerySupportedAqlOnFolderEnabled(String aql) {
-
         assertDoesNotThrow(() -> runEnsureQuerySupportedAqlOnFolderEnabled(aql));
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "SELECT f/items FROM FOLDER f",
+                "SELECT f/folders/items FROM FOLDER f",
+                "SELECT f/items/namespace FROM FOLDER f",
+                "SELECT f/items/type FROM FOLDER f",
+                "SELECT f/items/id FROM FOLDER f",
+                "SELECT f/items/id/value FROM FOLDER f"
+            })
+    void ensureQueryNotSupportedAqlOnFolderEnabled(String aql) {
+        assertThrows(AqlFeatureNotImplementedException.class, () -> runEnsureQuerySupportedAqlOnFolderEnabled(aql));
     }
 
     @ParameterizedTest
