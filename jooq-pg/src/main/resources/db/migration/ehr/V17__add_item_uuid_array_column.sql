@@ -21,13 +21,13 @@ ALTER TABLE ehr_folder_data_history ADD IF NOT EXISTS item_uuids uuid[] NULL DEF
 
 UPDATE ehr_folder_data
 SET
-    item_uuids = array(select (jsonb_array_elements(data -> 'i') -> 'x' ->> 'V')::uuid),
+    item_uuids = array(select (jsonb_array_elements(data -> 'i') -> 'X' ->> 'V')::uuid),
     data = data - 'i'
 WHERE item_uuids is null;
 
 UPDATE ehr_folder_data_history
 SET
-    item_uuids = array(select (jsonb_array_elements(data -> 'i') -> 'x' ->> 'V')::uuid),
+    item_uuids = array(select (jsonb_array_elements(data -> 'i') -> 'X' ->> 'V')::uuid),
     data = data - 'i'
 WHERE item_uuids is null;
 
