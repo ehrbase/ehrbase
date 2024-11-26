@@ -49,8 +49,6 @@ import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Field;
 import org.jooq.JSONB;
-import org.jooq.Record1;
-import org.jooq.SelectConditionStep;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
@@ -259,15 +257,11 @@ public class EhrFolderRepository
 
     public boolean folderUidExist(UUID folderId) {
 
-        var headQuery = folderUidExistCondition(tables.versionHead(), folderId);
-        var historyQuery = folderUidExistCondition(tables.versionHistory(), folderId);
-        return context.fetchExists(headQuery.unionAll(historyQuery));
-    }
-
-    private SelectConditionStep<Record1<Integer>> folderUidExistCondition(Table<?> table, UUID folderId) {
-        return context.selectOne()
-                .from(table)
-                .where(table.field(VERSION_PROTOTYPE.VO_ID).eq(folderId));
+        var versionHead = tables.versionHead();
+        var headQuery = context.selectOne()
+                .from(versionHead)
+                .where(versionHead.field(VERSION_PROTOTYPE.VO_ID).eq(folderId));
+        return context.fetchExists(headQuery);
     }
 
     @Transactional

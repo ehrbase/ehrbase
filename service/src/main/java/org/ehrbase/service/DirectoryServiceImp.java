@@ -26,6 +26,7 @@ import com.nedap.archie.rm.support.identification.UID;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import com.nedap.archie.rm.support.identification.VersionTreeId;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -165,6 +166,15 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
     @Override
     public Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId, UUID auditId) {
+
+        UUID uuid = UUID.fromString(ifMatches.getObjectId().getValue());
+
+        // Ensure IDs matching
+        if (!Objects.equals(uuid.toString(), folder.getUid().getRoot().getValue())) {
+            throw new PreconditionFailedException(String.format(
+                    "FOLDER uid %s does not match %s", folder.getUid().getRoot().getValue(), uuid));
+        }
+
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         if (!ehrFolderRepository.hasFolder(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
@@ -174,7 +184,6 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         FolderUtils.checkSiblingNameConflicts(folder);
 
-        UUID uuid = UUID.fromString(ifMatches.getObjectId().getValue());
         int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
 
         updateUuid(folder, true, uuid, version + 1);
