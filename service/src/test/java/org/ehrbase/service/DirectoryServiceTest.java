@@ -40,7 +40,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class DirectoryServiceTest {
+class DirectoryServiceTest {
 
     private static final UUID EHR_ID = UUID.fromString("4c5a39d4-7562-42a2-9ddf-771e2a61417d");
     private static final String FOLDER_ID = "fc7e5443-eded-452c-a3cf-15c8d623e2b0";
@@ -111,7 +111,8 @@ public class DirectoryServiceTest {
         UUID folderID = UUID.fromString(folder.getUid().getRoot().getValue());
         doReturn(true).when(mockEhrFolderRepository).folderUidExist(folderID);
 
-        assertThatThrownBy(() -> service().create(EHR_ID, folder))
+        DirectoryServiceImp service = service();
+        assertThatThrownBy(() -> service.create(EHR_ID, folder))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage("FOLDER with uid %s already exist.".formatted(FOLDER_ID));
     }
@@ -132,12 +133,30 @@ public class DirectoryServiceTest {
     }
 
     @Test
+    void updateFolderWithoutUid() {
+
+        Folder folder = folder("test");
+        folder.setUid(null);
+
+        doReturn(Optional.of(folder)).when(mockEhrFolderRepository).findHead(EHR_ID, 1);
+        doReturn(true).when(mockEhrFolderRepository).hasFolder(EHR_ID, 1);
+
+        Folder updated = service().update(EHR_ID, folder, new ObjectVersionId(FOLDER_ID, "test-system", "42"));
+        assertThat(updated).isSameAs(folder);
+
+        verify(mockEhrService, times(1)).checkEhrExistsAndIsModifiable(EHR_ID);
+        verify(mockEhrFolderRepository, times(1)).update(EHR_ID, folder, null, null, 1);
+    }
+
+    @Test
     void updateFolderUidMissMatch() {
 
         Folder folder = folder("test");
 
         ObjectVersionId ifMatch = new ObjectVersionId("1430745f-7bfb-4d82-800f-edd10cc107fe", "test-system", "42");
-        assertThatThrownBy(() -> service().update(EHR_ID, folder, ifMatch))
+
+        DirectoryServiceImp service = service();
+        assertThatThrownBy(() -> service.update(EHR_ID, folder, ifMatch))
                 .isInstanceOf(PreconditionFailedException.class)
                 .hasMessage("FOLDER uid %s does not match 1430745f-7bfb-4d82-800f-edd10cc107fe"
                         .formatted(folder.getUid().getValue()));
@@ -150,7 +169,9 @@ public class DirectoryServiceTest {
         folder.setUid(new ObjectVersionId("e8ee2c2b-6abb-4856-a97f-e10f302c8475::test-system::11"));
 
         ObjectVersionId ifMatch = new ObjectVersionId("1430745f-7bfb-4d82-800f-edd10cc107fe::test-system::42");
-        assertThatThrownBy(() -> service().update(EHR_ID, folder, ifMatch))
+
+        DirectoryServiceImp service = service();
+        assertThatThrownBy(() -> service.update(EHR_ID, folder, ifMatch))
                 .isInstanceOf(PreconditionFailedException.class)
                 .hasMessage(
                         "FOLDER uid e8ee2c2b-6abb-4856-a97f-e10f302c8475 does not match 1430745f-7bfb-4d82-800f-edd10cc107fe");
