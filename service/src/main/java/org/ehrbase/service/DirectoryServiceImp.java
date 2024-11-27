@@ -169,10 +169,15 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         UUID uuid = UUID.fromString(ifMatches.getObjectId().getValue());
 
-        // Ensure IDs matching
-        if (!Objects.equals(uuid.toString(), folder.getUid().getRoot().getValue())) {
-            throw new PreconditionFailedException(String.format(
-                    "FOLDER uid %s does not match %s", folder.getUid().getRoot().getValue(), uuid));
+        // Ensure UIDs matching
+        String folderUidValue = Optional.ofNullable(folder.getUid())
+                .map(UIDBasedId::getRoot)
+                .map(UID::getValue)
+                .orElse(null);
+
+        if (folderUidValue != null && !Objects.equals(uuid.toString(), folderUidValue)) {
+            throw new PreconditionFailedException(
+                    String.format("FOLDER uid %s does not match %s", folderUidValue, uuid));
         }
 
         // validation
