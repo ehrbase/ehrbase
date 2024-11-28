@@ -20,6 +20,7 @@ package org.ehrbase.repository;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
@@ -38,12 +39,19 @@ import org.ehrbase.jooq.pg.tables.records.EhrFolderDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionRecord;
+import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
+import org.ehrbase.openehr.dbformat.DbToRmFormat;
+import org.ehrbase.openehr.dbformat.StructureNode;
+import org.ehrbase.openehr.dbformat.VersionedObjectDataStructure;
 import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,6 +90,25 @@ public class EhrFolderRepository
     }
 
     /**
+     * Inserts item_uuids into json, so the FOLDER.items can be restored later.
+     * Restoring could be done by the db,
+     * but then the whole objects would need to be transferred.
+     */
+    @Override
+    protected Field<JSONB> jsonbDataAggregation(Table<?> dataTable) {
+        Field<JSONB> dataField = dataTable.field(DATA_PROTOTYPE.DATA);
+        Field<UUID[]> uuidsField = dataTable.field(EhrFolderData.EHR_FOLDER_DATA.ITEM_UUIDS);
+        return DSL.jsonbObjectAgg(
+                        dataTable.field(DATA_PROTOTYPE.ENTITY_IDX),
+                        DSL.case_()
+                                .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
+                                .else_(AdditionalSQLFunctions.jsonb_set(
+                                        dataField,
+                                        AdditionalSQLFunctions.array_to_jsonb(uuidsField),
+                                        DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS)))
+                .as(DSL.name("data"));
+    }
+    /**
      * Create a new Folder in the DB
      *
      * @param ehrId
@@ -99,10 +126,43 @@ public class EhrFolderRepository
                 auditId,
                 ContributionChangeType.creation,
                 r -> r.setEhrFoldersIdx(ehrFoldersIdx),
-                r -> {
-                    r.setEhrId(ehrId);
-                    r.setEhrFoldersIdx(ehrFoldersIdx);
-                });
+                (n, r) -> addExtraFolderData(ehrId, ehrFoldersIdx, n, r));
+    }
+
+    private void addExtraFolderData(UUID ehrId, int ehrFoldersIdx, StructureNode n, EhrFolderDataRecord r) {
+        // TODO could be moved to earlier stage.
+        //  r.data - items needs to be performed and setting data twice should be omitted
+        JsonNode itemsNode = n.getJsonNode().remove("items");
+        r.setItemUuids(getItemUuids(itemsNode));
+
+        if (itemsNode != null) {
+            // re-serialize the json because items was removed
+            r.setData(JSONB.valueOf(
+                    VersionedObjectDataStructure.applyRmAliases(n.getJsonNode()).toString()));
+        }
+        r.setEhrId(ehrId);
+        r.setEhrFoldersIdx(ehrFoldersIdx);
+    }
+
+    private UUID[] getItemUuids(JsonNode itemsNode) {
+        if (itemsNode == null) {
+            return new UUID[0];
+        }
+        int size = itemsNode.size();
+        if (size == 0) {
+            return new UUID[0];
+        }
+        UUID[] result = new UUID[size];
+        for (int i = 0; i < size; i++) {
+            // id and value are not optional
+            String uuidText = itemsNode.get(i).get("id").get("value").asText();
+            try {
+                result[i] = UUID.fromString(uuidText);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Only UUIDs are supported as FOLDER.items.id.value");
+            }
+        }
+        return result;
     }
 
     /**
@@ -125,10 +185,7 @@ public class EhrFolderRepository
                 contributionId,
                 auditId,
                 r -> r.setEhrFoldersIdx(ehrFoldersIdx),
-                r -> {
-                    r.setEhrId(ehrId);
-                    r.setEhrFoldersIdx(ehrFoldersIdx);
-                },
+                (n, r) -> addExtraFolderData(ehrId, ehrFoldersIdx, n, r),
                 "No FOLDER in ehr: %s".formatted(ehrId));
     }
 

@@ -36,3 +36,10 @@ but can still be enabled by setting the configuration property or environment va
 
 A validation that compositions only contain nodes that are defined by the template has been added.
 This behavior can be disabled by setting the configuration property or environment variable `ehrbase.validation.checkForExtraNodes` to `false`.
+
+## EHRbase 2.11.0
+
+The new data model for FOLDER items requires a full migration of the ehr_folder_data table, which may take a while.
+As only local VERSIONED_COMPOSITION references are supported, existing data is rewritten accordingly.
+If entries of FOLDER.items.id.value exist that do not comply with the UUID format, the migration will fail.
+These entries will have to be fixed manually.

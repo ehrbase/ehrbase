@@ -24,14 +24,14 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.directory.Folder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.CharSequenceHelper;
@@ -47,6 +47,8 @@ public final class DbToRmFormat {
     public static final String TYPE_ALIAS = "T";
 
     public static final String TYPE_ATTRIBUTE = "_type";
+
+    public static final String FOLDER_ITEMS_UUID_ARRAY_ALIAS = "IA";
 
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, String dbJsonStr) {
         JsonNode jsonNode = parseJson(dbJsonStr);
@@ -120,21 +122,14 @@ public final class DbToRmFormat {
             dbRoot = jsonObject;
 
         } else {
-            Map<String, ObjectNode> byPath = groupByPath(jsonObject);
-            final int rootPathLength = byPath.keySet().stream()
-                    .reduce((a, b) -> a.length() < b.length() ? a : b)
-                    .map(String::length)
-                    .orElseThrow();
+            final int rootPathLength = calcRootPathLength(jsonObject);
+            Map<DbJsonPath, ObjectNode> entries = new LinkedHashMap<>((jsonObject.size() * 4 / 3) + 1, 0.75f);
 
-            Map<DbJsonPath, ObjectNode> entries = byPath.entrySet().stream()
-                    .map(e -> Pair.of(remainingPath(rootPathLength, e.getKey()), e.getValue()))
-                    .collect(Collectors.toMap(
-                            Pair::getKey,
-                            Pair::getValue,
-                            (a, b) -> {
-                                throw new UnsupportedOperationException();
-                            },
-                            LinkedHashMap::new));
+            jsonObject
+                    .fields()
+                    .forEachRemaining(e -> entries.put(
+                            remainingPath(rootPathLength, e.getKey()), standardizeObjectNode(e.getValue())));
+
             dbRoot = entries.remove(DbJsonPath.EMPTY_PATH);
 
             entries.forEach((k, v) -> insertJsonEntry(dbRoot, k, v));
@@ -142,7 +137,56 @@ public final class DbToRmFormat {
 
         ObjectNode decoded = decodeKeys(dbRoot);
 
-        return RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
+        R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
+
+        // prevent empty items array
+        if (rmObject instanceof Folder folder && folder.getItems().isEmpty()) {
+            folder.setItems(null);
+        }
+
+        return rmObject;
+    }
+
+    private static int calcRootPathLength(ObjectNode jsonObject) {
+        final int rootPathLength;
+        Iterator<String> it = jsonObject.fieldNames();
+        int l = it.next().length();
+        while (it.hasNext() && l != 0) {
+            l = Math.min(l, it.next().length());
+        }
+        rootPathLength = l;
+        return rootPathLength;
+    }
+
+    private static ObjectNode standardizeObjectNode(JsonNode node) {
+        ObjectNode objectNode = (ObjectNode) node;
+
+        // revert folder items magic; folderItemsNode is reused
+        ArrayNode folderItemsNode = (ArrayNode) objectNode.remove(FOLDER_ITEMS_UUID_ARRAY_ALIAS);
+        if (folderItemsNode != null) {
+            int folderSize = folderItemsNode.size();
+            if (folderSize != 0) {
+                for (int i = 0; i < folderSize; i++) {
+                    restoreFolderItemObject(folderItemsNode, i);
+                }
+                objectNode.set(RmAttributeAlias.getAlias("items"), folderItemsNode);
+            }
+        }
+
+        return objectNode;
+    }
+
+    private static void restoreFolderItemObject(ArrayNode folderItemsNode, int idx) {
+        JsonNode srcNode = folderItemsNode.get(idx);
+
+        ObjectNode dstNode = folderItemsNode.objectNode();
+        dstNode.put(RmAttributeAlias.getAlias("namespace"), "local");
+        dstNode.put(RmAttributeAlias.getAlias("type"), "VERSIONED_COMPOSITION");
+        ObjectNode idNode = dstNode.putObject(RmAttributeAlias.getAlias("id"));
+        idNode.put(TYPE_ALIAS, RmTypeAlias.getAlias("HIER_OBJECT_ID"));
+        idNode.set(RmAttributeAlias.getAlias("value"), srcNode);
+
+        folderItemsNode.set(idx, dstNode);
     }
 
     static DbJsonPath remainingPath(int prefixLen, String fullPathStr) {
@@ -250,12 +294,6 @@ public final class DbToRmFormat {
                 /*NOOP*/
             }
         }
-    }
-
-    private static Map<String, ObjectNode> groupByPath(ObjectNode dbJson) {
-        Map<String, ObjectNode> entries = new LinkedHashMap<>();
-        dbJson.fields().forEachRemaining(e -> entries.put(e.getKey(), (ObjectNode) e.getValue()));
-        return entries;
     }
 
     record PathComponent(String attribute, Integer index) {}

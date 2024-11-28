@@ -112,7 +112,7 @@ public class CompositionRepository
                     r.setTemplateId(templateId);
                     r.setRootConcept(rootConcept);
                 },
-                r -> {});
+                (n, r) -> {});
     }
 
     @Transactional
@@ -173,7 +173,7 @@ public class CompositionRepository
                     r.setTemplateId(templateId);
                     r.setRootConcept(rootConcept);
                 },
-                r -> {},
+                (n, r) -> {},
                 "No COMPOSITION with given id: %s".formatted(rootId));
     }
 

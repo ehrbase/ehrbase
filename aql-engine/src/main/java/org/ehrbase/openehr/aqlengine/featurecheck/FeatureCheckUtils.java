@@ -260,6 +260,11 @@ final class FeatureCheckUtils {
                 AqlObjectPath subPath = new AqlObjectPath(
                         path.getPathNodes().stream().skip(level).toList());
 
+                // TODO CDR-1663 FOLDER.items is not yet supported
+                if (parentTargetTypes.contains(RmConstants.FOLDER) && "items".equals(attribute)) {
+                    throw new AqlFeatureNotImplementedException("Path FOLDER/items");
+                }
+
                 final Set<String> currentParentTargetTypes = parentTargetTypes;
                 Optional<AslExtractedColumn> extractedColumn = AslExtractedColumn.find(
                                 currentParentTargetTypes.iterator().next(), subPath)
