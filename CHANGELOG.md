@@ -8,6 +8,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [2.11.0]
+ ### Added
+ ### Changed 
 * EHR directory: Restriction of FOLDER items to only contain local VERSIONED_COMPOSITION references ([#1433](https://github.com/ehrbase/ehrbase/pull/1433))
  ### Fixed 
 
@@ -125,4 +130,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
 [2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0
 [2.10.0]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...v2.10.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.10.0...HEAD
+[2.11.0]: https://github.com/ehrbase/ehrbase/compare/v2.10.0...v2.11.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.11.0...HEAD
