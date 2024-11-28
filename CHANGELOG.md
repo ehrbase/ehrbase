@@ -7,8 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
+ ### Changed
  ### Fixed 
+* Allow Template overwrite with renamed property from `system.allow-template-overwrite` to `ehrbase.template..allow-overwrite` ([#1440](https://github.com/ehrbase/ehrbase/pull/1440))
 
 ## [2.11.0]
  ### Added

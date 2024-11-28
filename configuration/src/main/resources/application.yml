@@ -91,6 +91,9 @@ ehrbase:
     experimental:
       aql-on-folder:
         enabled: false
+  template:
+    # Allows to override templates using POST
+    allow-overwrite: false
   rest:
     aql:
       # allows to control query execution using debug params
@@ -130,10 +133,6 @@ cache:
     expire-after-write:
       duration: 300
       unit: SECONDS
-
-
-system:
-  allow-template-overwrite: false
 
 openehr-api:
   context-path: /rest/openehr
