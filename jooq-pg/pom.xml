@@ -37,7 +37,7 @@
 
 
   <properties>
-    <docker-maven-plugin.version>0.44.0</docker-maven-plugin.version>
+    <docker-maven-plugin.version>0.45.1</docker-maven-plugin.version>
     <database.docker.image>ehrbase/ehrbase-postgres:16.2-mvp</database.docker.image>
   </properties>
 
@@ -69,6 +69,8 @@
               <name>${database.docker.image}</name>
               <alias>postgres</alias>
               <run>
+                <!-- let the docker engine chose a random container name to prevent clashed during parallel builds @see https://dmp.fabric8.io/#container-name -->
+                <containerNamePattern>%e</containerNamePattern>
                 <env>
                   <EHRBASE_USER_ADMIN>${database.user}</EHRBASE_USER_ADMIN>
                   <EHRBASE_PASSWORD_ADMIN>${database.pass}</EHRBASE_PASSWORD_ADMIN>
