@@ -16,4 +16,5 @@
  * limitations under the License.
  */
 
-CREATE INDEX IF NOT EXISTS ehr_folder_version_vo_id_idx ON ehr_folder_version (vo_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ehr_folder_version_vo_id_idx ON ehr_folder_version (vo_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ehr_folder_version_history_vo_id_sys_version_uniq ON ehr_folder_version_history (vo_id, sys_version);

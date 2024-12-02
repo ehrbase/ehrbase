@@ -40,6 +40,7 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.util.FolderUtils;
 import org.ehrbase.util.UuidGenerator;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,7 +136,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
-        if (ehrFolderRepository.hasFolder(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
+        if (ehrFolderRepository.hasFolderForEhr(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
             throw new StateConflictException("EHR with id %s already contains a directory.".formatted(ehrId));
         }
 
@@ -146,14 +147,13 @@ public class DirectoryServiceImp implements InternalDirectoryService {
                 .map(UUID::fromString)
                 .orElse(UuidGenerator.randomUUID());
 
-        // sanity check to prevent deduplicate FOLDER UIDs
-        if (ehrFolderRepository.folderUidExist(folderUid)) {
-            throw new StateConflictException("FOLDER with uid %s already exist.".formatted(folderUid));
-        }
-
         updateUuid(folder, true, folderUid, 1);
 
-        ehrFolderRepository.commit(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
+        try {
+            ehrFolderRepository.commit(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
+        } catch (DuplicateKeyException e) {
+            throw new StateConflictException("FOLDER with uid %s already exist.".formatted(folderUid));
+        }
 
         return get(ehrId, null, null).orElseThrow();
     }
@@ -182,7 +182,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
-        if (!ehrFolderRepository.hasFolder(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
+        if (!ehrFolderRepository.hasFolderForVoId(uuid)) {
             throw new PreconditionFailedException(
                     String.format("EHR with id %s does not contain a directory.", ehrId.toString()));
         }
@@ -208,7 +208,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
-        if (!ehrFolderRepository.hasFolder(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
+        if (!ehrFolderRepository.hasFolderForEhr(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
             throw new PreconditionFailedException("EHR with id %s does not contain a directory.".formatted(ehrId));
         }
 
