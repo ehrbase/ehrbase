@@ -180,8 +180,8 @@ public class EhrFolderRepository
         update(
                 ehrId,
                 folder,
-                singleFolderCondition(ehrId, ehrFoldersIdx, tables.versionHead()),
-                singleFolderCondition(ehrId, ehrFoldersIdx, tables.versionHistory()),
+                singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHead()),
+                singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHistory()),
                 contributionId,
                 auditId,
                 r -> r.setEhrFoldersIdx(ehrFoldersIdx),
@@ -190,7 +190,7 @@ public class EhrFolderRepository
     }
 
     public Optional<Folder> findHead(UUID ehrId, int ehrFoldersIdx) {
-        return findHead(singleFolderCondition(ehrId, ehrFoldersIdx, tables.versionHead()));
+        return findHead(singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHead()));
     }
 
     /**
@@ -208,7 +208,7 @@ public class EhrFolderRepository
             UUID ehrId, UUID rootFolderId, int version, int ehrFoldersIdx, UUID contributionId, UUID auditId) {
         delete(
                 ehrId,
-                singleFolderCondition(ehrId, ehrFoldersIdx, tables.versionHead())
+                singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHead())
                         .and(field(VERSION_PROTOTYPE.VO_ID).eq(rootFolderId)),
                 version,
                 contributionId,
@@ -219,8 +219,8 @@ public class EhrFolderRepository
     public Optional<Folder> findByVersion(UUID ehrId, int folderIdx, int version) {
 
         return findByVersion(
-                singleFolderCondition(ehrId, folderIdx, tables.versionHead()),
-                singleFolderCondition(ehrId, folderIdx, tables.versionHistory()),
+                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHead()),
+                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHistory()),
                 version);
     }
 
@@ -229,39 +229,43 @@ public class EhrFolderRepository
         return Folder.class;
     }
 
-    private Condition singleFolderCondition(UUID ehrId, int folderIdx, Table<?> table) {
-        return table.field(VERSION_PROTOTYPE.EHR_ID)
-                .eq(ehrId)
-                .and(table.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(folderIdx));
-    }
-
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, int folderIdx, OffsetDateTime time) {
         return findVersionByTime(
-                singleFolderCondition(ehrId, folderIdx, tables.versionHead()),
-                singleFolderCondition(ehrId, folderIdx, tables.versionHistory()),
+                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHead()),
+                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHistory()),
                 time);
     }
 
-    public boolean hasFolder(UUID ehrId, int ehrFolderIdx) {
+    public boolean hasFolderForEhr(UUID ehrId, int ehrFolderIdx) {
 
         var headQuery = context.selectOne()
                 .from(tables.versionHead())
-                .where(singleFolderCondition(ehrId, ehrFolderIdx, tables.versionHead()));
+                .where(singleFolderInEhrCondition(ehrId, ehrFolderIdx, tables.versionHead()));
 
         var historyQuery = context.selectOne()
                 .from(tables.versionHistory())
-                .where(singleFolderCondition(ehrId, ehrFolderIdx, tables.versionHistory()));
+                .where(singleFolderInEhrCondition(ehrId, ehrFolderIdx, tables.versionHistory()));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
     }
 
-    public boolean folderUidExist(UUID folderId) {
+    public boolean hasFolderForVoId(UUID voId) {
 
-        var versionHead = tables.versionHead();
+        final Table<EhrFolderVersionRecord> versionTable = tables.versionHead();
+        final Table<EhrFolderVersionHistoryRecord> historyTable = tables.versionHistory();
+
         var headQuery = context.selectOne()
-                .from(versionHead)
-                .where(versionHead.field(VERSION_PROTOTYPE.VO_ID).eq(folderId));
-        return context.fetchExists(headQuery);
+                .from(versionTable)
+                .where(versionTable.field(VERSION_PROTOTYPE.VO_ID).eq(voId));
+
+        var historyQuery = context.selectOne()
+                .from(historyTable)
+                .where(historyTable
+                        .field(VERSION_PROTOTYPE.VO_ID)
+                        .eq(voId)
+                        .and(historyTable.field(EHR_FOLDER_VERSION.SYS_VERSION).eq(1)));
+
+        return context.fetchExists(headQuery.unionAll(historyQuery));
     }
 
     @Transactional
@@ -287,5 +291,11 @@ public class EhrFolderRepository
     public List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId) {
 
         return findVersionIdsByContribution(ehrId, contributionId);
+    }
+
+    private Condition singleFolderInEhrCondition(UUID ehrId, int folderIdx, Table<?> table) {
+        return table.field(VERSION_PROTOTYPE.EHR_ID)
+                .eq(ehrId)
+                .and(table.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(folderIdx));
     }
 }

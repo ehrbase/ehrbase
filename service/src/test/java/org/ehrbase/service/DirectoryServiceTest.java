@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,6 +40,7 @@ import org.ehrbase.repository.EhrFolderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.dao.DuplicateKeyException;
 
 class DirectoryServiceTest {
 
@@ -108,8 +110,7 @@ class DirectoryServiceTest {
     void createFolderConflict() {
 
         Folder folder = folder("conflict");
-        UUID folderID = UUID.fromString(folder.getUid().getRoot().getValue());
-        doReturn(true).when(mockEhrFolderRepository).folderUidExist(folderID);
+        doThrow(new DuplicateKeyException("test")).when(mockEhrFolderRepository).commit(EHR_ID, folder, null, null, 1);
 
         DirectoryServiceImp service = service();
         assertThatThrownBy(() -> service.create(EHR_ID, folder))
@@ -123,7 +124,7 @@ class DirectoryServiceTest {
         Folder folder = folder("test");
 
         doReturn(Optional.of(folder)).when(mockEhrFolderRepository).findHead(EHR_ID, 1);
-        doReturn(true).when(mockEhrFolderRepository).hasFolder(EHR_ID, 1);
+        doReturn(true).when(mockEhrFolderRepository).hasFolderForVoId(UUID.fromString(FOLDER_ID));
 
         Folder updated = service().update(EHR_ID, folder, new ObjectVersionId(FOLDER_ID, "test-system", "42"));
         assertThat(updated).isSameAs(folder);
@@ -139,7 +140,7 @@ class DirectoryServiceTest {
         folder.setUid(null);
 
         doReturn(Optional.of(folder)).when(mockEhrFolderRepository).findHead(EHR_ID, 1);
-        doReturn(true).when(mockEhrFolderRepository).hasFolder(EHR_ID, 1);
+        doReturn(true).when(mockEhrFolderRepository).hasFolderForVoId(UUID.fromString(FOLDER_ID));
 
         Folder updated = service().update(EHR_ID, folder, new ObjectVersionId(FOLDER_ID, "test-system", "42"));
         assertThat(updated).isSameAs(folder);
