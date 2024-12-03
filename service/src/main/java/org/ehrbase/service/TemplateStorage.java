@@ -28,6 +28,12 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 public interface TemplateStorage {
 
     /**
+     * Determinate if template overwriting is enabled for this storage
+     * @return allowTemplateOverwrite
+     */
+    boolean allowTemplateOverwrite();
+
+    /**
      * List all Templates in the store;
      *
      * @return @see {@link TemplateMetaData}

@@ -58,9 +58,6 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
     private final TemplateStorage templateStorage;
     private final CacheProvider cacheProvider;
 
-    @Value("${system.allow-template-overwrite:false}")
-    private boolean allowTemplateOverwrite;
-
     @Value("${ehrbase.cache.template-init-on-startup:false}")
     private boolean initTemplateCache;
 
@@ -100,17 +97,17 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
             throw new InvalidApiParameterException("Invalid template input content");
         }
 
+        boolean canOverwrite = templateStorage.allowTemplateOverwrite() || overwrite;
+
         // pre-check: if already existing throw proper exception
-        if (!allowTemplateOverwrite
-                && !overwrite
-                && retrieveOperationalTemplate(templateId).isPresent()) {
+        if (!canOverwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException(
                     "Operational template with this template ID already exists: " + templateId);
         }
 
         TemplateMetaData templateMetaData = templateStorage.storeTemplate(template);
 
-        if (allowTemplateOverwrite || overwrite) {
+        if (canOverwrite) {
             // Caches might be containing wrong data
             invalidateCaches(templateId, templateMetaData.getInternalId());
         }
