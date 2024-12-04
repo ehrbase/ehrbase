@@ -196,12 +196,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
                 return templateId;
             }));
         } catch (Cache.ValueRetrievalException ex) {
-            if (ex.getCause() instanceof NoSuchElementException) {
-                // No template with that UUID exist
-                return Optional.empty();
-            } else {
-                throw ex;
-            }
+            return handleCacheMismatch(ex);
         }
     }
 
@@ -216,8 +211,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
                 return internalId;
             }));
         } catch (Cache.ValueRetrievalException ex) {
-            // No template with that templateId exist
-            return Optional.empty();
+            return handleCacheMismatch(ex);
         }
     }
 
@@ -279,5 +273,15 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
                     "The supplied template is not supported (unsupported types: {0})",
                     String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
         }
+    }
+
+    private static <T> Optional<T> handleCacheMismatch(Cache.ValueRetrievalException ex) {
+        Throwable cause = ex.getCause();
+        return switch (cause) {
+                // No template with that UUID exists
+            case NoSuchElementException __ -> Optional.empty();
+            case RuntimeException re -> throw re;
+            default -> throw ex;
+        };
     }
 }
