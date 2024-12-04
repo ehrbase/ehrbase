@@ -136,7 +136,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
-        if (ehrFolderRepository.hasFolderForEhr(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
+        if (ehrFolderRepository.hasFolderAtIndex(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
             throw new StateConflictException("EHR with id %s already contains a directory.".formatted(ehrId));
         }
 
@@ -182,9 +182,14 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
-        if (!ehrFolderRepository.hasFolderForVoId(uuid)) {
+
+        if (!ehrFolderRepository.hasFolderAtIndex(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
             throw new PreconditionFailedException(
                     String.format("EHR with id %s does not contain a directory.", ehrId.toString()));
+        }
+        if (!ehrFolderRepository.hasFolderInEhrForVoId(ehrId, uuid)) {
+            throw new PreconditionFailedException(
+                    String.format("EHR with id %s does not contain a directory with id %s", ehrId, uuid));
         }
 
         FolderUtils.checkSiblingNameConflicts(folder);
@@ -208,7 +213,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
-        if (!ehrFolderRepository.hasFolderForEhr(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
+        if (!ehrFolderRepository.hasFolderAtIndex(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
             throw new PreconditionFailedException("EHR with id %s does not contain a directory.".formatted(ehrId));
         }
 
