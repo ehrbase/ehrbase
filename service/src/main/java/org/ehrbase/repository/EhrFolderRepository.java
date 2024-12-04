@@ -25,6 +25,7 @@ import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -111,8 +112,8 @@ public class EhrFolderRepository
     /**
      * Create a new Folder in the DB
      *
-     * @param ehrId
-     * @param folder
+     * @param ehrId            Affected <code>EHR</code>
+     * @param folder           The {@link Folder} to commit
      * @param contributionId   If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
      * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
@@ -180,8 +181,8 @@ public class EhrFolderRepository
         update(
                 ehrId,
                 folder,
-                singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHead()),
-                singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHistory()),
+                singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFoldersIdx),
+                singleFolderInEhrCondition(tables.versionHistory(), ehrId, ehrFoldersIdx),
                 contributionId,
                 auditId,
                 r -> r.setEhrFoldersIdx(ehrFoldersIdx),
@@ -190,16 +191,16 @@ public class EhrFolderRepository
     }
 
     public Optional<Folder> findHead(UUID ehrId, int ehrFoldersIdx) {
-        return findHead(singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHead()));
+        return findHead(singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFoldersIdx));
     }
 
     /**
      * Delete a  Folder in the DB
      *
-     * @param ehrId
-     * @param rootFolderId
-     * @param version        Version to be deleted. Must match latest.
-     * @param ehrFoldersIdx
+     * @param ehrId          Affected <code>EHR</code>
+     * @param rootFolderId   <code>EHR</code> root {@link Folder}
+     * @param version        Version to be deleted. Must match latest
+     * @param ehrFoldersIdx  <code>EHR</code> folder index to delete
      * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
      * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
@@ -208,7 +209,7 @@ public class EhrFolderRepository
             UUID ehrId, UUID rootFolderId, int version, int ehrFoldersIdx, UUID contributionId, UUID auditId) {
         delete(
                 ehrId,
-                singleFolderInEhrCondition(ehrId, ehrFoldersIdx, tables.versionHead())
+                singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFoldersIdx)
                         .and(field(VERSION_PROTOTYPE.VO_ID).eq(rootFolderId)),
                 version,
                 contributionId,
@@ -219,8 +220,8 @@ public class EhrFolderRepository
     public Optional<Folder> findByVersion(UUID ehrId, int folderIdx, int version) {
 
         return findByVersion(
-                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHead()),
-                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHistory()),
+                singleFolderInEhrCondition(tables.versionHead(), ehrId, folderIdx),
+                singleFolderInEhrCondition(tables.versionHistory(), ehrId, folderIdx),
                 version);
     }
 
@@ -231,38 +232,35 @@ public class EhrFolderRepository
 
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, int folderIdx, OffsetDateTime time) {
         return findVersionByTime(
-                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHead()),
-                singleFolderInEhrCondition(ehrId, folderIdx, tables.versionHistory()),
+                singleFolderInEhrCondition(tables.versionHead(), ehrId, folderIdx),
+                singleFolderInEhrCondition(tables.versionHistory(), ehrId, folderIdx),
                 time);
     }
 
-    public boolean hasFolderForEhr(UUID ehrId, int ehrFolderIdx) {
+    public boolean hasFolderAtIndex(UUID ehrId, int ehrFolderIdx) {
 
         var headQuery = context.selectOne()
                 .from(tables.versionHead())
-                .where(singleFolderInEhrCondition(ehrId, ehrFolderIdx, tables.versionHead()));
+                .where(singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFolderIdx));
 
         var historyQuery = context.selectOne()
                 .from(tables.versionHistory())
-                .where(singleFolderInEhrCondition(ehrId, ehrFolderIdx, tables.versionHistory()));
+                .where(singleFolderInEhrCondition(tables.versionHistory(), ehrId, ehrFolderIdx));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
     }
 
-    public boolean hasFolderForVoId(UUID voId) {
+    public boolean hasFolderInEhrForVoId(UUID ehrId, UUID voId) {
 
         final Table<EhrFolderVersionRecord> versionTable = tables.versionHead();
         final Table<EhrFolderVersionHistoryRecord> historyTable = tables.versionHistory();
 
-        var headQuery = context.selectOne()
-                .from(versionTable)
-                .where(versionTable.field(VERSION_PROTOTYPE.VO_ID).eq(voId));
+        var headQuery =
+                context.selectOne().from(versionTable).where(folderInEhrWithVoIdCondition(versionTable, ehrId, voId));
 
         var historyQuery = context.selectOne()
                 .from(historyTable)
-                .where(historyTable
-                        .field(VERSION_PROTOTYPE.VO_ID)
-                        .eq(voId)
+                .where(folderInEhrWithVoIdCondition(historyTable, ehrId, voId)
                         .and(historyTable.field(EHR_FOLDER_VERSION.SYS_VERSION).eq(1)));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
@@ -293,9 +291,15 @@ public class EhrFolderRepository
         return findVersionIdsByContribution(ehrId, contributionId);
     }
 
-    private Condition singleFolderInEhrCondition(UUID ehrId, int folderIdx, Table<?> table) {
+    private Condition singleFolderInEhrCondition(Table<?> table, UUID ehrId, int folderIdx) {
         return table.field(VERSION_PROTOTYPE.EHR_ID)
                 .eq(ehrId)
                 .and(table.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(folderIdx));
+    }
+
+    private Condition folderInEhrWithVoIdCondition(Table<?> table, UUID ehrId, UUID voId) {
+        return Objects.requireNonNull(table.field(VERSION_PROTOTYPE.EHR_ID))
+                .eq(ehrId)
+                .and(table.field(EHR_FOLDER_VERSION.VO_ID).eq(voId));
     }
 }

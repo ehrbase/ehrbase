@@ -124,7 +124,8 @@ class DirectoryServiceTest {
         Folder folder = folder("test");
 
         doReturn(Optional.of(folder)).when(mockEhrFolderRepository).findHead(EHR_ID, 1);
-        doReturn(true).when(mockEhrFolderRepository).hasFolderForVoId(UUID.fromString(FOLDER_ID));
+        doReturn(true).when(mockEhrFolderRepository).hasFolderAtIndex(EHR_ID, 1);
+        doReturn(true).when(mockEhrFolderRepository).hasFolderInEhrForVoId(EHR_ID, UUID.fromString(FOLDER_ID));
 
         Folder updated = service().update(EHR_ID, folder, new ObjectVersionId(FOLDER_ID, "test-system", "42"));
         assertThat(updated).isSameAs(folder);
@@ -140,7 +141,8 @@ class DirectoryServiceTest {
         folder.setUid(null);
 
         doReturn(Optional.of(folder)).when(mockEhrFolderRepository).findHead(EHR_ID, 1);
-        doReturn(true).when(mockEhrFolderRepository).hasFolderForVoId(UUID.fromString(FOLDER_ID));
+        doReturn(true).when(mockEhrFolderRepository).hasFolderAtIndex(EHR_ID, 1);
+        doReturn(true).when(mockEhrFolderRepository).hasFolderInEhrForVoId(EHR_ID, UUID.fromString(FOLDER_ID));
 
         Folder updated = service().update(EHR_ID, folder, new ObjectVersionId(FOLDER_ID, "test-system", "42"));
         assertThat(updated).isSameAs(folder);
