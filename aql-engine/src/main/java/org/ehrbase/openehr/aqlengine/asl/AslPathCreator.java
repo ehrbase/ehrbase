@@ -708,7 +708,7 @@ final class AslPathCreator {
 
         final String sqAlias = aliasProvider.uniqueAlias("p_" + attribute + "_");
         AslStructureQuery aslStructureQuery =
-                new AslStructureQuery(sqAlias, sourceRelation, fields, rmTypes, List.of(), attribute, false);
+                new AslStructureQuery(sqAlias, sourceRelation, fields, rmTypes, (rmTypes.size() == 1 && rmTypes.iterator().next().equals("EVENT_CONTEXT")) ? rmTypes : List.of() , attribute, false);
 
         AslUtils.predicates(attributePredicates, cp -> pathStructurePredicateCondition(cp, aslStructureQuery))
                 .ifPresent(aslStructureQuery::addConditionAnd);
