@@ -183,11 +183,12 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
 
-        if (!ehrFolderRepository.hasFolderAtIndex(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
-            throw new PreconditionFailedException(
-                    String.format("EHR with id %s does not contain a directory.", ehrId.toString()));
-        }
         if (!ehrFolderRepository.hasFolderInEhrForVoId(ehrId, uuid)) {
+            // perform a second check to provide a more detailed error message
+            if (!ehrFolderRepository.hasFolderAtIndex(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
+                throw new PreconditionFailedException(
+                        String.format("EHR with id %s does not contain a directory.", ehrId.toString()));
+            }
             throw new PreconditionFailedException(
                     String.format("EHR with id %s does not contain a directory with id %s", ehrId, uuid));
         }
