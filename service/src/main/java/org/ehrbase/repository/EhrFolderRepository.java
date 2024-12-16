@@ -250,17 +250,18 @@ public class EhrFolderRepository
         return context.fetchExists(headQuery.unionAll(historyQuery));
     }
 
-    public boolean hasFolderInEhrForVoId(UUID ehrId, UUID voId) {
+    public boolean hasFolderInEhrForVoId(UUID ehrId, UUID voId, int ehrFolderIdx) {
 
         final Table<EhrFolderVersionRecord> versionTable = tables.versionHead();
         final Table<EhrFolderVersionHistoryRecord> historyTable = tables.versionHistory();
 
-        var headQuery =
-                context.selectOne().from(versionTable).where(folderInEhrWithVoIdCondition(versionTable, ehrId, voId));
+        var headQuery = context.selectOne()
+                .from(versionTable)
+                .where(folderInEhrWithVoIdCondition(versionTable, ehrId, voId, ehrFolderIdx));
 
         var historyQuery = context.selectOne()
                 .from(historyTable)
-                .where(folderInEhrWithVoIdCondition(historyTable, ehrId, voId)
+                .where(folderInEhrWithVoIdCondition(historyTable, ehrId, voId, ehrFolderIdx)
                         .and(historyTable.field(EHR_FOLDER_VERSION.SYS_VERSION).eq(1)));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
@@ -297,9 +298,10 @@ public class EhrFolderRepository
                 .and(table.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(folderIdx));
     }
 
-    private Condition folderInEhrWithVoIdCondition(Table<?> table, UUID ehrId, UUID voId) {
+    private Condition folderInEhrWithVoIdCondition(Table<?> table, UUID ehrId, UUID voId, int folderIdx) {
         return Objects.requireNonNull(table.field(VERSION_PROTOTYPE.EHR_ID))
                 .eq(ehrId)
-                .and(table.field(EHR_FOLDER_VERSION.VO_ID).eq(voId));
+                .and(table.field(EHR_FOLDER_VERSION.VO_ID).eq(voId))
+                .and(table.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(folderIdx));
     }
 }

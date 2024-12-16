@@ -183,7 +183,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
 
-        if (!ehrFolderRepository.hasFolderInEhrForVoId(ehrId, uuid)) {
+        if (!ehrFolderRepository.hasFolderInEhrForVoId(ehrId, uuid, EHR_DIRECTORY_FOLDER_IDX)) {
             // perform a second check to provide a more detailed error message
             if (!ehrFolderRepository.hasFolderAtIndex(ehrId, EHR_DIRECTORY_FOLDER_IDX)) {
                 throw new PreconditionFailedException(
