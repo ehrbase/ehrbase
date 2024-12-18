@@ -64,6 +64,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
@@ -249,7 +250,17 @@ public class AqlSqlLayer {
 
                 if (aslField instanceof AslDvOrderedColumnField dvOrderedField) {
                     yield buildDvOrderedCondition(
-                            dvOrderedField, comparison.operator(), comparison.rightComparisonOperands());
+                            dvOrderedField,
+                            dvOrderedField.getDvOrderedTypes(),
+                            comparison.operator(),
+                            comparison.rightComparisonOperands());
+                } else if (aslField instanceof AslRmPathField pathField
+                        && !pathField.getDvOrderedTypes().isEmpty()) {
+                    yield buildDvOrderedCondition(
+                            pathField,
+                            pathField.getDvOrderedTypes(),
+                            comparison.operator(),
+                            comparison.rightComparisonOperands());
                 } else {
                     yield fieldValueQueryCondition(aslField, comparison);
                 }
@@ -334,12 +345,12 @@ public class AqlSqlLayer {
     }
 
     private static Optional<AslQueryCondition> buildDvOrderedCondition(
-            AslDvOrderedColumnField field, ComparisonConditionOperator operator, List<Primitive> values) {
+            AslField field, Set<String> dvOrderedTypes, ComparisonConditionOperator operator, List<Primitive> values) {
         if (operator == ComparisonConditionOperator.EXISTS || operator == ComparisonConditionOperator.LIKE) {
             throw new IllegalArgumentException("LIKE/EXISTS on DV_ORDERED is not supported");
         }
         List<Pair<Set<String>, Set<Object>>> typeToValues =
-                determinePossibleDvOrderedTypesAndValues(field.getDvOrderedTypes(), operator, values);
+                determinePossibleDvOrderedTypesAndValues(dvOrderedTypes, operator, values);
         if (typeToValues.isEmpty()) {
             return Optional.of(new AslFalseQueryCondition());
         }

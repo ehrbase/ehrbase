@@ -59,6 +59,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
@@ -294,9 +295,15 @@ final class ConditionUtils {
         AslField field = fv.getField();
 
         AslQuery internalProvider = field.getInternalProvider();
+        Table<?> srcTable = tables.getDataTable(internalProvider);
         if (fv instanceof AslDvOrderedValueQueryCondition<?> dvc) {
-            Field<JSONB> sqlDvOrderedField = FieldUtils.field(
-                    tables.getDataTable(internalProvider), (AslColumnField) field, JSONB.class, useAliases);
+            final Field<JSONB> sqlDvOrderedField;
+            if (field instanceof AslRmPathField arpf) {
+                Field<JSONB> srcField = FieldUtils.field(srcTable, arpf.getSrcField(), JSONB.class, true);
+                sqlDvOrderedField = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
+            } else {
+                sqlDvOrderedField = FieldUtils.field(srcTable, (AslColumnField) field, JSONB.class, useAliases);
+            }
             Field<BigDecimal> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField)
                     .cast(SQLDataType.NUMERIC);
             Field<String> sqlTypeField =
@@ -309,17 +316,11 @@ final class ConditionUtils {
 
         return switch (field) {
             case AslComplexExtractedColumnField ecf -> complexExtractedColumnCondition(
-                    useAliases,
-                    fv,
-                    ecf,
-                    tables.getDataTable(internalProvider),
-                    tables.getVersionTable(internalProvider));
+                    useAliases, fv, ecf, srcTable, tables.getVersionTable(internalProvider));
             case AslColumnField f -> applyOperator(
                     fv.getOperator(),
                     FieldUtils.field(
-                            (f.isVersionTableField()
-                                    ? tables.getVersionTable(internalProvider)
-                                    : tables.getDataTable(internalProvider)),
+                            (f.isVersionTableField() ? tables.getVersionTable(internalProvider) : srcTable),
                             f,
                             useAliases),
                     fv.getValues());
@@ -331,6 +332,16 @@ final class ConditionUtils {
             case AslSubqueryField __ -> throw new IllegalArgumentException("AslSubqueryField cannot be used in WHERE");
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "AslFolderItemIdValuesColumnField cannot be used in WHERE");
+            case AslRmPathField arpf -> {
+                Field<JSONB> srcField =
+                        FieldUtils.field(Objects.requireNonNull(srcTable), arpf.getSrcField(), JSONB.class, useAliases);
+                Field<JSONB> f = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
+
+                yield applyOperator(
+                        fv.getOperator(),
+                        arpf.getType() == String.class ? DSL.jsonbGetElementAsText(f, DSL.inline(0)) : f,
+                        fv.getValues());
+            }
         };
     }
 
