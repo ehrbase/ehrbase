@@ -18,11 +18,16 @@
 package org.ehrbase.openehr.aqlengine.sql;
 
 import java.util.Iterator;
+import java.util.List;
+import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
+import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
@@ -89,5 +94,24 @@ final class FieldUtils {
     public static Field<?> virtualAliasedField(
             Table<?> target, Field<?> field, AslVirtualField column, String columnName) {
         return DSL.field("{0}.{1}", target, field).as(column.aliasedName(columnName));
+    }
+
+    static Field<JSONB> buildJsonbPathField(List<PathNode> pathNodes, boolean multipleValued, Field<JSONB> jsonbField) {
+        Iterator<String> attributeIt = pathNodes.stream()
+                .map(PathNode::getAttribute)
+                .map(RmAttributeAlias::getAlias)
+                .iterator();
+
+        Field<JSONB> field = jsonbField;
+
+        while (attributeIt.hasNext()) {
+            field = DSL.jsonbGetAttribute(field, DSL.inline(attributeIt.next()));
+        }
+
+        if (multipleValued) {
+            field = AdditionalSQLFunctions.jsonb_array_elements(field);
+        }
+
+        return field;
     }
 }
