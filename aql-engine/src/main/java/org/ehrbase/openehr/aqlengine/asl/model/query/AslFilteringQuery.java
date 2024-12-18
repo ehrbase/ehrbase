@@ -20,7 +20,11 @@ package org.ehrbase.openehr.aqlengine.asl.model.query;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 
@@ -32,7 +36,16 @@ public final class AslFilteringQuery extends AslQuery {
     public AslFilteringQuery(String alias, AslField sourceField) {
         super(alias, Collections.emptyList());
         this.sourceField = sourceField;
-        this.select = sourceField.copyWithOwner(this);
+        if (sourceField instanceof AslRmPathField pf) {
+            if (pf.getDvOrderedTypes().isEmpty()) {
+                this.select = new AslColumnField(pf.getType(), pf.getSrcField().getColumnName(), false).withOwner(this);
+            } else {
+                this.select = new AslDvOrderedColumnField(
+                        pf.getSrcField().getColumnName(), FieldSource.withOwner(this), pf.getDvOrderedTypes());
+            }
+        } else {
+            this.select = sourceField.copyWithOwner(this);
+        }
     }
 
     @Override

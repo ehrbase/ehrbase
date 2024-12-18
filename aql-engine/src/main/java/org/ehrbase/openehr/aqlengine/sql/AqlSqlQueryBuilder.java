@@ -313,13 +313,13 @@ public class AqlSqlQueryBuilder {
     }
 
     private static SelectSelectStep<?> buildFilteringQuery(AslFilteringQuery aq, Table<?> target) {
+        final String fieldName = ((AslColumnField) aq.getSelect().getFirst()).getAliasedName();
         Stream<Field> fields =
                 switch (aq.getSourceField()) {
-                    case AslColumnField src -> Stream.of(FieldUtils.field(target, src, true)
-                            .as(((AslColumnField) aq.getSelect().getFirst()).getAliasedName()));
+                    case AslColumnField src -> Stream.of(
+                            FieldUtils.field(target, src, true).as(fieldName));
                     case AslComplexExtractedColumnField src -> src.getExtractedColumn().getColumns().stream()
-                            .map(fieldName -> FieldUtils.field(target, src, fieldName, true)
-                                    .as(src.aliasedName(fieldName)));
+                            .map(fn -> FieldUtils.field(target, src, fn, true).as(src.aliasedName(fn)));
                     case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "Filtering queries cannot be based on AslAggregatingField");
@@ -331,9 +331,10 @@ public class AqlSqlQueryBuilder {
                         Field<JSONB> srcField = FieldUtils.field(target, arpf.getSrcField(), JSONB.class, true);
                         Field<JSONB> ret = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
                         if (arpf.getType() == String.class) {
-                            yield Stream.of(DSL.jsonbGetElementAsText(ret, DSL.inline(0)));
+                            yield Stream.of(DSL.jsonbGetElementAsText(ret, DSL.inline(0))
+                                    .as(fieldName));
                         } else {
-                            yield Stream.of(ret);
+                            yield Stream.of(ret.as(fieldName));
                         }
                     }
                 };
