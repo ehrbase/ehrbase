@@ -163,9 +163,13 @@ final class EncapsulatingQueryUtils {
         return switch (af.getFunction()) {
             case COUNT -> f -> AdditionalSQLFunctions.count(af.isDistinct(), f);
             case MIN -> f -> af.getBaseField() instanceof AslDvOrderedColumnField
+                            || (af.getBaseField() instanceof AslRmPathField pf
+                                    && !pf.getDvOrderedTypes().isEmpty())
                     ? AdditionalSQLFunctions.min_dv_ordered(f)
                     : DSL.min(f);
             case MAX -> f -> af.getBaseField() instanceof AslDvOrderedColumnField
+                            || (af.getBaseField() instanceof AslRmPathField pf
+                                    && !pf.getDvOrderedTypes().isEmpty())
                     ? AdditionalSQLFunctions.max_dv_ordered(f)
                     : DSL.max(f);
             case SUM -> f -> DSL.aggregate("sum", SQLDataType.NUMERIC, f);
