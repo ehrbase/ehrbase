@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
 * Added check for duplicate version IDs during Folder creation as well as check for Folder uid and if-match header id during update ([#1410](https://github.com/ehrbase/ehrbase/pull/1410))
-* Remove EHR from AQL if not needed for the query
+* Remove EHR from AQL if not needed for the query ([#1448](https://github.com/ehrbase/ehrbase/pull/1448))
  ### Fixed 
 * Allow Template overwrite with renamed property from `system.allow-template-overwrite` to `ehrbase.template..allow-overwrite` ([#1440](https://github.com/ehrbase/ehrbase/pull/1440))
 
