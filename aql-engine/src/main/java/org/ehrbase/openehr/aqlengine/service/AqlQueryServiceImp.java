@@ -180,6 +180,8 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
             aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
 
+            optimizeQuery(aqlQuery);
+
             try {
                 if (logger.isTraceEnabled()) {
                     logger.trace(objectMapper.writeValueAsString(aqlQuery));
@@ -286,6 +288,29 @@ public class AqlQueryServiceImp implements AqlQueryService {
         replaceEhrPaths(aqlQuery);
 
         return aqlQuery;
+    }
+
+    protected void optimizeQuery(AqlQuery aqlQuery) {
+        // remove unused FROM EHR
+        if (aqlQuery.getFrom() instanceof ContainmentClassExpression containment
+                && RmConstants.EHR.equals(containment.getType())
+                && containment.getContains() instanceof ContainmentClassExpression childContainment
+                && !isReferenced(containment, aqlQuery)) {
+            aqlQuery.setFrom(childContainment);
+        }
+    }
+
+    protected static boolean isReferenced(ContainmentClassExpression containment, AqlQuery aqlQuery) {
+        if (containment.getPredicates() != null) {
+            return true;
+        }
+        String identifier = containment.getIdentifier();
+        if (identifier == null) {
+            return false;
+        } else {
+            return AqlQueryUtils.allIdentifiedPaths(aqlQuery)
+                    .anyMatch(p -> p.getRoot().equals(containment));
+        }
     }
 
     private List<List<Object>> executeQuery(
