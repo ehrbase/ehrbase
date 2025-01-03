@@ -80,9 +80,11 @@ public class MigrationStrategyConfig {
         };
     }
 
+    @SuppressWarnings("deprecation") // for ignoreFutureMigrations until flyway is updated
     private FluentConfiguration setSchema(Flyway flyway, String schema) {
         return Flyway.configure()
                 .dataSource(flyway.getConfiguration().getDataSource())
+                .ignoreFutureMigrations(false) // deprecated call will be removed in Flyway V9 and defaults to false
                 .schemas(schema);
     }
 }
