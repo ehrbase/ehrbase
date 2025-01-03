@@ -20,6 +20,7 @@ package org.ehrbase.configuration.config.flyway;
 import java.util.Map;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
+import org.flywaydb.core.api.pattern.ValidatePattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,6 +84,10 @@ public class MigrationStrategyConfig {
     private FluentConfiguration setSchema(Flyway flyway, String schema) {
         return Flyway.configure()
                 .dataSource(flyway.getConfiguration().getDataSource())
+                .validateOnMigrate(true)
+                // does not ignore *:Future migrations
+                // see https://documentation.red-gate.com/fd/ignore-migration-patterns-224919720.html
+                .ignoreMigrationPatterns(ValidatePattern.fromPattern("*:Ignored"))
                 .schemas(schema);
     }
 }
