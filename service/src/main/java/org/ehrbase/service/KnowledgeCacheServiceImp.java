@@ -58,9 +58,6 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
     private final TemplateStorage templateStorage;
     private final CacheProvider cacheProvider;
 
-    @Value("${system.allow-template-overwrite:false}")
-    private boolean allowTemplateOverwrite;
-
     @Value("${ehrbase.cache.template-init-on-startup:false}")
     private boolean initTemplateCache;
 
@@ -100,17 +97,17 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
             throw new InvalidApiParameterException("Invalid template input content");
         }
 
+        boolean canOverwrite = templateStorage.allowTemplateOverwrite() || overwrite;
+
         // pre-check: if already existing throw proper exception
-        if (!allowTemplateOverwrite
-                && !overwrite
-                && retrieveOperationalTemplate(templateId).isPresent()) {
+        if (!canOverwrite && retrieveOperationalTemplate(templateId).isPresent()) {
             throw new StateConflictException(
                     "Operational template with this template ID already exists: " + templateId);
         }
 
         TemplateMetaData templateMetaData = templateStorage.storeTemplate(template);
 
-        if (allowTemplateOverwrite || overwrite) {
+        if (canOverwrite) {
             // Caches might be containing wrong data
             invalidateCaches(templateId, templateMetaData.getInternalId());
         }
@@ -199,12 +196,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
                 return templateId;
             }));
         } catch (Cache.ValueRetrievalException ex) {
-            if (ex.getCause() instanceof NoSuchElementException) {
-                // No template with that UUID exist
-                return Optional.empty();
-            } else {
-                throw ex;
-            }
+            return handleCacheMismatch(ex);
         }
     }
 
@@ -219,8 +211,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
                 return internalId;
             }));
         } catch (Cache.ValueRetrievalException ex) {
-            // No template with that templateId exist
-            return Optional.empty();
+            return handleCacheMismatch(ex);
         }
     }
 
@@ -282,5 +273,15 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
                     "The supplied template is not supported (unsupported types: {0})",
                     String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
         }
+    }
+
+    private static <T> Optional<T> handleCacheMismatch(Cache.ValueRetrievalException ex) {
+        Throwable cause = ex.getCause();
+        return switch (cause) {
+                // No template with that UUID exists
+            case NoSuchElementException __ -> Optional.empty();
+            case RuntimeException re -> throw re;
+            default -> throw ex;
+        };
     }
 }
