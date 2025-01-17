@@ -59,7 +59,7 @@
     <commons-io.version>2.18.0</commons-io.version>
     <commons-lang3.version>3.17.0</commons-lang3.version>
     <ehrbase.openehr.sdk.version>2.20.0</ehrbase.openehr.sdk.version>
-    <flyway.version>8.5.13</flyway.version>
+    <flyway.version>11.1.1</flyway.version>
     <jackson-bom.version>2.18.1</jackson-bom.version>
     <javamelody.version>1.99.1</javamelody.version>
     <jooq.version>3.19.15</jooq.version>
@@ -303,6 +303,11 @@
       <dependency>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-core</artifactId>
+        <version>${flyway.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
         <version>${flyway.version}</version>
       </dependency>
       <dependency>
