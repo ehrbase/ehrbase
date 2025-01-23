@@ -20,8 +20,8 @@ package org.ehrbase.rest.openehr.specification;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import java.util.Optional;
-import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.springframework.http.ResponseEntity;
 
@@ -34,8 +34,8 @@ public interface DefinitionQueryApiSpecification {
             externalDocs =
                     @ExternalDocumentation(
                             url =
-                                    "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-get"))
-    ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(String accept, String qualifiedQueryName);
+                                    "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/Query/operation/definition_query_list"))
+    ResponseEntity<List<QueryDefinitionResponseData>> getStoredQueryList(String accept, String qualifiedQueryName);
 
     @Operation(
             summary = "Store a query",
