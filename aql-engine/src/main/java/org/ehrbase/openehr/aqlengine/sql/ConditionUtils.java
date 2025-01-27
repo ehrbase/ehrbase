@@ -306,8 +306,8 @@ final class ConditionUtils {
             }
             Field<BigDecimal> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField)
                     .cast(SQLDataType.NUMERIC);
-            Field<String> sqlTypeField =
-                    DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttributeAlias.getAlias(TYPE_ATTRIBUTE));
+            Field<String> sqlTypeField = DSL.jsonbGetAttributeAsText(
+                    sqlDvOrderedField, DSL.inline(RmAttributeAlias.getAlias(TYPE_ATTRIBUTE)));
             List<String> types =
                     dvc.getTypesToCompare().stream().map(RmTypeAlias::getAlias).toList();
             return applyOperator(AslConditionOperator.IN, sqlTypeField, types)
