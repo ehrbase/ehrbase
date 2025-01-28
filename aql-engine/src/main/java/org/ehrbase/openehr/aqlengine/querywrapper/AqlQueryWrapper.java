@@ -225,7 +225,7 @@ public final class AqlQueryWrapper {
                     (Primitive) c.getValue());
             case MatchesCondition c -> negate
                     ? new LogicalOperatorConditionWrapper(
-                            ConditionWrapper.LogicalConditionOperator.OR,
+                            ConditionWrapper.LogicalConditionOperator.AND,
                             c.getValues().stream()
                                     .map(Primitive.class::cast)
                                     .map(v -> (ConditionWrapper) new ComparisonOperatorConditionWrapper(

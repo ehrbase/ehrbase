@@ -23,6 +23,7 @@ import java.util.Map;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.jooq.SortOrder;
@@ -33,7 +34,7 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
 
     private final List<AslOrderByField> orderByFields = new ArrayList<>();
     private final List<AslField> groupByFields = new ArrayList<>();
-    private final List<AslDvOrderedColumnField> groupByDvOrderedMagnitudeFields = new ArrayList<>();
+    private final List<AslField> groupByDvOrderedMagnitudeFields = new ArrayList<>();
     private Long limit;
     private Long offset;
 
@@ -81,7 +82,7 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
         return groupByFields;
     }
 
-    public List<AslDvOrderedColumnField> getGroupByDvOrderedMagnitudeFields() {
+    public List<AslField> getGroupByDvOrderedMagnitudeFields() {
         return groupByDvOrderedMagnitudeFields;
     }
 
@@ -90,11 +91,14 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
 
         field.fieldsForAggregation(this).forEach(f -> {
             if (usesAggregateFunctionOrDistinct && !getGroupByFields().contains(f)) {
-                if (field instanceof AslDvOrderedColumnField df) {
-                    getGroupByDvOrderedMagnitudeFields().add(df);
-                } else {
-                    getGroupByFields().add(f);
-                }
+                (switch (f) {
+                            case AslDvOrderedColumnField __ -> getGroupByDvOrderedMagnitudeFields();
+                            case AslRmPathField arpf -> arpf.getDvOrderedTypes().isEmpty()
+                                    ? getGroupByFields()
+                                    : getGroupByDvOrderedMagnitudeFields();
+                            default -> getGroupByFields();
+                        })
+                        .add(f);
             }
         });
     }

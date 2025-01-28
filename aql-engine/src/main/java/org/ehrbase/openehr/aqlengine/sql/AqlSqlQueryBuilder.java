@@ -49,6 +49,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
@@ -61,9 +62,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
-import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
-import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -221,8 +219,11 @@ public class AqlSqlQueryBuilder {
 
             // if the magnitude is needed for ORDER BY, it is added to the GROUP BY
             rq.getGroupByDvOrderedMagnitudeFields().stream()
-                    .map(f -> AdditionalSQLFunctions.jsonb_dv_ordered_magnitude((Field<JSONB>)
-                            FieldUtils.field(aslQueryToTable.getDataTable(f.getInternalProvider()), f, true)))
+                    .map(f -> {
+                        Table<?> dataTable = aslQueryToTable.getDataTable(f.getInternalProvider());
+                        Field<JSONB> dvOrderedField = FieldUtils.buidDvOrderedField(true, f, dataTable);
+                        return AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(dvOrderedField);
+                    })
                     .forEach(query::addGroupBy);
 
             rq.getOrderByFields().stream()
@@ -261,13 +262,7 @@ public class AqlSqlQueryBuilder {
      * <p>
      * Structure based:
      * <p>
-     * select "cData"."data"->'N' as "pd_0_data"
-     * from "ehr"."comp" as "cData"
-     * where (
-     * "sSE_s_0"."sSE_s_0_ehr_id" = "cData"."ehr_id"
-     * and "sSE_s_0"."sSE_s_0_vo_id" = "cData"."vo_id"
-     * and "sSE_s_0"."sSE_s_0_entity_idx" = "cData"."entity_idx"
-     * )
+     * select "sSE_s_0"."data"->'N' as "pd_0_data"
      * <p>
      * Path data based:
      * <p>
@@ -280,42 +275,21 @@ public class AqlSqlQueryBuilder {
     private static TableLike<Record> buildPathDataQuery(
             AslPathDataQuery aslData, AslQuery target, AslQueryTables aslQueryToTable) {
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
+        Function<String, Field<JSONB>> dataFieldProvider =
+                colName -> FieldUtils.aliasedField(targetTable, aslData, colName, JSONB.class);
 
-        AslQuery base = aslData.getBase();
-
-        Table<?> data;
-        Function<String, Field<JSONB>> dataFieldProvider;
-        if (base instanceof AslStructureQuery baseSq) {
-            data = baseSq.getType().getDataTable().as(subqueryAlias(aslData));
-            dataFieldProvider = __ -> data.field(ObjectDataTablePrototype.INSTANCE.DATA);
-        } else {
-            data = targetTable;
-            dataFieldProvider = colName -> FieldUtils.aliasedField(data, aslData, colName, JSONB.class);
-        }
-
-        SelectSelectStep<Record> select = DSL.select(aslData.getSelect().stream()
+        return DSL.select(aslData.getSelect().stream()
                 .map(AslColumnField.class::cast)
                 .map(f -> pathDataField(aslData, f, dataFieldProvider))
                 .toList());
-
-        if (base instanceof AslStructureQuery) {
-            // primary key condition
-            List<Condition> pkeyCondition = data.getPrimaryKey().getFields().stream()
-                    .map(f -> FieldUtils.aliasedField(targetTable, aslData, f).eq((Field) data.field(f)))
-                    .toList();
-
-            return select.from(data).where(pkeyCondition);
-
-        } else {
-            return select;
-        }
     }
 
     @Nonnull
     private static Field pathDataField(
             AslPathDataQuery aslData, AslColumnField f, Function<String, Field<JSONB>> dataFieldProvider) {
         Field<JSONB> dataField = dataFieldProvider.apply(f.getColumnName());
-        Field<JSONB> jsonbField = buildJsonbPathField(aslData.getPathNodes(f), aslData.isMultipleValued(), dataField);
+        Field<JSONB> jsonbField =
+                FieldUtils.buildJsonbPathField(aslData.getPathNodes(f), aslData.isMultipleValued(), dataField);
         Field<?> field;
         if (f.getType() == String.class) {
             field = DSL.jsonbGetElementAsText(jsonbField, 0);
@@ -325,34 +299,14 @@ public class AqlSqlQueryBuilder {
         return field.as(f.getName(true));
     }
 
-    private static Field<JSONB> buildJsonbPathField(
-            List<PathNode> pathNodes, boolean multipleValued, Field<JSONB> jsonbField) {
-        Iterator<String> attributeIt = pathNodes.stream()
-                .map(PathNode::getAttribute)
-                .map(RmAttributeAlias::getAlias)
-                .iterator();
-
-        Field<JSONB> field = jsonbField;
-
-        while (attributeIt.hasNext()) {
-            field = DSL.jsonbGetAttribute(field, DSL.inline(attributeIt.next()));
-        }
-
-        if (multipleValued) {
-            field = AdditionalSQLFunctions.jsonb_array_elements(field);
-        }
-
-        return field;
-    }
-
     private static SelectSelectStep<?> buildFilteringQuery(AslFilteringQuery aq, Table<?> target) {
+        final String fieldName = ((AslColumnField) aq.getSelect().getFirst()).getAliasedName();
         Stream<Field> fields =
                 switch (aq.getSourceField()) {
-                    case AslColumnField src -> Stream.of(FieldUtils.field(target, src, true)
-                            .as(((AslColumnField) aq.getSelect().getFirst()).getAliasedName()));
+                    case AslColumnField src -> Stream.of(
+                            FieldUtils.field(target, src, true).as(fieldName));
                     case AslComplexExtractedColumnField src -> src.getExtractedColumn().getColumns().stream()
-                            .map(fieldName -> FieldUtils.field(target, src, fieldName, true)
-                                    .as(src.aliasedName(fieldName)));
+                            .map(fn -> FieldUtils.field(target, src, fn, true).as(src.aliasedName(fn)));
                     case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "Filtering queries cannot be based on AslAggregatingField");
@@ -360,6 +314,16 @@ public class AqlSqlQueryBuilder {
                             "Filtering queries cannot be based on AslSubqueryField");
                     case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                             "Filtering queries cannot be based on AslFolderItemIdValuesColumnField");
+                    case AslRmPathField arpf -> {
+                        Field<JSONB> srcField = FieldUtils.field(target, arpf.getSrcField(), JSONB.class, true);
+                        Field<JSONB> ret = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
+                        if (arpf.getType() == String.class) {
+                            yield Stream.of(DSL.jsonbGetElementAsText(ret, DSL.inline(0))
+                                    .as(fieldName));
+                        } else {
+                            yield Stream.of(ret.as(fieldName));
+                        }
+                    }
                 };
         return DSL.select(fields.toArray(Field[]::new));
     }
@@ -461,10 +425,10 @@ public class AqlSqlQueryBuilder {
                     .on(descendantFolderTable.EHR_ID.eq(baseFolderTable.EHR_ID))
                     .and(descendantFolderTable.EHR_FOLDERS_IDX.eq(baseFolderTable.EHR_FOLDERS_IDX))
                     .and(descendantFolderTable.NUM.between(baseFolderTable.NUM, baseFolderTable.NUM_CAP))
-                // -- take the item_uuids column, unnest them and then join with the each column 
+                // -- take the item_uuids column, unnest them and then join with the each column
                 .join(itemsUUIDArrayTable)
-                .on("1=1");
-        
+                .on();
+
         // in case we join using the folder_data table we need to pick a dedicated alias for the items to prevent clashes
         Table<?> joinTable = subAlias
                 ? selectOnConditionStep.asTable(dataTable.getName() + "_items")

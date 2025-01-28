@@ -17,6 +17,7 @@
  */
 package org.ehrbase.jooq.pg.util;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Stream;
@@ -70,8 +71,9 @@ public final class AdditionalSQLFunctions {
         return DSL.function("jsonb_extract_path_text", aClass, arguments);
     }
 
-    public static Field<JSONB> jsonb_dv_ordered_magnitude(Field<JSONB> dvOrderedField) {
-        return DSL.function("jsonb_dv_ordered_magnitude", JSONB.class, dvOrderedField);
+    public static Field<BigDecimal> jsonb_dv_ordered_magnitude(Field<JSONB> dvOrderedField) {
+        return DSL.function("jsonb_dv_ordered_magnitude", JSONB.class, dvOrderedField)
+                .cast(SQLDataType.NUMERIC);
     }
 
     /**

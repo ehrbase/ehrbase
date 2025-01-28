@@ -56,6 +56,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnFi
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -203,33 +204,44 @@ final class AslPathCreator {
             AslRootQuery rootQuery,
             AslPathDataQuery parentPathDataQuery,
             Map<IdentifiedPath, AslField> pathToField) {
-        boolean hasPathQueryParent = parentPathDataQuery != null;
-        boolean splitMultipleValued = dni.multipleValued() && !hasPathQueryParent;
-        final AslQuery base = hasPathQueryParent
-                ? parentPathDataQuery
-                : (AslStructureQuery) dni.parent().owner();
-        final AslQuery provider = hasPathQueryParent ? parentPathDataQuery : dni.providerSubQuery();
+        boolean isPathDataRoot = parentPathDataQuery == null;
+        final AslQuery base = isPathDataRoot ? (AslStructureQuery) dni.parent().owner() : parentPathDataQuery;
+        final AslQuery provider = isPathDataRoot ? dni.providerSubQuery() : parentPathDataQuery;
 
         final AslPathDataQuery dataQuery;
+        final AslField pathField;
         String alias = aliasProvider.uniqueAlias("pd");
-        if (splitMultipleValued) {
-            AslPathDataQuery arrayQuery = new AslPathDataQuery(
-                    alias + "_array", base, provider, dni.pathInJson(), false, dni.dvOrderedTypes(), JSONB.class);
-            rootQuery.addChild(arrayQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, arrayQuery));
+        if (dni.multipleValued()) {
+            if (isPathDataRoot) {
+                // Extract the array first to apply structure based filters before unnesting -> avoids unwanted row
+                // multiplication
+                // In the future this may also apply to isPathDataRoot == false to support advanced filtering
+                AslPathDataQuery arrayQuery = new AslPathDataQuery(
+                        alias + "_array", base, provider, dni.pathInJson(), false, dni.dvOrderedTypes(), JSONB.class);
+                rootQuery.addChild(arrayQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, arrayQuery));
 
-            dataQuery = new AslPathDataQuery(
-                    alias, arrayQuery, arrayQuery, List.of(), true, dni.dvOrderedTypes(), dni.type());
-            rootQuery.addChild(dataQuery, new AslJoin(arrayQuery, JoinType.LEFT_OUTER_JOIN, dataQuery));
+                dataQuery = new AslPathDataQuery(
+                        alias, arrayQuery, arrayQuery, List.of(), true, dni.dvOrderedTypes(), dni.type());
+                rootQuery.addChild(dataQuery, new AslJoin(arrayQuery, JoinType.LEFT_OUTER_JOIN, dataQuery));
+
+            } else {
+                dataQuery = new AslPathDataQuery(
+                        alias, base, provider, dni.pathInJson(), true, dni.dvOrderedTypes(), dni.type());
+                rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
+            }
+            pathField = dataQuery.getSelect().getFirst();
+            addQueriesForDataNode(dni.dependentPathDataNodes(), rootQuery, dataQuery, pathToField);
+        } else if (dni.dependentPathDataNodes().findAny().isPresent()) {
+            throw new IllegalStateException("Only multiple-valued json-path-nodes can have dependent nodes");
         } else {
-            dataQuery = new AslPathDataQuery(
-                    alias, base, provider, dni.pathInJson(), dni.multipleValued(), dni.dvOrderedTypes(), dni.type());
-            rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
+            pathField = new AslRmPathField(
+                            AslUtils.findFieldForOwner("data", provider.getSelect(), base),
+                            dni.pathInJson(),
+                            dni.dvOrderedTypes(),
+                            dni.type())
+                    .withProvider(rootQuery);
         }
-        dni.node()
-                .getPathsEndingAtNode()
-                .forEach(path -> pathToField.put(path, dataQuery.getSelect().getFirst()));
-
-        addQueriesForDataNode(dni.dependentPathDataNodes(), rootQuery, dataQuery, pathToField);
+        dni.node().getPathsEndingAtNode().forEach(path -> pathToField.put(path, pathField));
     }
 
     private void addFilterQueryIfRequired(
