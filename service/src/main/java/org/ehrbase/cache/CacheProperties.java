@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "cache")
 public class CacheProperties {
 
-    private List<String> doNotProxy = new ArrayList<>();
+    private List<String> txProxyExcludedBeanNames = new ArrayList<>();
     /**
      * Whether to initialize the caches during application startup.
      */
@@ -71,12 +71,12 @@ public class CacheProperties {
         this.userIdCacheConfig = userIdCacheConfig;
     }
 
-    public List<String> getDoNotProxy() {
-        return doNotProxy;
+    public List<String> getTxProxyExcludedBeanNames() {
+        return txProxyExcludedBeanNames;
     }
 
-    public void setDoNotProxy(List<String> doNotProxy) {
-        this.doNotProxy = doNotProxy;
+    public void setTxProxyExcludedBeanNames(List<String> txProxyExcludedBeanNames) {
+        this.txProxyExcludedBeanNames = txProxyExcludedBeanNames;
     }
 
     public static class CacheConfig {

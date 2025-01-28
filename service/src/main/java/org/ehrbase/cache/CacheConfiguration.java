@@ -98,7 +98,7 @@ public class CacheConfiguration {
             @Override
             public Object postProcessAfterInitialization(final Object bean, final String beanName) {
                 if (bean instanceof CacheManager cm
-                        && !cacheProperties.getDoNotProxy().contains(beanName)) {
+                        && !cacheProperties.getTxProxyExcludedBeanNames().contains(beanName)) {
                     return new CustomTxAwareCacheManagerProxy(cm);
                 }
                 return bean;
