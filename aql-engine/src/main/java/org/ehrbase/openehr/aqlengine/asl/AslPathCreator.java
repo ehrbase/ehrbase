@@ -204,20 +204,18 @@ final class AslPathCreator {
             AslRootQuery rootQuery,
             AslPathDataQuery parentPathDataQuery,
             Map<IdentifiedPath, AslField> pathToField) {
-        boolean hasPathQueryParent = parentPathDataQuery != null;
-        final AslQuery base = hasPathQueryParent
-                ? parentPathDataQuery
-                : (AslStructureQuery) dni.parent().owner();
-        final AslQuery provider = hasPathQueryParent ? parentPathDataQuery : dni.providerSubQuery();
+        boolean isPathDataRoot = parentPathDataQuery == null;
+        final AslQuery base = isPathDataRoot ? (AslStructureQuery) dni.parent().owner() : parentPathDataQuery;
+        final AslQuery provider = isPathDataRoot ? dni.providerSubQuery() : parentPathDataQuery;
 
         final AslPathDataQuery dataQuery;
         final AslField pathField;
         String alias = aliasProvider.uniqueAlias("pd");
         if (dni.multipleValued()) {
-            if (!hasPathQueryParent) {
+            if (isPathDataRoot) {
                 // Extract the array first to apply structure based filters before unnesting -> avoids unwanted row
                 // multiplication
-                // In the future this may also apply to hasPathQueryParent == true to support advanced filtering
+                // In the future this may also apply to isPathDataRoot == false to support advanced filtering
                 AslPathDataQuery arrayQuery = new AslPathDataQuery(
                         alias + "_array", base, provider, dni.pathInJson(), false, dni.dvOrderedTypes(), JSONB.class);
                 rootQuery.addChild(arrayQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, arrayQuery));
@@ -225,19 +223,17 @@ final class AslPathCreator {
                 dataQuery = new AslPathDataQuery(
                         alias, arrayQuery, arrayQuery, List.of(), true, dni.dvOrderedTypes(), dni.type());
                 rootQuery.addChild(dataQuery, new AslJoin(arrayQuery, JoinType.LEFT_OUTER_JOIN, dataQuery));
-                pathField = dataQuery.getSelect().getFirst();
+
             } else {
                 dataQuery = new AslPathDataQuery(
                         alias, base, provider, dni.pathInJson(), true, dni.dvOrderedTypes(), dni.type());
                 rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
-                pathField = dataQuery.getSelect().getFirst();
             }
-
+            pathField = dataQuery.getSelect().getFirst();
             addQueriesForDataNode(dni.dependentPathDataNodes(), rootQuery, dataQuery, pathToField);
+        } else if (dni.dependentPathDataNodes().findAny().isPresent()) {
+            throw new IllegalStateException("Only multiple-valued json-path-nodes can have dependent nodes");
         } else {
-            if (dni.dependentPathDataNodes().findAny().isPresent()) {
-                throw new IllegalStateException("Only multiple-valued json-path-nodes can have dependent nodes");
-            }
             pathField = new AslRmPathField(
                             AslUtils.findFieldForOwner("data", provider.getSelect(), base),
                             dni.pathInJson(),
@@ -245,9 +241,7 @@ final class AslPathCreator {
                             dni.type())
                     .withProvider(rootQuery);
         }
-        dni.node().getPathsEndingAtNode().forEach(path -> {
-            pathToField.put(path, pathField);
-        });
+        dni.node().getPathsEndingAtNode().forEach(path -> pathToField.put(path, pathField));
     }
 
     private void addFilterQueryIfRequired(

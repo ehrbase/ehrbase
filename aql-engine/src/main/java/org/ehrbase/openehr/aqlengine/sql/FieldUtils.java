@@ -17,10 +17,15 @@
  */
 package org.ehrbase.openehr.aqlengine.sql;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
@@ -113,5 +118,28 @@ final class FieldUtils {
         }
 
         return field;
+    }
+
+    public static Field<JSONB> buidDvOrderedField(boolean useAliases, AslField field, Table<?> srcTable) {
+        final Field<JSONB> sqlDvOrderedField =
+                switch (field) {
+                    case AslRmPathField arpf -> {
+                        Field<JSONB> srcField = field(srcTable, arpf.getSrcField(), JSONB.class, true);
+                        yield buildJsonbPathField(arpf.getPathInJson(), false, srcField);
+                    }
+                    case AslDvOrderedColumnField cf -> field(srcTable, cf, JSONB.class, useAliases);
+                    default -> throw new IllegalStateException("Unexpected field: " + field);
+                };
+        return sqlDvOrderedField;
+    }
+
+    public static Field<? extends Serializable> buildRmPathField(AslRmPathField field, Table<?> src) {
+        Field<JSONB> srcField = field(Objects.requireNonNull(src), field.getSrcField(), JSONB.class, true);
+        Field<JSONB> ret = buildJsonbPathField(field.getPathInJson(), false, srcField);
+        if (field.getType() == String.class) {
+            return DSL.jsonbGetElementAsText(ret, DSL.inline(0));
+        } else {
+            return ret;
+        }
     }
 }

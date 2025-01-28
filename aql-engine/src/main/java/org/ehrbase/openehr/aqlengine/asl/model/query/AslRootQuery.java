@@ -91,13 +91,14 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
 
         field.fieldsForAggregation(this).forEach(f -> {
             if (usesAggregateFunctionOrDistinct && !getGroupByFields().contains(f)) {
-                if (field instanceof AslDvOrderedColumnField
-                        || (field instanceof AslRmPathField arpf
-                                && !arpf.getDvOrderedTypes().isEmpty())) {
-                    getGroupByDvOrderedMagnitudeFields().add(f);
-                } else {
-                    getGroupByFields().add(f);
-                }
+                (switch (f) {
+                            case AslDvOrderedColumnField __ -> getGroupByDvOrderedMagnitudeFields();
+                            case AslRmPathField arpf -> arpf.getDvOrderedTypes().isEmpty()
+                                    ? getGroupByFields()
+                                    : getGroupByDvOrderedMagnitudeFields();
+                            default -> getGroupByFields();
+                        })
+                        .add(f);
             }
         });
     }

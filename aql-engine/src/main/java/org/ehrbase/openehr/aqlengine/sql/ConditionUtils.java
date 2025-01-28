@@ -77,7 +77,6 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 final class ConditionUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -297,15 +296,8 @@ final class ConditionUtils {
         AslQuery internalProvider = field.getInternalProvider();
         Table<?> srcTable = tables.getDataTable(internalProvider);
         if (fv instanceof AslDvOrderedValueQueryCondition<?> dvc) {
-            final Field<JSONB> sqlDvOrderedField;
-            if (field instanceof AslRmPathField arpf) {
-                Field<JSONB> srcField = FieldUtils.field(srcTable, arpf.getSrcField(), JSONB.class, true);
-                sqlDvOrderedField = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
-            } else {
-                sqlDvOrderedField = FieldUtils.field(srcTable, (AslColumnField) field, JSONB.class, useAliases);
-            }
-            Field<BigDecimal> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField)
-                    .cast(SQLDataType.NUMERIC);
+            final Field<JSONB> sqlDvOrderedField = FieldUtils.buidDvOrderedField(useAliases, field, srcTable);
+            Field<BigDecimal> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField);
             Field<String> sqlTypeField = DSL.jsonbGetAttributeAsText(
                     sqlDvOrderedField, DSL.inline(RmAttributeAlias.getAlias(TYPE_ATTRIBUTE)));
             List<String> types =
@@ -320,7 +312,7 @@ final class ConditionUtils {
             case AslColumnField f -> applyOperator(
                     fv.getOperator(),
                     FieldUtils.field(
-                            (f.isVersionTableField() ? tables.getVersionTable(internalProvider) : srcTable),
+                            f.isVersionTableField() ? tables.getVersionTable(internalProvider) : srcTable,
                             f,
                             useAliases),
                     fv.getValues());
@@ -442,11 +434,11 @@ final class ConditionUtils {
 
     private static Condition applyOperator(AslConditionOperator operator, Field field, Collection<?> values) {
         Class<?> sqlFieldType = field.getType();
-        boolean jsonbField = JSONB.class.isAssignableFrom(sqlFieldType);
-        boolean uuidField = !jsonbField && UUID.class.isAssignableFrom(sqlFieldType);
+        boolean isJsonbField = JSONB.class.isAssignableFrom(sqlFieldType);
+        boolean isUuidField = !isJsonbField && UUID.class.isAssignableFrom(sqlFieldType);
         if (operator == AslConditionOperator.LIKE) {
             String likePattern = (String) values.iterator().next();
-            if (jsonbField) {
+            if (isJsonbField) {
                 likePattern = escapeAsJsonString(likePattern);
             }
             return field.cast(String.class).like(likePattern);
@@ -465,18 +457,23 @@ final class ConditionUtils {
 
         List filteredValues = values.stream()
                 .map(v -> {
-                    Object value = null;
-                    if (uuidField && v instanceof String s) {
+                    final Object value;
+                    if (isUuidField && v instanceof String s) {
+                        UUID uuid;
                         try {
-                            value = UUID.fromString(s);
+                            uuid = UUID.fromString(s);
                         } catch (IllegalArgumentException e) {
                             // value stays null
+                            uuid = null;
                         }
-                    } else if (jsonbField
-                            || sqlFieldType.isInstance(v)
+                        value = uuid;
+                    } else if (isJsonbField
                             || orderOperator
+                            || sqlFieldType.isInstance(v)
                             || (Number.class.isAssignableFrom(sqlFieldType) && v instanceof Number)) {
                         value = v;
+                    } else {
+                        value = null;
                     }
                     return value;
                 })
@@ -494,10 +491,10 @@ final class ConditionUtils {
                 Object val = filteredValues.getFirst();
                 boolean valueAndFieldTypeCompatible = sqlFieldType.isInstance(val)
                         || (Number.class.isAssignableFrom(sqlFieldType) && val instanceof Number);
-                Field wrappedValue = jsonbField || orderOperator && !valueAndFieldTypeCompatible
+                Field wrappedValue = isJsonbField || (orderOperator && !valueAndFieldTypeCompatible)
                         ? AdditionalSQLFunctions.to_jsonb(val)
                         : DSL.inline(val);
-                Field wrappedField = !jsonbField && orderOperator && !valueAndFieldTypeCompatible
+                Field wrappedField = !isJsonbField && orderOperator && !valueAndFieldTypeCompatible
                         ? AdditionalSQLFunctions.to_jsonb(field)
                         : field;
                 yield switch (operator) {
@@ -512,7 +509,7 @@ final class ConditionUtils {
             }
             default -> switch (operator) {
                 case IN -> field.in(filteredValues.stream()
-                        .map(v -> jsonbField ? AdditionalSQLFunctions.to_jsonb(v) : DSL.inline(v))
+                        .map(v -> isJsonbField ? AdditionalSQLFunctions.to_jsonb(v) : DSL.inline(v))
                         .toList());
                 case EQ, NEQ, GT_EQ, GT, LT_EQ, LT -> throw new IllegalArgumentException(
                         "%s-Condition needs one value, not %d".formatted(operator, filteredValues.size()));

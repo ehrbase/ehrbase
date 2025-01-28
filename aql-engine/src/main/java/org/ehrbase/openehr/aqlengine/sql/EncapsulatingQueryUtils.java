@@ -145,16 +145,7 @@ final class EncapsulatingQueryUtils {
                     "Cannot aggregate on AslAggregatingField");
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate on AslFolderItemIdValuesColumnField");
-            case AslRmPathField arpf -> {
-                Field<JSONB> srcField =
-                        FieldUtils.field(Objects.requireNonNull(src), arpf.getSrcField(), JSONB.class, true);
-                Field<JSONB> ret = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
-                if (arpf.getType() == String.class) {
-                    yield DSL.jsonbGetElementAsText(ret, DSL.inline(0));
-                } else {
-                    yield ret;
-                }
-            }
+            case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
         };
     }
 
@@ -318,16 +309,7 @@ final class EncapsulatingQueryUtils {
             case AslSubqueryField sqf -> subqueryField(sqf, aslQueryToTable);
             case AslFolderItemIdVirtualField fidv -> throw new IllegalArgumentException(
                     "%s is not support as select field".formatted(fidv.getExtractedColumn()));
-            case AslRmPathField arpf -> {
-                Field<JSONB> srcField =
-                        FieldUtils.field(Objects.requireNonNull(src), arpf.getSrcField(), JSONB.class, true);
-                Field<JSONB> ret = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
-                if (arpf.getType() == String.class) {
-                    yield DSL.jsonbGetElementAsText(ret, DSL.inline(0));
-                } else {
-                    yield ret;
-                }
-            }
+            case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
         };
     }
 
@@ -353,21 +335,12 @@ final class EncapsulatingQueryUtils {
                 }
             }
             case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
-            case AslConstantField __ -> Stream.empty();
+            case AslConstantField<?> __ -> Stream.empty();
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslAggregatingField");
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslFolderItemIdValuesColumnField");
-            case AslRmPathField arpf -> {
-                Field<JSONB> srcField =
-                        FieldUtils.field(Objects.requireNonNull(src), arpf.getSrcField(), JSONB.class, true);
-                Field<JSONB> ret = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
-                if (arpf.getType() == String.class) {
-                    yield Stream.of(DSL.jsonbGetElementAsText(ret, DSL.inline(0)));
-                } else {
-                    yield Stream.of(ret);
-                }
-            }
+            case AslRmPathField arpf -> Stream.of(FieldUtils.buildRmPathField(arpf, src));
         };
     }
 
@@ -392,8 +365,7 @@ final class EncapsulatingQueryUtils {
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
                     case AslDvOrderedColumnField f -> Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(
-                                    (Field<JSONB>) FieldUtils.field(src, f, true))
-                            .cast(SQLDataType.NUMERIC));
+                            (Field<JSONB>) FieldUtils.field(src, f, true)));
                     case AslColumnField f -> columnOrderField(f, src, templateService);
                     case AslComplexExtractedColumnField ecf -> complexExtractedColumnOrderByFields(ecf, src);
                     case AslConstantField __ -> Stream.<Field<?>>empty();
@@ -403,16 +375,13 @@ final class EncapsulatingQueryUtils {
                     case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                             "ORDER BY AslFolderItemIdValuesColumnField is not allowed");
                     case AslRmPathField arpf -> {
-                        Field<JSONB> srcField =
-                                FieldUtils.field(Objects.requireNonNull(src), arpf.getSrcField(), JSONB.class, true);
-                        Field<JSONB> jsonbField = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
-                        if (arpf.getType() == String.class) {
-                            yield Stream.of(DSL.jsonbGetElementAsText(jsonbField, 0));
-                        } else if (!arpf.getDvOrderedTypes().isEmpty()) {
-                            yield Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(jsonbField)
-                                    .cast(SQLDataType.NUMERIC));
+                        var f = FieldUtils.buildRmPathField(arpf, src);
+                        if (arpf.getType() == String.class
+                                || arpf.getDvOrderedTypes().isEmpty()) {
+                            yield Stream.of(f);
+                        } else {
+                            yield Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude((Field<JSONB>) f));
                         }
-                        yield Stream.of(jsonbField);
                     }
                 })
                 .map(f -> f.sort(ob.direction()));

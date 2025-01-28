@@ -47,7 +47,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
@@ -84,7 +83,6 @@ import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Component;
 
 /**
@@ -222,20 +220,9 @@ public class AqlSqlQueryBuilder {
             // if the magnitude is needed for ORDER BY, it is added to the GROUP BY
             rq.getGroupByDvOrderedMagnitudeFields().stream()
                     .map(f -> {
-                        Table<?> table = aslQueryToTable.getDataTable(f.getInternalProvider());
-                        Field<JSONB> jsonbField =
-                                switch (f) {
-                                    case AslRmPathField arpf -> FieldUtils.buildJsonbPathField(
-                                            arpf.getPathInJson(),
-                                            false,
-                                            FieldUtils.field(table, arpf.getSrcField(), JSONB.class, true));
-                                    case AslDvOrderedColumnField dvof -> (Field<JSONB>)
-                                            FieldUtils.field(table, dvof, true);
-                                    default -> throw new IllegalStateException("Unexpected field: " + f);
-                                };
-
-                        return AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(jsonbField)
-                                .cast(SQLDataType.NUMERIC);
+                        Table<?> dataTable = aslQueryToTable.getDataTable(f.getInternalProvider());
+                        Field<JSONB> dvOrderedField = FieldUtils.buidDvOrderedField(true, f, dataTable);
+                        return AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(dvOrderedField);
                     })
                     .forEach(query::addGroupBy);
 
@@ -440,7 +427,7 @@ public class AqlSqlQueryBuilder {
                     .and(descendantFolderTable.NUM.between(baseFolderTable.NUM, baseFolderTable.NUM_CAP))
                 // -- take the item_uuids column, unnest them and then join with the each column
                 .join(itemsUUIDArrayTable)
-                .on("1=1");
+                .on();
 
         // in case we join using the folder_data table we need to pick a dedicated alias for the items to prevent clashes
         Table<?> joinTable = subAlias
