@@ -93,11 +93,12 @@ public class CacheConfiguration {
     }
 
     @Bean
-    public static BeanPostProcessor cacheManagerTxProxyBeanPostProcessor() {
+    public static BeanPostProcessor cacheManagerTxProxyBeanPostProcessor(CacheProperties cacheProperties) {
         return new BeanPostProcessor() {
             @Override
             public Object postProcessAfterInitialization(final Object bean, final String beanName) {
-                if (bean instanceof CacheManager cm) {
+                if (bean instanceof CacheManager cm
+                        && !cacheProperties.getTxProxyExcludedBeanNames().contains(beanName)) {
                     return new CustomTxAwareCacheManagerProxy(cm);
                 }
                 return bean;
