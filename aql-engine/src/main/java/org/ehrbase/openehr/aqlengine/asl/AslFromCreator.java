@@ -61,6 +61,7 @@ import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.Containment;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperatorSymbol;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
@@ -365,10 +366,15 @@ final class AslFromCreator {
 
             // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value
             Containment containment = nextDesc.containment().getContains();
-            if (RmConstants.FOLDER.equals(nextDesc.getRmType())
-                    && containment instanceof ContainmentClassExpression cs
-                    && Objects.equals(cs.getType(), RmConstants.COMPOSITION)) {
-                fields.add(new AslFolderItemIdVirtualField());
+            if (RmConstants.FOLDER.equals(nextDesc.getRmType())){
+                boolean addItemsField = switch(containment){
+                    case ContainmentClassExpression cce -> Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                    case ContainmentVersionExpression cve -> cve.getContains() instanceof ContainmentClassExpression cce && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                    default -> false;
+                };
+                if (addItemsField) {
+                    fields.add(new AslFolderItemIdVirtualField());
+                }
             }
         }
         return fields;
