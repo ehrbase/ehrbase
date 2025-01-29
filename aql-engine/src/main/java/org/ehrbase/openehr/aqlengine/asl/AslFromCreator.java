@@ -374,6 +374,7 @@ final class AslFromCreator {
                             case ContainmentVersionExpression cve -> cve.getContains()
                                             instanceof ContainmentClassExpression cce
                                     && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case null -> false;
                             default -> false;
                         };
                 if (addItemsField) {
