@@ -76,15 +76,12 @@ class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-            SELECT
-              enc/name/value,
-              c/uid/value
+            SELECT c/uid/value
             FROM EHR e
-              CONTAINS FOLDER[name/value="Encounter"]
-              CONTAINS FOLDER enc
-              CONTAINS COMPOSITION c
-            WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f' and c/archetype_details/template_id/value = 'template1.v1'
-            order by c/archetype_details/template_id/value
+            CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.vaccination_list.v0]
+            WHERE c/context/start_time <= '2023-11-15T15:14:29+01:00'
+            ORDER BY c/context/start_time DESC
+            LIMIT 500 OFFSET 5
         """);
 
         System.out.println("/*");

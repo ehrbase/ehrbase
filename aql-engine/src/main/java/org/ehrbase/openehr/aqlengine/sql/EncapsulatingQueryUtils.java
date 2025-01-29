@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,11 +49,13 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRmObjectDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
+import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.operand.AggregateFunction.AggregateFunctionName;
 import org.jooq.CaseWhenStep;
@@ -75,7 +78,7 @@ final class EncapsulatingQueryUtils {
     private EncapsulatingQueryUtils() {}
 
     private static SelectField<?> sqlAggregatingField(
-            AslAggregatingField af, Table<?> src, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+            AslAggregatingField af, Table<?> src, AslQueryTables aslQueryToTable) {
         if ((src == null || af.getBaseField() == null) && af.getFunction() != AggregateFunctionName.COUNT) {
             throw new IllegalArgumentException("only count does not require a source table");
         }
@@ -103,8 +106,7 @@ final class EncapsulatingQueryUtils {
     }
 
     @Nullable
-    private static Field<?> fieldToAggregate(
-            Table<?> src, AslAggregatingField af, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    private static Field<?> fieldToAggregate(Table<?> src, AslAggregatingField af, AslQueryTables aslQueryToTable) {
         return switch (af.getBaseField()) {
             case null -> null;
             case AslColumnField f -> FieldUtils.field(Objects.requireNonNull(src), f, true);
@@ -143,6 +145,7 @@ final class EncapsulatingQueryUtils {
                     "Cannot aggregate on AslAggregatingField");
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate on AslFolderItemIdValuesColumnField");
+            case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
         };
     }
 
@@ -151,9 +154,13 @@ final class EncapsulatingQueryUtils {
         return switch (af.getFunction()) {
             case COUNT -> f -> AdditionalSQLFunctions.count(af.isDistinct(), f);
             case MIN -> f -> af.getBaseField() instanceof AslDvOrderedColumnField
+                            || (af.getBaseField() instanceof AslRmPathField pf
+                                    && !pf.getDvOrderedTypes().isEmpty())
                     ? AdditionalSQLFunctions.min_dv_ordered(f)
                     : DSL.min(f);
             case MAX -> f -> af.getBaseField() instanceof AslDvOrderedColumnField
+                            || (af.getBaseField() instanceof AslRmPathField pf
+                                    && !pf.getDvOrderedTypes().isEmpty())
                     ? AdditionalSQLFunctions.max_dv_ordered(f)
                     : DSL.max(f);
             case SUM -> f -> DSL.aggregate("sum", SQLDataType.NUMERIC, f);
@@ -192,7 +199,7 @@ final class EncapsulatingQueryUtils {
         };
     }
 
-    private static Field<?> subqueryField(AslSubqueryField sqf, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    private static Field<?> subqueryField(AslSubqueryField sqf, AslQueryTables aslQueryToTable) {
         AslQuery baseQuery = sqf.getBaseQuery();
         if (!(baseQuery instanceof AslRmObjectDataQuery aq)) {
             throw new IllegalArgumentException("Subquery field not supported for type: " + baseQuery.getClass());
@@ -251,8 +258,8 @@ final class EncapsulatingQueryUtils {
 
         Map<Param<UUID>, Param<Integer>> templateIdOrderMap = new LinkedHashMap<>();
         Iterator<UUID> it = templates.entrySet().stream()
-                .sorted(Comparator.comparing(Map.Entry::getValue, Collator.getInstance(Locale.ENGLISH)))
-                .map(Map.Entry::getKey)
+                .sorted(Comparator.comparing(Entry::getValue, Collator.getInstance(Locale.ENGLISH)))
+                .map(Entry::getKey)
                 .iterator();
         int pos = 0;
         while (it.hasNext()) {
@@ -287,7 +294,7 @@ final class EncapsulatingQueryUtils {
         }
     }
 
-    public static SelectField<?> selectField(AslField field, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    public static SelectField<?> selectField(AslField field, AslQueryTables aslQueryToTable) {
         Table<?> src = Optional.of(field)
                 .map(AslField::getInternalProvider)
                 .map(aslQueryToTable::getDataTable)
@@ -302,11 +309,12 @@ final class EncapsulatingQueryUtils {
             case AslSubqueryField sqf -> subqueryField(sqf, aslQueryToTable);
             case AslFolderItemIdVirtualField fidv -> throw new IllegalArgumentException(
                     "%s is not support as select field".formatted(fidv.getExtractedColumn()));
+            case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
         };
     }
 
     @Nonnull
-    public static Stream<Field<?>> groupByFields(AslField gb, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable) {
+    public static Stream<Field<?>> groupByFields(AslField gb, AslQueryTables aslQueryToTable) {
         Table<?> src = aslQueryToTable.getDataTable(gb.getInternalProvider());
         return switch (gb) {
             case AslColumnField f -> Stream.of(FieldUtils.field(src, f, true));
@@ -327,11 +335,12 @@ final class EncapsulatingQueryUtils {
                 }
             }
             case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
-            case AslConstantField __ -> Stream.empty();
+            case AslConstantField<?> __ -> Stream.empty();
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslAggregatingField");
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslFolderItemIdValuesColumnField");
+            case AslRmPathField arpf -> Stream.of(FieldUtils.buildRmPathField(arpf, src));
         };
     }
 
@@ -351,7 +360,7 @@ final class EncapsulatingQueryUtils {
 
     @Nonnull
     public static Stream<SortField<?>> orderFields(
-            AslOrderByField ob, AqlSqlQueryBuilder.AslQueryTables aslQueryToTable, TemplateService templateService) {
+            AslOrderByField ob, AslQueryTables aslQueryToTable, TemplateService templateService) {
         AslField aslField = ob.field();
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
@@ -365,6 +374,15 @@ final class EncapsulatingQueryUtils {
                             "ORDER BY AslAggregatingField is not allowed");
                     case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                             "ORDER BY AslFolderItemIdValuesColumnField is not allowed");
+                    case AslRmPathField arpf -> {
+                        var f = FieldUtils.buildRmPathField(arpf, src);
+                        if (arpf.getType() == String.class
+                                || arpf.getDvOrderedTypes().isEmpty()) {
+                            yield Stream.of(f);
+                        } else {
+                            yield Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude((Field<JSONB>) f));
+                        }
+                    }
                 })
                 .map(f -> f.sort(ob.direction()));
     }

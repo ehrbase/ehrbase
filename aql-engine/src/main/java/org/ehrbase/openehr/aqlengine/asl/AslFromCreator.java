@@ -363,7 +363,7 @@ final class AslFromCreator {
                         AslExtractedColumn.ROOT_CONCEPT));
             }
 
-            // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value as complex extracted column
+            // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value
             Containment containment = nextDesc.containment().getContains();
             if (RmConstants.FOLDER.equals(nextDesc.getRmType())
                     && containment instanceof ContainmentClassExpression cs
