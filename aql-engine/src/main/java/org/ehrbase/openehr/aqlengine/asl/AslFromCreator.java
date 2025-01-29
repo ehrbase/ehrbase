@@ -366,12 +366,16 @@ final class AslFromCreator {
 
             // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value
             Containment containment = nextDesc.containment().getContains();
-            if (RmConstants.FOLDER.equals(nextDesc.getRmType())){
-                boolean addItemsField = switch(containment){
-                    case ContainmentClassExpression cce -> Objects.equals(cce.getType(), RmConstants.COMPOSITION);
-                    case ContainmentVersionExpression cve -> cve.getContains() instanceof ContainmentClassExpression cce && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
-                    default -> false;
-                };
+            if (RmConstants.FOLDER.equals(nextDesc.getRmType())) {
+                boolean addItemsField =
+                        switch (containment) {
+                            case ContainmentClassExpression cce -> Objects.equals(
+                                    cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentVersionExpression cve -> cve.getContains()
+                                            instanceof ContainmentClassExpression cce
+                                    && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            default -> false;
+                        };
                 if (addItemsField) {
                     fields.add(new AslFolderItemIdVirtualField());
                 }
