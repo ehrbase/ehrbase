@@ -43,3 +43,11 @@ The new data model for FOLDER items requires a full migration of the ehr_folder_
 As only local VERSIONED_COMPOSITION references are supported, existing data is rewritten accordingly.
 If entries of FOLDER.items.id.value exist that do not comply with the UUID format, the migration will fail.
 These entries will have to be fixed manually.
+
+## EHRbase 2.13.0
+
+The openEHR terminology has been update to version 2.4.0.
+As the code for the composition category 'episodic' has changed from 435 to 451, existing templates and compositions may be inconsistent.
+For smaller systems this can be checked via AQL:
+`SELECT c/archetype_details/template_id/value, count(*) FROM COMPOSITION c WHERE c/category/code/value = '435'`.
+Please open an issue on github in case you need instructions on correcting the data.
