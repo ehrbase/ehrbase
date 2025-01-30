@@ -76,15 +76,7 @@ class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-            SELECT
-              enc/name/value,
-              c/uid/value
-            FROM EHR e
-              CONTAINS FOLDER[name/value="Encounter"]
-              CONTAINS FOLDER enc
-              CONTAINS COMPOSITION c
-            WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f' and c/archetype_details/template_id/value = 'template1.v1'
-            order by c/archetype_details/template_id/value
+            SELECT count(*) FROM COMPOSITION c WHERE c/category/defining_code/code_string = '435'
         """);
 
         System.out.println("/*");
@@ -111,10 +103,17 @@ class AqlSqlQueryBuilderTest {
     @ValueSource(
             strings = {
                 """
-                SELECT o/data/events/data/items/value/magnitude
-                FROM OBSERVATION o [openEHR-EHR-OBSERVATION.conformance_observation.v0]
-                WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value = 82.0
+                    SELECT o/data/events/data/items/value/magnitude
+                    FROM OBSERVATION o [openEHR-EHR-OBSERVATION.conformance_observation.v0]
+                    WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value = 82.0
+                    """,
                 """
+                    SELECT e/ehr_id/value, cv0/commit_audit/time_committed/value, c0
+                    FROM EHR e
+                    CONTAINS FOLDER f0[name/value = '1439656']
+                    CONTAINS VERSION cv0[LATEST_VERSION]
+                    CONTAINS COMPOSITION c0
+                    """
             })
     void canBuildSqlQuery(String aql) {
 

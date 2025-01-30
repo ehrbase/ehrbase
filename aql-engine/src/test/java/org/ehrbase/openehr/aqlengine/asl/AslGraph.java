@@ -47,6 +47,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
@@ -60,6 +61,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslPathDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 
 public class AslGraph {
 
@@ -275,6 +277,11 @@ public class AslGraph {
                                             .collect(Collectors.joining("\n", "", "")));
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
             case AslFolderItemIdVirtualField f -> providerAlias + f.aliasedName() + " -- FOLDER.items";
+            case AslRmPathField f -> providerAlias
+                    + f.getSrcField().getAliasedName()
+                    + f.getPathInJson().stream()
+                            .map(PathNode::getAttribute)
+                            .collect(Collectors.joining(" -> ", " -> ", ""));
         };
     }
 

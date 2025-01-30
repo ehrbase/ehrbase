@@ -58,9 +58,9 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.Logical
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.ehrbase.openehr.dbformat.StructureRmType;
-import org.ehrbase.openehr.sdk.aql.dto.containment.Containment;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperatorSymbol;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
@@ -331,9 +331,9 @@ final class AslFromCreator {
 
     @Nonnull
     private static List<AslField> fieldsForContainsSubquery(
-            RmContainsWrapper nextDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
+            RmContainsWrapper currentDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         final List<AslField> fields = new ArrayList<>();
-        if (RmConstants.EHR.equals(nextDesc.getRmType())) {
+        if (RmConstants.EHR.equals(currentDesc.getRmType())) {
             fields.add(new AslColumnField(UUID.class, "id", null, false, AslExtractedColumn.EHR_ID));
             fields.add(new AslColumnField(OffsetDateTime.class, "creation_date", null, false, null));
         } else {
@@ -354,7 +354,7 @@ final class AslFromCreator {
                     .forEach(fields::add);
 
             // (Only) for Compositions version.root_concept mirrors the data.entity_concept of the COMPOSITION row
-            if (requiresVersionJoin && RmConstants.COMPOSITION.equals(nextDesc.getRmType())) {
+            if (requiresVersionJoin && RmConstants.COMPOSITION.equals(currentDesc.getRmType())) {
                 fields.add(new AslColumnField(
                         String.class,
                         Tables.COMP_VERSION.ROOT_CONCEPT.getName(),
@@ -363,12 +363,21 @@ final class AslFromCreator {
                         AslExtractedColumn.ROOT_CONCEPT));
             }
 
-            // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value as complex extracted column
-            Containment containment = nextDesc.containment().getContains();
-            if (RmConstants.FOLDER.equals(nextDesc.getRmType())
-                    && containment instanceof ContainmentClassExpression cs
-                    && Objects.equals(cs.getType(), RmConstants.COMPOSITION)) {
-                fields.add(new AslFolderItemIdVirtualField());
+            // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value
+            if (RmConstants.FOLDER.equals(currentDesc.getRmType())) {
+                boolean mustAddItemsField =
+                        switch (currentDesc.containment().getContains()) {
+                            case ContainmentClassExpression cce -> Objects.equals(
+                                    cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentVersionExpression cve -> cve.getContains()
+                                            instanceof ContainmentClassExpression cce
+                                    && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case null -> false;
+                            default -> false;
+                        };
+                if (mustAddItemsField) {
+                    fields.add(new AslFolderItemIdVirtualField());
+                }
             }
         }
         return fields;
