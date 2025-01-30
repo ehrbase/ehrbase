@@ -58,7 +58,6 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.Logical
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.ehrbase.openehr.dbformat.StructureRmType;
-import org.ehrbase.openehr.sdk.aql.dto.containment.Containment;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperatorSymbol;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;

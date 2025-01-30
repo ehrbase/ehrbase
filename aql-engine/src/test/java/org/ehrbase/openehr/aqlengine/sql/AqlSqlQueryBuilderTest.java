@@ -102,16 +102,16 @@ class AqlSqlQueryBuilderTest {
     @ParameterizedTest
     @ValueSource(
             strings = {
-                    """
+                """
                     SELECT o/data/events/data/items/value/magnitude
                     FROM OBSERVATION o [openEHR-EHR-OBSERVATION.conformance_observation.v0]
                     WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value = 82.0
                     """,
-                    """
+                """
                     SELECT e/ehr_id/value, cv0/commit_audit/time_committed/value, c0
-                    FROM EHR e 
-                    CONTAINS FOLDER f0[name/value = '1439656'] 
-                    CONTAINS VERSION cv0[LATEST_VERSION] 
+                    FROM EHR e
+                    CONTAINS FOLDER f0[name/value = '1439656']
+                    CONTAINS VERSION cv0[LATEST_VERSION]
                     CONTAINS COMPOSITION c0
                     """
             })
