@@ -332,9 +332,9 @@ final class AslFromCreator {
 
     @Nonnull
     private static List<AslField> fieldsForContainsSubquery(
-            RmContainsWrapper nextDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
+            RmContainsWrapper currentDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         final List<AslField> fields = new ArrayList<>();
-        if (RmConstants.EHR.equals(nextDesc.getRmType())) {
+        if (RmConstants.EHR.equals(currentDesc.getRmType())) {
             fields.add(new AslColumnField(UUID.class, "id", null, false, AslExtractedColumn.EHR_ID));
             fields.add(new AslColumnField(OffsetDateTime.class, "creation_date", null, false, null));
         } else {
@@ -355,7 +355,7 @@ final class AslFromCreator {
                     .forEach(fields::add);
 
             // (Only) for Compositions version.root_concept mirrors the data.entity_concept of the COMPOSITION row
-            if (requiresVersionJoin && RmConstants.COMPOSITION.equals(nextDesc.getRmType())) {
+            if (requiresVersionJoin && RmConstants.COMPOSITION.equals(currentDesc.getRmType())) {
                 fields.add(new AslColumnField(
                         String.class,
                         Tables.COMP_VERSION.ROOT_CONCEPT.getName(),
@@ -365,10 +365,9 @@ final class AslFromCreator {
             }
 
             // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value
-            Containment containment = nextDesc.containment().getContains();
-            if (RmConstants.FOLDER.equals(nextDesc.getRmType())) {
-                boolean addItemsField =
-                        switch (containment) {
+            if (RmConstants.FOLDER.equals(currentDesc.getRmType())) {
+                boolean mustAddItemsField =
+                        switch (currentDesc.containment().getContains()) {
                             case ContainmentClassExpression cce -> Objects.equals(
                                     cce.getType(), RmConstants.COMPOSITION);
                             case ContainmentVersionExpression cve -> cve.getContains()
@@ -377,7 +376,7 @@ final class AslFromCreator {
                             case null -> false;
                             default -> false;
                         };
-                if (addItemsField) {
+                if (mustAddItemsField) {
                     fields.add(new AslFolderItemIdVirtualField());
                 }
             }

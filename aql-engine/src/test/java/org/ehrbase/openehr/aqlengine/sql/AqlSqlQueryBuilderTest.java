@@ -76,12 +76,7 @@ class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-            SELECT c/uid/value
-            FROM EHR e
-            CONTAINS COMPOSITION c[openEHR-EHR-COMPOSITION.vaccination_list.v0]
-            WHERE c/context/start_time <= '2023-11-15T15:14:29+01:00'
-            ORDER BY c/context/start_time DESC
-            LIMIT 500 OFFSET 5
+            SELECT count(*) FROM COMPOSITION c WHERE c/category/defining_code/code_string = '435'
         """);
 
         System.out.println("/*");
@@ -107,11 +102,18 @@ class AqlSqlQueryBuilderTest {
     @ParameterizedTest
     @ValueSource(
             strings = {
-                """
-                SELECT o/data/events/data/items/value/magnitude
-                FROM OBSERVATION o [openEHR-EHR-OBSERVATION.conformance_observation.v0]
-                WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value = 82.0
-                """
+                    """
+                    SELECT o/data/events/data/items/value/magnitude
+                    FROM OBSERVATION o [openEHR-EHR-OBSERVATION.conformance_observation.v0]
+                    WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value = 82.0
+                    """,
+                    """
+                    SELECT e/ehr_id/value, cv0/commit_audit/time_committed/value, c0
+                    FROM EHR e 
+                    CONTAINS FOLDER f0[name/value = '1439656'] 
+                    CONTAINS VERSION cv0[LATEST_VERSION] 
+                    CONTAINS COMPOSITION c0
+                    """
             })
     void canBuildSqlQuery(String aql) {
 
