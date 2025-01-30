@@ -9,6 +9,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+
+## [2.13.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
 * Fix AQL handling for "FOLDER CONTAINS VERSION CONTAINS COMPOSITION" [#1459](https://github.com/ehrbase/ehrbase/pull/1459)
 
 ## [2.12.0]
@@ -142,4 +147,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.10.0]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...v2.10.0
 [2.11.0]: https://github.com/ehrbase/ehrbase/compare/v2.10.0...v2.11.0
 [2.12.0]: https://github.com/ehrbase/ehrbase/compare/v2.11.0...v2.12.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.12.0...HEAD
+[2.13.0]: https://github.com/ehrbase/ehrbase/compare/v2.12.0...v2.13.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.13.0...HEAD
