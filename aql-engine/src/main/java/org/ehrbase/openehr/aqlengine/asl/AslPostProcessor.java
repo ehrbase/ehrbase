@@ -31,7 +31,7 @@ import org.springframework.core.Ordered;
  * Specifying the Order is required since inplace modifications may affect each other.
  * Having multiple beans of this type with the same order value may produce inconsistent results.
  */
-public interface AslPostprocessor extends Ordered {
+public interface AslPostProcessor extends Ordered {
     /**
      * Invoked after the building the AslRootQuery and before building the DB query.
      * This method can be used to modify the AslRootQuery inplace.

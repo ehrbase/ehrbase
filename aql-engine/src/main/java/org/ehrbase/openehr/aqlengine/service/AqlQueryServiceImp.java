@@ -36,7 +36,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.openehr.aqlengine.AqlQueryParsingPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
-import org.ehrbase.openehr.aqlengine.asl.AslPostprocessor;
+import org.ehrbase.openehr.aqlengine.asl.AslPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.featurecheck.AqlQueryFeatureCheck;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
@@ -69,7 +69,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
     private final ObjectMapper objectMapper;
     private final AqlQueryContext aqlQueryContext;
     private final List<AqlQueryParsingPostProcessor> aqlPostProcessors;
-    private final List<AslPostprocessor> aslPostprocessors;
+    private final List<AslPostProcessor> aslPostProcessors;
 
     @Autowired
     public AqlQueryServiceImp(
@@ -80,7 +80,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
             ObjectMapper objectMapper,
             AqlQueryContext aqlQueryContext,
             List<AqlQueryParsingPostProcessor> aqlPostProcessors,
-            List<AslPostprocessor> aslPostprocessors) {
+            List<AslPostProcessor> aslPostProcessors) {
         this.aqlQueryRepository = aqlQueryRepository;
         this.tsAdapter = tsAdapter;
         this.aqlSqlLayer = aqlSqlLayer;
@@ -88,7 +88,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
         this.objectMapper = objectMapper;
         this.aqlQueryContext = aqlQueryContext;
         this.aqlPostProcessors = aqlPostProcessors;
-        this.aslPostprocessors = aslPostprocessors;
+        this.aslPostProcessors = aslPostProcessors;
     }
 
     @Override
@@ -117,7 +117,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
                 AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
 
                 AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-                aslPostprocessors.forEach(p -> p.afterBuildAsl(aslQuery, aqlQuery, queryWrapper, aqlQueryRequest));
+                aslPostProcessors.forEach(p -> p.afterBuildAsl(aslQuery, aqlQuery, queryWrapper, aqlQueryRequest));
                 List<SelectWrapper> nonPrimitiveSelects =
                         queryWrapper.nonPrimitiveSelects().toList();
 
