@@ -14,7 +14,7 @@ updates:
          update-types: ["version-update:semver-major"]
     groups:
       spring:
-        patterns: ["org.springframework:*","org.springdoc:*"]
+        patterns: ["org.springframework.*","org.springdoc:*"]
         update-types: ["minor", "patch"]    
       all-minor-patch:
         patterns: ["*"]
