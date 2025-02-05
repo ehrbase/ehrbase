@@ -12,6 +12,15 @@ updates:
     ignore:
        - dependency-name: "*"
          update-types: ["version-update:semver-major"]
+    groups:
+      spring:
+        patterns: 
+         - org.springframework.*
+         - org.springdoc.*
+        update-types: ["minor", "patch"]    
+      all-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]       
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
