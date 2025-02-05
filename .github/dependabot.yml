@@ -18,6 +18,7 @@ updates:
         update-types: ["minor", "patch"]    
       all-minor-patch:
         patterns: ["*"]
+        exclude-patterns: ["org.springframework.*","org.springdoc:*"]	
         update-types: ["minor", "patch"]       
   - package-ecosystem: "github-actions"
     directory: "/"
