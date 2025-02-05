@@ -18,7 +18,7 @@ updates:
         update-types: ["minor", "patch"]    
       all-minor-patch:
         patterns: ["*"]
-        exclude-patterns: ["org.springframework.*","org.springdoc:*"]	
+        exclude-patterns: ["org.springframework.*","org.springdoc:*","org.ehrbase.openehr.sdk:*"]	
         update-types: ["minor", "patch"]       
   - package-ecosystem: "github-actions"
     directory: "/"
