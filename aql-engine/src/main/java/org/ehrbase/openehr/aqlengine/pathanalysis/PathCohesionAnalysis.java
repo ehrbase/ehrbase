@@ -146,8 +146,11 @@ public final class PathCohesionAnalysis {
                 node.addChild(new PathNode(k), v);
             } else {
                 Map<List<AndOperatorPredicate>, List<IdentifiedPath>> byAttType = v.stream()
-                        .collect(Collectors.groupingBy(p -> attributeType.cleanupPredicates(
-                                p.getPath().getPathNodes().get(level).getPredicateOrOperands()), LinkedHashMap::new, Collectors.toList()));
+                        .collect(Collectors.groupingBy(
+                                p -> attributeType.cleanupPredicates(
+                                        p.getPath().getPathNodes().get(level).getPredicateOrOperands()),
+                                LinkedHashMap::new,
+                                Collectors.toList()));
                 byAttType.forEach((cleanPredicates, paths) -> node.addChild(new PathNode(k, cleanPredicates), paths));
             }
         });
