@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.pathanalysis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -146,7 +147,7 @@ public final class PathCohesionAnalysis {
             } else {
                 Map<List<AndOperatorPredicate>, List<IdentifiedPath>> byAttType = v.stream()
                         .collect(Collectors.groupingBy(p -> attributeType.cleanupPredicates(
-                                p.getPath().getPathNodes().get(level).getPredicateOrOperands())));
+                                p.getPath().getPathNodes().get(level).getPredicateOrOperands()), LinkedHashMap::new, Collectors.toList()));
                 byAttType.forEach((cleanPredicates, paths) -> node.addChild(new PathNode(k, cleanPredicates), paths));
             }
         });
