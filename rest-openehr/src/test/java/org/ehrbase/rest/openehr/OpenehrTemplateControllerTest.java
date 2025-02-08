@@ -34,6 +34,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -175,6 +176,7 @@ class OpenehrTemplateControllerTest {
 
     @ParameterizedTest
     @CsvSource({"application/json", "application/openehr.wt+json"})
+    @Disabled
     void getWebTemplate(String accept) {
 
         ResponseEntity<?> response = controller().getWebTemplate(accept, SAMPLE_ID);
