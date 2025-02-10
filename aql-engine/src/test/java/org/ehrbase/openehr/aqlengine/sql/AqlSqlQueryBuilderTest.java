@@ -247,7 +247,8 @@ class AqlSqlQueryBuilderTest {
 
     public static Stream<Arguments> aslGraphRegression() throws IOException {
         var res = new PathMatchingResourcePatternResolver(AqlSqlQueryBuilderTest.class.getClassLoader());
-        Resource[] resources = res.getResources("classpath*:/org/ehrbase/openehr/aqlengine/testdata/aslGraphRegression-*.txt");
+        Resource[] resources =
+                res.getResources("classpath*:/org/ehrbase/openehr/aqlengine/testdata/aslGraphRegression-*.txt");
         return Arrays.stream(resources).map(r -> {
             try {
                 String filename = r.getFilename();
