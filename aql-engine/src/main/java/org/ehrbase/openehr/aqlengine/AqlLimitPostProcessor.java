@@ -61,7 +61,7 @@ public class AqlLimitPostProcessor implements AqlQueryParsingPostProcessor {
 
     @Override
     public int getOrder() {
-        return 0;
+        return LIMIT_CONSTRAINT_PRECEDENCE;
     }
 
     @Override

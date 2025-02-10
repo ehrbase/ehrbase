@@ -51,7 +51,7 @@ public class AqlEhrPathPostProcessor implements AqlQueryParsingPostProcessor {
 
     @Override
     public int getOrder() {
-        return 200;
+        return EHR_PATH_PRECEDENCE;
     }
 
     /**

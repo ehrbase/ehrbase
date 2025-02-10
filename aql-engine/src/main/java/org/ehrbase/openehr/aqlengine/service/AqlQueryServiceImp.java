@@ -102,12 +102,8 @@ public class AqlQueryServiceImp implements AqlQueryService {
         try {
             AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
 
-            // apply safe AQL postprocessors
+            // apply AQL postprocessors
             aqlPostProcessors.forEach(p -> p.afterParseAql(aqlQuery, aqlQueryRequest, aqlQueryContext));
-
-            aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
-            // apply unsafe AQL postprocessors
-            aqlPostProcessors.forEach(p -> p.afterFeatureCheck(aqlQuery, aqlQueryRequest, aqlQueryContext));
 
             try {
                 if (logger.isTraceEnabled()) {

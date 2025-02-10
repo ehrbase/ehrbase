@@ -28,14 +28,14 @@ import org.springframework.stereotype.Component;
  * Removes unused EHR at the start of the FROM statement of an {@link AqlQuery} for simple cases.
  */
 @Component
-public class AqlFromEhrPostProcessor implements AqlQueryParsingPostProcessor {
+public class AqlFromEhrOptimisationPostProcessor implements AqlQueryParsingPostProcessor {
     @Override
     public int getOrder() {
-        return 0;
+        return FROM_EHR_OPTIMISATION_PRECEDENCE;
     }
 
     @Override
-    public void afterFeatureCheck(final AqlQuery aqlQuery, final AqlQueryRequest request, final AqlQueryContext ctx) {
+    public void afterParseAql(final AqlQuery aqlQuery, final AqlQueryRequest request, final AqlQueryContext ctx) {
         // remove unused FROM EHR
         if (aqlQuery.getFrom() instanceof ContainmentClassExpression containment
                 && RmConstants.EHR.equals(containment.getType())

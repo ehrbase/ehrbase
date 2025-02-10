@@ -26,29 +26,25 @@ import org.springframework.core.Ordered;
  * Used for modifications of the parsed AQL query directly after parsing.
  * All Spring beans implementing this interface will be picked up by AqlQueryService.
  * <p>
- * Specifying the Order is required since inplace modifications may affect each other.
+ * Specifying the Order is required since in-place modifications may affect each other.
  * Having multiple beans of this type with the same order value may produce inconsistent results.
  */
 public interface AqlQueryParsingPostProcessor extends Ordered {
 
+    int LIMIT_CONSTRAINT_PRECEDENCE = -3000;
+    int PARAMETER_REPLACEMENT_PRECEDENCE = -2000;
+    int EHR_PATH_PRECEDENCE = -1000;
+    int FEATURE_CHECK_PRECEDENCE = 0;
+    int FROM_EHR_OPTIMISATION_PRECEDENCE = 1000;
+
     /**
-     * Invoked after parsing the raw AQL string and before running the {@link org.ehrbase.openehr.aqlengine.featurecheck.AqlQueryFeatureCheck}.
-     * The given {@link AqlQuery} object can be modified inplace.
+     * Invoked after parsing the raw AQL string.
+     * The given {@link AqlQuery} object can be modified in-place.
      * Meta information can be added through the {@link AqlQueryContext}.
      *
      * @param aqlQuery object representing the parsed AQL string
      * @param request  the request passed to the service layer
      * @param ctx the query context
      */
-    default void afterParseAql(AqlQuery aqlQuery, AqlQueryRequest request, AqlQueryContext ctx) {}
-
-    /**
-     * Invoked after running the AqlQueryFeatureCheck and before building the AqlQueryWrapper.
-     * The given AqlQuery object can be modified inplace.
-     * All modifications made here must be supported by the engine!
-     *
-     * @param aqlQuery object representing the parsed AQL string
-     * @param request the request passed to the service layer
-     */
-    default void afterFeatureCheck(AqlQuery aqlQuery, AqlQueryRequest request, AqlQueryContext ctx) {}
+    void afterParseAql(AqlQuery aqlQuery, AqlQueryRequest request, AqlQueryContext ctx);
 }

@@ -25,7 +25,7 @@ import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class AqlFromEhrPostProcessorTest {
+class AqlFromEhrOptimisationPostProcessorTest {
 
     @ParameterizedTest
     @CsvSource(
@@ -41,8 +41,8 @@ class AqlFromEhrPostProcessorTest {
             delimiterString = "|")
     void removeRedundantFromEhr(String originalAql, String optimizedAql) {
         AqlQuery query = AqlQueryParser.parse(originalAql);
-        AqlFromEhrPostProcessor cut = new AqlFromEhrPostProcessor();
-        cut.afterFeatureCheck(query, null, null);
+        AqlFromEhrOptimisationPostProcessor cut = new AqlFromEhrOptimisationPostProcessor();
+        cut.afterParseAql(query, null, null);
 
         String expected = AqlQueryParser.parse(StringUtils.isBlank(optimizedAql) ? originalAql : optimizedAql)
                 .render();

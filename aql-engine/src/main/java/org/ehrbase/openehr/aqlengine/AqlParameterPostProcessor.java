@@ -88,7 +88,7 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
 
     @Override
     public int getOrder() {
-        return 100;
+        return PARAMETER_REPLACEMENT_PRECEDENCE;
     }
     /**
      * Replaces all parameters in the <code>aqlQuery</code> with values from the <code>parameterMap</code>.
