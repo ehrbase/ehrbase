@@ -31,6 +31,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.openehr.aqlengine.AqlEhrPathPostProcessor;
+import org.ehrbase.openehr.aqlengine.AqlFromEhrOptimisationPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslGraph;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
@@ -92,6 +94,8 @@ class AqlSqlQueryBuilderTest {
         System.out.println(aqlQuery.render());
         System.out.println("*/");
 
+        new AqlEhrPathPostProcessor().afterParseAql(aqlQuery, null, null);
+        new AqlFromEhrOptimisationPostProcessor().afterParseAql(aqlQuery, null, null);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");

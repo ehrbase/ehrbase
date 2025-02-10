@@ -205,6 +205,11 @@ final class FeatureCheckUtils {
         }
 
         if (RmConstants.EHR.equals(containmentType)) {
+            if (CollectionUtils.isNotEmpty(ip.getRootPredicate())) {
+                throw new AqlFeatureNotImplementedException(
+                        "%s: root predicate for path %s".formatted(clauseType, ip.render()));
+            }
+
             return AslExtractedColumn.find(containmentType, path)
                     .filter(ec -> !EnumSet.of(AslExtractedColumn.EHR_TIME_CREATED, AslExtractedColumn.EHR_SYSTEM_ID_DV)
                                     .contains(ec)

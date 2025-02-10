@@ -41,8 +41,8 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -130,7 +130,7 @@ final class ConditionUtils {
             AslDelegatingJoinCondition joinCondition, List<Condition> conditions, Table<?> sqlLeft, Table<?> sqlRight) {
         (switch (joinCondition.getDelegate()) {
                     case AslPathChildCondition c -> pathChildConditions(c, sqlLeft, sqlRight, true);
-                    case AslEntityIdxOffsetCondition c -> entityIdxOffsetConditions(c, sqlLeft, sqlRight, true);
+                    case AslFieldJoinCondition c -> fieldJoinCondition(c, sqlLeft, sqlRight, true);
                     case AslDescendantCondition c -> descendantConditions(c, sqlLeft, sqlRight, true);
                 })
                 .forEach(conditions::add);
@@ -171,23 +171,24 @@ final class ConditionUtils {
         };
     }
 
-    private static Stream<Condition> entityIdxOffsetConditions(
-            AslEntityIdxOffsetCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
-        return Stream.of(FieldUtils.field(
-                        sqlLeft,
-                        ic.getLeftProvider(),
-                        ic.getLeftOwner(),
-                        AslStructureColumn.ENTITY_IDX_LEN.getFieldName(),
-                        Integer.class,
-                        true)
-                .add(DSL.inline(ic.getOffset()))
-                .eq(FieldUtils.field(
-                        sqlRight,
-                        ic.getRightProvider(),
-                        ic.getRightOwner(),
-                        AslStructureColumn.ENTITY_IDX_LEN.getFieldName(),
-                        Integer.class,
-                        isJoinCondition)));
+    private static Stream<Condition> fieldJoinCondition(
+            AslFieldJoinCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
+
+        Field lf = FieldUtils.field(sqlLeft, ic.getLeftField(), true);
+        Field rf = FieldUtils.field(sqlRight, ic.getRightField(), isJoinCondition);
+        return Stream.of(
+                switch (ic.getOperator()) {
+                    case LIKE -> lf.like(rf);
+                    case IN -> lf.in(rf);
+                    case EQ -> lf.eq(rf);
+                    case NEQ -> lf.ne(rf);
+                    case GT_EQ -> lf.ge(rf);
+                    case GT -> lf.gt(rf);
+                    case LT_EQ -> lf.le(rf);
+                    case LT -> lf.lt(rf);
+                    case IS_NULL -> lf.isNull();
+                    case IS_NOT_NULL -> lf.isNotNull();
+                });
     }
 
     private static Stream<Condition> descendantConditions(
@@ -244,7 +245,7 @@ final class ConditionUtils {
             case AslTrueQueryCondition __ -> DSL.trueCondition();
             case AslNotNullQueryCondition nn -> notNullCondition(tables, useAliases, nn);
             case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv);
-            case AslEntityIdxOffsetCondition ic -> DSL.and(entityIdxOffsetConditions(
+            case AslFieldJoinCondition ic -> DSL.and(fieldJoinCondition(
                             ic,
                             tables.getDataTable(ic.getLeftProvider()),
                             tables.getDataTable(ic.getRightProvider()),
