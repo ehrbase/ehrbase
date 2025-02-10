@@ -33,7 +33,6 @@ import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.TemplateResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
-import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
@@ -165,7 +164,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
         // return simplified JSON-based “web template” format (if called with the Accept: application/json or
         // application/openehr.wt+json request header)
         else {
-            final WebTemplate webTemplate = templateService.findTemplate(templateId);
+            final WebTemplate webTemplate = templateService.findWebTemplate(templateId);
             return bodyBuilder.body(webTemplate);
         }
     }
@@ -205,7 +204,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         final MediaType mediaType =
                 resolveContentType(accept, OpenEHRMediaType.APPLICATION_WT_JSON, MediaType.APPLICATION_JSON);
-        final WebTemplate webTemplate = new Filter().filter(templateService.findTemplate(templateId));
+        final WebTemplate webTemplate = templateService.findWebTemplate(templateId);
 
         // @format:off
         final String linkPrefix = "%s/%s".formatted(getContextPath(), "swagger-ui/index.html?urls.primaryName=1.%20openEHR%20API#");
