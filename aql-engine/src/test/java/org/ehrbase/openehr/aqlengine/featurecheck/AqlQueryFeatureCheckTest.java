@@ -171,7 +171,7 @@ class AqlQueryFeatureCheckTest {
                 "SELECT 1 FROM EHR e",
                 "SELECT c FROM COMPOSITION c WHERE c/uid/value = 'b037bf7c-0ecb-40fb-aada-fc7d559815ea::node::1'",
                 "SELECT c FROM COMPOSITION c WHERE c/uid/value = 'b037bf7c-0ecb-40fb-aada-fc7d559815ea::::1'",
-                "SELECT c FROM COMPOSITION c WHERE c/uid/value = 'b037bf7c-0ecb-40fb-aada-fc7d559815ea'",
+                "SELECT c[openEHR-EHR-COMPOSITION.sample_blood_pressure.v1,'Blood pressure (Training sample)'] FROM COMPOSITION c",
                 "SELECT e/ehr_id/value, e/time_created, e/time_created/value FROM EHR e WHERE e/time_created > '2021-01-02T12:13:14+01:00' ORDER BY e/time_created",
                 """
                     SELECT
@@ -235,6 +235,8 @@ class AqlQueryFeatureCheckTest {
             strings = {
                 "SELECT e FROM EHR e",
                 "SELECT e/ehr_id FROM EHR e",
+                "SELECT e[ehr_status/subject/external_ref/id/value='abc']/ehr_id/value FROM EHR e",
+                "SELECT c[category/defining_code/code_string='433'] FROM COMPOSITION c",
                 // ehr_status is rewritten as CONTAINS
                 "SELECT e/ehr_status FROM EHR e",
                 "SELECT e/compositions FROM EHR e",
