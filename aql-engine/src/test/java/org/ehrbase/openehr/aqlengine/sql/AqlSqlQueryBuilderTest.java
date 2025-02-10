@@ -254,7 +254,7 @@ class AqlSqlQueryBuilderTest {
                 String filename = r.getFilename();
                 String testName = filename.substring(filename.indexOf('-') + 1, filename.length() - 4);
                 String[] parts = r.getContentAsString(StandardCharsets.UTF_8).split("\\R+##.+\\R+");
-                return Arguments.of(testName, parts[1].trim(), parts[2].trim());
+                return Arguments.of(testName, parts[1].trim(), parts.length < 3 ? "" : parts[2].trim());
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

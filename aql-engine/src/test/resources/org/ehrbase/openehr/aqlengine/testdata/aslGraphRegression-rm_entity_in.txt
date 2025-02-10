@@ -1,0 +1,61 @@
+
+## AQL ################
+
+SELECT en
+FROM COMPOSITION c CONTAINS ENTRY en
+WHERE c/uid/value = '0f5ea58d-9e30-4365-853e-81f2224a85e0'
+
+## ASL GRAPH ##########
+
+AslRootQuery
+  SELECT
+    pd_0: RmObjectDataQuery
+        SELECT
+          pd_0.pd_0_data
+        BASE sENTRY_en_0
+
+  FROM
+    sCO_c_0: StructureQuery
+      SELECT
+        sCO_c_0.sCO_c_0_vo_id
+        sCO_c_0.sCO_c_0_num
+        sCO_c_0.sCO_c_0_num_cap
+        sCO_c_0.sCO_c_0_parent_num
+        sCO_c_0.sCO_c_0_ehr_id
+        sCO_c_0.sCO_c_0_entity_idx
+        sCO_c_0.sCO_c_0_entity_idx_len
+        sCO_c_0.sCO_c_0_entity_concept
+        sCO_c_0.sCO_c_0_entity_name -- name/value
+        sCO_c_0.sCO_c_0_rm_entity
+        sCO_c_0.sCO_c_0_data
+        sCO_c_0.sCO_c_0_template_id -- archetype_details/template_id/value
+        sCO_c_0.sCO_c_0_sys_version
+        sCO_c_0.sCO_c_0_audit_id
+        sCO_c_0.sCO_c_0_contribution_id
+        sCO_c_0.sCO_c_0_sys_period_lower
+        sCO_c_0.sCO_c_0_root_concept -- archetype_node_id
+      WHERE
+        sCO_c_0.sCO_c_0_num EQ [0]
+      FROM COMPOSITION
+    sENTRY_en_0: StructureQuery
+      SELECT
+        sENTRY_en_0.sENTRY_en_0_vo_id
+        sENTRY_en_0.sENTRY_en_0_num
+        sENTRY_en_0.sENTRY_en_0_num_cap
+        sENTRY_en_0.sENTRY_en_0_parent_num
+        sENTRY_en_0.sENTRY_en_0_entity_idx
+        sENTRY_en_0.sENTRY_en_0_entity_idx_len
+        sENTRY_en_0.sENTRY_en_0_entity_concept
+        sENTRY_en_0.sENTRY_en_0_entity_name -- name/value
+        sENTRY_en_0.sENTRY_en_0_rm_entity
+        sENTRY_en_0.sENTRY_en_0_data
+      FROM COMPOSITION
+      STRUCTURE CONDITIONS
+        sENTRY_en_0.sENTRY_en_0_rm_entity IN [AN, AE, EV, IN, OB]
+      JOIN sCO_c_0 -> sENTRY_en_0
+        on
+          DelegatingJoinCondition sCO_c_0 ->
+              DescendantCondition COMPOSITION sCO_c_0 -> COMPOSITION sENTRY_en_0
+
+  WHERE
+    sCO_c_0.?? -- COMPLEX VO_ID uid/value EQ [0f5ea58d-9e30-4365-853e-81f2224a85e0]
