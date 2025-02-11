@@ -48,6 +48,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.serialisation.walker.FlatHelper;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValuePath;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValues;
+import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.webtemplateskeletonbuilder.WebTemplateSkeletonBuilder;
 import org.openehr.schemas.v1.CARCHETYPEROOT;
@@ -99,7 +100,7 @@ public class TemplateServiceImp implements TemplateService {
 
     @Override
     public Composition buildExample(String templateId) {
-        WebTemplate webTemplate = findTemplate(templateId);
+        WebTemplate webTemplate = findInternalTemplate(templateId);
         Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
 
         ExampleGeneratorConfig object = new ExampleGeneratorConfig();
@@ -120,15 +121,19 @@ public class TemplateServiceImp implements TemplateService {
         return composition;
     }
 
-    @Override
-    public WebTemplate findTemplate(String templateId) {
+    public WebTemplate findInternalTemplate(String templateId) {
         try {
-            return knowledgeCacheService.getWebTemplate(templateId);
+            return knowledgeCacheService.getInternalTemplate(templateId);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {
             throw new InternalServerException("Could not generate web template", e);
         }
+    }
+
+    @Override
+    public WebTemplate findWebTemplate(String templateId) {
+        return new Filter().filter(this.findInternalTemplate(templateId));
     }
 
     @Override

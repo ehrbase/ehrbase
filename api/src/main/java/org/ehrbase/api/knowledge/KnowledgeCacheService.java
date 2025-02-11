@@ -42,7 +42,7 @@ public interface KnowledgeCacheService {
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key);
 
-    WebTemplate getWebTemplate(String templateId);
+    WebTemplate getInternalTemplate(String templateId);
 
     /**
      * Deletes a given operational template physically from cache and from template storage and from cache. Should only

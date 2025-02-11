@@ -161,7 +161,7 @@ public class ValidationServiceImp implements ValidationService {
     private void check(String templateID, Composition composition) {
         WebTemplate webTemplate;
         try {
-            webTemplate = knowledgeCacheService.getWebTemplate(templateID);
+            webTemplate = knowledgeCacheService.getInternalTemplate(templateID);
         } catch (IllegalArgumentException e) {
             throw new UnprocessableEntityException(e.getMessage());
         }

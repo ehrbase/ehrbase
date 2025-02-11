@@ -395,7 +395,7 @@ public class CompositionServiceImp implements CompositionService {
                 if (templateId == null) {
                     return Optional.empty();
                 }
-                return Optional.ofNullable(knowledgeCacheService.getWebTemplate(templateId));
+                return Optional.ofNullable(knowledgeCacheService.getInternalTemplate(templateId));
             }
         };
     }

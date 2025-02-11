@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+- fix difference in Web template between openEhr API and etercis API  [#1470](https://github.com/ehrbase/ehrbase/pull/1470)
 
 ## [2.13.0]
  ### Added
