@@ -74,7 +74,6 @@ import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.JSONB;
-import org.jooq.Record2;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
@@ -419,27 +418,24 @@ final class ConditionUtils {
                     field);
         }
 
-        List<Field<UUID>> uidList = null;
-        List<Field<Record2<UUID, Integer>>> uidVersionList = null;
+        List<Field<?>> uidList = null;
+        List<Field<?>> uidVersionList = null;
 
         for (String id : ids) {
             // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
-            int uidEndPos = id.indexOf("::");
-            Field<UUID> uuid =
-                    DSL.inline(uidEndPos > 0 ? id.substring(0, uidEndPos) : id).cast(UUID.class);
+            Pair<String, Integer> voId = parseVoId(id);
+            Field<?> voIdValueField = createVoIdValue(voId);
 
-            if (uidEndPos > 0) {
-                if (uidVersionList == null) {
-                    uidVersionList = new ArrayList<>(ids.size());
-                }
-                int versionPos = id.indexOf("::", uidEndPos + 2);
-                Field<Integer> version = DSL.inline(Integer.parseInt(id.substring(versionPos + 2)));
-                uidVersionList.add(DSL.field(DSL.row(uuid, version)));
-            } else {
+            if (voId.getRight() == null) {
                 if (uidList == null) {
                     uidList = new ArrayList<>(ids.size());
                 }
-                uidList.add(uuid);
+                uidList.add(voIdValueField);
+            } else {
+                if (uidVersionList == null) {
+                    uidVersionList = new ArrayList<>(ids.size());
+                }
+                uidVersionList.add(voIdValueField);
             }
         }
 
@@ -476,6 +472,9 @@ final class ConditionUtils {
             AslConditionOperator op,
             AslComplexExtractedColumnField field) {
 
+        // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
+        Pair<String, Integer> voId = parseVoId(id);
+
         Field<?> uuidField = FieldUtils.field(versionTable, field, COMP_VERSION.VO_ID.getName(), aliasedNames);
         if (op == AslConditionOperator.IS_NULL) {
             return uuidField.isNull();
@@ -483,24 +482,16 @@ final class ConditionUtils {
             return uuidField.isNotNull();
         }
 
-        // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
-        int uidEndPos = id.indexOf("::");
-        Field<?> uuid =
-                DSL.inline(uidEndPos > 0 ? id.substring(0, uidEndPos) : id).cast(UUID.class);
-
         Field left;
-        Field right;
-        if (uidEndPos > 0) {
-            int versionPos = id.indexOf("::", uidEndPos + 2);
+        if (voId.getRight() == null) {
+            left = uuidField;
+        } else {
             Field<?> versionField =
                     FieldUtils.field(versionTable, field, COMP_VERSION.SYS_VERSION.getName(), aliasedNames);
-            Field<Integer> version = DSL.inline(Integer.parseInt(id.substring(versionPos)));
             left = DSL.field(DSL.row(uuidField, versionField));
-            right = DSL.field(DSL.row(uuid, version));
-        } else {
-            left = uuidField;
-            right = uuid;
         }
+        Field<?> right = createVoIdValue(voId);
+
         return switch (op) {
             case IN, EQ -> left.eq(right);
             case NEQ -> left.ne(right);
@@ -510,6 +501,25 @@ final class ConditionUtils {
             case LT_EQ -> left.le(right);
             case LIKE, IS_NULL, IS_NOT_NULL -> throw new IllegalArgumentException();
         };
+    }
+
+    private static Pair<String, Integer> parseVoId(String id) {
+        int uidEndPos = id.indexOf("::");
+        if (uidEndPos < 0) {
+            return Pair.of(id, null);
+        }
+        int versionPos = id.indexOf("::", uidEndPos + 2);
+        return Pair.of(id.substring(0, uidEndPos), Integer.parseInt(id.substring(versionPos + 2)));
+    }
+
+    private static Field<?> createVoIdValue(Pair<String, Integer> voId) {
+        Field<UUID> uuidField = DSL.inline(voId.getLeft()).cast(UUID.class);
+        if (voId.getRight() == null) {
+            return uuidField;
+        } else {
+            Field<Integer> versionField = DSL.inline(voId.getRight());
+            return DSL.field(DSL.row(uuidField, versionField));
+        }
     }
 
     private static Condition applyOperator(AslConditionOperator operator, Field field, Collection<?> values) {
