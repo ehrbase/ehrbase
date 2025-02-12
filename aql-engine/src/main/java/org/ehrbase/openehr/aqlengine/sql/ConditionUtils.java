@@ -31,7 +31,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -338,7 +337,7 @@ final class ConditionUtils {
     }
 
     @Nonnull
-    private static Condition complexExtractedColumnCondition(
+    static Condition complexExtractedColumnCondition(
             boolean useAliases,
             AslFieldValueQueryCondition<?> fv,
             AslComplexExtractedColumnField ecf,
@@ -346,12 +345,13 @@ final class ConditionUtils {
             Table<?> versionTable) {
         return switch (ecf.getExtractedColumn()) {
             case VO_ID -> {
-                AslConditionOperator op =
-                        fv.getOperator() == AslConditionOperator.IN ? AslConditionOperator.EQ : fv.getOperator();
-                yield fv.getValues().stream()
-                        .map(String.class::cast)
-                        .map(id -> voIdCondition(versionTable, useAliases, id, op, ecf))
-                        .reduce(DSL.noCondition(), DSL::or);
+                yield switch (fv.getOperator()) {
+                    case IS_NULL, IS_NOT_NULL -> voIdCondition(versionTable, useAliases, null, fv.getOperator(), ecf);
+                    case IN, EQ -> voIdInCondition(versionTable, useAliases, (List<String>) fv.getValues(), true, ecf);
+                    case NEQ -> voIdInCondition(versionTable, useAliases, (List<String>) fv.getValues(), false, ecf);
+                    case LIKE, GT_EQ, GT, LT_EQ, LT -> voIdCondition(
+                            versionTable, useAliases, (String) fv.getValues().getFirst(), fv.getOperator(), ecf);
+                };
             }
             case ARCHETYPE_NODE_ID -> {
                 AslConditionOperator op =
@@ -400,25 +400,98 @@ final class ConditionUtils {
     }
 
     @Nonnull
+    private static Condition voIdInCondition(
+            Table<?> versionTable,
+            boolean aliasedNames,
+            List<String> ids,
+            boolean notNegated,
+            AslComplexExtractedColumnField field) {
+        if (ids.isEmpty()) {
+            return notNegated ? DSL.falseCondition() : DSL.trueCondition();
+        }
+        if (ids.size() == 1) {
+            return voIdCondition(
+                    versionTable,
+                    aliasedNames,
+                    ids.getFirst(),
+                    notNegated ? AslConditionOperator.EQ : AslConditionOperator.NEQ,
+                    field);
+        }
+
+        List<Field<?>> uidList = null;
+        List<Field<?>> uidVersionList = null;
+
+        for (String id : ids) {
+            // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
+            Pair<String, Integer> voId = parseVoId(id);
+            Field<?> voIdValueField = createVoIdValue(voId);
+
+            if (voId.getRight() == null) {
+                if (uidList == null) {
+                    uidList = new ArrayList<>(ids.size());
+                }
+                uidList.add(voIdValueField);
+            } else {
+                if (uidVersionList == null) {
+                    uidVersionList = new ArrayList<>(ids.size());
+                }
+                uidVersionList.add(voIdValueField);
+            }
+        }
+
+        Field<?> uuidField = FieldUtils.field(versionTable, field, COMP_VERSION.VO_ID.getName(), aliasedNames);
+
+        Condition uidCond;
+        if (uidList == null) {
+            uidCond = null;
+        } else {
+            uidCond = uuidField.in(uidList);
+        }
+        Condition uidVersionCond;
+        if (uidVersionList == null) {
+            uidVersionCond = null;
+        } else {
+            Field<?> versionField =
+                    FieldUtils.field(versionTable, field, COMP_VERSION.SYS_VERSION.getName(), aliasedNames);
+            uidVersionCond = DSL.field(DSL.row(uuidField, versionField)).in(uidVersionList);
+        }
+
+        Condition cond = DSL.or(uidCond, uidVersionCond);
+        if (notNegated) {
+            return cond;
+        } else {
+            return cond.not();
+        }
+    }
+
+    @Nonnull
     private static Condition voIdCondition(
             Table<?> versionTable,
             boolean aliasedNames,
             String id,
             AslConditionOperator op,
             AslComplexExtractedColumnField field) {
-        // id is expected to be valid
-        String[] split = id.split("::");
 
         Field<?> uuidField = FieldUtils.field(versionTable, field, COMP_VERSION.VO_ID.getName(), aliasedNames);
-        Field<?> versionField = FieldUtils.field(versionTable, field, COMP_VERSION.SYS_VERSION.getName(), aliasedNames);
-        Field<?> uuid = DSL.inline(split[0]).cast(UUID.class);
-        Optional<Field<Integer>> version = Optional.of(split)
-                .filter(s -> s.length > 2)
-                .map(s -> s[2])
-                .map(Integer::parseInt)
-                .map(DSL::inline);
-        Field left = version.isPresent() ? DSL.field(DSL.row(uuidField, versionField)) : uuidField;
-        Field right = version.isPresent() ? DSL.field(DSL.row(uuid, version.get())) : uuid;
+        if (op == AslConditionOperator.IS_NULL) {
+            return uuidField.isNull();
+        } else if (op == AslConditionOperator.IS_NOT_NULL) {
+            return uuidField.isNotNull();
+        }
+
+        // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
+        Pair<String, Integer> voId = parseVoId(id);
+
+        Field left;
+        if (voId.getRight() == null) {
+            left = uuidField;
+        } else {
+            Field<?> versionField =
+                    FieldUtils.field(versionTable, field, COMP_VERSION.SYS_VERSION.getName(), aliasedNames);
+            left = DSL.field(DSL.row(uuidField, versionField));
+        }
+        Field<?> right = createVoIdValue(voId);
+
         return switch (op) {
             case IN, EQ -> left.eq(right);
             case NEQ -> left.ne(right);
@@ -426,10 +499,27 @@ final class ConditionUtils {
             case GT -> left.gt(right);
             case GT_EQ -> left.ge(right);
             case LT_EQ -> left.le(right);
-            case IS_NULL -> uuidField.isNull();
-            case IS_NOT_NULL -> uuidField.isNotNull();
-            case LIKE -> throw new IllegalArgumentException();
+            case LIKE, IS_NULL, IS_NOT_NULL -> throw new IllegalArgumentException();
         };
+    }
+
+    private static Pair<String, Integer> parseVoId(String id) {
+        int uidEndPos = id.indexOf("::");
+        if (uidEndPos < 0) {
+            return Pair.of(id, null);
+        }
+        int versionPos = id.indexOf("::", uidEndPos + 2);
+        return Pair.of(id.substring(0, uidEndPos), Integer.parseInt(id.substring(versionPos + 2)));
+    }
+
+    private static Field<?> createVoIdValue(Pair<String, Integer> voId) {
+        Field<UUID> uuidField = DSL.inline(voId.getLeft()).cast(UUID.class);
+        if (voId.getRight() == null) {
+            return uuidField;
+        } else {
+            Field<Integer> versionField = DSL.inline(voId.getRight());
+            return DSL.field(DSL.row(uuidField, versionField));
+        }
     }
 
     private static Condition applyOperator(AslConditionOperator operator, Field field, Collection<?> values) {

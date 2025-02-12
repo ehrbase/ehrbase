@@ -21,9 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
@@ -44,9 +49,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 class AqlSqlQueryBuilderTest {
 
@@ -226,8 +235,33 @@ class AqlSqlQueryBuilderTest {
         assertThat(selectQuery.toString()).doesNotContain("select jsonb_array_elements(");
     }
 
-    private SelectQuery<Record> buildSqlQuery(AqlQueryWrapper queryWrapper) {
+    @ParameterizedTest(name = "{index} {0}")
+    @MethodSource
+    void aslGraphRegression(String name, String aql, String aslGraph) {
+        AqlQuery aqlQuery = AqlQueryParser.parse(aql);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
+        assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringWhitespace(aslGraph);
+    }
 
+    public static Stream<Arguments> aslGraphRegression() throws IOException {
+        var res = new PathMatchingResourcePatternResolver(AqlSqlQueryBuilderTest.class.getClassLoader());
+        Resource[] resources =
+                res.getResources("classpath*:/org/ehrbase/openehr/aqlengine/testdata/aslGraphRegression-*.txt");
+        return Arrays.stream(resources).map(r -> {
+            try {
+                String filename = r.getFilename();
+                String testName = filename.substring(filename.indexOf('-') + 1, filename.length() - 4);
+                String[] parts = r.getContentAsString(StandardCharsets.UTF_8).split("\\R+##.+\\R+");
+                return Arguments.of(testName, parts[1].trim(), parts.length < 3 ? "" : parts[2].trim());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    private SelectQuery<Record> buildSqlQuery(AqlQueryWrapper queryWrapper) {
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
