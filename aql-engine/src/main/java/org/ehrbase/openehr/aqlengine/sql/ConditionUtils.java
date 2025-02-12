@@ -472,15 +472,15 @@ final class ConditionUtils {
             AslConditionOperator op,
             AslComplexExtractedColumnField field) {
 
-        // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
-        Pair<String, Integer> voId = parseVoId(id);
-
         Field<?> uuidField = FieldUtils.field(versionTable, field, COMP_VERSION.VO_ID.getName(), aliasedNames);
         if (op == AslConditionOperator.IS_NULL) {
             return uuidField.isNull();
         } else if (op == AslConditionOperator.IS_NOT_NULL) {
             return uuidField.isNotNull();
         }
+
+        // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
+        Pair<String, Integer> voId = parseVoId(id);
 
         Field left;
         if (voId.getRight() == null) {
