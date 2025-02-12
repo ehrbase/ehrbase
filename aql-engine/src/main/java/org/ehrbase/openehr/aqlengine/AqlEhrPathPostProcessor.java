@@ -17,11 +17,11 @@
  */
 package org.ehrbase.openehr.aqlengine;
 
-import com.google.re2j.Pattern;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.dto.AqlQueryContext;
