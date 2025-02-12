@@ -338,7 +338,7 @@ final class ConditionUtils {
     }
 
     @Nonnull
-    private static Condition complexExtractedColumnCondition(
+    static Condition complexExtractedColumnCondition(
             boolean useAliases,
             AslFieldValueQueryCondition<?> fv,
             AslComplexExtractedColumnField ecf,
@@ -433,7 +433,7 @@ final class ConditionUtils {
                     uidVersionList = new ArrayList<>(ids.size());
                 }
                 int versionPos = id.indexOf("::", uidEndPos + 2);
-                Field<Integer> version = DSL.inline(Integer.parseInt(id.substring(versionPos)));
+                Field<Integer> version = DSL.inline(Integer.parseInt(id.substring(versionPos + 2)));
                 uidVersionList.add(DSL.field(DSL.row(uuid, version)));
             } else {
                 if (uidList == null) {
