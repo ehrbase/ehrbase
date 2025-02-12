@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2025 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,9 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine.service;
+package org.ehrbase.openehr.aqlengine;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Map;
@@ -25,27 +24,12 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.UnprocessableEntityException;
+import org.ehrbase.openehr.aqlengine.AqlLimitPostProcessor.FetchPrecedence;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
-import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class AqlQueryServiceImpTest {
-
-    @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
-            SELECT e/ehr_status AS s FROM EHR e=>SELECT s AS s FROM EHR e CONTAINS EHR_STATUS s
-            SELECT s/uid/value, e/ehr_status/subject/external_ref/id FROM EHR e CONTAINS COMPOSITION s WHERE e/ehr_status/is_modifiable = true=>SELECT s/uid/value, s1/subject/external_ref/id FROM EHR e CONTAINS (EHR_STATUS s1 AND COMPOSITION s) WHERE s1/is_modifiable = true
-            """,
-            delimiterString = "=>")
-    void resolveEhrStatus(String srcAql, String expectedAql) {
-
-        AqlQuery aqlQuery = AqlQueryParser.parse(srcAql);
-        AqlQueryServiceImp.replaceEhrPaths(aqlQuery);
-        assertThat(aqlQuery.render()).isEqualTo(expectedAql.replaceAll(" +", " "));
-    }
+class AqlLimitPostProcessorTest {
 
     @ParameterizedTest
     @CsvSource(
@@ -68,7 +52,7 @@ class AqlQueryServiceImpTest {
             String aqlOffset,
             String paramLimit,
             String paramOffset,
-            AqlQueryServiceImp.FetchPrecedence fetchPrecedence,
+            FetchPrecedence fetchPrecedence,
             String defaultLimit,
             String maxLimit,
             String maxFetch,
@@ -108,7 +92,7 @@ class AqlQueryServiceImpTest {
             String aqlOffset,
             String paramLimit,
             String paramOffset,
-            AqlQueryServiceImp.FetchPrecedence fetchPrecedence,
+            FetchPrecedence fetchPrecedence,
             String defaultLimit,
             String maxLimit,
             String maxFetch) {
@@ -120,7 +104,7 @@ class AqlQueryServiceImpTest {
             String aqlOffset,
             String paramLimit,
             String paramOffset,
-            AqlQueryServiceImp.FetchPrecedence fetchPrecedence,
+            FetchPrecedence fetchPrecedence,
             String defaultLimit,
             String maxLimit,
             String maxFetch) {
@@ -129,9 +113,14 @@ class AqlQueryServiceImpTest {
                 parseLong(aqlLimit).map(s -> "LIMIT " + s).orElse(""),
                 parseLong(aqlOffset).map(s -> "OFFSET " + s).orElse("")
         );
-
-        AqlQueryServiceImp.buildAqlQuery(
-                new AqlQueryRequest(
+        new AqlLimitPostProcessor(
+                parseLong(defaultLimit).orElse(null),
+                parseLong(maxLimit).orElse(null),
+                parseLong(maxFetch).orElse(null),
+                fetchPrecedence)
+                .afterParseAql(
+                        AqlQuery.parse(query),
+                        new AqlQueryRequest(
                         query,
                         Map.of(),
                         parseLong(paramLimit).orElse(null),
@@ -139,36 +128,11 @@ class AqlQueryServiceImpTest {
                                 .filter(s -> !s.isEmpty())
                                 .map(Long::parseLong)
                                 .orElse(null)),
-                fetchPrecedence,
-                parseLong(defaultLimit).orElse(null),
-                parseLong(maxLimit).orElse(null),
-                parseLong(maxFetch).orElse(null));
+                        new TestAqlQueryContext());
         // @format:on
     }
 
     private static Optional<Long> parseLong(String longStr) {
         return Optional.ofNullable(longStr).filter(StringUtils::isNotEmpty).map(Long::parseLong);
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
-            SELECT e FROM EHR e |
-            SELECT e/ehr_id/value FROM EHR e CONTAINS COMPOSITION c |
-            SELECT c FROM EHR e[ehr_id/value = '5dd64358-76b4-4ffe-8d05-554406d9d023'] CONTAINS COMPOSITION c |
-            SELECT s_el FROM EHR e CONTAINS (COMPOSITION c AND EHR_STATUS CONTAINS ELEMENT s_el) |
-            SELECT c/uid/value FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value = '5dd64358-76b4-4ffe-8d05-554406d9d023' |
-            SELECT c FROM EHR e CONTAINS COMPOSITION c WHERE c/uid/value = '5dd64358-76b4-4ffe-8d05-554406d9d023' | SELECT c FROM COMPOSITION c WHERE c/uid/value = '5dd64358-76b4-4ffe-8d05-554406d9d023'
-            """,
-            delimiterString = "|")
-    void optimizeQuery(String originalAql, String optimizedAql) {
-        AqlQuery query = AqlQueryParser.parse(originalAql);
-        AqlQueryServiceImp cut = new AqlQueryServiceImp(null, null, null, null, null, null);
-        cut.optimizeQuery(query);
-
-        String expected = AqlQueryParser.parse(StringUtils.isBlank(optimizedAql) ? originalAql : optimizedAql)
-                .render();
-        assertThat(query.render()).isEqualTo(expected);
     }
 }

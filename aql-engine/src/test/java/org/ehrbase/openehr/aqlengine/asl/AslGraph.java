@@ -31,8 +31,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -191,13 +191,15 @@ public class AslGraph {
                             .map(op -> conditionToGraph(level + 1, op))
                             .collect(Collectors.joining());
             case AslNotNullQueryCondition c -> indented(level, "NOT_NULL " + fieldToGraph(level + 1, c.getField()));
-            case AslEntityIdxOffsetCondition c -> indented(
+            case AslFieldJoinCondition c -> indented(
                     level,
-                    "EntityIdxOffset %s -%d-> %s"
+                    "AslFieldJoinCondition %s.%s %s %s.%s"
                             .formatted(
                                     c.getLeftOwner().getAlias(),
-                                    c.getOffset(),
-                                    c.getRightOwner().getAlias()));
+                                    c.getLeftField().getAliasedName(),
+                                    c.getOperator(),
+                                    c.getRightOwner().getAlias(),
+                                    c.getRightField().getAliasedName()));
             case AslDescendantCondition c -> indented(
                     level,
                     "DescendantCondition %s %s -> %s %s"
