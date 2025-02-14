@@ -451,17 +451,11 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public VersionedComposition getVersionedComposition(UUID ehrId, UUID composition) {
-
-        ehrService.checkEhrExists(ehrId);
-
-        Optional<VersionedComposition> versionedComposition =
-                compositionRepository.getVersionedComposition(ehrId, composition);
-
-        if (versionedComposition.isEmpty()) {
+        return compositionRepository.getVersionedComposition(ehrId, composition).orElseGet(() -> {
+            ehrService.checkEhrExists(ehrId);
             throw new ObjectNotFoundException(
-                    "versioned_composition", "No VERSIONED_COMPOSITION with given id: " + composition);
-        }
-        return versionedComposition.get();
+                    "versioned_composition", "No VERSIONED_COMPOSITION with given id: %s".formatted(composition));
+        });
     }
 
     @Override
