@@ -51,6 +51,7 @@ import org.jooq.Record1;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -116,6 +117,11 @@ public class EhrRepository
     @Override
     public boolean hasEhr(UUID ehrId) {
         return super.hasEhr(ehrId);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+    public boolean hasEhrNewTransaction(UUID ehrId) {
+        return hasEhr(ehrId);
     }
 
     public Boolean fetchIsModifiable(UUID ehrId) {
