@@ -401,9 +401,13 @@ public class CompositionServiceImp implements CompositionService {
     }
 
     @Override
-    public int getLastVersionNumber(UUID compositionId) {
-
-        Optional<Integer> versionNumber = compositionRepository.getLatestVersionNumber(compositionId);
+    public int getLastVersionNumber(UUID ehrId, UUID compositionId) {
+        Optional<Integer> versionNumber;
+        if (ehrId == null) {
+            versionNumber = compositionRepository.getLatestVersionNumber(compositionId);
+        } else {
+            versionNumber = compositionRepository.getLatestVersionNumber(ehrId, compositionId);
+        }
         return versionNumber.orElseThrow(() -> new ObjectNotFoundException(
                 "composition", "No COMPOSITION with given id: %s".formatted(compositionId)));
     }
@@ -429,9 +433,8 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public boolean isDeleted(UUID ehrId, UUID versionedObjectId, Integer version) {
-
         if (version == null) {
-            Optional<Integer> versionNumber = compositionRepository.getLatestVersionNumber(versionedObjectId);
+            Optional<Integer> versionNumber = compositionRepository.getLatestVersionNumber(ehrId, versionedObjectId);
             if (versionNumber.isEmpty()) {
                 return false;
             }
@@ -461,17 +464,16 @@ public class CompositionServiceImp implements CompositionService {
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition) {
         // get number of versions
-        int versions = getLastVersionNumber(composition);
+        int versions = getLastVersionNumber(ehrUid, composition);
         // fetch each version and add to revision history
         RevisionHistory revisionHistory = new RevisionHistory();
         for (int i = 1; i <= versions; i++) {
-            Optional<OriginalVersion<Composition>> compoVersion = getOriginalVersionComposition(ehrUid, composition, i);
-            compoVersion.ifPresent(compositionOriginalVersion ->
-                    revisionHistory.addItem(revisionHistoryItemFromComposition(compositionOriginalVersion)));
+            revisionHistory.addItem(revisionHistoryItemFromComposition(
+                    getOriginalVersionComposition(ehrUid, composition, i).orElseThrow()));
         }
 
         if (revisionHistory.getItems().isEmpty()) {
-            throw new InternalServerException("Problem creating RevisionHistory"); // never should be empty; not valid
+            throw new ObjectNotFoundException("VERSIONED_COMPOSITION", null); // never should be empty; not valid
         }
         return revisionHistory;
     }

@@ -166,6 +166,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
         ObjectVersionId compositionVersionId = new ObjectVersionId(versionUid);
         if (!compositionVersionId.getRoot().getValue().equals(versionedObjectUid)) {
+            checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
             throw new IllegalArgumentException("Composition parameters are not matching.");
         }
 
@@ -212,7 +213,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         try {
             version = decodeVersionAtTime(versionAtTime)
                     .map(offsetDateTime -> compositionService.getVersionByTimestamp(versionedCompoUid, offsetDateTime))
-                    .orElseGet(() -> compositionService.getLastVersionNumber(versionedCompoUid));
+                    .orElseGet(() -> compositionService.getLastVersionNumber(ehrId, versionedCompoUid));
         } catch (ObjectNotFoundException e) {
             // revise exception
             checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
@@ -276,7 +277,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version, String... pathSegments) {
         if (version == 0) {
-            version = compositionService.getLastVersionNumber(versionedObjectUid);
+            version = compositionService.getLastVersionNumber(ehrId, versionedObjectUid);
         }
 
         String versionedComposition =
