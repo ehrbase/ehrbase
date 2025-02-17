@@ -32,7 +32,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class AqlParameterReplacementTest {
+class AqlParameterPostProcessorTest {
 
     @ParameterizedTest
     @ValueSource(
@@ -76,7 +76,7 @@ class AqlParameterReplacementTest {
                 "2020-12-31T23:59:59.013-0200"
             })
     void confirmTemporalPattern(String example) {
-        assertThat(AqlParameterReplacement.TemporalPrimitivePattern.matches(example))
+        assertThat(AqlParameterPostProcessor.TemporalPrimitivePattern.matches(example))
                 .isTrue();
     }
 
@@ -108,7 +108,7 @@ class AqlParameterReplacementTest {
                 "23:59:59T2020-12-31",
             })
     void rejectTemporalPattern(String example) {
-        assertThat(AqlParameterReplacement.TemporalPrimitivePattern.matches(example))
+        assertThat(AqlParameterPostProcessor.TemporalPrimitivePattern.matches(example))
                 .isFalse();
     }
 
@@ -286,7 +286,7 @@ class AqlParameterReplacementTest {
 
     private static void assertReplaceParameters(String srcAql, Map<String, Object> parameterMap, String expected) {
         AqlQuery query = AqlQuery.parse(srcAql);
-        AqlParameterReplacement.replaceParameters(query, parameterMap);
+        AqlParameterPostProcessor.replaceParameters(query, parameterMap);
         String rendered = query.render();
         try {
             AqlQuery.parse(rendered);
@@ -299,7 +299,7 @@ class AqlParameterReplacementTest {
     private static AbstractThrowableAssert<?, ? extends Throwable> assertReplaceParametersRejected(
             String srcAql, Map<String, Object> parameterMap) {
         AqlQuery query = AqlQuery.parse(srcAql);
-        return assertThatThrownBy(() -> AqlParameterReplacement.replaceParameters(query, parameterMap));
+        return assertThatThrownBy(() -> AqlParameterPostProcessor.replaceParameters(query, parameterMap));
     }
 
     record ReplacementTestParam(

@@ -33,7 +33,7 @@ public interface TemplateService {
 
     Composition buildExample(String templateId);
 
-    WebTemplate findTemplate(String templateId);
+    WebTemplate findWebTemplate(String templateId);
 
     /**
      * Finds and returns the given operational template as string represented in requested format.

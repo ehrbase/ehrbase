@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.MapUtils;
+import org.ehrbase.api.dto.AqlQueryContext;
+import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.condition.ComparisonOperatorCondition;
@@ -71,16 +73,23 @@ import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.select.SelectClause;
 import org.ehrbase.openehr.sdk.aql.dto.select.SelectExpression;
 import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
+import org.springframework.stereotype.Component;
 
 /**
  * Replaces parameters in an AQL query
  */
-public final class AqlParameterReplacement {
+@Component
+public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
 
-    private AqlParameterReplacement() {
-        // NOOP
+    @Override
+    public void afterParseAql(final AqlQuery aqlQuery, final AqlQueryRequest request, final AqlQueryContext ctx) {
+        replaceParameters(aqlQuery, request.parameters());
     }
 
+    @Override
+    public int getOrder() {
+        return PARAMETER_REPLACEMENT_PRECEDENCE;
+    }
     /**
      * Replaces all parameters in the <code>aqlQuery</code> with values from the <code>parameterMap</code>.
      * The replacement is performed in-place, modifying the source object.

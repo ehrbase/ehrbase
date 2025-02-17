@@ -30,7 +30,6 @@ import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
-import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
 import org.ehrbase.rest.ehrscape.responsedata.Meta;
 import org.ehrbase.rest.ehrscape.responsedata.RestHref;
@@ -101,7 +100,7 @@ public class TemplateController extends BaseController {
     @Deprecated(since = "2.0.0", forRemoval = true)
     public ResponseEntity<TemplateResponseData> getTemplate(@PathVariable(value = "templateId") String templateId) {
         TemplateResponseData responseData = new TemplateResponseData();
-        responseData.setWebTemplate(new Filter().filter(templateService.findTemplate(templateId)));
+        responseData.setWebTemplate(templateService.findWebTemplate(templateId));
         responseData.setAction(Action.RETRIEVE);
         RestHref url = new RestHref();
         url.setUrl(createLocationUri(TEMPLATE, templateId));

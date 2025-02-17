@@ -215,18 +215,18 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
         }
     }
 
-    public WebTemplate getWebTemplate(String templateId) {
+    public WebTemplate getInternalTemplate(String templateId) {
         try {
             return CacheProvider.INTROSPECT_CACHE.get(cacheProvider, templateId, () -> {
                 log.info("Updating WebTemplate cache for template: {}", templateId);
-                return retrieveWebTemplate(templateId);
+                return retrieveInternalTemplate(templateId);
             });
         } catch (Cache.ValueRetrievalException ex) {
             throw (RuntimeException) ex.getCause();
         }
     }
 
-    private WebTemplate retrieveWebTemplate(String templateId) {
+    private WebTemplate retrieveInternalTemplate(String templateId) {
 
         return retrieveOperationalTemplate(templateId)
                 .map(this::buildWebTemplate)

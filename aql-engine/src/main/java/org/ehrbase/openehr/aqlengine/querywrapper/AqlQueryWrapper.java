@@ -109,10 +109,10 @@ public final class AqlQueryWrapper {
      * @return
      */
     public static AqlQueryWrapper create(AqlQuery aqlQuery) {
-        Map<AbstractContainmentExpression, ContainsWrapper> containsDescs;
+        Map<AbstractContainmentExpression, ContainsWrapper> containsDescs = new LinkedHashMap<>();
+
         ContainsChain fromClause;
         {
-            containsDescs = new LinkedHashMap<>();
             AbstractContainmentExpression fromRoot = (AbstractContainmentExpression) aqlQuery.getFrom();
             AqlUtil.streamContainments(fromRoot)
                     .filter(ContainmentClassExpression.class::isInstance)
