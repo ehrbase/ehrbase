@@ -61,6 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
@@ -191,23 +192,6 @@ public class EhrServiceImp implements EhrService {
         }
     }
 
-    private void checkEhrExistForParty(UUID ehrId, EhrStatusDto status) {
-        Optional.ofNullable(status)
-                .map(EhrStatusDto::subject)
-                .map(PartyProxy::getExternalRef)
-                .ifPresent(pRef -> {
-                    String subjectId = pRef.getId().getValue();
-                    String namespace = pRef.getNamespace();
-                    findBySubject(subjectId, namespace)
-                            .filter(dbSubjectEhrId -> !dbSubjectEhrId.equals(ehrId))
-                            .ifPresent(ehrIdOpt -> {
-                                throw new StateConflictException(
-                                        "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s]."
-                                                .formatted(subjectId, namespace));
-                            });
-                });
-    }
-
     private void validateEhrStatus(@Nonnull EhrStatusDto status) {
         try {
             validationService.check(status);
@@ -251,10 +235,18 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public boolean hasEhr(UUID ehrId) {
-        if (TransactionInterceptor.currentTransactionStatus().isRollbackOnly()) {
+        if (isIsRollbackOnly()) {
             return ehrRepository.hasEhrNewTransaction(ehrId);
         } else {
             return ehrRepository.hasEhr(ehrId);
+        }
+    }
+
+    private static boolean isIsRollbackOnly() {
+        try {
+            return TransactionInterceptor.currentTransactionStatus().isRollbackOnly();
+        } catch (NoTransactionException e) {
+            return false;
         }
     }
 

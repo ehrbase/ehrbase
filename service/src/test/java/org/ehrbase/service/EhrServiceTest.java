@@ -55,7 +55,9 @@ import org.ehrbase.test.assertions.EhrStatusAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.dao.DuplicateKeyException;
 
 class EhrServiceTest {
 
@@ -172,12 +174,15 @@ class EhrServiceTest {
                 new HierObjectId("20b5cb7a-4431-4524-96ea-56f80bc00496"),
                 new PartySelf(new PartyRef(new HierObjectId("42"), "some:namespace", "some_type")));
 
-        EhrService service = service();
-        doReturn(Optional.of(UUID.fromString("20b5cb7a-4431-4524-96ea-56f80bc00496")))
-                .when(service)
-                .findBySubject("42", "some:namespace");
+        doThrow(new DuplicateKeyException("\"ehr_status_subject_idx\""))
+                .when(ehrRepository)
+                .commit(
+                        ArgumentMatchers.eq(ehrId),
+                        ArgumentMatchers.any(),
+                        ArgumentMatchers.any(),
+                        ArgumentMatchers.any());
 
-        assertThatThrownBy(() -> runCreateEhr(service, ehrId, ehrStatusDto))
+        assertThatThrownBy(() -> runCreateEhr(service(), ehrId, ehrStatusDto))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage(
                         "Supplied partyId[42] is used by a different EHR in the same partyNamespace[some:namespace].");
@@ -219,7 +224,7 @@ class EhrServiceTest {
 
         assertThatThrownBy(() -> service.getEhrStatus(ehrId))
                 .isInstanceOf(ObjectNotFoundException.class)
-                .hasMessage("EHR with id ce3a8b60-cfba-4081-8583-8113d12a6118 not found");
+                .hasMessage("No EHR found with given ID: ce3a8b60-cfba-4081-8583-8113d12a6118");
     }
 
     @Test
