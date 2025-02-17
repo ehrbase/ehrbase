@@ -63,7 +63,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service(value = "ehrService")
 @Transactional()
@@ -244,7 +244,7 @@ public class EhrServiceImp implements EhrService {
 
     private static boolean isIsRollbackOnly() {
         try {
-            return TransactionInterceptor.currentTransactionStatus().isRollbackOnly();
+            return TransactionAspectSupport.currentTransactionStatus().isRollbackOnly();
         } catch (NoTransactionException e) {
             return false;
         }
