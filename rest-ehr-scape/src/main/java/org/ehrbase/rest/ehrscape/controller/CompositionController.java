@@ -141,7 +141,7 @@ public class CompositionController extends BaseController {
             String fullUid = compositionDto.get().getUuid() + "::"
                     + systemService.getSystemId() + "::"
                     + compositionService.getLastVersionNumber(
-                            compositionDto.get().getUuid());
+                            ehrId, compositionDto.get().getUuid());
             responseDto.setCompositionUid(fullUid);
             responseDto.setEhrId(compositionDto.get().getEhrId());
             Meta meta = buildMeta(responseDto.getCompositionUid());
@@ -225,7 +225,7 @@ public class CompositionController extends BaseController {
         return new ObjectVersionId(
                 compositionId.toString(),
                 systemService.getSystemId(),
-                Integer.toString(compositionService.getLastVersionNumber(compositionId)));
+                Integer.toString(compositionService.getLastVersionNumber(null, compositionId)));
     }
 
     private Meta buildMeta(String compositionUid) {

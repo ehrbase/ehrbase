@@ -48,7 +48,8 @@ $$
                                ('12', -1180956002, ARRAY [-1833794828]),
                                ('13', 2140263155, ARRAY [1159298511]),
                                ('14', -263968835, ARRAY [-1374259243]),
-                               ('15', -1838484272, ARRAY [1525464025])
+                               ('15', -1838484272, ARRAY [1525464025]),
+                               ('18', -573241973, ARRAY [1514619896])
                         ) v(version, checksum, old_checksums)) fsm
             WHERE fsh.version = fsm.version
               AND fsh.checksum = fsm.old_checksum;

@@ -58,9 +58,12 @@ import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.service.maping.EhrStatusMapper;
 import org.ehrbase.util.UuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service(value = "ehrService")
 @Transactional()
@@ -96,17 +99,15 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public EhrResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status) {
-
-        // pre-step: use or create UUID
-        ehrId = Optional.ofNullable(ehrId).orElseGet(UuidGenerator::randomUUID);
-
-        if (hasEhr(ehrId)) {
-            throw new StateConflictException("EHR with this ID already exists");
+        if (ehrId == null) {
+            ehrId = UuidGenerator.randomUUID();
         }
+        // status always gets a new UUID
+        ObjectVersionId statusVersionId = buildObjectVersionId(UuidGenerator.randomUUID(), 1, systemService);
 
         if (status == null) { // in case of new status with default values
             status = new EhrStatusDto(
-                    null,
+                    statusVersionId,
                     "openEHR-EHR-EHR_STATUS.generic.v1",
                     new DvText("EHR Status"),
                     null,
@@ -117,15 +118,19 @@ public class EhrServiceImp implements EhrService {
                     null);
         } else {
             // pre-step: validate
-            check(status);
-            checkEhrExistForParty(ehrId, status);
+            validateEhrStatus(status);
+            status = ehrStatusDtoWithId(status, statusVersionId);
         }
-
-        // server sets own new UUID in both cases (new or given status)
-        ObjectVersionId statusVersionId = buildObjectVersionId(UuidGenerator.randomUUID(), 1, systemService);
-        status = ehrStatusDtoWithId(status, statusVersionId);
-
-        ehrRepository.commit(ehrId, EhrStatusMapper.fromDto(status), null, null);
+        try {
+            ehrRepository.commit(ehrId, EhrStatusMapper.fromDto(status), null, null);
+        } catch (DuplicateKeyException e) {
+            checkEhrExistForParty(e, status);
+            if (hasEhr(ehrId)) {
+                throw new StateConflictException("EHR with id %s already exists.".formatted(ehrId));
+            } else {
+                throw e;
+            }
+        }
 
         return new EhrResult(ehrId, statusVersionId, status);
     }
@@ -134,9 +139,7 @@ public class EhrServiceImp implements EhrService {
     public EhrResult updateStatus(
             UUID ehrId, EhrStatusDto status, ObjectVersionId ifMatch, UUID contributionId, UUID audit) {
 
-        // pre-step: validate + check for valid ehrId
-        check(status);
-        checkEhrExistForParty(ehrId, status);
+        validateEhrStatus(status);
 
         UUID ehrStatusId = UUID.fromString(ifMatch.getObjectId().getValue());
         int version = Integer.parseInt(ifMatch.getVersionTreeId().getValue());
@@ -145,18 +148,18 @@ public class EhrServiceImp implements EhrService {
         ObjectVersionId statusVersionId = buildObjectVersionId(ehrStatusId, version + 1, systemService);
         EhrStatusDto updatedEhrStatus = ehrStatusDtoWithId(status, statusVersionId);
 
-        // perform update
-        ehrRepository.update(ehrId, EhrStatusMapper.fromDto(updatedEhrStatus), contributionId, audit);
+        try {
+            ehrRepository.update(ehrId, EhrStatusMapper.fromDto(updatedEhrStatus), contributionId, audit);
+        } catch (DuplicateKeyException e) {
+            checkEhrExistForParty(e, status);
+            throw e;
+        }
 
         return new EhrResult(ehrId, statusVersionId, updatedEhrStatus);
     }
 
     @Override
     public EhrResult getEhrStatus(UUID ehrId) {
-
-        // pre-step: check for valid ehrId
-        checkEhrExists(ehrId);
-
         Optional<EhrStatus> head = ehrRepository.findHead(ehrId);
 
         // post-step: check for valid head
@@ -180,32 +183,22 @@ public class EhrServiceImp implements EhrService {
                 .map(ov -> originalVersionCopyWithData(ov, EhrStatusMapper.toDto(ov.getData())));
     }
 
-    private void checkEhrExistForParty(UUID ehrId, EhrStatusDto status) {
-        Optional<PartyRef> partyRef =
-                Optional.ofNullable(status).map(EhrStatusDto::subject).map(PartyProxy::getExternalRef);
-
-        if (partyRef.isPresent()) {
-            String subjectId = partyRef.get().getId().getValue();
-            String namespace = partyRef.get().getNamespace();
-            Optional<UUID> ehrIdOpt = findBySubject(subjectId, namespace);
-            if (ehrIdOpt.isPresent() && !ehrIdOpt.get().equals(ehrId)) {
-                throw new StateConflictException(String.format(
-                        "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s].",
-                        subjectId, namespace));
-            }
+    private void checkEhrExistForParty(DuplicateKeyException e, EhrStatusDto status) throws StateConflictException {
+        if (e.getMessage().contains("\"ehr_status_subject_idx\"")) {
+            PartyRef pRef = status.subject().getExternalRef();
+            throw new StateConflictException(
+                    "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s]."
+                            .formatted(pRef.getId().getValue(), pRef.getNamespace()));
         }
     }
 
-    private void check(@Nonnull EhrStatusDto status) {
+    private void validateEhrStatus(@Nonnull EhrStatusDto status) {
         try {
             validationService.check(status);
-        } catch (Exception ex) {
-            // rethrow if this class, but wrap all others in InternalServerException
-            switch (ex) {
-                case UnprocessableEntityException e -> throw e;
-                case ValidationException e -> throw e;
-                default -> throw new InternalServerException(ex.getMessage(), ex);
-            }
+        } catch (UnprocessableEntityException | ValidationException | InternalServerException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new InternalServerException(e.getMessage(), e);
         }
     }
 
@@ -222,8 +215,8 @@ public class EhrServiceImp implements EhrService {
 
         return ehrRepository
                 .findVersionByTime(ehrId, timestamp)
-                .orElseThrow(() ->
-                        new ObjectNotFoundException("ehr_status", "No EHR_STATUS with given timestamp: " + timestamp));
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "ehr_status", "No EHR_STATUS with given timestamp: %s".formatted(timestamp)));
     }
 
     public ObjectVersionId getLatestVersionUidOfStatus(UUID ehrId) {
@@ -242,7 +235,19 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public boolean hasEhr(UUID ehrId) {
-        return ehrRepository.hasEhr(ehrId);
+        if (isIsRollbackOnly()) {
+            return ehrRepository.hasEhrNewTransaction(ehrId);
+        } else {
+            return ehrRepository.hasEhr(ehrId);
+        }
+    }
+
+    private static boolean isIsRollbackOnly() {
+        try {
+            return TransactionAspectSupport.currentTransactionStatus().isRollbackOnly();
+        } catch (NoTransactionException e) {
+            return false;
+        }
     }
 
     @Override

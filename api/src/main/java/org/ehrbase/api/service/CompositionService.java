@@ -67,7 +67,7 @@ public interface CompositionService extends VersionedObjectService<Composition, 
      * @param compositionId   The {@link UUID} of the composition to be returned.
      * @return latestVersion  of the existing composition.
      */
-    int getLastVersionNumber(UUID compositionId);
+    int getLastVersionNumber(UUID ehrId, UUID compositionId);
 
     /**
      * Retrieves the template ID associated with a given composition ID.
