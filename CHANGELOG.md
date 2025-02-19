@@ -8,6 +8,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [2.15.0]
+ ### Added
+ ### Changed 
  ### Fixed
  - Prevent concurrent creation of multiple EHRs with same patient reference [#1475](https://github.com/ehrbase/ehrbase/pull/1475)
 
@@ -156,4 +161,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.12.0]: https://github.com/ehrbase/ehrbase/compare/v2.11.0...v2.12.0
 [2.13.0]: https://github.com/ehrbase/ehrbase/compare/v2.12.0...v2.13.0
 [2.14.0]: https://github.com/ehrbase/ehrbase/compare/v2.13.0...v2.14.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.14.0...HEAD
+[2.15.0]: https://github.com/ehrbase/ehrbase/compare/v2.14.0...v2.15.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.15.0...HEAD
