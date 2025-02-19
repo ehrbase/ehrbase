@@ -28,7 +28,6 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
@@ -100,11 +99,14 @@ public class OpenehrVersionedCompositionController extends BaseController
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
 
-        // check if parameters are valid
-        checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
-
-        VersionedComposition versionedComposition =
-                compositionService.getVersionedComposition(ehrId, versionedCompoUid);
+        VersionedComposition versionedComposition;
+        try {
+            versionedComposition = compositionService.getVersionedComposition(ehrId, versionedCompoUid);
+        } catch (ObjectNotFoundException e) {
+            // revise exception
+            checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
+            throw e;
+        }
 
         VersionedCompositionDto versionedCompositionDto = new VersionedCompositionDto(
                 versionedComposition.getUid(),
@@ -131,11 +133,14 @@ public class OpenehrVersionedCompositionController extends BaseController
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
 
-        // check if parameters are valid
-        checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
-
-        RevisionHistory revisionHistory =
-                compositionService.getRevisionHistoryOfVersionedComposition(ehrId, versionedCompoUid);
+        RevisionHistory revisionHistory;
+        try {
+            revisionHistory = compositionService.getRevisionHistoryOfVersionedComposition(ehrId, versionedCompoUid);
+        } catch (ObjectNotFoundException e) {
+            // revise exception
+            checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
+            throw e;
+        }
 
         RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
 
@@ -159,11 +164,9 @@ public class OpenehrVersionedCompositionController extends BaseController
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
 
-        // check if parameters are valid
-        checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
-
         ObjectVersionId compositionVersionId = new ObjectVersionId(versionUid);
         if (!compositionVersionId.getRoot().getValue().equals(versionedObjectUid)) {
+            checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
             throw new IllegalArgumentException("Composition parameters are not matching.");
         }
 
@@ -186,7 +189,13 @@ public class OpenehrVersionedCompositionController extends BaseController
         String auditLocation = getLocationUrl(versionedObjectId, ehrId, version, "version", versionUid);
         createRestContext(ehrId, versionedCompoUid, auditLocation);
 
-        return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
+        try {
+            return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
+        } catch (ObjectNotFoundException e) {
+            // revise exception
+            checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
+            throw e;
+        }
     }
 
     @GetMapping(path = "/{versioned_object_uid}/version")
@@ -200,16 +209,15 @@ public class OpenehrVersionedCompositionController extends BaseController
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
 
-        // check if parameters are valid
-        checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
-
         int version;
-
-        Optional<OffsetDateTime> temporal = decodeVersionAtTime(versionAtTime);
-        if (temporal.isPresent()) {
-            version = compositionService.getVersionByTimestamp(versionedCompoUid, temporal.get());
-        } else {
-            version = compositionService.getLastVersionNumber(versionedCompoUid);
+        try {
+            version = decodeVersionAtTime(versionAtTime)
+                    .map(offsetDateTime -> compositionService.getVersionByTimestamp(versionedCompoUid, offsetDateTime))
+                    .orElseGet(() -> compositionService.getLastVersionNumber(ehrId, versionedCompoUid));
+        } catch (ObjectNotFoundException e) {
+            // revise exception
+            checkForValidEhrAndCompositionParameter(ehrId, versionedCompoUid);
+            throw e;
         }
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, version, "version");
@@ -219,13 +227,14 @@ public class OpenehrVersionedCompositionController extends BaseController
     }
 
     private void checkForValidEhrAndCompositionParameter(UUID ehrId, UUID versionedCompoUid) {
-        // check if EHR is valid
-        if (!ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException(RmConstants.EHR, "No EHR with this ID can be found");
-        }
-
+        Optional<UUID> ehrIdByComp = compositionService.getEhrIdForComposition(versionedCompoUid);
         // check if Composition is valid
-        if (!compositionService.exists(versionedCompoUid)) {
+        if (ehrIdByComp.filter(ehrId::equals).isPresent()) {
+            // NOOP: Composition found
+        } else if (ehrService.hasEhr(ehrId)) {
+            // compositions from different EHR are treated as missing composition
+            throw new ObjectNotFoundException(RmConstants.EHR, "No EHR with this ID can be found");
+        } else {
             throw new ObjectNotFoundException(RmConstants.COMPOSITION, "No composition with this ID can be found.");
         }
     }
@@ -235,6 +244,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
         Optional<OriginalVersion<Composition>> compositionOriginalVersion =
                 compositionService.getOriginalVersionComposition(ehrId, versionedObjectId, version);
+
         UUID contributionId = compositionOriginalVersion
                 .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
                 .orElseThrow(() -> new ObjectNotFoundException(
@@ -267,7 +277,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version, String... pathSegments) {
         if (version == 0) {
-            version = compositionService.getLastVersionNumber(versionedObjectUid);
+            version = compositionService.getLastVersionNumber(ehrId, versionedObjectUid);
         }
 
         String versionedComposition =

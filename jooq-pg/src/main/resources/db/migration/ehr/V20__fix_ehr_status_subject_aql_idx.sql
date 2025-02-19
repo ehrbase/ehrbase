@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2025 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -16,4 +16,12 @@
  * limitations under the License.
  */
 
- -- NOOP, see V20
+DROP INDEX IF EXISTS ehr_status_subject_idx;
+
+ALTER INDEX IF EXISTS mig_ehr_status_subject_idx RENAME TO ehr_status_subject_idx;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ehr_status_subject_idx ON ehr_status_data USING btree
+    ((data -> 'su' -> 'er' -> 'X' -> 'V' ->> 0),
+     (data -> 'su' -> 'er' -> 'ns' ->> 0))
+    INCLUDE (ehr_id)
+    WHERE num = 0;
