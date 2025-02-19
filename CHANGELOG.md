@@ -8,7 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
- ### Fixed 
+ ### Fixed
+ - Prevent concurrent creation of multiple EHRs with same patient reference [#1475](https://github.com/ehrbase/ehrbase/pull/1475)
 
 ## [2.14.0]
  ### Added
