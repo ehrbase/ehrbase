@@ -148,14 +148,12 @@ public final class DbToRmFormat {
     }
 
     private static int calcRootPathLength(ObjectNode jsonObject) {
-        final int rootPathLength;
         Iterator<String> it = jsonObject.fieldNames();
         int l = it.next().length();
         while (it.hasNext() && l != 0) {
             l = Math.min(l, it.next().length());
         }
-        rootPathLength = l;
-        return rootPathLength;
+        return l;
     }
 
     private static ObjectNode standardizeObjectNode(JsonNode node) {
