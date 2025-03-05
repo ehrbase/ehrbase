@@ -574,9 +574,7 @@ public class AqlSqlQueryBuilder {
 
         Table<?> data = type.getDataTable().as(subqueryAlias(aslData));
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);
-        Field<JSONB> jsonbField = dataAggregation(
-                        data, FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX), type)
-                .as(DSL.name(dataFieldName));
+        Field<JSONB> jsonbField = dataAggregation(data, type).as(DSL.name(dataFieldName));
 
         SelectJoinStep<Record1<JSONB>> from = DSL.select(jsonbField).from(data);
 
@@ -609,8 +607,7 @@ public class AqlSqlQueryBuilder {
      *
      * @return
      */
-    private static JSONObjectAggNullStep<JSONB> dataAggregation(
-            Table<?> dataTable, Field<String> baseEntityIndex, AslSourceRelation type) {
+    private static JSONObjectAggNullStep<JSONB> dataAggregation(Table<?> dataTable, AslSourceRelation type) {
 
         Field<String> keyField = dataTable.field(COMP_DATA.ENTITY_IDX);
         Field<JSONB> dataField = dataTable.field(COMP_DATA.DATA);
