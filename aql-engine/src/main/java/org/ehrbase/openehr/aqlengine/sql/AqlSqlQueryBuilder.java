@@ -555,16 +555,16 @@ public class AqlSqlQueryBuilder {
     /**
      * select
      * jsonb_object_agg(
-     * ( sub_string(d2."entity_idx" FROM char_length(c2."entity_idx") + 1)
-     * ), "data"
+     *   d2."entity_idx",
+     *  d2."data"
      * ) as "data"
-     * from "ehr"."comp_one" d2
+     * from "ehr"."comp_data" d2
      * where
-     * c2."ehr_id" = "d2"."ehr_id"
-     * and c2."VO_ID" = "d2"."VO_ID"
-     * and c2."num" <= "d2"."num"
-     * and c2."num_cap" >= "d2"."num"
-     * group by "d2"."VO_ID"
+     * c2."ehr_id" = d2."ehr_id"
+     * and c2."VO_ID" = d2."VO_ID"
+     * and c2."num" <= d2."num"
+     * and c2."num_cap" >= d2."num"
+     * group by d2."VO_ID"
      */
     static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
             AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition... additionalConditions) {
@@ -574,7 +574,6 @@ public class AqlSqlQueryBuilder {
 
         Table<?> data = type.getDataTable().as(subqueryAlias(aslData));
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);
-        // XXX Data aggregation is not needed for "terminal" structure nodes, e.g. ELEMENT
         Field<JSONB> jsonbField = dataAggregation(
                         data, FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.ENTITY_IDX), type)
                 .as(DSL.name(dataFieldName));
@@ -613,9 +612,7 @@ public class AqlSqlQueryBuilder {
     private static JSONObjectAggNullStep<JSONB> dataAggregation(
             Table<?> dataTable, Field<String> baseEntityIndex, AslSourceRelation type) {
 
-        Field<String> keyField = DSL.substring(
-                dataTable.field(COMP_DATA.ENTITY_IDX),
-                DSL.length(baseEntityIndex).plus(DSL.inline(1)));
+        Field<String> keyField = dataTable.field(COMP_DATA.ENTITY_IDX);
         Field<JSONB> dataField = dataTable.field(COMP_DATA.DATA);
 
         Field<JSONB> valueField;
