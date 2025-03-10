@@ -70,7 +70,7 @@
     <postgresql.version>42.7.4</postgresql.version>
 
     <!-- spring -->
-    <spring-boot.version>3.4.2</spring-boot.version>
+    <spring-boot.version>3.4.3</spring-boot.version>
     <springdoc-openapi.version>2.8.5</springdoc-openapi.version>
 
     <!-- not used ehrbase but needed for the version plugin -->
