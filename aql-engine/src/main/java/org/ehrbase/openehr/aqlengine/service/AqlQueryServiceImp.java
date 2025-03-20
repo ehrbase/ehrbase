@@ -143,7 +143,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
                             AqlQueryContext.EhrbaseMetaProperty.EXECUTED_SQL,
                             AqlQueryRepository.getQuerySql(preparedQuery));
                 }
-                if (aqlQueryContext.showQueryPlan()) {
+                if (false) {
                     // for dry-run omit analyze
                     boolean analyze = !aqlQueryContext.isDryRun();
                     String explainedQuery = aqlQueryRepository.explainQuery(analyze, preparedQuery);

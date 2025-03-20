@@ -38,7 +38,9 @@ import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
+import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.Result;
 import org.jooq.SelectQuery;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,12 +56,17 @@ public class AqlQueryRepository {
     private final SystemService systemService;
     private final KnowledgeCacheService knowledgeCache;
     private final AqlSqlQueryBuilder queryBuilder;
+    private final DSLContext context;
 
     public AqlQueryRepository(
-            SystemService systemService, KnowledgeCacheService knowledgeCache, AqlSqlQueryBuilder queryBuilder) {
+            SystemService systemService,
+            KnowledgeCacheService knowledgeCache,
+            AqlSqlQueryBuilder queryBuilder,
+            DSLContext context) {
         this.queryBuilder = queryBuilder;
         this.systemService = systemService;
         this.knowledgeCache = knowledgeCache;
+        this.context = context;
     }
 
     /**
@@ -88,7 +95,13 @@ public class AqlQueryRepository {
     }
 
     public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
-        try (Stream<Record> stream = preparedQuery.selectQuery.stream()) {
+        SelectQuery<Record> selectQuery = preparedQuery.selectQuery;
+
+        Result<Record> fetch;
+
+        fetch = preparedQuery.selectQuery.fetch();
+
+        try (Stream<Record> stream = fetch.stream()) {
             return stream.map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
                     .toList();
         }
