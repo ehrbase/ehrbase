@@ -18,14 +18,15 @@
 package org.ehrbase.openehr.aqlengine.asl.model.query;
 
 import java.util.List;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 
 public abstract sealed class AslDataQuery extends AslQuery permits AslRmObjectDataQuery, AslPathDataQuery {
 
     private AslQuery base;
     private final AslQuery baseProvider;
 
-    protected AslDataQuery(String alias, AslQuery base, AslQuery baseProvider) {
-        super(alias, List.of());
+    protected AslDataQuery(String alias, AslTypeOrigin origin, AslQuery base, AslQuery baseProvider) {
+        super(alias, origin, List.of());
         this.base = base;
         this.baseProvider = baseProvider;
     }
