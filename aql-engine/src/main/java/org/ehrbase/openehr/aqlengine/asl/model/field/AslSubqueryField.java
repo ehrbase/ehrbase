@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.field;
 import java.util.List;
 import java.util.stream.Stream;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
@@ -34,7 +35,7 @@ public final class AslSubqueryField extends AslField {
     private final List<AslQueryCondition> filterConditions;
 
     private AslSubqueryField(Class<?> type, AslQuery baseQuery, List<AslQueryCondition> filterConditions) {
-        super(type, null, null);
+        super(type, null, null, null);
         this.baseQuery = baseQuery;
         this.filterConditions = filterConditions;
     }
@@ -77,6 +78,11 @@ public final class AslSubqueryField extends AslField {
 
     @Override
     public AslField withProvider(AslQuery provider) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public AslField withOrigin(AslFieldOrigin origin) {
         throw new UnsupportedOperationException();
     }
 

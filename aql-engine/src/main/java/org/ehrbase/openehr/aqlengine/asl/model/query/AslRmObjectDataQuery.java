@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.query;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
@@ -49,8 +50,8 @@ import org.jooq.JSONB;
 public final class AslRmObjectDataQuery extends AslDataQuery {
     private final AslField field;
 
-    public AslRmObjectDataQuery(String alias, AslStructureQuery base, AslQuery baseProvider) {
-        super(alias, base, baseProvider);
+    public AslRmObjectDataQuery(String alias, AslTypeOrigin origin, AslStructureQuery base, AslQuery baseProvider) {
+        super(alias, origin, base, baseProvider);
         this.field = new AslColumnField(JSONB.class, "data", FieldSource.withOwner(this), false);
     }
 

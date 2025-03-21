@@ -17,6 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.sdk.aql.dto.operand.AggregateFunction.AggregateFunctionName;
 
@@ -27,7 +28,7 @@ public final class AslAggregatingField extends AslVirtualField {
     private final boolean distinct;
 
     public AslAggregatingField(AggregateFunctionName function, AslField baseField, boolean distinct) {
-        super(Number.class, null, null);
+        super(Number.class, null, baseField.origin, null);
         this.function = function;
         this.baseField = baseField;
         this.distinct = distinct;
@@ -68,6 +69,11 @@ public final class AslAggregatingField extends AslVirtualField {
 
     @Override
     public AslField copyWithOwner(AslQuery aslFilteringQuery) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public AslField withOrigin(AslFieldOrigin origin) {
         throw new UnsupportedOperationException();
     }
 
