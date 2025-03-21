@@ -69,7 +69,7 @@ public enum AslStructureColumn {
     }
 
     public AslField field() {
-        return new AslColumnField(clazz, fieldName, null, fromVersionTable, extractedColumn);
+        return new AslColumnField(clazz, fieldName, null, extractedColumn, fromVersionTable);
     }
 
     public String getFieldName() {

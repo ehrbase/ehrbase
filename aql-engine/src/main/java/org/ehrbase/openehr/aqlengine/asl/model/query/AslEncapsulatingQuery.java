@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -33,8 +34,8 @@ import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 public sealed class AslEncapsulatingQuery extends AslQuery permits AslRootQuery {
     private final List<Pair<AslQuery, AslJoin>> children = new ArrayList<>();
 
-    public AslEncapsulatingQuery(String alias) {
-        super(alias, new ArrayList<>());
+    public AslEncapsulatingQuery(String alias, AslTypeOrigin origin) {
+        super(alias, origin, new ArrayList<>());
     }
 
     public List<Pair<AslQuery, AslJoin>> getChildren() {

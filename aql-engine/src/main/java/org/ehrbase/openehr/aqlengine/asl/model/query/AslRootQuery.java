@@ -39,7 +39,7 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
     private Long offset;
 
     public AslRootQuery() {
-        super(null);
+        super(null, null);
     }
 
     public List<AslField> getSelect() {

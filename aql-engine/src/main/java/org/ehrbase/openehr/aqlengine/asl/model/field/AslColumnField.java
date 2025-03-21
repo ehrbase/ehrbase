@@ -17,28 +17,40 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 public sealed class AslColumnField extends AslField permits AslDvOrderedColumnField {
+
     private final String columnName;
     private final Boolean versionTableField;
 
-    public AslColumnField(Class<?> type, String columnName, boolean versionTableField) {
-        this(type, columnName, null, versionTableField);
+    public AslColumnField(Class<?> type, String columnName, Boolean versionTableField) {
+        this(type, columnName, null, null, null, versionTableField);
     }
 
-    public AslColumnField(Class<?> type, String columnName, FieldSource fieldSource, boolean versionTableField) {
-        this(type, columnName, fieldSource, versionTableField, null);
+    public AslColumnField(Class<?> type, String columnName, FieldSource fieldSource, Boolean versionTableField) {
+        this(type, columnName, fieldSource, null, null, versionTableField);
     }
 
     public AslColumnField(
             Class<?> type,
             String columnName,
             FieldSource fieldSource,
-            Boolean versionTableField,
-            AslExtractedColumn extractedColumn) {
-        super(type, fieldSource, extractedColumn);
+            AslExtractedColumn extractedColumn,
+            Boolean versionTableField) {
+        this(type, columnName, fieldSource, null, extractedColumn, versionTableField);
+    }
+
+    public AslColumnField(
+            Class<?> type,
+            String columnName,
+            FieldSource fieldSource,
+            AslFieldOrigin origin,
+            AslExtractedColumn extractedColumn,
+            Boolean versionTableField) {
+        super(type, fieldSource, origin, extractedColumn);
         this.columnName = columnName;
         this.versionTableField = versionTableField;
     }
@@ -66,12 +78,17 @@ public sealed class AslColumnField extends AslField permits AslDvOrderedColumnFi
     @Override
     public AslColumnField withProvider(AslQuery provider) {
         return new AslColumnField(
-                type, columnName, fieldSource.withProvider(provider), versionTableField, getExtractedColumn());
+                type, columnName, fieldSource.withProvider(provider), origin, getExtractedColumn(), versionTableField);
     }
 
     @Override
     public AslColumnField copyWithOwner(AslQuery owner) {
         return new AslColumnField(
-                type, columnName, FieldSource.withOwner(owner), versionTableField, getExtractedColumn());
+                type, columnName, FieldSource.withOwner(owner), origin, getExtractedColumn(), versionTableField);
+    }
+
+    @Override
+    public AslField withOrigin(AslFieldOrigin origin) {
+        return new AslColumnField(type, columnName, fieldSource, origin, getExtractedColumn(), versionTableField);
     }
 }

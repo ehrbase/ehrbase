@@ -19,6 +19,7 @@ package org.ehrbase.openehr.aqlengine.asl;
 
 import static org.apache.commons.lang3.StringUtils.join;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
@@ -61,7 +63,14 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslPathDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
+import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
+import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
+import org.ehrbase.openehr.sdk.aql.dto.operand.Primitive;
+import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
+import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 
 public class AslGraph {
 
@@ -141,7 +150,8 @@ public class AslGraph {
                     default -> "";
                 };
 
-        return indented(level == 2 ? 2 : 0, subquery.getAlias() + ": " + typeName(subquery) + queryComment)
+        return origin(level, subquery)
+                + indented(level, subquery.getAlias() + ": " + typeName(subquery) + queryComment)
                 + selectGraph(level + 1, subquery.getSelect())
                 + base
                 + section(
@@ -179,9 +189,9 @@ public class AslGraph {
             case null -> "";
             case AslNotQueryCondition c -> indented(level, "NOT") + conditionToGraph(level + 1, c.getCondition());
             case AslFieldValueQueryCondition<?> c -> indented(
-                    level, fieldToGraph(level + 1, c.getField()) + " " + c.getOperator() + " " + c.getValues());
-            case AslFalseQueryCondition aslFalseQueryCondition -> indented(level, "false");
-            case AslTrueQueryCondition aslTrueQueryCondition -> indented(level, "true");
+                    level, fieldToGraph(level, c.getField()) + " " + c.getOperator() + " " + c.getValues());
+            case AslFalseQueryCondition __ -> indented(level, "false");
+            case AslTrueQueryCondition __ -> indented(level, "true");
             case AslOrQueryCondition c -> indented(level, "OR")
                     + c.getOperands().stream()
                             .map(op -> conditionToGraph(level + 1, op))
@@ -246,54 +256,115 @@ public class AslGraph {
     }
 
     private static String fieldToGraph(int level, AslField field) {
+        String origin = origin(level, field);
         String providerAlias = (field.getInternalProvider() != null)
                 ? (field.getInternalProvider().getAlias() + ".")
                 : "";
-        return switch (field) {
-            case AslColumnField f -> providerAlias
-                    + f.getAliasedName()
-                    + Optional.of(f)
-                            .map(AslColumnField::getExtractedColumn)
-                            .map(e -> " -- " + e.getPath().render())
-                            .orElse("");
-            case AslComplexExtractedColumnField f -> providerAlias + "??"
-                    + Optional.of(f)
-                            .map(AslComplexExtractedColumnField::getExtractedColumn)
-                            .map(e -> " -- COMPLEX " + e.name() + " "
-                                    + e.getPath().render())
-                            .orElse("");
-            case AslAggregatingField f -> "%s(%s%s)"
-                    .formatted(
-                            f.getFunction(),
-                            f.isDistinct() ? "DISTINCT " : "",
-                            Optional.of(f)
-                                    .map(AslAggregatingField::getBaseField)
-                                    .map(bf -> fieldToGraph(level, bf))
-                                    .orElse("*"));
-            case AslSubqueryField f -> sqToGraph(level + 1, f.getBaseQuery(), null)
-                    + (f.getFilterConditions().isEmpty()
-                            ? ""
-                            : indented(level + 1, "Filter:")
-                                    + f.getFilterConditions().stream()
-                                            .map(c -> conditionToGraph(level + 2, c))
-                                            .collect(Collectors.joining("\n", "", "")));
-            case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
-            case AslFolderItemIdVirtualField f -> providerAlias + f.aliasedName() + " -- FOLDER.items";
-            case AslRmPathField f -> providerAlias
-                    + f.getSrcField().getAliasedName()
-                    + f.getPathInJson().stream()
-                            .map(PathNode::getAttribute)
-                            .collect(Collectors.joining(" -> ", " -> ", ""));
-        };
+        return origin
+                + switch (field) {
+                    case AslColumnField f -> providerAlias
+                            + f.getAliasedName()
+                            + Optional.of(f)
+                                    .map(AslColumnField::getExtractedColumn)
+                                    .map(e -> " -- " + e.getPath().render())
+                                    .orElse("");
+                    case AslComplexExtractedColumnField f -> providerAlias + "??"
+                            + Optional.of(f)
+                                    .map(AslComplexExtractedColumnField::getExtractedColumn)
+                                    .map(e -> " -- COMPLEX " + e.name() + " "
+                                            + e.getPath().render())
+                                    .orElse("");
+                    case AslAggregatingField f -> "%s(%s%s)"
+                            .formatted(
+                                    f.getFunction(),
+                                    f.isDistinct() ? "DISTINCT " : "",
+                                    Optional.of(f)
+                                            .map(AslAggregatingField::getBaseField)
+                                            .map(bf -> fieldToGraph(level, bf))
+                                            .orElse("*"));
+                    case AslSubqueryField f -> sqToGraph(level + 1, f.getBaseQuery(), null)
+                            + (f.getFilterConditions().isEmpty()
+                                    ? ""
+                                    : indented(level + 1, "Filter:")
+                                            + f.getFilterConditions().stream()
+                                                    .map(c -> conditionToGraph(level + 2, c))
+                                                    .collect(Collectors.joining("\n", "", "")));
+                    case AslConstantField f -> "CONSTANT (%s): %s"
+                            .formatted(f.getType().getSimpleName(), f.getValue());
+                    case AslFolderItemIdVirtualField f -> providerAlias + f.aliasedName() + " -- FOLDER.items";
+                    case AslRmPathField f -> providerAlias
+                            + f.getSrcField().getAliasedName()
+                            + f.getPathInJson().stream()
+                                    .map(PathNode::getAttribute)
+                                    .collect(Collectors.joining(" -> ", " -> ", ""));
+                };
+    }
+
+    private static String origin(int level, AslField field) {
+        return Optional.ofNullable(field.getOrigin())
+                .map(origin -> "-- " + identifiedPath(origin.path()) + "\n" + indention(level))
+                .orElse("");
+    }
+
+    private static String origin(int level, AslQuery aslQuery) {
+        AslTypeOrigin origin = aslQuery.getOrigin();
+        if (origin == null) {
+            return indented(level == 2 ? 2 : 0, "");
+        }
+        String type =
+                switch (origin) {
+                    case AslTypeOrigin.AslRmTypeOrigin rmTypeOrigin -> rmTypeOrigin.getRmType();
+                    case AslTypeOrigin.AslVersionTypeOrigin versionTypeOrigin -> versionTypeOrigin.getRmType() + " "
+                            + versionTypeOrigin.getRmTypeOrigin().getRmType();
+                };
+        return indented(level == 2 ? 2 : 1, "-- " + origin.getAlias() + " " + type)
+                + origin.getFieldPaths().stream()
+                        .map(identifiedPath -> indented(level, "-- " + identifiedPath(identifiedPath)))
+                        .collect(Collectors.joining("", "", ""));
     }
 
     private static <T> String indented(int level, Stream<T> entries, Function<T, String> toString) {
-        String prefix = StringUtils.repeat("  ", level);
-        return entries.map(toString::apply).collect(Collectors.joining("\n" + prefix, prefix, "\n"));
+        String prefix = indention(level);
+        return entries.map(toString).collect(Collectors.joining("\n" + prefix, prefix, "\n"));
     }
 
     private static <T> String indented(int level, String str) {
-        String prefix = StringUtils.repeat("  ", level);
-        return prefix + str + "\n";
+        return indention(level) + str + "\n";
+    }
+
+    private static <T> String indention(int level) {
+        return StringUtils.repeat("  ", level);
+    }
+
+    private static String identifiedPath(IdentifiedPath identifiedPath) {
+        AbstractContainmentExpression root = identifiedPath.getRoot();
+        String type =
+                switch (root) {
+                    case ContainmentClassExpression containmentClassExpression:
+                        yield containmentClassExpression.getType();
+                    case ContainmentVersionExpression containmentVersionExpression:
+                        yield containmentVersionExpression
+                                .getVersionPredicateType()
+                                .name();
+                };
+        String predicates = root.hasPredicates() ? andOperatorPredicate(root.getPredicates()) : "";
+        String identifier = root.getIdentifier();
+        String pathPart = identifiedPath.getPath().render();
+        return identifier + " " + type + predicates + "/" + pathPart;
+    }
+
+    private static String andOperatorPredicate(Collection<AndOperatorPredicate> predicates) {
+        return predicates.stream()
+                .flatMap(predicate -> predicate.getOperands().stream().map(operand -> {
+                    String path = operand.getPath().render();
+                    String value =
+                            ((Primitive<?, ?>) operand.getValue()).getValue().toString();
+                    if (path.equals("archetype_node_id")
+                            && operand.getOperator() == ComparisonOperatorPredicate.PredicateComparisonOperator.EQ) {
+                        return value;
+                    }
+                    return path + operand.getOperator().getSymbol() + value;
+                }))
+                .collect(Collectors.joining(",", "[", "]"));
     }
 }

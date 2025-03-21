@@ -36,6 +36,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
@@ -139,12 +140,13 @@ public final class AslStructureQuery extends AslQuery {
     public AslStructureQuery(
             String alias,
             AslSourceRelation type,
-            List<AslField> fields,
+            AslTypeOrigin origin,
+            List<? extends AslField> fields,
             Collection<String> rmTypes,
             Collection<String> rmTypesConstraint,
             String attribute,
             boolean requiresVersionTableJoin) {
-        super(alias, new ArrayList<>());
+        super(alias, origin, new ArrayList<>());
         this.type = type;
         this.rmTypes = List.copyOf(rmTypes);
         this.requiresVersionTableJoin = requiresVersionTableJoin;
@@ -155,13 +157,13 @@ public final class AslStructureQuery extends AslQuery {
                 List<String> aliasedRmTypes = rmTypesConstraint.stream()
                         .map(StructureRmType::getAliasOrTypeName)
                         .toList();
-                this.structureConditions.add(new AslFieldValueQueryCondition(
+                this.structureConditions.add(new AslFieldValueQueryCondition<>(
                         AslUtils.findFieldForOwner(AslStructureColumn.RM_ENTITY, this.getSelect(), this),
                         AslConditionOperator.IN,
                         aliasedRmTypes));
             }
             if (StringUtils.isNotBlank(attribute)) {
-                this.structureConditions.add(new AslFieldValueQueryCondition(
+                this.structureConditions.add(new AslFieldValueQueryCondition<>(
                         new AslColumnField(String.class, ENTITY_ATTRIBUTE, FieldSource.withOwner(this), false),
                         AslConditionOperator.EQ,
                         List.of(RmAttributeAlias.getAlias(attribute))));
@@ -211,5 +213,10 @@ public final class AslStructureQuery extends AslQuery {
 
     public void setRepresentsOriginalVersionExpression(boolean representsOriginalVersionExpression) {
         this.representsOriginalVersionExpression = representsOriginalVersionExpression;
+    }
+
+    @Override
+    public String toString() {
+        return "AslStructureQuery@" + type + "(" + getOrigin().getAlias() + ")[" + alias + "]";
     }
 }

@@ -44,6 +44,10 @@ public final class RmContainsWrapper implements ContainsWrapper {
                 .orElse(containment.getType());
     }
 
+    public String getIdentifier() {
+        return containment.getIdentifier();
+    }
+
     @Override
     public String alias() {
         return containment.getIdentifier();

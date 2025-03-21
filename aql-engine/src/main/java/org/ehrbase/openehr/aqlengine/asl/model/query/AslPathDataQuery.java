@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
@@ -41,13 +42,14 @@ public final class AslPathDataQuery extends AslDataQuery {
 
     public AslPathDataQuery(
             String alias,
+            AslTypeOrigin origin,
             AslQuery base,
             AslQuery baseProvider,
             List<PathNode> dataPath,
             boolean multipleValued,
             Set<String> dvOrderedTypes,
             Class<?> fieldType) {
-        super(alias, base, baseProvider);
+        super(alias, origin, base, baseProvider);
         this.dvOrderedTypes = Collections.unmodifiableSet(dvOrderedTypes);
         if (!(base instanceof AslStructureQuery || base instanceof AslPathDataQuery)) {
             throw new IllegalArgumentException(
