@@ -268,7 +268,9 @@ public class AslGraph {
                                     .map(AslColumnField::getExtractedColumn)
                                     .map(e -> " -- " + e.getPath().render())
                                     .orElse("");
-                    case AslComplexExtractedColumnField f -> providerAlias + "??"
+                    case AslComplexExtractedColumnField f -> providerAlias
+                            + f.getOwner().getAlias() + "_"
+                            + f.getExtractedColumn().name().toLowerCase()
                             + Optional.of(f)
                                     .map(AslComplexExtractedColumnField::getExtractedColumn)
                                     .map(e -> " -- COMPLEX " + e.name() + " "

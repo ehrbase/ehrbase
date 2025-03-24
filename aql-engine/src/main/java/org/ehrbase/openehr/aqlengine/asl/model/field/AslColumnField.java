@@ -26,6 +26,10 @@ public sealed class AslColumnField extends AslField permits AslDvOrderedColumnFi
     private final String columnName;
     private final Boolean versionTableField;
 
+    public AslColumnField(Class<?> type, String columnName) {
+        this(type, columnName, null, null, null, false);
+    }
+
     public AslColumnField(Class<?> type, String columnName, Boolean versionTableField) {
         this(type, columnName, null, null, null, versionTableField);
     }

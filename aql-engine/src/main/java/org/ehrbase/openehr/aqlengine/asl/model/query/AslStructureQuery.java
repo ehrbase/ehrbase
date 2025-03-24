@@ -133,7 +133,6 @@ public final class AslStructureQuery extends AslQuery {
     private final AslSourceRelation type;
     private final Collection<String> rmTypes;
     private final List<AslField> fields = new ArrayList<>();
-    private final String alias;
     private final boolean requiresVersionTableJoin;
     private boolean representsOriginalVersionExpression = false;
 
@@ -151,7 +150,6 @@ public final class AslStructureQuery extends AslQuery {
         this.rmTypes = List.copyOf(rmTypes);
         this.requiresVersionTableJoin = requiresVersionTableJoin;
         fields.forEach(this::addField);
-        this.alias = alias;
         if (type != AslSourceRelation.EHR && type != AslSourceRelation.AUDIT_DETAILS) {
             if (!rmTypesConstraint.isEmpty()) {
                 List<String> aliasedRmTypes = rmTypesConstraint.stream()
@@ -194,11 +192,6 @@ public final class AslStructureQuery extends AslQuery {
         return fields;
     }
 
-    @Override
-    public String getAlias() {
-        return alias;
-    }
-
     public AslSourceRelation getType() {
         return type;
     }
@@ -217,6 +210,6 @@ public final class AslStructureQuery extends AslQuery {
 
     @Override
     public String toString() {
-        return "AslStructureQuery@" + type + "(" + getOrigin().getAlias() + ")[" + alias + "]";
+        return "AslStructureQuery@" + type + "[" + getAlias() + "]";
     }
 }

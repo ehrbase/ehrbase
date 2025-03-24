@@ -29,7 +29,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 
 public abstract sealed class AslQuery
-        permits AslDataQuery, AslEncapsulatingQuery, AslFilteringQuery, AslStructureQuery {
+        permits AslDataQuery, AslEncapsulatingQuery, AslFilteringQuery, AslStructureQuery, AslExternalQuery {
 
     protected List<AslQueryCondition> structureConditions;
     private final String alias;
