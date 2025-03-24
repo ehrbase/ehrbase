@@ -294,8 +294,6 @@ final class AslFromCreator {
                         .map(a -> "_" + a)
                         .orElse(""));
 
-        String identifier = containsWrapper.getIdentifier();
-
         final List<String> rmTypes;
         boolean isRoot;
         if (RmConstants.EHR.equals(rmType)) {
