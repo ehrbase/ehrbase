@@ -34,14 +34,15 @@ public final class AslSubqueryField extends AslField {
     private final AslQuery baseQuery;
     private final List<AslQueryCondition> filterConditions;
 
-    private AslSubqueryField(Class<?> type, AslQuery baseQuery, List<AslQueryCondition> filterConditions) {
-        super(type, null, null, null);
+    private AslSubqueryField(
+            Class<?> type, AslQuery baseQuery, AslFieldOrigin origin, List<AslQueryCondition> filterConditions) {
+        super(type, null, origin, null);
         this.baseQuery = baseQuery;
         this.filterConditions = filterConditions;
     }
 
     public static AslSubqueryField createAslSubqueryField(Class<?> type, AslQuery baseQuery) {
-        return new AslSubqueryField(type, baseQuery, List.of());
+        return new AslSubqueryField(type, baseQuery, null, List.of());
     }
 
     public AslQuery getBaseQuery() {
@@ -83,7 +84,7 @@ public final class AslSubqueryField extends AslField {
 
     @Override
     public AslField withOrigin(AslFieldOrigin origin) {
-        throw new UnsupportedOperationException();
+        return new AslSubqueryField(type, baseQuery, origin, filterConditions);
     }
 
     @Override
@@ -99,7 +100,7 @@ public final class AslSubqueryField extends AslField {
                 })
                 .toList();
 
-        return new AslSubqueryField(getType(), baseQuery, conditions);
+        return new AslSubqueryField(getType(), baseQuery, origin, conditions);
     }
 
     @Override

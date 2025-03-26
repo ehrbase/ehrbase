@@ -69,6 +69,7 @@ import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.operand.Primitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 
@@ -351,7 +352,9 @@ public class AslGraph {
                 };
         String predicates = root.hasPredicates() ? andOperatorPredicate(root.getPredicates()) : "";
         String identifier = root.getIdentifier();
-        String pathPart = identifiedPath.getPath().render();
+        String pathPart = Optional.ofNullable(identifiedPath.getPath())
+                .map(AqlObjectPath::render)
+                .orElse("");
         return identifier + " " + type + predicates + "/" + pathPart;
     }
 

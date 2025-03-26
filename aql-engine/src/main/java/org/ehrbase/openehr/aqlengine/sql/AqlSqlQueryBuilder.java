@@ -53,6 +53,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslExternalQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslFilteringQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslPathDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
@@ -61,6 +62,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
+import org.ehrbase.openehr.aqlengine.sql.provider.AqlSqlExternalTableProvider;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -95,16 +97,19 @@ public class AqlSqlQueryBuilder {
     private final DSLContext context;
     private final TemplateService templateService;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
+    private final Optional<AqlSqlExternalTableProvider> externalTableProvider;
 
     public AqlSqlQueryBuilder(
             AqlConfigurationProperties aqlConfigurationProperties,
             DSLContext context,
             TemplateService templateService,
-            Optional<AqlSqlQueryPostProcessor> queryPostProcessor) {
+            Optional<AqlSqlQueryPostProcessor> queryPostProcessor,
+            Optional<AqlSqlExternalTableProvider> externalTableProvider) {
         this.aqlConfigurationProperties = aqlConfigurationProperties;
         this.context = context;
         this.templateService = templateService;
         this.queryPostProcessor = queryPostProcessor;
+        this.externalTableProvider = externalTableProvider;
     }
 
     public static String subqueryAlias(AslQuery aslQuery) {
@@ -168,6 +173,31 @@ public class AqlSqlQueryBuilder {
         } else {
             return context.fetch("EXPLAIN (SUMMARY, COSTS, VERBOSE, FORMAT JSON) {0}", selectQuery);
         }
+    }
+
+    private Table<Record> buildExternalQuery(AslExternalQuery aslExternalQuery, AslQueryTables aslQueryToTable) {
+
+        Table<Record> table = externalTableProvider
+                .orElseThrow(() -> new IllegalStateException("No external table provider available"))
+                .tableForExternalQuery(aslExternalQuery)
+                .orElseThrow(() ->
+                        new IllegalStateException("Could not obtain SQL table for %s".formatted(aslExternalQuery)));
+
+        aslQueryToTable.put(aslExternalQuery, table, table);
+
+        Map<Class<? extends AslField>, List<AslField>> aslFields =
+                aslExternalQuery.getSelect().stream().collect(Collectors.groupingBy(AslField::getClass));
+
+        Stream<Field<?>> columnFields = consumeFieldsOfType(aslFields, AslColumnField.class, cf -> DSL.field(
+                        FieldUtils.field(table, cf, false).getUnqualifiedName())
+                .as(cf.getAliasedName()));
+
+        checkAllFieldsConsumed("ExternalQuery", aslFields);
+
+        SelectJoinStep<Record> selectStep =
+                DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new)).from(table);
+
+        return selectStep.asTable(aslExternalQuery.getAlias());
     }
 
     @Nonnull
@@ -245,6 +275,7 @@ public class AqlSqlQueryBuilder {
                     .asTable(aq.getAlias()));
             case AslPathDataQuery aq -> DSL.lateral(
                     buildPathDataQuery(aq, target, aslQueryToTable).asTable(aq.getAlias()));
+            case AslExternalQuery aq -> buildExternalQuery(aq, aslQueryToTable);
         };
     }
 
@@ -359,24 +390,16 @@ public class AqlSqlQueryBuilder {
         Map<Class<? extends AslField>, List<AslField>> aslFields =
                 aq.getSelect().stream().collect(Collectors.groupingBy(AslField::getClass));
 
-        Stream<Field<?>> columnFields = consumeFieldsOfType(
-                aslFields,
-                AslColumnField.class,
-                cf -> ((aq.isRequiresVersionTableJoin() && cf.isVersionTableField()) ? primaryTable : dataTable)
-                        .field(cf.getColumnName())
-                        .as(cf.getAliasedName()));
+        Stream<Field<?>> columnFields = consumeFieldsOfType(aslFields, AslColumnField.class, cf -> FieldUtils.field(
+                        (aq.isRequiresVersionTableJoin() && cf.isVersionTableField()) ? primaryTable : dataTable,
+                        cf,
+                        false)
+                .as(cf.getAliasedName()));
 
         Stream<AslFolderItemIdVirtualField> folderFields =
                 consumeFieldsOfType(aslFields, AslFolderItemIdVirtualField.class, Function.identity());
 
-        if (!aslFields.isEmpty()) {
-            throw new IllegalStateException("StructureQueryBase could not handle AslFields of type %s"
-                    .formatted(aslFields.values().stream()
-                            .flatMap(Collection::stream)
-                            .map(Object::getClass)
-                            .map(Class::getSimpleName)
-                            .toList()));
-        }
+        checkAllFieldsConsumed("StructureQueryBase", aslFields);
 
         final SelectJoinStep<Record> step;
         if (hasVersionTable) {
@@ -544,12 +567,17 @@ public class AqlSqlQueryBuilder {
                 .map(mapper);
     }
 
-    private static <T> SelectJoinStep<Record> structureQueryBaseVersion(
-            Stream<Field<?>> columnFields, Table<?> primaryTable, Table<?> dataTable, TableField<?, T> tableField) {
-        return DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
-                .from(primaryTable)
-                .join(dataTable)
-                .on(Objects.requireNonNull(primaryTable.field(tableField)).eq(dataTable.field(tableField)));
+    private static void checkAllFieldsConsumed(String type, Map<Class<? extends AslField>, List<AslField>> aslFields) {
+        if (!aslFields.isEmpty()) {
+            throw new IllegalStateException("%s could not handle AslFields of type %s"
+                    .formatted(
+                            type,
+                            aslFields.values().stream()
+                                    .flatMap(Collection::stream)
+                                    .map(Object::getClass)
+                                    .map(Class::getSimpleName)
+                                    .toList()));
+        }
     }
 
     /**
