@@ -23,7 +23,9 @@ import javax.annotation.Nonnull;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.VersionContainsWrapper;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
+import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 
 /**
@@ -34,16 +36,38 @@ public abstract sealed class AslTypeOrigin permits AslTypeOrigin.AslRmTypeOrigin
     /**
      * Factory method to create a new type {@link AslTypeOrigin} like an <code>EHR, COMPOSITION, ACTION</code> for the
      * given {@link ContainsWrapper}.
-     * @param containsWrapper used to extract the alias an type information for.
+     * @param containsWrapper used to extract the alias and type information for.
      * @return origin
      */
     public static AslTypeOrigin ofContainsWrapper(ContainsWrapper containsWrapper) {
         return switch (containsWrapper) {
-            case RmContainsWrapper rmContainsWrapper -> new AslRmTypeOrigin(
-                    containsWrapper.alias(), containsWrapper.getRmType(), List.of());
-            case VersionContainsWrapper versionContainsWrapper -> new AslVersionTypeOrigin(new AslRmTypeOrigin(
-                    containsWrapper.alias(), versionContainsWrapper.child().getRmType(), List.of()));
+            case RmContainsWrapper rmContainsWrapper -> ofRmContains(rmContainsWrapper.alias(), rmContainsWrapper);
+            case VersionContainsWrapper versionContainsWrapper -> ofRmContains(
+                    containsWrapper.alias(), versionContainsWrapper.child());
         };
+    }
+
+    private static AslRmTypeOrigin ofRmContains(String alias, RmContainsWrapper containsWrapper) {
+
+        List<IdentifiedPath> identifiedPaths = List.of();
+        ContainmentClassExpression containment = containsWrapper.containment();
+
+        // Convert containment into identified paths expression to be cary this information as the query origin
+        if (containment.hasPredicates()) {
+            identifiedPaths = containment.getPredicates().stream()
+                    .flatMap(predicate -> {
+                        List<ComparisonOperatorPredicate> operands = predicate.getOperands();
+                        return operands.stream().map(comparisonOperatorPredicate -> {
+                            IdentifiedPath identifiedPath = new IdentifiedPath();
+                            identifiedPath.setRoot(containment);
+                            identifiedPath.setRootPredicate(List.of(predicate));
+                            identifiedPath.setPath(comparisonOperatorPredicate.getPath());
+                            return identifiedPath;
+                        });
+                    })
+                    .toList();
+        }
+        return new AslRmTypeOrigin(alias, containsWrapper.getRmType(), identifiedPaths);
     }
 
     /** AQL alias */

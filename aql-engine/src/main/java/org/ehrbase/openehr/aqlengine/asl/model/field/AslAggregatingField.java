@@ -28,7 +28,7 @@ public final class AslAggregatingField extends AslVirtualField {
     private final boolean distinct;
 
     public AslAggregatingField(AggregateFunctionName function, AslField baseField, boolean distinct) {
-        super(Number.class, null, baseField.origin, null);
+        super(Number.class, null, baseField != null ? baseField.origin : null, null);
         this.function = function;
         this.baseField = baseField;
         this.distinct = distinct;

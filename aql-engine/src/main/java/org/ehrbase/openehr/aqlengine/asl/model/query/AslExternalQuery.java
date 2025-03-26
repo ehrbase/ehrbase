@@ -24,19 +24,17 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 
-public final class AslExternalQuery extends AslQuery {
+/**
+ * An {@link AslQuery} that is not necessary based on some RM-Type object and need tables provided by a
+ * {@link org.ehrbase.openehr.aqlengine.sql.provider.AqlSqlExternalTableProvider}.
+ */
+public non-sealed abstract class AslExternalQuery extends AslQuery {
 
-    private final String label;
     private final List<AslField> fields = new ArrayList<>();
 
-    public AslExternalQuery(String alias, String label, List<? extends AslField> fields) {
+    public AslExternalQuery(String alias, List<? extends AslField> fields) {
         super(alias, null, new ArrayList<>());
-        this.label = label;
         fields.forEach(this::addField);
-    }
-
-    public String getLabel() {
-        return label;
     }
 
     @Override
@@ -58,6 +56,6 @@ public final class AslExternalQuery extends AslQuery {
 
     @Override
     public String toString() {
-        return "AslExternalQuery@" + label + "[" + getAlias() + "]";
+        return "AslProvidedQuery[" + getAlias() + "]";
     }
 }

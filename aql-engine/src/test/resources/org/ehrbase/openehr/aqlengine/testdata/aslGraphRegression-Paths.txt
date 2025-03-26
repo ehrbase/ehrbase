@@ -14,18 +14,26 @@ WHERE e/ehr_id/value = '0f5ea58d-9e30-4365-853e-81f2224a85e0'
 
 AslRootQuery
   SELECT
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude
     p_eq_0.p_items__0_data -> value -> magnitude
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/units
     p_eq_0.p_items__0_data -> value -> units
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value/magnitude
     p_eq_0.p_items__1_data -> value -> magnitude
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1005]/value/magnitude
     p_eq_0.p_items__2_data -> value -> magnitude
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0005]/value/units
     p_eq_0.p_items__3_data -> value -> units
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1006]/value/units
     p_eq_0.p_items__4_data -> value -> units
   FROM
+    -- e EHR
     sEHR_e_0: StructureQuery
       SELECT
         sEHR_e_0.sEHR_e_0_id -- ehr_id/value
         sEHR_e_0.sEHR_e_0_creation_date
       FROM EHR
+    -- c COMPOSITION
     sCO_c_0: StructureQuery
       SELECT
         sCO_c_0.sCO_c_0_vo_id
@@ -53,6 +61,8 @@ AslRootQuery
           DelegatingJoinCondition sEHR_e_0 ->
               DescendantCondition EHR sEHR_e_0 -> COMPOSITION sCO_c_0
 
+    -- o OBSERVATION
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/archetype_node_id
     sOB_o_0: StructureQuery
       SELECT
         sOB_o_0.sOB_o_0_vo_id
@@ -66,7 +76,7 @@ AslRootQuery
         sOB_o_0.sOB_o_0_rm_entity
         sOB_o_0.sOB_o_0_data
       WHERE
-        sOB_o_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.sample_blood_pressure.v1]]
+        sOB_o_0.sOB_o_0_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.sample_blood_pressure.v1]]
       FROM COMPOSITION
       STRUCTURE CONDITIONS
         sOB_o_0.sOB_o_0_rm_entity IN [OB]
@@ -75,6 +85,13 @@ AslRootQuery
           DelegatingJoinCondition sCO_c_0 ->
               DescendantCondition COMPOSITION sCO_c_0 -> COMPOSITION sOB_o_0
 
+    -- o OBSERVATION
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/units
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value/magnitude
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1005]/value/magnitude
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0005]/value/units
+    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1006]/value/units
     p_eq_0: EncapsulatingQuery
       SELECT
         p_data__0.p_data__0_vo_id
@@ -173,7 +190,14 @@ AslRootQuery
           NOT_NULL p_items__3.p_items__3_vo_id
           NOT_NULL p_items__4.p_items__4_vo_id
         FROM
-          p_data__0: StructureQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/units
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1005]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0005]/value/units
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1006]/value/units
+            p_data__0: StructureQuery
               SELECT
                 p_data__0.p_data__0_vo_id
                 p_data__0.p_data__0_num
@@ -187,12 +211,19 @@ AslRootQuery
                 p_data__0.p_data__0_data
                 p_data__0.p_data__0_entity_attribute
               WHERE
-                p_data__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
+                p_data__0.p_data__0_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
               FROM COMPOSITION
               STRUCTURE CONDITIONS
                 p_data__0.p_data__0_entity_attribute EQ [d]
 
-          p_events__0: StructureQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/units
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1005]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0005]/value/units
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1006]/value/units
+            p_events__0: StructureQuery
               SELECT
                 p_events__0.p_events__0_vo_id
                 p_events__0.p_events__0_num
@@ -206,7 +237,7 @@ AslRootQuery
                 p_events__0.p_events__0_data
                 p_events__0.p_events__0_entity_attribute
               WHERE
-                p_events__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                p_events__0.p_events__0_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
               FROM COMPOSITION
               STRUCTURE CONDITIONS
                 p_events__0.p_events__0_entity_attribute EQ [e]
@@ -216,7 +247,14 @@ AslRootQuery
                       PathChildCondition COMPOSITION p_data__0 -> COMPOSITION p_events__0
 
 
-          p_data__1: StructureQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/units
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1005]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0005]/value/units
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1006]/value/units
+            p_data__1: StructureQuery
               SELECT
                 p_data__1.p_data__1_vo_id
                 p_data__1.p_data__1_num
@@ -230,7 +268,7 @@ AslRootQuery
                 p_data__1.p_data__1_data
                 p_data__1.p_data__1_entity_attribute
               WHERE
-                p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+                p_data__1.p_data__1_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
               FROM COMPOSITION
               STRUCTURE CONDITIONS
                 p_data__1.p_data__1_entity_attribute EQ [d]
@@ -240,7 +278,10 @@ AslRootQuery
                       PathChildCondition COMPOSITION p_events__0 -> COMPOSITION p_data__1
 
 
-          p_eq_1: EncapsulatingQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/units
+            p_eq_1: EncapsulatingQuery
               SELECT
                 p_items__0.p_items__0_vo_id
                 p_items__0.p_items__0_num
@@ -254,7 +295,10 @@ AslRootQuery
                 p_items__0.p_items__0_data
                 p_items__0.p_items__0_entity_attribute
                 FROM
-                  p_items__0: StructureQuery
+                    -- o OBSERVATION
+                    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude
+                    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/units
+                    p_items__0: StructureQuery
                       SELECT
                         p_items__0.p_items__0_vo_id
                         p_items__0.p_items__0_num
@@ -268,7 +312,7 @@ AslRootQuery
                         p_items__0.p_items__0_data
                         p_items__0.p_items__0_entity_attribute
                       WHERE
-                        p_items__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0004]]
+                        p_items__0.p_items__0_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0004]]
                       FROM COMPOSITION
                       STRUCTURE CONDITIONS
                         p_items__0.p_items__0_entity_attribute EQ [i]
@@ -279,7 +323,9 @@ AslRootQuery
                       PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__0
 
 
-          p_eq_2: EncapsulatingQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value/magnitude
+            p_eq_2: EncapsulatingQuery
               SELECT
                 p_items__1.p_items__1_vo_id
                 p_items__1.p_items__1_num
@@ -293,7 +339,9 @@ AslRootQuery
                 p_items__1.p_items__1_data
                 p_items__1.p_items__1_entity_attribute
                 FROM
-                  p_items__1: StructureQuery
+                    -- o OBSERVATION
+                    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value/magnitude
+                    p_items__1: StructureQuery
                       SELECT
                         p_items__1.p_items__1_vo_id
                         p_items__1.p_items__1_num
@@ -307,7 +355,7 @@ AslRootQuery
                         p_items__1.p_items__1_data
                         p_items__1.p_items__1_entity_attribute
                       WHERE
-                        p_items__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0006]]
+                        p_items__1.p_items__1_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0006]]
                       FROM COMPOSITION
                       STRUCTURE CONDITIONS
                         p_items__1.p_items__1_entity_attribute EQ [i]
@@ -318,7 +366,9 @@ AslRootQuery
                       PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__1
 
 
-          p_eq_3: EncapsulatingQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1005]/value/magnitude
+            p_eq_3: EncapsulatingQuery
               SELECT
                 p_items__2.p_items__2_vo_id
                 p_items__2.p_items__2_num
@@ -332,7 +382,9 @@ AslRootQuery
                 p_items__2.p_items__2_data
                 p_items__2.p_items__2_entity_attribute
                 FROM
-                  p_items__2: StructureQuery
+                    -- o OBSERVATION
+                    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1005]/value/magnitude
+                    p_items__2: StructureQuery
                       SELECT
                         p_items__2.p_items__2_vo_id
                         p_items__2.p_items__2_num
@@ -346,7 +398,7 @@ AslRootQuery
                         p_items__2.p_items__2_data
                         p_items__2.p_items__2_entity_attribute
                       WHERE
-                        p_items__2.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at1005]]
+                        p_items__2.p_items__2_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at1005]]
                       FROM COMPOSITION
                       STRUCTURE CONDITIONS
                         p_items__2.p_items__2_entity_attribute EQ [i]
@@ -357,7 +409,9 @@ AslRootQuery
                       PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__2
 
 
-          p_eq_4: EncapsulatingQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0005]/value/units
+            p_eq_4: EncapsulatingQuery
               SELECT
                 p_items__3.p_items__3_vo_id
                 p_items__3.p_items__3_num
@@ -371,7 +425,9 @@ AslRootQuery
                 p_items__3.p_items__3_data
                 p_items__3.p_items__3_entity_attribute
                 FROM
-                  p_items__3: StructureQuery
+                    -- o OBSERVATION
+                    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0005]/value/units
+                    p_items__3: StructureQuery
                       SELECT
                         p_items__3.p_items__3_vo_id
                         p_items__3.p_items__3_num
@@ -385,7 +441,7 @@ AslRootQuery
                         p_items__3.p_items__3_data
                         p_items__3.p_items__3_entity_attribute
                       WHERE
-                        p_items__3.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0005]]
+                        p_items__3.p_items__3_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0005]]
                       FROM COMPOSITION
                       STRUCTURE CONDITIONS
                         p_items__3.p_items__3_entity_attribute EQ [i]
@@ -396,7 +452,9 @@ AslRootQuery
                       PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__3
 
 
-          p_eq_5: EncapsulatingQuery
+            -- o OBSERVATION
+            -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1006]/value/units
+            p_eq_5: EncapsulatingQuery
               SELECT
                 p_items__4.p_items__4_vo_id
                 p_items__4.p_items__4_num
@@ -410,7 +468,9 @@ AslRootQuery
                 p_items__4.p_items__4_data
                 p_items__4.p_items__4_entity_attribute
                 FROM
-                  p_items__4: StructureQuery
+                    -- o OBSERVATION
+                    -- o OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/data[at0001]/events[at0002]/data[at0003]/items[at1006]/value/units
+                    p_items__4: StructureQuery
                       SELECT
                         p_items__4.p_items__4_vo_id
                         p_items__4.p_items__4_num
@@ -424,7 +484,7 @@ AslRootQuery
                         p_items__4.p_items__4_data
                         p_items__4.p_items__4_entity_attribute
                       WHERE
-                        p_items__4.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at1006]]
+                        p_items__4.p_items__4_archetype_node_id -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at1006]]
                       FROM COMPOSITION
                       STRUCTURE CONDITIONS
                         p_items__4.p_items__4_entity_attribute EQ [i]
@@ -441,4 +501,5 @@ AslRootQuery
               PathChildCondition COMPOSITION sOB_o_0 -> COMPOSITION p_data__0
 
   WHERE
+    -- e EHR/ehr_id/value
     sEHR_e_0.sEHR_e_0_id -- ehr_id/value EQ [0f5ea58d-9e30-4365-853e-81f2224a85e0]
