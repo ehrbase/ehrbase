@@ -53,6 +53,11 @@ public final class AslAggregatingField extends AslVirtualField {
     }
 
     @Override
+    public AslFieldOrigin getOrigin() {
+        return baseField == null ? null : baseField.getOrigin();
+    }
+
+    @Override
     public AslQuery getProvider() {
         return baseField == null ? null : baseField.getProvider();
     }

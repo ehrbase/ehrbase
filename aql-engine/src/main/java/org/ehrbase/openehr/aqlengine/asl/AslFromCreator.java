@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
@@ -316,7 +317,7 @@ final class AslFromCreator {
         AslStructureQuery aslStructureQuery = new AslStructureQuery(
                 sAlias,
                 sourceRelation,
-                origin,
+                AslQueryOrigin.ofType(origin),
                 fields,
                 rmTypes,
                 isRoot ? List.of() : rmTypes,
