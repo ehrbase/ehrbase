@@ -171,7 +171,7 @@ public class AqlSqlLayer {
                             select.getAggregateFunctionName(),
                             // identified path is null for COUNT(*)
                             pathToField.getField(select.getIdentifiedPath().orElse(null)),
-                            select.isCountDistinct());
+                            select.isCountDistinct()); // .withOrigin();
                     case PRIMITIVE, FUNCTION -> throw new IllegalArgumentException();
                 })
                 .forEach(rootQuery.getSelect()::add);

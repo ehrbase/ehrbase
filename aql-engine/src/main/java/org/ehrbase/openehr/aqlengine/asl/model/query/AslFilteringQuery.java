@@ -20,7 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.query;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
@@ -34,7 +34,7 @@ public final class AslFilteringQuery extends AslQuery {
     private final AslField sourceField;
     private final AslField select;
 
-    public AslFilteringQuery(String alias, AslTypeOrigin origin, AslField sourceField) {
+    public AslFilteringQuery(String alias, AslQueryOrigin origin, AslField sourceField) {
         super(alias, origin, Collections.emptyList());
         this.sourceField = sourceField;
         if (sourceField instanceof AslRmPathField pf) {

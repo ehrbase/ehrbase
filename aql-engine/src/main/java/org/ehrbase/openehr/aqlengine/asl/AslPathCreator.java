@@ -43,7 +43,7 @@ import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.DataNodeInfo.ExtractedColumnDataNodeInfo;
 import org.ehrbase.openehr.aqlengine.asl.DataNodeInfo.JsonRmDataNodeInfo;
 import org.ehrbase.openehr.aqlengine.asl.DataNodeInfo.StructureRmDataNodeInfo;
-import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
@@ -485,7 +485,8 @@ final class AslPathCreator {
             AslStructureQuery sq,
             PathCohesionTreeNode currentNode) {
         final AslEncapsulatingQuery currentQuery = new AslEncapsulatingQuery(
-                aliasProvider.uniqueAlias("p_eq"), sq.getOrigin().withPaths(currentNode.getPaths()));
+                aliasProvider.uniqueAlias("p_eq"),
+                sq.getOrigin().copyWithFirstTypeOrigin(typeOrigin -> typeOrigin.withPaths(currentNode.getPaths())));
         currentQuery.addChild(sq, null);
 
         AslQuery parentProvider = parentJoinMode == JoinMode.ROOT ? parent.provider() : parent.owner();
@@ -751,8 +752,8 @@ final class AslPathCreator {
                 .collect(Collectors.toList());
         fields.add(new AslColumnField(String.class, AslStructureQuery.ENTITY_ATTRIBUTE, false));
 
-        AslTypeOrigin origin = parent instanceof AslStructureQuery aslStructureQuery
-                ? aslStructureQuery.getOrigin().withPaths(paths)
+        AslQueryOrigin origin = parent instanceof AslStructureQuery aslStructureQuery
+                ? aslStructureQuery.getOrigin().copyWithFirstTypeOrigin(typeOrigin -> typeOrigin.withPaths(paths))
                 : null;
         final String alias = aliasProvider.uniqueAlias("p_" + attribute + "_");
         AslStructureQuery aslStructureQuery =

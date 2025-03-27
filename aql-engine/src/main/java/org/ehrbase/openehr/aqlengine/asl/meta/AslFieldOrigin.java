@@ -28,6 +28,10 @@ import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
  */
 public record AslFieldOrigin(@Nonnull IdentifiedPath path) {
 
+    public static AslFieldOrigin of(IdentifiedPath path) {
+        return new AslFieldOrigin(path);
+    }
+
     @Override
     public String toString() {
         return "AslFieldOrigin[root=" + path.getRoot() + ", path" + path.render() + ']';

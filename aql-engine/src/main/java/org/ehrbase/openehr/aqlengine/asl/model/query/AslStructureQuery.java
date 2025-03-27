@@ -36,7 +36,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils;
-import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
@@ -139,7 +139,7 @@ public final class AslStructureQuery extends AslQuery {
     public AslStructureQuery(
             String alias,
             AslSourceRelation type,
-            AslTypeOrigin origin,
+            AslQueryOrigin origin,
             List<? extends AslField> fields,
             Collection<String> rmTypes,
             Collection<String> rmTypesConstraint,

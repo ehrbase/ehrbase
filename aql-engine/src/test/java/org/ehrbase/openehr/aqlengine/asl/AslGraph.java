@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
@@ -283,7 +285,7 @@ public class AslGraph {
                                     f.isDistinct() ? "DISTINCT " : "",
                                     Optional.of(f)
                                             .map(AslAggregatingField::getBaseField)
-                                            .map(bf -> fieldToGraph(level, bf))
+                                            .map(bf -> fieldToGraph(level, bf.withOrigin((AslFieldOrigin) null)))
                                             .orElse("*"));
                     case AslSubqueryField f -> sqToGraph(level + 1, f.getBaseQuery(), null)
                             + (f.getFilterConditions().isEmpty()
@@ -310,20 +312,27 @@ public class AslGraph {
     }
 
     private static String origin(int level, AslQuery aslQuery) {
-        AslTypeOrigin origin = aslQuery.getOrigin();
-        if (origin == null) {
+        AslQueryOrigin queryOrigin = aslQuery.getOrigin();
+        if (queryOrigin == null || queryOrigin.getTypeOrigins().isEmpty()) {
             return indented(level == 2 ? 2 : 0, "");
         }
-        String type =
-                switch (origin) {
-                    case AslTypeOrigin.AslRmTypeOrigin rmTypeOrigin -> rmTypeOrigin.getRmType();
-                    case AslTypeOrigin.AslVersionTypeOrigin versionTypeOrigin -> versionTypeOrigin.getRmType() + " "
-                            + versionTypeOrigin.getRmTypeOrigin().getRmType();
-                };
-        return indented(level == 2 ? 2 : 1, "-- " + origin.getAlias() + " " + type)
-                + origin.getFieldPaths().stream()
-                        .map(identifiedPath -> indented(level, "-- " + identifiedPath(identifiedPath)))
-                        .collect(Collectors.joining("", "", ""));
+        return queryOrigin.getTypeOrigins().stream()
+                .map(origin -> {
+                    String type =
+                            switch (origin) {
+                                case AslTypeOrigin.AslRmTypeOrigin rmTypeOrigin -> rmTypeOrigin.getRmType();
+                                case AslTypeOrigin.AslVersionTypeOrigin versionTypeOrigin -> versionTypeOrigin
+                                                .getRmType()
+                                        + " "
+                                        + versionTypeOrigin.getRmTypeOrigin().getRmType();
+                            };
+                    return indented(level == 2 ? 2 : 1, "-- " + origin.getAlias() + " " + type)
+                            + origin.getFieldPaths().stream()
+                                    .map(identifiedPath -> indented(level, "-- " + identifiedPath(identifiedPath)))
+                                    .collect(Collectors.joining("", "", ""));
+                })
+                .collect(Collectors.joining("\n", "", ""))
+                .replaceAll("\n+", "\n");
     }
 
     private static <T> String indented(int level, Stream<T> entries, Function<T, String> toString) {

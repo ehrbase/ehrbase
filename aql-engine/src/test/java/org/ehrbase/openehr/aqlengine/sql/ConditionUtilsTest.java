@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.ehrbase.jooq.pg.tables.CompData;
 import org.ehrbase.jooq.pg.tables.CompVersion;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
@@ -42,7 +43,7 @@ class ConditionUtilsTest {
         AslQuery q = new AslStructureQuery(
                 "asq",
                 AslStructureQuery.AslSourceRelation.COMPOSITION,
-                new AslTypeOrigin.AslRmTypeOrigin("c", "COMPOSITION", List.of()),
+                AslQueryOrigin.ofType(new AslTypeOrigin.AslRmTypeOrigin("c", "COMPOSITION", List.of())),
                 List.of(
                         AslStructureColumn.VO_ID.field(),
                         AslStructureColumn.RM_ENTITY.field(),
