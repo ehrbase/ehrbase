@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 class AslGraphTest {
 
     @Test
-    @Disabled
+    @Disabled("Can be used for quick local test")
     void printDataQueryGraph() {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(

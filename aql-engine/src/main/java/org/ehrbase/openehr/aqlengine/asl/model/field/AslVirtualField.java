@@ -23,7 +23,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 public abstract sealed class AslVirtualField extends AslField
         permits AslAggregatingField, AslComplexExtractedColumnField, AslFolderItemIdVirtualField, AslRmPathField {
 
-    public AslVirtualField(
+    protected AslVirtualField(
             Class<?> type, FieldSource fieldSource, AslFieldOrigin origin, AslExtractedColumn extractedColumn) {
         super(type, fieldSource, origin, extractedColumn);
     }

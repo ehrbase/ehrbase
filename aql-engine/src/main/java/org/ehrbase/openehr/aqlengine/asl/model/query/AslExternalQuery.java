@@ -28,11 +28,11 @@ import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
  * An {@link AslQuery} that is not necessary based on some RM-Type object and need tables provided by a
  * {@link org.ehrbase.openehr.aqlengine.sql.provider.AqlSqlExternalTableProvider}.
  */
-public non-sealed abstract class AslExternalQuery extends AslQuery {
+public abstract non-sealed class AslExternalQuery extends AslQuery {
 
     private final List<AslField> fields = new ArrayList<>();
 
-    public AslExternalQuery(String alias, List<? extends AslField> fields) {
+    protected AslExternalQuery(String alias, List<? extends AslField> fields) {
         super(alias, null, new ArrayList<>());
         fields.forEach(this::addField);
     }

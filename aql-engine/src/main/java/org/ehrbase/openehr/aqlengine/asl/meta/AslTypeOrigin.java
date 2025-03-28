@@ -31,7 +31,7 @@ import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 /**
  * Contains backtracking information for the original AQL query types.
  */
-public abstract sealed class AslTypeOrigin permits AslTypeOrigin.AslRmTypeOrigin, AslTypeOrigin.AslVersionTypeOrigin {
+public abstract sealed class AslTypeOrigin {
 
     /**
      * Factory method to create a new type {@link AslTypeOrigin} like an <code>EHR, COMPOSITION, ACTION</code> for the
@@ -77,7 +77,7 @@ public abstract sealed class AslTypeOrigin permits AslTypeOrigin.AslRmTypeOrigin
     /** AQL fields this type is used to query for */
     protected final List<IdentifiedPath> fieldPaths;
 
-    public AslTypeOrigin(@Nonnull String alias, @Nonnull String rmType, @Nonnull List<IdentifiedPath> fieldPaths) {
+    protected AslTypeOrigin(@Nonnull String alias, @Nonnull String rmType, @Nonnull List<IdentifiedPath> fieldPaths) {
         this.alias = alias;
         this.rmType = rmType;
         this.fieldPaths = fieldPaths;

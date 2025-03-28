@@ -9,7 +9,7 @@ WHERE c/uid/value = '0f5ea58d-9e30-4365-853e-81f2224a85e0'
 
 AslRootQuery
   SELECT
-    -- en ENTRY/
+    -- ENTRY en/
 
       pd_0: RmObjectDataQuery
         SELECT
@@ -17,7 +17,7 @@ AslRootQuery
         BASE sENTRY_en_0
 
   FROM
-  	-- c COMPOSITION
+    -- COMPOSITION c
     sCO_c_0: StructureQuery
       SELECT
         sCO_c_0.sCO_c_0_vo_id
@@ -40,7 +40,7 @@ AslRootQuery
       WHERE
         sCO_c_0.sCO_c_0_num EQ [0]
       FROM COMPOSITION
-    -- en ENTRY
+    -- ENTRY en
     sENTRY_en_0: StructureQuery
       SELECT
         sENTRY_en_0.sENTRY_en_0_vo_id
@@ -62,5 +62,5 @@ AslRootQuery
               DescendantCondition COMPOSITION sCO_c_0 -> COMPOSITION sENTRY_en_0
 
   WHERE
-  	-- c COMPOSITION/uid/value
+    -- COMPOSITION c/uid/value
     sCO_c_0.sCO_c_0_vo_id -- COMPLEX VO_ID uid/value EQ [0f5ea58d-9e30-4365-853e-81f2224a85e0]

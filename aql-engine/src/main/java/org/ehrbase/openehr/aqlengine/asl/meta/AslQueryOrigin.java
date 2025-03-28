@@ -19,7 +19,7 @@ package org.ehrbase.openehr.aqlengine.asl.meta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Contains backtracking information for the original AQL query.
@@ -49,7 +49,7 @@ public class AslQueryOrigin {
         typeOrigins.addAll(aslTypeOrigins);
     }
 
-    public AslQueryOrigin copyWithFirstTypeOrigin(Function<AslTypeOrigin, AslTypeOrigin> mappingFunction) {
+    public AslQueryOrigin copyWithFirstTypeOrigin(UnaryOperator<AslTypeOrigin> mappingFunction) {
         return new AslQueryOrigin(
                 typeOrigins.stream().findFirst().map(mappingFunction).stream().toList());
     }

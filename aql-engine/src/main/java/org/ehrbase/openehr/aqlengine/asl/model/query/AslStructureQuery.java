@@ -71,6 +71,7 @@ import org.jooq.TableField;
  *     )
  *     </pre>
  */
+@SuppressWarnings("java:S107")
 public final class AslStructureQuery extends AslQuery {
 
     public static final String ENTITY_ATTRIBUTE = "entity_attribute";
