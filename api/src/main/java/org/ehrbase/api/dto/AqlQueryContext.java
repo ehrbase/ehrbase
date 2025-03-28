@@ -18,6 +18,7 @@
 package org.ehrbase.api.dto;
 
 import java.net.URI;
+import java.util.Optional;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
 
 public interface AqlQueryContext {
@@ -66,4 +67,6 @@ public interface AqlQueryContext {
     void setExecutedAql(String executedAql);
 
     void setMetaProperty(MetaProperty property, Object value);
+
+    Optional<String> getHeader(String header);
 }

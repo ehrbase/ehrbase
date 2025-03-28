@@ -32,6 +32,7 @@ import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 
+@SuppressWarnings("java:S107")
 public final class AslPathDataQuery extends AslDataQuery {
     public static final String DATA_COLUMN_NAME = "data";
 
