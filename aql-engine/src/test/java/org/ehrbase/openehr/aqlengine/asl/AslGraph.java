@@ -313,10 +313,10 @@ public class AslGraph {
 
     private static String origin(int level, AslQuery aslQuery) {
         AslQueryOrigin queryOrigin = aslQuery.getOrigin();
-        if (queryOrigin == null || queryOrigin.getTypeOrigins().isEmpty()) {
+        if (queryOrigin == null || queryOrigin.typeOrigins().isEmpty()) {
             return indented(level == 2 ? 2 : 0, "");
         }
-        return queryOrigin.getTypeOrigins().stream()
+        return queryOrigin.typeOrigins().stream()
                 .map(origin -> {
                     String type =
                             switch (origin) {
