@@ -326,6 +326,7 @@ final class AslPathCreator {
             AslRootQuery root, ExtractedColumnDataNodeInfo dni, Map<IdentifiedPath, AslField> pathToField) {
         final FieldSource fieldSource = new FieldSource(dni.parent().owner(), dni.providerSubQuery(), root);
         AslField field = createExtractedColumnField(dni.extractedColumn(), fieldSource);
+        fieldSource.owner().getOrigin().addPaths(dni.node().getPathsEndingAtNode());
         dni.node().getPathsEndingAtNode().forEach(path -> pathToField.put(path, field.withOrigin(path)));
     }
 
@@ -752,9 +753,7 @@ final class AslPathCreator {
                 .collect(Collectors.toList());
         fields.add(new AslColumnField(String.class, AslStructureQuery.ENTITY_ATTRIBUTE, false));
 
-        AslQueryOrigin origin = parent instanceof AslStructureQuery aslStructureQuery
-                ? aslStructureQuery.getOrigin().copyWithFirstTypeOrigin(typeOrigin -> typeOrigin.withPaths(paths))
-                : null;
+        AslQueryOrigin origin = parent.getOrigin().copyWithFirstTypeOrigin(typeOrigin -> typeOrigin.withPaths(paths));
         final String alias = aliasProvider.uniqueAlias("p_" + attribute + "_");
         AslStructureQuery aslStructureQuery =
                 new AslStructureQuery(alias, sourceRelation, origin, fields, rmTypes, List.of(), attribute, false);
