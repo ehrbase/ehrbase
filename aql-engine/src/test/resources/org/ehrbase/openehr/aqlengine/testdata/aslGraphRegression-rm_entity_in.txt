@@ -18,6 +18,7 @@ AslRootQuery
 
   FROM
     -- COMPOSITION c
+    -- COMPOSITION c/uid/value
     sCO_c_0: StructureQuery
       SELECT
         sCO_c_0.sCO_c_0_vo_id

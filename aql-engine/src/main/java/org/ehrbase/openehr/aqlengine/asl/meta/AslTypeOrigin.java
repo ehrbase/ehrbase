@@ -17,8 +17,10 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.meta;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
@@ -75,7 +77,7 @@ public abstract sealed class AslTypeOrigin {
     /** AQL type */
     protected final String rmType;
     /** AQL fields this type is used to query for */
-    protected final List<IdentifiedPath> fieldPaths;
+    protected List<IdentifiedPath> fieldPaths;
 
     protected AslTypeOrigin(@Nonnull String alias, @Nonnull String rmType, @Nonnull List<IdentifiedPath> fieldPaths) {
         this.alias = alias;
@@ -105,6 +107,15 @@ public abstract sealed class AslTypeOrigin {
     @Nonnull
     public List<IdentifiedPath> getFieldPaths() {
         return fieldPaths;
+    }
+
+    /**
+     * Add the given <code>path</code> to the fields paths
+     * @param path to add
+     */
+    public void addPath(IdentifiedPath... path) {
+        this.fieldPaths =
+                Stream.concat(fieldPaths.stream(), Arrays.stream(path)).toList();
     }
 
     /**
