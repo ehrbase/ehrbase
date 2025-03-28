@@ -27,6 +27,15 @@ import org.ehrbase.openehr.sdk.response.dto.MetaData;
 public class TestAqlQueryContext implements AqlQueryContext {
 
     private final Map<String, Object> metaProperties = new LinkedHashMap<>();
+    private final Map<String, String> header = new LinkedHashMap<>();
+
+    public TestAqlQueryContext() {
+        this(Map.of());
+    }
+
+    public TestAqlQueryContext(Map<String, String> header) {
+        this.header.putAll(header);
+    }
 
     @Override
     public MetaData createMetaData(final URI location) {
@@ -59,6 +68,11 @@ public class TestAqlQueryContext implements AqlQueryContext {
     }
 
     @Override
+    public Optional<String> getHeader(String header) {
+        return Optional.ofNullable(this.header.get(header));
+    }
+
+    @Override
     public void setMetaProperty(final MetaProperty property, final Object value) {
         String name = property.propertyName();
         if (value == null) {
@@ -66,12 +80,5 @@ public class TestAqlQueryContext implements AqlQueryContext {
         } else {
             metaProperties.put(name, value);
         }
-    }
-
-    public Object getMetaProperty(MetaProperty property) {
-        return Optional.of(property)
-                .map(MetaProperty::propertyName)
-                .map(metaProperties::get)
-                .orElse(null);
     }
 }

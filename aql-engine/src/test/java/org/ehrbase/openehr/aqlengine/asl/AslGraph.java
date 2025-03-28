@@ -326,7 +326,7 @@ public class AslGraph {
                                         + " "
                                         + versionTypeOrigin.getRmTypeOrigin().getRmType();
                             };
-                    return indented(level == 2 ? 2 : 1, "-- " + origin.getAlias() + " " + type)
+                    return indented(level == 2 ? 2 : 1, "-- " + type + " " + origin.getAlias())
                             + origin.getFieldPaths().stream()
                                     .map(identifiedPath -> indented(level, "-- " + identifiedPath(identifiedPath)))
                                     .collect(Collectors.joining("", "", ""));
@@ -364,7 +364,7 @@ public class AslGraph {
         String pathPart = Optional.ofNullable(identifiedPath.getPath())
                 .map(AqlObjectPath::render)
                 .orElse("");
-        return identifier + " " + type + predicates + "/" + pathPart;
+        return Optional.ofNullable(identifier).map(it -> type + " " + it).orElse(type) + predicates + "/" + pathPart;
     }
 
     private static String andOperatorPredicate(Collection<AndOperatorPredicate> predicates) {
