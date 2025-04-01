@@ -75,7 +75,7 @@ class AqlParameterPostProcessorTest {
                 "2020-12-31T23:59:59Z",
                 "2020-12-31T23:59:59-0200",
                 "2020-12-31T23:59:59.013-0200",
-                //leap year
+                // leap year
                 "20200229",
                 "2020-02-29",
                 "20200229T235959",
@@ -97,25 +97,24 @@ class AqlParameterPostProcessorTest {
                 .isTrue();
     }
 
-
-
     @ParameterizedTest
     @ValueSource(
             strings = {
-                    // syntactically correct, but non-existing
-                    "20200431",
-                    "20200230",
-                    "20210229",
-                    "2020-04-31",
-                    "2020-02-30",
-                    "2021-02-29",
-                    "20210229T235959",
-                    "2020-04-31T23:59:59",
-                    "2020-02-30T23:59:59",
-                    "2021-02-29T23:59:59",
+                // syntactically correct, but non-existing
+                "20200431",
+                "20200230",
+                "20210229",
+                "2020-04-31",
+                "2020-02-30",
+                "2021-02-29",
+                "20210229T235959",
+                "2020-04-31T23:59:59",
+                "2020-02-30T23:59:59",
+                "2021-02-29T23:59:59",
             })
     void falsePositivePatterns(String example) {
-        assertThat(AqlParameterPostProcessor.Utils.stringToPrimitive(example)).isExactlyInstanceOf(StringPrimitive.class);
+        assertThat(AqlParameterPostProcessor.Utils.stringToPrimitive(example))
+                .isExactlyInstanceOf(StringPrimitive.class);
     }
 
     @ParameterizedTest
