@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+ - Parsing of invalid temporal aql parameters [#1489](https://github.com/ehrbase/ehrbase/pull/1489)
 
 ## [2.15.0]
  ### Added

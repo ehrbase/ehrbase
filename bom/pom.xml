@@ -58,7 +58,7 @@
     <archie.version>3.12.0</archie.version>
     <commons-io.version>2.18.0</commons-io.version>
     <commons-lang3.version>3.17.0</commons-lang3.version>
-    <ehrbase.openehr.sdk.version>2.21.0</ehrbase.openehr.sdk.version>
+    <ehrbase.openehr.sdk.version>2.22.0</ehrbase.openehr.sdk.version>
     <flyway.version>11.1.1</flyway.version>
     <jackson-bom.version>2.18.1</jackson-bom.version>
     <javamelody.version>1.99.1</javamelody.version>
