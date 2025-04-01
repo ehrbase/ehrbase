@@ -482,10 +482,14 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
         }
     }
 
-    private static final class Utils {
+    static final class Utils {
 
         public static StringPrimitive stringToPrimitive(String str) {
-            return TemporalPrimitivePattern.matches(str) ? new TemporalPrimitive(str) : new StringPrimitive(str);
+            if (TemporalPrimitivePattern.matches(str)) {
+                return TemporalPrimitive.fromString(str);
+            } else {
+                return new StringPrimitive(str);
+            }
         }
 
         /**
