@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.field;
 import java.util.List;
 import java.util.stream.Stream;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
@@ -33,14 +34,15 @@ public final class AslSubqueryField extends AslField {
     private final AslQuery baseQuery;
     private final List<AslQueryCondition> filterConditions;
 
-    private AslSubqueryField(Class<?> type, AslQuery baseQuery, List<AslQueryCondition> filterConditions) {
-        super(type, null, null);
+    private AslSubqueryField(
+            Class<?> type, AslQuery baseQuery, AslFieldOrigin origin, List<AslQueryCondition> filterConditions) {
+        super(type, null, origin, null);
         this.baseQuery = baseQuery;
         this.filterConditions = filterConditions;
     }
 
     public static AslSubqueryField createAslSubqueryField(Class<?> type, AslQuery baseQuery) {
-        return new AslSubqueryField(type, baseQuery, List.of());
+        return new AslSubqueryField(type, baseQuery, null, List.of());
     }
 
     public AslQuery getBaseQuery() {
@@ -81,6 +83,11 @@ public final class AslSubqueryField extends AslField {
     }
 
     @Override
+    public AslField withOrigin(AslFieldOrigin origin) {
+        return new AslSubqueryField(type, baseQuery, origin, filterConditions);
+    }
+
+    @Override
     public AslField copyWithOwner(AslQuery aslFilteringQuery) {
         throw new UnsupportedOperationException();
     }
@@ -93,7 +100,7 @@ public final class AslSubqueryField extends AslField {
                 })
                 .toList();
 
-        return new AslSubqueryField(getType(), baseQuery, conditions);
+        return new AslSubqueryField(getType(), baseQuery, origin, conditions);
     }
 
     @Override
