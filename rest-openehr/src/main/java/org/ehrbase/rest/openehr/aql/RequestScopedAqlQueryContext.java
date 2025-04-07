@@ -106,7 +106,12 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     }
 
     private boolean isHeaderTrue(String header) {
-        return Optional.of(header).map(request::getHeader).map(Boolean::valueOf).orElse(false);
+        return getHeader(header).map(Boolean::valueOf).orElse(false);
+    }
+
+    @Override
+    public Optional<String> getHeader(String header) {
+        return Optional.of(header).map(request::getHeader);
     }
 
     @Override

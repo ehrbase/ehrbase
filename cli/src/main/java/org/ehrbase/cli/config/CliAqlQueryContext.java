@@ -18,6 +18,7 @@
 package org.ehrbase.cli.config;
 
 import java.net.URI;
+import java.util.Optional;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
 import org.springframework.stereotype.Component;
@@ -63,6 +64,11 @@ public class CliAqlQueryContext implements AqlQueryContext {
 
     @Override
     public void setMetaProperty(MetaProperty property, Object value) {
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
+    }
+
+    @Override
+    public Optional<String> getHeader(String header) {
         throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 }
