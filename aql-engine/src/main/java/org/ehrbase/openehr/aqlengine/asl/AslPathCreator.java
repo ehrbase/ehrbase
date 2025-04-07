@@ -618,7 +618,7 @@ final class AslPathCreator {
         AslStructureQuery auditDetailsQuery = new AslStructureQuery(
                 aliasProvider.uniqueAlias("p_ca"),
                 AslSourceRelation.AUDIT_DETAILS,
-                currentQuery.getOrigin(),
+                parent.owner().getOrigin(),
                 fields,
                 Set.of(RmConstants.AUDIT_DETAILS),
                 Set.of(RmConstants.AUDIT_DETAILS),
