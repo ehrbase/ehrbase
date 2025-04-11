@@ -27,7 +27,7 @@ import org.springframework.http.ResponseEntity;
 /**
  * OpenAPI specification for openEHR REST API QUERY resource.
  */
-@Tag(name = "Query")
+@Tag(name = "QUERY")
 @SuppressWarnings({"unused", "java:S107"})
 public interface QueryApiSpecification {
 
