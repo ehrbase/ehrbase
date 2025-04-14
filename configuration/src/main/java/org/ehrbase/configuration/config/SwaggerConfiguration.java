@@ -85,7 +85,7 @@ public class SwaggerConfiguration {
                                 "EHRbase implements the [official openEHR REST API](https://specifications.openehr.org/releases/ITS-REST/latest/). "
                                         + "Additionally, EHRbase provides a custom `status` heartbeat endpoint, "
                                         + "an [Admin API](https://docs.ehrbase.org/docs/EHRbase/Explore/Admin-REST) (if activated) "
-                                        + "and a [Status and Metrics API](http://localhost:3000/docs/EHRbase/Explore/Status-And-Metrics) (if activated) "
+                                        + "and a [Status and Metrics API](https://docs.ehrbase.org/docs/EHRbase/Explore/Status-And-Metrics) (if activated) "
                                         + "for monitoring and maintenance. "
                                         + " "
                                         + "Note: The openEHR REST API is documented in their official documentation, not here. Please refer to their separate documentation.")
