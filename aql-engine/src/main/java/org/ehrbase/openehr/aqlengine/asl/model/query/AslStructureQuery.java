@@ -211,6 +211,7 @@ public final class AslStructureQuery extends AslQuery {
 
     @Override
     public String toString() {
-        return "AslStructureQuery@" + type + "[" + getAlias() + "]";
+        return "AslStructureQuery@" + type + "[" + getAlias() + "]("
+                + (representsOriginalVersionExpression ? "original" : "-") + ")";
     }
 }

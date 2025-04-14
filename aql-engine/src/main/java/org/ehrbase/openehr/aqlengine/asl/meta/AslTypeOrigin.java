@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.VersionContainsWrapper;
@@ -79,7 +80,7 @@ public abstract sealed class AslTypeOrigin {
     /** AQL fields this type is used to query for */
     protected List<IdentifiedPath> fieldPaths;
 
-    protected AslTypeOrigin(@Nonnull String alias, @Nonnull String rmType, @Nonnull List<IdentifiedPath> fieldPaths) {
+    protected AslTypeOrigin(@Nullable String alias, @Nonnull String rmType, @Nonnull List<IdentifiedPath> fieldPaths) {
         this.alias = alias;
         this.rmType = rmType;
         this.fieldPaths = fieldPaths;
@@ -88,7 +89,7 @@ public abstract sealed class AslTypeOrigin {
     /**
      * AQL alias of this type
      */
-    @Nonnull
+    @Nullable
     public String getAlias() {
         return alias;
     }
