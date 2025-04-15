@@ -45,8 +45,8 @@ public abstract sealed class AslTypeOrigin {
     public static AslTypeOrigin ofContainsWrapper(ContainsWrapper containsWrapper) {
         return switch (containsWrapper) {
             case RmContainsWrapper rmContainsWrapper -> ofRmContains(rmContainsWrapper.alias(), rmContainsWrapper);
-            case VersionContainsWrapper versionContainsWrapper -> ofRmContains(
-                    containsWrapper.alias(), versionContainsWrapper.child());
+            case VersionContainsWrapper versionContainsWrapper -> new AslVersionTypeOrigin(
+                    ofRmContains(containsWrapper.alias(), versionContainsWrapper.child()));
         };
     }
 
@@ -136,7 +136,7 @@ public abstract sealed class AslTypeOrigin {
     public static final class AslRmTypeOrigin extends AslTypeOrigin {
 
         public AslRmTypeOrigin(
-                @Nonnull String alias, @Nonnull String rmType, @Nonnull List<IdentifiedPath> fieldPaths) {
+                @Nullable String alias, @Nonnull String rmType, @Nonnull List<IdentifiedPath> fieldPaths) {
             super(alias, rmType, fieldPaths);
         }
 

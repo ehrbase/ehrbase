@@ -34,6 +34,6 @@ public record AslFieldOrigin(@Nonnull IdentifiedPath path) {
 
     @Override
     public String toString() {
-        return "AslFieldOrigin[root=" + path.getRoot() + ", path" + path.render() + ']';
+        return "AslFieldOrigin[" + path.render() + ']';
     }
 }

@@ -19,6 +19,7 @@ package org.ehrbase.openehr.aqlengine.asl.meta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
@@ -39,14 +40,27 @@ public record AslQueryOrigin(List<AslTypeOrigin> typeOrigins) {
         return new AslQueryOrigin(List.of(aslTypeOrigin));
     }
 
+    /**
+     * Create  new query origin with the used type origins
+     * @param typeOrigins used for this query
+     */
     public AslQueryOrigin(List<AslTypeOrigin> typeOrigins) {
         this.typeOrigins = new ArrayList<>(typeOrigins);
     }
 
+    /**
+     * Add new type origins
+     * @param aslTypeOrigins to add
+     */
     public void addTypeOrigins(List<AslTypeOrigin> aslTypeOrigins) {
         typeOrigins.addAll(aslTypeOrigins);
     }
 
+    /**
+     * Create a shallow copy while applying the given mapping function to the {@link AslTypeOrigin}s
+     * @param mappingFunction to apply on each {@link AslTypeOrigin}
+     * @return queryOriginCopy
+     */
     public AslQueryOrigin copyWithFirstTypeOrigin(UnaryOperator<AslTypeOrigin> mappingFunction) {
         return new AslQueryOrigin(
                 typeOrigins.stream().findFirst().map(mappingFunction).stream().toList());
@@ -69,7 +83,7 @@ public record AslQueryOrigin(List<AslTypeOrigin> typeOrigins) {
                     };
 
             typeOrigins.stream()
-                    .filter(to -> to.getRmType().equals(rmType) && to.getAlias().equals(alias))
+                    .filter(to -> Objects.equals(to.getRmType(), rmType) && Objects.equals(to.getAlias(), alias))
                     .findFirst()
                     .orElseGet(() -> {
                         AslTypeOrigin.AslRmTypeOrigin aslRmTypeOrigin =

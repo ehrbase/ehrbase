@@ -56,6 +56,6 @@ public abstract non-sealed class AslExternalQuery extends AslQuery {
 
     @Override
     public String toString() {
-        return "AslProvidedQuery[" + getAlias() + "]";
+        return "AslExternalQuery[" + getAlias() + "]";
     }
 }
