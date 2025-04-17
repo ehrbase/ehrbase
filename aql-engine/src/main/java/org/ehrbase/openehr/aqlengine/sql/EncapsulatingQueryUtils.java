@@ -208,7 +208,7 @@ final class EncapsulatingQueryUtils {
                         aq,
                         aslQueryToTable,
                         sqf.getFilterConditions().stream()
-                                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
+                                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, false))
                                 .toArray(Condition[]::new))
                 .asField();
     }

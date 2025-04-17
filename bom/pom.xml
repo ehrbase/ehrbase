@@ -388,6 +388,10 @@
               <licenseHeader>
                 <file>${maven.multiModuleProjectDirectory}/spotless-lic-header</file>
               </licenseHeader>
+              <excludes>
+                <!-- spotless can not parse non-sealed -->
+                <exclude>src/main/java/**/AslExternalQuery.java</exclude>
+              </excludes>
             </java>
           </configuration>
         </plugin>
