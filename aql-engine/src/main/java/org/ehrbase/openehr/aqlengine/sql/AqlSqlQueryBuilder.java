@@ -153,13 +153,15 @@ public class AqlSqlQueryBuilder {
 
         AslQueryTables aslQueryToTable = new AslQueryTables();
         SelectJoinStep<Record> encapsulatingQuery =
-                buildEncapsulatingQuery(aslRootQuery, context::select, aslQueryToTable);
+                buildEncapsulatingQuery(aslRootQuery, context::select, aslQueryToTable,0);
 
         SelectQuery<Record> query = encapsulatingQuery.getQuery();
 
         // LIMIT
         if (aslRootQuery.getLimit() != null) {
-            query.addLimit(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset(), aslRootQuery.getLimit());
+
+            query.addLimit(DSL.inline(aslRootQuery.getLimit()));
+            query.addOffset(DSL.inline(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset()));
         }
 
         queryPostProcessor.ifPresent(p -> p.afterBuildSqlQuery(aslRootQuery, query));
@@ -202,7 +204,7 @@ public class AqlSqlQueryBuilder {
 
     @Nonnull
     private SelectJoinStep<Record> buildEncapsulatingQuery(
-            AslEncapsulatingQuery aq, Supplier<SelectSelectStep<Record>> creator, AslQueryTables aslQueryToTable) {
+            AslEncapsulatingQuery aq, Supplier<SelectSelectStep<Record>> creator, AslQueryTables aslQueryToTable, int i) {
         Iterator<Pair<AslQuery, AslJoin>> childIt = aq.getChildren().iterator();
 
         // from
@@ -234,13 +236,14 @@ public class AqlSqlQueryBuilder {
             query.addSelect(sqlField);
         }
         // where
+        List<Condition> list = Stream.concat(
+                        Optional.of(aq).map(AslEncapsulatingQuery::getCondition).stream(),
+                        aq.getStructureConditions().stream())
+                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, true))
+                .toList();
         query.addConditions(
                 Operator.AND,
-                Stream.concat(
-                                Optional.of(aq).map(AslEncapsulatingQuery::getCondition).stream(),
-                                aq.getStructureConditions().stream())
-                        .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
-                        .toList());
+                list);
 
         if (aq instanceof AslRootQuery rq) {
             rq.getGroupByFields().stream()
@@ -267,7 +270,7 @@ public class AqlSqlQueryBuilder {
         return switch (aslQuery) {
             case AslStructureQuery aq -> buildStructureQuery(aq, aslQueryToTable)
                     .asTable(aq.getAlias());
-            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable)
+            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable, 1)
                     .asTable(aq.getAlias());
             case AslRmObjectDataQuery aq -> DSL.lateral(
                     buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));
@@ -375,7 +378,7 @@ public class AqlSqlQueryBuilder {
         SelectConditionStep<Record> where = step.where(Stream.concat(
                         Optional.of(aq).map(AslStructureQuery::getCondition).stream(),
                         aq.getStructureConditions().stream())
-                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, false))
+                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, false, false))
                 .toArray(Condition[]::new));
 
         // data and primary are local to this sub-query and can be removed
