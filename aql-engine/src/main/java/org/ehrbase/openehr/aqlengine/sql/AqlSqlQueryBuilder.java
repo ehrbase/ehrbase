@@ -162,9 +162,13 @@ public class AqlSqlQueryBuilder {
 
         // LIMIT
         if (aslRootQuery.getLimit() != null) {
-
-            query.addLimit(DSL.inline(aslRootQuery.getLimit()));
-            query.addOffset(DSL.inline(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset()));
+            boolean useParam = aqlQueryContext.flatMap(a ->     a.getHeader("EHRbase-AQL-Query-Plan-Cache")).filter("true"::equals).isPresent();
+            if (useParam) {
+                query.addLimit(DSL.inline(aslRootQuery.getLimit()));
+                query.addOffset(DSL.inline(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset()));
+            }else{
+                query.addLimit(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset(),aslRootQuery.getLimit());
+            }
         }
 
         queryPostProcessor.ifPresent(p -> p.afterBuildSqlQuery(aslRootQuery, query));
@@ -238,13 +242,14 @@ public class AqlSqlQueryBuilder {
             SelectField<?> sqlField = EncapsulatingQueryUtils.selectField(field, aslQueryToTable);
             query.addSelect(sqlField);
         }
-        Optional<String> header =  aqlQueryContext.flatMap(a ->     a.getHeader("EHRbase-AQL-Query-Plan-Cache"));
+
 
         // where
+        boolean useParam = aqlQueryContext.flatMap(a ->     a.getHeader("EHRbase-AQL-Query-Plan-Cache")).filter("true"::equals).isPresent();
         List<Condition> list = Stream.concat(
                         Optional.of(aq).map(AslEncapsulatingQuery::getCondition).stream(),
                         aq.getStructureConditions().stream())
-                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, header.filter("true"::equals).isPresent()))
+                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, useParam))
                 .toList();
         query.addConditions(
                 Operator.AND,
