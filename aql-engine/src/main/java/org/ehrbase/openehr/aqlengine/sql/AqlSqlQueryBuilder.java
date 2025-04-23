@@ -99,14 +99,14 @@ public class AqlSqlQueryBuilder {
     private final TemplateService templateService;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
     private final Optional<AqlSqlExternalTableProvider> externalTableProvider;
-    private final AqlQueryContext aqlQueryContext;
+    private final Optional<AqlQueryContext> aqlQueryContext;
 
     public AqlSqlQueryBuilder(
             AqlConfigurationProperties aqlConfigurationProperties,
             DSLContext context,
             TemplateService templateService,
             Optional<AqlSqlQueryPostProcessor> queryPostProcessor,
-            Optional<AqlSqlExternalTableProvider> externalTableProvider, AqlQueryContext aqlQueryContext) {
+            Optional<AqlSqlExternalTableProvider> externalTableProvider, Optional<AqlQueryContext> aqlQueryContext) {
         this.aqlConfigurationProperties = aqlConfigurationProperties;
         this.context = context;
         this.templateService = templateService;
@@ -238,7 +238,7 @@ public class AqlSqlQueryBuilder {
             SelectField<?> sqlField = EncapsulatingQueryUtils.selectField(field, aslQueryToTable);
             query.addSelect(sqlField);
         }
-        Optional<String> header = aqlQueryContext.getHeader("EHRbase-AQL-Query-Plan-Cache");
+        Optional<String> header =  aqlQueryContext.flatMap(a ->     a.getHeader("EHRbase-AQL-Query-Plan-Cache"));
 
         // where
         List<Condition> list = Stream.concat(

@@ -73,7 +73,7 @@ class AqlSqlQueryBuilderTest {
                 new DefaultDSLContext(SQLDialect.POSTGRES),
                 templateService,
                 Optional.empty(),
-                Optional.empty());
+                Optional.empty(),Optional.empty());
     }
 
     @BeforeEach
