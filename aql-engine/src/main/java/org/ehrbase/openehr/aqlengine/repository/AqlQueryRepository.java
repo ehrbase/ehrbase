@@ -88,10 +88,8 @@ public class AqlQueryRepository {
     }
 
     public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
-        SelectQuery<Record> selectQuery = preparedQuery.selectQuery;
 
-        selectQuery.fetch();
-        try (Stream<Record> stream = selectQuery.stream()) {
+        try (Stream<Record> stream = preparedQuery.selectQuery.stream()) {
             return stream.map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
                     .toList();
         }

@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
@@ -98,18 +99,20 @@ public class AqlSqlQueryBuilder {
     private final TemplateService templateService;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
     private final Optional<AqlSqlExternalTableProvider> externalTableProvider;
+    private final AqlQueryContext aqlQueryContext;
 
     public AqlSqlQueryBuilder(
             AqlConfigurationProperties aqlConfigurationProperties,
             DSLContext context,
             TemplateService templateService,
             Optional<AqlSqlQueryPostProcessor> queryPostProcessor,
-            Optional<AqlSqlExternalTableProvider> externalTableProvider) {
+            Optional<AqlSqlExternalTableProvider> externalTableProvider, AqlQueryContext aqlQueryContext) {
         this.aqlConfigurationProperties = aqlConfigurationProperties;
         this.context = context;
         this.templateService = templateService;
         this.queryPostProcessor = queryPostProcessor;
         this.externalTableProvider = externalTableProvider;
+        this.aqlQueryContext = aqlQueryContext;
     }
 
     public static String subqueryAlias(AslQuery aslQuery) {
@@ -153,7 +156,7 @@ public class AqlSqlQueryBuilder {
 
         AslQueryTables aslQueryToTable = new AslQueryTables();
         SelectJoinStep<Record> encapsulatingQuery =
-                buildEncapsulatingQuery(aslRootQuery, context::select, aslQueryToTable,0);
+                buildEncapsulatingQuery(aslRootQuery, context::select, aslQueryToTable);
 
         SelectQuery<Record> query = encapsulatingQuery.getQuery();
 
@@ -204,7 +207,7 @@ public class AqlSqlQueryBuilder {
 
     @Nonnull
     private SelectJoinStep<Record> buildEncapsulatingQuery(
-            AslEncapsulatingQuery aq, Supplier<SelectSelectStep<Record>> creator, AslQueryTables aslQueryToTable, int i) {
+            AslEncapsulatingQuery aq, Supplier<SelectSelectStep<Record>> creator, AslQueryTables aslQueryToTable) {
         Iterator<Pair<AslQuery, AslJoin>> childIt = aq.getChildren().iterator();
 
         // from
@@ -235,11 +238,13 @@ public class AqlSqlQueryBuilder {
             SelectField<?> sqlField = EncapsulatingQueryUtils.selectField(field, aslQueryToTable);
             query.addSelect(sqlField);
         }
+        Optional<String> header = aqlQueryContext.getHeader("EHRbase-AQL-Query-Plan-Cache");
+
         // where
         List<Condition> list = Stream.concat(
                         Optional.of(aq).map(AslEncapsulatingQuery::getCondition).stream(),
                         aq.getStructureConditions().stream())
-                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, true))
+                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, header.filter("true"::equals).isPresent()))
                 .toList();
         query.addConditions(
                 Operator.AND,
@@ -270,7 +275,7 @@ public class AqlSqlQueryBuilder {
         return switch (aslQuery) {
             case AslStructureQuery aq -> buildStructureQuery(aq, aslQueryToTable)
                     .asTable(aq.getAlias());
-            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable, 1)
+            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable)
                     .asTable(aq.getAlias());
             case AslRmObjectDataQuery aq -> DSL.lateral(
                     buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));

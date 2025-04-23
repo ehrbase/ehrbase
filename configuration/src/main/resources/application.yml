@@ -155,7 +155,7 @@ logging:
 server:
   # Optional custom server nodename
   # nodename: 'local.test.org'
-  port: 8080
+  port: 8081
   servlet:
     contextPath: /ehrbase
 
