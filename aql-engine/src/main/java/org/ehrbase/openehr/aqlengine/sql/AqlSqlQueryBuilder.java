@@ -106,7 +106,8 @@ public class AqlSqlQueryBuilder {
             DSLContext context,
             TemplateService templateService,
             Optional<AqlSqlQueryPostProcessor> queryPostProcessor,
-            Optional<AqlSqlExternalTableProvider> externalTableProvider, Optional<AqlQueryContext> aqlQueryContext) {
+            Optional<AqlSqlExternalTableProvider> externalTableProvider,
+            Optional<AqlQueryContext> aqlQueryContext) {
         this.aqlConfigurationProperties = aqlConfigurationProperties;
         this.context = context;
         this.templateService = templateService;
@@ -162,12 +163,16 @@ public class AqlSqlQueryBuilder {
 
         // LIMIT
         if (aslRootQuery.getLimit() != null) {
-            boolean useParam = aqlQueryContext.flatMap(a ->     a.getHeader("EHRbase-AQL-Query-Plan-Cache")).filter("true"::equals).isPresent();
+            boolean useParam = aqlQueryContext
+                    .flatMap(a -> a.getHeader("EHRbase-AQL-Query-Plan-Cache"))
+                    .filter("true"::equals)
+                    .isPresent();
             if (useParam) {
                 query.addLimit(DSL.inline(aslRootQuery.getLimit()));
                 query.addOffset(DSL.inline(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset()));
-            }else{
-                query.addLimit(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset(),aslRootQuery.getLimit());
+            } else {
+                query.addLimit(
+                        aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset(), aslRootQuery.getLimit());
             }
         }
 
@@ -243,17 +248,17 @@ public class AqlSqlQueryBuilder {
             query.addSelect(sqlField);
         }
 
-
         // where
-        boolean useParam = aqlQueryContext.flatMap(a ->     a.getHeader("EHRbase-AQL-Query-Plan-Cache")).filter("true"::equals).isPresent();
+        boolean useParam = aqlQueryContext
+                .flatMap(a -> a.getHeader("EHRbase-AQL-Query-Plan-Cache"))
+                .filter("true"::equals)
+                .isPresent();
         List<Condition> list = Stream.concat(
                         Optional.of(aq).map(AslEncapsulatingQuery::getCondition).stream(),
                         aq.getStructureConditions().stream())
                 .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, useParam))
                 .toList();
-        query.addConditions(
-                Operator.AND,
-                list);
+        query.addConditions(Operator.AND, list);
 
         if (aq instanceof AslRootQuery rq) {
             rq.getGroupByFields().stream()

@@ -231,7 +231,8 @@ final class ConditionUtils {
         };
     }
 
-    public static Condition buildCondition(AslQueryCondition c, AslQueryTables tables, boolean useAliases, boolean useParam) {
+    public static Condition buildCondition(
+            AslQueryCondition c, AslQueryTables tables, boolean useAliases, boolean useParam) {
         return switch (c) {
             case null -> DSL.noCondition();
             case AslAndQueryCondition and -> DSL.and(and.getOperands().stream()
@@ -244,7 +245,7 @@ final class ConditionUtils {
             case AslFalseQueryCondition __ -> DSL.falseCondition();
             case AslTrueQueryCondition __ -> DSL.trueCondition();
             case AslNotNullQueryCondition nn -> notNullCondition(tables, useAliases, nn);
-            case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv,useParam);
+            case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv, useParam);
             case AslFieldJoinCondition ic -> DSL.and(fieldJoinCondition(
                             ic,
                             tables.getDataTable(ic.getLeftProvider()),
@@ -302,7 +303,7 @@ final class ConditionUtils {
                     sqlDvOrderedField, DSL.inline(RmAttributeAlias.getAlias(TYPE_ATTRIBUTE)));
             List<String> types =
                     dvc.getTypesToCompare().stream().map(RmTypeAlias::getAlias).toList();
-            return applyOperator(AslConditionOperator.IN, sqlTypeField, types,useParam)
+            return applyOperator(AslConditionOperator.IN, sqlTypeField, types, useParam)
                     .and(applyOperator(dvc.getOperator(), sqlMagnitudeField, dvc.getValues(), useParam));
         }
 
@@ -315,7 +316,8 @@ final class ConditionUtils {
                             f.isVersionTableField() ? tables.getVersionTable(internalProvider) : srcTable,
                             f,
                             useAliases),
-                    fv.getValues(), useParam);
+                    fv.getValues(),
+                    useParam);
                 // XXX conditions on constant fields could be evaluated here instead of by the DB
             case AslConstantField f -> applyOperator(
                     fv.getOperator(), DSL.inline(f.getValue(), f.getType()), fv.getValues(), false);
@@ -332,7 +334,8 @@ final class ConditionUtils {
                 yield applyOperator(
                         fv.getOperator(),
                         arpf.getType() == String.class ? DSL.jsonbGetElementAsText(f, DSL.inline(0)) : f,
-                        fv.getValues(), useParam);
+                        fv.getValues(),
+                        useParam);
             }
         };
     }
@@ -396,7 +399,10 @@ final class ConditionUtils {
                         Pair.of(COMP_DATA.ENTITY_CONCEPT, rmTypeAndConcept.concept()))
                 .filter(p -> p.getValue() != null)
                 .map(p1 -> applyOperator(
-                        op, FieldUtils.field(src, ecf, p1.getKey().getName(), aliasedNames), List.of(p1.getValue()), false))
+                        op,
+                        FieldUtils.field(src, ecf, p1.getKey().getName(), aliasedNames),
+                        List.of(p1.getValue()),
+                        false))
                 .reduce(DSL.noCondition(), op == AslConditionOperator.NEQ ? DSL::or : DSL::and);
     }
 
@@ -523,7 +529,8 @@ final class ConditionUtils {
         }
     }
 
-    private static Condition applyOperator(AslConditionOperator operator, Field field, Collection<?> values, boolean useParam) {
+    private static Condition applyOperator(
+            AslConditionOperator operator, Field field, Collection<?> values, boolean useParam) {
         Class<?> sqlFieldType = field.getType();
         boolean isJsonbField = JSONB.class.isAssignableFrom(sqlFieldType);
         boolean isUuidField = !isJsonbField && UUID.class.isAssignableFrom(sqlFieldType);
@@ -584,7 +591,7 @@ final class ConditionUtils {
                         || (Number.class.isAssignableFrom(sqlFieldType) && val instanceof Number);
                 Field wrappedValue = isJsonbField || (orderOperator && !valueAndFieldTypeCompatible)
                         ? AdditionalSQLFunctions.to_jsonb(val)
-                        : useParam?DSL.val( val) :DSL.inline(val);
+                        : useParam ? DSL.val(val) : DSL.inline(val);
                 Field wrappedField = !isJsonbField && orderOperator && !valueAndFieldTypeCompatible
                         ? AdditionalSQLFunctions.to_jsonb(field)
                         : field;
@@ -600,7 +607,9 @@ final class ConditionUtils {
             }
             default -> switch (operator) {
                 case IN -> field.in(filteredValues.stream()
-                        .map(v -> isJsonbField ? AdditionalSQLFunctions.to_jsonb(v) : useParam?DSL.val( v) :DSL.inline(v))
+                        .map(v -> isJsonbField
+                                ? AdditionalSQLFunctions.to_jsonb(v)
+                                : useParam ? DSL.val(v) : DSL.inline(v))
                         .toList());
                 case EQ, NEQ, GT_EQ, GT, LT_EQ, LT -> throw new IllegalArgumentException(
                         "%s-Condition needs one value, not %d".formatted(operator, filteredValues.size()));
