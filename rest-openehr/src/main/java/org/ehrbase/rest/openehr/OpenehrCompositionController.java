@@ -435,8 +435,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
             templateId = compositionService.retrieveTemplateId(compositionId);
         }
 
-        respHeaders.addIfAbsent(EHRbaseHeader.TEMPLATE_ID, templateId);
-
         HttpRestContext.register(
                 EHR_ID,
                 ehrId,
