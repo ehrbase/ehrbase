@@ -32,10 +32,12 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.BadGatewayException;
@@ -291,8 +293,7 @@ public class CompositionServiceImp implements CompositionService {
     }
 
     @Override
-    public Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version)
-            throws InternalServerException {
+    public Optional<Composition> retrieve(UUID ehrId, UUID compositionId, Integer version) {
 
         Optional<Composition> result;
 
@@ -308,6 +309,11 @@ public class CompositionServiceImp implements CompositionService {
         }
 
         return result;
+    }
+
+    @Override
+    public Stream<Composition> retrieve(Collection<UUID> compositionIds) {
+        return compositionRepository.findHeads(compositionIds);
     }
 
     @Override

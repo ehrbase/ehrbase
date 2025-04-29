@@ -22,8 +22,10 @@ import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
@@ -139,6 +141,8 @@ public interface CompositionService extends VersionedObjectService<Composition, 
             UUID ehrUid, UUID versionedObjectUid, int version);
 
     Composition buildComposition(String content, CompositionFormat format, String templateId);
+
+    Stream<Composition> retrieve(Collection<UUID> compositionIds);
 
     /**
      * Gets the EHR id for the given Composition id.
