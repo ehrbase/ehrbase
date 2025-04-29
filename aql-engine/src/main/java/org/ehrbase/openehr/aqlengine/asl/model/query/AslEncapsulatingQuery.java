@@ -53,6 +53,10 @@ public sealed class AslEncapsulatingQuery extends AslQuery permits AslRootQuery 
         this.children.add(Pair.of(child, join));
     }
 
+    public void addChild(int index, AslQuery child, AslJoin join) {
+        this.children.add(index, Pair.of(child, join));
+    }
+
     @Override
     public Map<IdentifiedPath, List<AslPathFilterJoinCondition>> joinConditionsForFiltering() {
         return children.stream()
