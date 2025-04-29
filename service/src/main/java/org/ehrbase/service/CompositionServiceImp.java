@@ -180,7 +180,7 @@ public class CompositionServiceImp implements CompositionService {
                     UUID.fromString(objectVersionId.getObjectId().getValue()))) {
                 throw new PreconditionFailedException("Provided Id %s already exists".formatted(uid));
             }
-            return (ObjectVersionId) uid;
+            return objectVersionId;
         } else {
             throw new PreconditionFailedException("Provided Id %s is not a ObjectVersionId".formatted(uid));
         }
@@ -312,7 +312,7 @@ public class CompositionServiceImp implements CompositionService {
     }
 
     @Override
-    public Stream<Composition> retrieve(Collection<UUID> compositionIds) {
+    public Stream<Composition> retrieveMultiple(Collection<UUID> compositionIds) {
         return compositionRepository.findHeads(compositionIds);
     }
 

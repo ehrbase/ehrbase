@@ -142,7 +142,7 @@ public interface CompositionService extends VersionedObjectService<Composition, 
 
     Composition buildComposition(String content, CompositionFormat format, String templateId);
 
-    Stream<Composition> retrieve(Collection<UUID> compositionIds);
+    Stream<Composition> retrieveMultiple(Collection<UUID> compositionIds);
 
     /**
      * Gets the EHR id for the given Composition id.
