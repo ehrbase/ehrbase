@@ -213,14 +213,16 @@ final class AslPathCreator {
         final AslField pathField;
         String alias = aliasProvider.uniqueAlias("pd");
         List<PathNode> pathNodes = dni.pathInJson();
+
         if (dni.multipleValued()) {
             if (isPathDataRoot) {
+
                 // Extract the array first to apply structure based filters before unnesting -> avoids unwanted row
                 // multiplication
                 // In the future this may also apply to isPathDataRoot == false to support advanced filtering
                 AslPathDataQuery arrayQuery = new AslPathDataQuery(
                         alias + "_array",
-                        null, //base.getOrigin(),
+                        null, // base.getOrigin(),
                         base,
                         provider,
                         pathNodes,
@@ -231,7 +233,7 @@ final class AslPathCreator {
 
                 dataQuery = new AslPathDataQuery(
                         alias,
-                        null, //base.getOrigin(),
+                        null, // base.getOrigin(),
                         arrayQuery,
                         arrayQuery,
                         List.of(),
