@@ -212,6 +212,7 @@ final class AslPathCreator {
         final AslPathDataQuery dataQuery;
         final AslField pathField;
         String alias = aliasProvider.uniqueAlias("pd");
+        List<PathNode> pathNodes = dni.pathInJson();
         if (dni.multipleValued()) {
             if (isPathDataRoot) {
                 // Extract the array first to apply structure based filters before unnesting -> avoids unwanted row
@@ -219,10 +220,10 @@ final class AslPathCreator {
                 // In the future this may also apply to isPathDataRoot == false to support advanced filtering
                 AslPathDataQuery arrayQuery = new AslPathDataQuery(
                         alias + "_array",
-                        base.getOrigin(),
+                        null, //base.getOrigin(),
                         base,
                         provider,
-                        dni.pathInJson(),
+                        pathNodes,
                         false,
                         dni.dvOrderedTypes(),
                         JSONB.class);
@@ -230,7 +231,7 @@ final class AslPathCreator {
 
                 dataQuery = new AslPathDataQuery(
                         alias,
-                        base.getOrigin(),
+                        null, //base.getOrigin(),
                         arrayQuery,
                         arrayQuery,
                         List.of(),
@@ -242,10 +243,10 @@ final class AslPathCreator {
             } else {
                 dataQuery = new AslPathDataQuery(
                         alias,
-                        base.getOrigin(),
+                        null, // base.getOrigin(),
                         base,
                         provider,
-                        dni.pathInJson(),
+                        pathNodes,
                         true,
                         dni.dvOrderedTypes(),
                         dni.type());
@@ -258,7 +259,7 @@ final class AslPathCreator {
         } else {
             pathField = new AslRmPathField(
                             AslUtils.findFieldForOwner("data", provider.getSelect(), base),
-                            dni.pathInJson(),
+                            pathNodes,
                             dni.dvOrderedTypes(),
                             dni.type())
                     .withProvider(rootQuery);
