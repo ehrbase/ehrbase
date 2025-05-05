@@ -49,7 +49,7 @@ public class AslFieldOriginTest {
                 new StringPrimitive("openEHR-EHR-COMPOSITION.registereintrag.v1"))))));
 
         AslFieldOrigin origin = AslFieldOrigin.of(identifiedPath);
-        System.out.println(origin);
+
         assertThat(origin)
                 .hasToString(
                         "AslFieldOrigin[compo[openEHR-EHR-COMPOSITION.registereintrag.v1]/content[openEHR-EHR-OBSERVATION.blood_pressure.v2]/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value]");
