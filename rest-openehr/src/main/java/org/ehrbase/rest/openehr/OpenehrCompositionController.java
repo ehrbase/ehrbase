@@ -27,6 +27,7 @@ import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import jakarta.annotation.Nullable;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -139,7 +140,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 Optional.ofNullable(compoObj)
                         .map(Locatable::getArchetypeDetails)
                         .map(Archetyped::getTemplateId)
-                        .map(ObjectId::getValue));
+                        .map(ObjectId::getValue)
+                        .orElse(null));
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -224,7 +226,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     Optional.of(compoObj)
                             .map(Locatable::getArchetypeDetails)
                             .map(Archetyped::getTemplateId)
-                            .map(ObjectId::getValue));
+                            .map(ObjectId::getValue)
+                            .orElse(null));
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
         } // composition input not parsable / buildable -> bad request handled by BaseController class
@@ -348,7 +351,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 uri,
                 headerList,
                 () -> new CompositionResponseData(null, null),
-                Optional.empty());
+                null);
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())
@@ -374,7 +377,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
      * @param uri                    Location of resource
      * @param headerList             List of headers to be set for response
      * @param factory                Lambda function to constructor of desired object
-     * @param availableTemplateId    The template id of the composition, if available a priori
+     * @param contextTemplateId      The template id of the composition, if available a priori in the caller context
      * @return
      */
     private <T extends CompositionResponseData> Optional<InternalResponse<T>> buildCompositionResponseData(
@@ -385,7 +388,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             URI uri,
             List<String> headerList,
             Supplier<T> factory,
-            Optional<String> availableTemplateId) {
+            @Nullable String contextTemplateId) {
         // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
         // lambda request
         T minimalOrRepresentation = factory.get();
@@ -431,8 +434,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             respHeaders.setContentType(responseRepresentation.mediaType);
         } // else continue with returning but without additional data from above, e.g. body
 
-        if (isBlank(templateId) && availableTemplateId.isPresent()) {
-            templateId = availableTemplateId.get();
+        if (isBlank(templateId) && !isBlank(contextTemplateId)) {
+            templateId = contextTemplateId;
         }
 
         HttpRestContext.register(
