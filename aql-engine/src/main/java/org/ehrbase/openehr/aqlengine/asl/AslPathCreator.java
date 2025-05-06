@@ -216,18 +216,21 @@ final class AslPathCreator {
         List<PathNode> pathNodes = dni.pathInJson();
 
         // Create new origin path pointing into the json structure
-        AslQueryOrigin origin = Optional.ofNullable(base.getOrigin()).map(baseOrigin -> baseOrigin.copyWithFirstTypeOrigin(typeOrigin ->
-
-                typeOrigin.withPaths(typeOrigin.getFieldPaths().stream().map(identifiedPath -> {
-                    IdentifiedPath ip = new IdentifiedPath();
-                    ip.setRoot(identifiedPath.getRoot());
-                    ip.setPath(new AqlObjectPath(Stream.of(
-                            identifiedPath.getPath().getPathNodes().stream(),
-                            pathNodes.stream()
-                    ).flatMap(s -> s).toList()));
-                    return ip;
-                }).toList())
-        )).orElse(null);
+        AslQueryOrigin origin = Optional.ofNullable(base.getOrigin())
+                .map(baseOrigin -> baseOrigin.copyWithFirstTypeOrigin(
+                        typeOrigin -> typeOrigin.withPaths(typeOrigin.getFieldPaths().stream()
+                                .map(identifiedPath -> {
+                                    IdentifiedPath ip = new IdentifiedPath();
+                                    ip.setRoot(identifiedPath.getRoot());
+                                    ip.setPath(new AqlObjectPath(Stream.of(
+                                                    identifiedPath.getPath().getPathNodes().stream(),
+                                                    pathNodes.stream())
+                                            .flatMap(s -> s)
+                                            .toList()));
+                                    return ip;
+                                })
+                                .toList())))
+                .orElse(null);
 
         if (dni.multipleValued()) {
             if (isPathDataRoot) {
@@ -236,37 +239,16 @@ final class AslPathCreator {
                 // multiplication
                 // In the future this may also apply to isPathDataRoot == false to support advanced filtering
                 AslPathDataQuery arrayQuery = new AslPathDataQuery(
-                        alias + "_array",
-                        origin,
-                        base,
-                        provider,
-                        pathNodes,
-                        false,
-                        dni.dvOrderedTypes(),
-                        JSONB.class);
+                        alias + "_array", origin, base, provider, pathNodes, false, dni.dvOrderedTypes(), JSONB.class);
                 rootQuery.addChild(arrayQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, arrayQuery));
 
                 dataQuery = new AslPathDataQuery(
-                        alias,
-                        origin,
-                        arrayQuery,
-                        arrayQuery,
-                        List.of(),
-                        true,
-                        dni.dvOrderedTypes(),
-                        dni.type());
+                        alias, origin, arrayQuery, arrayQuery, List.of(), true, dni.dvOrderedTypes(), dni.type());
                 rootQuery.addChild(dataQuery, new AslJoin(arrayQuery, JoinType.LEFT_OUTER_JOIN, dataQuery));
 
             } else {
                 dataQuery = new AslPathDataQuery(
-                        alias,
-                        origin,
-                        base,
-                        provider,
-                        pathNodes,
-                        true,
-                        dni.dvOrderedTypes(),
-                        dni.type());
+                        alias, origin, base, provider, pathNodes, true, dni.dvOrderedTypes(), dni.type());
                 rootQuery.addChild(dataQuery, new AslJoin(provider, JoinType.LEFT_OUTER_JOIN, dataQuery));
             }
             pathField = dataQuery.getSelect().getFirst();
