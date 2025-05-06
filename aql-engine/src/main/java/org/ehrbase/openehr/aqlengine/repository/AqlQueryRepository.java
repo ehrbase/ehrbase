@@ -20,7 +20,9 @@ package org.ehrbase.openehr.aqlengine.repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
@@ -30,6 +32,8 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
 import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder;
+import org.ehrbase.openehr.aqlengine.sql.ParsedQuery;
+import org.ehrbase.openehr.aqlengine.sql.QueryResultRowMapper;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlResultPostprocessor;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.DefaultResultPostprocessor;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.ExtractedColumnResultPostprocessor;
@@ -37,9 +41,18 @@ import org.ehrbase.openehr.sdk.aql.dto.operand.AggregateFunction.AggregateFuncti
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
+import org.ehrbase.openehr.sdk.response.dto.ehrscape.query.ResultHolder;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.Select;
 import org.jooq.SelectQuery;
+import org.jooq.impl.QOM;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.core.simple.JdbcClient.StatementSpec;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,12 +67,16 @@ public class AqlQueryRepository {
     private final SystemService systemService;
     private final KnowledgeCacheService knowledgeCache;
     private final AqlSqlQueryBuilder queryBuilder;
+    private final DSLContext context;
+    private final JdbcClient jdbcClient;
 
-    public AqlQueryRepository(
-            SystemService systemService, KnowledgeCacheService knowledgeCache, AqlSqlQueryBuilder queryBuilder) {
+    public AqlQueryRepository(SystemService systemService, KnowledgeCacheService knowledgeCache,
+                              AqlSqlQueryBuilder queryBuilder, DSLContext context, JdbcClient jdbcClient) {
         this.queryBuilder = queryBuilder;
         this.systemService = systemService;
         this.knowledgeCache = knowledgeCache;
+        this.context = context;
+        this.jdbcClient = jdbcClient;
     }
 
     /**
@@ -140,5 +157,67 @@ public class AqlQueryRepository {
             resultRow.add(postProcessors[i].postProcessColumn(r.get(i)));
         }
         return resultRow;
+    }
+
+    /**
+     * Executes the SQL query and returns the result.
+     * <p>
+     * This method MUST only be used to execute the SQL query that has been stored first.
+     * It is not intended to be used for executing arbitrary SQL queries.
+     * </p>
+     *
+     * @param parsedQuery the parsed SQL query
+     * @return the result of the query
+     */
+    @SuppressWarnings("SqlSourceToSinkFlow")
+    public QueryResultDto executeSql(ParsedQuery parsedQuery) {
+        StatementSpec queryStatement = jdbcClient.sql(parsedQuery.getSql());
+        parsedQuery.getParameters().forEach(queryStatement::param);
+
+        List<List<Object>> results = queryStatement
+                .query(new QueryResultRowMapper())
+                .list();
+
+        Select<?> selectQuery = context.parser().parseSelect(parsedQuery.getSql());
+        if (selectQuery == null) {
+            throw new IllegalStateException("Failed to parse SQL query");
+        }
+
+        return buildResult(selectQuery.getSelect(), results, parsedQuery.getLimit(), parsedQuery.getOffset());
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private QueryResultDto buildResult(List<Field<?>> selectFields, List<List<Object>> results,
+                                       Integer limit, Integer offset) {
+        QueryResultDto queryResult = new QueryResultDto();
+
+        String[] columnNames = new String[selectFields.size()];
+        Map<String, String> columns = new LinkedHashMap<>();
+        for (int i = 0; i < selectFields.size(); i++) {
+            Field<?> field = selectFields.get(i);
+            columnNames[i] = field.getName();
+            if (field instanceof QOM.FieldAlias<?> fieldAlias) {
+                columns.put(fieldAlias.getName(), formatQualifiedName(fieldAlias.$field().getQualifiedName()));
+            }
+        }
+        queryResult.setVariables(columns);
+
+        var resultSet = results.stream()
+                .map(row -> {
+                    ResultHolder fieldMap = new ResultHolder();
+                    for (int i = 0; i < row.size(); i++) {
+                        fieldMap.putResult(columnNames[i], row.get(i));
+                    }
+                    return fieldMap;
+                })
+                .toList();
+        queryResult.setResultSet(resultSet);
+        queryResult.setLimit(limit);
+        queryResult.setOffset(offset);
+        return queryResult;
+    }
+
+    private String formatQualifiedName(Name qualifiedName) {
+        return String.join(".", qualifiedName.getName());
     }
 }

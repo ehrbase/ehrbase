@@ -41,6 +41,7 @@ import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.rest.openehr.specification.DefinitionQueryApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -63,8 +64,6 @@ import org.springframework.web.bind.annotation.RestController;
         path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/definition/query",
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
-
-    private static final String AQL = "AQL";
 
     private final StoredQueryService storedQueryService;
 
@@ -103,12 +102,12 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     public ResponseEntity<QueryDefinitionResponseData> getStoredQueryVersion(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-            @PathVariable(value = "version") Optional<String> version) {
+            @PathVariable(value = "version", required = false) String version) {
 
-        registerLocation(qualifiedQueryName, version.orElse(null));
+        registerLocation(qualifiedQueryName, version);
 
         QueryDefinitionResponseData queryDefinitionResponseData = new QueryDefinitionResponseData(
-                storedQueryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
+                storedQueryService.retrieveStoredQuery(qualifiedQueryName, version));
 
         HttpRestContext.register(QUERY_ID, qualifiedQueryName);
 
@@ -124,19 +123,17 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-            @PathVariable(value = "version") Optional<String> version,
+            @PathVariable(value = "version", required = false) String version,
             @RequestParam(value = "type", required = false, defaultValue = "AQL") String type,
             @RequestBody String queryPayload) {
 
-        if (!AQL.equalsIgnoreCase(type)) {
-            throw new InvalidApiParameterException("Query type:%s not supported!".formatted(type));
-        }
+        QueryType queryType = QueryType.fromString(type);
 
         MediaType mediaType = MediaType.parseMediaType(contentType);
-        String aql;
+        String queryString;
         if (APPLICATION_JSON.isCompatibleWith(mediaType)) {
             // assume same format as adhoc POST
-            aql = Optional.of(queryPayload)
+            queryString = Optional.of(queryPayload)
                     .map(p -> {
                         try {
                             return new ObjectMapper().readTree(p);
@@ -150,20 +147,19 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                     .orElse(null);
 
         } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
-            aql = queryPayload;
+            queryString = queryPayload;
         } else {
             throw new UnsupportedMediaTypeException(mediaType.toString());
         }
 
-        if (isBlank(aql)) {
-
-            throw new InvalidApiParameterException("no aql query provided");
+        if (isBlank(queryString)) {
+            throw new InvalidApiParameterException(String.format("No %s query provided", queryType));
         }
 
-        registerLocation(qualifiedQueryName, version.orElse(null));
+        registerLocation(qualifiedQueryName, version);
 
         QueryDefinitionResultDto storedQuery =
-                storedQueryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
+                storedQueryService.createStoredQuery(qualifiedQueryName, version, queryString, queryType);
 
         HttpRestContext.register(QUERY_ID, qualifiedQueryName);
 

@@ -20,7 +20,6 @@ package org.ehrbase.rest.openehr.specification;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.Optional;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +48,7 @@ public interface DefinitionQueryApiSpecification {
             String contentType,
             String accept,
             String qualifiedQueryName,
-            Optional<String> version,
+            String version,
             String type,
             String queryPayload);
 
@@ -60,5 +59,5 @@ public interface DefinitionQueryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-get-1"))
     ResponseEntity<QueryDefinitionResponseData> getStoredQueryVersion(
-            String accept, String qualifiedQueryName, Optional<String> version);
+            String accept, String qualifiedQueryName, String version);
 }

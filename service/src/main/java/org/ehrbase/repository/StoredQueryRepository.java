@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.jooq.pg.tables.StoredQuery;
 import org.ehrbase.jooq.pg.tables.records.StoredQueryRecord;
@@ -57,15 +58,23 @@ public class StoredQueryRepository {
         this.timeProvider = timeProvider;
     }
 
-    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
+    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String queryString) {
+        store(storedQueryQualifiedName, queryString, QueryType.AQL);
+    }
 
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String queryString, QueryType type) {
+
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, queryString, type);
         storedQueryRecord.insert();
     }
 
-    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
+    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String queryString) {
+        update(storedQueryQualifiedName, queryString, QueryType.AQL);
+    }
 
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String queryString, QueryType type) {
+
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, queryString, type);
         storedQueryRecord.update();
     }
 
@@ -187,14 +196,14 @@ public class StoredQueryRepository {
     }
 
     private StoredQueryRecord createStoredQueryRecord(
-            StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
+            StoredQueryQualifiedName storedQueryQualifiedName, String queryString, QueryType type) {
         StoredQueryRecord storedQueryRecord = context.newRecord(STORED_QUERY);
 
         storedQueryRecord.setReverseDomainName(storedQueryQualifiedName.reverseDomainName());
         storedQueryRecord.setSemanticId(storedQueryQualifiedName.semanticId());
         storedQueryRecord.setSemver(storedQueryQualifiedName.semVer().toVersionString());
-        storedQueryRecord.setQueryText(sourceAqlText);
-        storedQueryRecord.setType("AQL");
+        storedQueryRecord.setQueryText(queryString);
+        storedQueryRecord.setType(type.name());
 
         storedQueryRecord.setCreationDate(timeProvider.getNow());
         return storedQueryRecord;
@@ -252,5 +261,12 @@ public class StoredQueryRepository {
         return retrieveStoredQueryRecords()
                 .map(StoredQueryRepository::mapToQueryDefinitionDto)
                 .toList();
+    }
+
+    /**
+     * Parses the given select query string using JOOQ to validate the syntax.
+     */
+    public void parseQuery(String queryString) {
+        context.parser().parseSelect(queryString);
     }
 }

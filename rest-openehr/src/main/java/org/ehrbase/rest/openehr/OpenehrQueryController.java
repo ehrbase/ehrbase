@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -102,6 +103,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // get the query and pass it to the service
         AqlQueryRequest aqlQueryRequest = createRequest(
+                QueryType.AQL,
                 queryString,
                 queryParameters,
                 Optional.ofNullable(fetch).map(Integer::longValue),
@@ -143,7 +145,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
 
         // get the query and pass it to the service
-        AqlQueryRequest aqlQueryRequest = createRequest(queryString, queryRequest);
+        AqlQueryRequest aqlQueryRequest = createRequest(QueryType.AQL, queryString, queryRequest);
         QueryResultDto aqlQueryResult = aqlQueryService.query(aqlQueryRequest);
 
         // create and return response
@@ -177,11 +179,12 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
-
+        QueryType queryType = QueryType.fromString(queryDefinition.getType());
         String queryString = queryDefinition.getQueryText();
 
         // get the query and pass it to the service
         AqlQueryRequest aqlQueryRequest = createRequest(
+                queryType,
                 queryString,
                 queryParameters,
                 Optional.ofNullable(fetch).map(Integer::longValue),
@@ -214,28 +217,28 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             @PathVariable(name = "version", required = false) String version,
             @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestHeader(name = CONTENT_TYPE) String contentType,
-            @RequestBody(required = false) Map<String, Object> queryRequest) {
+            @RequestBody(required = false) Map<String, Object> requestBody) {
 
-        logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
+        logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, requestBody);
 
         // Enriches request attributes with aql for later audit processing
         createRestContext(qualifiedQueryName, version);
 
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
-
+        QueryType queryType = QueryType.fromString(queryDefinition.getType());
         String queryString = queryDefinition.getQueryText();
 
         if (queryString == null) {
-            var message = MessageFormat.format("Could not retrieve AQL {0}/{1}", qualifiedQueryName, version);
+            var message = MessageFormat.format("Could not retrieve query {0}/{1}", qualifiedQueryName, version);
             throw new ObjectNotFoundException("AQL", message);
         }
 
         // get the query and pass it to the service
-        AqlQueryRequest aqlQueryRequest = createRequest(queryString, queryRequest);
-        QueryResultDto aqlQueryResult = aqlQueryService.query(aqlQueryRequest);
+        AqlQueryRequest queryRequest = createRequest(queryType, queryString, requestBody);
+        QueryResultDto queryResult = aqlQueryService.query(queryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryString, null);
+        QueryResponseData queryResponseData = createQueryResponse(queryResult, queryString, null);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
@@ -255,7 +258,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     }
 
     @SuppressWarnings("unchecked")
-    private AqlQueryRequest createRequest(@NonNull String queryString, Map<String, Object> requestBody) {
+    private AqlQueryRequest createRequest(@NonNull QueryType type, @NonNull String queryString, Map<String, Object> requestBody) {
 
         requestBody = Optional.ofNullable(requestBody).orElseGet(Map::of);
         Map<String, Object> queryParameters = Optional.ofNullable(requestBody.get(QUERY_PARAMETERS))
@@ -264,13 +267,13 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         Optional<Long> fetch = optionalLong(FETCH_PARAM, requestBody);
         Optional<Long> offset = optionalLong(OFFSET_PARAM, requestBody);
 
-        return createRequest(queryString, queryParameters, fetch, offset);
+        return createRequest(type, queryString, queryParameters, fetch, offset);
     }
 
-    private AqlQueryRequest createRequest(
-            @NonNull String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
+    private AqlQueryRequest createRequest(@NonNull QueryType type, @NonNull String queryString,
+                                          Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
 
-        return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null));
+        return new AqlQueryRequest(type, queryString, parameters, fetch.orElse(null), offset.orElse(null));
     }
 
     protected QueryResponseData createQueryResponse(

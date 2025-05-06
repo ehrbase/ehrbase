@@ -18,6 +18,7 @@
 package org.ehrbase.api.service;
 
 import java.util.List;
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 
@@ -30,6 +31,8 @@ public interface StoredQueryService {
 
     // === DEFINITION: manage stored queries
     QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString);
+
+    QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString, QueryType type);
 
     void deleteStoredQuery(String qualifiedName, String version);
 }

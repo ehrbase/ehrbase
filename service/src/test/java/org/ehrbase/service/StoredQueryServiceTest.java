@@ -19,12 +19,14 @@ package org.ehrbase.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,6 +35,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import org.ehrbase.api.definitions.QueryType;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.StoredQueryService;
@@ -43,6 +47,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.repository.StoredQueryRepository;
 import org.ehrbase.util.SemVer;
 import org.ehrbase.util.StoredQueryQualifiedName;
+import org.jooq.impl.ParserException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -275,5 +280,73 @@ public class StoredQueryServiceTest {
                 .thenReturn(List.of(new QueryDefinitionResultDto()));
 
         assertEquals(1, service().retrieveStoredQueries("test::query").size());
+    }
+
+    @Test
+    void createStoredQueryUsingSqlType() {
+        String sql = """
+                --
+                -- SELECT o FROM SECTION CONTAINS OBSERVATION o
+                --
+                SELECT e.id AS ehdId, cd.rm_entity, cd.entity_name
+                FROM ehr.ehr e
+                         INNER JOIN ehr.comp_version cv on e.id = cv.ehr_id
+                         INNER JOIN ehr.comp_data cd on cv.vo_id = cd.vo_id
+                WHERE cd.data ->'V'->'df'->>'cd' = :publishing_up
+                """;
+        StoredQueryRecord expected = new StoredQueryRecord("test.create", "sql-query", "1.2.3",
+                sql, QueryType.SQL.getType(), OffsetDateTime.now());
+
+        when(mockStoredQueryRepository.retrieveQualified(any()))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(expected)));
+
+        QueryDefinitionResultDto actual =
+                service().createStoredQuery("test.create::sql-query", "1.2.3", sql, QueryType.SQL);
+
+        assertSoftly(softly -> {
+            softly.assertThat(actual.getQualifiedName()).isEqualTo("test.create::sql-query");
+            softly.assertThat(actual.getVersion()).isEqualTo(expected.getSemver());
+            softly.assertThat(actual.getSaved().toInstant()).isEqualTo(expected.getCreationDate().toInstant());
+            softly.assertThat(actual.getQueryText()).isEqualTo(expected.getQueryText());
+            softly.assertThat(actual.getType()).isEqualTo(expected.getType());
+        });
+    }
+
+    @Test
+    void createStoredQueryInsertThrowsException() {
+        String sql = "INSERT INTO ehr.ehr VALUES ('bb1006cb-c6b3-4715-a6bc-0bc629e37702', '2025-05-06 00:00:00.000 +00:00')";
+
+        doThrow(new ParserException("Unsupported query type")).when(mockStoredQueryRepository).parseQuery(any());
+
+        assertThatThrownBy(() ->
+                service().createStoredQuery("test.create::insert-query", "1.2.3", sql, QueryType.SQL))
+                .isInstanceOf(InvalidApiParameterException.class)
+                .hasMessage("Invalid SQL syntax: Unsupported query type");
+    }
+
+    @Test
+    void createStoredQueryDeleteThrowsException() {
+        String sql = "DELETE FROM ehr.ehr";
+
+        doThrow(new ParserException("Unsupported query type")).when(mockStoredQueryRepository).parseQuery(any());
+
+        assertThatThrownBy(() ->
+                service().createStoredQuery("test.create::delete-query", "1.2.3", sql, QueryType.SQL))
+                .isInstanceOf(InvalidApiParameterException.class)
+                .hasMessage("Invalid SQL syntax: Unsupported query type");
+    }
+
+    @Test
+    void createStoredQueryUpdateThrowsException() {
+        String sql = "UPDATE ehr.comp_data SET data = '{}' WHERE id = 'bb1006cb-c6b3-4715-a6bc-0bc629e37702'";
+
+        doThrow(new ParserException("Unsupported query type"))
+                .when(mockStoredQueryRepository).parseQuery(any());
+
+        assertThatThrownBy(() ->
+                service().createStoredQuery("test.create::update-query", "1.2.3", sql, QueryType.SQL))
+                .isInstanceOf(InvalidApiParameterException.class)
+                .hasMessage("Invalid SQL syntax: Unsupported query type");
     }
 }

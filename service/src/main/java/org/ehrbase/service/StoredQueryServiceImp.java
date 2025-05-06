@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -38,6 +39,7 @@ import org.ehrbase.util.SemVerUtil;
 import org.ehrbase.util.StoredQueryQualifiedName;
 import org.ehrbase.util.VersionConflictException;
 import org.jooq.exception.DataAccessException;
+import org.jooq.impl.ParserException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.stereotype.Service;
@@ -123,16 +125,15 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
     @Override
     public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
+        return createStoredQuery(qualifiedName, version, queryString, QueryType.AQL);
+    }
+
+    @Override
+    public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString, QueryType queryType) {
+        validateQuerySyntax(queryString, queryType);
 
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName queryQualifiedName = StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
-
-        // validate the query syntax
-        try {
-            AqlQueryParser.parse(queryString);
-        } catch (AqlParseException e) {
-            throw new IllegalArgumentException("Invalid query, reason:" + e, e);
-        }
 
         // lookup version in db
         SemVer dbSemVer = storedQueryRepository
@@ -150,9 +151,9 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         try {
             if (isUpdate) {
-                storedQueryRepository.update(newQueryQualifiedName, queryString);
+                storedQueryRepository.update(newQueryQualifiedName, queryString, queryType);
             } else {
-                storedQueryRepository.store(newQueryQualifiedName, queryString);
+                storedQueryRepository.store(newQueryQualifiedName, queryString, queryType);
             }
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
@@ -229,6 +230,19 @@ public class StoredQueryServiceImp implements StoredQueryService {
             return SemVer.parse(version);
         } catch (InvalidVersionFormatException e) {
             throw new InvalidApiParameterException("Incorrect version. Use the SEMVER format.", e);
+        }
+    }
+
+    private void validateQuerySyntax(String queryString, QueryType queryType) {
+        try {
+            if (QueryType.AQL == queryType) {
+                AqlQueryParser.parse(queryString);
+            } else {
+                storedQueryRepository.parseQuery(queryString);
+            }
+        } catch (AqlParseException | ParserException ex) {
+            throw new InvalidApiParameterException(
+                    String.format("Invalid %s syntax: %s", queryType, ex.getMessage()), ex);
         }
     }
 }

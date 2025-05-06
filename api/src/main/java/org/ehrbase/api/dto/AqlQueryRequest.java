@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.api.service.AqlQueryService;
 
 /**
@@ -33,6 +34,7 @@ import org.ehrbase.api.service.AqlQueryService;
  * @param offset               query offset to apply
  */
 public record AqlQueryRequest(
+        @Nonnull QueryType type,
         @Nonnull String queryString,
         @Nullable Map<String, Object> parameters,
         @Nullable Long fetch,
@@ -43,6 +45,16 @@ public record AqlQueryRequest(
             @Nullable Map<String, Object> parameters,
             @Nullable Long fetch,
             @Nullable Long offset) {
+        this(QueryType.AQL, queryString, parameters, fetch, offset);
+    }
+
+    public AqlQueryRequest(
+            @Nonnull QueryType type,
+            @Nonnull String queryString,
+            @Nullable Map<String, Object> parameters,
+            @Nullable Long fetch,
+            @Nullable Long offset) {
+        this.type = type;
         this.queryString = queryString;
         this.parameters = rewriteExplicitParameterTypes(parameters);
         this.fetch = fetch;

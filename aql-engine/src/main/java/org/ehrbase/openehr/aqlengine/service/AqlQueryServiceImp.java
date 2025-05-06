@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.LongStream;
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.BadGatewayException;
@@ -44,6 +45,7 @@ import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
 import org.ehrbase.openehr.aqlengine.repository.AqlQueryRepository;
 import org.ehrbase.openehr.aqlengine.repository.PreparedQuery;
+import org.ehrbase.openehr.aqlengine.sql.ParsedQuery;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
@@ -92,8 +94,15 @@ public class AqlQueryServiceImp implements AqlQueryService {
     }
 
     @Override
-    public QueryResultDto query(AqlQueryRequest aqlQuery) {
-        return queryAql(aqlQuery);
+    public QueryResultDto query(AqlQueryRequest queryRequest) {
+        if (queryRequest.type() == QueryType.AQL) {
+            return queryAql(queryRequest);
+        } else if (queryRequest.type() == QueryType.SQL) {
+            return querySql(queryRequest);
+        } else {
+            // Should never happen
+            throw new IllegalArgumentException("Unsupported query type: " + queryRequest.type());
+        }
     }
 
     private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
@@ -230,5 +239,10 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
     private static String errorMessage(String prefix, Exception e) {
         return prefix + ": " + Optional.of(e).map(Throwable::getCause).orElse(e).getMessage();
+    }
+
+    private QueryResultDto querySql(AqlQueryRequest sqlQueryRequest) {
+        ParsedQuery parsedQuery = new ParsedQuery(sqlQueryRequest);
+        return aqlQueryRepository.executeSql(parsedQuery);
     }
 }

@@ -19,14 +19,17 @@ package org.ehrbase.rest.openehr;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
+
+import org.ehrbase.api.definitions.QueryType;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.service.StoredQueryService;
@@ -88,7 +91,7 @@ public class OpenehrDefinitionQueryControllerTest {
         assertThatThrownBy(() ->
                         testStoreQuery(MediaType.APPLICATION_JSON_VALUE, "some-name", "", "", null, response -> {}))
                 .isInstanceOf(InvalidApiParameterException.class)
-                .hasMessage("no aql query provided");
+                .hasMessage("No AQL query provided");
     }
 
     @ParameterizedTest
@@ -139,14 +142,14 @@ public class OpenehrDefinitionQueryControllerTest {
 
         QueryDefinitionResultDto resultDto = resultDto(name, version, query);
 
-        doReturn(resultDto).when(mockStoredQueryService).createStoredQuery(name, version, query);
+        doReturn(resultDto).when(mockStoredQueryService).createStoredQuery(name, version, query, QueryType.AQL);
 
         ResponseEntity<QueryDefinitionResponseData> response = controller()
                 .putStoredQuery(
                         contentType,
                         MediaType.APPLICATION_JSON_VALUE,
                         name,
-                        Optional.ofNullable(version),
+                        version,
                         "AQL",
                         payload);
         assertThat(response).satisfies(check);
@@ -201,7 +204,7 @@ public class OpenehrDefinitionQueryControllerTest {
                 .retrieveStoredQuery(name, version);
 
         ResponseEntity<QueryDefinitionResponseData> response =
-                controller().getStoredQueryVersion(accept, name, Optional.ofNullable(version));
+                controller().getStoredQueryVersion(accept, name, version);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().satisfies(dto -> {
@@ -211,5 +214,40 @@ public class OpenehrDefinitionQueryControllerTest {
             assertThat(dto.getQuery()).isEqualTo(SAMPLE_QUERY);
             assertThat(dto.getSaved()).isNotNull().isNotBlank();
         });
+    }
+
+    @Test
+    void putStoredQueryUsingSqlType() {
+        QueryDefinitionResultDto expected = new QueryDefinitionResultDto();
+        expected.setQualifiedName("sql-query");
+        expected.setVersion("1.0.0");
+        expected.setQueryText("SELECT e.id FROM ehr e");
+        expected.setType("SQL");
+
+        when(mockStoredQueryService
+                .createStoredQuery("sql-query", "1.0.0", "SELECT e.id FROM ehr e", QueryType.SQL)
+        )
+        .thenReturn(expected);
+
+        ResponseEntity<QueryDefinitionResponseData> response = controller()
+                .putStoredQuery(MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE,
+                "sql-query", "1.0.0", QueryType.SQL.name(),
+                "SELECT e.id FROM ehr e");
+
+        assertSoftly(softly -> {
+            softly.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            softly.assertThat(response.getBody()).isNull();
+        });
+    }
+
+    @Test
+    void putStoredQueryInvalidQueryTypeThrowsException() {
+        String queryType = "JPQL";
+        assertThatThrownBy(() ->
+                        controller().putStoredQuery(MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE,
+                                "jql-query", "1.0.0", queryType,
+                                "select u from User join fetch u.authorities"))
+                .isInstanceOf(InvalidApiParameterException.class)
+                .hasMessage("Unsupported query type: " + queryType);
     }
 }
