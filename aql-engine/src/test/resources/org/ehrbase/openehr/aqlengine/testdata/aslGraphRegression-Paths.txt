@@ -62,7 +62,7 @@ AslRootQuery
               DescendantCondition EHR sEHR_e_0 -> COMPOSITION sCO_c_0
 
     -- OBSERVATION o
-    -- OBSERVATION o[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/archetype_node_id
+    -- OBSERVATION o[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]/
     sOB_o_0: StructureQuery
       SELECT
         sOB_o_0.sOB_o_0_vo_id

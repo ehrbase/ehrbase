@@ -64,7 +64,7 @@ public abstract sealed class AslTypeOrigin {
                             IdentifiedPath identifiedPath = new IdentifiedPath();
                             identifiedPath.setRoot(containment);
                             identifiedPath.setRootPredicate(List.of(predicate));
-                            identifiedPath.setPath(comparisonOperatorPredicate.getPath());
+                            identifiedPath.setPath(null);
                             return identifiedPath;
                         });
                     })

@@ -62,10 +62,10 @@ public class AslTypeOriginTest {
         assertThat(origin.getRmType()).isEqualTo("COMPOSITION");
         assertThat(origin.getFieldPaths()).singleElement().satisfies(identifiedPath -> assertThat(
                         identifiedPath.render())
-                .isEqualTo("c[openEHR-EHR-COMPOSITION.some.identifier.v0]/archetype_node_id"));
+                .isEqualTo("c[openEHR-EHR-COMPOSITION.some.identifier.v0]"));
         assertThat(origin)
                 .hasToString(
-                        "AslRmTypeOrigin[alias=c, rmType=COMPOSITION, fieldPaths=c[openEHR-EHR-COMPOSITION.some.identifier.v0]/archetype_node_id]");
+                        "AslRmTypeOrigin[alias=c, rmType=COMPOSITION, fieldPaths=c[openEHR-EHR-COMPOSITION.some.identifier.v0]]");
     }
 
     @Test
@@ -102,9 +102,9 @@ public class AslTypeOriginTest {
         assertThat(origin.getRmType()).isEqualTo("ORIGINAL_VERSION");
         assertThat(origin.getFieldPaths()).singleElement().satisfies(identifiedPath -> assertThat(
                         identifiedPath.render())
-                .isEqualTo("c[openEHR-EHR-COMPOSITION.other.identifier.v0]/archetype_node_id"));
+                .isEqualTo("c[openEHR-EHR-COMPOSITION.other.identifier.v0]"));
         assertThat(origin)
                 .hasToString(
-                        "AslVersionTypeOrigin[alias=vc, rmType=ORIGINAL_VERSION, fieldPaths=c[openEHR-EHR-COMPOSITION.other.identifier.v0]/archetype_node_id]");
+                        "AslVersionTypeOrigin[alias=vc, rmType=ORIGINAL_VERSION, fieldPaths=c[openEHR-EHR-COMPOSITION.other.identifier.v0]]");
     }
 }

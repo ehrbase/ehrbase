@@ -83,7 +83,6 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.Logical
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
-import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
@@ -215,22 +214,10 @@ final class AslPathCreator {
         String alias = aliasProvider.uniqueAlias("pd");
         List<PathNode> pathNodes = dni.pathInJson();
 
-        // Create new origin path pointing into the json structure
-        AslQueryOrigin origin = Optional.ofNullable(base.getOrigin())
-                .map(baseOrigin -> baseOrigin.copyWithFirstTypeOrigin(
-                        typeOrigin -> typeOrigin.withPaths(typeOrigin.getFieldPaths().stream()
-                                .map(identifiedPath -> {
-                                    IdentifiedPath ip = new IdentifiedPath();
-                                    ip.setRoot(identifiedPath.getRoot());
-                                    ip.setPath(new AqlObjectPath(Stream.of(
-                                                    identifiedPath.getPath().getPathNodes().stream(),
-                                                    pathNodes.stream())
-                                            .flatMap(s -> s)
-                                            .toList()));
-                                    return ip;
-                                })
-                                .toList())))
-                .orElse(null);
+        // use all node paths as origin
+        AslQueryOrigin origin = base.getOrigin()
+                .copyWithFirstTypeOrigin(
+                        baseOrigin -> baseOrigin.withPaths(dni.node().getPaths()));
 
         if (dni.multipleValued()) {
             if (isPathDataRoot) {

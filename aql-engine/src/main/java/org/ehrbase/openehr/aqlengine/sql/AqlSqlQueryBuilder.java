@@ -189,31 +189,6 @@ public class AqlSqlQueryBuilder {
         }
     }
 
-    private Table<Record> buildExternalQuery(AslExternalQuery aslExternalQuery, AslQueryTables aslQueryToTable) {
-
-        Table<Record> table = externalTableProvider
-                .orElseThrow(() -> new IllegalStateException("No external table provider available"))
-                .tableForExternalQuery(aslExternalQuery)
-                .orElseThrow(() ->
-                        new IllegalStateException("Could not obtain SQL table for %s".formatted(aslExternalQuery)));
-
-        aslQueryToTable.put(aslExternalQuery, table, table);
-
-        Map<Class<? extends AslField>, List<AslField>> aslFields =
-                aslExternalQuery.getSelect().stream().collect(Collectors.groupingBy(AslField::getClass));
-
-        Stream<Field<?>> columnFields = consumeFieldsOfType(aslFields, AslColumnField.class, cf -> DSL.field(
-                        FieldUtils.field(table, cf, false).getUnqualifiedName())
-                .as(cf.getAliasedName()));
-
-        checkAllFieldsConsumed("ExternalQuery", aslFields);
-
-        SelectJoinStep<Record> selectStep =
-                DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new)).from(table);
-
-        return selectStep.asTable(aslExternalQuery.getAlias());
-    }
-
     @Nonnull
     private SelectJoinStep<Record> buildEncapsulatingQuery(
             AslEncapsulatingQuery aq, Supplier<SelectSelectStep<Record>> creator, AslQueryTables aslQueryToTable) {
@@ -426,6 +401,37 @@ public class AqlSqlQueryBuilder {
             step = structureQueryBaseUsingDataTable(aq, primaryTable, columnFields, folderFields);
         }
         return step;
+    }
+
+    private Table<Record> buildExternalQuery(AslExternalQuery aslExternalQuery, AslQueryTables aslQueryToTable) {
+
+        Table<Record> table = externalTableProvider
+                .orElseThrow(() -> new IllegalStateException("No external table provider available"))
+                .tableForExternalQuery(aslExternalQuery)
+                .orElseThrow(() ->
+                        new IllegalStateException("Could not obtain SQL table for %s".formatted(aslExternalQuery)));
+
+        aslQueryToTable.put(aslExternalQuery, table, table);
+
+        Map<Class<? extends AslField>, List<AslField>> aslFields =
+                aslExternalQuery.getSelect().stream().collect(Collectors.groupingBy(AslField::getClass));
+
+        Stream<Field<?>> columnFields = consumeFieldsOfType(aslFields, AslColumnField.class, cf -> DSL.field(
+                        FieldUtils.field(table, cf, false).getUnqualifiedName())
+                .as(cf.getAliasedName()));
+
+        checkAllFieldsConsumed("ExternalQuery", aslFields);
+
+        SelectJoinStep<Record> selectStep =
+                DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new)).from(table);
+
+        return Optional.ofNullable(aslExternalQuery.getCondition())
+                .map(condition -> {
+                    SelectConditionStep<Record> where = selectStep.where(ConditionUtils.buildCondition(
+                            aslExternalQuery.getCondition(), aslQueryToTable, false, false));
+                    return where.asTable(aslExternalQuery.getAlias());
+                })
+                .orElseGet(() -> selectStep.asTable(aslExternalQuery.getAlias()));
     }
 
     /**
