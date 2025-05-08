@@ -36,6 +36,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
@@ -70,6 +71,7 @@ import org.jooq.TableField;
  *     )
  *     </pre>
  */
+@SuppressWarnings("java:S107")
 public final class AslStructureQuery extends AslQuery {
 
     public static final String ENTITY_ATTRIBUTE = "entity_attribute";
@@ -132,36 +134,35 @@ public final class AslStructureQuery extends AslQuery {
     private final AslSourceRelation type;
     private final Collection<String> rmTypes;
     private final List<AslField> fields = new ArrayList<>();
-    private final String alias;
     private final boolean requiresVersionTableJoin;
     private boolean representsOriginalVersionExpression = false;
 
     public AslStructureQuery(
             String alias,
             AslSourceRelation type,
-            List<AslField> fields,
+            AslQueryOrigin origin,
+            List<? extends AslField> fields,
             Collection<String> rmTypes,
             Collection<String> rmTypesConstraint,
             String attribute,
             boolean requiresVersionTableJoin) {
-        super(alias, new ArrayList<>());
+        super(alias, origin, new ArrayList<>());
         this.type = type;
         this.rmTypes = List.copyOf(rmTypes);
         this.requiresVersionTableJoin = requiresVersionTableJoin;
         fields.forEach(this::addField);
-        this.alias = alias;
         if (type != AslSourceRelation.EHR && type != AslSourceRelation.AUDIT_DETAILS) {
             if (!rmTypesConstraint.isEmpty()) {
                 List<String> aliasedRmTypes = rmTypesConstraint.stream()
                         .map(StructureRmType::getAliasOrTypeName)
                         .toList();
-                this.structureConditions.add(new AslFieldValueQueryCondition(
+                this.structureConditions.add(new AslFieldValueQueryCondition<>(
                         AslUtils.findFieldForOwner(AslStructureColumn.RM_ENTITY, this.getSelect(), this),
                         AslConditionOperator.IN,
                         aliasedRmTypes));
             }
             if (StringUtils.isNotBlank(attribute)) {
-                this.structureConditions.add(new AslFieldValueQueryCondition(
+                this.structureConditions.add(new AslFieldValueQueryCondition<>(
                         new AslColumnField(String.class, ENTITY_ATTRIBUTE, FieldSource.withOwner(this), false),
                         AslConditionOperator.EQ,
                         List.of(RmAttributeAlias.getAlias(attribute))));
@@ -192,11 +193,6 @@ public final class AslStructureQuery extends AslQuery {
         return fields;
     }
 
-    @Override
-    public String getAlias() {
-        return alias;
-    }
-
     public AslSourceRelation getType() {
         return type;
     }
@@ -211,5 +207,11 @@ public final class AslStructureQuery extends AslQuery {
 
     public void setRepresentsOriginalVersionExpression(boolean representsOriginalVersionExpression) {
         this.representsOriginalVersionExpression = representsOriginalVersionExpression;
+    }
+
+    @Override
+    public String toString() {
+        return "AslStructureQuery@" + type + "[" + getAlias() + "]("
+                + (representsOriginalVersionExpression ? "original" : "-") + ")";
     }
 }

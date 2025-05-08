@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
 import java.util.UUID;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 /**
@@ -32,7 +33,7 @@ public final class AslFolderItemIdVirtualField extends AslVirtualField {
     }
 
     public AslFolderItemIdVirtualField(FieldSource fieldSource) {
-        super(UUID[].class, fieldSource, null);
+        super(UUID[].class, fieldSource, null, null);
     }
 
     @Override
@@ -43,6 +44,11 @@ public final class AslFolderItemIdVirtualField extends AslVirtualField {
     @Override
     public AslFolderItemIdVirtualField copyWithOwner(AslQuery owner) {
         return new AslFolderItemIdVirtualField(FieldSource.withOwner(owner));
+    }
+
+    @Override
+    public AslField withOrigin(AslFieldOrigin origin) {
+        throw new UnsupportedOperationException();
     }
 
     public String getFieldName() {

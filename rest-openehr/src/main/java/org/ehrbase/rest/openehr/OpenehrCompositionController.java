@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.ehrbase.api.rest.HttpRestContext.TEMPLATE_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
@@ -135,7 +134,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 responseRepresentation,
                 uri,
                 headerList,
-                RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null);
+                RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null,
+                compoObj.getArchetypeDetails().getTemplateId().getValue());
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -217,7 +217,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     responseRepresentation,
                     uri,
                     headerList,
-                    RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null);
+                    RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null,
+                    compoObj.getArchetypeDetails().getTemplateId().getValue());
 
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
@@ -344,7 +345,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 responseRepresentation,
                 uri,
                 headerList,
-                () -> new CompositionResponseData(null, null));
+                () -> new CompositionResponseData(null, null),
+                null);
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())
@@ -370,6 +372,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
      * @param uri                    Location of resource
      * @param headerList             List of headers to be set for response
      * @param factory                Lambda function to constructor of desired object
+     * @param contextTemplateId
      * @return
      */
     private <T extends CompositionResponseData> Optional<InternalResponse<T>> buildCompositionResponseData(
@@ -379,7 +382,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             CompositionRepresentation responseRepresentation,
             URI uri,
             List<String> headerList,
-            Supplier<T> factory) {
+            Supplier<T> factory,
+            String contextTemplateId) {
         // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
         // lambda request
         T minimalOrRepresentation = factory.get();
@@ -406,7 +410,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             }
         }
 
-        String templateId = null;
+        String templateId;
 
         // if response data objects was created as "representation" do all task from wider scope, too
         // if (minimalOrRepresentation.getClass().equals(CompositionResponseData.class)) {     // TODO make
@@ -430,9 +434,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             // finally set last header
             respHeaders.setContentType(responseRepresentation.mediaType);
         } // else continue with returning but without additional data from above, e.g. body
-
-        if (isBlank(templateId)) {
-            templateId = compositionService.retrieveTemplateId(compositionId);
+        else {
+            templateId = contextTemplateId;
         }
 
         respHeaders.addIfAbsent(EHRbaseHeader.TEMPLATE_ID, templateId);
