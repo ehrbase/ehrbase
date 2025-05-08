@@ -88,4 +88,9 @@ public sealed class AslEncapsulatingQuery extends AslQuery permits AslRootQuery 
     public void addStructureCondition(AslQueryCondition condition) {
         this.structureConditions.add(condition);
     }
+
+    @Override
+    public String toString() {
+        return "AslEncapsulatingQuery[" + getAlias() + "]";
+    }
 }

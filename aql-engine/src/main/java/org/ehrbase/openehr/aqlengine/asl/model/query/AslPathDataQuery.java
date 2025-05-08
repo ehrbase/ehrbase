@@ -92,4 +92,10 @@ public final class AslPathDataQuery extends AslDataQuery {
     public Set<String> getDvOrderedTypes() {
         return dvOrderedTypes;
     }
+
+
+    @Override
+    public String toString() {
+        return "AslPathDataQuery[" + getAlias() + "]";
+    }
 }
