@@ -22,8 +22,6 @@ import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.ehrbase.api.rest.HttpRestContext.TEMPLATE_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.nedap.archie.rm.archetyped.Archetyped;
-import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -137,11 +135,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 uri,
                 headerList,
                 RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null,
-                Optional.ofNullable(compoObj)
-                        .map(Locatable::getArchetypeDetails)
-                        .map(Archetyped::getTemplateId)
-                        .map(ObjectId::getValue)
-                        .orElse(null));
+                compoObj.getArchetypeDetails().getTemplateId().getValue());
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -185,7 +179,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
         CompositionRepresentation requestRepresentation = extractCompositionRepresentation(contentType, format);
         CompositionRepresentation responseRepresentation = extractCompositionRepresentation(accept, format);
 
-        var compoObj = compositionService.buildComposition(composition, requestRepresentation.format, templateId);
+        Composition compoObj =
+                compositionService.buildComposition(composition, requestRepresentation.format, templateId);
 
         // If body already contains a composition uid it must match the {versioned_object_uid} in request url
         Optional<String> inputUuid = getUidFrom(compoObj);
@@ -223,11 +218,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     uri,
                     headerList,
                     RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null,
-                    Optional.of(compoObj)
-                            .map(Locatable::getArchetypeDetails)
-                            .map(Archetyped::getTemplateId)
-                            .map(ObjectId::getValue)
-                            .orElse(null));
+                    compoObj.getArchetypeDetails().getTemplateId().getValue());
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
         } // composition input not parsable / buildable -> bad request handled by BaseController class
@@ -340,10 +331,13 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
         URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid);
 
-        // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
-        var headerList = List.of(LOCATION, ETAG, LAST_MODIFIED);
+        List<String> headerList = Arrays.asList(
+                LOCATION,
+                ETAG,
+                LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled
+        // separately
 
-        var respData = buildCompositionResponseData(
+        Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(
                 ehrId,
                 compositionUid,
                 version,
@@ -395,7 +389,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
         // do minimal scope steps
         // create and supplement headers with data depending on which headers are requested
-        var respHeaders = new HttpHeaders();
+        HttpHeaders respHeaders = new HttpHeaders();
         for (String header : headerList) {
             switch (header) {
                 case LOCATION -> respHeaders.setLocation(uri);
