@@ -24,7 +24,7 @@
 
   <groupId>org.ehrbase.openehr</groupId>
   <artifactId>bom</artifactId>
-  <version>2.16.0</version>
+  <version>2.17.0</version>
   <packaging>pom</packaging>
 
   <name>EHRbase</name>
@@ -55,7 +55,7 @@
 
   <properties>
     <!-- antlr4 and archie versions should be sync with sdk antlr4 and archie versions  -->
-    <archie.version>3.12.0</archie.version>
+    <archie.version>3.13.0</archie.version>
     <commons-io.version>2.18.0</commons-io.version>
     <commons-lang3.version>3.17.0</commons-lang3.version>
     <ehrbase.openehr.sdk.version>2.22.0</ehrbase.openehr.sdk.version>
