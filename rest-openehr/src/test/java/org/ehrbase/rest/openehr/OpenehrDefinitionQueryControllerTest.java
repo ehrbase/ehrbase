@@ -30,7 +30,6 @@ import java.util.function.Consumer;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.service.StoredQueryService;
-import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -158,12 +157,12 @@ public class OpenehrDefinitionQueryControllerTest {
 
         doReturn(List.of()).when(mockStoredQueryService).retrieveStoredQueries("some-query");
 
-        ResponseEntity<QueryDefinitionListResponseData> response =
+        ResponseEntity<List<QueryDefinitionResponseData>> response =
                 controller().getStoredQueryList(accept, "some-query");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto.size())
-                .isZero());
+        assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto)
+                .isEmpty());
     }
 
     @ParameterizedTest
@@ -174,12 +173,12 @@ public class OpenehrDefinitionQueryControllerTest {
                 .when(mockStoredQueryService)
                 .retrieveStoredQueries("test-query");
 
-        ResponseEntity<QueryDefinitionListResponseData> response =
+        ResponseEntity<List<QueryDefinitionResponseData>> response =
                 controller().getStoredQueryList(accept, "test-query");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto.size())
-                .isEqualTo(1));
+        assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto)
+                .hasSize(1));
     }
 
     @ParameterizedTest
