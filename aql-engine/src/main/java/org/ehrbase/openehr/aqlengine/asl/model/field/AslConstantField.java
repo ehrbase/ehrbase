@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
 import java.lang.constant.Constable;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
@@ -25,7 +26,16 @@ public final class AslConstantField<T extends Constable> extends AslField {
     private final T value;
 
     public AslConstantField(Class<T> type, T value, FieldSource fieldSource, AslExtractedColumn extractedColumn) {
-        super(type, fieldSource, extractedColumn);
+        this(type, value, fieldSource, null, extractedColumn);
+    }
+
+    public AslConstantField(
+            Class<T> type,
+            T value,
+            FieldSource fieldSource,
+            AslFieldOrigin origin,
+            AslExtractedColumn extractedColumn) {
+        super(type, fieldSource, origin, extractedColumn);
         this.value = value;
     }
 
@@ -33,13 +43,23 @@ public final class AslConstantField<T extends Constable> extends AslField {
         return value;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public AslConstantField<T> withProvider(AslQuery provider) {
-        return new AslConstantField<>((Class<T>) type, value, fieldSource.withProvider(provider), getExtractedColumn());
+        return new AslConstantField<>(
+                (Class<T>) type, value, fieldSource.withProvider(provider), origin, getExtractedColumn());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public AslConstantField<T> copyWithOwner(AslQuery owner) {
-        return new AslConstantField<>((Class<T>) type, value, FieldSource.withOwner(owner), getExtractedColumn());
+        return new AslConstantField<>(
+                (Class<T>) type, value, FieldSource.withOwner(owner), origin, getExtractedColumn());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public AslField withOrigin(AslFieldOrigin origin) {
+        return new AslConstantField<>((Class<T>) type, value, fieldSource, origin, getExtractedColumn());
     }
 }

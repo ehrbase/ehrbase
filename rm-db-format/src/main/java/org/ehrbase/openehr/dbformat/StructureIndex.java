@@ -81,6 +81,10 @@ public final class StructureIndex {
         public String toString() {
             return "Node{'" + attribute + "' " + idx + '}';
         }
+
+        public String render() {
+            return attribute + (idx != null ? "[" + idx + "]" : "");
+        }
     }
 
     private final Node[] index;
@@ -170,5 +174,9 @@ public final class StructureIndex {
     @Override
     public String toString() {
         return Arrays.toString(index);
+    }
+
+    public String render() {
+        return Arrays.stream(index).map(Node::render).collect(Collectors.joining("/", "/", ""));
     }
 }
