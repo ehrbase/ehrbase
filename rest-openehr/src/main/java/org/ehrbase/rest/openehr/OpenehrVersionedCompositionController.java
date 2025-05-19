@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.dto.VersionedCompositionDto;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
@@ -242,22 +241,20 @@ public class OpenehrVersionedCompositionController extends BaseController
     private ResponseEntity<OriginalVersionResponseData<Composition>> getOriginalVersionResponseDataResponseEntity(
             String accept, UUID ehrId, UUID versionedObjectId, int version) {
 
-        Optional<OriginalVersion<Composition>> compositionOriginalVersion =
-                compositionService.getOriginalVersionComposition(ehrId, versionedObjectId, version);
-
-        UUID contributionId = compositionOriginalVersion
-                .map(i -> UUID.fromString(i.getContribution().getId().getValue()))
+        OriginalVersion<Composition> compositionOriginalVersion = compositionService
+                .getOriginalVersionComposition(ehrId, versionedObjectId, version)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         RmConstants.ORIGINAL_VERSION,
                         "No VERSIONED_COMPOSITION with given id: %s and version: %d"
                                 .formatted(versionedObjectId, version)));
 
+        UUID contributionId = UUID.fromString(
+                compositionOriginalVersion.getContribution().getId().getValue());
+
         ContributionDto contributionDto = contributionService.getContribution(ehrId, contributionId);
 
-        OriginalVersionResponseData<Composition> originalVersionResponseData = new OriginalVersionResponseData<>(
-                compositionOriginalVersion.orElseThrow(() ->
-                        new InternalServerException("Composition exists but can't be retrieved as Original Version.")),
-                contributionDto);
+        OriginalVersionResponseData<Composition> originalVersionResponseData =
+                new OriginalVersionResponseData<>(compositionOriginalVersion, contributionDto);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
