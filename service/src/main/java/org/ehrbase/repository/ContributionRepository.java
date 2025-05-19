@@ -187,7 +187,7 @@ public class ContributionRepository {
     }
 
     public com.nedap.archie.rm.generic.AuditDetails findAuditDetailsForContribution(UUID ehrId, UUID contributionId) {
-        AuditDetailsRecord auditDetailsRecord = context.select(AuditDetails.AUDIT_DETAILS)
+        AuditDetailsRecord auditDetailsRecord = context.select(AuditDetails.AUDIT_DETAILS.fields())
                 .from(Contribution.CONTRIBUTION)
                 .join(AuditDetails.AUDIT_DETAILS)
                 .on(AuditDetails.AUDIT_DETAILS.ID.eq(Contribution.CONTRIBUTION.HAS_AUDIT))
