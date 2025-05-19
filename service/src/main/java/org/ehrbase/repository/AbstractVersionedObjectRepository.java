@@ -63,12 +63,14 @@ import org.jooq.InsertQuery;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record2;
+import org.jooq.Record3;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectFromStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.SelectLimitPercentStep;
 import org.jooq.SelectOnConditionStep;
+import org.jooq.SelectOrderByStep;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -231,20 +233,17 @@ public abstract class AbstractVersionedObjectRepository<
                 .map(r -> r.into(history));
     }
 
-    public List<ObjectVersionId> findVersionIdsByContribution(UUID ehrId, UUID contributionId) {
-        return context
-                .select(field(VERSION_PROTOTYPE.VO_ID), field(VERSION_PROTOTYPE.SYS_VERSION))
+    public SelectOrderByStep<Record3<String, UUID, Integer>> buildVersionIdsByContributionQuery(
+            String rmKey, UUID ehrId, UUID contributionId) {
+        return context.select(DSL.inline(rmKey), field(VERSION_PROTOTYPE.VO_ID), field(VERSION_PROTOTYPE.SYS_VERSION))
                 .from(tables.versionHead)
                 .where(contributionCondition(ehrId, contributionId, tables.versionHead))
                 .unionAll(context.select(
+                                DSL.inline(rmKey),
                                 tables.versionHistory.field(VERSION_HISTORY_PROTOTYPE.VO_ID),
                                 tables.versionHistory.field(VERSION_HISTORY_PROTOTYPE.SYS_VERSION))
                         .from(tables.versionHistory)
-                        .where(contributionCondition(ehrId, contributionId, tables.versionHistory)))
-                .orderBy(tables.versionHead.field(VERSION_PROTOTYPE.SYS_VERSION).asc())
-                .stream()
-                .map(r -> buildObjectVersionId(r.value1(), r.value2(), systemService))
-                .toList();
+                        .where(contributionCondition(ehrId, contributionId, tables.versionHistory)));
     }
 
     protected Condition contributionCondition(UUID ehrId, UUID contributionId, Table<?> table) {

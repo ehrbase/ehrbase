@@ -26,7 +26,6 @@ import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.TerminologyId;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
@@ -181,10 +180,26 @@ public class ContributionRepository {
     }
 
     public com.nedap.archie.rm.generic.AuditDetails findAuditDetails(UUID auditId) {
-
         AuditDetailsRecord auditDetailsRecord =
                 context.fetchOne(AuditDetails.AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(auditId));
-        Objects.requireNonNull(auditDetailsRecord);
+
+        return mapToAuditDetails(auditDetailsRecord);
+    }
+
+    public com.nedap.archie.rm.generic.AuditDetails findAuditDetailsForContribution(UUID ehrId, UUID contributionId) {
+        AuditDetailsRecord auditDetailsRecord = context.select(AuditDetails.AUDIT_DETAILS)
+                .from(Contribution.CONTRIBUTION)
+                .join(AuditDetails.AUDIT_DETAILS)
+                .on(AuditDetails.AUDIT_DETAILS.ID.eq(Contribution.CONTRIBUTION.HAS_AUDIT))
+                .where(Contribution.CONTRIBUTION.EHR_ID.eq(ehrId).and(Contribution.CONTRIBUTION.ID.eq(contributionId)))
+                .fetchOneInto(AuditDetailsRecord.class);
+        return mapToAuditDetails(auditDetailsRecord);
+    }
+
+    private com.nedap.archie.rm.generic.AuditDetails mapToAuditDetails(AuditDetailsRecord auditDetailsRecord) {
+        if (auditDetailsRecord == null) {
+            return null;
+        }
 
         com.nedap.archie.rm.generic.AuditDetails auditDetails = new com.nedap.archie.rm.generic.AuditDetails();
 
@@ -211,7 +226,6 @@ public class ContributionRepository {
 
         DvDateTime time = new DvDateTime(auditDetailsRecord.getTimeCommitted());
         auditDetails.setTimeCommitted(time);
-
         return auditDetails;
     }
 }

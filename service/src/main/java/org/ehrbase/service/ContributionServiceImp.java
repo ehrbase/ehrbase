@@ -27,8 +27,6 @@ import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rminfo.RMTypeInfo;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,12 +40,13 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
-import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
+import org.ehrbase.repository.AbstractVersionedObjectRepository;
 import org.ehrbase.repository.AuditDetailsTargetType;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.ContributionRepository;
@@ -56,6 +55,7 @@ import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.service.contribution.ContributionServiceHelper;
 import org.ehrbase.service.contribution.ContributionWrapper;
 import org.ehrbase.util.UuidGenerator;
+import org.jooq.Record3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -71,6 +71,7 @@ public class ContributionServiceImp implements ContributionService {
     private final InternalDirectoryService folderService;
 
     private final ValidationService validationService;
+    private final SystemService systemService;
     private final ContributionRepository contributionRepository;
     private final CompositionRepository compositionRepository;
 
@@ -90,6 +91,7 @@ public class ContributionServiceImp implements ContributionService {
             EhrService ehrService,
             InternalDirectoryService folderService,
             ValidationService validationService,
+            SystemService systemService,
             ContributionRepository contributionRepository,
             CompositionRepository compositionRepository,
             EhrFolderRepository ehrFolderRepository,
@@ -99,6 +101,7 @@ public class ContributionServiceImp implements ContributionService {
         this.ehrService = ehrService;
         this.folderService = folderService;
         this.validationService = validationService;
+        this.systemService = systemService;
         this.contributionRepository = contributionRepository;
         this.compositionRepository = compositionRepository;
         this.ehrFolderRepository = ehrFolderRepository;
@@ -409,21 +412,18 @@ public class ContributionServiceImp implements ContributionService {
      * @throws IllegalArgumentException on error when retrieving compositions
      */
     private Map<String, String> retrieveUuidsOfContributionObjects(UUID ehrId, UUID contribution) {
-        Map<String, String> objRefs = new LinkedHashMap<>();
-
-        compositionRepository.findVersionIdsByContribution(ehrId, contribution).stream()
-                .sorted(Comparator.comparing(ObjectVersionId::getValue))
-                .forEach(k -> objRefs.put(k.getValue(), SupportedVersionedObject.COMPOSITION.name()));
-
-        ehrRepository.findVersionIdsByContribution(ehrId, contribution).stream()
-                .sorted(Comparator.comparing(ObjectVersionId::getValue))
-                .forEach(k -> objRefs.put(k.getValue(), SupportedVersionedObject.EHR_STATUS.name()));
-
-        ehrFolderRepository.findForContribution(ehrId, contribution).stream()
-                .sorted(Comparator.comparing(ObjectVersionId::getValue))
-                .forEach(f -> objRefs.put(f.toString(), SupportedVersionedObject.FOLDER.name()));
-
-        return objRefs;
+        return compositionRepository
+                .buildVersionIdsByContributionQuery(SupportedVersionedObject.COMPOSITION.name(), ehrId, contribution)
+                .unionAll(ehrRepository.buildVersionIdsByContributionQuery(
+                        SupportedVersionedObject.EHR_STATUS.name(), ehrId, contribution))
+                .unionAll(ehrFolderRepository.buildVersionIdsByContributionQuery(
+                        SupportedVersionedObject.FOLDER.name(), ehrId, contribution))
+                .orderBy(2, 3)
+                .fetchMap(
+                        r -> AbstractVersionedObjectRepository.buildObjectVersionId(
+                                        r.value2(), r.value3(), systemService)
+                                .getValue(),
+                        Record3::value1);
     }
 
     /**
@@ -434,19 +434,17 @@ public class ContributionServiceImp implements ContributionService {
      * @throws ObjectNotFoundException if EHR or CONTRIBUTION is not found
      */
     private AuditDetails retrieveAuditDetails(UUID ehrId, UUID contributionId) {
+        AuditDetails auditDetailsForContribution =
+                contributionRepository.findAuditDetailsForContribution(ehrId, contributionId);
 
-        ContributionRecord contributionRec = contributionRepository.findById(contributionId);
-
-        if (contributionRec == null || !contributionRec.getEhrId().equals(ehrId)) {
+        if (auditDetailsForContribution == null) {
             if (ehrService.hasEhr(ehrId)) {
                 throw new ObjectNotFoundException("CONTRIBUTION", "Contribution with given ID does not exist");
             } else {
                 throw new ObjectNotFoundException(RmConstants.EHR, "No EHR found with given ID: %s".formatted(ehrId));
             }
         }
-
-        UUID hasAudit = contributionRec.getHasAudit();
-        return contributionRepository.findAuditDetails(hasAudit);
+        return auditDetailsForContribution;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
