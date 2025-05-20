@@ -25,16 +25,15 @@ import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
@@ -42,13 +41,14 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
@@ -57,11 +57,14 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAbstractJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslCommitterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
@@ -79,6 +82,17 @@ import org.jooq.impl.DSL;
 
 final class ConditionUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_PARENT_RELATIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER,
+            AslSourceRelation.EHR);
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_CONDITIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER // FOLDER CONTAINS FOLDER
+            );
 
     private ConditionUtils() {}
 
@@ -102,6 +116,8 @@ final class ConditionUtils {
                         ac));
                 case AslCommitterJoinCondition cc -> conditions.add(buildForeignKeyJoinCondition(
                         sqlLeft, AUDIT_DETAILS.COMMITTER_ID, sqlRight, COMMITTER.ID, aslJoin, cc));
+                case AslFolderItemJoinCondition c -> conditions.add(
+                        joinFolderItemIdEqualVoIdCondition(c, sqlLeft, sqlRight));
             }
         }
 
@@ -123,9 +139,9 @@ final class ConditionUtils {
     private static void addDelegatingJoinConditions(
             AslDelegatingJoinCondition joinCondition, List<Condition> conditions, Table<?> sqlLeft, Table<?> sqlRight) {
         (switch (joinCondition.getDelegate()) {
-                    case AslEntityIdxOffsetCondition c -> entityIdxOffsetConditions(c, sqlLeft, sqlRight, true);
-                    case AslDescendantCondition c -> descendantConditions(c, sqlLeft, sqlRight, true);
                     case AslPathChildCondition c -> pathChildConditions(c, sqlLeft, sqlRight, true);
+                    case AslFieldJoinCondition c -> fieldJoinCondition(c, sqlLeft, sqlRight, true);
+                    case AslDescendantCondition c -> descendantConditions(c, sqlLeft, sqlRight, true);
                 })
                 .forEach(conditions::add);
     }
@@ -136,54 +152,29 @@ final class ConditionUtils {
             final Table<?> sqlRight,
             final boolean isJoinCondition) {
         AslSourceRelation parentRelation = dc.getParentRelation();
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
+        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.FOLDER)
                 .contains(parentRelation)) {
             throw new IllegalArgumentException("unexpected parent relation type %s".formatted(parentRelation));
         }
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
+        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.FOLDER)
                 .contains(dc.getChildRelation())) {
             throw new IllegalArgumentException(
                     "unexpected descendant relation type %s".formatted(dc.getChildRelation()));
         }
 
         return switch (parentRelation) {
-            case COMPOSITION, EHR_STATUS -> {
-                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.COMPOSITION
-                        ? AslStructureColumn.VO_ID
-                        : AslStructureColumn.EHR_ID;
-                yield Stream.of(
-                        // l.pKey == r.pKey
-                        FieldUtils.field(
-                                        sqlLeft,
-                                        dc.getLeftProvider(),
-                                        dc.getLeftOwner(),
-                                        pKeyField.getFieldName(),
-                                        UUID.class,
-                                        true)
-                                .eq(FieldUtils.field(
-                                        sqlRight,
-                                        dc.getRightProvider(),
-                                        dc.getRightOwner(),
-                                        pKeyField.getFieldName(),
-                                        UUID.class,
-                                        isJoinCondition)),
-                        // l.num == r.parent_num
-                        FieldUtils.field(
-                                        sqlLeft,
-                                        dc.getLeftProvider(),
-                                        dc.getLeftOwner(),
-                                        AslStructureColumn.NUM.getFieldName(),
-                                        Integer.class,
-                                        true)
-                                .eq(FieldUtils.field(
-                                        sqlRight,
-                                        dc.getRightProvider(),
-                                        dc.getRightOwner(),
-                                        AslStructureColumn.PARENT_NUM.getFieldName(),
-                                        Integer.class,
-                                        isJoinCondition)));
-            }
-            case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
+            case EHR_STATUS -> Stream.of(
+                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinNumEqualParentNumCondition(dc, sqlLeft, sqlRight, isJoinCondition));
+                // l.vo_id == r.vo_id and l.num == r.parent_num
+            case COMPOSITION -> Stream.of(
+                    joinColumnEqualCondition(AslStructureColumn.VO_ID, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinNumEqualParentNumCondition(dc, sqlLeft, sqlRight, isJoinCondition));
+                // l.ehr_id == r.ehr_id and l.folder_idx = r.folder_idx and l.num == r.parent_num
+            case FOLDER -> Stream.of(
+                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinColumnEqualCondition(AslStructureColumn.EHR_FOLDER_IDX, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinNumEqualParentNumCondition(dc, sqlLeft, sqlRight, isJoinCondition));
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Path child condition not applicable to AUDIT_DETAILS");
             case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
@@ -192,23 +183,24 @@ final class ConditionUtils {
         };
     }
 
-    private static Stream<Condition> entityIdxOffsetConditions(
-            AslEntityIdxOffsetCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
-        return Stream.of(FieldUtils.field(
-                        sqlLeft,
-                        ic.getLeftProvider(),
-                        ic.getLeftOwner(),
-                        AslStructureColumn.ENTITY_IDX_LEN.getFieldName(),
-                        Integer.class,
-                        true)
-                .add(DSL.inline(ic.getOffset()))
-                .eq(FieldUtils.field(
-                        sqlRight,
-                        ic.getRightProvider(),
-                        ic.getRightOwner(),
-                        AslStructureColumn.ENTITY_IDX_LEN.getFieldName(),
-                        Integer.class,
-                        isJoinCondition)));
+    private static Stream<Condition> fieldJoinCondition(
+            AslFieldJoinCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
+
+        Field lf = FieldUtils.field(sqlLeft, ic.getLeftField(), true);
+        Field rf = FieldUtils.field(sqlRight, ic.getRightField(), isJoinCondition);
+        return Stream.of(
+                switch (ic.getOperator()) {
+                    case LIKE -> lf.like(rf);
+                    case IN -> lf.in(rf);
+                    case EQ -> lf.eq(rf);
+                    case NEQ -> lf.ne(rf);
+                    case GT_EQ -> lf.ge(rf);
+                    case GT -> lf.gt(rf);
+                    case LT_EQ -> lf.le(rf);
+                    case LT -> lf.lt(rf);
+                    case IS_NULL -> lf.isNull();
+                    case IS_NOT_NULL -> lf.isNotNull();
+                });
     }
 
     private static Stream<Condition> descendantConditions(
@@ -216,14 +208,12 @@ final class ConditionUtils {
 
         // TODO cleanup
         AslSourceRelation parentRelation = dc.getParentRelation();
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.EHR)
-                .contains(parentRelation)) {
+        if (!SUPPORTED_DESCENDANT_PARENT_RELATIONS.contains(parentRelation)) {
             throw new IllegalArgumentException("unexpected parent relation type %s".formatted(parentRelation));
         }
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS)
-                .contains(dc.getDescendantRelation())) {
-            throw new IllegalArgumentException(
-                    "unexpected descendant relation type %s".formatted(dc.getDescendantRelation()));
+        AslSourceRelation descendantRelation = dc.getDescendantRelation();
+        if (!SUPPORTED_DESCENDANT_CONDITIONS.contains(descendantRelation)) {
+            throw new IllegalArgumentException("unexpected descendant relation type %s".formatted(descendantRelation));
         }
 
         return switch (parentRelation) {
@@ -236,52 +226,18 @@ final class ConditionUtils {
                                     AslStructureColumn.EHR_ID.getFieldName(),
                                     UUID.class,
                                     isJoinCondition)));
-            case COMPOSITION, EHR_STATUS -> {
-                AslStructureColumn pKeyField = parentRelation == AslSourceRelation.COMPOSITION
-                        ? AslStructureColumn.VO_ID
-                        : AslStructureColumn.EHR_ID;
-                yield Stream.of(
-                        // l.pKey == r.pKey
-                        FieldUtils.field(
-                                        sqlLeft,
-                                        dc.getLeftProvider(),
-                                        dc.getLeftOwner(),
-                                        pKeyField.getFieldName(),
-                                        UUID.class,
-                                        true)
-                                .eq(FieldUtils.field(
-                                        sqlRight,
-                                        dc.getRightProvider(),
-                                        dc.getRightOwner(),
-                                        pKeyField.getFieldName(),
-                                        UUID.class,
-                                        isJoinCondition)),
-                        // l.num < r.num <= l.num_cap
-                        FieldUtils.field(
-                                        sqlRight,
-                                        dc.getRightProvider(),
-                                        dc.getRightOwner(),
-                                        AslStructureColumn.NUM.getFieldName(),
-                                        Integer.class,
-                                        true)
-                                .between(
-                                        FieldUtils.field(
-                                                        sqlLeft,
-                                                        dc.getLeftProvider(),
-                                                        dc.getLeftOwner(),
-                                                        AslStructureColumn.NUM.getFieldName(),
-                                                        Integer.class,
-                                                        isJoinCondition)
-                                                .add(DSL.inline(1)),
-                                        FieldUtils.field(
-                                                sqlLeft,
-                                                dc.getLeftProvider(),
-                                                dc.getLeftOwner(),
-                                                AslStructureColumn.NUM_CAP.getFieldName(),
-                                                Integer.class,
-                                                isJoinCondition)));
-            }
-            case FOLDER -> throw new NotImplementedException("Joining FOLDER is not yet supported");
+            case EHR_STATUS -> Stream.of(
+                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinNumCapBetweenCondition(dc, sqlLeft, sqlRight, isJoinCondition));
+                // l.vo_id == r.vo_id and l.num < r.num <= l.num_cap
+            case COMPOSITION -> Stream.of(
+                    joinColumnEqualCondition(AslStructureColumn.VO_ID, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinNumCapBetweenCondition(dc, sqlLeft, sqlRight, isJoinCondition));
+                // l.ehr_id == r.ehr_id and l.folder_idx == r.folder_idx and l.num < r.num <= l.num_cap
+            case FOLDER -> Stream.of(
+                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinColumnEqualCondition(AslStructureColumn.EHR_FOLDER_IDX, dc, sqlLeft, sqlRight, isJoinCondition),
+                    joinNumCapBetweenCondition(dc, sqlLeft, sqlRight, isJoinCondition));
             case AUDIT_DETAILS, COMMITTER -> throw new IllegalArgumentException(
                     "Descendant condition not applicable to " + parentRelation.name());
         };
@@ -301,7 +257,7 @@ final class ConditionUtils {
             case AslTrueQueryCondition __ -> DSL.trueCondition();
             case AslNotNullQueryCondition nn -> notNullCondition(tables, useAliases, nn);
             case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv);
-            case AslEntityIdxOffsetCondition ic -> DSL.and(entityIdxOffsetConditions(
+            case AslFieldJoinCondition ic -> DSL.and(fieldJoinCondition(
                             ic,
                             tables.getDataTable(ic.getLeftProvider()),
                             tables.getDataTable(ic.getRightProvider()),
@@ -350,11 +306,12 @@ final class ConditionUtils {
         AslField field = fv.getField();
 
         AslQuery internalProvider = field.getInternalProvider();
+        Table<?> srcTable = tables.getDataTable(internalProvider);
         if (fv instanceof AslDvOrderedValueQueryCondition<?> dvc) {
-            Field<JSONB> sqlDvOrderedField = FieldUtils.field(
-                    tables.getDataTable(internalProvider), (AslColumnField) field, JSONB.class, useAliases);
-            Field<JSONB> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField);
-            Field<String> sqlTypeField = DSL.jsonbGetAttributeAsText(sqlDvOrderedField, RmAttribute.OBJ_TYPE.alias());
+            final Field<JSONB> sqlDvOrderedField = FieldUtils.buidDvOrderedField(useAliases, field, srcTable);
+            Field<BigDecimal> sqlMagnitudeField = AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(sqlDvOrderedField);
+            Field<String> sqlTypeField = DSL.jsonbGetAttributeAsText(
+                    sqlDvOrderedField, DSL.inline(RmAttribute.getAlias(TYPE_ATTRIBUTE)));
             List<String> types =
                     dvc.getTypesToCompare().stream().map(RmType::getAlias).toList();
             return applyOperator(AslConditionOperator.IN, sqlTypeField, types)
@@ -363,17 +320,11 @@ final class ConditionUtils {
 
         return switch (field) {
             case AslComplexExtractedColumnField ecf -> complexExtractedColumnCondition(
-                    useAliases,
-                    fv,
-                    ecf,
-                    tables.getDataTable(internalProvider),
-                    tables.getVersionTable(internalProvider));
+                    useAliases, fv, ecf, srcTable, tables.getVersionTable(internalProvider));
             case AslColumnField f -> applyOperator(
                     fv.getOperator(),
                     FieldUtils.field(
-                            (f.isVersionTableField()
-                                    ? tables.getVersionTable(internalProvider)
-                                    : tables.getDataTable(internalProvider)),
+                            f.isVersionTableField() ? tables.getVersionTable(internalProvider) : srcTable,
                             f,
                             useAliases),
                     fv.getValues());
@@ -383,11 +334,23 @@ final class ConditionUtils {
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "AslAggregatingField cannot be used in WHERE");
             case AslSubqueryField __ -> throw new IllegalArgumentException("AslSubqueryField cannot be used in WHERE");
+            case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
+                    "AslFolderItemIdValuesColumnField cannot be used in WHERE");
+            case AslRmPathField arpf -> {
+                Field<JSONB> srcField =
+                        FieldUtils.field(Objects.requireNonNull(srcTable), arpf.getSrcField(), JSONB.class, useAliases);
+                Field<JSONB> f = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
+
+                yield applyOperator(
+                        fv.getOperator(),
+                        arpf.getType() == String.class ? DSL.jsonbGetElementAsText(f, DSL.inline(0)) : f,
+                        fv.getValues());
+            }
         };
     }
 
     @Nonnull
-    private static Condition complexExtractedColumnCondition(
+    static Condition complexExtractedColumnCondition(
             boolean useAliases,
             AslFieldValueQueryCondition<?> fv,
             AslComplexExtractedColumnField ecf,
@@ -395,12 +358,13 @@ final class ConditionUtils {
             Table<?> versionTable) {
         return switch (ecf.getExtractedColumn()) {
             case VO_ID -> {
-                AslConditionOperator op =
-                        fv.getOperator() == AslConditionOperator.IN ? AslConditionOperator.EQ : fv.getOperator();
-                yield fv.getValues().stream()
-                        .map(String.class::cast)
-                        .map(id -> voIdCondition(versionTable, useAliases, id, op, ecf))
-                        .reduce(DSL.noCondition(), DSL::or);
+                yield switch (fv.getOperator()) {
+                    case IS_NULL, IS_NOT_NULL -> voIdCondition(versionTable, useAliases, null, fv.getOperator(), ecf);
+                    case IN, EQ -> voIdInCondition(versionTable, useAliases, (List<String>) fv.getValues(), true, ecf);
+                    case NEQ -> voIdInCondition(versionTable, useAliases, (List<String>) fv.getValues(), false, ecf);
+                    case LIKE, GT_EQ, GT, LT_EQ, LT -> voIdCondition(
+                            versionTable, useAliases, (String) fv.getValues().getFirst(), fv.getOperator(), ecf);
+                };
             }
             case ARCHETYPE_NODE_ID -> {
                 AslConditionOperator op =
@@ -449,25 +413,98 @@ final class ConditionUtils {
     }
 
     @Nonnull
+    private static Condition voIdInCondition(
+            Table<?> versionTable,
+            boolean aliasedNames,
+            List<String> ids,
+            boolean notNegated,
+            AslComplexExtractedColumnField field) {
+        if (ids.isEmpty()) {
+            return notNegated ? DSL.falseCondition() : DSL.trueCondition();
+        }
+        if (ids.size() == 1) {
+            return voIdCondition(
+                    versionTable,
+                    aliasedNames,
+                    ids.getFirst(),
+                    notNegated ? AslConditionOperator.EQ : AslConditionOperator.NEQ,
+                    field);
+        }
+
+        List<Field<?>> uidList = null;
+        List<Field<?>> uidVersionList = null;
+
+        for (String id : ids) {
+            // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
+            Pair<String, Integer> voId = parseVoId(id);
+            Field<?> voIdValueField = createVoIdValue(voId);
+
+            if (voId.getRight() == null) {
+                if (uidList == null) {
+                    uidList = new ArrayList<>(ids.size());
+                }
+                uidList.add(voIdValueField);
+            } else {
+                if (uidVersionList == null) {
+                    uidVersionList = new ArrayList<>(ids.size());
+                }
+                uidVersionList.add(voIdValueField);
+            }
+        }
+
+        Field<?> uuidField = FieldUtils.field(versionTable, field, COMP_VERSION.VO_ID.getName(), aliasedNames);
+
+        Condition uidCond;
+        if (uidList == null) {
+            uidCond = null;
+        } else {
+            uidCond = uuidField.in(uidList);
+        }
+        Condition uidVersionCond;
+        if (uidVersionList == null) {
+            uidVersionCond = null;
+        } else {
+            Field<?> versionField =
+                    FieldUtils.field(versionTable, field, COMP_VERSION.SYS_VERSION.getName(), aliasedNames);
+            uidVersionCond = DSL.field(DSL.row(uuidField, versionField)).in(uidVersionList);
+        }
+
+        Condition cond = DSL.or(uidCond, uidVersionCond);
+        if (notNegated) {
+            return cond;
+        } else {
+            return cond.not();
+        }
+    }
+
+    @Nonnull
     private static Condition voIdCondition(
             Table<?> versionTable,
             boolean aliasedNames,
             String id,
             AslConditionOperator op,
             AslComplexExtractedColumnField field) {
-        // id is expected to be valid
-        String[] split = id.split("::");
 
         Field<?> uuidField = FieldUtils.field(versionTable, field, COMP_VERSION.VO_ID.getName(), aliasedNames);
-        Field<?> versionField = FieldUtils.field(versionTable, field, COMP_VERSION.SYS_VERSION.getName(), aliasedNames);
-        Field<?> uuid = DSL.inline(split[0]).cast(UUID.class);
-        Optional<Field<Integer>> version = Optional.of(split)
-                .filter(s -> s.length > 2)
-                .map(s -> s[2])
-                .map(Integer::parseInt)
-                .map(DSL::inline);
-        Field left = version.isPresent() ? DSL.field(DSL.row(uuidField, versionField)) : uuidField;
-        Field right = version.isPresent() ? DSL.field(DSL.row(uuid, version.get())) : uuid;
+        if (op == AslConditionOperator.IS_NULL) {
+            return uuidField.isNull();
+        } else if (op == AslConditionOperator.IS_NOT_NULL) {
+            return uuidField.isNotNull();
+        }
+
+        // id is expected to be valid, see FeatureCheckUtils::ensureOperandSupported
+        Pair<String, Integer> voId = parseVoId(id);
+
+        Field left;
+        if (voId.getRight() == null) {
+            left = uuidField;
+        } else {
+            Field<?> versionField =
+                    FieldUtils.field(versionTable, field, COMP_VERSION.SYS_VERSION.getName(), aliasedNames);
+            left = DSL.field(DSL.row(uuidField, versionField));
+        }
+        Field<?> right = createVoIdValue(voId);
+
         return switch (op) {
             case IN, EQ -> left.eq(right);
             case NEQ -> left.ne(right);
@@ -475,19 +512,36 @@ final class ConditionUtils {
             case GT -> left.gt(right);
             case GT_EQ -> left.ge(right);
             case LT_EQ -> left.le(right);
-            case IS_NULL -> uuidField.isNull();
-            case IS_NOT_NULL -> uuidField.isNotNull();
-            case LIKE -> throw new IllegalArgumentException();
+            case LIKE, IS_NULL, IS_NOT_NULL -> throw new IllegalArgumentException();
         };
+    }
+
+    private static Pair<String, Integer> parseVoId(String id) {
+        int uidEndPos = id.indexOf("::");
+        if (uidEndPos < 0) {
+            return Pair.of(id, null);
+        }
+        int versionPos = id.indexOf("::", uidEndPos + 2);
+        return Pair.of(id.substring(0, uidEndPos), Integer.parseInt(id.substring(versionPos + 2)));
+    }
+
+    private static Field<?> createVoIdValue(Pair<String, Integer> voId) {
+        Field<UUID> uuidField = DSL.inline(voId.getLeft()).cast(UUID.class);
+        if (voId.getRight() == null) {
+            return uuidField;
+        } else {
+            Field<Integer> versionField = DSL.inline(voId.getRight());
+            return DSL.field(DSL.row(uuidField, versionField));
+        }
     }
 
     private static Condition applyOperator(AslConditionOperator operator, Field field, Collection<?> values) {
         Class<?> sqlFieldType = field.getType();
-        boolean jsonbField = JSONB.class.isAssignableFrom(sqlFieldType);
-        boolean uuidField = !jsonbField && UUID.class.isAssignableFrom(sqlFieldType);
+        boolean isJsonbField = JSONB.class.isAssignableFrom(sqlFieldType);
+        boolean isUuidField = !isJsonbField && UUID.class.isAssignableFrom(sqlFieldType);
         if (operator == AslConditionOperator.LIKE) {
             String likePattern = (String) values.iterator().next();
-            if (jsonbField) {
+            if (isJsonbField) {
                 likePattern = escapeAsJsonString(likePattern);
             }
             return field.cast(String.class).like(likePattern);
@@ -506,15 +560,23 @@ final class ConditionUtils {
 
         List filteredValues = values.stream()
                 .map(v -> {
-                    Object value = null;
-                    if (uuidField && v instanceof String s) {
+                    final Object value;
+                    if (isUuidField && v instanceof String s) {
+                        UUID uuid;
                         try {
-                            value = UUID.fromString(s);
+                            uuid = UUID.fromString(s);
                         } catch (IllegalArgumentException e) {
                             // value stays null
+                            uuid = null;
                         }
-                    } else if (jsonbField || sqlFieldType.isInstance(v) || orderOperator) {
+                        value = uuid;
+                    } else if (isJsonbField
+                            || orderOperator
+                            || sqlFieldType.isInstance(v)
+                            || (Number.class.isAssignableFrom(sqlFieldType) && v instanceof Number)) {
                         value = v;
+                    } else {
+                        value = null;
                     }
                     return value;
                 })
@@ -530,10 +592,12 @@ final class ConditionUtils {
             };
             case 1 -> {
                 Object val = filteredValues.getFirst();
-                Field wrappedValue = jsonbField || orderOperator && !sqlFieldType.isInstance(val)
+                boolean valueAndFieldTypeCompatible = sqlFieldType.isInstance(val)
+                        || (Number.class.isAssignableFrom(sqlFieldType) && val instanceof Number);
+                Field wrappedValue = isJsonbField || (orderOperator && !valueAndFieldTypeCompatible)
                         ? AdditionalSQLFunctions.to_jsonb(val)
                         : DSL.inline(val);
-                Field wrappedField = !jsonbField && orderOperator && !sqlFieldType.isInstance(val)
+                Field wrappedField = !isJsonbField && orderOperator && !valueAndFieldTypeCompatible
                         ? AdditionalSQLFunctions.to_jsonb(field)
                         : field;
                 yield switch (operator) {
@@ -548,13 +612,102 @@ final class ConditionUtils {
             }
             default -> switch (operator) {
                 case IN -> field.in(filteredValues.stream()
-                        .map(v -> jsonbField ? AdditionalSQLFunctions.to_jsonb(v) : DSL.inline(v))
+                        .map(v -> isJsonbField ? AdditionalSQLFunctions.to_jsonb(v) : DSL.inline(v))
                         .toList());
                 case EQ, NEQ, GT_EQ, GT, LT_EQ, LT -> throw new IllegalArgumentException(
                         "%s-Condition needs one value, not %d".formatted(operator, filteredValues.size()));
                 default -> throw new IllegalStateException("Unexpected value: " + operator);
             };
         };
+    }
+
+    /**
+     * Provides a join conditions using the given column name
+     * <code>[sqlLeft].column = [sqlRight].column</code>
+     * Example:
+     * <code>"p_data__0"."p_data__0_vo_id" = "p_events__0"."p_events__0_vo_id"</code>
+     */
+    private static Condition joinColumnEqualCondition(
+            AslStructureColumn column,
+            AslProvidesJoinCondition dc,
+            Table<?> sqlLeft,
+            Table<?> sqlRight,
+            boolean aliased) {
+        final String cName = column.getFieldName();
+        return FieldUtils.field(sqlLeft, dc.getLeftProvider(), dc.getLeftOwner(), cName, UUID.class, true)
+                .eq(FieldUtils.field(sqlRight, dc.getRightProvider(), dc.getRightOwner(), cName, UUID.class, aliased));
+    }
+
+    /**
+     * Provides a parent child join conditions using the left <code>num</code> to right <code>parent_num</code>
+     * <code>[sqlLeft].num = [sqlRight].parent_name</code>
+     * Example:
+     * <code>"p_data__0"."p_data__0_vo_id" = "p_events__0"."p_events__0_vo_id"</code>
+     */
+    private static Condition joinNumEqualParentNumCondition(
+            AslProvidesJoinCondition dc, Table<?> sqlLeft, Table<?> sqlRight, boolean aliased) {
+
+        final String num = AslStructureColumn.NUM.getFieldName();
+        final String parentNum = AslStructureColumn.PARENT_NUM.getFieldName();
+
+        return FieldUtils.field(sqlLeft, dc.getLeftProvider(), dc.getLeftOwner(), num, Integer.class, true)
+                .eq(FieldUtils.field(
+                        sqlRight, dc.getRightProvider(), dc.getRightOwner(), parentNum, Integer.class, aliased));
+    }
+
+    /**
+     * Provides a parent child join conditions using the left <code>num</code> to right <code>parent_num</code>
+     * <code>[sqlRight].num between ([sqlLeft].num + 1) and [sqlLeft].num_cap</code>
+     * Example:
+     * <code>"sAN_d_0"."sAN_d_0_num" between ("sCO_c_0"."sCO_c_0_num" + 1) and "sCO_c_0"."sCO_c_0_num_cap"</code>
+     */
+    private static Condition joinNumCapBetweenCondition(
+            AslProvidesJoinCondition dc, Table<?> sqlLeft, Table<?> sqlRight, boolean aliased) {
+
+        final String numFieldName = AslStructureColumn.NUM.getFieldName();
+        final String numCapFieldName = AslStructureColumn.NUM_CAP.getFieldName();
+
+        final AslQuery leftProvider = dc.getLeftProvider();
+        final AslQuery leftOwner = dc.getLeftOwner();
+
+        return FieldUtils.field(sqlRight, dc.getRightProvider(), dc.getRightOwner(), numFieldName, Integer.class, true)
+                .between(
+                        FieldUtils.field(sqlLeft, leftProvider, leftOwner, numFieldName, Integer.class, aliased)
+                                .add(DSL.inline(1)),
+                        FieldUtils.field(sqlLeft, leftProvider, leftOwner, numCapFieldName, Integer.class, aliased));
+    }
+
+    /**
+     * Provides the FOLDER contains COMPOSITION join condition using
+     * <code>[sqlRight]_vo_id = [sqlLeft]_item_id_value</code>
+     * Example:
+     * <code>on "sCO_c_0_vo_id" = "sF_0"."sF_0_item_id_value"</code>
+     *
+     * @param dc {@link AslFolderItemJoinCondition}
+     * @param sqlLeft structure query on <code>folder_data</code>
+     * @param sqlRight structure query on <code>comp_data</code>
+     * @return joinByItemId matching the composition void against the folder item id
+     */
+    private static Condition joinFolderItemIdEqualVoIdCondition(
+            AslFolderItemJoinCondition dc, Table<?> sqlLeft, Table<?> sqlRight) {
+
+        AslQuery leftOwner = dc.getLeftOwner();
+
+        AslQuery rightProvider = dc.rightProvider();
+        AslQuery rightOwner = dc.getRightOwner();
+
+        AslFolderItemIdVirtualField column = leftOwner.getSelect().stream()
+                .filter(AslFolderItemIdVirtualField.class::isInstance)
+                .map(AslFolderItemIdVirtualField.class::cast)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "AslFolderItemJoinCondition requires an AslFolderItemIdValuesColumnField"));
+
+        // comp.vo_id == folder.data /items/id/value
+        // on "sCO_c_0_vo_id" = "sF_0_data_item_id_value"
+        return FieldUtils.field(
+                        sqlRight, rightProvider, rightOwner, AslStructureColumn.VO_ID.getFieldName(), UUID.class, true)
+                .eq(FieldUtils.field(sqlLeft, column, column.getFieldName(), UUID.class, true));
     }
 
     static String escapeAsJsonString(String string) {

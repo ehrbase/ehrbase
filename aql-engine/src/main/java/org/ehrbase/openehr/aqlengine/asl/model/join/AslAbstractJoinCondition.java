@@ -23,7 +23,8 @@ public abstract sealed class AslAbstractJoinCondition implements AslJoinConditio
         permits AslAuditDetailsJoinCondition,
                 AslCommitterJoinCondition,
                 AslDelegatingJoinCondition,
-                AslPathFilterJoinCondition {
+                AslPathFilterJoinCondition,
+                AslFolderItemJoinCondition {
     protected AslQuery leftOwner;
     protected AslQuery rightOwner;
 

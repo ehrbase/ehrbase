@@ -18,6 +18,7 @@
 package org.ehrbase.util;
 
 import java.util.function.ToIntFunction;
+import java.util.stream.Stream;
 import org.springframework.lang.NonNull;
 
 public class SemVerUtil {
@@ -67,6 +68,24 @@ public class SemVerUtil {
             return fallback;
         } else {
             return func.applyAsInt(semVer) + 1;
+        }
+    }
+
+    public static Stream<SemVer> streamAllResolutions(SemVer semVer) {
+        if (semVer.suffix() != null) {
+            return Stream.of(semVer);
+        } else if (semVer.major() == null) {
+            return Stream.of(SemVer.NO_VERSION);
+        } else if (semVer.minor() == null) {
+            return Stream.of(semVer, SemVer.NO_VERSION);
+        } else if (semVer.patch() == null) {
+            return Stream.of(semVer, new SemVer(semVer.major(), null, null, null), SemVer.NO_VERSION);
+        } else {
+            return Stream.of(
+                    semVer,
+                    new SemVer(semVer.major(), semVer.minor(), null, null),
+                    new SemVer(semVer.major(), null, null, null),
+                    SemVer.NO_VERSION);
         }
     }
 }

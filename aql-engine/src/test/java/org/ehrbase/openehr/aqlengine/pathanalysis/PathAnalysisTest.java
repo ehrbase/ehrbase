@@ -40,8 +40,6 @@ class PathAnalysisTest {
     @Test
     void compositionTypes() {
         assertThat(PathAnalysis.AttributeInfos.rmTypes).isNotEmpty();
-
-        System.out.println(PathAnalysis.AttributeInfos.rmTypes);
     }
 
     @Test
@@ -254,12 +252,10 @@ class PathAnalysisTest {
     @Test
     void testRmAttributeAlias() {
 
+        List<String> synthetic = List.of("_magnitude", "_type", "_index");
         List<String> rmAttributes = RmAttribute.VALUES.stream()
                 .map(RmAttribute::attribute)
-                .filter(s -> !List.of(
-                                // synthetic
-                                "_magnitude", "details", "folders", "_type", "_index")
-                        .contains(s))
+                .filter(s -> !synthetic.contains(s))
                 .collect(Collectors.toList());
         // EHR-only
         rmAttributes.addAll(List.of("timeCreated", "ehrId", "ehrStatus", "compositions"));

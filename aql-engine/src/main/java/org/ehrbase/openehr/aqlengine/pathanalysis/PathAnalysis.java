@@ -131,7 +131,7 @@ public class PathAnalysis {
 
         static {
             LinkedHashSet<String> typesModifiable = new LinkedHashSet<>();
-            Stream.of(RmConstants.COMPOSITION, RmConstants.EHR_STATUS, RmConstants.ORIGINAL_VERSION)
+            Stream.of(RmConstants.EHR_STATUS, RmConstants.COMPOSITION, RmConstants.FOLDER, RmConstants.ORIGINAL_VERSION)
                     .map(AttributeInfos::calculateContainedTypes)
                     .forEach(typesModifiable::addAll);
 

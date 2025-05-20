@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.aqlengine.asl.model;
 
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
+import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -26,6 +27,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.jooq.Field;
+import org.jooq.JSONB;
 
 public enum AslStructureColumn {
     VO_ID(ObjectDataTablePrototype.INSTANCE.VO_ID, UUID.class, null),
@@ -38,8 +40,12 @@ public enum AslStructureColumn {
     ENTITY_CONCEPT(ObjectDataTablePrototype.INSTANCE.ENTITY_CONCEPT, String.class, false),
     ENTITY_NAME(ObjectDataTablePrototype.INSTANCE.ENTITY_NAME, String.class, AslExtractedColumn.NAME_VALUE, false),
     RM_ENTITY(ObjectDataTablePrototype.INSTANCE.RM_ENTITY, String.class, false),
+    DATA(ObjectDataTablePrototype.INSTANCE.DATA, JSONB.class, false),
     TEMPLATE_ID(COMP_VERSION.TEMPLATE_ID, UUID.class, AslExtractedColumn.TEMPLATE_ID, true),
     SYS_VERSION(ObjectVersionTablePrototype.INSTANCE.SYS_VERSION, Integer.class, true),
+
+    // Columns for FOLDER querying
+    EHR_FOLDER_IDX(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX, Integer.class, true),
 
     // Columns for VERSION querying
     AUDIT_ID(ObjectVersionTablePrototype.INSTANCE.AUDIT_ID, UUID.class, true),

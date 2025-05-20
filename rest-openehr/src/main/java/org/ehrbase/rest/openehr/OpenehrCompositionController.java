@@ -284,7 +284,9 @@ public class OpenehrCompositionController extends BaseController implements Comp
     }
 
     private String getLocationUrl(UUID versionedObjectUid, UUID ehrId, int version) {
-        if (version == 0) version = compositionService.getLastVersionNumber(versionedObjectUid);
+        if (version == 0) {
+            version = compositionService.getLastVersionNumber(ehrId, versionedObjectUid);
+        }
 
         return fromPath("/{ehrSegment}/{ehrId}/{compositionSegment}/{compositionId}::{nodeName}::{version}")
                 .build(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid, systemService.getSystemId(), version)
@@ -321,7 +323,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                         .map(t -> Optional.ofNullable(compositionService.getVersionByTimestamp(compositionUid, t))
                                 .orElseThrow(() -> new ObjectNotFoundException(
                                         COMPOSITION, "No composition version matching the timestamp condition"))))
-                .orElseGet(() -> compositionService.getLastVersionNumber(compositionUid));
+                .orElseGet(() -> compositionService.getLastVersionNumber(ehrId, compositionUid));
 
         if (compositionService.isDeleted(ehrId, compositionUid, version)) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

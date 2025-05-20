@@ -26,13 +26,14 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.assertj.core.api.AbstractThrowableAssert;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
+import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class AqlParameterReplacementTest {
+class AqlParameterPostProcessorTest {
 
     @ParameterizedTest
     @ValueSource(
@@ -73,11 +74,47 @@ class AqlParameterReplacementTest {
                 "2020-12-31T23:59:59.987654321",
                 "2020-12-31T23:59:59Z",
                 "2020-12-31T23:59:59-0200",
-                "2020-12-31T23:59:59.013-0200"
+                "2020-12-31T23:59:59.013-0200",
+                // leap year
+                "20200229",
+                "2020-02-29",
+                "20200229T235959",
+                "2020-02-29T23:59:59-0200",
+                // syntactically correct, but non-existing
+                "20200431",
+                "20200230",
+                "20210229",
+                "2020-04-31",
+                "2020-02-30",
+                "2021-02-29",
+                "20210229T235959",
+                "2020-04-31T23:59:59",
+                "2020-02-30T23:59:59",
+                "2021-02-29T23:59:59",
             })
     void confirmTemporalPattern(String example) {
-        assertThat(AqlParameterReplacement.TemporalPrimitivePattern.matches(example))
+        assertThat(AqlParameterPostProcessor.TemporalPrimitivePattern.matches(example))
                 .isTrue();
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                // syntactically correct, but non-existing
+                "20200431",
+                "20200230",
+                "20210229",
+                "2020-04-31",
+                "2020-02-30",
+                "2021-02-29",
+                "20210229T235959",
+                "2020-04-31T23:59:59",
+                "2020-02-30T23:59:59",
+                "2021-02-29T23:59:59",
+            })
+    void falsePositivePatterns(String example) {
+        assertThat(AqlParameterPostProcessor.Utils.stringToPrimitive(example))
+                .isExactlyInstanceOf(StringPrimitive.class);
     }
 
     @ParameterizedTest
@@ -105,10 +142,10 @@ class AqlParameterReplacementTest {
                 "2020-12-31t23:59:59.013-0200",
                 "2020-12-31T235959",
                 "20201231T23:59:59",
-                "23:59:59T2020-12-31",
+                "23:59:59T2020-12-31"
             })
     void rejectTemporalPattern(String example) {
-        assertThat(AqlParameterReplacement.TemporalPrimitivePattern.matches(example))
+        assertThat(AqlParameterPostProcessor.TemporalPrimitivePattern.matches(example))
                 .isFalse();
     }
 
@@ -286,7 +323,7 @@ class AqlParameterReplacementTest {
 
     private static void assertReplaceParameters(String srcAql, Map<String, Object> parameterMap, String expected) {
         AqlQuery query = AqlQuery.parse(srcAql);
-        AqlParameterReplacement.replaceParameters(query, parameterMap);
+        AqlParameterPostProcessor.replaceParameters(query, parameterMap);
         String rendered = query.render();
         try {
             AqlQuery.parse(rendered);
@@ -299,7 +336,7 @@ class AqlParameterReplacementTest {
     private static AbstractThrowableAssert<?, ? extends Throwable> assertReplaceParametersRejected(
             String srcAql, Map<String, Object> parameterMap) {
         AqlQuery query = AqlQuery.parse(srcAql);
-        return assertThatThrownBy(() -> AqlParameterReplacement.replaceParameters(query, parameterMap));
+        return assertThatThrownBy(() -> AqlParameterPostProcessor.replaceParameters(query, parameterMap));
     }
 
     record ReplacementTestParam(

@@ -35,6 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
@@ -171,6 +172,17 @@ final class FeatureCheckUtils {
                     case ContainmentVersionExpression __ -> RmConstants.ORIGINAL_VERSION;
                 };
         boolean isVersionPath = RmConstants.ORIGINAL_VERSION.equals(containmentType);
+
+        Set<String> containmentTargetTypes = AncestorStructureRmType.byTypeName(containmentType)
+                .map(AncestorStructureRmType::getDescendants)
+                .map(s -> s.stream().map(StructureRmType::name).collect(Collectors.toSet()))
+                .orElse(Set.of(containmentType));
+
+        if (CollectionUtils.isNotEmpty(ip.getRootPredicate())) {
+            for (final String parentTargetType : containmentTargetTypes) {
+                ensurePathPredicateSupported(path, parentTargetType, ip.getRootPredicate(), systemId);
+            }
+        }
         if (path == null) {
             if (allowEmpty) {
                 if (isVersionPath) {
@@ -194,6 +206,11 @@ final class FeatureCheckUtils {
         }
 
         if (RmConstants.EHR.equals(containmentType)) {
+            if (CollectionUtils.isNotEmpty(ip.getRootPredicate())) {
+                throw new AqlFeatureNotImplementedException(
+                        "%s: root predicate for path %s".formatted(clauseType, ip.render()));
+            }
+
             return AslExtractedColumn.find(containmentType, path)
                     .filter(ec -> !EnumSet.of(AslExtractedColumn.EHR_TIME_CREATED, AslExtractedColumn.EHR_SYSTEM_ID_DV)
                                     .contains(ec)
@@ -232,10 +249,8 @@ final class FeatureCheckUtils {
         Map<ANode, Map<String, PathAnalysis.AttInfo>> attributeInfos = PathAnalysis.createAttributeInfos(analyzed);
 
         Set<String> targetTypes = new HashSet<>();
-        Set<String> parentTargetTypes = AncestorStructureRmType.byTypeName(containmentType)
-                .map(AncestorStructureRmType::getDescendants)
-                .map(s -> s.stream().map(StructureRmType::name).collect(Collectors.toSet()))
-                .orElse(Set.of(containmentType));
+        Set<String> parentTargetTypes = containmentTargetTypes;
+
         final List<AqlObjectPath.PathNode> pathNodes = path.getPathNodes();
         for (int i = 0; i < pathNodes.size(); i++) {
             AqlObjectPath.PathNode pathNode = pathNodes.get(i);
@@ -266,6 +281,11 @@ final class FeatureCheckUtils {
                 // (path ends with) extracted column?
                 AqlObjectPath subPath = new AqlObjectPath(
                         path.getPathNodes().stream().skip(level).toList());
+
+                // TODO CDR-1663 FOLDER.items is not yet supported
+                if (parentTargetTypes.contains(RmConstants.FOLDER) && "items".equals(attribute)) {
+                    throw new AqlFeatureNotImplementedException("Path FOLDER/items");
+                }
 
                 final Set<String> currentParentTargetTypes = parentTargetTypes;
                 Optional<AslExtractedColumn> extractedColumn = AslExtractedColumn.find(

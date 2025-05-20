@@ -29,6 +29,8 @@ import com.nedap.archie.rminfo.RMTypeInfo;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,13 +85,20 @@ public enum AncestorStructureRmType {
             return StructureRmType.byType(c).isPresent();
         });
 
-        this.nonStructureDescendants = Collections.unmodifiableSet(nonAbstractDescendants);
-        this.descendants = descendantStream.build().collect(Collectors.toUnmodifiableSet());
+        this.nonStructureDescendants =
+                unmodifiableOrderedSet(nonAbstractDescendants.stream(), Comparator.comparing(Class::getCanonicalName));
+        this.descendants =
+                unmodifiableOrderedSet(descendantStream.build(), Comparator.comparing(StructureRmType::name));
         List<StructureRoot> structureRoots = descendants.stream()
                 .map(StructureRmType::getStructureRoot)
                 .distinct()
                 .toList();
         this.structureRoot = structureRoots.size() == 1 ? structureRoots.getFirst() : null;
+    }
+
+    private static <T> Set<T> unmodifiableOrderedSet(Stream<T> values, Comparator<T> comparator) {
+        Set<T> collect = values.sorted(comparator).collect(Collectors.toCollection(LinkedHashSet::new));
+        return Collections.unmodifiableSet(collect);
     }
 
     public StructureRoot getStructureRoot() {

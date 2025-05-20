@@ -83,8 +83,17 @@ security:
 
 
 ehrbase:
+  validation:
+    check-for-extra-nodes: true
+    validate-rm-constraints: true
   aql:
     pg-llj-workaround: true
+    experimental:
+      aql-on-folder:
+        enabled: false
+  template:
+    # Allows to override templates using POST
+    allow-overwrite: false
   rest:
     aql:
       # allows to control query execution using debug params
@@ -98,6 +107,8 @@ ehrbase:
       tags:
         enabled: false
         context-path: /rest/experimental/tags
+    ehrscape:
+      enabled: false
   security:
     # Configuration of actuator for reporting and health endpoints
     management:
@@ -112,7 +123,8 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  template-init-on-startup: true
+  template-init-on-startup: false
+  stored-query-init-on-startup: false
   user-id-cache-config:
     expire-after-access:
       duration: 300
@@ -121,10 +133,6 @@ cache:
     expire-after-write:
       duration: 300
       unit: SECONDS
-
-
-system:
-  allow-template-overwrite: false
 
 openehr-api:
   context-path: /rest/openehr
@@ -141,7 +149,6 @@ logging:
     org.jooq.Constants: warn
     org.springframework: info
     org.springframework.security.web.DefaultSecurityFilterChain: warn
-    org.flywaydb.core.internal.license.VersionPrinter: warn
   pattern:
     console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X]){faint} %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
 

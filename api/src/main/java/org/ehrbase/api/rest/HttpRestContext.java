@@ -82,6 +82,12 @@ public class HttpRestContext {
         map.put(key3, value3);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T get(CtxAttr<T> attr) {
+        Map<CtxAttr<?>, Object> ctxAttrObjectMap = httpContext.get();
+        return (T) ctxAttrObjectMap.get(attr);
+    }
+
     public static void handle(HttpRestContextHandler handler) {
         Map<CtxAttr<?>, Object> ctxAttrObjectMap = httpContext.get();
         handler.handle(new HttpCtx() {

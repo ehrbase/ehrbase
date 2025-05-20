@@ -21,11 +21,15 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 public sealed interface AslProvidesJoinCondition extends AslQueryCondition
-        permits AslDescendantCondition, AslEntityIdxOffsetCondition, AslPathChildCondition {
+        permits AslDescendantCondition, AslFieldJoinCondition, AslPathChildCondition {
 
     AslQuery getLeftOwner();
 
     AslQuery getRightOwner();
+
+    AslQuery getLeftProvider();
+
+    AslQuery getRightProvider();
 
     default AslDelegatingJoinCondition provideJoinCondition() {
         return new AslDelegatingJoinCondition(this);

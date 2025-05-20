@@ -17,6 +17,8 @@
  */
 package org.ehrbase;
 
+import org.ehrbase.service.validation.ValidationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -25,4 +27,5 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @ComponentScan(
         basePackages = {"org.ehrbase.service", "org.ehrbase.cache", "org.ehrbase.plugin", "org.ehrbase.repository"})
 @EnableAspectJAutoProxy
+@EnableConfigurationProperties(ValidationProperties.class)
 public class ServiceModuleConfiguration {}

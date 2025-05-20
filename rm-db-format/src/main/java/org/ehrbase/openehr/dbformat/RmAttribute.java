@@ -181,6 +181,7 @@ public record RmAttribute(String attribute, String alias) {
             alias("territory", "ty"),
             alias("thumbnail", "th"),
             alias("time", "ti"),
+            alias("time_asserted", "ts"),
             alias("time_committed", "tc"),
             alias("timing", "tg"),
             alias("transition", "tr"),

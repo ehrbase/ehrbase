@@ -112,7 +112,7 @@ public class CompositionRepository
                     r.setTemplateId(templateId);
                     r.setRootConcept(rootConcept);
                 },
-                r -> {});
+                (n, r) -> {});
     }
 
     @Transactional
@@ -173,7 +173,7 @@ public class CompositionRepository
                     r.setTemplateId(templateId);
                     r.setRootConcept(rootConcept);
                 },
-                r -> {},
+                (n, r) -> {},
                 "No COMPOSITION with given id: %s".formatted(rootId));
     }
 
@@ -196,6 +196,18 @@ public class CompositionRepository
                 .unionAll(context.select(COMP_VERSION_HISTORY.SYS_VERSION)
                         .from(COMP_VERSION_HISTORY)
                         .where(COMP_VERSION_HISTORY.VO_ID.eq(compId)))
+                .orderBy(COMP_VERSION.SYS_VERSION.desc())
+                .limit(1)
+                .fetchOptional(Record1::value1);
+    }
+
+    public Optional<Integer> getLatestVersionNumber(UUID ehrId, UUID compId) {
+        return context.select(COMP_VERSION.SYS_VERSION)
+                .from(COMP_VERSION)
+                .where(COMP_VERSION.EHR_ID.eq(ehrId).and(COMP_VERSION.VO_ID.eq(compId)))
+                .unionAll(context.select(COMP_VERSION_HISTORY.SYS_VERSION)
+                        .from(COMP_VERSION_HISTORY)
+                        .where(COMP_VERSION_HISTORY.EHR_ID.eq(ehrId).and(COMP_VERSION_HISTORY.VO_ID.eq(compId))))
                 .orderBy(COMP_VERSION.SYS_VERSION.desc())
                 .limit(1)
                 .fetchOptional(Record1::value1);

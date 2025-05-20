@@ -23,8 +23,11 @@ import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.repository.PartyProxyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.cache.Cache;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserServiceImp implements UserService {
@@ -54,21 +57,26 @@ public class UserServiceImp implements UserService {
     @Override
     public UserAndCommitterId getCurrentUserAndCommitterId() {
         String key = authenticationFacade.getAuthentication().getName();
-        return CacheProvider.USER_ID_CACHE.get(cacheProvider, key, () -> getOrCreateCurrentUserId(key));
+        try {
+            return CacheProvider.USER_ID_CACHE.get(cacheProvider, key, () -> getOrCreateCurrentUserIdSync(key));
+        } catch (Cache.ValueRetrievalException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof DuplicateKeyException c) {
+                throw new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "User already created concurrently by different request", c);
+            } else if (cause instanceof RuntimeException c) {
+                throw c;
+            } else {
+                throw e;
+            }
+        }
     }
 
     private UserAndCommitterId getOrCreateCurrentUserId(String key) {
 
         return partyProxyRepository
                 .findInternalUserAndCommitterId(key)
-                .or(() -> {
-                    try {
-                        return Optional.of(partyProxyRepository.createInternalUser(key));
-                    } catch (DataIntegrityViolationException e) {
-                        logger.info(e.getMessage(), e);
-                        return partyProxyRepository.findInternalUserAndCommitterId(key);
-                    }
-                })
+                .or(() -> Optional.of(partyProxyRepository.createInternalUser(key)))
                 .orElseThrow(() -> new InternalServerException("Cannot create User"));
     }
 }

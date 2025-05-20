@@ -18,13 +18,23 @@
 package org.ehrbase.openehr.aqlengine.sql;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
+import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.jooq.Field;
+import org.jooq.JSONB;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.jooq.impl.DSL;
 
 final class FieldUtils {
 
@@ -58,9 +68,13 @@ final class FieldUtils {
         return field;
     }
 
-    public static Field<?> field(
-            Table<?> table, AslComplexExtractedColumnField aslField, String fieldName, boolean aliased) {
+    public static Field<?> field(Table<?> table, AslVirtualField aslField, String fieldName, boolean aliased) {
         return table.field(aliased ? aslField.aliasedName(fieldName) : fieldName);
+    }
+
+    public static <T> Field<T> field(
+            Table<?> table, AslVirtualField aslField, String fieldName, Class<T> type, boolean aliased) {
+        return table.field(aliased ? aslField.aliasedName(fieldName) : fieldName, type);
     }
 
     public static Field<?> field(Table<?> table, AslColumnField aslField, boolean aliased) {
@@ -79,5 +93,50 @@ final class FieldUtils {
     public static <T> Field<T> aliasedField(
             Table<?> target, AslDataQuery aslData, String fieldName, Class<T> fieldType) {
         return field(target, aslData.getBase(), aslData.getBase(), fieldName, fieldType, true);
+    }
+
+    public static Field<?> virtualAliasedField(
+            Table<?> target, Field<?> field, AslVirtualField column, String columnName) {
+        return DSL.field("{0}.{1}", target, field).as(column.aliasedName(columnName));
+    }
+
+    static Field<JSONB> buildJsonbPathField(List<PathNode> pathNodes, boolean multipleValued, Field<JSONB> jsonbField) {
+        Iterator<String> attributeIt = pathNodes.stream()
+                .map(PathNode::getAttribute)
+                .map(RmAttributeAlias::getAlias)
+                .iterator();
+
+        Field<JSONB> field = jsonbField;
+
+        while (attributeIt.hasNext()) {
+            field = DSL.jsonbGetAttribute(field, DSL.inline(attributeIt.next()));
+        }
+
+        if (multipleValued) {
+            field = AdditionalSQLFunctions.jsonb_array_elements(field);
+        }
+
+        return field;
+    }
+
+    public static Field<JSONB> buidDvOrderedField(boolean useAliases, AslField field, Table<?> srcTable) {
+        return switch (field) {
+            case AslRmPathField arpf -> {
+                Field<JSONB> srcField = field(srcTable, arpf.getSrcField(), JSONB.class, true);
+                yield buildJsonbPathField(arpf.getPathInJson(), false, srcField);
+            }
+            case AslDvOrderedColumnField cf -> field(srcTable, cf, JSONB.class, useAliases);
+            default -> throw new IllegalStateException("Unexpected field: " + field);
+        };
+    }
+
+    public static Field<?> buildRmPathField(AslRmPathField field, Table<?> src) {
+        Field<JSONB> srcField = field(Objects.requireNonNull(src), field.getSrcField(), JSONB.class, true);
+        Field<JSONB> ret = buildJsonbPathField(field.getPathInJson(), false, srcField);
+        if (field.getType() == String.class) {
+            return DSL.jsonbGetElementAsText(ret, DSL.inline(0));
+        } else {
+            return ret;
+        }
     }
 }

@@ -109,10 +109,10 @@ public final class AqlQueryWrapper {
      * @return
      */
     public static AqlQueryWrapper create(AqlQuery aqlQuery) {
-        Map<AbstractContainmentExpression, ContainsWrapper> containsDescs;
+        Map<AbstractContainmentExpression, ContainsWrapper> containsDescs = new LinkedHashMap<>();
+
         ContainsChain fromClause;
         {
-            containsDescs = new LinkedHashMap<>();
             AbstractContainmentExpression fromRoot = (AbstractContainmentExpression) aqlQuery.getFrom();
             AqlUtil.streamContainments(fromRoot)
                     .filter(ContainmentClassExpression.class::isInstance)
@@ -225,7 +225,7 @@ public final class AqlQueryWrapper {
                     (Primitive) c.getValue());
             case MatchesCondition c -> negate
                     ? new LogicalOperatorConditionWrapper(
-                            ConditionWrapper.LogicalConditionOperator.OR,
+                            ConditionWrapper.LogicalConditionOperator.AND,
                             c.getValues().stream()
                                     .map(Primitive.class::cast)
                                     .map(v -> (ConditionWrapper) new ComparisonOperatorConditionWrapper(

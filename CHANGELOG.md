@@ -11,6 +11,59 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 
+## [2.17.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
+## [2.16.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+ - Parsing of invalid temporal aql parameters [#1489](https://github.com/ehrbase/ehrbase/pull/1489)
+
+## [2.15.0]
+ ### Added
+ ### Changed 
+ ### Fixed
+ - Prevent concurrent creation of multiple EHRs with same patient reference [#1475](https://github.com/ehrbase/ehrbase/pull/1475)
+
+## [2.14.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+- fix difference in Web template between openEhr API and etercis API  [#1470](https://github.com/ehrbase/ehrbase/pull/1470)
+
+## [2.13.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+* Fix AQL handling for "FOLDER CONTAINS VERSION CONTAINS COMPOSITION" [#1459](https://github.com/ehrbase/ehrbase/pull/1459)
+
+## [2.12.0]
+ ### Added
+ ### Changed 
+* Added check for duplicate version IDs during Folder creation as well as check for Folder uid and if-match header id during update ([#1410](https://github.com/ehrbase/ehrbase/pull/1410))
+* Remove EHR from AQL if not needed for the query ([#1448](https://github.com/ehrbase/ehrbase/pull/1448))
+* Update flyway to V11 to Gracefully exit in case installed flyway DB is newer than supported ([#1450](https://github.com/ehrbase/ehrbase/pull/1450))
+ ### Fixed 
+* Allow Template overwrite with renamed property from `system.allow-template-overwrite` to `ehrbase.template.allow-overwrite` ([#1440](https://github.com/ehrbase/ehrbase/pull/1440))
+
+## [2.11.0]
+ ### Added
+ ### Changed 
+* EHR directory: Restriction of FOLDER items to only contain local VERSIONED_COMPOSITION references ([#1433](https://github.com/ehrbase/ehrbase/pull/1433))
+ ### Fixed 
+
+## [2.10.0]
+ ### Added
+* Revived option to pre-fill template cache (`ehrbase.cache.template-init-on-startup`, default: `false`) ([#1394](https://github.com/ehrbase/ehrbase/pull/1394))
+* Added experimental `AQL` support for `FOLDER` (`ehrbase.aql.experimental.aqlOnFolder`, default: `false`) ([#1401](https://github.com/ehrbase/ehrbase/pull/1401))
+ ### Changed
+* Feature toggle for ehrscape API (`ehrbase.rest.ehrscape.enabled`, default: `false`) ([#1415](https://github.com/ehrbase/ehrbase/pull/1415))
+ ### Fixed
+* Validate that compositions only contain nodes that are defined by the template (`ehrbase.validation.checkForExtraNodes`, default: `true`)  ([#1424](https://github.com/ehrbase/ehrbase/pull/1424))
+
 ## [2.9.0]
  ### Added
  ### Changed 
@@ -115,4 +168,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.8.0]: https://github.com/ehrbase/ehrbase/compare/v2.7.0...v2.8.0
 [2.8.1]: https://github.com/ehrbase/ehrbase/compare/v2.8.0...v2.8.1
 [2.9.0]: https://github.com/ehrbase/ehrbase/compare/v2.8.1...v2.9.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...HEAD
+[2.10.0]: https://github.com/ehrbase/ehrbase/compare/v2.9.0...v2.10.0
+[2.11.0]: https://github.com/ehrbase/ehrbase/compare/v2.10.0...v2.11.0
+[2.12.0]: https://github.com/ehrbase/ehrbase/compare/v2.11.0...v2.12.0
+[2.13.0]: https://github.com/ehrbase/ehrbase/compare/v2.12.0...v2.13.0
+[2.14.0]: https://github.com/ehrbase/ehrbase/compare/v2.13.0...v2.14.0
+[2.15.0]: https://github.com/ehrbase/ehrbase/compare/v2.14.0...v2.15.0
+[2.16.0]: https://github.com/ehrbase/ehrbase/compare/v2.15.0...v2.16.0
+[2.17.0]: https://github.com/ehrbase/ehrbase/compare/v2.16.0...v2.17.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.17.0...HEAD

@@ -36,7 +36,7 @@ jobs:
 
       - name: Github - Send Robot Report to PR
         # Dependabot has not enough rights to add the report to the PR.
-        uses: joonvena/robotframework-reporter-action@v2.4
+        uses: joonvena/robotframework-reporter-action@v2.5
         with:
           gh_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
           # using pull_request_id is misleading, under the hood it is the PR number

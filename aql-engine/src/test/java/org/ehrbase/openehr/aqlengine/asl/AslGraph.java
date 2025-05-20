@@ -31,8 +31,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -45,11 +45,14 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslCommitterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
@@ -59,6 +62,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslPathDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 
 public class AslGraph {
 
@@ -188,13 +192,15 @@ public class AslGraph {
                             .map(op -> conditionToGraph(level + 1, op))
                             .collect(Collectors.joining());
             case AslNotNullQueryCondition c -> indented(level, "NOT_NULL " + fieldToGraph(level + 1, c.getField()));
-            case AslEntityIdxOffsetCondition c -> indented(
+            case AslFieldJoinCondition c -> indented(
                     level,
-                    "EntityIdxOffset %s -%d-> %s"
+                    "AslFieldJoinCondition %s.%s %s %s.%s"
                             .formatted(
                                     c.getLeftOwner().getAlias(),
-                                    c.getOffset(),
-                                    c.getRightOwner().getAlias()));
+                                    c.getLeftField().getAliasedName(),
+                                    c.getOperator(),
+                                    c.getRightOwner().getAlias(),
+                                    c.getRightField().getAliasedName()));
             case AslDescendantCondition c -> indented(
                     level,
                     "DescendantCondition %s %s -> %s %s"
@@ -225,6 +231,12 @@ public class AslGraph {
                             .formatted(
                                     c.getLeftOwner().getAlias(),
                                     c.getRightOwner().getAlias());
+                    case AslFolderItemJoinCondition
+                    c -> "FolderItemJoinCondition FOLDER -> %s [%s.vo_id in %s.data.items[].id.value]"
+                            .formatted(
+                                    c.descendantRelation(),
+                                    c.getRightOwner().getAlias(),
+                                    c.getLeftOwner().getAlias());
                     case AslCommitterJoinCondition c -> "CommitterJoinCondition %s -> %s"
                             .formatted(
                                     c.getLeftOwner().getAlias(),
@@ -271,6 +283,12 @@ public class AslGraph {
                                             .map(c -> conditionToGraph(level + 2, c))
                                             .collect(Collectors.joining("\n", "", "")));
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
+            case AslFolderItemIdVirtualField f -> providerAlias + f.aliasedName() + " -- FOLDER.items";
+            case AslRmPathField f -> providerAlias
+                    + f.getSrcField().getAliasedName()
+                    + f.getPathInJson().stream()
+                            .map(PathNode::getAttribute)
+                            .collect(Collectors.joining(" -> ", " -> ", ""));
         };
     }
 

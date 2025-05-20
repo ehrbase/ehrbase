@@ -44,7 +44,7 @@ jobs:
           path: ./
 
       - name: Collect - JUnit Reports
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         # Dependabot has not enough rights to add the report to the run.
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:

@@ -172,7 +172,7 @@ public class ContributionServiceImp implements ContributionService {
                     }
                 }
                 case Folder folder -> processFolderVersion(ehrId, contributionId, version, folder);
-                case EhrStatus ignored -> {
+                case EhrStatus __ -> {
                     // Here we use the EHRStatusDto to be able to apply a better validation
                     EhrStatusDto ehrStatusDto = Optional.ofNullable(dto)
                             .filter(EhrStatusDto.class::isInstance)

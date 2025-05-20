@@ -23,8 +23,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 import org.apache.commons.io.IOUtils;
@@ -34,6 +36,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorConfig;
@@ -45,6 +48,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.serialisation.walker.FlatHelper;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValuePath;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValues;
+import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.webtemplateskeletonbuilder.WebTemplateSkeletonBuilder;
 import org.openehr.schemas.v1.CARCHETYPEROOT;
@@ -57,10 +61,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TemplateServiceImp implements TemplateService {
 
-    private final KnowledgeCacheServiceImp knowledgeCacheService;
+    private final KnowledgeCacheService knowledgeCacheService;
 
-    public TemplateServiceImp(KnowledgeCacheServiceImp knowledgeCacheService) {
-
+    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService) {
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
     }
 
@@ -69,6 +72,11 @@ public class TemplateServiceImp implements TemplateService {
         return knowledgeCacheService.listAllOperationalTemplates().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<UUID, String> findAllTemplateIds() {
+        return knowledgeCacheService.findAllTemplateIds();
     }
 
     private TemplateMetaDataDto mapToDto(TemplateMetaData data) {
@@ -92,7 +100,7 @@ public class TemplateServiceImp implements TemplateService {
 
     @Override
     public Composition buildExample(String templateId) {
-        WebTemplate webTemplate = findTemplate(templateId);
+        WebTemplate webTemplate = findInternalTemplate(templateId);
         Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
 
         ExampleGeneratorConfig object = new ExampleGeneratorConfig();
@@ -113,15 +121,19 @@ public class TemplateServiceImp implements TemplateService {
         return composition;
     }
 
-    @Override
-    public WebTemplate findTemplate(String templateId) {
+    public WebTemplate findInternalTemplate(String templateId) {
         try {
-            return knowledgeCacheService.getQueryOptMetaData(templateId);
+            return knowledgeCacheService.getInternalTemplate(templateId);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {
             throw new InternalServerException("Could not generate web template", e);
         }
+    }
+
+    @Override
+    public WebTemplate findWebTemplate(String templateId) {
+        return new Filter().filter(this.findInternalTemplate(templateId));
     }
 
     @Override
@@ -153,15 +165,14 @@ public class TemplateServiceImp implements TemplateService {
      * {@inheritDoc}
      */
     @Override
-    public boolean adminDeleteTemplate(String templateId) {
-        Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
-        if (existingTemplate.isEmpty()) {
-            throw new ObjectNotFoundException(
-                    "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId));
-        }
+    public void adminDeleteTemplate(String templateId) {
+        OPERATIONALTEMPLATE existingTemplate = knowledgeCacheService
+                .retrieveOperationalTemplate(templateId)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
 
         // Delete template if not used
-        return knowledgeCacheService.deleteOperationalTemplate(existingTemplate.get());
+        knowledgeCacheService.deleteOperationalTemplate(existingTemplate);
     }
 
     /**

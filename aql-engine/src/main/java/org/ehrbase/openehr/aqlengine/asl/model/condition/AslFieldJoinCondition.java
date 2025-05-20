@@ -17,43 +17,48 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model.condition;
 
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
-public final class AslEntityIdxOffsetCondition implements AslProvidesJoinCondition {
-    private final int offset;
-    private final AslQuery leftProvider;
-    private final AslQuery leftOwner;
-    private final AslQuery rightProvider;
-    private final AslQuery rightOwner;
+public final class AslFieldJoinCondition implements AslProvidesJoinCondition {
+    private final AslColumnField leftField;
+    private final AslConditionOperator operator;
+    private final AslColumnField rightField;
 
-    public AslEntityIdxOffsetCondition(
-            AslQuery leftProvider, AslQuery leftOwner, AslQuery rightProvider, AslQuery rightOwner, int offset) {
-        this.leftProvider = leftProvider;
-        this.leftOwner = leftOwner;
-        this.rightProvider = rightProvider;
-        this.rightOwner = rightOwner;
-        this.offset = offset;
+    public AslFieldJoinCondition(
+            final AslColumnField leftField, final AslConditionOperator operator, final AslColumnField rightField) {
+        this.leftField = leftField;
+        this.rightField = rightField;
+        this.operator = operator;
     }
 
-    public int getOffset() {
-        return offset;
+    public AslColumnField getLeftField() {
+        return leftField;
+    }
+
+    public AslConditionOperator getOperator() {
+        return operator;
+    }
+
+    public AslColumnField getRightField() {
+        return rightField;
     }
 
     @Override
     public AslQuery getLeftOwner() {
-        return leftOwner;
+        return leftField.getOwner();
     }
 
     @Override
     public AslQuery getRightOwner() {
-        return rightOwner;
+        return rightField.getOwner();
     }
 
     public AslQuery getLeftProvider() {
-        return leftProvider;
+        return leftField.getProvider();
     }
 
     public AslQuery getRightProvider() {
-        return rightProvider;
+        return rightField.getProvider();
     }
 }

@@ -13,13 +13,20 @@ services:
     container_name: "EHRbase"
     # adjust env as needed
     environment:
+      SERVER_NODENAME: "local.ehrbase.org"
+      # allows to perform health checks
       MANAGEMENT_ENDPOINTS_WEB_ACCESS: "PUBLIC"
       MANAGEMENT_ENDPOINT_INFO_ENABLED: "true"
-      SERVER_NODENAME: "local.ehrbase.org"
-      EHRBASE_REST_AQL_RESPONSE_GENERATOR_DETAILS_ENABLED: "true"
-      EHRBASE_REST_AQL_RESPONSE_EXECUTION_OPTIONS_ENABLED: "true"
+      # Admin API is needed fir robot
       ADMINAPI_ACTIVE: "true"
       ADMINAPI_ALLOWDELETEALL: "true"
+      # Addition AQL infos
+      EHRBASE_REST_AQL_RESPONSE_GENERATOR_DETAILS_ENABLED: "true"
+      EHRBASE_REST_AQL_RESPONSE_EXECUTION_OPTIONS_ENABLED: "true"
+      # Experimental features
+      EHRBASE_AQL_EXPERIMENTAL_AQLONFOLDER_ENABLED: "true"
+      EHRBASE_REST_EXPERIMENTAL_TAGS_ENABLED: "true"
+      # test related
       JACOCO_RESULT_PATH: "${JACOCO_RESULT_PATH:-/app/coverage/jacoco.exec}"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ehrbase/management/info || exit 1" ]

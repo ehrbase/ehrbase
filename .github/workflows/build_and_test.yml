@@ -50,7 +50,7 @@ jobs:
             deps-
 
       - name: Maven - Verify and Package
-        run: mvn --batch-mode --update-snapshots --activate-profiles full -Dmaven.test.failure.ignore=true verify package
+        run: mvn --batch-mode --update-snapshots --activate-profiles full verify package
 
       - name: Maven - Get Version
         id: "get_version"
@@ -138,7 +138,7 @@ jobs:
           path: ${{ runner.temp }}/ehrbase-test.tar
           if-no-files-found: error
           retention-days: 1
-      
+
       - name: Upload - Build Image
         uses: actions/upload-artifact@v4
         with:
@@ -231,6 +231,7 @@ jobs:
           if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
             echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/ehrbase" >> .env.ehrbase
           fi
+          echo "EHRBASE_REST_EHRSCAPE_ENABLED=true" >> .env.ehrbase
           echo "EHRBASE_REST_EXPERIMENTAL_TAGS_ENABLED=true" >> .env.ehrbase
           cat .env.ehrbase
 
@@ -352,7 +353,7 @@ jobs:
       - name: Restart jmeter if not started
         run: |
           docker compose exec jmeter ls -al /tests || docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml restart jmeter
-      
+
       - name: Run JMeter Tests
         env:
           TEST_PLAN_PATH: /tests/${{ matrix.test-plan.name }}.jmx
@@ -394,7 +395,7 @@ jobs:
           name: jmeter-report-${{ matrix.test-plan.name }}
           path: reports/${{ matrix.test-plan.name }}/html
           if-no-files-found: error
-          
+
       - name: Docker Compose - Logs ehrbase
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase
@@ -441,7 +442,7 @@ jobs:
         with:
           pattern: jmeter-report-*
           path: ./tests/jmeter-reports/
-      
+
       - name: Archive and Upload - JMeter results
         if: always()
         uses: actions/upload-artifact@v4
@@ -482,7 +483,7 @@ jobs:
         with:
           pattern: robot-result-*
           path: ./tests/results/
-      
+
       - name: Generate - Robot Tests-Report
         run: |
           docker run \
