@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 
@@ -30,11 +31,17 @@ public final class AslRmPathField extends AslVirtualField {
     private final Set<String> dvOrderedTypes;
 
     public AslRmPathField(
-            final AslColumnField srcField,
-            final List<PathNode> pathInJson,
-            final Set<String> dvOrderedTypes,
-            final Class<?> type) {
-        super(type, srcField.fieldSource, null);
+            AslColumnField srcField, List<PathNode> pathInJson, Set<String> dvOrderedTypes, Class<?> type) {
+        this(srcField, null, pathInJson, dvOrderedTypes, type);
+    }
+
+    public AslRmPathField(
+            AslColumnField srcField,
+            AslFieldOrigin origin,
+            List<PathNode> pathInJson,
+            Set<String> dvOrderedTypes,
+            Class<?> type) {
+        super(type, srcField.fieldSource, origin, null);
         this.srcField = srcField;
         this.pathInJson = new ArrayList<>(pathInJson);
         this.dvOrderedTypes = dvOrderedTypes;
@@ -42,12 +49,17 @@ public final class AslRmPathField extends AslVirtualField {
 
     @Override
     public AslField withProvider(final AslQuery provider) {
-        return new AslRmPathField(srcField.withProvider(provider), pathInJson, dvOrderedTypes, type);
+        return new AslRmPathField(srcField.withProvider(provider), origin, pathInJson, dvOrderedTypes, type);
     }
 
     @Override
     public AslField copyWithOwner(final AslQuery aslFilteringQuery) {
-        return new AslRmPathField(srcField.copyWithOwner(aslFilteringQuery), pathInJson, dvOrderedTypes, type);
+        return new AslRmPathField(srcField.copyWithOwner(aslFilteringQuery), origin, pathInJson, dvOrderedTypes, type);
+    }
+
+    @Override
+    public AslField withOrigin(AslFieldOrigin origin) {
+        return new AslRmPathField(srcField, origin, pathInJson, dvOrderedTypes, type);
     }
 
     public AslColumnField getSrcField() {
