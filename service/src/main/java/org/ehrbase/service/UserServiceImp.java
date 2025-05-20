@@ -58,7 +58,7 @@ public class UserServiceImp implements UserService {
     public UserAndCommitterId getCurrentUserAndCommitterId() {
         String key = authenticationFacade.getAuthentication().getName();
         try {
-            return CacheProvider.USER_ID_CACHE.get(cacheProvider, key, () -> getOrCreateCurrentUserIdSync(key));
+            return CacheProvider.USER_ID_CACHE.get(cacheProvider, key, () -> getOrCreateCurrentUserId(key));
         } catch (Cache.ValueRetrievalException e) {
             Throwable cause = e.getCause();
             if (cause instanceof DuplicateKeyException c) {

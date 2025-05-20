@@ -28,7 +28,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.openehr.dbformat.RmAttribute;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -103,7 +103,7 @@ final class FieldUtils {
     static Field<JSONB> buildJsonbPathField(List<PathNode> pathNodes, boolean multipleValued, Field<JSONB> jsonbField) {
         Iterator<String> attributeIt = pathNodes.stream()
                 .map(PathNode::getAttribute)
-                .map(RmAttributeAlias::getAlias)
+                .map(RmAttribute::getAlias)
                 .iterator();
 
         Field<JSONB> field = jsonbField;

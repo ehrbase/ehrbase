@@ -250,7 +250,7 @@ class PathAnalysisTest {
     }
 
     @Test
-    void testRmAttributeAlias() {
+    void testRmAttribute() {
 
         List<String> synthetic = List.of("_magnitude", "_type", "_index");
         List<String> rmAttributes = RmAttribute.VALUES.stream()

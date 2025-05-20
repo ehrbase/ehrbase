@@ -42,7 +42,7 @@ import org.junit.jupiter.params.provider.EnumSource.Mode;
 class VersionedObjectDataStructureTest {
 
     @Test
-    void testStructureRmTypeAlias() {
+    void testStructureRmType() {
         // duplicate aliases?
         Map<String, StructureRmType> result = Arrays.stream(StructureRmType.values())
                 .collect(Collectors.toMap(StructureRmType::getAlias, Function.identity()));

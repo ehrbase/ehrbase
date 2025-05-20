@@ -163,7 +163,7 @@ public final class DbToRmFormat {
                 for (int i = 0; i < folderSize; i++) {
                     restoreFolderItemObject(folderItemsNode, i);
                 }
-                objectNode.set(RmAttributeAlias.getAlias("items"), folderItemsNode);
+                objectNode.set(RmAttribute.getAlias("items"), folderItemsNode);
             }
         }
 
@@ -174,11 +174,11 @@ public final class DbToRmFormat {
         JsonNode srcNode = folderItemsNode.get(idx);
 
         ObjectNode dstNode = folderItemsNode.objectNode();
-        dstNode.put(RmAttributeAlias.getAlias("namespace"), "local");
-        dstNode.put(RmAttributeAlias.getAlias("type"), "VERSIONED_COMPOSITION");
-        ObjectNode idNode = dstNode.putObject(RmAttributeAlias.getAlias("id"));
-        idNode.put(TYPE_ALIAS, RmTypeAlias.getAlias("HIER_OBJECT_ID"));
-        idNode.set(RmAttributeAlias.getAlias("value"), srcNode);
+        dstNode.put(RmAttribute.getAlias("namespace"), "local");
+        dstNode.put(RmAttribute.getAlias("type"), "VERSIONED_COMPOSITION");
+        ObjectNode idNode = dstNode.putObject(RmAttribute.getAlias("id"));
+        idNode.put(RmAttribute.OBJ_TYPE.alias(), RmType.getAlias("HIER_OBJECT_ID"));
+        idNode.set(RmAttribute.getAlias("value"), srcNode);
 
         folderItemsNode.set(idx, dstNode);
     }
