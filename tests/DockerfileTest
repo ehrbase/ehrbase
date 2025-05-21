@@ -3,7 +3,7 @@ ARG EHRBASE_IMAGE
 #
 # Builder to fetch jacoco
 #
-FROM maven:3.9-eclipse-temurin-21-alpine as builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 

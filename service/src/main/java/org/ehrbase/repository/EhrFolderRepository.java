@@ -287,11 +287,6 @@ public class EhrFolderRepository
         deleteHistoryQuery.execute();
     }
 
-    public List<ObjectVersionId> findForContribution(UUID ehrId, UUID contributionId) {
-
-        return findVersionIdsByContribution(ehrId, contributionId);
-    }
-
     private Condition singleFolderInEhrCondition(Table<?> table, UUID ehrId, int folderIdx) {
         return table.field(VERSION_PROTOTYPE.EHR_ID)
                 .eq(ehrId)
