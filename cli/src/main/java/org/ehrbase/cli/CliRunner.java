@@ -23,9 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
-import org.assertj.core.util.Lists;
+import java.util.stream.StreamSupport;
 import org.ehrbase.cli.cmd.CliCommand;
 import org.ehrbase.cli.cmd.CliHelpCommand;
 import org.slf4j.Logger;
@@ -72,7 +74,13 @@ public class CliRunner {
         commandName.ifPresentOrElse(
                 name -> Optional.ofNullable(namedCommands.get(name))
                         .ifPresentOrElse(
-                                command -> runCommand(command, Lists.newArrayList(argIter)),
+                                command -> runCommand(
+                                        command,
+                                        StreamSupport.stream(
+                                                        Spliterators.spliteratorUnknownSize(
+                                                                argIter, Spliterator.ORDERED),
+                                                        false)
+                                                .toList()),
                                 () -> helpCommand.exitFail("Unknown command %s".formatted(name))),
                 () -> helpCommand.exitFail("No command specified"));
     }

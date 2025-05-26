@@ -65,9 +65,11 @@
             <groupId>com.nedap.healthcare.archie</groupId>
             <artifactId>openehr-rm</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
