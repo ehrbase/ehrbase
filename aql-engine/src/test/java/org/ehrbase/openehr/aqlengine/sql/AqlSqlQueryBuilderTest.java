@@ -72,6 +72,8 @@ class AqlSqlQueryBuilderTest {
                 TestConfig.aqlConfigurationProperties(),
                 new DefaultDSLContext(SQLDialect.POSTGRES),
                 templateService,
+                Optional.empty(),
+                Optional.empty(),
                 Optional.empty());
     }
 
