@@ -31,9 +31,11 @@ import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
@@ -238,6 +240,10 @@ public class CompositionRepository
 
     public Optional<Composition> findHead(UUID ehrId, UUID compId) {
         return findHead(singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()));
+    }
+
+    public Stream<Composition> findHeads(Collection<UUID> compIds) {
+        return findHeads(tables.versionHead().field(VERSION_PROTOTYPE.VO_ID).in(compIds));
     }
 
     private Optional<Composition> toComposition(UUID compId, Record3<UUID, Integer, JSONB> jsonbRecord) {
