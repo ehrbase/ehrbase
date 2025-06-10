@@ -50,6 +50,8 @@ public final class DbToRmFormat {
 
     public static final String FOLDER_ITEMS_UUID_ARRAY_ALIAS = "IA";
 
+    public static final String FEEDER_AUDIT_ATTRIBUTE_ALIAS = "f";
+
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, String dbJsonStr) {
         JsonNode jsonNode = parseJson(dbJsonStr);
 
@@ -211,24 +213,30 @@ public final class DbToRmFormat {
             boolean isLeaf = p == leaf;
             ObjectNode child = v;
             String fieldName = p.attribute();
+            JsonNode ch = parentObject.get(fieldName);
             if (p.index() == null) {
-                JsonNode ch = parentObject.get(fieldName);
                 ObjectNode existing = (ObjectNode) ch;
-                if (existing != null) {
-                    if (isLeaf) {
-                        throw new IllegalArgumentException(
-                                "parent already has child %s (%s)".formatted(fieldName, path));
+                if (isLeaf) {
+                    if (existing != null) {
+                        /* In VersionedObjectDataStructure::handleSubObject a copy of FEEDER_AUDIT
+                         * is stored in ELEMENT, so we can treat ELEMENT as leaf.
+                         * ELEMENT/feeder_audit is replaced because it would be more complicated to skip all possible descendants
+                         */
+                        if (!FEEDER_AUDIT_ATTRIBUTE_ALIAS.equals(fieldName)) {
+                            throw new IllegalArgumentException(
+                                    "parent already has child %s (%s)".formatted(fieldName, path));
+                        }
                     }
-                    parentObject = (ObjectNode) parentObject.get(fieldName);
-                } else if (!isLeaf) {
-                    throw new IllegalArgumentException("missing ancestor %s (%s)".formatted(fieldName, path));
-                } else {
                     parentObject.set(fieldName, child);
                     parentObject = child;
+                } else if (existing == null) {
+                    throw new IllegalArgumentException("missing ancestor %s (%s)".formatted(fieldName, path));
+                } else {
+                    parentObject = (ObjectNode) parentObject.get(fieldName);
                 }
 
             } else {
-                ArrayNode arrayNode = (ArrayNode) parentObject.get(fieldName);
+                ArrayNode arrayNode = (ArrayNode) ch;
                 if (arrayNode == null) {
                     arrayNode = parentObject.arrayNode();
                     parentObject.set(fieldName, arrayNode);
