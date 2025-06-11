@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 - Add missing test dependency scope to assertj [#1502](https://github.com/ehrbase/ehrbase/pull/1502)
+- Fix terminology validation URL extraction [#1507](https://github.com/ehrbase/ehrbase/pull/1507)
 
 ## [2.17.0]
  ### Added
