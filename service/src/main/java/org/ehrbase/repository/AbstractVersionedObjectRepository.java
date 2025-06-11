@@ -177,6 +177,11 @@ public abstract class AbstractVersionedObjectRepository<
         return toLocatable(locatableDataQuery.fetchOne(), getLocatableClass());
     }
 
+    protected Stream<O> findHeads(Condition condition) {
+        SelectQuery<Record> locatableDataQuery = buildLocatableDataQuery(condition, true);
+        return locatableDataQuery.stream().flatMap(r -> toLocatable(r, getLocatableClass()).stream());
+    }
+
     public Optional<O> findByVersion(Condition condition, Condition historyCondition, int version) {
         SelectQuery<Record /*<UUID, Integer, JSONB, …>*/> headQuery = buildLocatableDataQuery(condition, true);
         headQuery.addConditions(field(VERSION_PROTOTYPE.SYS_VERSION).eq(version));

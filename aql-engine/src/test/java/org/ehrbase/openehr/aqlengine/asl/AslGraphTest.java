@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 class AslGraphTest {
 
     @Test
-    @Disabled("What is this testing - there is no assert?")
+    @Disabled("Can be used for quick local test")
     void printDataQueryGraph() {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(
@@ -39,6 +39,8 @@ class AslGraphTest {
                   -- ,c1/content[openEHR-EHR-SECTION.adhoc.v1,'Diagnostic Results']/name/value
                 FROM EHR e
                   CONTAINS COMPOSITION c1
+                WHERE
+                    c1/content[openEHR-EHR-SECTION.adhoc.v1]/name/value = 'test_value'
                 """);
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);

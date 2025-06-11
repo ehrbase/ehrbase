@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.asl.model.query;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
@@ -28,13 +29,16 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 
 public abstract sealed class AslQuery
-        permits AslDataQuery, AslEncapsulatingQuery, AslFilteringQuery, AslStructureQuery {
+        permits AslDataQuery, AslEncapsulatingQuery, AslFilteringQuery, AslStructureQuery, AslExternalQuery {
+
     protected List<AslQueryCondition> structureConditions;
     private final String alias;
+    private final AslQueryOrigin origin;
     private AslQueryCondition condition;
 
-    protected AslQuery(String alias, List<AslQueryCondition> structureConditions) {
+    protected AslQuery(String alias, AslQueryOrigin origin, List<AslQueryCondition> structureConditions) {
         this.alias = alias;
+        this.origin = origin;
         this.structureConditions = structureConditions;
     }
 
@@ -44,6 +48,10 @@ public abstract sealed class AslQuery
 
     public String getAlias() {
         return alias;
+    }
+
+    public AslQueryOrigin getOrigin() {
+        return origin;
     }
 
     public AslQueryCondition getCondition() {

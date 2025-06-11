@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
@@ -53,6 +54,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslExternalQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslFilteringQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslPathDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
@@ -61,6 +63,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
+import org.ehrbase.openehr.aqlengine.sql.provider.AqlSqlExternalTableProvider;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -95,16 +98,22 @@ public class AqlSqlQueryBuilder {
     private final DSLContext context;
     private final TemplateService templateService;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
+    private final Optional<AqlSqlExternalTableProvider> externalTableProvider;
+    private final Optional<AqlQueryContext> aqlQueryContext;
 
     public AqlSqlQueryBuilder(
             AqlConfigurationProperties aqlConfigurationProperties,
             DSLContext context,
             TemplateService templateService,
-            Optional<AqlSqlQueryPostProcessor> queryPostProcessor) {
+            Optional<AqlSqlQueryPostProcessor> queryPostProcessor,
+            Optional<AqlSqlExternalTableProvider> externalTableProvider,
+            Optional<AqlQueryContext> aqlQueryContext) {
         this.aqlConfigurationProperties = aqlConfigurationProperties;
         this.context = context;
         this.templateService = templateService;
         this.queryPostProcessor = queryPostProcessor;
+        this.externalTableProvider = externalTableProvider;
+        this.aqlQueryContext = aqlQueryContext;
     }
 
     public static String subqueryAlias(AslQuery aslQuery) {
@@ -154,7 +163,17 @@ public class AqlSqlQueryBuilder {
 
         // LIMIT
         if (aslRootQuery.getLimit() != null) {
-            query.addLimit(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset(), aslRootQuery.getLimit());
+            boolean useParam = aqlQueryContext
+                    .flatMap(a -> a.getHeader("EHRbase-AQL-Query-Plan-Cache"))
+                    .filter("true"::equals)
+                    .isPresent();
+            if (useParam) {
+                query.addLimit(DSL.inline(aslRootQuery.getLimit()));
+                query.addOffset(DSL.inline(aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset()));
+            } else {
+                query.addLimit(
+                        aslRootQuery.getOffset() == null ? 0L : aslRootQuery.getOffset(), aslRootQuery.getLimit());
+            }
         }
 
         queryPostProcessor.ifPresent(p -> p.afterBuildSqlQuery(aslRootQuery, query));
@@ -203,14 +222,18 @@ public class AqlSqlQueryBuilder {
             SelectField<?> sqlField = EncapsulatingQueryUtils.selectField(field, aslQueryToTable);
             query.addSelect(sqlField);
         }
+
         // where
-        query.addConditions(
-                Operator.AND,
-                Stream.concat(
-                                Optional.of(aq).map(AslEncapsulatingQuery::getCondition).stream(),
-                                aq.getStructureConditions().stream())
-                        .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
-                        .toList());
+        boolean useParam = aqlQueryContext
+                .flatMap(a -> a.getHeader("EHRbase-AQL-Query-Plan-Cache"))
+                .filter("true"::equals)
+                .isPresent();
+        List<Condition> list = Stream.concat(
+                        Optional.of(aq).map(AslEncapsulatingQuery::getCondition).stream(),
+                        aq.getStructureConditions().stream())
+                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true, useParam))
+                .toList();
+        query.addConditions(Operator.AND, list);
 
         if (aq instanceof AslRootQuery rq) {
             rq.getGroupByFields().stream()
@@ -245,6 +268,7 @@ public class AqlSqlQueryBuilder {
                     .asTable(aq.getAlias()));
             case AslPathDataQuery aq -> DSL.lateral(
                     buildPathDataQuery(aq, target, aslQueryToTable).asTable(aq.getAlias()));
+            case AslExternalQuery aq -> buildExternalQuery(aq, aslQueryToTable);
         };
     }
 
@@ -344,7 +368,7 @@ public class AqlSqlQueryBuilder {
         SelectConditionStep<Record> where = step.where(Stream.concat(
                         Optional.of(aq).map(AslStructureQuery::getCondition).stream(),
                         aq.getStructureConditions().stream())
-                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, false))
+                .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, false, false))
                 .toArray(Condition[]::new));
 
         // data and primary are local to this sub-query and can be removed
@@ -359,24 +383,16 @@ public class AqlSqlQueryBuilder {
         Map<Class<? extends AslField>, List<AslField>> aslFields =
                 aq.getSelect().stream().collect(Collectors.groupingBy(AslField::getClass));
 
-        Stream<Field<?>> columnFields = consumeFieldsOfType(
-                aslFields,
-                AslColumnField.class,
-                cf -> ((aq.isRequiresVersionTableJoin() && cf.isVersionTableField()) ? primaryTable : dataTable)
-                        .field(cf.getColumnName())
-                        .as(cf.getAliasedName()));
+        Stream<Field<?>> columnFields = consumeFieldsOfType(aslFields, AslColumnField.class, cf -> FieldUtils.field(
+                        (aq.isRequiresVersionTableJoin() && cf.isVersionTableField()) ? primaryTable : dataTable,
+                        cf,
+                        false)
+                .as(cf.getAliasedName()));
 
         Stream<AslFolderItemIdVirtualField> folderFields =
                 consumeFieldsOfType(aslFields, AslFolderItemIdVirtualField.class, Function.identity());
 
-        if (!aslFields.isEmpty()) {
-            throw new IllegalStateException("StructureQueryBase could not handle AslFields of type %s"
-                    .formatted(aslFields.values().stream()
-                            .flatMap(Collection::stream)
-                            .map(Object::getClass)
-                            .map(Class::getSimpleName)
-                            .toList()));
-        }
+        checkAllFieldsConsumed("StructureQueryBase", aslFields);
 
         final SelectJoinStep<Record> step;
         if (hasVersionTable) {
@@ -385,6 +401,37 @@ public class AqlSqlQueryBuilder {
             step = structureQueryBaseUsingDataTable(aq, primaryTable, columnFields, folderFields);
         }
         return step;
+    }
+
+    private Table<Record> buildExternalQuery(AslExternalQuery aslExternalQuery, AslQueryTables aslQueryToTable) {
+
+        Table<Record> table = externalTableProvider
+                .orElseThrow(() -> new IllegalStateException("No external table provider available"))
+                .tableForExternalQuery(aslExternalQuery)
+                .orElseThrow(() ->
+                        new IllegalStateException("Could not obtain SQL table for %s".formatted(aslExternalQuery)));
+
+        aslQueryToTable.put(aslExternalQuery, table, table);
+
+        Map<Class<? extends AslField>, List<AslField>> aslFields =
+                aslExternalQuery.getSelect().stream().collect(Collectors.groupingBy(AslField::getClass));
+
+        Stream<Field<?>> columnFields = consumeFieldsOfType(aslFields, AslColumnField.class, cf -> DSL.field(
+                        FieldUtils.field(table, cf, false).getUnqualifiedName())
+                .as(cf.getAliasedName()));
+
+        checkAllFieldsConsumed("ExternalQuery", aslFields);
+
+        SelectJoinStep<Record> selectStep =
+                DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new)).from(table);
+
+        return Optional.ofNullable(aslExternalQuery.getCondition())
+                .map(condition -> {
+                    SelectConditionStep<Record> where = selectStep.where(ConditionUtils.buildCondition(
+                            aslExternalQuery.getCondition(), aslQueryToTable, false, false));
+                    return where.asTable(aslExternalQuery.getAlias());
+                })
+                .orElseGet(() -> selectStep.asTable(aslExternalQuery.getAlias()));
     }
 
     /**
@@ -544,12 +591,17 @@ public class AqlSqlQueryBuilder {
                 .map(mapper);
     }
 
-    private static <T> SelectJoinStep<Record> structureQueryBaseVersion(
-            Stream<Field<?>> columnFields, Table<?> primaryTable, Table<?> dataTable, TableField<?, T> tableField) {
-        return DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
-                .from(primaryTable)
-                .join(dataTable)
-                .on(Objects.requireNonNull(primaryTable.field(tableField)).eq(dataTable.field(tableField)));
+    private static void checkAllFieldsConsumed(String type, Map<Class<? extends AslField>, List<AslField>> aslFields) {
+        if (!aslFields.isEmpty()) {
+            throw new IllegalStateException("%s could not handle AslFields of type %s"
+                    .formatted(
+                            type,
+                            aslFields.values().stream()
+                                    .flatMap(Collection::stream)
+                                    .map(Object::getClass)
+                                    .map(Class::getSimpleName)
+                                    .toList()));
+        }
     }
 
     /**

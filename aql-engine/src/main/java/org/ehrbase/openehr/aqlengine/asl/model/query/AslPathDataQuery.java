@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
@@ -31,6 +32,7 @@ import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 
+@SuppressWarnings("java:S107")
 public final class AslPathDataQuery extends AslDataQuery {
     public static final String DATA_COLUMN_NAME = "data";
 
@@ -41,13 +43,14 @@ public final class AslPathDataQuery extends AslDataQuery {
 
     public AslPathDataQuery(
             String alias,
+            AslQueryOrigin origin,
             AslQuery base,
             AslQuery baseProvider,
             List<PathNode> dataPath,
             boolean multipleValued,
             Set<String> dvOrderedTypes,
             Class<?> fieldType) {
-        super(alias, base, baseProvider);
+        super(alias, origin, base, baseProvider);
         this.dvOrderedTypes = Collections.unmodifiableSet(dvOrderedTypes);
         if (!(base instanceof AslStructureQuery || base instanceof AslPathDataQuery)) {
             throw new IllegalArgumentException(
@@ -88,5 +91,11 @@ public final class AslPathDataQuery extends AslDataQuery {
 
     public Set<String> getDvOrderedTypes() {
         return dvOrderedTypes;
+    }
+
+
+    @Override
+    public String toString() {
+        return "AslPathDataQuery[" + getAlias() + "]";
     }
 }

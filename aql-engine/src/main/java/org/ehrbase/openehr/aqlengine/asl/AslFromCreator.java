@@ -31,6 +31,8 @@ import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslQueryOrigin;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslTypeOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
@@ -267,7 +269,8 @@ final class AslFromCreator {
             Map<ContainsWrapper, OwnerProviderTuple> containsToStructureSubQuery,
             AslStructureQuery currentParent,
             ContainsChain operand) {
-        AslEncapsulatingQuery orSq = new AslEncapsulatingQuery(aliasProvider.uniqueAlias("or_sq"));
+        AslEncapsulatingQuery orSq =
+                new AslEncapsulatingQuery(aliasProvider.uniqueAlias("or_sq"), currentParent.getOrigin());
         HashMap<ContainsWrapper, OwnerProviderTuple> subQueryMap = new HashMap<>();
 
         addContainsChain(orSq, currentParent, operand, false, subQueryMap);
@@ -309,9 +312,17 @@ final class AslFromCreator {
             isRoot = RmConstants.EHR_STATUS.equals(rmType) || RmConstants.COMPOSITION.equals(rmType);
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
+        final AslTypeOrigin origin = AslTypeOrigin.ofContainsWrapper(containsWrapper);
 
         AslStructureQuery aslStructureQuery = new AslStructureQuery(
-                sAlias, sourceRelation, fields, rmTypes, isRoot ? List.of() : rmTypes, null, requiresVersionJoin);
+                sAlias,
+                sourceRelation,
+                AslQueryOrigin.ofType(origin),
+                fields,
+                rmTypes,
+                isRoot ? List.of() : rmTypes,
+                null,
+                requiresVersionJoin);
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
@@ -334,8 +345,8 @@ final class AslFromCreator {
             RmContainsWrapper currentDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         final List<AslField> fields = new ArrayList<>();
         if (RmConstants.EHR.equals(currentDesc.getRmType())) {
-            fields.add(new AslColumnField(UUID.class, "id", null, false, AslExtractedColumn.EHR_ID));
-            fields.add(new AslColumnField(OffsetDateTime.class, "creation_date", null, false, null));
+            fields.add(new AslColumnField(UUID.class, "id", null, AslExtractedColumn.EHR_ID, false));
+            fields.add(new AslColumnField(OffsetDateTime.class, "creation_date", null, null, false));
         } else {
             Arrays.stream(AslStructureColumn.values())
                     .filter(c -> requiresVersionJoin
@@ -359,8 +370,8 @@ final class AslFromCreator {
                         String.class,
                         Tables.COMP_VERSION.ROOT_CONCEPT.getName(),
                         null,
-                        true,
-                        AslExtractedColumn.ROOT_CONCEPT));
+                        AslExtractedColumn.ROOT_CONCEPT,
+                        true));
             }
 
             // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value

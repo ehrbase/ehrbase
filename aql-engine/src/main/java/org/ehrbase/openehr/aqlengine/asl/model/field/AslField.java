@@ -18,11 +18,14 @@
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
 import java.util.stream.Stream;
+import org.ehrbase.openehr.aqlengine.asl.meta.AslFieldOrigin;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
+import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 
 public abstract sealed class AslField permits AslColumnField, AslConstantField, AslSubqueryField, AslVirtualField {
+
     public record FieldSource(
             /**
              * The table that the fields originates from
@@ -49,10 +52,13 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
     protected Class<?> type;
     protected FieldSource fieldSource;
     protected AslExtractedColumn extractedColumn;
+    protected AslFieldOrigin origin;
 
-    protected AslField(Class<?> type, FieldSource fieldSource, AslExtractedColumn extractedColumn) {
+    protected AslField(
+            Class<?> type, FieldSource fieldSource, AslFieldOrigin origin, AslExtractedColumn extractedColumn) {
         this.type = type;
         this.fieldSource = fieldSource;
+        this.origin = origin;
         this.extractedColumn = extractedColumn;
     }
 
@@ -72,6 +78,10 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
         return fieldSource.provider();
     }
 
+    public AslFieldOrigin getOrigin() {
+        return origin;
+    }
+
     public abstract AslField withProvider(AslQuery provider);
 
     public AslField withOwner(AslQuery owner) {
@@ -81,6 +91,14 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
         return copyWithOwner(owner);
     }
 
+    public abstract AslField copyWithOwner(AslQuery aslFilteringQuery);
+
+    public AslField withOrigin(IdentifiedPath path) {
+        return withOrigin(new AslFieldOrigin(path));
+    }
+
+    public abstract AslField withOrigin(AslFieldOrigin origin);
+
     public AslExtractedColumn getExtractedColumn() {
         return extractedColumn;
     }
@@ -88,8 +106,6 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
     protected String aliasedName(String name) {
         return fieldSource.owner().getAlias() + "_" + name;
     }
-
-    public abstract AslField copyWithOwner(AslQuery aslFilteringQuery);
 
     public Stream<AslField> fieldsForAggregation(AslRootQuery rootQuery) {
         if (this.getProvider() == rootQuery) {
