@@ -75,6 +75,14 @@ import org.jooq.JSONB;
 
 public final class AslUtils {
 
+    public static AslSourceRelation getTargetType(AslQuery target) {
+        if (target instanceof AslStructureQuery sq) {
+            return sq.getType();
+        } else {
+            throw new IllegalArgumentException("target is no StructureQuery: %s".formatted(target));
+        }
+    }
+
     static final class AliasProvider {
         private final Map<String, Integer> aliasCounters = new HashMap<>();
 
