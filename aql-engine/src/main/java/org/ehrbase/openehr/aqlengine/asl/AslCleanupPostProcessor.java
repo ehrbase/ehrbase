@@ -132,7 +132,13 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
                         }));
                 eq.getChildren().stream().map(Pair::getLeft).forEach(cq -> findUsedFields(cq, usedFields));
             }
-            case AslStructureQuery sq -> usedFields.computeIfAbsent(sq, k -> new HashSet<>());
+            case AslStructureQuery sq -> usedFields.compute(sq, (k, v) -> {
+                Set<String> names = v != null ? v : new HashSet<>();
+                // Default column to keep since an empty SELECT is translated to SELECT *
+                names.add(AslStructureColumn.VO_ID.getFieldName());
+                names.add("id");
+                return names;
+            });
             case AslRmObjectDataQuery rodq -> throw new IllegalArgumentException("unexpected AslRmObjectDataQuery");
         }
     }
@@ -140,6 +146,8 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
     private static AslQuery determineOwner(AslField f) {
         if (f instanceof AslSubqueryField sf) {
             return ((AslDataQuery) sf.getBaseQuery()).getBase();
+        } else if (f instanceof AslAggregatingField af) {
+            return determineOwner(af.getBaseField());
         }
         return f.getOwner();
     }
@@ -192,6 +200,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
                             .map(TableField::getName),
                     Stream.of(AslStructureColumn.NUM.getFieldName(), AslStructureColumn.NUM_CAP.getFieldName()));
             case AslFolderItemIdVirtualField fidf -> Stream.of(fidf.getFieldName());
+            case null -> Stream.empty();
         };
     }
 
