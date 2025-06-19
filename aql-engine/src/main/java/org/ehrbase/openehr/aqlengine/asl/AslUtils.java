@@ -103,6 +103,7 @@ public final class AslUtils {
             case AslFalseQueryCondition __ -> Stream.empty();
             case AslTrueQueryCondition __ -> Stream.empty();
             case AslProvidesJoinCondition __ -> throw new IllegalArgumentException();
+            case null -> Stream.empty();
         };
     }
 
