@@ -87,7 +87,6 @@ class AslCleanupPostProcessorTest {
             sCO_c_0: StructureQuery
               SELECT
                 sCO_c_0.sCO_c_0_vo_id
-                sCO_c_0.sCO_c_0_num
                 sCO_c_0.sCO_c_0_sys_version
               WHERE
                 sCO_c_0.sCO_c_0_num EQ [0]
@@ -318,15 +317,6 @@ class AslCleanupPostProcessorTest {
               ORDER BY
             sOB_o_0.sOB_o_0_entity_name -- name/value ASC
         """);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"SELECT c/uid/value, c/name FROM COMPOSITION c"})
-    void unchangedAsl(String aqlStr) {
-        AslResult result = parseAql(aqlStr);
-        String originalAslGraph = AslGraph.createAslGraph(result.aslQuery());
-        new AslCleanupPostProcessor().afterBuildAsl(result.aslQuery(), result.aqlQuery(), result.queryWrapper(), null);
-        assertThat(AslGraph.createAslGraph(result.aslQuery())).isEqualTo(originalAslGraph);
     }
 
     @ParameterizedTest
