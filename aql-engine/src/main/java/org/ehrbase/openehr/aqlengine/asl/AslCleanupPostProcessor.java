@@ -144,12 +144,12 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
     }
 
     private static AslQuery determineOwner(AslField f) {
-        if (f instanceof AslSubqueryField sf) {
-            return ((AslDataQuery) sf.getBaseQuery()).getBase();
-        } else if (f instanceof AslAggregatingField af) {
-            return determineOwner(af.getBaseField());
-        }
-        return f.getOwner();
+        return switch (f) {
+            case null -> null;
+            case AslSubqueryField sf -> ((AslDataQuery) sf.getBaseQuery()).getBase();
+            case AslAggregatingField af -> determineOwner(af.getBaseField());
+            default -> f.getOwner();
+        };
     }
 
     private static Stream<AslField> streamJoinConditionFields(AslJoinCondition jc) {
