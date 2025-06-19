@@ -85,6 +85,25 @@ class AslCleanupPostProcessorTest {
     @Test
     void cleanupRegression() {
         AslResult result = parseAql("""
+            SELECT c/uid/value,
+                o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude,
+                el/value/units
+            FROM EHR[ehr_id/value='860f5c5b-f121-41bb-ad66-7ac6c285526c']
+            CONTAINS EHR_STATUS s 
+            AND COMPOSITION c
+             CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.test.v0] 
+                CONTAINS ELEMENT el[at0120]
+            WHERE el/name/value='Result'
+            AND el/value/value=1.3
+            ORDER BY o/name/value
+            
+            
+        """);
+        new AslCleanupPostProcessor()
+                .afterBuildAsl(result.aslQuery(), result.aqlQuery(), result.queryWrapper(), null);
+        String modifiedAslGraph = AslGraph.createAslGraph(result.aslQuery());
+
+        assertThat(modifiedAslGraph).isEqualToIgnoringWhitespace("""
 AslRootQuery
   SELECT
     sCO_c_0.?? -- COMPLEX VO_ID uid/value
@@ -333,24 +352,6 @@ AslRootQuery
       sE_el_0.sE_el_0_data -> value -> value EQ [1.3]
   ORDER BY
 sOB_o_0.sOB_o_0_entity_name -- name/value ASC
-        """);
-        new AslCleanupPostProcessor()
-                .afterBuildAsl(result.aslQuery(), result.aqlQuery(), result.queryWrapper(), null);
-        String modifiedAslGraph = AslGraph.createAslGraph(result.aslQuery());
-
-        assertThat(modifiedAslGraph).isEqualToIgnoringWhitespace("""
-        AslRootQuery
-          SELECT
-            sCO_c_0.?? -- COMPLEX VO_ID uid/value
-          FROM
-            sCO_c_0: StructureQuery
-              SELECT
-                sCO_c_0.sCO_c_0_vo_id
-                sCO_c_0.sCO_c_0_num
-                sCO_c_0.sCO_c_0_sys_version
-              WHERE
-                sCO_c_0.sCO_c_0_num EQ [0]
-              FROM COMPOSITION
         """);
     }
 
