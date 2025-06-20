@@ -32,6 +32,8 @@ import org.springframework.core.Ordered;
  * Having multiple beans of this type with the same order value may produce inconsistent results.
  */
 public interface AslPostProcessor extends Ordered {
+
+    int CLEAN_UP_PRECEDENCE = 0;
     /**
      * Invoked after the building the AslRootQuery and before building the DB query.
      * This method can be used to modify the AslRootQuery inplace.

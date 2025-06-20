@@ -43,6 +43,7 @@ import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
+import org.ehrbase.openehr.aqlengine.asl.AslUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
@@ -248,14 +249,6 @@ public class AqlSqlQueryBuilder {
         };
     }
 
-    private static AslSourceRelation getTargetType(AslQuery target) {
-        if (target instanceof AslStructureQuery sq) {
-            return sq.getType();
-        } else {
-            throw new IllegalArgumentException("target is no StructureQuery: %s".formatted(target));
-        }
-    }
-
     /**
      * Has to be wrapped in DSL::lateral.
      * Applies "jsonb_array_elements" function, if last node is multiple valued
@@ -458,7 +451,7 @@ public class AqlSqlQueryBuilder {
                     .join(dataTable)
                     .on(primaryTable.field(COMP_VERSION.VO_ID).eq(dataTable.field(COMP_DATA.VO_ID)));
             case FOLDER -> {
-                Optional<AslFolderItemIdVirtualField> folderItemColumn = folderFields.findFirst();
+                Optional<AslFolderItemIdVirtualField> folderItemAslField = folderFields.findFirst();
 
                 final Condition onCondition = primaryTable
                         .field(EHR_FOLDER_VERSION.EHR_ID)
@@ -467,15 +460,15 @@ public class AqlSqlQueryBuilder {
                                 .field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
                                 .eq(dataTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
 
-                if (folderItemColumn.isEmpty()) {
+                if (folderItemAslField.isEmpty()) {
                     yield DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
                             .from(primaryTable)
                             .join(dataTable)
                             .on(onCondition);
                 } else {
-                    AslFolderItemIdVirtualField column = folderItemColumn.get();
+                    AslFolderItemIdVirtualField itemIdVirtualField = folderItemAslField.get();
                     Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
-                            buildFolderItemIdNestedSelect(dataTable, column, false);
+                            buildFolderItemIdNestedSelect(dataTable, itemIdVirtualField, false);
 
                     // we need all fields at this point + the item id array
                     Table<?> joinTable = tableToSelect.getLeft();
@@ -570,7 +563,7 @@ public class AqlSqlQueryBuilder {
             AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition... additionalConditions) {
         AslQuery target = aslData.getBaseProvider();
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
-        AslSourceRelation type = getTargetType(aslData.getBase());
+        AslSourceRelation type = AslUtils.getTargetType(aslData.getBase());
 
         Table<?> data = type.getDataTable().as(subqueryAlias(aslData));
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);

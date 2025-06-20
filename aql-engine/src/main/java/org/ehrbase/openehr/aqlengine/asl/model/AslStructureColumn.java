@@ -24,6 +24,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.jooq.Field;
@@ -70,6 +71,11 @@ public enum AslStructureColumn {
 
     public AslField field() {
         return new AslColumnField(clazz, fieldName, null, fromVersionTable, extractedColumn);
+    }
+
+    public AslColumnField fieldWithOwner(AslQuery owner) {
+        return new AslColumnField(
+                clazz, fieldName, AslField.FieldSource.withOwner(owner), fromVersionTable, extractedColumn);
     }
 
     public String getFieldName() {

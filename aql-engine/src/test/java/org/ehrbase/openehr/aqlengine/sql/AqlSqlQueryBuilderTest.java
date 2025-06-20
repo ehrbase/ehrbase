@@ -34,6 +34,7 @@ import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.AqlEhrPathPostProcessor;
 import org.ehrbase.openehr.aqlengine.AqlFromEhrOptimisationPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
+import org.ehrbase.openehr.aqlengine.asl.AslCleanupPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AslGraph;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis;
@@ -87,7 +88,7 @@ class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-            SELECT count(*) FROM COMPOSITION c WHERE c/category/defining_code/code_string = '435'
+            SELECT c/feeder_audit/original_content FROM COMPOSITION c
         """);
 
         System.out.println("/*");
@@ -100,6 +101,7 @@ class AqlSqlQueryBuilderTest {
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
+        new AslCleanupPostProcessor().afterBuildAsl(aslQuery, aqlQuery, queryWrapper, null);
 
         System.out.println("/*");
         System.out.println(AslGraph.createAslGraph(aslQuery));
