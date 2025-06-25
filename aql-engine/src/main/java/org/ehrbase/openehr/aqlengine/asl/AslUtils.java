@@ -43,6 +43,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -75,14 +76,6 @@ import org.jooq.JSONB;
 
 public final class AslUtils {
 
-    public static AslSourceRelation getTargetType(AslQuery target) {
-        if (target instanceof AslStructureQuery sq) {
-            return sq.getType();
-        } else {
-            throw new IllegalArgumentException("target is no StructureQuery: %s".formatted(target));
-        }
-    }
-
     static final class AliasProvider {
         private final Map<String, Integer> aliasCounters = new HashMap<>();
 
@@ -91,7 +84,26 @@ public final class AslUtils {
         }
     }
 
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_PARENT_RELATIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER,
+            AslSourceRelation.EHR);
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_CONDITIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER // FOLDER CONTAINS FOLDER
+            );
+
     private AslUtils() {}
+
+    public static AslSourceRelation getTargetType(AslQuery target) {
+        if (target instanceof AslStructureQuery sq) {
+            return sq.getType();
+        } else {
+            throw new IllegalArgumentException("target is no StructureQuery: %s".formatted(target));
+        }
+    }
 
     public static Stream<AslField> streamConditionFields(AslQueryCondition condition) {
         return switch (condition) {
@@ -404,5 +416,69 @@ public final class AslUtils {
             case 1 -> conditions.getFirst();
             default -> new AslAndQueryCondition(conditions);
         };
+    }
+
+    public static Stream<AslFieldJoinCondition> descendantJoinConditionProviders(
+            AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
+
+        AslSourceRelation parentRelation = leftOwner.getType();
+        if (!SUPPORTED_DESCENDANT_PARENT_RELATIONS.contains(parentRelation)) {
+            throw new IllegalArgumentException("unexpected parent relation type %s".formatted(parentRelation));
+        }
+        AslSourceRelation descendantRelation = rightOwner.getType();
+        if (!SUPPORTED_DESCENDANT_CONDITIONS.contains(descendantRelation)) {
+            throw new IllegalArgumentException("unexpected descendant relation type %s".formatted(descendantRelation));
+        }
+
+        return switch (parentRelation) {
+            case EHR -> Stream.of(new AslFieldJoinCondition(
+                    findFieldForOwner("id", left.getSelect(), leftOwner),
+                    AslConditionOperator.EQ,
+                    findFieldForOwner(AslStructureColumn.EHR_ID, right.getSelect(), rightOwner)));
+            case EHR_STATUS -> Stream.of(
+                            joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
+                            joinNumCapBetweenCondition(left, leftOwner, right, rightOwner))
+                    .flatMap(s -> s);
+                // l.vo_id == r.vo_id and l.num < r.num <= l.num_cap
+            case COMPOSITION -> Stream.of(
+                            joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner),
+                            joinNumCapBetweenCondition(left, leftOwner, right, rightOwner))
+                    .flatMap(s -> s);
+                // l.ehr_id == r.ehr_id and l.folder_idx == r.folder_idx and l.num < r.num <= l.num_cap
+            case FOLDER -> Stream.of(
+                            joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
+                            joinColumnEqualCondition(
+                                    AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner),
+                            joinNumCapBetweenCondition(left, leftOwner, right, rightOwner))
+                    .flatMap(s -> s);
+            case AUDIT_DETAILS -> throw new IllegalArgumentException(
+                    "Descendant condition not applicable to AUDIT_DETAILS");
+        };
+    }
+
+    private static Stream<AslFieldJoinCondition> joinColumnEqualCondition(
+            AslStructureColumn column,
+            AslQuery left,
+            AslStructureQuery leftOwner,
+            AslQuery right,
+            AslStructureQuery rightOwner) {
+        return Stream.of(new AslFieldJoinCondition(
+                findFieldForOwner(column, left.getSelect(), leftOwner),
+                AslConditionOperator.EQ,
+                findFieldForOwner(column, right.getSelect(), rightOwner)));
+    }
+
+    private static Stream<AslFieldJoinCondition> joinNumCapBetweenCondition(
+            AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
+
+        return Stream.of(
+                new AslFieldJoinCondition(
+                        findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
+                        AslConditionOperator.LT,
+                        findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)),
+                new AslFieldJoinCondition(
+                        findFieldForOwner(AslStructureColumn.NUM_CAP, left.getSelect(), leftOwner),
+                        AslConditionOperator.GT_EQ,
+                        findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)));
     }
 }

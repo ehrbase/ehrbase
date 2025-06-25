@@ -33,7 +33,7 @@ import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
@@ -41,9 +41,9 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslCo
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslAbstractJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
@@ -206,15 +206,18 @@ final class AslFromCreator {
         container.addChild(toAdd, join);
     }
 
-    private static AslAbstractJoinCondition aslJoinCondition(AslStructureQuery toAdd, AslStructureQuery joinParent) {
+    private static AslJoinCondition[] aslJoinCondition(AslStructureQuery toAdd, AslStructureQuery joinParent) {
 
         AslSourceRelation parentType = joinParent.getType();
         AslSourceRelation targetType = toAdd.getType();
         if (parentType == AslSourceRelation.FOLDER && targetType == AslSourceRelation.COMPOSITION) {
-            return new AslFolderItemJoinCondition(joinParent, joinParent, targetType, toAdd, toAdd);
+            return new AslJoinCondition[] {
+                new AslFolderItemJoinCondition(joinParent, joinParent, targetType, toAdd, toAdd)
+            };
         }
-        return new AslDescendantCondition(parentType, joinParent, joinParent, targetType, toAdd, toAdd)
-                .provideJoinCondition();
+        return AslUtils.descendantJoinConditionProviders(joinParent, joinParent, toAdd, toAdd)
+                .map(AslFieldJoinCondition::provideJoinCondition)
+                .toArray(AslJoinCondition[]::new);
     }
 
     private void addContainsChainSetOperator(
@@ -242,14 +245,9 @@ final class AslFromCreator {
                                 currentParent,
                                 JoinType.LEFT_OUTER_JOIN,
                                 orSq,
-                                new AslDescendantCondition(
-                                                currentParent.getType(),
-                                                currentParent,
-                                                currentParent,
-                                                child.getType(),
-                                                orSq,
-                                                child)
-                                        .provideJoinCondition()));
+                                AslUtils.descendantJoinConditionProviders(currentParent, currentParent, orSq, child)
+                                        .map(AslFieldJoinCondition::provideJoinCondition)
+                                        .toArray(AslJoinCondition[]::new)));
             } else {
                 // AND operands and simple (no chaining inside) OR operands can be joined directly
                 addContainsChain(
