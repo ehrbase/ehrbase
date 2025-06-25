@@ -151,11 +151,17 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
             }
             case AslFilteringQuery fq -> usedFields.addFieldNames(
                     fq.getSourceField().getOwner(), fq.getSourceField());
-            case AslStructureQuery sq -> usedFields.addFieldNames(
-                    sq,
-                    List.of(
-                            // Default column to keep since an empty SELECT is translated to SELECT *
-                            AslStructureColumn.VO_ID.getFieldName(), "id"));
+            case AslStructureQuery sq -> {
+                usedFields.addFieldNames(
+                        sq,
+                        List.of(
+                                // Default column to keep since an empty SELECT is translated to SELECT * by JOOQ
+                                AslStructureColumn.VO_ID.getFieldName(), "id"));
+                sq.joinConditionsForFiltering().values().stream()
+                        .flatMap(Collection::stream)
+                        .flatMap(AslCleanupPostProcessor::streamJoinConditionFields)
+                        .forEach(f -> usedFields.addFieldNames(determineOwner(f), f));
+            }
             case AslRmObjectDataQuery rodq -> throw new IllegalArgumentException("unexpected AslRmObjectDataQuery");
         }
     }

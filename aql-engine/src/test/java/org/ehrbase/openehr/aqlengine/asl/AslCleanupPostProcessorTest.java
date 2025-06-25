@@ -140,6 +140,7 @@ class AslCleanupPostProcessorTest {
         AslResult result = parseAql(
                 """
             SELECT c/uid/value,
+                o/data[at0001]/events[at0002]/data[at0003, 'name1']/items[at0004]/value/magnitude,
                 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude,
                 el/value/units
             FROM EHR[ehr_id/value='860f5c5b-f121-41bb-ad66-7ac6c285526c']
@@ -162,7 +163,8 @@ class AslCleanupPostProcessorTest {
             AslRootQuery
               SELECT
                 sCO_c_0.?? -- COMPLEX VO_ID uid/value
-                p_eq_0.p_items__0_data -> value -> magnitude
+                p_items__0_f_0.p_items__0_f_0_data
+                p_items__0_f_1.p_items__0_f_1_data
                 sE_el_0.sE_el_0_data -> value -> units
               FROM
                 sEHR_0: StructureQuery
@@ -242,6 +244,9 @@ class AslCleanupPostProcessorTest {
                     p_data__1.p_data__1_vo_id
                     p_data__1.p_data__1_num
                     p_data__1.p_data__1_parent_num
+                    p_data__1.p_data__1_entity_concept
+                    p_data__1.p_data__1_entity_name -- name/value
+                    p_data__1.p_data__1_rm_entity
                     p_items__0.p_items__0_vo_id
                     p_items__0.p_items__0_parent_num
                     p_items__0.p_items__0_data
@@ -278,6 +283,9 @@ class AslCleanupPostProcessorTest {
                             p_data__1.p_data__1_vo_id
                             p_data__1.p_data__1_num
                             p_data__1.p_data__1_parent_num
+                            p_data__1.p_data__1_entity_concept
+                            p_data__1.p_data__1_entity_name -- name/value
+                            p_data__1.p_data__1_rm_entity
                           WHERE
                             p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
                           FROM COMPOSITION
@@ -301,6 +309,13 @@ class AslCleanupPostProcessorTest {
                             p_items__0.p_items__0_entity_attribute EQ [i]
                           JOIN p_data__1 -> p_items__0
                             on
+                              PathFilterJoinCondition p_data__1 ->
+                                  OR
+                                    AND
+                                      p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+                                      p_data__1.p_data__1_entity_name -- name/value EQ [name1]
+                                    p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+
                               DelegatingJoinCondition p_data__1 ->
                                   PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__0
 
@@ -309,6 +324,24 @@ class AslCleanupPostProcessorTest {
                     on
                       DelegatingJoinCondition sOB_o_0 ->
                           PathChildCondition COMPOSITION sOB_o_0 -> COMPOSITION p_data__0
+
+                p_items__0_f_0: FilteringQuery
+                  SELECT
+                    p_items__0_f_0.p_items__0_f_0_data
+                  LEFT_OUTER_JOIN p_eq_0 -> p_items__0_f_0
+                    on
+                      PathFilterJoinCondition p_data__1 ->
+                          AND
+                            p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+                            p_eq_0.p_data__1_entity_name -- name/value EQ [name1]
+
+                p_items__0_f_1: FilteringQuery
+                  SELECT
+                    p_items__0_f_1.p_items__0_f_1_data
+                  LEFT_OUTER_JOIN p_eq_0 -> p_items__0_f_1
+                    on
+                      PathFilterJoinCondition p_data__1 ->
+                          p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
 
               WHERE
                 AND
