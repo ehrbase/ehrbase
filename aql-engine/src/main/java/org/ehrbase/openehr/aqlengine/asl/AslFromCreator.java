@@ -178,9 +178,8 @@ final class AslFromCreator {
                     .isPresent();
         }
 
-        final AslStructureQuery structureQuery = containsSubquery(usedWrapper, requiresVersionJoin, sourceRelation);
-        structureQuery.setRepresentsOriginalVersionExpression(isOriginalVersion);
-
+        final AslStructureQuery structureQuery =
+                containsSubquery(usedWrapper, requiresVersionJoin, sourceRelation, isOriginalVersion);
         addContainsSubqueryToContainer(encapsulatingQuery, structureQuery, currentParent, useLeftJoin);
 
         OwnerProviderTuple ownerProviderTuple = new OwnerProviderTuple(structureQuery, structureQuery);
@@ -282,7 +281,10 @@ final class AslFromCreator {
     }
 
     private AslStructureQuery containsSubquery(
-            RmContainsWrapper containsWrapper, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
+            RmContainsWrapper containsWrapper,
+            boolean requiresVersionJoin,
+            AslSourceRelation sourceRelation,
+            final boolean isOriginalVersion) {
         // e.g. "sCO_c_1"
         String rmType = containsWrapper.getRmType();
         final String sAlias = aliasProvider.uniqueAlias("s"
@@ -311,7 +313,15 @@ final class AslFromCreator {
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
 
         AslStructureQuery aslStructureQuery = new AslStructureQuery(
-                sAlias, sourceRelation, fields, rmTypes, isRoot ? List.of() : rmTypes, null, requiresVersionJoin);
+                sAlias,
+                sourceRelation,
+                fields,
+                rmTypes,
+                isRoot ? List.of() : rmTypes,
+                null,
+                requiresVersionJoin,
+                isOriginalVersion,
+                isRoot);
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(

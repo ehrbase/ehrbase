@@ -590,6 +590,8 @@ final class AslPathCreator {
                 Set.of(RmConstants.AUDIT_DETAILS),
                 Set.of(RmConstants.AUDIT_DETAILS),
                 null,
+                false,
+                false,
                 false);
 
         currentQuery.addChild(
@@ -719,8 +721,8 @@ final class AslPathCreator {
         fields.add(new AslColumnField(String.class, AslStructureQuery.ENTITY_ATTRIBUTE, false));
 
         final String sqAlias = aliasProvider.uniqueAlias("p_" + attribute + "_");
-        AslStructureQuery aslStructureQuery =
-                new AslStructureQuery(sqAlias, sourceRelation, fields, rmTypes, List.of(), attribute, false);
+        AslStructureQuery aslStructureQuery = new AslStructureQuery(
+                sqAlias, sourceRelation, fields, rmTypes, List.of(), attribute, false, false, false);
 
         AslUtils.predicates(attributePredicates, cp -> pathStructurePredicateCondition(cp, aslStructureQuery))
                 .ifPresent(aslStructureQuery::addConditionAnd);
