@@ -160,195 +160,206 @@ class AslCleanupPostProcessorTest {
         assertThat(modifiedAslGraph)
                 .isEqualToIgnoringWhitespace(
                         """
-            AslRootQuery
+        AslRootQuery
+          SELECT
+            sCO_c_0.?? -- COMPLEX VO_ID uid/value
+            p_items__0_f_0.p_items__0_f_0_data
+            p_items__0_f_1.p_items__0_f_1_data
+            sE_el_0.sE_el_0_data -> value -> units
+          FROM
+            sEHR_0: StructureQuery
               SELECT
-                sCO_c_0.?? -- COMPLEX VO_ID uid/value
-                p_items__0_f_0.p_items__0_f_0_data
-                p_items__0_f_1.p_items__0_f_1_data
-                sE_el_0.sE_el_0_data -> value -> units
-              FROM
-                sEHR_0: StructureQuery
-                  SELECT
-                    sEHR_0.sEHR_0_id -- ehr_id/value
-                  WHERE
-                    sEHR_0.sEHR_0_id -- ehr_id/value EQ [860f5c5b-f121-41bb-ad66-7ac6c285526c]
-                  FROM EHR
-                sES_s_0: StructureQuery
-                  SELECT
-                    sES_s_0.sES_s_0_vo_id
-                    sES_s_0.sES_s_0_num
-                    sES_s_0.sES_s_0_ehr_id
-                  WHERE
-                    sES_s_0.sES_s_0_num EQ [0]
-                  FROM EHR_STATUS
-                  JOIN sEHR_0 -> sES_s_0
-                    on
-                      DelegatingJoinCondition sEHR_0 ->
-                          DescendantCondition EHR sEHR_0 -> EHR_STATUS sES_s_0
-
-                sCO_c_0: StructureQuery
-                  SELECT
-                    sCO_c_0.sCO_c_0_vo_id
-                    sCO_c_0.sCO_c_0_num
-                    sCO_c_0.sCO_c_0_num_cap
-                    sCO_c_0.sCO_c_0_ehr_id
-                    sCO_c_0.sCO_c_0_sys_version
-                  WHERE
-                    sCO_c_0.sCO_c_0_num EQ [0]
-                  FROM COMPOSITION
-                  JOIN sEHR_0 -> sCO_c_0
-                    on
-                      DelegatingJoinCondition sEHR_0 ->
-                          DescendantCondition EHR sEHR_0 -> COMPOSITION sCO_c_0
-
-                sOB_o_0: StructureQuery
-                  SELECT
-                    sOB_o_0.sOB_o_0_vo_id
-                    sOB_o_0.sOB_o_0_num
-                    sOB_o_0.sOB_o_0_num_cap
-                    sOB_o_0.sOB_o_0_entity_name -- name/value
-                  WHERE
-                    sOB_o_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.test.v0]]
-                  FROM COMPOSITION
-                  STRUCTURE CONDITIONS
-                    sOB_o_0.sOB_o_0_rm_entity IN [OB]
-                  JOIN sCO_c_0 -> sOB_o_0
-                    on
-                      DelegatingJoinCondition sCO_c_0 ->
-                          DescendantCondition COMPOSITION sCO_c_0 -> COMPOSITION sOB_o_0
-
-                sE_el_0: StructureQuery
-                  SELECT
-                    sE_el_0.sE_el_0_vo_id
-                    sE_el_0.sE_el_0_num
-                    sE_el_0.sE_el_0_entity_name -- name/value
-                    sE_el_0.sE_el_0_data
-                  WHERE
-                    sE_el_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0120]]
-                  FROM COMPOSITION
-                  STRUCTURE CONDITIONS
-                    sE_el_0.sE_el_0_rm_entity IN [E]
-                  JOIN sOB_o_0 -> sE_el_0
-                    on
-                      DelegatingJoinCondition sOB_o_0 ->
-                          DescendantCondition COMPOSITION sOB_o_0 -> COMPOSITION sE_el_0
-
-                p_eq_0: EncapsulatingQuery
-                  SELECT
-                    p_data__0.p_data__0_vo_id
-                    p_data__0.p_data__0_num
-                    p_data__0.p_data__0_parent_num
-                    p_events__0.p_events__0_vo_id
-                    p_events__0.p_events__0_num
-                    p_events__0.p_events__0_parent_num
-                    p_data__1.p_data__1_vo_id
-                    p_data__1.p_data__1_num
-                    p_data__1.p_data__1_parent_num
-                    p_data__1.p_data__1_entity_concept
-                    p_data__1.p_data__1_entity_name -- name/value
-                    p_data__1.p_data__1_rm_entity
-                    p_items__0.p_items__0_vo_id
-                    p_items__0.p_items__0_parent_num
-                    p_items__0.p_items__0_data
-                    FROM
-                      p_data__0: StructureQuery
-                          SELECT
-                            p_data__0.p_data__0_vo_id
-                            p_data__0.p_data__0_num
-                            p_data__0.p_data__0_parent_num
-                          WHERE
-                            p_data__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
-                          FROM COMPOSITION
-                          STRUCTURE CONDITIONS
-                            p_data__0.p_data__0_entity_attribute EQ [d]
-
-                      p_events__0: StructureQuery
-                          SELECT
-                            p_events__0.p_events__0_vo_id
-                            p_events__0.p_events__0_num
-                            p_events__0.p_events__0_parent_num
-                          WHERE
-                            p_events__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
-                          FROM COMPOSITION
-                          STRUCTURE CONDITIONS
-                            p_events__0.p_events__0_entity_attribute EQ [e]
-                          JOIN p_data__0 -> p_events__0
-                            on
-                              DelegatingJoinCondition p_data__0 ->
-                                  PathChildCondition COMPOSITION p_data__0 -> COMPOSITION p_events__0
-
-
-                      p_data__1: StructureQuery
-                          SELECT
-                            p_data__1.p_data__1_vo_id
-                            p_data__1.p_data__1_num
-                            p_data__1.p_data__1_parent_num
-                            p_data__1.p_data__1_entity_concept
-                            p_data__1.p_data__1_entity_name -- name/value
-                            p_data__1.p_data__1_rm_entity
-                          WHERE
-                            p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-                          FROM COMPOSITION
-                          STRUCTURE CONDITIONS
-                            p_data__1.p_data__1_entity_attribute EQ [d]
-                          JOIN p_events__0 -> p_data__1
-                            on
-                              DelegatingJoinCondition p_events__0 ->
-                                  PathChildCondition COMPOSITION p_events__0 -> COMPOSITION p_data__1
-
-
-                      p_items__0: StructureQuery
-                          SELECT
-                            p_items__0.p_items__0_vo_id
-                            p_items__0.p_items__0_parent_num
-                            p_items__0.p_items__0_data
-                          WHERE
-                            p_items__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0004]]
-                          FROM COMPOSITION
-                          STRUCTURE CONDITIONS
-                            p_items__0.p_items__0_entity_attribute EQ [i]
-                          JOIN p_data__1 -> p_items__0
-                            on
-                              PathFilterJoinCondition p_data__1 ->
-                                  OR
-                                    AND
-                                      p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-                                      p_data__1.p_data__1_entity_name -- name/value EQ [name1]
-                                    p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-
-                              DelegatingJoinCondition p_data__1 ->
-                                  PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__0
-
-
-                  LEFT_OUTER_JOIN sOB_o_0 -> p_eq_0
-                    on
-                      DelegatingJoinCondition sOB_o_0 ->
-                          PathChildCondition COMPOSITION sOB_o_0 -> COMPOSITION p_data__0
-
-                p_items__0_f_0: FilteringQuery
-                  SELECT
-                    p_items__0_f_0.p_items__0_f_0_data
-                  LEFT_OUTER_JOIN p_eq_0 -> p_items__0_f_0
-                    on
-                      PathFilterJoinCondition p_data__1 ->
-                          AND
-                            p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-                            p_eq_0.p_data__1_entity_name -- name/value EQ [name1]
-
-                p_items__0_f_1: FilteringQuery
-                  SELECT
-                    p_items__0_f_1.p_items__0_f_1_data
-                  LEFT_OUTER_JOIN p_eq_0 -> p_items__0_f_1
-                    on
-                      PathFilterJoinCondition p_data__1 ->
-                          p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-
+                sEHR_0.sEHR_0_id -- ehr_id/value
               WHERE
-                AND
-                  sE_el_0.sE_el_0_entity_name -- name/value EQ [Result]
-                  sE_el_0.sE_el_0_data -> value -> value EQ [1.3]
-              ORDER BY
-            sOB_o_0.sOB_o_0_entity_name -- name/value ASC
+                sEHR_0.sEHR_0_id -- ehr_id/value EQ [860f5c5b-f121-41bb-ad66-7ac6c285526c]
+              FROM EHR
+            sES_s_0: StructureQuery
+              SELECT
+                sES_s_0.sES_s_0_vo_id
+                sES_s_0.sES_s_0_ehr_id
+              WHERE
+                sES_s_0.sES_s_0_num EQ [0]
+              FROM EHR_STATUS
+              JOIN sEHR_0 -> sES_s_0
+                on
+                  DelegatingJoinCondition sEHR_0 ->
+                      AslFieldJoinCondition sEHR_0.sEHR_0_id EQ sES_s_0.sES_s_0_ehr_id
+
+            sCO_c_0: StructureQuery
+              SELECT
+                sCO_c_0.sCO_c_0_vo_id
+                sCO_c_0.sCO_c_0_num
+                sCO_c_0.sCO_c_0_num_cap
+                sCO_c_0.sCO_c_0_ehr_id
+                sCO_c_0.sCO_c_0_sys_version
+              WHERE
+                sCO_c_0.sCO_c_0_num EQ [0]
+              FROM COMPOSITION
+              JOIN sEHR_0 -> sCO_c_0
+                on
+                  DelegatingJoinCondition sEHR_0 ->
+                      AslFieldJoinCondition sEHR_0.sEHR_0_id EQ sCO_c_0.sCO_c_0_ehr_id
+
+            sOB_o_0: StructureQuery
+              SELECT
+                sOB_o_0.sOB_o_0_vo_id
+                sOB_o_0.sOB_o_0_num
+                sOB_o_0.sOB_o_0_num_cap
+                sOB_o_0.sOB_o_0_entity_name -- name/value
+              WHERE
+                sOB_o_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.test.v0]]
+              FROM COMPOSITION
+              STRUCTURE CONDITIONS
+                sOB_o_0.sOB_o_0_rm_entity IN [OB]
+              JOIN sCO_c_0 -> sOB_o_0
+                on
+                  DelegatingJoinCondition sCO_c_0 ->
+                      AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
+
+                  DelegatingJoinCondition sCO_c_0 ->
+                      AslFieldJoinCondition sCO_c_0.sCO_c_0_num LT sOB_o_0.sOB_o_0_num
+
+                  DelegatingJoinCondition sCO_c_0 ->
+                      AslFieldJoinCondition sCO_c_0.sCO_c_0_num_cap GT_EQ sOB_o_0.sOB_o_0_num
+
+            sE_el_0: StructureQuery
+              SELECT
+                sE_el_0.sE_el_0_vo_id
+                sE_el_0.sE_el_0_num
+                sE_el_0.sE_el_0_entity_name -- name/value
+                sE_el_0.sE_el_0_data
+              WHERE
+                sE_el_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0120]]
+              FROM COMPOSITION
+              STRUCTURE CONDITIONS
+                sE_el_0.sE_el_0_rm_entity IN [E]
+              JOIN sOB_o_0 -> sE_el_0
+                on
+                  DelegatingJoinCondition sOB_o_0 ->
+                      AslFieldJoinCondition sOB_o_0.sOB_o_0_vo_id EQ sE_el_0.sE_el_0_vo_id
+
+                  DelegatingJoinCondition sOB_o_0 ->
+                      AslFieldJoinCondition sOB_o_0.sOB_o_0_num LT sE_el_0.sE_el_0_num
+
+                  DelegatingJoinCondition sOB_o_0 ->
+                      AslFieldJoinCondition sOB_o_0.sOB_o_0_num_cap GT_EQ sE_el_0.sE_el_0_num
+
+            p_eq_0: EncapsulatingQuery
+              SELECT
+                p_data__0.p_data__0_vo_id
+                p_data__0.p_data__0_num
+                p_data__0.p_data__0_parent_num
+                p_events__0.p_events__0_vo_id
+                p_events__0.p_events__0_num
+                p_events__0.p_events__0_parent_num
+                p_data__1.p_data__1_vo_id
+                p_data__1.p_data__1_num
+                p_data__1.p_data__1_parent_num
+                p_data__1.p_data__1_entity_concept
+                p_data__1.p_data__1_entity_name -- name/value
+                p_data__1.p_data__1_rm_entity
+                p_items__0.p_items__0_vo_id
+                p_items__0.p_items__0_parent_num
+                p_items__0.p_items__0_data
+                FROM
+                  p_data__0: StructureQuery
+                      SELECT
+                        p_data__0.p_data__0_vo_id
+                        p_data__0.p_data__0_num
+                        p_data__0.p_data__0_parent_num
+                      WHERE
+                        p_data__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        p_data__0.p_data__0_entity_attribute EQ [d]
+
+                  p_events__0: StructureQuery
+                      SELECT
+                        p_events__0.p_events__0_vo_id
+                        p_events__0.p_events__0_num
+                        p_events__0.p_events__0_parent_num
+                      WHERE
+                        p_events__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        p_events__0.p_events__0_entity_attribute EQ [e]
+                      JOIN p_data__0 -> p_events__0
+                        on
+                          DelegatingJoinCondition p_data__0 ->
+                              PathChildCondition COMPOSITION p_data__0 -> COMPOSITION p_events__0
+
+
+                  p_data__1: StructureQuery
+                      SELECT
+                        p_data__1.p_data__1_vo_id
+                        p_data__1.p_data__1_num
+                        p_data__1.p_data__1_parent_num
+                        p_data__1.p_data__1_entity_concept
+                        p_data__1.p_data__1_entity_name -- name/value
+                        p_data__1.p_data__1_rm_entity
+                      WHERE
+                        p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        p_data__1.p_data__1_entity_attribute EQ [d]
+                      JOIN p_events__0 -> p_data__1
+                        on
+                          DelegatingJoinCondition p_events__0 ->
+                              PathChildCondition COMPOSITION p_events__0 -> COMPOSITION p_data__1
+
+
+                  p_items__0: StructureQuery
+                      SELECT
+                        p_items__0.p_items__0_vo_id
+                        p_items__0.p_items__0_parent_num
+                        p_items__0.p_items__0_data
+                      WHERE
+                        p_items__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0004]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        p_items__0.p_items__0_entity_attribute EQ [i]
+                      JOIN p_data__1 -> p_items__0
+                        on
+                          PathFilterJoinCondition p_data__1 ->
+                              OR
+                                AND
+                                  p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+                                  p_data__1.p_data__1_entity_name -- name/value EQ [name1]
+                                p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+
+                          DelegatingJoinCondition p_data__1 ->
+                              PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__0
+
+
+              LEFT_OUTER_JOIN sOB_o_0 -> p_eq_0
+                on
+                  DelegatingJoinCondition sOB_o_0 ->
+                      PathChildCondition COMPOSITION sOB_o_0 -> COMPOSITION p_data__0
+
+            p_items__0_f_0: FilteringQuery
+              SELECT
+                p_items__0_f_0.p_items__0_f_0_data
+              LEFT_OUTER_JOIN p_eq_0 -> p_items__0_f_0
+                on
+                  PathFilterJoinCondition p_data__1 ->
+                      AND
+                        p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+                        p_eq_0.p_data__1_entity_name -- name/value EQ [name1]
+
+            p_items__0_f_1: FilteringQuery
+              SELECT
+                p_items__0_f_1.p_items__0_f_1_data
+              LEFT_OUTER_JOIN p_eq_0 -> p_items__0_f_1
+                on
+                  PathFilterJoinCondition p_data__1 ->
+                      p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+
+          WHERE
+            AND
+              sE_el_0.sE_el_0_entity_name -- name/value EQ [Result]
+              sE_el_0.sE_el_0_data -> value -> value EQ [1.3]
+          ORDER BY
+        sOB_o_0.sOB_o_0_entity_name -- name/value ASC
         """);
     }
 
