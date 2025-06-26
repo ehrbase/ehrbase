@@ -20,6 +20,7 @@ package org.ehrbase.api.dto;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.ehrbase.api.exception.IllegalAqlException;
@@ -73,14 +74,8 @@ public record AqlQueryRequest(
         if (parameters == null) {
             return Map.of();
         }
-        parameters.entrySet().forEach(e -> {
-            Object ov = e.getValue();
-            Object nv = handleExplicitParameterTypes(ov);
-            if (ov != nv) {
-                e.setValue(nv);
-            }
-        });
-        return parameters;
+        return parameters.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> handleExplicitParameterTypes(entry.getValue())));
     }
 
     /**
