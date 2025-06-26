@@ -22,31 +22,51 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.AqlQueryService;
+import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
+import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
+import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 
 /**
  * The requested AQL to be executed by {@link AqlQueryService#query(AqlQueryRequest)}.
  *
- * @param queryString          the actual aql query string
- * @param parameters           additional query parameters
- * @param fetch                query limit to apply
- * @param offset               query offset to apply
+ * @param aqlQuery    the actual aql string
+ * @param parameters  additional query parameters
+ * @param fetch       query limit to apply
+ * @param offset      query offset to apply
  */
 public record AqlQueryRequest(
-        @Nonnull String queryString,
+        @Nonnull AqlQuery aqlQuery,
         @Nullable Map<String, Object> parameters,
         @Nullable Long fetch,
         @Nullable Long offset) {
 
     public AqlQueryRequest(
+            @Nonnull AqlQuery aqlQuery,
+            @Nullable Map<String, Object> parameters,
+            @Nullable Long fetch,
+            @Nullable Long offset) {
+        this.aqlQuery = aqlQuery;
+        this.parameters = rewriteExplicitParameterTypes(parameters);
+        this.fetch = fetch;
+        this.offset = offset;
+    }
+
+    public static AqlQueryRequest parse(
             @Nonnull String queryString,
             @Nullable Map<String, Object> parameters,
             @Nullable Long fetch,
             @Nullable Long offset) {
-        this.queryString = queryString;
-        this.parameters = rewriteExplicitParameterTypes(parameters);
-        this.fetch = fetch;
-        this.offset = offset;
+        try {
+            AqlQuery aqlQuery = AqlQueryParser.parse(queryString);
+            return new AqlQueryRequest(aqlQuery, parameters, fetch, offset);
+        } catch (AqlParseException e) {
+            throw new IllegalAqlException(
+                    "Could not parse AQL query: "
+                            + Optional.of(e).map(Throwable::getCause).orElse(e).getMessage(),
+                    e);
+        }
     }
 
     public static Map<String, Object> rewriteExplicitParameterTypes(Map<String, Object> parameters) {
