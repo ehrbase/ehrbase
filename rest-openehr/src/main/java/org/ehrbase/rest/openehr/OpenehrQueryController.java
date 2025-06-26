@@ -270,7 +270,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     private AqlQueryRequest createRequest(
             @NonNull String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
 
-        return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null));
+        return AqlQueryRequest.parse(queryString, parameters, fetch.orElse(null), offset.orElse(null));
     }
 
     protected QueryResponseData createQueryResponse(
