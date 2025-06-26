@@ -46,7 +46,6 @@ import org.ehrbase.openehr.aqlengine.repository.AqlQueryRepository;
 import org.ehrbase.openehr.aqlengine.repository.PreparedQuery;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
-import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 import org.ehrbase.openehr.sdk.aql.render.AqlRenderer;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.query.ResultHolder;
@@ -93,14 +92,18 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
     @Override
     public QueryResultDto query(AqlQueryRequest aqlQuery) {
-        return queryAql(aqlQuery);
+        try {
+            return queryAql(aqlQuery);
+        } catch (AqlParseException e) {
+            throw new IllegalAqlException(errorMessage("Could not parse AQL query", e), e);
+        }
     }
 
     private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
 
         // TODO: check that select aliases are not duplicated
         try {
-            AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
+            AqlQuery aqlQuery = aqlQueryRequest.aqlQuery();
 
             // apply AQL postprocessors
             aqlPostProcessors.forEach(p -> p.afterParseAql(aqlQuery, aqlQueryRequest, aqlQueryContext));
@@ -170,8 +173,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
             throw new BadGatewayException(errorMessage("Bad gateway", e), e);
         } catch (DataAccessException e) {
             throw new InternalServerException(errorMessage("Data Access Error", e), e);
-        } catch (AqlParseException e) {
-            throw new IllegalAqlException(errorMessage("Could not parse AQL query", e), e);
         }
     }
 

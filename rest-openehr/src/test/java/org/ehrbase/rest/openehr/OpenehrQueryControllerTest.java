@@ -101,7 +101,7 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(SAMPLE_QUERY, offset, fetch, SAMPLE_PARAMETER_MAP, MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.parse(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     private Long toLong(Object obj) {
@@ -123,7 +123,7 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.parse(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     private static Map<String, Object> sampleAqlQuery(Object fetch, Object offset) {
@@ -179,7 +179,7 @@ public class OpenehrQueryControllerTest {
                         SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.parse(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         sampleAqlJson(fetch, offset));
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.parse(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
