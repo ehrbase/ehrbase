@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
@@ -200,14 +199,6 @@ public class AslGraph {
                                     c.getOperator(),
                                     c.getRightOwner().getAlias(),
                                     c.getRightField().getAliasedName()));
-            case AslDescendantCondition c -> indented(
-                    level,
-                    "DescendantCondition %s %s -> %s %s"
-                            .formatted(
-                                    c.getParentRelation(),
-                                    c.getLeftOwner().getAlias(),
-                                    c.getDescendantRelation(),
-                                    c.getRightOwner().getAlias()));
             case AslPathChildCondition c -> indented(
                     level,
                     "PathChildCondition %s %s -> %s %s"
