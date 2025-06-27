@@ -92,7 +92,7 @@
     <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
     <maven-spotless-maven-plugin.version>2.43.0</maven-spotless-maven-plugin.version>
-    <maven-nexus-staging-plugin.version>1.7.0</maven-nexus-staging-plugin.version>
+    <maven-central-publishing-plugin.version>0.8.0</maven-central-publishing-plugin.version>
     <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
     <maven-versions-maven-plugin.version>2.17.1</maven-versions-maven-plugin.version>
     <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
@@ -407,9 +407,9 @@
           <version>${maven-gpg-plugin.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>${maven-nexus-staging-plugin.version}</version>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>${maven-central-publishing-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>com.spotify</groupId>
