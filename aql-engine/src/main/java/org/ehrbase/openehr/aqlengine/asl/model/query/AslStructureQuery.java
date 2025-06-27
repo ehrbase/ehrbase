@@ -28,10 +28,9 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.jooq.pg.Tables;
@@ -128,10 +127,10 @@ public final class AslStructureQuery extends AslQuery {
         }
     }
 
-    private final Map<IdentifiedPath, AslPathFilterJoinCondition> joinConditionsForFiltering = new HashMap<>();
+    private final Map<IdentifiedPath, AslPathFilterJoinCondition> joinConditionsForFiltering = new LinkedHashMap<>();
     private final AslSourceRelation type;
     private final Collection<String> rmTypes;
-    private final List<AslField> fields = new ArrayList<>();
+    private final ArrayList<AslField> fields = new ArrayList<>(0);
     private final String alias;
     private final boolean requiresVersionTableJoin;
     private boolean representsOriginalVersionExpression = false;
@@ -144,10 +143,11 @@ public final class AslStructureQuery extends AslQuery {
             Collection<String> rmTypesConstraint,
             String attribute,
             boolean requiresVersionTableJoin) {
-        super(alias, new ArrayList<>());
+        super(alias, new ArrayList<>(0));
         this.type = type;
         this.rmTypes = List.copyOf(rmTypes);
         this.requiresVersionTableJoin = requiresVersionTableJoin;
+        this.fields.ensureCapacity(fields.size());
         fields.forEach(this::addField);
         this.alias = alias;
         if (type != AslSourceRelation.EHR && type != AslSourceRelation.AUDIT_DETAILS) {
@@ -180,7 +180,7 @@ public final class AslStructureQuery extends AslQuery {
     @Override
     public Map<IdentifiedPath, List<AslPathFilterJoinCondition>> joinConditionsForFiltering() {
         return joinConditionsForFiltering.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> List.of(e.getValue())));
+                .collect(AslUtils.toLinkedHashMap(Map.Entry::getKey, e -> List.of(e.getValue())));
     }
 
     public void addJoinConditionForFiltering(IdentifiedPath ip, AslQueryCondition condition) {

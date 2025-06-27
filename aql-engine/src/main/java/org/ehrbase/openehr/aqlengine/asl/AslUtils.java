@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +36,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -75,6 +78,26 @@ import org.jooq.JSONB;
 
 public final class AslUtils {
 
+    public static AslSourceRelation getTargetType(AslQuery target) {
+        if (target instanceof AslStructureQuery sq) {
+            return sq.getType();
+        } else {
+            throw new IllegalArgumentException("target is no StructureQuery: %s".formatted(target));
+        }
+    }
+
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedHashMap(
+            Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return Collectors.toMap(
+                keyMapper,
+                valueMapper,
+                (u, v) -> {
+                    throw new IllegalStateException(
+                            String.format("Duplicate key: attempted merging values %s and %s", u, v));
+                },
+                LinkedHashMap::new);
+    }
+
     static final class AliasProvider {
         private final Map<String, Integer> aliasCounters = new HashMap<>();
 
@@ -95,6 +118,7 @@ public final class AslUtils {
             case AslFalseQueryCondition __ -> Stream.empty();
             case AslTrueQueryCondition __ -> Stream.empty();
             case AslProvidesJoinCondition __ -> throw new IllegalArgumentException();
+            case null -> Stream.empty();
         };
     }
 

@@ -17,6 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine;
 
+import java.util.Optional;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -29,6 +30,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "ehrbase.aql")
 public record AqlConfigurationProperties(boolean pgLljWorkaround, Experimental experimental) {
+
+    public AqlConfigurationProperties(boolean pgLljWorkaround, Experimental experimental) {
+        this.pgLljWorkaround = pgLljWorkaround;
+        this.experimental = Optional.ofNullable(experimental)
+                .orElseGet(() -> new Experimental(new Experimental.AqlOnFolder(false)));
+    }
+
     public record Experimental(AqlOnFolder aqlOnFolder) {
 
         public record AqlOnFolder(boolean enabled) {}

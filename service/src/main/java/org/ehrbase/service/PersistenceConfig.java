@@ -26,9 +26,11 @@ import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.DefaultDSLContext;
 import org.jooq.impl.DefaultExecuteListenerProvider;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jooq.JooqProperties;
+import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,8 +67,11 @@ public class PersistenceConfig {
     }
 
     @Bean
-    public DataSourceTransactionManager transactionManager() {
-        return new DataSourceTransactionManager(dataSource);
+    public DataSourceTransactionManager transactionManager(
+            ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+        transactionManagerCustomizers.ifAvailable((customizers) -> customizers.customize(transactionManager));
+        return transactionManager;
     }
 
     @Bean

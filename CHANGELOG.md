@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.18.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+- Add missing test dependency scope to assertj [#1502](https://github.com/ehrbase/ehrbase/pull/1502)
+- Allow for retrieving COMPOSITIONs containing ELEMENTs with FEEDER_AUDIT [#1506](https://github.com/ehrbase/ehrbase/pull/1506)
+
 ## [2.17.0]
  ### Added
  ### Changed 
@@ -170,3 +177,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.15.0]: https://github.com/ehrbase/ehrbase/compare/v2.14.0...v2.15.0
 [2.16.0]: https://github.com/ehrbase/ehrbase/compare/v2.15.0...v2.16.0
 [2.17.0]: https://github.com/ehrbase/ehrbase/compare/v2.16.0...v2.17.0
+[2.18.0]: https://github.com/ehrbase/ehrbase/compare/v2.17.0...v2.18.0
