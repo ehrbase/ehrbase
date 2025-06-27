@@ -54,6 +54,6 @@ jobs:
       - name: Publish - Maven Central
         run: mvn -B deploy -P release -DskipTests
         env:
-          OSSRH_USERNAME: ${{ secrets.S01_OSSRH_USERNAME }}
-          OSSRH_TOKEN: ${{ secrets.S01_OSSRH_TOKEN }}
+          OSSRH_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
