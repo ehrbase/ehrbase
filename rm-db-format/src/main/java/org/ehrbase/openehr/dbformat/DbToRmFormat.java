@@ -217,12 +217,13 @@ public final class DbToRmFormat {
             if (p.index() == null) {
                 ObjectNode existing = (ObjectNode) ch;
                 if (isLeaf) {
-                   /* In VersionedObjectDataStructure::handleSubObject a copy of FEEDER_AUDIT
-                    * is stored in ELEMENT, so we can treat ELEMENT as leaf.
-                    * ELEMENT/feeder_audit is replaced because it would be more complicated to skip all possible descendants
+                    /* In VersionedObjectDataStructure::handleSubObject a copy of FEEDER_AUDIT
+                     * is stored in ELEMENT, so we can treat ELEMENT as leaf.
+                     * ELEMENT/feeder_audit is replaced because it would be more complicated to skip all possible descendants
                      */
                     if (existing != null && !FEEDER_AUDIT_ATTRIBUTE_ALIAS.equals(fieldName)) {
-                        throw new IllegalArgumentException( "parent already has child %s (%s)".formatted(fieldName, path));
+                        throw new IllegalArgumentException(
+                                "parent already has child %s (%s)".formatted(fieldName, path));
                     }
                     parentObject.set(fieldName, child);
                     parentObject = child;
