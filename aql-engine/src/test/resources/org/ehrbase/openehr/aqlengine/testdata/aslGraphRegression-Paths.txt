@@ -51,7 +51,7 @@ AslRootQuery
       JOIN sEHR_e_0 -> sCO_c_0
         on
           DelegatingJoinCondition sEHR_e_0 ->
-              DescendantCondition EHR sEHR_e_0 -> COMPOSITION sCO_c_0
+              AslFieldJoinCondition sEHR_e_0.sEHR_e_0_id EQ sCO_c_0.sCO_c_0_ehr_id
 
     sOB_o_0: StructureQuery
       SELECT
@@ -73,7 +73,13 @@ AslRootQuery
       JOIN sCO_c_0 -> sOB_o_0
         on
           DelegatingJoinCondition sCO_c_0 ->
-              DescendantCondition COMPOSITION sCO_c_0 -> COMPOSITION sOB_o_0
+              AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
+
+          DelegatingJoinCondition sCO_c_0 ->
+              AslFieldJoinCondition sCO_c_0.sCO_c_0_num LT sOB_o_0.sOB_o_0_num
+
+          DelegatingJoinCondition sCO_c_0 ->
+              AslFieldJoinCondition sCO_c_0.sCO_c_0_num_cap GT_EQ sOB_o_0.sOB_o_0_num
 
     p_eq_0: EncapsulatingQuery
       SELECT

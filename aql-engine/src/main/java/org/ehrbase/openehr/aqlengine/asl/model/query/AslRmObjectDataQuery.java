@@ -20,7 +20,6 @@ package org.ehrbase.openehr.aqlengine.asl.model.query;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
@@ -44,7 +43,6 @@ import org.jooq.JSONB;
  * 	  group by "d2"."VO_ID"
  * 	 </pre>
  *
- * @see AslDescendantCondition
  */
 public final class AslRmObjectDataQuery extends AslDataQuery {
     private final AslField field;

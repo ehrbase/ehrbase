@@ -32,7 +32,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
@@ -195,21 +194,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
                             .withOwner(adjc.getRightOwner()));
 
             case AslDelegatingJoinCondition adjc -> switch (adjc.getDelegate()) {
-                    // see ConditionUtils::descendantConditions
-                case AslDescendantCondition djc -> Stream.of(
-                        new AslColumnField(UUID.class, Tables.EHR_.ID.getName(), false).withOwner(djc.getLeftOwner()),
-                        AslStructureColumn.EHR_ID.fieldWithOwner(djc.getLeftOwner()),
-                        AslStructureColumn.EHR_ID.fieldWithOwner(djc.getRightOwner()),
-                        AslStructureColumn.VO_ID.fieldWithOwner(djc.getLeftOwner()),
-                        AslStructureColumn.VO_ID.fieldWithOwner(djc.getRightOwner()),
-                        AslStructureColumn.NUM.fieldWithOwner(djc.getLeftOwner()),
-                        AslStructureColumn.NUM_CAP.fieldWithOwner(djc.getLeftOwner()),
-                        AslStructureColumn.NUM.fieldWithOwner(djc.getRightOwner()),
-                        AslStructureColumn.EHR_FOLDER_IDX.fieldWithOwner(djc.getLeftOwner()),
-                        AslStructureColumn.EHR_FOLDER_IDX.fieldWithOwner(djc.getRightOwner()));
-
                 case AslFieldJoinCondition fjc -> Stream.of(fjc.getLeftField(), fjc.getRightField());
-
                     // see ConditionUtils::pathChildConditions
                 case AslPathChildCondition pcjc -> Stream.of(
                         AslStructureColumn.EHR_ID.fieldWithOwner(pcjc.getLeftOwner()),
