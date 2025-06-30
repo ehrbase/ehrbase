@@ -333,6 +333,7 @@ public class AqlSqlQueryBuilder {
 
         aslQueryToTable.put(aq, dataTable, primaryTable);
 
+
         // add regular and structure conditions
         SelectConditionStep<Record> where = step.where(Stream.concat(
                         Optional.of(aq).map(AslStructureQuery::getCondition).stream(),
@@ -440,13 +441,16 @@ public class AqlSqlQueryBuilder {
             Table<?> dataTable,
             Stream<Field<?>> columnFields,
             Stream<AslFolderItemIdVirtualField> folderFields) {
+        SelectFieldOrAsterisk[] fields = columnFields.toArray(SelectFieldOrAsterisk[]::new);
+        boolean needsDataTable = !aq.isRoot() || Arrays.stream(fields).anyMatch(f -> f instanceof TableField jf && jf.getTable().equals(dataTable));
+        if(needsDataTable) {}
 
         return switch (aq.getType()) {
-            case EHR_STATUS -> DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+            case EHR_STATUS -> DSL.select(fields)
                     .from(primaryTable)
                     .join(dataTable)
                     .on(primaryTable.field(EHR_STATUS_VERSION.EHR_ID).eq(dataTable.field(EHR_STATUS_DATA.EHR_ID)));
-            case COMPOSITION -> DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+            case COMPOSITION -> DSL.select(fields)
                     .from(primaryTable)
                     .join(dataTable)
                     .on(primaryTable.field(COMP_VERSION.VO_ID).eq(dataTable.field(COMP_DATA.VO_ID)));
@@ -461,7 +465,7 @@ public class AqlSqlQueryBuilder {
                                 .eq(dataTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
 
                 if (folderItemAslField.isEmpty()) {
-                    yield DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+                    yield DSL.select(fields)
                             .from(primaryTable)
                             .join(dataTable)
                             .on(onCondition);
@@ -474,7 +478,7 @@ public class AqlSqlQueryBuilder {
                     Table<?> joinTable = tableToSelect.getLeft();
                     List<SelectFieldOrAsterisk> selectFields = tableToSelect.getRight();
 
-                    yield DSL.select(Stream.concat(columnFields, selectFields.stream())
+                    yield DSL.select(Stream.concat(Arrays.stream(fields), selectFields.stream())
                                     .toArray(SelectFieldOrAsterisk[]::new))
                             .from(primaryTable)
                             .join(joinTable)

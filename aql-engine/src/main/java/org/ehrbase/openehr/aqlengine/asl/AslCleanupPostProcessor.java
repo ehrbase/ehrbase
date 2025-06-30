@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
@@ -184,7 +184,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
         return switch (joinCondition) {
             case AslPathFilterJoinCondition pfjc -> AslUtils.streamConditionFields(pfjc.getCondition());
             case AslDelegatingJoinCondition adjc -> switch (adjc.getDelegate()) {
-                case AslFieldJoinCondition fjc -> Stream.of(fjc.getLeftField(), fjc.getRightField());
+                case AslFieldCondition fjc -> Stream.of(fjc.getLeftField(), fjc.getRightField());
             };
             case AslFolderItemJoinCondition fijc -> Stream.of(
                     AslStructureColumn.VO_ID.fieldWithOwner(fijc.getRightOwner()),

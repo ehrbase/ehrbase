@@ -31,7 +31,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -188,7 +188,7 @@ public class AslGraph {
                             .map(op -> conditionToGraph(level + 1, op))
                             .collect(Collectors.joining());
             case AslNotNullQueryCondition c -> indented(level, "NOT_NULL " + fieldToGraph(level + 1, c.getField()));
-            case AslFieldJoinCondition c -> indented(
+            case AslFieldCondition c -> indented(
                     level,
                     "AslFieldJoinCondition %s %s %s"
                             .formatted(

@@ -40,7 +40,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -99,13 +99,13 @@ final class ConditionUtils {
     private static void addDelegatingJoinConditions(
             AslDelegatingJoinCondition joinCondition, List<Condition> conditions, Table<?> sqlLeft, Table<?> sqlRight) {
         (switch (joinCondition.getDelegate()) {
-                    case AslFieldJoinCondition c -> fieldJoinCondition(c, sqlLeft, sqlRight, true);
+                    case AslFieldCondition c -> fieldJoinCondition(c, sqlLeft, sqlRight, true);
                 })
                 .forEach(conditions::add);
     }
 
     private static Stream<Condition> fieldJoinCondition(
-            AslFieldJoinCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
+            AslFieldCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
 
         Field lf = switch(ic.getLeftField()){
             case AslColumnField cf -> FieldUtils.field(sqlLeft, cf, true);
@@ -149,12 +149,7 @@ final class ConditionUtils {
             case AslTrueQueryCondition __ -> DSL.trueCondition();
             case AslNotNullQueryCondition nn -> notNullCondition(tables, useAliases, nn);
             case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv);
-            case AslFieldJoinCondition ic -> DSL.and(fieldJoinCondition(
-                            ic,
-                            tables.getDataTable(ic.getLeftProvider()),
-                            tables.getDataTable(ic.getRightProvider()),
-                            false)
-                    .toList());
+            case AslFieldCondition ic -> throw new IllegalArgumentException("AslFieldConditions are not supported in WHERE clauses");
         };
     }
 

@@ -33,7 +33,7 @@ import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
@@ -216,7 +216,7 @@ final class AslFromCreator {
             };
         }
         return AslUtils.descendantJoinConditionProviders(joinParent, joinParent, toAdd, toAdd)
-                .map(AslFieldJoinCondition::provideJoinCondition)
+                .map(AslFieldCondition::provideJoinCondition)
                 .toArray(AslJoinCondition[]::new);
     }
 
@@ -246,7 +246,7 @@ final class AslFromCreator {
                                 JoinType.LEFT_OUTER_JOIN,
                                 orSq,
                                 AslUtils.descendantJoinConditionProviders(currentParent, currentParent, orSq, child)
-                                        .map(AslFieldJoinCondition::provideJoinCondition)
+                                        .map(AslFieldCondition::provideJoinCondition)
                                         .toArray(AslJoinCondition[]::new)));
             } else {
                 // AND operands and simple (no chaining inside) OR operands can be joined directly
