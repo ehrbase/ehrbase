@@ -37,7 +37,7 @@
 
 
   <properties>
-    <docker-maven-plugin.version>0.45.1</docker-maven-plugin.version>
+    <docker-maven-plugin.version>0.46.0</docker-maven-plugin.version>
     <database.docker.image>ehrbase/ehrbase-postgres:16.2-mvp</database.docker.image>
   </properties>
 
