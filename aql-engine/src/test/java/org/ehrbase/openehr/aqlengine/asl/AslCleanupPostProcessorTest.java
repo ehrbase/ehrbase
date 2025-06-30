@@ -286,7 +286,10 @@ class AslCleanupPostProcessorTest {
                       JOIN p_data__0 -> p_events__0
                         on
                           DelegatingJoinCondition p_data__0 ->
-                              PathChildCondition COMPOSITION p_data__0 -> COMPOSITION p_events__0
+                              AslFieldJoinCondition p_data__0.p_data__0_vo_id EQ p_events__0.p_events__0_vo_id
+
+                          DelegatingJoinCondition p_data__0 ->
+                              AslFieldJoinCondition p_data__0.p_data__0_num EQ p_events__0.p_events__0_parent_num
 
 
                   p_data__1: StructureQuery
@@ -305,7 +308,10 @@ class AslCleanupPostProcessorTest {
                       JOIN p_events__0 -> p_data__1
                         on
                           DelegatingJoinCondition p_events__0 ->
-                              PathChildCondition COMPOSITION p_events__0 -> COMPOSITION p_data__1
+                              AslFieldJoinCondition p_events__0.p_events__0_vo_id EQ p_data__1.p_data__1_vo_id
+
+                          DelegatingJoinCondition p_events__0 ->
+                              AslFieldJoinCondition p_events__0.p_events__0_num EQ p_data__1.p_data__1_parent_num
 
 
                   p_items__0: StructureQuery
@@ -328,13 +334,19 @@ class AslCleanupPostProcessorTest {
                                 p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
 
                           DelegatingJoinCondition p_data__1 ->
-                              PathChildCondition COMPOSITION p_data__1 -> COMPOSITION p_items__0
+                              AslFieldJoinCondition p_data__1.p_data__1_vo_id EQ p_items__0.p_items__0_vo_id
+
+                          DelegatingJoinCondition p_data__1 ->
+                              AslFieldJoinCondition p_data__1.p_data__1_num EQ p_items__0.p_items__0_parent_num
 
 
               LEFT_OUTER_JOIN sOB_o_0 -> p_eq_0
                 on
                   DelegatingJoinCondition sOB_o_0 ->
-                      PathChildCondition COMPOSITION sOB_o_0 -> COMPOSITION p_data__0
+                      AslFieldJoinCondition sOB_o_0.sOB_o_0_vo_id EQ p_data__0.p_data__0_vo_id
+
+                  DelegatingJoinCondition sOB_o_0 ->
+                      AslFieldJoinCondition sOB_o_0.sOB_o_0_num EQ p_data__0.p_data__0_parent_num
 
             p_items__0_f_0: FilteringQuery
               SELECT

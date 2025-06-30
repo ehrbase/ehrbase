@@ -49,7 +49,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
@@ -462,14 +462,9 @@ final class AslPathCreator {
 
         AslQuery parentProvider = parentJoinMode == JoinMode.ROOT ? parent.provider() : parent.owner();
         AslJoinCondition[] joinConditions = Stream.concat(
-                        Stream.of(new AslPathChildCondition(
-                                        sourceRelation,
-                                        parentProvider,
-                                        parent.owner(),
-                                        sourceRelation,
-                                        currentQuery,
-                                        sq)
-                                .provideJoinCondition()),
+                        AslUtils.pathChildConditions(
+                                        parentProvider, (AslStructureQuery) parent.owner(), currentQuery, sq)
+                                .map(AslProvidesJoinCondition::provideJoinCondition),
                         parentFiltersAsJoinCondition(parent, currentNode).stream())
                 .toArray(AslJoinCondition[]::new);
         query.addChild(
@@ -491,9 +486,9 @@ final class AslPathCreator {
             PathCohesionTreeNode currentNode) {
         List<AslJoinCondition> childNodeJoinConditions = new ArrayList<>();
         parentFiltersAsJoinCondition(parent, currentNode).ifPresent(childNodeJoinConditions::add);
-        childNodeJoinConditions.add(new AslPathChildCondition(
-                        sourceRelation, parent.provider(), parent.owner(), sourceRelation, nodeSubquery, nodeSubquery)
-                .provideJoinCondition());
+        AslUtils.pathChildConditions(parent.provider(), (AslStructureQuery) parent.owner(), nodeSubquery, nodeSubquery)
+                .map(AslProvidesJoinCondition::provideJoinCondition)
+                .forEach(childNodeJoinConditions::add);
         query.addChild(
                 nodeSubquery, new AslJoin(parent.provider(), JoinType.JOIN, nodeSubquery, childNodeJoinConditions));
         return query;

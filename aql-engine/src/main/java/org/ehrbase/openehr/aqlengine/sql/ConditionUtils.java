@@ -45,8 +45,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondi
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
@@ -64,7 +62,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
-import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
 import org.ehrbase.openehr.dbformat.RmAttributeAlias;
 import org.ehrbase.openehr.dbformat.RmTypeAlias;
@@ -101,45 +98,9 @@ final class ConditionUtils {
     private static void addDelegatingJoinConditions(
             AslDelegatingJoinCondition joinCondition, List<Condition> conditions, Table<?> sqlLeft, Table<?> sqlRight) {
         (switch (joinCondition.getDelegate()) {
-                    case AslPathChildCondition c -> pathChildConditions(c, sqlLeft, sqlRight, true);
                     case AslFieldJoinCondition c -> fieldJoinCondition(c, sqlLeft, sqlRight, true);
                 })
                 .forEach(conditions::add);
-    }
-
-    private static Stream<Condition> pathChildConditions(
-            final AslPathChildCondition dc,
-            final Table<?> sqlLeft,
-            final Table<?> sqlRight,
-            final boolean isJoinCondition) {
-        AslSourceRelation parentRelation = dc.getParentRelation();
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.FOLDER)
-                .contains(parentRelation)) {
-            throw new IllegalArgumentException("unexpected parent relation type %s".formatted(parentRelation));
-        }
-        if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.FOLDER)
-                .contains(dc.getChildRelation())) {
-            throw new IllegalArgumentException(
-                    "unexpected descendant relation type %s".formatted(dc.getChildRelation()));
-        }
-
-        return switch (parentRelation) {
-            case EHR_STATUS -> Stream.of(
-                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, dc, sqlLeft, sqlRight, isJoinCondition),
-                    joinNumEqualParentNumCondition(dc, sqlLeft, sqlRight, isJoinCondition));
-                // l.vo_id == r.vo_id and l.num == r.parent_num
-            case COMPOSITION -> Stream.of(
-                    joinColumnEqualCondition(AslStructureColumn.VO_ID, dc, sqlLeft, sqlRight, isJoinCondition),
-                    joinNumEqualParentNumCondition(dc, sqlLeft, sqlRight, isJoinCondition));
-                // l.ehr_id == r.ehr_id and l.folder_idx = r.folder_idx and l.num == r.parent_num
-            case FOLDER -> Stream.of(
-                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, dc, sqlLeft, sqlRight, isJoinCondition),
-                    joinColumnEqualCondition(AslStructureColumn.EHR_FOLDER_IDX, dc, sqlLeft, sqlRight, isJoinCondition),
-                    joinNumEqualParentNumCondition(dc, sqlLeft, sqlRight, isJoinCondition));
-            case AUDIT_DETAILS -> throw new IllegalArgumentException(
-                    "Path child condition not applicable to AUDIT_DETAILS");
-            case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
-        };
     }
 
     private static Stream<Condition> fieldJoinCondition(
@@ -180,14 +141,6 @@ final class ConditionUtils {
                             ic,
                             tables.getDataTable(ic.getLeftProvider()),
                             tables.getDataTable(ic.getRightProvider()),
-                            false)
-                    .toList());
-            case AslPathChildCondition dc -> DSL.and(pathChildConditions(
-                            dc,
-                            tables.getDataTable(dc.getLeftProvider()),
-                            dc.getParentRelation() == AslSourceRelation.EHR
-                                    ? tables.getVersionTable(dc.getRightProvider())
-                                    : tables.getDataTable(dc.getRightProvider()),
                             false)
                     .toList());
         };
@@ -530,40 +483,6 @@ final class ConditionUtils {
                 default -> throw new IllegalStateException("Unexpected value: " + operator);
             };
         };
-    }
-
-    /**
-     * Provides a join conditions using the given column name
-     * <code>[sqlLeft].column = [sqlRight].column</code>
-     * Example:
-     * <code>"p_data__0"."p_data__0_vo_id" = "p_events__0"."p_events__0_vo_id"</code>
-     */
-    private static Condition joinColumnEqualCondition(
-            AslStructureColumn column,
-            AslProvidesJoinCondition dc,
-            Table<?> sqlLeft,
-            Table<?> sqlRight,
-            boolean aliased) {
-        final String cName = column.getFieldName();
-        return FieldUtils.field(sqlLeft, dc.getLeftProvider(), dc.getLeftOwner(), cName, UUID.class, true)
-                .eq(FieldUtils.field(sqlRight, dc.getRightProvider(), dc.getRightOwner(), cName, UUID.class, aliased));
-    }
-
-    /**
-     * Provides a parent child join conditions using the left <code>num</code> to right <code>parent_num</code>
-     * <code>[sqlLeft].num = [sqlRight].parent_name</code>
-     * Example:
-     * <code>"p_data__0"."p_data__0_vo_id" = "p_events__0"."p_events__0_vo_id"</code>
-     */
-    private static Condition joinNumEqualParentNumCondition(
-            AslProvidesJoinCondition dc, Table<?> sqlLeft, Table<?> sqlRight, boolean aliased) {
-
-        final String num = AslStructureColumn.NUM.getFieldName();
-        final String parentNum = AslStructureColumn.PARENT_NUM.getFieldName();
-
-        return FieldUtils.field(sqlLeft, dc.getLeftProvider(), dc.getLeftOwner(), num, Integer.class, true)
-                .eq(FieldUtils.field(
-                        sqlRight, dc.getRightProvider(), dc.getRightOwner(), parentNum, Integer.class, aliased));
     }
 
     /**

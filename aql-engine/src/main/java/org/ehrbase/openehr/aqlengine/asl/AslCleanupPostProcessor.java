@@ -31,7 +31,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
@@ -186,16 +185,6 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
             case AslPathFilterJoinCondition pfjc -> AslUtils.streamConditionFields(pfjc.getCondition());
             case AslDelegatingJoinCondition adjc -> switch (adjc.getDelegate()) {
                 case AslFieldJoinCondition fjc -> Stream.of(fjc.getLeftField(), fjc.getRightField());
-                    // see ConditionUtils::pathChildConditions
-                case AslPathChildCondition pcjc -> Stream.of(
-                        AslStructureColumn.EHR_ID.fieldWithOwner(pcjc.getLeftOwner()),
-                        AslStructureColumn.EHR_ID.fieldWithOwner(pcjc.getRightOwner()),
-                        AslStructureColumn.VO_ID.fieldWithOwner(pcjc.getLeftOwner()),
-                        AslStructureColumn.VO_ID.fieldWithOwner(pcjc.getRightOwner()),
-                        AslStructureColumn.NUM.fieldWithOwner(pcjc.getLeftOwner()),
-                        AslStructureColumn.PARENT_NUM.fieldWithOwner(pcjc.getRightOwner()),
-                        AslStructureColumn.EHR_FOLDER_IDX.fieldWithOwner(pcjc.getLeftOwner()),
-                        AslStructureColumn.EHR_FOLDER_IDX.fieldWithOwner(pcjc.getRightOwner()));
             };
             case AslFolderItemJoinCondition fijc -> Stream.of(
                     AslStructureColumn.VO_ID.fieldWithOwner(fijc.getRightOwner()),

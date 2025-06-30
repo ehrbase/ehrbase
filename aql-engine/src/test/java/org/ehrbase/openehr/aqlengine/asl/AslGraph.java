@@ -36,7 +36,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondi
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
@@ -198,14 +197,6 @@ public class AslGraph {
                                     c.getOperator(),
                                     c.getRightOwner().getAlias(),
                                     c.getRightField().getAliasedName()));
-            case AslPathChildCondition c -> indented(
-                    level,
-                    "PathChildCondition %s %s -> %s %s"
-                            .formatted(
-                                    c.getParentRelation(),
-                                    c.getLeftOwner().getAlias(),
-                                    c.getChildRelation(),
-                                    c.getRightOwner().getAlias()));
         };
     }
 
