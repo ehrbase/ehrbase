@@ -2,7 +2,7 @@ name: "Maven Publish"
 
 on:
   workflow_call:
-  # workflow_dispatch: <- is this needed?
+  workflow_dispatch:
 
 jobs:
 
