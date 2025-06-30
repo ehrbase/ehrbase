@@ -33,9 +33,9 @@ jobs:
           java-version: 21
           distribution: 'temurin'
           cache: 'maven'
-          server-id: ossrh
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_TOKEN
+          server-id: central
+          server-username: CENTRAL_SONATYPE_USERNAME
+          server-password: CENTRAL_SONATYPE_TOKEN
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
 
@@ -54,6 +54,6 @@ jobs:
       - name: Publish - Maven Central
         run: mvn -B deploy -P release -DskipTests
         env:
-          OSSRH_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-          OSSRH_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
