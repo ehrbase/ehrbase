@@ -199,14 +199,22 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
             case AslConstantField<?> __ -> Stream.empty();
             case AslAggregatingField af -> streamFieldNames(af.getBaseField());
             case AslComplexExtractedColumnField ecf -> ecf.getExtractedColumn().getColumns().stream();
-            case AslSubqueryField sqf -> concatStreams(
-                    AslUtils.getTargetType(((AslDataQuery) sqf.getBaseQuery()).getBase()).getPkeyFields().stream()
-                            .map(TableField::getName),
-                    sqf.getFilterConditions().stream()
-                            .flatMap(AslUtils::streamConditionFields)
-                            .flatMap(AslCleanupPostProcessor::streamFieldNames),
-                    Stream.of(AslStructureColumn.NUM.getFieldName()),
-                    Stream.of(AslStructureColumn.NUM_CAP.getFieldName()));
+            case AslSubqueryField sqf -> {
+                AslQuery baseQuery = ((AslDataQuery) sqf.getBaseQuery()).getBase();
+                Stream<String> pkeyFieldNames = AslUtils.getTargetType(baseQuery).getPkeyFields().stream()
+                        .map(TableField::getName);
+                Stream<String> filterConditionFieldNames = sqf.getFilterConditions().stream()
+                                .flatMap(AslUtils::streamConditionFields)
+                                .flatMap(AslCleanupPostProcessor::streamFieldNames);
+                if(baseQuery instanceof AslStructureQuery sq && sq.isRoot()){
+                    yield concatStreams(pkeyFieldNames, filterConditionFieldNames);
+                }
+                yield concatStreams(
+                        pkeyFieldNames,
+                        filterConditionFieldNames,
+                        Stream.of(AslStructureColumn.NUM.getFieldName()),
+                        Stream.of(AslStructureColumn.NUM_CAP.getFieldName()));
+            }
             case AslFolderItemIdVirtualField f -> Stream.of(f.getFieldName());
             case null -> Stream.empty();
         };

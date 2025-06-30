@@ -57,6 +57,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslCo
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
@@ -522,23 +523,35 @@ public final class AslUtils {
     private static Stream<AslFieldJoinCondition> joinNumCapBetweenCondition(
             AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
 
-        return Stream.of(
-                new AslFieldJoinCondition(
-                        findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
-                        AslConditionOperator.LT,
-                        findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)),
-                new AslFieldJoinCondition(
-                        findFieldForOwner(AslStructureColumn.NUM_CAP, left.getSelect(), leftOwner),
-                        AslConditionOperator.GT_EQ,
-                        findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)));
+        if(leftOwner.isRoot()){
+            return Stream.of(new AslFieldJoinCondition(
+                    new AslConstantField<>(Integer.class,0,FieldSource.NONE,null),
+                    AslConditionOperator.NEQ,
+                    findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)));
+        }else{
+            return Stream.of(
+                    new AslFieldJoinCondition(
+                            findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
+                            AslConditionOperator.LT,
+                            findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)),
+                    new AslFieldJoinCondition(
+                            findFieldForOwner(AslStructureColumn.NUM_CAP, left.getSelect(), leftOwner),
+                            AslConditionOperator.GT_EQ,
+                            findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)));
+        }
     }
 
     private static Stream<AslFieldJoinCondition> joinNumEqualParentNumCondition(
             AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
-
+        if(leftOwner.isRoot()){
+            return Stream.of(new AslFieldJoinCondition(
+                    new AslConstantField<>(Integer.class,0,FieldSource.NONE,null),
+                    AslConditionOperator.EQ,
+                    findFieldForOwner(AslStructureColumn.PARENT_NUM, right.getSelect(), rightOwner)));
+        }else{
         return Stream.of(new AslFieldJoinCondition(
                 findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
                 AslConditionOperator.EQ,
                 findFieldForOwner(AslStructureColumn.PARENT_NUM, right.getSelect(), rightOwner)));
-    }
+    }}
 }

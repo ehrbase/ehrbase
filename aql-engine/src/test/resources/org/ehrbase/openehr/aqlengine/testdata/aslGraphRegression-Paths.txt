@@ -23,7 +23,7 @@ AslRootQuery
   FROM
     sEHR_e_0: StructureQuery
       SELECT
-        sEHR_e_0.sEHR_e_0_id -- ehr_id/value
+        sEHR_e_0.sEHR_e_0_id /* ehr_id/value */
         sEHR_e_0.sEHR_e_0_creation_date
       FROM EHR
     sCO_c_0: StructureQuery
@@ -36,22 +36,22 @@ AslRootQuery
         sCO_c_0.sCO_c_0_entity_idx
         sCO_c_0.sCO_c_0_entity_idx_len
         sCO_c_0.sCO_c_0_entity_concept
-        sCO_c_0.sCO_c_0_entity_name -- name/value
+        sCO_c_0.sCO_c_0_entity_name /* name/value */
         sCO_c_0.sCO_c_0_rm_entity
         sCO_c_0.sCO_c_0_data
-        sCO_c_0.sCO_c_0_template_id -- archetype_details/template_id/value
+        sCO_c_0.sCO_c_0_template_id /* archetype_details/template_id/value */
         sCO_c_0.sCO_c_0_sys_version
         sCO_c_0.sCO_c_0_audit_id
         sCO_c_0.sCO_c_0_contribution_id
         sCO_c_0.sCO_c_0_sys_period_lower
-        sCO_c_0.sCO_c_0_root_concept -- archetype_node_id
+        sCO_c_0.sCO_c_0_root_concept /* archetype_node_id */
       WHERE
         sCO_c_0.sCO_c_0_num EQ [0]
       FROM COMPOSITION
       JOIN sEHR_e_0 -> sCO_c_0
         on
           DelegatingJoinCondition sEHR_e_0 ->
-              AslFieldJoinCondition sEHR_e_0.sEHR_e_0_id EQ sCO_c_0.sCO_c_0_ehr_id
+              AslFieldJoinCondition sEHR_e_0.sEHR_e_0_id /* ehr_id/value */ EQ sCO_c_0.sCO_c_0_ehr_id
 
     sOB_o_0: StructureQuery
       SELECT
@@ -62,7 +62,7 @@ AslRootQuery
         sOB_o_0.sOB_o_0_entity_idx
         sOB_o_0.sOB_o_0_entity_idx_len
         sOB_o_0.sOB_o_0_entity_concept
-        sOB_o_0.sOB_o_0_entity_name -- name/value
+        sOB_o_0.sOB_o_0_entity_name /* name/value */
         sOB_o_0.sOB_o_0_rm_entity
         sOB_o_0.sOB_o_0_data
       WHERE
@@ -75,11 +75,8 @@ AslRootQuery
           DelegatingJoinCondition sCO_c_0 ->
               AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
 
-          DelegatingJoinCondition sCO_c_0 ->
-              AslFieldJoinCondition sCO_c_0.sCO_c_0_num LT sOB_o_0.sOB_o_0_num
-
-          DelegatingJoinCondition sCO_c_0 ->
-              AslFieldJoinCondition sCO_c_0.sCO_c_0_num_cap GT_EQ sOB_o_0.sOB_o_0_num
+          DelegatingJoinCondition  ->
+              AslFieldJoinCondition CONSTANT (Integer): 0 NEQ sOB_o_0.sOB_o_0_num
 
     p_eq_0: EncapsulatingQuery
       SELECT
@@ -90,7 +87,7 @@ AslRootQuery
         p_data__0.p_data__0_entity_idx
         p_data__0.p_data__0_entity_idx_len
         p_data__0.p_data__0_entity_concept
-        p_data__0.p_data__0_entity_name -- name/value
+        p_data__0.p_data__0_entity_name /* name/value */
         p_data__0.p_data__0_rm_entity
         p_data__0.p_data__0_data
         p_data__0.p_data__0_entity_attribute
@@ -101,7 +98,7 @@ AslRootQuery
         p_events__0.p_events__0_entity_idx
         p_events__0.p_events__0_entity_idx_len
         p_events__0.p_events__0_entity_concept
-        p_events__0.p_events__0_entity_name -- name/value
+        p_events__0.p_events__0_entity_name /* name/value */
         p_events__0.p_events__0_rm_entity
         p_events__0.p_events__0_data
         p_events__0.p_events__0_entity_attribute
@@ -112,7 +109,7 @@ AslRootQuery
         p_data__1.p_data__1_entity_idx
         p_data__1.p_data__1_entity_idx_len
         p_data__1.p_data__1_entity_concept
-        p_data__1.p_data__1_entity_name -- name/value
+        p_data__1.p_data__1_entity_name /* name/value */
         p_data__1.p_data__1_rm_entity
         p_data__1.p_data__1_data
         p_data__1.p_data__1_entity_attribute
@@ -123,7 +120,7 @@ AslRootQuery
         p_eq_1.p_items__0_entity_idx
         p_eq_1.p_items__0_entity_idx_len
         p_eq_1.p_items__0_entity_concept
-        p_eq_1.p_items__0_entity_name -- name/value
+        p_eq_1.p_items__0_entity_name /* name/value */
         p_eq_1.p_items__0_rm_entity
         p_eq_1.p_items__0_data
         p_eq_1.p_items__0_entity_attribute
@@ -134,7 +131,7 @@ AslRootQuery
         p_eq_2.p_items__1_entity_idx
         p_eq_2.p_items__1_entity_idx_len
         p_eq_2.p_items__1_entity_concept
-        p_eq_2.p_items__1_entity_name -- name/value
+        p_eq_2.p_items__1_entity_name /* name/value */
         p_eq_2.p_items__1_rm_entity
         p_eq_2.p_items__1_data
         p_eq_2.p_items__1_entity_attribute
@@ -145,7 +142,7 @@ AslRootQuery
         p_eq_3.p_items__2_entity_idx
         p_eq_3.p_items__2_entity_idx_len
         p_eq_3.p_items__2_entity_concept
-        p_eq_3.p_items__2_entity_name -- name/value
+        p_eq_3.p_items__2_entity_name /* name/value */
         p_eq_3.p_items__2_rm_entity
         p_eq_3.p_items__2_data
         p_eq_3.p_items__2_entity_attribute
@@ -156,7 +153,7 @@ AslRootQuery
         p_eq_4.p_items__3_entity_idx
         p_eq_4.p_items__3_entity_idx_len
         p_eq_4.p_items__3_entity_concept
-        p_eq_4.p_items__3_entity_name -- name/value
+        p_eq_4.p_items__3_entity_name /* name/value */
         p_eq_4.p_items__3_rm_entity
         p_eq_4.p_items__3_data
         p_eq_4.p_items__3_entity_attribute
@@ -167,7 +164,7 @@ AslRootQuery
         p_eq_5.p_items__4_entity_idx
         p_eq_5.p_items__4_entity_idx_len
         p_eq_5.p_items__4_entity_concept
-        p_eq_5.p_items__4_entity_name -- name/value
+        p_eq_5.p_items__4_entity_name /* name/value */
         p_eq_5.p_items__4_rm_entity
         p_eq_5.p_items__4_data
         p_eq_5.p_items__4_entity_attribute
@@ -188,7 +185,7 @@ AslRootQuery
                 p_data__0.p_data__0_entity_idx
                 p_data__0.p_data__0_entity_idx_len
                 p_data__0.p_data__0_entity_concept
-                p_data__0.p_data__0_entity_name -- name/value
+                p_data__0.p_data__0_entity_name /* name/value */
                 p_data__0.p_data__0_rm_entity
                 p_data__0.p_data__0_data
                 p_data__0.p_data__0_entity_attribute
@@ -207,7 +204,7 @@ AslRootQuery
                 p_events__0.p_events__0_entity_idx
                 p_events__0.p_events__0_entity_idx_len
                 p_events__0.p_events__0_entity_concept
-                p_events__0.p_events__0_entity_name -- name/value
+                p_events__0.p_events__0_entity_name /* name/value */
                 p_events__0.p_events__0_rm_entity
                 p_events__0.p_events__0_data
                 p_events__0.p_events__0_entity_attribute
@@ -234,7 +231,7 @@ AslRootQuery
                 p_data__1.p_data__1_entity_idx
                 p_data__1.p_data__1_entity_idx_len
                 p_data__1.p_data__1_entity_concept
-                p_data__1.p_data__1_entity_name -- name/value
+                p_data__1.p_data__1_entity_name /* name/value */
                 p_data__1.p_data__1_rm_entity
                 p_data__1.p_data__1_data
                 p_data__1.p_data__1_entity_attribute
@@ -261,7 +258,7 @@ AslRootQuery
                 p_items__0.p_items__0_entity_idx
                 p_items__0.p_items__0_entity_idx_len
                 p_items__0.p_items__0_entity_concept
-                p_items__0.p_items__0_entity_name -- name/value
+                p_items__0.p_items__0_entity_name /* name/value */
                 p_items__0.p_items__0_rm_entity
                 p_items__0.p_items__0_data
                 p_items__0.p_items__0_entity_attribute
@@ -275,7 +272,7 @@ AslRootQuery
                         p_items__0.p_items__0_entity_idx
                         p_items__0.p_items__0_entity_idx_len
                         p_items__0.p_items__0_entity_concept
-                        p_items__0.p_items__0_entity_name -- name/value
+                        p_items__0.p_items__0_entity_name /* name/value */
                         p_items__0.p_items__0_rm_entity
                         p_items__0.p_items__0_data
                         p_items__0.p_items__0_entity_attribute
@@ -303,7 +300,7 @@ AslRootQuery
                 p_items__1.p_items__1_entity_idx
                 p_items__1.p_items__1_entity_idx_len
                 p_items__1.p_items__1_entity_concept
-                p_items__1.p_items__1_entity_name -- name/value
+                p_items__1.p_items__1_entity_name /* name/value */
                 p_items__1.p_items__1_rm_entity
                 p_items__1.p_items__1_data
                 p_items__1.p_items__1_entity_attribute
@@ -317,7 +314,7 @@ AslRootQuery
                         p_items__1.p_items__1_entity_idx
                         p_items__1.p_items__1_entity_idx_len
                         p_items__1.p_items__1_entity_concept
-                        p_items__1.p_items__1_entity_name -- name/value
+                        p_items__1.p_items__1_entity_name /* name/value */
                         p_items__1.p_items__1_rm_entity
                         p_items__1.p_items__1_data
                         p_items__1.p_items__1_entity_attribute
@@ -345,7 +342,7 @@ AslRootQuery
                 p_items__2.p_items__2_entity_idx
                 p_items__2.p_items__2_entity_idx_len
                 p_items__2.p_items__2_entity_concept
-                p_items__2.p_items__2_entity_name -- name/value
+                p_items__2.p_items__2_entity_name /* name/value */
                 p_items__2.p_items__2_rm_entity
                 p_items__2.p_items__2_data
                 p_items__2.p_items__2_entity_attribute
@@ -359,7 +356,7 @@ AslRootQuery
                         p_items__2.p_items__2_entity_idx
                         p_items__2.p_items__2_entity_idx_len
                         p_items__2.p_items__2_entity_concept
-                        p_items__2.p_items__2_entity_name -- name/value
+                        p_items__2.p_items__2_entity_name /* name/value */
                         p_items__2.p_items__2_rm_entity
                         p_items__2.p_items__2_data
                         p_items__2.p_items__2_entity_attribute
@@ -387,7 +384,7 @@ AslRootQuery
                 p_items__3.p_items__3_entity_idx
                 p_items__3.p_items__3_entity_idx_len
                 p_items__3.p_items__3_entity_concept
-                p_items__3.p_items__3_entity_name -- name/value
+                p_items__3.p_items__3_entity_name /* name/value */
                 p_items__3.p_items__3_rm_entity
                 p_items__3.p_items__3_data
                 p_items__3.p_items__3_entity_attribute
@@ -401,7 +398,7 @@ AslRootQuery
                         p_items__3.p_items__3_entity_idx
                         p_items__3.p_items__3_entity_idx_len
                         p_items__3.p_items__3_entity_concept
-                        p_items__3.p_items__3_entity_name -- name/value
+                        p_items__3.p_items__3_entity_name /* name/value */
                         p_items__3.p_items__3_rm_entity
                         p_items__3.p_items__3_data
                         p_items__3.p_items__3_entity_attribute
@@ -429,7 +426,7 @@ AslRootQuery
                 p_items__4.p_items__4_entity_idx
                 p_items__4.p_items__4_entity_idx_len
                 p_items__4.p_items__4_entity_concept
-                p_items__4.p_items__4_entity_name -- name/value
+                p_items__4.p_items__4_entity_name /* name/value */
                 p_items__4.p_items__4_rm_entity
                 p_items__4.p_items__4_data
                 p_items__4.p_items__4_entity_attribute
@@ -443,7 +440,7 @@ AslRootQuery
                         p_items__4.p_items__4_entity_idx
                         p_items__4.p_items__4_entity_idx_len
                         p_items__4.p_items__4_entity_concept
-                        p_items__4.p_items__4_entity_name -- name/value
+                        p_items__4.p_items__4_entity_name /* name/value */
                         p_items__4.p_items__4_rm_entity
                         p_items__4.p_items__4_data
                         p_items__4.p_items__4_entity_attribute
@@ -471,4 +468,4 @@ AslRootQuery
               AslFieldJoinCondition sOB_o_0.sOB_o_0_num EQ p_data__0.p_data__0_parent_num
 
   WHERE
-    sEHR_e_0.sEHR_e_0_id -- ehr_id/value EQ [0f5ea58d-9e30-4365-853e-81f2224a85e0]
+    sEHR_e_0.sEHR_e_0_id /* ehr_id/value */ EQ [0f5ea58d-9e30-4365-853e-81f2224a85e0]

@@ -190,13 +190,11 @@ public class AslGraph {
             case AslNotNullQueryCondition c -> indented(level, "NOT_NULL " + fieldToGraph(level + 1, c.getField()));
             case AslFieldJoinCondition c -> indented(
                     level,
-                    "AslFieldJoinCondition %s.%s %s %s.%s"
+                    "AslFieldJoinCondition %s %s %s"
                             .formatted(
-                                    c.getLeftOwner().getAlias(),
-                                    c.getLeftField().getAliasedName(),
+                                    fieldToGraph(level,c.getLeftField()),
                                     c.getOperator(),
-                                    c.getRightOwner().getAlias(),
-                                    c.getRightField().getAliasedName()));
+                                    fieldToGraph(level,c.getRightField())));
         };
     }
 
@@ -206,7 +204,7 @@ public class AslGraph {
                     case AslPathFilterJoinCondition c -> "PathFilterJoinCondition %s ->\n%s"
                             .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getCondition()));
                     case AslDelegatingJoinCondition c -> "DelegatingJoinCondition %s ->\n%s"
-                            .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getDelegate()));
+                            .formatted(getAlias(c.getLeftOwner()), conditionToGraph(level + 2, c.getDelegate()));
                     case AslFolderItemJoinCondition
                     c -> "FolderItemJoinCondition FOLDER -> %s [%s.vo_id in %s.data.items[].id.value]"
                             .formatted(
@@ -216,6 +214,14 @@ public class AslGraph {
                 })
                 .map(s -> indented(level, s))
                 .collect(Collectors.joining());
+    }
+
+    private static String getAlias(AslQuery query) {
+        if(query == null){
+            return "";
+        }else{
+            return query.getAlias();
+        }
     }
 
     private static String orderByToGraph(int level, AslOrderByField sortOrderPair) {
@@ -231,7 +237,7 @@ public class AslGraph {
                     + f.getAliasedName()
                     + Optional.of(f)
                             .map(AslColumnField::getExtractedColumn)
-                            .map(e -> " -- " + e.getPath().render())
+                            .map(e -> " /* " + e.getPath().render() + " */")
                             .orElse("");
             case AslComplexExtractedColumnField f -> providerAlias + "??"
                     + Optional.of(f)

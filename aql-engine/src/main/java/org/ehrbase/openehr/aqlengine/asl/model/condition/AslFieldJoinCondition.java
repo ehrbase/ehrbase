@@ -17,22 +17,22 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model.condition;
 
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
 public final class AslFieldJoinCondition implements AslProvidesJoinCondition {
-    private final AslColumnField leftField;
+    private final AslField leftField;
     private final AslConditionOperator operator;
-    private final AslColumnField rightField;
+    private final AslField rightField;
 
     public AslFieldJoinCondition(
-            final AslColumnField leftField, final AslConditionOperator operator, final AslColumnField rightField) {
+            final AslField leftField, final AslConditionOperator operator, final AslField rightField) {
         this.leftField = leftField;
         this.rightField = rightField;
         this.operator = operator;
     }
 
-    public AslColumnField getLeftField() {
+    public AslField getLeftField() {
         return leftField;
     }
 
@@ -40,7 +40,7 @@ public final class AslFieldJoinCondition implements AslProvidesJoinCondition {
         return operator;
     }
 
-    public AslColumnField getRightField() {
+    public AslField getRightField() {
         return rightField;
     }
 

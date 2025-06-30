@@ -564,6 +564,7 @@ public class AqlSqlQueryBuilder {
         AslQuery target = aslData.getBaseProvider();
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
         AslSourceRelation type = AslUtils.getTargetType(aslData.getBase());
+        final boolean isRoot = aslData.getBase() instanceof AslStructureQuery sq && sq.isRoot();
 
         Table<?> data = type.getDataTable().as(subqueryAlias(aslData));
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);
@@ -585,7 +586,8 @@ public class AqlSqlQueryBuilder {
         Condition[] conditions = Stream.concat(
                         // TODO can be skipped for roots
                         // TODO can be set to == for leafs (ELEMENT)
-                        Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
+                        isRoot ? Stream.empty() :
+                                Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
                                 .between(
                                         FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
                                         FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),

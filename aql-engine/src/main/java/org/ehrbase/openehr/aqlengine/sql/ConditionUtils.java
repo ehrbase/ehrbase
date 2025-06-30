@@ -56,6 +56,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -106,8 +107,19 @@ final class ConditionUtils {
     private static Stream<Condition> fieldJoinCondition(
             AslFieldJoinCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
 
-        Field lf = FieldUtils.field(sqlLeft, ic.getLeftField(), true);
-        Field rf = FieldUtils.field(sqlRight, ic.getRightField(), isJoinCondition);
+        Field lf = switch(ic.getLeftField()){
+            case AslColumnField cf -> FieldUtils.field(sqlLeft, cf, true);
+            case AslConstantField cf -> DSL.inline(cf.getValue());
+            case AslSubqueryField __ -> throw new IllegalArgumentException("AslFieldJoinConditions using AslSubqueryFields are not supported");
+            case AslVirtualField __ -> throw new  IllegalArgumentException("AslFieldJoinConditions using AslVirtualFields are not supported");
+        };
+        Field rf = switch(ic.getRightField()){
+            case AslColumnField cf -> FieldUtils.field(sqlRight, cf, isJoinCondition);
+            case AslConstantField cf -> DSL.inline(cf.getValue());
+            case AslSubqueryField __ -> throw new IllegalArgumentException("AslFieldJoinConditions using AslSubqueryFields are not supported");
+            case AslVirtualField __ -> throw new  IllegalArgumentException("AslFieldJoinConditions using AslVirtualFields are not supported");
+        };
+
         return Stream.of(
                 switch (ic.getOperator()) {
                     case LIKE -> lf.like(rf);

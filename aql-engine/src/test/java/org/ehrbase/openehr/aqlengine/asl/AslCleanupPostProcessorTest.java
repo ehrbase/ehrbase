@@ -169,9 +169,9 @@ class AslCleanupPostProcessorTest {
           FROM
             sEHR_0: StructureQuery
               SELECT
-                sEHR_0.sEHR_0_id -- ehr_id/value
+                sEHR_0.sEHR_0_id /* ehr_id/value */
               WHERE
-                sEHR_0.sEHR_0_id -- ehr_id/value EQ [860f5c5b-f121-41bb-ad66-7ac6c285526c]
+                sEHR_0.sEHR_0_id /* ehr_id/value */ EQ [860f5c5b-f121-41bb-ad66-7ac6c285526c]
               FROM EHR
             sES_s_0: StructureQuery
               SELECT
@@ -183,13 +183,11 @@ class AslCleanupPostProcessorTest {
               JOIN sEHR_0 -> sES_s_0
                 on
                   DelegatingJoinCondition sEHR_0 ->
-                      AslFieldJoinCondition sEHR_0.sEHR_0_id EQ sES_s_0.sES_s_0_ehr_id
-
+                      AslFieldJoinCondition sEHR_0.sEHR_0_id /* ehr_id/value */ EQ sES_s_0.sES_s_0_ehr_id
+        
             sCO_c_0: StructureQuery
               SELECT
                 sCO_c_0.sCO_c_0_vo_id
-                sCO_c_0.sCO_c_0_num
-                sCO_c_0.sCO_c_0_num_cap
                 sCO_c_0.sCO_c_0_ehr_id
                 sCO_c_0.sCO_c_0_sys_version
               WHERE
@@ -198,14 +196,14 @@ class AslCleanupPostProcessorTest {
               JOIN sEHR_0 -> sCO_c_0
                 on
                   DelegatingJoinCondition sEHR_0 ->
-                      AslFieldJoinCondition sEHR_0.sEHR_0_id EQ sCO_c_0.sCO_c_0_ehr_id
-
+                      AslFieldJoinCondition sEHR_0.sEHR_0_id /* ehr_id/value */ EQ sCO_c_0.sCO_c_0_ehr_id
+        
             sOB_o_0: StructureQuery
               SELECT
                 sOB_o_0.sOB_o_0_vo_id
                 sOB_o_0.sOB_o_0_num
                 sOB_o_0.sOB_o_0_num_cap
-                sOB_o_0.sOB_o_0_entity_name -- name/value
+                sOB_o_0.sOB_o_0_entity_name /* name/value */
               WHERE
                 sOB_o_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.test.v0]]
               FROM COMPOSITION
@@ -215,18 +213,15 @@ class AslCleanupPostProcessorTest {
                 on
                   DelegatingJoinCondition sCO_c_0 ->
                       AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
-
-                  DelegatingJoinCondition sCO_c_0 ->
-                      AslFieldJoinCondition sCO_c_0.sCO_c_0_num LT sOB_o_0.sOB_o_0_num
-
-                  DelegatingJoinCondition sCO_c_0 ->
-                      AslFieldJoinCondition sCO_c_0.sCO_c_0_num_cap GT_EQ sOB_o_0.sOB_o_0_num
-
+        
+                  DelegatingJoinCondition  ->
+                      AslFieldJoinCondition CONSTANT (Integer): 0 NEQ sOB_o_0.sOB_o_0_num
+        
             sE_el_0: StructureQuery
               SELECT
                 sE_el_0.sE_el_0_vo_id
                 sE_el_0.sE_el_0_num
-                sE_el_0.sE_el_0_entity_name -- name/value
+                sE_el_0.sE_el_0_entity_name /* name/value */
                 sE_el_0.sE_el_0_data
               WHERE
                 sE_el_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0120]]
@@ -237,13 +232,13 @@ class AslCleanupPostProcessorTest {
                 on
                   DelegatingJoinCondition sOB_o_0 ->
                       AslFieldJoinCondition sOB_o_0.sOB_o_0_vo_id EQ sE_el_0.sE_el_0_vo_id
-
+        
                   DelegatingJoinCondition sOB_o_0 ->
                       AslFieldJoinCondition sOB_o_0.sOB_o_0_num LT sE_el_0.sE_el_0_num
-
+        
                   DelegatingJoinCondition sOB_o_0 ->
                       AslFieldJoinCondition sOB_o_0.sOB_o_0_num_cap GT_EQ sE_el_0.sE_el_0_num
-
+        
             p_eq_0: EncapsulatingQuery
               SELECT
                 p_data__0.p_data__0_vo_id
@@ -256,7 +251,7 @@ class AslCleanupPostProcessorTest {
                 p_data__1.p_data__1_num
                 p_data__1.p_data__1_parent_num
                 p_data__1.p_data__1_entity_concept
-                p_data__1.p_data__1_entity_name -- name/value
+                p_data__1.p_data__1_entity_name /* name/value */
                 p_data__1.p_data__1_rm_entity
                 p_items__0.p_items__0_vo_id
                 p_items__0.p_items__0_parent_num
@@ -272,7 +267,7 @@ class AslCleanupPostProcessorTest {
                       FROM COMPOSITION
                       STRUCTURE CONDITIONS
                         p_data__0.p_data__0_entity_attribute EQ [d]
-
+        
                   p_events__0: StructureQuery
                       SELECT
                         p_events__0.p_events__0_vo_id
@@ -287,18 +282,18 @@ class AslCleanupPostProcessorTest {
                         on
                           DelegatingJoinCondition p_data__0 ->
                               AslFieldJoinCondition p_data__0.p_data__0_vo_id EQ p_events__0.p_events__0_vo_id
-
+        
                           DelegatingJoinCondition p_data__0 ->
                               AslFieldJoinCondition p_data__0.p_data__0_num EQ p_events__0.p_events__0_parent_num
-
-
+        
+        
                   p_data__1: StructureQuery
                       SELECT
                         p_data__1.p_data__1_vo_id
                         p_data__1.p_data__1_num
                         p_data__1.p_data__1_parent_num
                         p_data__1.p_data__1_entity_concept
-                        p_data__1.p_data__1_entity_name -- name/value
+                        p_data__1.p_data__1_entity_name /* name/value */
                         p_data__1.p_data__1_rm_entity
                       WHERE
                         p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
@@ -309,11 +304,11 @@ class AslCleanupPostProcessorTest {
                         on
                           DelegatingJoinCondition p_events__0 ->
                               AslFieldJoinCondition p_events__0.p_events__0_vo_id EQ p_data__1.p_data__1_vo_id
-
+        
                           DelegatingJoinCondition p_events__0 ->
                               AslFieldJoinCondition p_events__0.p_events__0_num EQ p_data__1.p_data__1_parent_num
-
-
+        
+        
                   p_items__0: StructureQuery
                       SELECT
                         p_items__0.p_items__0_vo_id
@@ -330,24 +325,24 @@ class AslCleanupPostProcessorTest {
                               OR
                                 AND
                                   p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-                                  p_data__1.p_data__1_entity_name -- name/value EQ [name1]
+                                  p_data__1.p_data__1_entity_name /* name/value */ EQ [name1]
                                 p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-
+        
                           DelegatingJoinCondition p_data__1 ->
                               AslFieldJoinCondition p_data__1.p_data__1_vo_id EQ p_items__0.p_items__0_vo_id
-
+        
                           DelegatingJoinCondition p_data__1 ->
                               AslFieldJoinCondition p_data__1.p_data__1_num EQ p_items__0.p_items__0_parent_num
-
-
+        
+        
               LEFT_OUTER_JOIN sOB_o_0 -> p_eq_0
                 on
                   DelegatingJoinCondition sOB_o_0 ->
                       AslFieldJoinCondition sOB_o_0.sOB_o_0_vo_id EQ p_data__0.p_data__0_vo_id
-
+        
                   DelegatingJoinCondition sOB_o_0 ->
                       AslFieldJoinCondition sOB_o_0.sOB_o_0_num EQ p_data__0.p_data__0_parent_num
-
+        
             p_items__0_f_0: FilteringQuery
               SELECT
                 p_items__0_f_0.p_items__0_f_0_data
@@ -356,8 +351,8 @@ class AslCleanupPostProcessorTest {
                   PathFilterJoinCondition p_data__1 ->
                       AND
                         p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-                        p_eq_0.p_data__1_entity_name -- name/value EQ [name1]
-
+                        p_eq_0.p_data__1_entity_name /* name/value */ EQ [name1]
+        
             p_items__0_f_1: FilteringQuery
               SELECT
                 p_items__0_f_1.p_items__0_f_1_data
@@ -365,13 +360,13 @@ class AslCleanupPostProcessorTest {
                 on
                   PathFilterJoinCondition p_data__1 ->
                       p_eq_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
-
+        
           WHERE
             AND
-              sE_el_0.sE_el_0_entity_name -- name/value EQ [Result]
+              sE_el_0.sE_el_0_entity_name /* name/value */ EQ [Result]
               sE_el_0.sE_el_0_data -> value -> value EQ [1.3]
           ORDER BY
-        sOB_o_0.sOB_o_0_entity_name -- name/value ASC
+        sOB_o_0.sOB_o_0_entity_name /* name/value */ ASC
         """);
     }
 
