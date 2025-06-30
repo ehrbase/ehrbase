@@ -13,7 +13,7 @@ jobs:
     name: Publish
     runs-on: ubuntu-latest
     # Sanity check to ensure docker push only happen on dev/main/tag[v] refs
-    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/feature/CDR-1909#ossrh-migration' }} # || startsWith(github.ref, 'refs/heads/release/') }}
+    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' ||  startsWith(github.ref, 'refs/heads/feature/CDR-1909') }} # || startsWith(github.ref, 'refs/heads/release/') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
