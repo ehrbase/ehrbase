@@ -17,7 +17,6 @@
  */
 package org.ehrbase.openehr.aqlengine.sql;
 
-import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
 import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.openehr.dbformat.DbToRmFormat.TYPE_ATTRIBUTE;
@@ -59,7 +58,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -92,20 +90,6 @@ final class ConditionUtils {
                         desc, conditions, sqlLeft, sqlRight);
                 case AslPathFilterJoinCondition filterCondition -> conditions.add(
                         buildCondition(filterCondition.getCondition(), aslQueryToTable, true));
-                case AslAuditDetailsJoinCondition ac -> conditions.add(FieldUtils.field(
-                                sqlLeft,
-                                aslJoin.getLeft(),
-                                ac.getLeftOwner(),
-                                AslStructureColumn.AUDIT_ID.getFieldName(),
-                                UUID.class,
-                                true)
-                        .eq(FieldUtils.field(
-                                sqlRight,
-                                aslJoin.getRight(),
-                                ac.getRightOwner(),
-                                AUDIT_DETAILS.ID.getName(),
-                                UUID.class,
-                                true)));
                 case AslFolderItemJoinCondition c -> conditions.add(
                         joinFolderItemIdEqualVoIdCondition(c, sqlLeft, sqlRight));
             }

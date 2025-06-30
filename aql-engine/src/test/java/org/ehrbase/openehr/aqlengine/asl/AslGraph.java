@@ -48,7 +48,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -217,10 +216,6 @@ public class AslGraph {
                             .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getCondition()));
                     case AslDelegatingJoinCondition c -> "DelegatingJoinCondition %s ->\n%s"
                             .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getDelegate()));
-                    case AslAuditDetailsJoinCondition c -> "AuditDetailsJoinCondition %s -> %s"
-                            .formatted(
-                                    c.getLeftOwner().getAlias(),
-                                    c.getRightOwner().getAlias());
                     case AslFolderItemJoinCondition
                     c -> "FolderItemJoinCondition FOLDER -> %s [%s.vo_id in %s.data.items[].id.value]"
                             .formatted(

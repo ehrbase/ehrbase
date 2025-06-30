@@ -46,6 +46,7 @@ import org.ehrbase.openehr.aqlengine.asl.DataNodeInfo.StructureRmDataNodeInfo;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
@@ -58,7 +59,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
@@ -600,7 +600,17 @@ final class AslPathCreator {
                         parent.provider(),
                         JoinType.JOIN,
                         auditDetailsQuery,
-                        new AslAuditDetailsJoinCondition(parent.owner(), auditDetailsQuery)));
+                        new AslFieldJoinCondition(
+                                        AslUtils.findFieldForOwner(
+                                                AslStructureColumn.AUDIT_ID,
+                                                parent.owner().getSelect(),
+                                                parent.owner()),
+                                        AslConditionOperator.EQ,
+                                        AslUtils.findFieldForOwner(
+                                                AUDIT_DETAILS.ID.getName(),
+                                                auditDetailsQuery.getSelect(),
+                                                auditDetailsQuery))
+                                .provideJoinCondition()));
         return new OwnerProviderTuple(auditDetailsQuery, auditDetailsQuery);
     }
 

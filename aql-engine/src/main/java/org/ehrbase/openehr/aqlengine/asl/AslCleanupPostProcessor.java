@@ -25,12 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.AqlQueryRequest;
-import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
@@ -43,7 +41,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -187,12 +184,6 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
     private static Stream<AslField> streamJoinConditionFields(AslJoinCondition joinCondition) {
         return switch (joinCondition) {
             case AslPathFilterJoinCondition pfjc -> AslUtils.streamConditionFields(pfjc.getCondition());
-
-            case AslAuditDetailsJoinCondition adjc -> Stream.of(
-                    AslStructureColumn.AUDIT_ID.fieldWithOwner(adjc.getLeftOwner()),
-                    new AslColumnField(UUID.class, Tables.AUDIT_DETAILS.ID.getName(), false)
-                            .withOwner(adjc.getRightOwner()));
-
             case AslDelegatingJoinCondition adjc -> switch (adjc.getDelegate()) {
                 case AslFieldJoinCondition fjc -> Stream.of(fjc.getLeftField(), fjc.getRightField());
                     // see ConditionUtils::pathChildConditions
