@@ -192,9 +192,9 @@ public class AslGraph {
                     level,
                     "AslFieldJoinCondition %s %s %s"
                             .formatted(
-                                    fieldToGraph(level,c.getLeftField()),
+                                    fieldToGraph(level, c.getLeftField()),
                                     c.getOperator(),
-                                    fieldToGraph(level,c.getRightField())));
+                                    fieldToGraph(level, c.getRightField())));
         };
     }
 
@@ -217,9 +217,9 @@ public class AslGraph {
     }
 
     private static String getAlias(AslQuery query) {
-        if(query == null){
+        if (query == null) {
             return "";
-        }else{
+        } else {
             return query.getAlias();
         }
     }

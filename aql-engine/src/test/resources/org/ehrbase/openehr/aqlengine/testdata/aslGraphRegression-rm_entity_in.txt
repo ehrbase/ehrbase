@@ -34,8 +34,6 @@ AslRootQuery
         sCO_c_0.sCO_c_0_contribution_id
         sCO_c_0.sCO_c_0_sys_period_lower
         sCO_c_0.sCO_c_0_root_concept /* archetype_node_id */
-      WHERE
-        sCO_c_0.sCO_c_0_num EQ [0]
       FROM COMPOSITION
     sENTRY_en_0: StructureQuery
       SELECT

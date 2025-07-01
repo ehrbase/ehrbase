@@ -25,8 +25,7 @@ public final class AslFieldCondition implements AslProvidesJoinCondition {
     private final AslConditionOperator operator;
     private final AslField rightField;
 
-    public AslFieldCondition(
-            final AslField leftField, final AslConditionOperator operator, final AslField rightField) {
+    public AslFieldCondition(final AslField leftField, final AslConditionOperator operator, final AslField rightField) {
         this.leftField = leftField;
         this.rightField = rightField;
         this.operator = operator;

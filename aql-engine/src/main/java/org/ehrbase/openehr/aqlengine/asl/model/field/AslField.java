@@ -37,7 +37,7 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
              */
             AslQuery provider) {
 
-        public static final FieldSource NONE = new FieldSource(null,null,null);
+        public static final FieldSource NONE = new FieldSource(null, null, null);
 
         public static FieldSource withOwner(AslQuery owner) {
             return new FieldSource(owner, owner, owner);

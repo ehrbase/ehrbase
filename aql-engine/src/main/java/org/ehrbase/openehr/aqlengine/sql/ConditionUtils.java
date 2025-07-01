@@ -107,18 +107,24 @@ final class ConditionUtils {
     private static Stream<Condition> fieldJoinCondition(
             AslFieldCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
 
-        Field lf = switch(ic.getLeftField()){
-            case AslColumnField cf -> FieldUtils.field(sqlLeft, cf, true);
-            case AslConstantField cf -> DSL.inline(cf.getValue());
-            case AslSubqueryField __ -> throw new IllegalArgumentException("AslFieldJoinConditions using AslSubqueryFields are not supported");
-            case AslVirtualField __ -> throw new  IllegalArgumentException("AslFieldJoinConditions using AslVirtualFields are not supported");
-        };
-        Field rf = switch(ic.getRightField()){
-            case AslColumnField cf -> FieldUtils.field(sqlRight, cf, isJoinCondition);
-            case AslConstantField cf -> DSL.inline(cf.getValue());
-            case AslSubqueryField __ -> throw new IllegalArgumentException("AslFieldJoinConditions using AslSubqueryFields are not supported");
-            case AslVirtualField __ -> throw new  IllegalArgumentException("AslFieldJoinConditions using AslVirtualFields are not supported");
-        };
+        Field lf =
+                switch (ic.getLeftField()) {
+                    case AslColumnField cf -> FieldUtils.field(sqlLeft, cf, true);
+                    case AslConstantField cf -> DSL.inline(cf.getValue());
+                    case AslSubqueryField __ -> throw new IllegalArgumentException(
+                            "AslFieldJoinConditions using AslSubqueryFields are not supported");
+                    case AslVirtualField __ -> throw new IllegalArgumentException(
+                            "AslFieldJoinConditions using AslVirtualFields are not supported");
+                };
+        Field rf =
+                switch (ic.getRightField()) {
+                    case AslColumnField cf -> FieldUtils.field(sqlRight, cf, isJoinCondition);
+                    case AslConstantField cf -> DSL.inline(cf.getValue());
+                    case AslSubqueryField __ -> throw new IllegalArgumentException(
+                            "AslFieldJoinConditions using AslSubqueryFields are not supported");
+                    case AslVirtualField __ -> throw new IllegalArgumentException(
+                            "AslFieldJoinConditions using AslVirtualFields are not supported");
+                };
 
         return Stream.of(
                 switch (ic.getOperator()) {
@@ -149,7 +155,8 @@ final class ConditionUtils {
             case AslTrueQueryCondition __ -> DSL.trueCondition();
             case AslNotNullQueryCondition nn -> notNullCondition(tables, useAliases, nn);
             case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv);
-            case AslFieldCondition ic -> throw new IllegalArgumentException("AslFieldConditions are not supported in WHERE clauses");
+            case AslFieldCondition ic -> throw new IllegalArgumentException(
+                    "AslFieldConditions are not supported in WHERE clauses");
         };
     }
 

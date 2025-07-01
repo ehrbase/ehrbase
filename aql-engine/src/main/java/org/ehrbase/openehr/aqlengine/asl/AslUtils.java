@@ -24,6 +24,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -55,11 +56,16 @@ import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinConditio
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
@@ -77,6 +83,7 @@ import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.openehr.sdk.util.OpenEHRDateTimeParseUtils;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JSONB;
+import org.jooq.TableField;
 
 public final class AslUtils {
 
@@ -90,6 +97,39 @@ public final class AslUtils {
                             String.format("Duplicate key: attempted merging values %s and %s", u, v));
                 },
                 LinkedHashMap::new);
+    }
+
+    @SafeVarargs
+    public static <T> Stream<T> concatStreams(Stream<T>... streams) {
+        return Arrays.stream(streams).flatMap(s -> s);
+    }
+
+    public static Stream<String> streamFieldNames(final AslField field) {
+        return switch (field) {
+            case AslColumnField cf -> Stream.of(cf.getColumnName());
+            case AslRmPathField pf -> Stream.of(pf.getSrcField().getColumnName());
+            case AslConstantField<?> __ -> Stream.empty();
+            case AslAggregatingField af -> streamFieldNames(af.getBaseField());
+            case AslComplexExtractedColumnField ecf -> ecf.getExtractedColumn().getColumns().stream();
+            case AslSubqueryField sqf -> {
+                AslQuery baseQuery = ((AslDataQuery) sqf.getBaseQuery()).getBase();
+                Stream<String> pkeyFieldNames =
+                        getTargetType(baseQuery).getPkeyFields().stream().map(TableField::getName);
+                Stream<String> filterConditionFieldNames = sqf.getFilterConditions().stream()
+                        .flatMap(AslUtils::streamConditionFields)
+                        .flatMap(AslUtils::streamFieldNames);
+                if (baseQuery instanceof AslStructureQuery sq && sq.isRoot()) {
+                    yield concatStreams(pkeyFieldNames, filterConditionFieldNames);
+                }
+                yield concatStreams(
+                        pkeyFieldNames,
+                        filterConditionFieldNames,
+                        Stream.of(AslStructureColumn.NUM.getFieldName()),
+                        Stream.of(AslStructureColumn.NUM_CAP.getFieldName()));
+            }
+            case AslFolderItemIdVirtualField f -> Stream.of(f.getFieldName());
+            case null -> Stream.empty();
+        };
     }
 
     static final class AliasProvider {
@@ -523,12 +563,12 @@ public final class AslUtils {
     private static Stream<AslFieldCondition> joinNumCapBetweenCondition(
             AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
 
-        if(leftOwner.isRoot()){
+        if (leftOwner.isRoot()) {
             return Stream.of(new AslFieldCondition(
-                    new AslConstantField<>(Integer.class,0,FieldSource.NONE,null),
+                    new AslConstantField<>(Integer.class, 0, FieldSource.NONE, null),
                     AslConditionOperator.NEQ,
                     findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)));
-        }else{
+        } else {
             return Stream.of(
                     new AslFieldCondition(
                             findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
@@ -543,15 +583,16 @@ public final class AslUtils {
 
     private static Stream<AslFieldCondition> joinNumEqualParentNumCondition(
             AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
-        if(leftOwner.isRoot()){
+        if (leftOwner.isRoot()) {
             return Stream.of(new AslFieldCondition(
-                    new AslConstantField<>(Integer.class,0,FieldSource.NONE,null),
+                    new AslConstantField<>(Integer.class, 0, FieldSource.NONE, null),
                     AslConditionOperator.EQ,
                     findFieldForOwner(AslStructureColumn.PARENT_NUM, right.getSelect(), rightOwner)));
-        }else{
-        return Stream.of(new AslFieldCondition(
-                findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
-                AslConditionOperator.EQ,
-                findFieldForOwner(AslStructureColumn.PARENT_NUM, right.getSelect(), rightOwner)));
-    }}
+        } else {
+            return Stream.of(new AslFieldCondition(
+                    findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
+                    AslConditionOperator.EQ,
+                    findFieldForOwner(AslStructureColumn.PARENT_NUM, right.getSelect(), rightOwner)));
+        }
+    }
 }

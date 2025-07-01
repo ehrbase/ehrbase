@@ -44,6 +44,7 @@ import org.ehrbase.jooq.pg.tables.EhrFolderData;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils;
+import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
@@ -324,7 +325,19 @@ public class AqlSqlQueryBuilder {
     @Nonnull
     private static SelectConditionStep<Record> buildStructureQuery(
             AslStructureQuery aq, AslQueryTables aslQueryToTable) {
-        Table<?> dataTable = aq.getType().getDataTable().as(subqueryAlias(aq));
+
+        boolean requiresDataTable = !aq.isRoot()
+                || !aq.isRequiresVersionTableJoin()
+                || AslUtils.concatStreams(
+                                aq.getSelect().stream(),
+                                Optional.of(aq).map(AslStructureQuery::getCondition).stream()
+                                        .flatMap(AslUtils::streamConditionFields),
+                                aq.getStructureConditions().stream().flatMap(AslUtils::streamConditionFields))
+                        .flatMap(AslUtils::streamFieldNames)
+                        .anyMatch(f ->
+                                aq.getType().getVersionTable().fieldStream().noneMatch(tf -> f.equals(tf.getName())));
+
+        Table<?> dataTable = requiresDataTable ? aq.getType().getDataTable().as(subqueryAlias(aq)) : null;
         Table<?> primaryTable = aq.isRequiresVersionTableJoin()
                 ? aq.getType().getVersionTable().as(versionSubqueryAlias(aq))
                 : dataTable;
@@ -333,13 +346,18 @@ public class AqlSqlQueryBuilder {
 
         aslQueryToTable.put(aq, dataTable, primaryTable);
 
-
         // add regular and structure conditions
         SelectConditionStep<Record> where = step.where(Stream.concat(
                         Optional.of(aq).map(AslStructureQuery::getCondition).stream(),
                         aq.getStructureConditions().stream())
                 .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, false))
                 .toArray(Condition[]::new));
+
+        if (aq.isRoot() && requiresDataTable) {
+            where = where.and(dataTable
+                    .field(AslStructureColumn.NUM.getFieldName(), Integer.class)
+                    .eq(DSL.inline(0)));
+        }
 
         // data and primary are local to this sub-query and can be removed
         aslQueryToTable.remove(aq);
@@ -441,52 +459,63 @@ public class AqlSqlQueryBuilder {
             Table<?> dataTable,
             Stream<Field<?>> columnFields,
             Stream<AslFolderItemIdVirtualField> folderFields) {
-        SelectFieldOrAsterisk[] fields = columnFields.toArray(SelectFieldOrAsterisk[]::new);
-        boolean needsDataTable = !aq.isRoot() || Arrays.stream(fields).anyMatch(f -> f instanceof TableField jf && jf.getTable().equals(dataTable));
-        if(needsDataTable) {}
-
         return switch (aq.getType()) {
-            case EHR_STATUS -> DSL.select(fields)
-                    .from(primaryTable)
-                    .join(dataTable)
-                    .on(primaryTable.field(EHR_STATUS_VERSION.EHR_ID).eq(dataTable.field(EHR_STATUS_DATA.EHR_ID)));
-            case COMPOSITION -> DSL.select(fields)
-                    .from(primaryTable)
-                    .join(dataTable)
-                    .on(primaryTable.field(COMP_VERSION.VO_ID).eq(dataTable.field(COMP_DATA.VO_ID)));
-            case FOLDER -> {
-                Optional<AslFolderItemIdVirtualField> folderItemAslField = folderFields.findFirst();
-
-                final Condition onCondition = primaryTable
-                        .field(EHR_FOLDER_VERSION.EHR_ID)
-                        .eq(dataTable.field(EHR_FOLDER_DATA.EHR_ID))
-                        .and(primaryTable
-                                .field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
-                                .eq(dataTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
-
-                if (folderItemAslField.isEmpty()) {
-                    yield DSL.select(fields)
-                            .from(primaryTable)
-                            .join(dataTable)
-                            .on(onCondition);
-                } else {
-                    AslFolderItemIdVirtualField itemIdVirtualField = folderItemAslField.get();
-                    Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
-                            buildFolderItemIdNestedSelect(dataTable, itemIdVirtualField, false);
-
-                    // we need all fields at this point + the item id array
-                    Table<?> joinTable = tableToSelect.getLeft();
-                    List<SelectFieldOrAsterisk> selectFields = tableToSelect.getRight();
-
-                    yield DSL.select(Stream.concat(Arrays.stream(fields), selectFields.stream())
-                                    .toArray(SelectFieldOrAsterisk[]::new))
-                            .from(primaryTable)
-                            .join(joinTable)
-                            .on(onCondition);
-                }
-            }
+            case EHR_STATUS -> structureQueryBaseUsingVersionAndDataTable(
+                    columnFields, primaryTable, dataTable, EHR_STATUS_VERSION.EHR_ID, EHR_STATUS_DATA.EHR_ID);
+            case COMPOSITION -> structureQueryBaseUsingVersionAndDataTable(
+                    columnFields, primaryTable, dataTable, COMP_VERSION.VO_ID, COMP_DATA.VO_ID);
+            case FOLDER -> folderStructureQueryBaseUsingVersionAndData(
+                    primaryTable, dataTable, folderFields, columnFields);
             default -> throw new IllegalArgumentException("%s has no version table".formatted(aq.getType()));
         };
+    }
+
+    private static <T> SelectJoinStep<Record> structureQueryBaseUsingVersionAndDataTable(
+            Stream<Field<?>> columnFields,
+            Table<?> primaryTable,
+            Table<?> dataTable,
+            Field<T> versionField,
+            Field<T> dataField) {
+        SelectJoinStep<Record> from =
+                DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new)).from(primaryTable);
+        return dataTable == null
+                ? from
+                : from.join(dataTable).on(primaryTable.field(versionField).eq(dataTable.field(dataField)));
+    }
+
+    private static SelectJoinStep<Record> folderStructureQueryBaseUsingVersionAndData(
+            final Table<?> primaryTable,
+            final Table<?> dataTable,
+            final Stream<AslFolderItemIdVirtualField> folderFields,
+            Stream<Field<?>> columnFields) {
+        Optional<AslFolderItemIdVirtualField> folderItemAslField = folderFields.findFirst();
+
+        final Condition onCondition = primaryTable
+                .field(EHR_FOLDER_VERSION.EHR_ID)
+                .eq(dataTable.field(EHR_FOLDER_DATA.EHR_ID))
+                .and(primaryTable
+                        .field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
+                        .eq(dataTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)));
+
+        if (folderItemAslField.isEmpty()) {
+            return DSL.select(columnFields.toArray(SelectFieldOrAsterisk[]::new))
+                    .from(primaryTable)
+                    .join(dataTable)
+                    .on(onCondition);
+        } else {
+            AslFolderItemIdVirtualField itemIdVirtualField = folderItemAslField.get();
+            Pair<Table<?>, List<SelectFieldOrAsterisk>> tableToSelect =
+                    buildFolderItemIdNestedSelect(dataTable, itemIdVirtualField, false);
+
+            // we need all fields at this point + the item id array
+            Table<?> joinTable = tableToSelect.getLeft();
+            List<SelectFieldOrAsterisk> selectFields = tableToSelect.getRight();
+
+            return DSL.select(Stream.concat(columnFields, selectFields.stream()).toArray(SelectFieldOrAsterisk[]::new))
+                    .from(primaryTable)
+                    .join(joinTable)
+                    .on(onCondition);
+        }
     }
 
     @Nonnull
@@ -590,11 +619,12 @@ public class AqlSqlQueryBuilder {
         Condition[] conditions = Stream.concat(
                         // TODO can be skipped for roots
                         // TODO can be set to == for leafs (ELEMENT)
-                        isRoot ? Stream.empty() :
-                                Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
-                                .between(
-                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
-                                        FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),
+                        isRoot
+                                ? Stream.empty()
+                                : Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
+                                        .between(
+                                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
+                                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),
                         Arrays.stream(additionalConditions))
                 .toArray(Condition[]::new);
 

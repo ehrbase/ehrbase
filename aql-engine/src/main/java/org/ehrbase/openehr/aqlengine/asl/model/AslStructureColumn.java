@@ -21,6 +21,7 @@ import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
@@ -52,6 +53,8 @@ public enum AslStructureColumn {
     AUDIT_ID(ObjectVersionTablePrototype.INSTANCE.AUDIT_ID, UUID.class, true),
     CONTRIBUTION_ID(ObjectVersionTablePrototype.INSTANCE.CONTRIBUTION_ID, UUID.class, null, true),
     SYS_PERIOD_LOWER(ObjectVersionTablePrototype.INSTANCE.SYS_PERIOD_LOWER, OffsetDateTime.class, null, true);
+
+    public static List<AslStructureColumn> VERSION_TABLE_COLUMNS;
 
     private final String fieldName;
     private final Class<?> clazz;

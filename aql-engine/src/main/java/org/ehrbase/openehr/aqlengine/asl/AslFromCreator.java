@@ -34,10 +34,8 @@ import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition.AslConditionOperator;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
@@ -326,13 +324,7 @@ final class AslFromCreator {
                                 c, aslStructureQuery, knowledgeCacheService::findUuidByTemplateId))
                 .ifPresent(aslStructureQuery::addConditionAnd);
 
-        if (isRoot) {
-            aslStructureQuery.addConditionAnd(new AslFieldValueQueryCondition<>(
-                    AslUtils.findFieldForOwner(
-                            AslStructureColumn.NUM, aslStructureQuery.getSelect(), aslStructureQuery),
-                    AslConditionOperator.EQ,
-                    List.of(0)));
-        }
+        // num = 0 condition for roots gets added by the AqlSqlQueryBuilder
 
         return aslStructureQuery;
     }

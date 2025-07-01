@@ -17,7 +17,6 @@
  */
 package org.ehrbase.openehr.aqlengine.asl;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,12 +32,9 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
@@ -55,7 +51,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
-import org.jooq.TableField;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -71,7 +66,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
         public void addFieldNames(AslQuery base, AslField field) {
             usedFields.compute(base, (k, v) -> {
                 Set<String> result = v != null ? v : new HashSet<>();
-                streamFieldNames(field).forEach(result::add);
+                AslUtils.streamFieldNames(field).forEach(result::add);
                 return result;
             });
         }
@@ -112,7 +107,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
         switch (q) {
             case AslPathDataQuery pdq -> usedFields.addFieldName(pdq.getBase(), AslStructureColumn.DATA.getFieldName());
             case AslRootQuery rq -> {
-                concatStreams(
+                AslUtils.concatStreams(
                                 rq.getSelect().stream(),
                                 rq.getChildren().stream()
                                         .map(Pair::getRight)
@@ -131,7 +126,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
                 rq.getChildren().forEach(cq -> findUsedFields(cq.getLeft(), usedFields));
             }
             case AslEncapsulatingQuery eq -> {
-                concatStreams(
+                AslUtils.concatStreams(
                                 eq.getChildren().stream()
                                         .map(Pair::getRight)
                                         .filter(Objects::nonNull)
@@ -161,11 +156,6 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
         }
     }
 
-    @SafeVarargs
-    private static <T> Stream<T> concatStreams(Stream<T>... streams) {
-        return Arrays.stream(streams).flatMap(s -> s);
-    }
-
     private static AslQuery determineOwner(AslField f) {
         return switch (f) {
             case null -> null;
@@ -189,34 +179,6 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
             case AslFolderItemJoinCondition fijc -> Stream.of(
                     AslStructureColumn.VO_ID.fieldWithOwner(fijc.getRightOwner()),
                     new AslFolderItemIdVirtualField(AslField.FieldSource.withOwner(fijc.getLeftOwner())));
-        };
-    }
-
-    private static Stream<String> streamFieldNames(final AslField field) {
-        return switch (field) {
-            case AslColumnField cf -> Stream.of(cf.getColumnName());
-            case AslRmPathField pf -> Stream.of(pf.getSrcField().getColumnName());
-            case AslConstantField<?> __ -> Stream.empty();
-            case AslAggregatingField af -> streamFieldNames(af.getBaseField());
-            case AslComplexExtractedColumnField ecf -> ecf.getExtractedColumn().getColumns().stream();
-            case AslSubqueryField sqf -> {
-                AslQuery baseQuery = ((AslDataQuery) sqf.getBaseQuery()).getBase();
-                Stream<String> pkeyFieldNames = AslUtils.getTargetType(baseQuery).getPkeyFields().stream()
-                        .map(TableField::getName);
-                Stream<String> filterConditionFieldNames = sqf.getFilterConditions().stream()
-                                .flatMap(AslUtils::streamConditionFields)
-                                .flatMap(AslCleanupPostProcessor::streamFieldNames);
-                if(baseQuery instanceof AslStructureQuery sq && sq.isRoot()){
-                    yield concatStreams(pkeyFieldNames, filterConditionFieldNames);
-                }
-                yield concatStreams(
-                        pkeyFieldNames,
-                        filterConditionFieldNames,
-                        Stream.of(AslStructureColumn.NUM.getFieldName()),
-                        Stream.of(AslStructureColumn.NUM_CAP.getFieldName()));
-            }
-            case AslFolderItemIdVirtualField f -> Stream.of(f.getFieldName());
-            case null -> Stream.empty();
         };
     }
 
