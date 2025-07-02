@@ -58,7 +58,7 @@
     <archie.version>3.13.0</archie.version>
     <commons-io.version>2.18.0</commons-io.version>
     <commons-lang3.version>3.17.0</commons-lang3.version>
-    <ehrbase.openehr.sdk.version>2.23.0</ehrbase.openehr.sdk.version>
+    <ehrbase.openehr.sdk.version>2.24.0-SNAPSHOT</ehrbase.openehr.sdk.version>
     <flyway.version>11.1.1</flyway.version>
     <jackson-bom.version>2.18.1</jackson-bom.version>
     <javamelody.version>1.99.1</javamelody.version>
@@ -92,37 +92,13 @@
     <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-jacoco-plugin.version>0.8.12</maven-jacoco-plugin.version>
     <maven-spotless-maven-plugin.version>2.43.0</maven-spotless-maven-plugin.version>
-    <maven-nexus-staging-plugin.version>1.7.0</maven-nexus-staging-plugin.version>
+    <maven-central-publishing-plugin.version>0.8.0</maven-central-publishing-plugin.version>
     <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
     <maven-versions-maven-plugin.version>2.17.1</maven-versions-maven-plugin.version>
     <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
     <maven-sonar.scanner.version>3.11.0.3922</maven-sonar.scanner.version>
 
   </properties>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
-
-  <repositories>
-    <repository>
-      <id>ossrh-snapshots</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -407,9 +383,9 @@
           <version>${maven-gpg-plugin.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>${maven-nexus-staging-plugin.version}</version>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>${maven-central-publishing-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>com.spotify</groupId>
