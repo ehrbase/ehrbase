@@ -55,8 +55,5 @@ AslRootQuery
           DelegatingJoinCondition sCO_c_0 ->
               AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sENTRY_en_0.sENTRY_en_0_vo_id
 
-          DelegatingJoinCondition  ->
-              AslFieldJoinCondition CONSTANT (Integer): 0 NEQ sENTRY_en_0.sENTRY_en_0_num
-
   WHERE
     sCO_c_0.?? -- COMPLEX VO_ID uid/value EQ [0f5ea58d-9e30-4365-853e-81f2224a85e0]

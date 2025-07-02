@@ -564,10 +564,9 @@ public final class AslUtils {
             AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
 
         if (leftOwner.isRoot()) {
-            return Stream.of(new AslFieldCondition(
-                    new AslConstantField<>(Integer.class, 0, FieldSource.NONE, null),
-                    AslConditionOperator.NEQ,
-                    findFieldForOwner(AslStructureColumn.NUM, right.getSelect(), rightOwner)));
+            // descendants of a root (EHR_STATUS, COMPOSITION) are always constrained by RM type, so no condition on num
+            // is necessary
+            return Stream.empty();
         } else {
             return Stream.of(
                     new AslFieldCondition(

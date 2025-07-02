@@ -21,7 +21,6 @@ import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;

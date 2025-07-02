@@ -73,9 +73,6 @@ AslRootQuery
           DelegatingJoinCondition sCO_c_0 ->
               AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
 
-          DelegatingJoinCondition  ->
-              AslFieldJoinCondition CONSTANT (Integer): 0 NEQ sOB_o_0.sOB_o_0_num
-
     p_eq_0: EncapsulatingQuery
       SELECT
         p_data__0.p_data__0_vo_id

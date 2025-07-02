@@ -206,9 +206,6 @@ class AslCleanupPostProcessorTest {
                   DelegatingJoinCondition sCO_c_0 ->
                       AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
 
-                  DelegatingJoinCondition  ->
-                      AslFieldJoinCondition CONSTANT (Integer): 0 NEQ sOB_o_0.sOB_o_0_num
-
             sE_el_0: StructureQuery
               SELECT
                 sE_el_0.sE_el_0_vo_id
