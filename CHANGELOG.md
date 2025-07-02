@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- Publishing artifacts directly to central.sonatype.com [#1512](https://github.com/ehrbase/ehrbase/pull/1512)
  ### Fixed 
 
 ## [2.18.0]
