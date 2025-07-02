@@ -54,8 +54,6 @@ public enum AslStructureColumn {
     CONTRIBUTION_ID(ObjectVersionTablePrototype.INSTANCE.CONTRIBUTION_ID, UUID.class, null, true),
     SYS_PERIOD_LOWER(ObjectVersionTablePrototype.INSTANCE.SYS_PERIOD_LOWER, OffsetDateTime.class, null, true);
 
-    public static List<AslStructureColumn> VERSION_TABLE_COLUMNS;
-
     private final String fieldName;
     private final Class<?> clazz;
     private final AslExtractedColumn extractedColumn;
