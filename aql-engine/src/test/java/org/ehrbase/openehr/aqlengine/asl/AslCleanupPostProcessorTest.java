@@ -126,7 +126,7 @@ class AslCleanupPostProcessorTest {
                   p_feeder_audit__0.p_feeder_audit__0_entity_attribute EQ [f]
                 LEFT_OUTER_JOIN sCO_c_0 -> p_feeder_audit__0
                   on
-                    DelegatingJoinCondition sCO_c_0 ->
+                    DelegatingJoinCondition ->
                         PathChildCondition COMPOSITION sCO_c_0 -> COMPOSITION p_feeder_audit__0
         """);
     }
@@ -176,8 +176,8 @@ class AslCleanupPostProcessorTest {
               FROM EHR_STATUS
               JOIN sEHR_0 -> sES_s_0
                 on
-                  DelegatingJoinCondition sEHR_0 ->
-                      AslFieldJoinCondition sEHR_0.sEHR_0_id /* ehr_id/value */ EQ sES_s_0.sES_s_0_ehr_id
+                  DelegatingJoinCondition ->
+                      sEHR_0.sEHR_0_id /* ehr_id/value */ EQ sES_s_0.sES_s_0_ehr_id
 
             sCO_c_0: StructureQuery
               SELECT
@@ -187,8 +187,8 @@ class AslCleanupPostProcessorTest {
               FROM COMPOSITION
               JOIN sEHR_0 -> sCO_c_0
                 on
-                  DelegatingJoinCondition sEHR_0 ->
-                      AslFieldJoinCondition sEHR_0.sEHR_0_id /* ehr_id/value */ EQ sCO_c_0.sCO_c_0_ehr_id
+                  DelegatingJoinCondition ->
+                      sEHR_0.sEHR_0_id /* ehr_id/value */ EQ sCO_c_0.sCO_c_0_ehr_id
 
             sOB_o_0: StructureQuery
               SELECT
@@ -203,8 +203,8 @@ class AslCleanupPostProcessorTest {
                 sOB_o_0.sOB_o_0_rm_entity IN [OB]
               JOIN sCO_c_0 -> sOB_o_0
                 on
-                  DelegatingJoinCondition sCO_c_0 ->
-                      AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
+                  DelegatingJoinCondition ->
+                      sCO_c_0.sCO_c_0_vo_id EQ sOB_o_0.sOB_o_0_vo_id
 
             sE_el_0: StructureQuery
               SELECT
@@ -219,14 +219,14 @@ class AslCleanupPostProcessorTest {
                 sE_el_0.sE_el_0_rm_entity IN [E]
               JOIN sOB_o_0 -> sE_el_0
                 on
-                  DelegatingJoinCondition sOB_o_0 ->
-                      AslFieldJoinCondition sOB_o_0.sOB_o_0_vo_id EQ sE_el_0.sE_el_0_vo_id
+                  DelegatingJoinCondition ->
+                      sOB_o_0.sOB_o_0_vo_id EQ sE_el_0.sE_el_0_vo_id
 
-                  DelegatingJoinCondition sOB_o_0 ->
-                      AslFieldJoinCondition sOB_o_0.sOB_o_0_num LT sE_el_0.sE_el_0_num
+                  DelegatingJoinCondition ->
+                      sOB_o_0.sOB_o_0_num LT sE_el_0.sE_el_0_num
 
-                  DelegatingJoinCondition sOB_o_0 ->
-                      AslFieldJoinCondition sOB_o_0.sOB_o_0_num_cap GT_EQ sE_el_0.sE_el_0_num
+                  DelegatingJoinCondition ->
+                      sOB_o_0.sOB_o_0_num_cap GT_EQ sE_el_0.sE_el_0_num
 
             p_eq_0: EncapsulatingQuery
               SELECT
@@ -269,11 +269,11 @@ class AslCleanupPostProcessorTest {
                         p_events__0.p_events__0_entity_attribute EQ [e]
                       JOIN p_data__0 -> p_events__0
                         on
-                          DelegatingJoinCondition p_data__0 ->
-                              AslFieldJoinCondition p_data__0.p_data__0_vo_id EQ p_events__0.p_events__0_vo_id
+                          DelegatingJoinCondition ->
+                              p_data__0.p_data__0_vo_id EQ p_events__0.p_events__0_vo_id
 
-                          DelegatingJoinCondition p_data__0 ->
-                              AslFieldJoinCondition p_data__0.p_data__0_num EQ p_events__0.p_events__0_parent_num
+                          DelegatingJoinCondition ->
+                              p_data__0.p_data__0_num EQ p_events__0.p_events__0_parent_num
 
 
                   p_data__1: StructureQuery
@@ -291,11 +291,11 @@ class AslCleanupPostProcessorTest {
                         p_data__1.p_data__1_entity_attribute EQ [d]
                       JOIN p_events__0 -> p_data__1
                         on
-                          DelegatingJoinCondition p_events__0 ->
-                              AslFieldJoinCondition p_events__0.p_events__0_vo_id EQ p_data__1.p_data__1_vo_id
+                          DelegatingJoinCondition ->
+                              p_events__0.p_events__0_vo_id EQ p_data__1.p_data__1_vo_id
 
-                          DelegatingJoinCondition p_events__0 ->
-                              AslFieldJoinCondition p_events__0.p_events__0_num EQ p_data__1.p_data__1_parent_num
+                          DelegatingJoinCondition ->
+                              p_events__0.p_events__0_num EQ p_data__1.p_data__1_parent_num
 
 
                   p_items__0: StructureQuery
@@ -317,20 +317,20 @@ class AslCleanupPostProcessorTest {
                                   p_data__1.p_data__1_entity_name /* name/value */ EQ [name1]
                                 p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
 
-                          DelegatingJoinCondition p_data__1 ->
-                              AslFieldJoinCondition p_data__1.p_data__1_vo_id EQ p_items__0.p_items__0_vo_id
+                          DelegatingJoinCondition ->
+                              p_data__1.p_data__1_vo_id EQ p_items__0.p_items__0_vo_id
 
-                          DelegatingJoinCondition p_data__1 ->
-                              AslFieldJoinCondition p_data__1.p_data__1_num EQ p_items__0.p_items__0_parent_num
+                          DelegatingJoinCondition ->
+                              p_data__1.p_data__1_num EQ p_items__0.p_items__0_parent_num
 
 
               LEFT_OUTER_JOIN sOB_o_0 -> p_eq_0
                 on
-                  DelegatingJoinCondition sOB_o_0 ->
-                      AslFieldJoinCondition sOB_o_0.sOB_o_0_vo_id EQ p_data__0.p_data__0_vo_id
+                  DelegatingJoinCondition ->
+                      sOB_o_0.sOB_o_0_vo_id EQ p_data__0.p_data__0_vo_id
 
-                  DelegatingJoinCondition sOB_o_0 ->
-                      AslFieldJoinCondition sOB_o_0.sOB_o_0_num EQ p_data__0.p_data__0_parent_num
+                  DelegatingJoinCondition ->
+                      sOB_o_0.sOB_o_0_num EQ p_data__0.p_data__0_parent_num
 
             p_items__0_f_0: FilteringQuery
               SELECT

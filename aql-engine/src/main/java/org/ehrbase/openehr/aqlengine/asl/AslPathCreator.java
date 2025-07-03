@@ -46,7 +46,7 @@ import org.ehrbase.openehr.aqlengine.asl.DataNodeInfo.StructureRmDataNodeInfo;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslProvidesJoinCondition;
@@ -595,7 +595,7 @@ final class AslPathCreator {
                         parent.provider(),
                         JoinType.JOIN,
                         auditDetailsQuery,
-                        new AslFieldCondition(
+                        new AslFieldFieldQueryCondition(
                                         AslUtils.findFieldForOwner(
                                                 AslStructureColumn.AUDIT_ID,
                                                 parent.owner().getSelect(),

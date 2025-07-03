@@ -20,12 +20,13 @@ package org.ehrbase.openehr.aqlengine.asl.model.condition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
-public final class AslFieldCondition implements AslProvidesJoinCondition {
+public final class AslFieldFieldQueryCondition implements AslProvidesJoinCondition {
     private final AslField leftField;
     private final AslConditionOperator operator;
     private final AslField rightField;
 
-    public AslFieldCondition(final AslField leftField, final AslConditionOperator operator, final AslField rightField) {
+    public AslFieldFieldQueryCondition(
+            final AslField leftField, final AslConditionOperator operator, final AslField rightField) {
         this.leftField = leftField;
         this.rightField = rightField;
         this.operator = operator;

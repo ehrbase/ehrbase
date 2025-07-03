@@ -31,7 +31,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -188,9 +188,9 @@ public class AslGraph {
                             .map(op -> conditionToGraph(level + 1, op))
                             .collect(Collectors.joining());
             case AslNotNullQueryCondition c -> indented(level, "NOT_NULL " + fieldToGraph(level + 1, c.getField()));
-            case AslFieldCondition c -> indented(
+            case AslFieldFieldQueryCondition c -> indented(
                     level,
-                    "AslFieldJoinCondition %s %s %s"
+                    "%s %s %s"
                             .formatted(
                                     fieldToGraph(level, c.getLeftField()),
                                     c.getOperator(),
@@ -203,8 +203,8 @@ public class AslGraph {
                 .map(jc -> switch (jc) {
                     case AslPathFilterJoinCondition c -> "PathFilterJoinCondition %s ->\n%s"
                             .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getCondition()));
-                    case AslDelegatingJoinCondition c -> "DelegatingJoinCondition %s ->\n%s"
-                            .formatted(getAlias(c.getLeftOwner()), conditionToGraph(level + 2, c.getDelegate()));
+                    case AslDelegatingJoinCondition c -> "DelegatingJoinCondition ->\n%s"
+                            .formatted(conditionToGraph(level + 2, c.getDelegate()));
                     case AslFolderItemJoinCondition
                     c -> "FolderItemJoinCondition FOLDER -> %s [%s.vo_id in %s.data.items[].id.value]"
                             .formatted(

@@ -40,7 +40,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -78,18 +78,15 @@ final class ConditionUtils {
     private ConditionUtils() {}
 
     public static Condition buildJoinCondition(AslJoin aslJoin, AslQueryTables aslQueryToTable) {
-        Table<?> sqlLeft = aslQueryToTable.getDataTable(aslJoin.getLeft());
-        Table<?> sqlRight = aslQueryToTable.getDataTable(aslJoin.getRight());
 
         List<Condition> conditions = new ArrayList<>();
         for (AslJoinCondition jc : aslJoin.getOn()) {
             switch (jc) {
-                case AslDelegatingJoinCondition desc -> addDelegatingJoinConditions(
-                        desc, conditions, sqlLeft, sqlRight);
+                case AslDelegatingJoinCondition desc -> addDelegatingJoinConditions(desc, conditions, aslQueryToTable);
                 case AslPathFilterJoinCondition filterCondition -> conditions.add(
                         buildCondition(filterCondition.getCondition(), aslQueryToTable, true));
                 case AslFolderItemJoinCondition c -> conditions.add(
-                        joinFolderItemIdEqualVoIdCondition(c, sqlLeft, sqlRight));
+                        joinFolderItemIdEqualVoIdCondition(c, aslQueryToTable.getDataTable(aslJoin.getLeft()), aslQueryToTable.getDataTable(aslJoin.getRight())));
             }
         }
 
@@ -97,37 +94,16 @@ final class ConditionUtils {
     }
 
     private static void addDelegatingJoinConditions(
-            AslDelegatingJoinCondition joinCondition, List<Condition> conditions, Table<?> sqlLeft, Table<?> sqlRight) {
-        (switch (joinCondition.getDelegate()) {
-                    case AslFieldCondition c -> fieldJoinCondition(c, sqlLeft, sqlRight, true);
-                })
-                .forEach(conditions::add);
+            AslDelegatingJoinCondition joinCondition, List<Condition> conditions, AslQueryTables aslQueryToTable) {
+        conditions.add(fieldJoinCondition((AslFieldFieldQueryCondition) joinCondition.getDelegate(), aslQueryToTable));
     }
 
-    private static Stream<Condition> fieldJoinCondition(
-            AslFieldCondition ic, Table<?> sqlLeft, Table<?> sqlRight, boolean isJoinCondition) {
+    private static Condition fieldJoinCondition(
+            AslFieldFieldQueryCondition ic, AslQueryTables aslQueryToTable) {
+        Field lf =  getSqlField(aslQueryToTable, ic.getLeftField());
+        Field rf = getSqlField(aslQueryToTable, ic.getRightField());
 
-        Field lf =
-                switch (ic.getLeftField()) {
-                    case AslColumnField cf -> FieldUtils.field(sqlLeft, cf, true);
-                    case AslConstantField cf -> DSL.inline(cf.getValue());
-                    case AslSubqueryField __ -> throw new IllegalArgumentException(
-                            "AslFieldJoinConditions using AslSubqueryFields are not supported");
-                    case AslVirtualField __ -> throw new IllegalArgumentException(
-                            "AslFieldJoinConditions using AslVirtualFields are not supported");
-                };
-        Field rf =
-                switch (ic.getRightField()) {
-                    case AslColumnField cf -> FieldUtils.field(sqlRight, cf, isJoinCondition);
-                    case AslConstantField cf -> DSL.inline(cf.getValue());
-                    case AslSubqueryField __ -> throw new IllegalArgumentException(
-                            "AslFieldJoinConditions using AslSubqueryFields are not supported");
-                    case AslVirtualField __ -> throw new IllegalArgumentException(
-                            "AslFieldJoinConditions using AslVirtualFields are not supported");
-                };
-
-        return Stream.of(
-                switch (ic.getOperator()) {
+        return switch (ic.getOperator()) {
                     case LIKE -> lf.like(rf);
                     case IN -> lf.in(rf);
                     case EQ -> lf.eq(rf);
@@ -138,7 +114,20 @@ final class ConditionUtils {
                     case LT -> lf.lt(rf);
                     case IS_NULL -> lf.isNull();
                     case IS_NOT_NULL -> lf.isNotNull();
-                });
+                };
+    }
+
+    private static Field getSqlField(AslQueryTables aslQueryToTable, AslField leftField) {
+        return switch (leftField) {
+            case AslColumnField cf ->
+                    FieldUtils.field(aslQueryToTable.getDataTable(cf.getInternalProvider()), cf, true);
+            case AslConstantField cf -> DSL.inline(cf.getValue());
+            case AslSubqueryField __ -> throw new IllegalArgumentException(
+                    "AslFieldFieldQueryConditions using AslSubqueryFields are not supported");
+            case AslVirtualField __ -> throw new IllegalArgumentException(
+                    "AslFieldFieldQueryConditions using AslVirtualFields are not supported");
+            case null -> null;
+        };
     }
 
     public static Condition buildCondition(AslQueryCondition c, AslQueryTables tables, boolean useAliases) {
@@ -155,7 +144,7 @@ final class ConditionUtils {
             case AslTrueQueryCondition __ -> DSL.trueCondition();
             case AslNotNullQueryCondition nn -> notNullCondition(tables, useAliases, nn);
             case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv);
-            case AslFieldCondition ic -> throw new IllegalArgumentException(
+            case AslFieldFieldQueryCondition ic -> throw new IllegalArgumentException(
                     "AslFieldConditions are not supported in WHERE clauses");
         };
     }

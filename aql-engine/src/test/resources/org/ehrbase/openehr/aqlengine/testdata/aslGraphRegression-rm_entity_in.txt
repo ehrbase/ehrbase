@@ -52,8 +52,8 @@ AslRootQuery
         sENTRY_en_0.sENTRY_en_0_rm_entity IN [AN, AE, EV, IN, OB]
       JOIN sCO_c_0 -> sENTRY_en_0
         on
-          DelegatingJoinCondition sCO_c_0 ->
-              AslFieldJoinCondition sCO_c_0.sCO_c_0_vo_id EQ sENTRY_en_0.sENTRY_en_0_vo_id
+          DelegatingJoinCondition ->
+              sCO_c_0.sCO_c_0_vo_id EQ sENTRY_en_0.sENTRY_en_0_vo_id
 
   WHERE
     sCO_c_0.?? -- COMPLEX VO_ID uid/value EQ [0f5ea58d-9e30-4365-853e-81f2224a85e0]
