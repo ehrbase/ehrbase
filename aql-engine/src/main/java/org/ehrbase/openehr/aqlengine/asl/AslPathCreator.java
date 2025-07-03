@@ -377,10 +377,9 @@ final class AslPathCreator {
             subQuery = new OwnerProviderTuple(sq, sq);
 
             if (parentJoinMode == JoinMode.INTERNAL_SINGLE_CHILD) {
-                currentQuery = addInternalPathNode(query, parent, sourceRelation, sq, currentNode);
+                currentQuery = addInternalPathNode(query, parent, sq, currentNode);
             } else {
-                currentQuery = addEncapsulatingQueryWithPathNode(
-                        query, parent, parentJoinMode, sourceRelation, sq, currentNode);
+                currentQuery = addEncapsulatingQueryWithPathNode(query, parent, parentJoinMode, sq, currentNode);
                 if (parentJoinMode == JoinMode.ROOT) {
                     rootProviderQuery = currentQuery;
                 }
@@ -454,7 +453,6 @@ final class AslPathCreator {
             AslEncapsulatingQuery query,
             OwnerProviderTuple parent,
             JoinMode parentJoinMode,
-            AslSourceRelation sourceRelation,
             AslStructureQuery sq,
             PathCohesionTreeNode currentNode) {
         final AslEncapsulatingQuery currentQuery = new AslEncapsulatingQuery(aliasProvider.uniqueAlias("p_eq"));
@@ -481,14 +479,17 @@ final class AslPathCreator {
     private static AslEncapsulatingQuery addInternalPathNode(
             AslEncapsulatingQuery query,
             OwnerProviderTuple parent,
-            AslSourceRelation sourceRelation,
             AslStructureQuery nodeSubquery,
             PathCohesionTreeNode currentNode) {
-        List<AslJoinCondition> childNodeJoinConditions = new ArrayList<>();
-        parentFiltersAsJoinCondition(parent, currentNode).ifPresent(childNodeJoinConditions::add);
-        AslUtils.pathChildConditions(parent.provider(), (AslStructureQuery) parent.owner(), nodeSubquery, nodeSubquery)
-                .map(AslProvidesJoinCondition::provideJoinCondition)
-                .forEach(childNodeJoinConditions::add);
+        List<AslJoinCondition> childNodeJoinConditions = AslUtils.<AslJoinCondition>concatStreams(
+                        parentFiltersAsJoinCondition(parent, currentNode).stream(),
+                        AslUtils.pathChildConditions(
+                                        parent.provider(),
+                                        (AslStructureQuery) parent.owner(),
+                                        nodeSubquery,
+                                        nodeSubquery)
+                                .map(AslProvidesJoinCondition::provideJoinCondition))
+                .toList();
         query.addChild(
                 nodeSubquery, new AslJoin(parent.provider(), JoinType.JOIN, nodeSubquery, childNodeJoinConditions));
         return query;

@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
@@ -87,6 +88,11 @@ import org.jooq.TableField;
 
 public final class AslUtils {
 
+    private static final String EHR_TABLE_ID_FIELD =
+            Tables.EHR_.ID.getUnqualifiedName().first();
+    private static final String COMP_DATA_TABLE_ROOT_CONCEPT_FIELD =
+            Tables.COMP_VERSION.ROOT_CONCEPT.getUnqualifiedName().first();
+
     public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedHashMap(
             Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
         return Collectors.toMap(
@@ -100,7 +106,7 @@ public final class AslUtils {
     }
 
     @SafeVarargs
-    public static <T> Stream<T> concatStreams(Stream<T>... streams) {
+    public static <T> Stream<T> concatStreams(Stream<? extends T>... streams) {
         return Arrays.stream(streams).flatMap(s -> s);
     }
 
@@ -312,7 +318,7 @@ public final class AslUtils {
                             aslOperator,
                             conditionValue(value, operator, String.class));
                     case EHR_ID -> new AslFieldValueQueryCondition<>(
-                            findFieldForOwner("id", query.getSelect(), query),
+                            findFieldForOwner(EHR_TABLE_ID_FIELD, query.getSelect(), query),
                             aslOperator,
                             conditionValue(value, operator, String.class));
                     case ARCHETYPE_NODE_ID -> new AslFieldValueQueryCondition<>(
@@ -320,7 +326,7 @@ public final class AslUtils {
                             aslOperator,
                             archetypeNodeIdConditionValues(value, operator));
                     case ROOT_CONCEPT -> new AslFieldValueQueryCondition<>(
-                            findFieldForOwner("root_concept", query.getSelect(), query),
+                            findFieldForOwner(COMP_DATA_TABLE_ROOT_CONCEPT_FIELD, query.getSelect(), query),
                             aslOperator,
                             archetypeNodeIdConditionValues(value, operator).stream()
                                     // archetype must be for COMPOSITION
@@ -488,25 +494,22 @@ public final class AslUtils {
 
         return switch (parentRelation) {
             case EHR -> Stream.of(new AslFieldFieldQueryCondition(
-                    findFieldForOwner("id", left.getSelect(), leftOwner),
+                    findFieldForOwner(EHR_TABLE_ID_FIELD, left.getSelect(), leftOwner),
                     AslConditionOperator.EQ,
                     findFieldForOwner(AslStructureColumn.EHR_ID, right.getSelect(), rightOwner)));
-            case EHR_STATUS -> Stream.of(
-                            Stream.of(joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner)),
-                            joinNumCapBetweenConditions(left, leftOwner, right, rightOwner))
-                    .flatMap(s -> s);
+            case EHR_STATUS -> Stream.concat(
+                    Stream.of(joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner)),
+                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
                 // l.vo_id == r.vo_id and l.num < r.num <= l.num_cap
-            case COMPOSITION -> Stream.of(
-                            Stream.of(joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner)),
-                            joinNumCapBetweenConditions(left, leftOwner, right, rightOwner))
-                    .flatMap(s -> s);
+            case COMPOSITION -> Stream.concat(
+                    Stream.of(joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner)),
+                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
                 // l.ehr_id == r.ehr_id and l.folder_idx == r.folder_idx and l.num < r.num <= l.num_cap
-            case FOLDER -> Stream.of(
+            case FOLDER -> concatStreams(
                     Stream.of(joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner)),
                     Stream.of(joinColumnEqualCondition(
-                                    AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner)),
-                            joinNumCapBetweenConditions(left, leftOwner, right, rightOwner))
-                    .flatMap(s -> s);
+                            AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner)),
+                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Descendant condition not applicable to AUDIT_DETAILS");
         };
@@ -527,18 +530,17 @@ public final class AslUtils {
 
         return switch (parentRelation) {
             case EHR_STATUS -> Stream.of(
-                            joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
-                            joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
+                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
+                    joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
                 // l.vo_id == r.vo_id and l.num == r.parent_num
             case COMPOSITION -> Stream.of(
-                            joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner),
-                            joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
+                    joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner),
+                    joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
                 // l.ehr_id == r.ehr_id and l.folder_idx = r.folder_idx and l.num == r.parent_num
             case FOLDER -> Stream.of(
-                            joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
-                            joinColumnEqualCondition(
-                                    AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner),
-                            joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
+                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
+                    joinColumnEqualCondition(AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner),
+                    joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Path child condition not applicable to AUDIT_DETAILS");
             case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");

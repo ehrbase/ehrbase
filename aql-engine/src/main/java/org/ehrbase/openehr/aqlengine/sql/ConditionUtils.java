@@ -60,7 +60,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder.AslQueryTables;
@@ -78,49 +77,46 @@ final class ConditionUtils {
     private ConditionUtils() {}
 
     public static Condition buildJoinCondition(AslJoin aslJoin, AslQueryTables aslQueryToTable) {
-
-        List<Condition> conditions = new ArrayList<>();
-        for (AslJoinCondition jc : aslJoin.getOn()) {
-            switch (jc) {
-                case AslDelegatingJoinCondition desc -> addDelegatingJoinConditions(desc, conditions, aslQueryToTable);
-                case AslPathFilterJoinCondition filterCondition -> conditions.add(
-                        buildCondition(filterCondition.getCondition(), aslQueryToTable, true));
-                case AslFolderItemJoinCondition c -> conditions.add(
-                        joinFolderItemIdEqualVoIdCondition(c, aslQueryToTable.getDataTable(aslJoin.getLeft()), aslQueryToTable.getDataTable(aslJoin.getRight())));
-            }
-        }
-
-        return conditions.stream().reduce(DSL.noCondition(), DSL::and);
+        return aslJoin.getOn().stream()
+                .map(jc -> switch (jc) {
+                    case AslDelegatingJoinCondition desc -> delegatingJoinCondition(desc, aslQueryToTable);
+                    case AslPathFilterJoinCondition filterCondition -> buildCondition(
+                            filterCondition.getCondition(), aslQueryToTable, true);
+                    case AslFolderItemJoinCondition c -> joinFolderItemIdEqualVoIdCondition(
+                            c,
+                            aslQueryToTable.getDataTable(aslJoin.getLeft()),
+                            aslQueryToTable.getDataTable(aslJoin.getRight()));
+                })
+                .reduce(DSL.noCondition(), DSL::and);
     }
 
-    private static void addDelegatingJoinConditions(
-            AslDelegatingJoinCondition joinCondition, List<Condition> conditions, AslQueryTables aslQueryToTable) {
-        conditions.add(fieldJoinCondition((AslFieldFieldQueryCondition) joinCondition.getDelegate(), aslQueryToTable));
+    private static Condition delegatingJoinCondition(
+            AslDelegatingJoinCondition joinCondition, AslQueryTables aslQueryToTable) {
+        return fieldJoinCondition((AslFieldFieldQueryCondition) joinCondition.getDelegate(), aslQueryToTable);
     }
 
-    private static Condition fieldJoinCondition(
-            AslFieldFieldQueryCondition ic, AslQueryTables aslQueryToTable) {
-        Field lf =  getSqlField(aslQueryToTable, ic.getLeftField());
+    private static Condition fieldJoinCondition(AslFieldFieldQueryCondition ic, AslQueryTables aslQueryToTable) {
+        Field lf = getSqlField(aslQueryToTable, ic.getLeftField());
         Field rf = getSqlField(aslQueryToTable, ic.getRightField());
 
         return switch (ic.getOperator()) {
-                    case LIKE -> lf.like(rf);
-                    case IN -> lf.in(rf);
-                    case EQ -> lf.eq(rf);
-                    case NEQ -> lf.ne(rf);
-                    case GT_EQ -> lf.ge(rf);
-                    case GT -> lf.gt(rf);
-                    case LT_EQ -> lf.le(rf);
-                    case LT -> lf.lt(rf);
-                    case IS_NULL -> lf.isNull();
-                    case IS_NOT_NULL -> lf.isNotNull();
-                };
+            case LIKE -> lf.like(rf);
+            case IN -> lf.in(rf);
+            case EQ -> lf.eq(rf);
+            case NEQ -> lf.ne(rf);
+            case GT_EQ -> lf.ge(rf);
+            case GT -> lf.gt(rf);
+            case LT_EQ -> lf.le(rf);
+            case LT -> lf.lt(rf);
+            case IS_NULL -> lf.isNull();
+            case IS_NOT_NULL -> lf.isNotNull();
+        };
     }
 
     private static Field getSqlField(AslQueryTables aslQueryToTable, AslField leftField) {
         return switch (leftField) {
-            case AslColumnField cf ->
-                    FieldUtils.field(aslQueryToTable.getDataTable(cf.getInternalProvider()), cf, true);
+            case AslColumnField cf -> FieldUtils.field(
+                    aslQueryToTable.getDataTable(cf.getInternalProvider()), cf, true);
             case AslConstantField cf -> DSL.inline(cf.getValue());
             case AslSubqueryField __ -> throw new IllegalArgumentException(
                     "AslFieldFieldQueryConditions using AslSubqueryFields are not supported");
