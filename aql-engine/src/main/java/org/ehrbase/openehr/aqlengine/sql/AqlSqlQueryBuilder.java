@@ -38,6 +38,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
@@ -326,6 +327,7 @@ public class AqlSqlQueryBuilder {
     private static SelectConditionStep<Record> buildStructureQuery(
             AslStructureQuery aq, AslQueryTables aslQueryToTable) {
 
+        // the data table is needed if any of its fields are selected or constrained
         boolean requiresDataTable = !aq.isRoot()
                 || !aq.isRequiresVersionTableJoin()
                 || AslUtils.concatStreams(
@@ -334,6 +336,7 @@ public class AqlSqlQueryBuilder {
                                         .flatMap(AslUtils::streamConditionFields),
                                 aq.getStructureConditions().stream().flatMap(AslUtils::streamConditionFields))
                         .flatMap(AslUtils::streamFieldNames)
+                        // check if the field is not from the version table (there may be a more efficient way)
                         .anyMatch(f ->
                                 aq.getType().getVersionTable().fieldStream().noneMatch(tf -> f.equals(tf.getName())));
 
@@ -616,17 +619,16 @@ public class AqlSqlQueryBuilder {
                 })
                 .toList();
 
-        Condition[] conditions = Stream.concat(
-                        // TODO can be skipped for roots
-                        // TODO can be set to == for leafs (ELEMENT)
-                        isRoot
-                                ? Stream.empty()
-                                : Stream.of(Objects.requireNonNull(data.field(COMP_DATA.NUM))
-                                        .between(
-                                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
-                                                FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP))),
-                        Arrays.stream(additionalConditions))
-                .toArray(Condition[]::new);
+        final Condition[] conditions;
+        if (isRoot) {
+            //  no hierarch constraints needed
+            conditions = additionalConditions;
+        } else {
+            conditions = ArrayUtils.addFirst(additionalConditions, Objects.requireNonNull(data.field(COMP_DATA.NUM))
+                    .between(
+                            FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
+                            FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP)));
+        }
 
         return from.where(conditions).groupBy(pKeyFields);
     }
