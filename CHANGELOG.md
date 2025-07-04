@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
 - Publishing artifacts directly to central.sonatype.com [#1512](https://github.com/ehrbase/ehrbase/pull/1512)
  ### Fixed 
+* Refactor getStoredQueryList to comply with openEHR REST API specs ([#1456](https://github.com/ehrbase/ehrbase/pull/1456))
 
 ## [2.18.0]
  ### Added
