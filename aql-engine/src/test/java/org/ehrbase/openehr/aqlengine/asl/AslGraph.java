@@ -30,14 +30,12 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslOrQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslPathChildCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslTrueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
@@ -49,7 +47,6 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
@@ -191,31 +188,13 @@ public class AslGraph {
                             .map(op -> conditionToGraph(level + 1, op))
                             .collect(Collectors.joining());
             case AslNotNullQueryCondition c -> indented(level, "NOT_NULL " + fieldToGraph(level + 1, c.getField()));
-            case AslFieldJoinCondition c -> indented(
+            case AslFieldFieldQueryCondition c -> indented(
                     level,
-                    "AslFieldJoinCondition %s.%s %s %s.%s"
+                    "%s %s %s"
                             .formatted(
-                                    c.getLeftOwner().getAlias(),
-                                    c.getLeftField().getAliasedName(),
+                                    fieldToGraph(level, c.getLeftField()),
                                     c.getOperator(),
-                                    c.getRightOwner().getAlias(),
-                                    c.getRightField().getAliasedName()));
-            case AslDescendantCondition c -> indented(
-                    level,
-                    "DescendantCondition %s %s -> %s %s"
-                            .formatted(
-                                    c.getParentRelation(),
-                                    c.getLeftOwner().getAlias(),
-                                    c.getDescendantRelation(),
-                                    c.getRightOwner().getAlias()));
-            case AslPathChildCondition c -> indented(
-                    level,
-                    "PathChildCondition %s %s -> %s %s"
-                            .formatted(
-                                    c.getParentRelation(),
-                                    c.getLeftOwner().getAlias(),
-                                    c.getChildRelation(),
-                                    c.getRightOwner().getAlias()));
+                                    fieldToGraph(level, c.getRightField())));
         };
     }
 
@@ -224,12 +203,8 @@ public class AslGraph {
                 .map(jc -> switch (jc) {
                     case AslPathFilterJoinCondition c -> "PathFilterJoinCondition %s ->\n%s"
                             .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getCondition()));
-                    case AslDelegatingJoinCondition c -> "DelegatingJoinCondition %s ->\n%s"
-                            .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getDelegate()));
-                    case AslAuditDetailsJoinCondition c -> "AuditDetailsJoinCondition %s -> %s"
-                            .formatted(
-                                    c.getLeftOwner().getAlias(),
-                                    c.getRightOwner().getAlias());
+                    case AslDelegatingJoinCondition c -> "DelegatingJoinCondition ->\n%s"
+                            .formatted(conditionToGraph(level + 2, c.getDelegate()));
                     case AslFolderItemJoinCondition
                     c -> "FolderItemJoinCondition FOLDER -> %s [%s.vo_id in %s.data.items[].id.value]"
                             .formatted(
@@ -239,6 +214,14 @@ public class AslGraph {
                 })
                 .map(s -> indented(level, s))
                 .collect(Collectors.joining());
+    }
+
+    private static String getAlias(AslQuery query) {
+        if (query == null) {
+            return "";
+        } else {
+            return query.getAlias();
+        }
     }
 
     private static String orderByToGraph(int level, AslOrderByField sortOrderPair) {
@@ -254,7 +237,7 @@ public class AslGraph {
                     + f.getAliasedName()
                     + Optional.of(f)
                             .map(AslColumnField::getExtractedColumn)
-                            .map(e -> " -- " + e.getPath().render())
+                            .map(e -> " /* " + e.getPath().render() + " */")
                             .orElse("");
             case AslComplexExtractedColumnField f -> providerAlias + "??"
                     + Optional.of(f)

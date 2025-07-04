@@ -133,7 +133,8 @@ public final class AslStructureQuery extends AslQuery {
     private final ArrayList<AslField> fields = new ArrayList<>(0);
     private final String alias;
     private final boolean requiresVersionTableJoin;
-    private boolean representsOriginalVersionExpression = false;
+    private final boolean representsOriginalVersionExpression;
+    private final boolean root;
 
     public AslStructureQuery(
             String alias,
@@ -142,11 +143,15 @@ public final class AslStructureQuery extends AslQuery {
             Collection<String> rmTypes,
             Collection<String> rmTypesConstraint,
             String attribute,
-            boolean requiresVersionTableJoin) {
-        super(alias, new ArrayList<>(0));
+            boolean requiresVersionTableJoin,
+            final boolean representsOriginalVersionExpression,
+            final boolean root) {
+        super(alias, new ArrayList<>());
         this.type = type;
         this.rmTypes = List.copyOf(rmTypes);
         this.requiresVersionTableJoin = requiresVersionTableJoin;
+        this.representsOriginalVersionExpression = representsOriginalVersionExpression;
+        this.root = root;
         this.fields.ensureCapacity(fields.size());
         fields.forEach(this::addField);
         this.alias = alias;
@@ -209,7 +214,7 @@ public final class AslStructureQuery extends AslQuery {
         return representsOriginalVersionExpression;
     }
 
-    public void setRepresentsOriginalVersionExpression(boolean representsOriginalVersionExpression) {
-        this.representsOriginalVersionExpression = representsOriginalVersionExpression;
+    public boolean isRoot() {
+        return root;
     }
 }
