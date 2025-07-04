@@ -24,7 +24,6 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -624,10 +623,12 @@ public class AqlSqlQueryBuilder {
             //  no hierarch constraints needed
             conditions = additionalConditions;
         } else {
-            conditions = ArrayUtils.addFirst(additionalConditions, Objects.requireNonNull(data.field(COMP_DATA.NUM))
-                    .between(
-                            FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
-                            FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP)));
+            conditions = ArrayUtils.addFirst(
+                    additionalConditions,
+                    Objects.requireNonNull(data.field(COMP_DATA.NUM))
+                            .between(
+                                    FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM),
+                                    FieldUtils.aliasedField(targetTable, aslData, COMP_DATA.NUM_CAP)));
         }
 
         return from.where(conditions).groupBy(pKeyFields);
