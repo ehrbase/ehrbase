@@ -115,8 +115,7 @@ final class ConditionUtils {
 
     private static Field getSqlField(AslQueryTables aslQueryToTable, AslField leftField) {
         return switch (leftField) {
-            case AslColumnField cf -> FieldUtils.field(
-                    aslQueryToTable.getDataTable(cf.getProvider()), cf, true);
+            case AslColumnField cf -> FieldUtils.field(aslQueryToTable.getDataTable(cf.getProvider()), cf, true);
             case AslConstantField cf -> DSL.inline(cf.getValue());
             case AslSubqueryField __ -> throw new IllegalArgumentException(
                     "AslFieldFieldQueryConditions using AslSubqueryFields are not supported");
