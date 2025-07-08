@@ -100,6 +100,13 @@
 
   </properties>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>central-snapshots</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
