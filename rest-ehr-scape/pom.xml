@@ -32,6 +32,7 @@
     </parent>
 
     <artifactId>rest-ehr-scape</artifactId>
+    <name>EHRbase ehrscape REST</name>
 
     <dependencies>
         <dependency>

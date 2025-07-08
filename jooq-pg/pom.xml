@@ -32,9 +32,7 @@
   </parent>
 
   <artifactId>jooq-pg</artifactId>
-
-  <name>jooq-pg</name>
-
+  <name>EHRbase JOOQ</name>
 
   <properties>
     <docker-maven-plugin.version>0.45.1</docker-maven-plugin.version>

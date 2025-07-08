@@ -30,6 +30,7 @@
     </parent>
 
     <artifactId>api</artifactId>
+    <name>EHRbase Internal API</name>
 
     <dependencies>
         <dependency>

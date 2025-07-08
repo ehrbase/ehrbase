@@ -33,6 +33,7 @@
 
   <artifactId>test-coverage</artifactId>
   <packaging>pom</packaging>
+  <name>EHRbase Test Coverage</name>
 
   <properties>
     <!-- per default, we disable and skip al coverage generation to speed up our local test execution -->
