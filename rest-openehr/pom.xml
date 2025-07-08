@@ -32,6 +32,7 @@
     </parent>
 
     <artifactId>rest-openehr</artifactId>
+    <name>EHRbase openEHR REST</name>
 
     <dependencies>
         <dependency>

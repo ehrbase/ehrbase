@@ -35,7 +35,7 @@
   <artifactId>server</artifactId>
   <version>2.19.0</version>
   <packaging>pom</packaging>
-  <name>ehrbase server</name>
+  <name>EHRbase server</name>
   <description>EHRbase openEHR server</description>
 
   <repositories>
