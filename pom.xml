@@ -52,7 +52,6 @@
     </repository>
   </repositories>
 
-
   <modules>
     <module>bom</module>
     <module>application</module>
@@ -229,15 +228,6 @@
           <compilerArgs>
             <arg>-parameters</arg>
           </compilerArgs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.sonatype.central</groupId>
-        <artifactId>central-publishing-maven-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <publishingServerId>central</publishingServerId>
-          <autoPublish>true</autoPublish>
         </configuration>
       </plugin>
     </plugins>
