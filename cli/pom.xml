@@ -31,6 +31,7 @@
 
   <artifactId>cli</artifactId>
   <packaging>jar</packaging>
+  <name>EHRbase CLI</name>
 
   <dependencies>
     <dependency>

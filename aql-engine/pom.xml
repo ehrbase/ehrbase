@@ -10,6 +10,7 @@
   </parent>
 
   <artifactId>aql-engine</artifactId>
+  <name>EHRbase AQL Engine</name>
 
   <properties>
     <maven.compiler.source>21</maven.compiler.source>
