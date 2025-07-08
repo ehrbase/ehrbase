@@ -48,6 +48,8 @@ class ConditionUtilsTest {
                 List.of("CO"),
                 List.of(),
                 null,
+                true,
+                false,
                 true);
 
         AslField.FieldSource fieldSource = new AslField.FieldSource(q, q, q);

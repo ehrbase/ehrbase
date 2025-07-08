@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.19.0]
+ ### Added
+ ### Changed 
+- Publishing artifacts directly to central.sonatype.com [#1512](https://github.com/ehrbase/ehrbase/pull/1512)
+ ### Fixed 
+
 ## [2.18.0]
  ### Added
  ### Changed 
@@ -178,3 +184,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.16.0]: https://github.com/ehrbase/ehrbase/compare/v2.15.0...v2.16.0
 [2.17.0]: https://github.com/ehrbase/ehrbase/compare/v2.16.0...v2.17.0
 [2.18.0]: https://github.com/ehrbase/ehrbase/compare/v2.17.0...v2.18.0
+[2.19.0]: https://github.com/ehrbase/ehrbase/compare/v2.18.0...v2.19.0
