@@ -100,13 +100,6 @@
 
   </properties>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>central-snapshots</id>
-      <url>https://central.sonatype.com/repository/maven-snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -352,6 +345,17 @@
           <generateBackupPoms>false</generateBackupPoms>
         </configuration>
       </plugin>
+      <!--
+      Releases can be tested by adding a server entry to the settings.xml
+          <server>
+            <id>central</id>
+            <username>invalid</username>
+            <password>invalid</password>
+          </server>
+
+      then use `mvn versions:set -DnewVersion=2.19.0[-SNAPSHOT]  -DprocessAllModules=true` to define the version and
+      check using ` mvn -B deploy -P release -DskipTests` if the correct release or snapshot version it tried to upload
+      -->
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
