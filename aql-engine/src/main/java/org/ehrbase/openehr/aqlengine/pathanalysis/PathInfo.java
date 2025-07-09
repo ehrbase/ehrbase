@@ -19,13 +19,16 @@ package org.ehrbase.openehr.aqlengine.pathanalysis;
 
 import static org.ehrbase.openehr.aqlengine.AqlQueryUtils.streamWhereConditions;
 
+import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdered;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rminfo.RMTypeInfo;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,14 +45,21 @@ import org.ehrbase.openehr.aqlengine.pathanalysis.ANode.NodeCategory;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathAnalysis.AttInfo;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
+import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
+import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.orderby.OrderByExpression;
+import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
+import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate.PredicateComparisonOperator;
+import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
+import org.ehrbase.openehr.util.TreeNode;
 
 /**
  * Provides an analysis of a Path Cohesion Tree
@@ -60,6 +70,12 @@ public final class PathInfo {
             ArchieRMInfoLookup.getInstance().getTypeInfo(DvOrdered.class).getAllDescendantClasses().stream()
                     .map(RMTypeInfo::getRmName)
                     .collect(Collectors.toSet());
+
+    private static final Set<String> NON_LOCATABLE_STRUCTURE_ENTRIES = Arrays.stream(StructureRmType.values())
+            .filter(StructureRmType::isStructureEntry)
+            .filter(t -> !Locatable.class.isAssignableFrom(t.type))
+            .map(Enum::name)
+            .collect(Collectors.toSet());
 
     /**
      * The number of (structure) children and if data is retrieved determines how a path node needs to be joined.
@@ -114,7 +130,7 @@ public final class PathInfo {
 
     private final PathCohesionTreeNode cohesionTreeRoot;
     private final Map<IdentifiedPath, Pair<ANode, Map<ANode, Map<String, AttInfo>>>> pathAttributeInfo;
-
+    private final Set<PathCohesionTreeNode> skippableNodes;
     private final Map<PathCohesionTreeNode, NodeInfo> nodeTypeInfo;
     private final Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause;
 
@@ -136,6 +152,91 @@ public final class PathInfo {
 
         this.nodeTypeInfo = fillNodeTypeInfo(cohesionTreeRoot, -1, new HashMap<>());
         this.pathToQueryClause = pathToQueryClause;
+        this.skippableNodes = Collections.unmodifiableSet(findSkippableNodes(cohesionTreeRoot));
+    }
+
+    private Set<PathCohesionTreeNode> findSkippableNodes(PathCohesionTreeNode root) {
+        HashSet<PathCohesionTreeNode> skippable = new HashSet<>();
+        Iterator<PathCohesionTreeNode> it = root.streamDepthFirst().iterator();
+        PathCohesionTreeNode prevNode = it.next();
+        NodeCategory prevCategory = getNodeCategory(prevNode);
+        boolean containingArchetypeIsKnown = hasArchetypeNodeIdPredicateWithValuePrefix(
+                prevNode.getAttribute().getPredicateOrOperands(), "openEHR-");
+        boolean prevNodeIsAtCode = false;
+        boolean prevNodeHasFilters = false;
+        while (it.hasNext()) {
+            PathCohesionTreeNode node = it.next();
+            int depth = node.getDepth();
+            NodeCategory nodeCategory = getNodeCategory(node);
+            if (nodeCategory == NodeCategory.STRUCTURE) {
+                List<AndOperatorPredicate> attrPredicates = node.getAttribute().getPredicateOrOperands();
+                boolean hasFilters = node.getPaths().stream()
+                                .map(p -> AqlUtil.streamPredicates(p.getPath()
+                                                .getPathNodes()
+                                                .get(depth - 1)
+                                                .getPredicateOrOperands())
+                                        .count())
+                                .max(Long::compareTo)
+                                .orElse(0L)
+                        != AqlUtil.streamPredicates(attrPredicates).count();
+                boolean isAtCode = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "at");
+                boolean isArchetype =
+                        !isAtCode && hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "openEHR-");
+
+                if (containingArchetypeIsKnown
+                        && !prevNodeHasFilters
+                        && isAtCode
+                        && (prevNodeIsAtCode || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(prevNode)))
+                        && prevCategory == NodeCategory.STRUCTURE
+                        && !skippable.contains(prevNode)) {
+                    JoinMode joinMode = joinMode(prevNode);
+                    if (joinMode == JoinMode.INTERNAL_SINGLE_CHILD
+                            || joinMode == JoinMode.INTERNAL_FORK && isSkippableFork(prevNode)) {
+                        skippable.add(prevNode);
+                    }
+                }
+                prevNode = node;
+                prevCategory = nodeCategory;
+                /*LOCATABLE nodes with just a name predicate or no predicate end our archetype container, since any LOCATABLE can be archetyped.
+                To make these nodes skippable requires analysis of the containing archetype. */
+                containingArchetypeIsKnown =
+                        ((isAtCode || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(node)))
+                                        && containingArchetypeIsKnown)
+                                || isArchetype;
+                prevNodeIsAtCode = isAtCode;
+                prevNodeHasFilters = hasFilters;
+            } else {
+                prevCategory = nodeCategory;
+                containingArchetypeIsKnown = false;
+                prevNodeIsAtCode = false;
+                prevNodeHasFilters = false;
+            }
+        }
+        return skippable;
+    }
+
+    private boolean isSkippableFork(final PathCohesionTreeNode prevNode) {
+        boolean onlyChildrenAreStructure = prevNode.getChildren().stream()
+                .map(TreeNode::getChildren)
+                .flatMap(List::stream)
+                .map(this::getNodeCategory)
+                .allMatch(c -> c == NodeCategory.RM_TYPE
+                        || c == NodeCategory.FOUNDATION
+                        || c == NodeCategory.FOUNDATION_EXTENDED);
+        return onlyChildrenAreStructure
+                && prevNode.getChildren().stream()
+                        .map(PathCohesionTreeNode::getAttribute)
+                        .map(PathNode::getPredicateOrOperands)
+                        .allMatch(pl -> hasArchetypeNodeIdPredicateWithValuePrefix(pl, "at"));
+    }
+
+    private static boolean hasArchetypeNodeIdPredicateWithValuePrefix(
+            final List<AndOperatorPredicate> attrPredicates, final String prefix) {
+        return AqlUtil.streamPredicates(attrPredicates)
+                .anyMatch(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
+                        && p.getOperator() == PredicateComparisonOperator.EQ
+                        && p.getValue() instanceof StringPrimitive sp
+                        && sp.getValue().startsWith(prefix));
     }
 
     private Map<PathCohesionTreeNode, NodeInfo> fillNodeTypeInfo(
@@ -253,6 +354,14 @@ public final class PathInfo {
 
     public PathCohesionTreeNode getCohesionTreeRoot() {
         return cohesionTreeRoot;
+    }
+
+    public Set<PathCohesionTreeNode> getSkippableNodes() {
+        return skippableNodes;
+    }
+
+    public boolean isNodeSkippable(PathCohesionTreeNode node) {
+        return skippableNodes.contains(node);
     }
 
     public NodeCategory getNodeCategory(PathCohesionTreeNode node) {
