@@ -32,6 +32,7 @@ public abstract class TreeNode<T extends TreeNode<T>> {
 
     protected T parent;
     final List<T> children = new ArrayList<>();
+    protected int depth = 0;
 
     public T getParent() {
         return parent;
@@ -67,8 +68,13 @@ public abstract class TreeNode<T extends TreeNode<T>> {
         child.removeFromParent();
 
         child.parent = (T) this;
+        child.depth = depth + 1;
         children.add(child);
         return child;
+    }
+
+    public int getDepth() {
+        return depth;
     }
 
     public List<T> getChildren() {
