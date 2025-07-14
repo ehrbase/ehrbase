@@ -47,7 +47,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Executes ASL queries as SQL, and converts the results
  */
 @Repository
-@Transactional(readOnly = true)
 public class AqlQueryRepository {
 
     private static final AqlSqlResultPostprocessor NOOP_POSTPROCESSOR = v -> v;
@@ -70,7 +69,6 @@ public class AqlQueryRepository {
      * @param selects  to obtain {@link AqlSqlResultPostprocessor} for.
      *
      * @see #executeQuery(PreparedQuery)
-     * @see #getQuerySql(PreparedQuery)
      * @see #explainQuery(boolean, PreparedQuery)
      */
     public PreparedQuery prepareQuery(AslRootQuery aslQuery, List<SelectWrapper> selects) {
@@ -87,6 +85,13 @@ public class AqlQueryRepository {
         return new PreparedQuery(selectQuery, postProcessors);
     }
 
+    /**
+     * Executes the given {@link PreparedQuery} in its own read only transaction.
+     *
+     * @param preparedQuery to execute
+     * @return resultSet
+     */
+    @Transactional(readOnly = true)
     public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
         try (Stream<Record> stream = preparedQuery.selectQuery.stream()) {
             return stream.map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
@@ -94,10 +99,13 @@ public class AqlQueryRepository {
         }
     }
 
-    public static String getQuerySql(PreparedQuery preparedQuery) {
-        return preparedQuery.selectQuery.getSQL();
-    }
-
+    /**
+     * Explains the with optional analyse the given {@link PreparedQuery} in its own read only transaction.
+     * @param analyze       also run analyse
+     * @param preparedQuery to explain and analyse if needed
+     * @return result in serialized Json format
+     */
+    @Transactional(readOnly = true)
     public String explainQuery(boolean analyze, PreparedQuery preparedQuery) {
         return queryBuilder.explain(analyze, preparedQuery.selectQuery).formatJSON();
     }
