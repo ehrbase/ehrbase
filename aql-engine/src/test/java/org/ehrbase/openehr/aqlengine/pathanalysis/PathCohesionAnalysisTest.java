@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.assertj.core.api.AbstractStringAssert;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
+import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
@@ -31,6 +32,25 @@ import org.ehrbase.openehr.util.TreeUtils;
 import org.junit.jupiter.api.Test;
 
 class PathCohesionAnalysisTest {
+
+    @Test
+    void test() {
+        //TODO real tests for node skipping
+        AqlQueryWrapper w = AqlQueryWrapper.create(
+                AqlQuery.parse(
+                        """
+
+                SELECT
+                c/context/other_context[at0001]/items[openEHR-EHR-CLUSTER.clcl.v0]/items[at0001]/items[at0002]
+                ,o/data[at0001]/events[at0002]/data[at0003]/items[at0007]/value
+                ,o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value
+                ,o/data[at0001]/events[at0002]/state[at0005]/items[at0006]/value
+                FROM COMPOSITION c[openEHR-EHR-COMPOSITION.ccc.v0] CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v0]"""));
+
+        w.pathInfos().forEach((__, pi) -> {
+            System.out.println(pi.getSkippableNodes());
+        });
+    }
 
     @Test
     void simplePath() {

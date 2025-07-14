@@ -347,5 +347,14 @@ public final class PathCohesionAnalysis {
         public boolean isRoot() {
             return root;
         }
+
+        @Override
+        public String toString() {
+            return "PathCohesionTreeNode{" + "attribute="
+                    + attribute + ", paths="
+                    + paths + ", pathsEndingAtNode="
+                    + pathsEndingAtNode + ", root="
+                    + root + '}';
+        }
     }
 }
