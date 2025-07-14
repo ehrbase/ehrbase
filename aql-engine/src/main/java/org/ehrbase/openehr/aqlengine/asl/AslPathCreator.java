@@ -131,6 +131,7 @@ final class AslPathCreator {
             joinPathStructureNode(
                             rootQuery,
                             parent,
+                            pathInfo.isArchetypeNode(pathInfo.getCohesionTreeRoot()),
                             null,
                             sourceRelation,
                             pathInfo.getCohesionTreeRoot(),
@@ -354,6 +355,7 @@ final class AslPathCreator {
     private Stream<DataNodeInfo> joinPathStructureNode(
             AslEncapsulatingQuery query,
             OwnerProviderTuple parent,
+            boolean isArchetypeParent,
             JoinMode parentJoinMode,
             AslSourceRelation sourceRelation,
             PathCohesionTreeNode currentNode,
@@ -364,11 +366,11 @@ final class AslPathCreator {
         final OwnerProviderTuple subQuery;
         final AslEncapsulatingQuery currentQuery;
         final JoinMode joinMode = pathInfo.joinMode(currentNode);
-        if (joinMode == JoinMode.ROOT) {
+        final boolean skipNode = pathInfo.isNodeSkippable(currentNode);
+        if (joinMode == JoinMode.ROOT || skipNode) {
             subQuery = parent;
             currentQuery = query;
         } else {
-
             AslStructureQuery sq = pathStructureSubQuery(
                     currentNode.getAttribute().getAttribute(),
                     currentNode.getAttribute().getPredicateOrOperands(),
@@ -386,21 +388,39 @@ final class AslPathCreator {
             }
         }
 
-        if (subQuery.owner() instanceof AslStructureQuery sq) {
+        if (!skipNode && subQuery.owner() instanceof AslStructureQuery sq) {
             addFiltersToPathNodeSubquery(currentNode, structureLevel, sq);
         }
 
         final AslQuery finalRootProviderSubQuery = rootProviderQuery;
         Stream<DataNodeInfo> dataNodeInfoStream = currentNode.getChildren().stream()
-                .flatMap(child -> handlePathStructureNodeChild(
-                        sourceRelation,
-                        pathInfo,
-                        structureLevel,
-                        child,
-                        subQuery,
-                        currentQuery,
-                        finalRootProviderSubQuery,
-                        joinMode));
+                .flatMap(child -> {
+                    if (subQuery.owner() instanceof AslStructureQuery sq
+                            && sq.isRepresentsOriginalVersionExpression()
+                            && pathInfo.getTargetTypes(child).stream().anyMatch(RmConstants.AUDIT_DETAILS::equals)) {
+                        // VERSION.commit_audit
+                        return joinAuditDetailsPaths(currentQuery, subQuery, child, finalRootProviderSubQuery);
+                    }
+
+                    NodeCategory nodeCategory = pathInfo.getNodeCategory(child);
+                    return switch (nodeCategory) {
+                        case STRUCTURE -> joinPathStructureNode(
+                                currentQuery,
+                                subQuery,
+                                skipNode && isArchetypeParent || !skipNode && pathInfo.isArchetypeNode(currentNode),
+                                joinMode,
+                                sourceRelation,
+                                child,
+                                pathInfo,
+                                finalRootProviderSubQuery,
+                                structureLevel + 1);
+                        case STRUCTURE_INTERMEDIATE, FOUNDATION_EXTENDED -> throw new IllegalArgumentException();
+                        case RM_TYPE -> joinRmTypeNode(
+                                child, currentQuery, subQuery, finalRootProviderSubQuery, pathInfo, 1);
+                        case FOUNDATION -> joinFoundationNode(
+                                child, currentQuery, subQuery, finalRootProviderSubQuery, pathInfo, 1);
+                    };
+                });
 
         if ((joinMode == JoinMode.ROOT || joinMode == JoinMode.DATA)
                 // this node only returns an RM object, if there is actually a path ending here
@@ -413,39 +433,6 @@ final class AslPathCreator {
         } else {
             return dataNodeInfoStream;
         }
-    }
-
-    private Stream<DataNodeInfo> handlePathStructureNodeChild(
-            AslSourceRelation sourceRelation,
-            PathInfo pathInfo,
-            int structureLevel,
-            PathCohesionTreeNode child,
-            OwnerProviderTuple subQuery,
-            AslEncapsulatingQuery currentQuery,
-            AslQuery rootProvider,
-            JoinMode joinMode) {
-        if (subQuery.owner() instanceof AslStructureQuery sq
-                && sq.isRepresentsOriginalVersionExpression()
-                && pathInfo.getTargetTypes(child).stream().anyMatch(RmConstants.AUDIT_DETAILS::equals)) {
-            // VERSION.commit_audit
-            return joinAuditDetailsPaths(currentQuery, subQuery, child, rootProvider);
-        }
-
-        NodeCategory nodeCategory = pathInfo.getNodeCategory(child);
-        return switch (nodeCategory) {
-            case STRUCTURE -> joinPathStructureNode(
-                    currentQuery,
-                    subQuery,
-                    joinMode,
-                    sourceRelation,
-                    child,
-                    pathInfo,
-                    rootProvider,
-                    structureLevel + 1);
-            case STRUCTURE_INTERMEDIATE, FOUNDATION_EXTENDED -> throw new IllegalArgumentException();
-            case RM_TYPE -> joinRmTypeNode(child, currentQuery, subQuery, rootProvider, pathInfo, 1);
-            case FOUNDATION -> joinFoundationNode(child, currentQuery, subQuery, rootProvider, pathInfo, 1);
-        };
     }
 
     @Nonnull
