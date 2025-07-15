@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,6 +80,7 @@ public final class PathInfo {
     private static final Set<NodeCategory> STRUCTURE_NODE_CATEGORIES =
             EnumSet.of(NodeCategory.STRUCTURE, NodeCategory.STRUCTURE_INTERMEDIATE);
 
+
     /**
      * The number of (structure) children and if data is retrieved determines how a path node needs to be joined.
      *
@@ -123,45 +125,6 @@ public final class PathInfo {
         INTERNAL_FORK
     }
 
-    public record NodeInfo(
-            NodeCategory category,
-            Set<String> rmTypes,
-            List<PathNode> pathFromRoot,
-            boolean multipleValued,
-            Set<String> dvOrderedTypes) {}
-
-    private final PathCohesionTreeNode cohesionTreeRoot;
-    private final Map<IdentifiedPath, Pair<ANode, Map<ANode, Map<String, AttInfo>>>> pathAttributeInfo;
-    private final Set<PathCohesionTreeNode> skippableNodes;
-    private final Map<PathCohesionTreeNode, PathJoinConditionType> nodeToJoinConditionType;
-    private final Map<PathCohesionTreeNode, NodeInfo> nodeTypeInfo;
-    private final Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause;
-
-    public PathInfo(PathCohesionTreeNode cohesionTreeRoot, Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause) {
-        this.cohesionTreeRoot = cohesionTreeRoot;
-        this.pathAttributeInfo = cohesionTreeRoot.getPaths().stream().collect(Collectors.toMap(ip -> ip, ip -> {
-            AbstractContainmentExpression root = ip.getRoot();
-            ANode analyzed = PathAnalysis.analyzeAqlPathTypes(
-                    root instanceof ContainmentClassExpression cce ? cce.getType() : RmConstants.ORIGINAL_VERSION,
-                    ip.getRootPredicate(),
-                    root.getPredicates(),
-                    ip.getPath(),
-                    null);
-            if (analyzed.getCandidateTypes().isEmpty()) {
-                throw new IllegalArgumentException("Path %s is not valid".formatted(ip.render()));
-            }
-            return Pair.of(analyzed, PathAnalysis.createAttributeInfos(analyzed));
-        }));
-
-        this.nodeTypeInfo = fillNodeTypeInfo(cohesionTreeRoot, -1, new HashMap<>());
-        this.pathToQueryClause = pathToQueryClause;
-        Set<PathCohesionTreeNode> skippableNodesResult = new HashSet<>();
-        Map<PathCohesionTreeNode, PathJoinConditionType> nodeToJoinConditionTypeResult = new HashMap<>();
-        findSkippableNodesInPathTree(cohesionTreeRoot, false, skippableNodesResult, nodeToJoinConditionTypeResult);
-        this.skippableNodes = Collections.unmodifiableSet(skippableNodesResult);
-        this.nodeToJoinConditionType = Collections.unmodifiableMap(nodeToJoinConditionTypeResult);
-    }
-
     public enum PathJoinConditionType {
         /**
          *Regular path join
@@ -187,14 +150,87 @@ public final class PathInfo {
          * (c.num >= p.num_cap)
          *
          */
-        NODE_ID_ANCHOR
+        NODE_ID_ANCHOR,
+        /**
+         * The node is skipped (so the children won't have PARENT_CHILD)
+         */
+        SKIPPED
+    }
+
+    public record NodeInfo(
+            NodeCategory category,
+            Set<String> rmTypes,
+            List<PathNode> pathFromRoot,
+            boolean multipleValued,
+            Set<String> dvOrderedTypes) {}
+
+    private final PathCohesionTreeNode cohesionTreeRoot;
+    private final Map<IdentifiedPath, Pair<ANode, Map<ANode, Map<String, AttInfo>>>> pathAttributeInfo;
+    private final Set<PathCohesionTreeNode> skippableNodes;
+    private final Map<PathCohesionTreeNode, Set<PathJoinConditionType>> nodeToJoinConditionTypes;
+    private final Map<PathCohesionTreeNode, NodeInfo> nodeTypeInfo;
+    private final Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause;
+
+    public PathInfo(PathCohesionTreeNode cohesionTreeRoot, Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause) {
+        this.cohesionTreeRoot = cohesionTreeRoot;
+        this.pathAttributeInfo = cohesionTreeRoot.getPaths().stream().collect(Collectors.toMap(ip -> ip, ip -> {
+            AbstractContainmentExpression root = ip.getRoot();
+            ANode analyzed = PathAnalysis.analyzeAqlPathTypes(
+                    root instanceof ContainmentClassExpression cce ? cce.getType() : RmConstants.ORIGINAL_VERSION,
+                    ip.getRootPredicate(),
+                    root.getPredicates(),
+                    ip.getPath(),
+                    null);
+            if (analyzed.getCandidateTypes().isEmpty()) {
+                throw new IllegalArgumentException("Path %s is not valid".formatted(ip.render()));
+            }
+            return Pair.of(analyzed, PathAnalysis.createAttributeInfos(analyzed));
+        }));
+
+        this.nodeTypeInfo = fillNodeTypeInfo(cohesionTreeRoot, -1, new HashMap<>());
+        this.pathToQueryClause = pathToQueryClause;
+        Set<PathCohesionTreeNode> skippableNodesResult = new LinkedHashSet<>();
+        findSkippableNodesInPathTree(cohesionTreeRoot, false, skippableNodesResult);
+        this.skippableNodes = Collections.unmodifiableSet(skippableNodesResult);
+        this.nodeToJoinConditionTypes = Collections.unmodifiableMap(determineJoinConditionTypes(cohesionTreeRoot, this.skippableNodes));
+    }
+
+    private Map<PathCohesionTreeNode, Set<PathJoinConditionType>> determineJoinConditionTypes(PathCohesionTreeNode cohesionTreeRoot, Set<PathCohesionTreeNode> skippableNodes) {
+        Set<PathCohesionTreeNode> havingNodeIdAnchor = new HashSet<>();
+
+        return cohesionTreeRoot.streamDepthFirst().collect(Collectors.toMap(node -> node, node -> {
+            if (skippableNodes.contains(node)) {
+                return Set.of(PathJoinConditionType.SKIPPED);
+            }
+            PathCohesionTreeNode parent = node.getParent();
+            if (parent == null) {
+                return Set.of();
+            } else if (!skippableNodes.contains(parent)) {
+                return Set.of(PathJoinConditionType.PARENT_CHILD);
+            } else {
+                PathJoinConditionType jt;
+                if (havingNodeIdAnchor.contains(parent)) {
+                    jt = PathJoinConditionType.NODE_ID_ANCHOR;
+                } else {
+                    jt = PathJoinConditionType.ARCHETYPE_ANCHOR;
+                }
+                if(node.getChildren().size() > 1 && isMultipleValued(node)) {
+                    havingNodeIdAnchor.add(node);
+                }
+                boolean sameParentAsSiblings = parent.getChildren().size() > 1;
+                if (sameParentAsSiblings) {
+                    return Set.of(jt, PathJoinConditionType.SAME_PARENT_AS_SIBLINGS);
+                } else {
+                    return Set.of(jt);
+                }
+            }
+        }, (a, b) -> {throw new UnsupportedOperationException();}, LinkedHashMap::new));
     }
 
     private boolean findSkippableNodesInPathTree(
             PathCohesionTreeNode node,
             boolean containingArchetypeKnown,
-            Set<PathCohesionTreeNode> skippableNodes,
-            final Map<PathCohesionTreeNode, PathJoinConditionType> nodeToJoinConditionTypeResult) {
+            Set<PathCohesionTreeNode> skippableNodes) {
 
         int depth = node.getDepth();
         JoinMode joinMode = joinMode(node);
@@ -214,7 +250,7 @@ public final class PathInfo {
             boolean isArchetype = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "openEHR-");
             node.getChildren()
                     .forEach(child -> findSkippableNodesInPathTree(
-                            child, isArchetype, skippableNodes, nodeToJoinConditionTypeResult));
+                            child, isArchetype, skippableNodes));
             return false;
         } else if (STRUCTURE_NODE_CATEGORIES.contains(nodeCategory)) {
             boolean isAtCode = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "at");
@@ -224,8 +260,7 @@ public final class PathInfo {
                             (isAtCode
                                     || hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "openEHR-")
                                     || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(node))),
-                            skippableNodes,
-                            nodeToJoinConditionTypeResult))
+                            skippableNodes))
                     .reduce(Boolean::logicalOr)
                     .orElse(false);
             if ((isAtCode || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(node)))
@@ -386,6 +421,14 @@ public final class PathInfo {
 
     public boolean isNodeSkippable(PathCohesionTreeNode node) {
         return skippableNodes.contains(node);
+    }
+
+    public Map<PathCohesionTreeNode, Set<PathJoinConditionType>> getJoinConditionTypes() {
+        return nodeToJoinConditionTypes;
+    }
+
+    public Set<PathJoinConditionType> getJoinConditionTypes(PathCohesionTreeNode node) {
+        return nodeToJoinConditionTypes.get(node);
     }
 
     public boolean isArchetypeNode(PathCohesionTreeNode node) {

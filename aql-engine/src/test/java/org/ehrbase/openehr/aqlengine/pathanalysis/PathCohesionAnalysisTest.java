@@ -25,31 +25,66 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.AbstractStringAssert;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
+import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.util.TreeUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class PathCohesionAnalysisTest {
 
-    @Test
-    void test() {
-        //TODO real tests for node skipping
-        AqlQueryWrapper w = AqlQueryWrapper.create(
-                AqlQuery.parse(
-                        """
-
+    /*
+    *
+    */
+    @ParameterizedTest
+    @ValueSource(
+            strings = {"""
                 SELECT
                 c/context/other_context[at0001]/items[openEHR-EHR-CLUSTER.clcl.v0]/items[at0001]/items[at0002]
                 ,o/data[at0001]/events[at0002]/data[at0003]/items[at0007]/value
                 ,o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value
                 ,o/data[at0001]/events[at0002]/state[at0005]/items[at0006]/value
-                FROM COMPOSITION c[openEHR-EHR-COMPOSITION.ccc.v0] CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v0]"""));
-
-        w.pathInfos().forEach((__, pi) -> {
-            System.out.println(pi.getSkippableNodes());
+                FROM COMPOSITION c[openEHR-EHR-COMPOSITION.ccc.v0] 
+                CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v0]""",
+                """
+                    SELECT
+                    c/context/other_context[at0001]/items[openEHR-EHR-CLUSTER.clcl.v0]/items[at0001]/items[at0002]
+                    ,o/data[at0001]/events[at0002]/data[at0003]/items[at0007]/value
+                    ,o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value
+                    ,o/data[at0001]/events[at0002]/state[at0005]/items[at0006]/value
+                    FROM COMPOSITION c
+                    CONTAINS OBSERVATION o """}
+    )
+    void test(String aql) {
+        //TODO real tests for node skipping
+        AqlQueryWrapper w = AqlQueryWrapper.create(AqlQuery.parse(aql));
+        Map<ContainsWrapper, PathInfo> pathInfos = w.pathInfos();
+        pathInfos.forEach((cw, pi) -> {
+            System.out.print(cw.alias() + " ");
+            System.out.println(renderTree(pi.getCohesionTreeRoot()));
+            System.out.printf("%s Skippable nodes:%n", pi.getSkippableNodes().size());
+            pi.getSkippableNodes()
+                    .forEach(n -> System.out.println(printAttribute(n)));
+            System.out.println("JoinConditionTypes:");
+            pi.getJoinConditionTypes().forEach((k, v)-> {
+                System.out.println(printAttribute(k) + ": " + v);
+            });
+            System.out.println();
         });
+    }
+
+    private static String printAttribute(PathCohesionTreeNode tn) {
+        AqlObjectPath.PathNode att = tn.getAttribute();
+        return att.getAttribute() +
+                //atNodeId
+                att.getPredicateOrOperands().stream().findFirst()
+                        .flatMap(a -> a.getOperands().stream().filter(op -> op.getPath().getPathNodes().stream().findFirst().filter(pn -> pn.getAttribute().equals("archetype_node_id")).isPresent())
+                                .findFirst()
+                                .map(op -> "[%s]".formatted(((StringPrimitive)op.getValue()).getValue()))).orElse("");
     }
 
     @Test
