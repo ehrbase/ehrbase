@@ -199,10 +199,17 @@ public final class PathInfo {
         Set<PathCohesionTreeNode> havingNodeIdAnchor = new HashSet<>();
 
         return cohesionTreeRoot.streamDepthFirst().collect(Collectors.toMap(node -> node, node -> {
+            if (!STRUCTURE_NODE_CATEGORIES.contains(getNodeCategory(node))) {
+                return Set.of();
+            }
+
+            PathCohesionTreeNode parent = node.getParent();
+            if(parent != null && parent.getChildren().size() > 1 && isMultipleValued(parent)) {
+                havingNodeIdAnchor.add(node);
+            }
             if (skippableNodes.contains(node)) {
                 return Set.of(PathJoinConditionType.SKIPPED);
             }
-            PathCohesionTreeNode parent = node.getParent();
             if (parent == null) {
                 return Set.of();
             } else if (!skippableNodes.contains(parent)) {
@@ -213,9 +220,6 @@ public final class PathInfo {
                     jt = PathJoinConditionType.NODE_ID_ANCHOR;
                 } else {
                     jt = PathJoinConditionType.ARCHETYPE_ANCHOR;
-                }
-                if(node.getChildren().size() > 1 && isMultipleValued(node)) {
-                    havingNodeIdAnchor.add(node);
                 }
                 boolean sameParentAsSiblings = parent.getChildren().size() > 1;
                 if (sameParentAsSiblings) {
