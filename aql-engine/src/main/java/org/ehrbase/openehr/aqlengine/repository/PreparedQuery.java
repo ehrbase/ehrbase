@@ -40,8 +40,12 @@ public final class PreparedQuery {
         this.postProcessors = postProcessors;
     }
 
+    public String getQuerySql() {
+        return selectQuery.getSQL();
+    }
+
     @Override
     public String toString() {
-        return selectQuery.getSQL();
+        return getQuerySql();
     }
 }
