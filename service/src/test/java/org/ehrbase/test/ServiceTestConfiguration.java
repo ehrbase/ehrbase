@@ -20,13 +20,10 @@ package org.ehrbase.test;
 import jakarta.annotation.PostConstruct;
 import java.time.OffsetDateTime;
 import java.util.List;
-import javax.sql.DataSource;
 import org.ehrbase.service.TimeProvider;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,21 +45,6 @@ public class ServiceTestConfiguration {
                         "integration-test",
                         "integration-test-principal",
                         List.of(new SimpleGrantedAuthority("integration-test-authority"))));
-    }
-
-    @Bean
-    public DataSource dataSource() {
-
-        // We reuse the same postgres container for all Integration tests
-        EhrbasePostgreSQLContainer ehrdb = EhrbasePostgreSQLContainer.sharedInstance();
-
-        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.type(SimpleDriverDataSource.class);
-        dataSourceBuilder.driverClassName(ehrdb.getDriverClassName());
-        dataSourceBuilder.url(ehrdb.getJdbcUrl());
-        dataSourceBuilder.username(ehrdb.getUsername());
-        dataSourceBuilder.password(ehrdb.getPassword());
-        return dataSourceBuilder.build();
     }
 
     /**

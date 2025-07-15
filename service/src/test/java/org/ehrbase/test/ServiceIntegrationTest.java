@@ -25,12 +25,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.ehrbase.ServiceModuleConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
+@ContextConfiguration(initializers = ServiceIntegrationTest.IntegrationTestInitializer.class)
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         classes = {ServiceModuleConfiguration.class, ServiceTestConfiguration.class},
@@ -40,4 +45,22 @@ import org.springframework.test.context.ActiveProfiles;
             "spring.main.lazy-initialization=true",
         })
 @ActiveProfiles("test")
-public @interface ServiceIntegrationTest {}
+public @interface ServiceIntegrationTest {
+
+    class IntegrationTestInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+        EhrbasePostgreSQLContainer ehrDb = EhrbasePostgreSQLContainer.sharedInstance();
+
+        @Override
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+
+            TestPropertyValues.of(
+                            // configure connection to the running mssql test container
+                            "spring.datasource.url=" + ehrDb.getJdbcUrl(),
+                            "spring.datasource.driver-class-name=org.postgresql.Driver",
+                            "spring.datasource.username=" + ehrDb.getUsername(),
+                            "spring.datasource.password=" + ehrDb.getPassword())
+                    .applyTo(configurableApplicationContext.getEnvironment());
+        }
+    }
+}

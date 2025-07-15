@@ -54,24 +54,28 @@ public class CacheConfiguration {
             Function<CacheProvider.EhrBaseCache<?, ?>, String> createCacheName) {
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.INTROSPECT_CACHE),
-                Caffeine.newBuilder().build());
+                newCaffeineBuilder().build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.TEMPLATE_UUID_ID_CACHE),
-                Caffeine.newBuilder().build());
+                newCaffeineBuilder().build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.TEMPLATE_ID_UUID_CACHE),
-                Caffeine.newBuilder().build());
+                newCaffeineBuilder().build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.USER_ID_CACHE),
-                configureCache(Caffeine.newBuilder(), cacheProperties.getUserIdCacheConfig())
+                configureCache(newCaffeineBuilder(), cacheProperties.getUserIdCacheConfig())
                         .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE),
-                configureCache(Caffeine.newBuilder(), cacheProperties.getExternalFhirTerminologyCacheConfig())
+                configureCache(newCaffeineBuilder(), cacheProperties.getExternalFhirTerminologyCacheConfig())
                         .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.STORED_QUERY_CACHE),
-                Caffeine.newBuilder().build());
+                newCaffeineBuilder().build());
+    }
+
+    public static Caffeine<Object, Object> newCaffeineBuilder() {
+        return Caffeine.newBuilder().recordStats();
     }
 
     protected static Caffeine<Object, Object> configureCache(

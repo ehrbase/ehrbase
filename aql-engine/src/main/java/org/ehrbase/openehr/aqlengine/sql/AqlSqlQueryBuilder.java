@@ -85,6 +85,7 @@ import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -94,17 +95,22 @@ import org.springframework.stereotype.Component;
 public class AqlSqlQueryBuilder {
 
     private final AqlConfigurationProperties aqlConfigurationProperties;
-    private final DSLContext context;
+    final DSLContext context;
+
+    public DSLContext getContext() {
+        return context;
+    }
+
     private final TemplateService templateService;
     private final Optional<AqlSqlQueryPostProcessor> queryPostProcessor;
 
     public AqlSqlQueryBuilder(
             AqlConfigurationProperties aqlConfigurationProperties,
-            DSLContext context,
+            @Qualifier("jooqDslAQL") DSLContext aqlDsl,
             TemplateService templateService,
             Optional<AqlSqlQueryPostProcessor> queryPostProcessor) {
         this.aqlConfigurationProperties = aqlConfigurationProperties;
-        this.context = context;
+        this.context = aqlDsl;
         this.templateService = templateService;
         this.queryPostProcessor = queryPostProcessor;
     }

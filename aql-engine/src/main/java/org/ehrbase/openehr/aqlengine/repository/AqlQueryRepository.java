@@ -41,7 +41,6 @@ import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Executes ASL queries as SQL, and converts the results
@@ -91,7 +90,6 @@ public class AqlQueryRepository {
      * @param preparedQuery to execute
      * @return resultSet
      */
-    @Transactional(readOnly = true)
     public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
         try (Stream<Record> stream = preparedQuery.selectQuery.stream()) {
             return stream.map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
@@ -105,7 +103,6 @@ public class AqlQueryRepository {
      * @param preparedQuery to explain and analyse if needed
      * @return result in serialized Json format
      */
-    @Transactional(readOnly = true)
     public String explainQuery(boolean analyze, PreparedQuery preparedQuery) {
         return queryBuilder.explain(analyze, preparedQuery.selectQuery).formatJSON();
     }
