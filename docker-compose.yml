@@ -16,6 +16,7 @@ services:
       DB_PASS_ADMIN: ehrbase
       DB_USER: ehrbase_restricted
       DB_PASS: ehrbase_restricted
+      SECURITY_AUTHTYPE: none # alternatives: 'basic' or 'oauth'. For 'basic' default credentialse are in .env.ehrbase. May require container delete after a change.
     links:
       - ehrdb
       - keycloak
