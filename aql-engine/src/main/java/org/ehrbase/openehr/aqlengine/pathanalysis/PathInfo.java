@@ -281,7 +281,7 @@ public final class PathInfo {
                         .anyMatch(cnt -> cnt > attributePredicateCount);
 
         if (!containingArchetypeKnown || joinMode == JoinMode.ROOT || hasFilters) {
-            boolean isArchetype = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "openEHR-");
+            boolean isArchetype = isArchetypeNode(node);
             node.getChildren().forEach(child -> findSkippableNodesInPathTree(child, isArchetype, skippableNodes));
             return false;
         } else if (STRUCTURE_NODE_CATEGORIES.contains(nodeCategory)) {
@@ -290,7 +290,7 @@ public final class PathInfo {
                     .map(child -> findSkippableNodesInPathTree(
                             child,
                             (isAtCode
-                                    || hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "openEHR-")
+                                    || isArchetypeNode(node)
                                     || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(node))),
                             skippableNodes))
                     .reduce(Boolean::logicalOr)
@@ -321,7 +321,7 @@ public final class PathInfo {
                 .allMatch(pl -> hasArchetypeNodeIdPredicateWithValuePrefix(pl, "at"));
     }
 
-    private static boolean hasArchetypeNodeIdPredicateWithValuePrefix(
+    public static boolean hasArchetypeNodeIdPredicateWithValuePrefix(
             final List<AndOperatorPredicate> attrPredicates, final String prefix) {
         return AqlUtil.streamPredicates(attrPredicates)
                 .anyMatch(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
@@ -463,7 +463,7 @@ public final class PathInfo {
         return nodeToJoinConditionTypes.get(node);
     }
 
-    public boolean isArchetypeNode(PathCohesionTreeNode node) {
+    public static boolean isArchetypeNode(PathCohesionTreeNode node) {
         return hasArchetypeNodeIdPredicateWithValuePrefix(node.getAttribute().getPredicateOrOperands(), "openEHR-");
     }
 
