@@ -70,6 +70,8 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
+import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
+import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
@@ -517,6 +519,20 @@ public final class AslUtils {
 
     public static Stream<AslFieldFieldQueryCondition> pathChildConditions(
             AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
+        return Stream.concat(
+                joinSameRootObjectConditions(left,leftOwner,right,rightOwner),
+                Stream.of(joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner)));
+    }
+
+
+    public static Stream<AslFieldFieldQueryCondition> archetypeAnchorConditions(
+            PathCohesionTreeNode leftNode, AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
+        return Stream.concat(
+                joinSameRootObjectConditions(left,leftOwner,right,rightOwner),
+                Stream.of(joinCItemNumCondition(leftNode, left, leftOwner, right, rightOwner)));
+    }
+
+    private static Stream<AslFieldFieldQueryCondition> joinSameRootObjectConditions(AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner){
         AslSourceRelation parentRelation = leftOwner.getType();
         if (!EnumSet.of(AslSourceRelation.COMPOSITION, AslSourceRelation.EHR_STATUS, AslSourceRelation.FOLDER)
                 .contains(parentRelation)) {
@@ -527,20 +543,16 @@ public final class AslUtils {
                 .contains(childRelation)) {
             throw new IllegalArgumentException("unexpected descendant relation type %s".formatted(childRelation));
         }
-
         return switch (parentRelation) {
             case EHR_STATUS -> Stream.of(
-                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
-                    joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
-                // l.vo_id == r.vo_id and l.num == r.parent_num
+                    joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner));
+            // l.vo_id == r.vo_id and l.num == r.parent_num
             case COMPOSITION -> Stream.of(
-                    joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner),
-                    joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
-                // l.ehr_id == r.ehr_id and l.folder_idx = r.folder_idx and l.num == r.parent_num
+                    joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner));
+            // l.ehr_id == r.ehr_id and l.folder_idx = r.folder_idx and l.num == r.parent_num
             case FOLDER -> Stream.of(
                     joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner),
-                    joinColumnEqualCondition(AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner),
-                    joinNumEqualParentNumCondition(left, leftOwner, right, rightOwner));
+                    joinColumnEqualCondition(AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner));
             case AUDIT_DETAILS -> throw new IllegalArgumentException(
                     "Path child condition not applicable to AUDIT_DETAILS");
             case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
@@ -553,10 +565,20 @@ public final class AslUtils {
             AslStructureQuery leftOwner,
             AslQuery right,
             AslStructureQuery rightOwner) {
+        return joinColumnEqualToColumnCondition(column,left,leftOwner,column,right,rightOwner);
+    }
+
+    private static AslFieldFieldQueryCondition joinColumnEqualToColumnCondition(
+            AslStructureColumn leftColumn,
+            AslQuery left,
+            AslStructureQuery leftOwner,
+            AslStructureColumn rightColumn,
+            AslQuery right,
+            AslStructureQuery rightOwner){
         return new AslFieldFieldQueryCondition(
-                findFieldForOwner(column, left.getSelect(), leftOwner),
+                findFieldForOwner(leftColumn, left.getSelect(), leftOwner),
                 AslConditionOperator.EQ,
-                findFieldForOwner(column, right.getSelect(), rightOwner));
+                findFieldForOwner(rightColumn, right.getSelect(), rightOwner));
     }
 
     private static Stream<AslFieldFieldQueryCondition> joinNumCapBetweenConditions(
@@ -587,10 +609,24 @@ public final class AslUtils {
                     AslConditionOperator.EQ,
                     new AslConstantField<>(Integer.class, 0, FieldSource.NONE, null));
         } else {
+            return joinColumnEqualToColumnCondition(AslStructureColumn.NUM, left, leftOwner,AslStructureColumn.PARENT_NUM, right, rightOwner);
+        }
+    }
+
+    private static AslFieldFieldQueryCondition joinCItemNumCondition(
+            final PathCohesionTreeNode leftNode, AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
+        if (leftOwner.isRoot()) {
+            return new AslFieldFieldQueryCondition(
+                    findFieldForOwner(AslStructureColumn.C_ITEM_NUM, right.getSelect(), rightOwner),
+                    AslConditionOperator.EQ,
+                    new AslConstantField<>(Integer.class, 0, FieldSource.NONE, null));
+        } else if(PathInfo.isArchetypeNode(leftNode)){
             return new AslFieldFieldQueryCondition(
                     findFieldForOwner(AslStructureColumn.NUM, left.getSelect(), leftOwner),
                     AslConditionOperator.EQ,
-                    findFieldForOwner(AslStructureColumn.PARENT_NUM, right.getSelect(), rightOwner));
+                    findFieldForOwner(AslStructureColumn.C_ITEM_NUM, right.getSelect(), rightOwner));
+        } else {
+            return joinColumnEqualCondition(AslStructureColumn.C_ITEM_NUM,left,leftOwner,right,rightOwner);
         }
     }
 }
