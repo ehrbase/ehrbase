@@ -1,0 +1,142 @@
+
+########################################################################################################################
+Single qualified path >>>
+
+SELECT
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[at0009]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value
+FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+
+>>>
+
+o: OBSERVATION[openEHR-EHR-OBSERVATION.ooo.v1]: []
+  data[at0001]: [SKIPPED]
+    events[at0002]: [SKIPPED]
+      data[at0003]: [SKIPPED]
+        items[at0004]: [SKIPPED]
+          items[at0009]: [ARCHETYPE_ANCHOR]
+            items[openEHR-EHR-CLUSTER.cl.v0]: [PARENT_CHILD]
+              items[at0005]: [SKIPPED]
+                items[at0006]: [ARCHETYPE_ANCHOR]
+                  value: []
+
+
+########################################################################################################################
+Single qualified path, no root archetype >>>
+
+SELECT
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[at0009]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value
+FROM OBSERVATION o
+
+>>>
+
+o: OBSERVATION: []
+  data[at0001]: [PARENT_CHILD]
+    events[at0002]: [PARENT_CHILD]
+      data[at0003]: [PARENT_CHILD]
+        items[at0004]: [PARENT_CHILD]
+          items[at0009]: [PARENT_CHILD]
+            items[openEHR-EHR-CLUSTER.cl.v0]: [PARENT_CHILD]
+              items[at0005]: [SKIPPED]
+                items[at0006]: [ARCHETYPE_ANCHOR]
+                  value: []
+
+
+########################################################################################################################
+Single partly qualified path >>>
+
+SELECT
+o/data[at0001]/events[at0002]/data/items[at0004]/items[at0009]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value
+FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+
+>>>
+
+o: OBSERVATION[openEHR-EHR-OBSERVATION.ooo.v1]: []
+  data[at0001]: [SKIPPED]
+    events[at0002]: [ARCHETYPE_ANCHOR]
+      data: [PARENT_CHILD]
+        items[at0004]: [PARENT_CHILD]
+          items[at0009]: [PARENT_CHILD]
+            items[openEHR-EHR-CLUSTER.cl.v0]: [PARENT_CHILD]
+              items[at0005]: [SKIPPED]
+                items[at0006]: [ARCHETYPE_ANCHOR]
+                  value: []
+
+
+########################################################################################################################
+Multiple qualified paths, sibling conditions >>>
+
+SELECT
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
+o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value,
+o/data[at0001]/events[at0002]/data[at0003]/items[at0007]/value
+FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+
+>>>
+
+o: OBSERVATION[openEHR-EHR-OBSERVATION.ooo.v1]: []
+  data[at0001]: [SKIPPED]
+    events[at0002]: [SKIPPED]
+      data[at0003]: [SKIPPED]
+        items[at0004]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+          items[openEHR-EHR-CLUSTER.cl.v0]: [PARENT_CHILD]
+            items[at0005]: [SKIPPED]
+              items[at0006]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+                value: []
+              items[at0009]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+                value: []
+        items[at0007]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+          value: []
+        items[at0008]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+          value: []
+
+
+########################################################################################################################
+Multiple qualified paths, prefer skipping children >>>
+
+SELECT
+o/data[at0001]/events[at0002]/data[at0003]/items[at0006]/value,
+o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/items[at0007]/value
+FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+
+>>>
+
+o: OBSERVATION[openEHR-EHR-OBSERVATION.ooo.v1]: []
+  data[at0001]: [SKIPPED]
+    events[at0002]: [SKIPPED]
+      data[at0003]: [ARCHETYPE_ANCHOR]
+        items[at0006]: [PARENT_CHILD]
+          value: []
+        items[at0008]: [SKIPPED]
+          items[at0007]: [NODE_ID_ANCHOR]
+            value: []
+
+
+########################################################################################################################
+Multiple qualified paths, sibling conditions, node id anchor >>>
+
+SELECT
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
+o/data[at0001]/events[at0002]/state[at0003]/items[at0008]/value,
+o/data[at0001]/events[at0002]/state[at0003]/items[at0007]/value
+FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+
+>>>
+
+o: OBSERVATION[openEHR-EHR-OBSERVATION.ooo.v1]: []
+  data[at0001]: [SKIPPED]
+    events[at0002]: [ARCHETYPE_ANCHOR]
+      data[at0003]: [SKIPPED]
+        items[at0004]: [NODE_ID_ANCHOR]
+          items[openEHR-EHR-CLUSTER.cl.v0]: [PARENT_CHILD]
+            items[at0005]: [SKIPPED]
+              items[at0006]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+                value: []
+              items[at0009]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+                value: []
+      state[at0003]: [SKIPPED]
+        items[at0007]: [NODE_ID_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+          value: []
+        items[at0008]: [NODE_ID_ANCHOR, SAME_PARENT_AS_SIBLINGS]
+          value: []
