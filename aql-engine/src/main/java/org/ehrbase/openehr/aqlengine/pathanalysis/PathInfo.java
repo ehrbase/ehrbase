@@ -80,7 +80,6 @@ public final class PathInfo {
     private static final Set<NodeCategory> STRUCTURE_NODE_CATEGORIES =
             EnumSet.of(NodeCategory.STRUCTURE, NodeCategory.STRUCTURE_INTERMEDIATE);
 
-
     /**
      * The number of (structure) children and if data is retrieved determines how a path node needs to be joined.
      *
@@ -192,49 +191,80 @@ public final class PathInfo {
         Set<PathCohesionTreeNode> skippableNodesResult = new LinkedHashSet<>();
         findSkippableNodesInPathTree(cohesionTreeRoot, false, skippableNodesResult);
         this.skippableNodes = Collections.unmodifiableSet(skippableNodesResult);
-        this.nodeToJoinConditionTypes = Collections.unmodifiableMap(determineJoinConditionTypes(cohesionTreeRoot, this.skippableNodes));
+        this.nodeToJoinConditionTypes =
+                Collections.unmodifiableMap(determineJoinConditionTypes(cohesionTreeRoot, this.skippableNodes));
     }
 
-    private Map<PathCohesionTreeNode, Set<PathJoinConditionType>> determineJoinConditionTypes(PathCohesionTreeNode cohesionTreeRoot, Set<PathCohesionTreeNode> skippableNodes) {
-        Set<PathCohesionTreeNode> havingNodeIdAnchor = new HashSet<>();
+    private Map<PathCohesionTreeNode, Set<PathJoinConditionType>> determineJoinConditionTypes(
+            PathCohesionTreeNode cohesionTreeRoot, Set<PathCohesionTreeNode> skippableNodes) {
 
-        return cohesionTreeRoot.streamDepthFirst().collect(Collectors.toMap(node -> node, node -> {
-            if (!STRUCTURE_NODE_CATEGORIES.contains(getNodeCategory(node))) {
-                return Set.of();
-            }
+        return cohesionTreeRoot
+                .streamDepthFirst()
+                .collect(Collectors.toMap(
+                        node -> node,
+                        node -> {
+                            if (!STRUCTURE_NODE_CATEGORIES.contains(getNodeCategory(node))) {
+                                return Set.of();
+                            }
 
-            PathCohesionTreeNode parent = node.getParent();
-            if(parent != null && parent.getChildren().size() > 1 && isMultipleValued(parent)) {
-                havingNodeIdAnchor.add(node);
+                            PathCohesionTreeNode parent = node.getParent();
+                            if (skippableNodes.contains(node)) {
+                                return Set.of(PathJoinConditionType.SKIPPED);
+                            }
+                            if (parent == null) {
+                                return Set.of();
+                            } else if (!skippableNodes.contains(parent)) {
+                                return Set.of(PathJoinConditionType.PARENT_CHILD);
+                            } else {
+                                PathJoinConditionType jt;
+                                if (hasNodeIdAnchor(node)) {
+                                    jt = PathJoinConditionType.NODE_ID_ANCHOR;
+                                } else {
+                                    jt = PathJoinConditionType.ARCHETYPE_ANCHOR;
+                                }
+                                boolean sameParentAsSiblings =
+                                        parent.getChildren().size() > 1;
+                                if (sameParentAsSiblings) {
+                                    LinkedHashSet<PathJoinConditionType> ret = LinkedHashSet.newLinkedHashSet(2);
+                                    ret.add(jt);
+                                    ret.add(PathJoinConditionType.SAME_PARENT_AS_SIBLINGS);
+                                    return Collections.unmodifiableSet(ret);
+                                } else {
+                                    return Set.of(jt);
+                                }
+                            }
+                        },
+                        (a, b) -> {
+                            throw new UnsupportedOperationException();
+                        },
+                        LinkedHashMap::new));
+    }
+
+    private boolean hasNodeIdAnchor(final PathCohesionTreeNode node) {
+        PathCohesionTreeNode currentNode = node.getParent();
+        boolean hasAncestorWithFork = false;
+        boolean hasMultipleValuedAncestor = false;
+        while (currentNode != null) {
+            currentNode = currentNode.getParent();
+            if (hasArchetypeNodeIdPredicateWithValuePrefix(
+                    currentNode.getAttribute().getPredicateOrOperands(), "openEHR-")) {
+                return false;
             }
-            if (skippableNodes.contains(node)) {
-                return Set.of(PathJoinConditionType.SKIPPED);
+            if (currentNode.getChildren().size() > 1) {
+                hasAncestorWithFork = true;
             }
-            if (parent == null) {
-                return Set.of();
-            } else if (!skippableNodes.contains(parent)) {
-                return Set.of(PathJoinConditionType.PARENT_CHILD);
-            } else {
-                PathJoinConditionType jt;
-                if (havingNodeIdAnchor.contains(parent)) {
-                    jt = PathJoinConditionType.NODE_ID_ANCHOR;
-                } else {
-                    jt = PathJoinConditionType.ARCHETYPE_ANCHOR;
-                }
-                boolean sameParentAsSiblings = parent.getChildren().size() > 1;
-                if (sameParentAsSiblings) {
-                    return Set.of(jt, PathJoinConditionType.SAME_PARENT_AS_SIBLINGS);
-                } else {
-                    return Set.of(jt);
-                }
+            if (isMultipleValued(currentNode)) {
+                hasMultipleValuedAncestor = true;
             }
-        }, (a, b) -> {throw new UnsupportedOperationException();}, LinkedHashMap::new));
+            if (hasAncestorWithFork && hasMultipleValuedAncestor) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean findSkippableNodesInPathTree(
-            PathCohesionTreeNode node,
-            boolean containingArchetypeKnown,
-            Set<PathCohesionTreeNode> skippableNodes) {
+            PathCohesionTreeNode node, boolean containingArchetypeKnown, Set<PathCohesionTreeNode> skippableNodes) {
 
         int depth = node.getDepth();
         JoinMode joinMode = joinMode(node);
@@ -252,9 +282,7 @@ public final class PathInfo {
 
         if (!containingArchetypeKnown || joinMode == JoinMode.ROOT || hasFilters) {
             boolean isArchetype = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "openEHR-");
-            node.getChildren()
-                    .forEach(child -> findSkippableNodesInPathTree(
-                            child, isArchetype, skippableNodes));
+            node.getChildren().forEach(child -> findSkippableNodesInPathTree(child, isArchetype, skippableNodes));
             return false;
         } else if (STRUCTURE_NODE_CATEGORIES.contains(nodeCategory)) {
             boolean isAtCode = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "at");
