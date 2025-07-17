@@ -134,7 +134,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 responseRepresentation,
                 uri,
                 headerList,
-                RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null,
+                RETURN_REPRESENTATION.equals(prefer) ? new CompositionResponseData(null, null) : null,
                 compoObj.getArchetypeDetails().getTemplateId().getValue());
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
@@ -217,7 +217,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     responseRepresentation,
                     uri,
                     headerList,
-                    RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null,
+                    RETURN_REPRESENTATION.equals(prefer) ? new CompositionResponseData(null, null) : null,
                     compoObj.getArchetypeDetails().getTemplateId().getValue());
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
@@ -344,7 +344,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 responseRepresentation,
                 uri,
                 headerList,
-                () -> new CompositionResponseData(null, null),
+                new CompositionResponseData(null, null),
                 null);
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
@@ -370,9 +370,9 @@ public class OpenehrCompositionController extends BaseController implements Comp
      *                               the response should be delivered in, as given by request
      * @param uri                    Location of resource
      * @param headerList             List of headers to be set for response
-     * @param factory                Lambda function to constructor of desired object
+     * @param compositionData        The composition data (can be null)
      * @param contextTemplateId      The template id of the composition, if available a priori in the caller context
-     * @return
+     * @return A response containing the headers and, if not null, the composition data (the body of the response)
      */
     private <T extends CompositionResponseData> Optional<InternalResponse<T>> buildCompositionResponseData(
             UUID ehrId,
@@ -381,11 +381,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             CompositionRepresentation responseRepresentation,
             URI uri,
             List<String> headerList,
-            Supplier<T> factory,
+            @Nullable T compositionData,
             @Nullable String contextTemplateId) {
-        // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
-        // lambda request
-        T minimalOrRepresentation = factory.get();
 
         // do minimal scope steps
         // create and supplement headers with data depending on which headers are requested
@@ -408,10 +405,9 @@ public class OpenehrCompositionController extends BaseController implements Comp
         // if response data objects was created as "representation" do all task from wider scope, too
         // if (minimalOrRepresentation.getClass().equals(CompositionResponseData.class)) {     // TODO make
         // Optional.ofNull....
-        if (minimalOrRepresentation != null) {
+        if (compositionData != null) {
             // when this "if" is true the following casting can be executed and data manipulated by reference (handled
             // by temporary variable)
-            CompositionResponseData objByReference = minimalOrRepresentation;
 
             CompositionDto compositionDto = compositionService
                     .retrieve(ehrId, compositionId, version)
@@ -421,8 +417,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             templateId = compositionDto.getTemplateId();
 
             StructuredString ss = compositionService.serialize(compositionDto, responseRepresentation.format);
-            objByReference.setValue(ss.getValue());
-            objByReference.setFormat(ss.getFormat());
+            compositionData.setValue(ss.getValue());
+            compositionData.setFormat(ss.getFormat());
 
             // finally set last header
             respHeaders.setContentType(responseRepresentation.mediaType);
@@ -440,7 +436,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 TEMPLATE_ID,
                 templateId);
 
-        return Optional.of(new InternalResponse<>(minimalOrRepresentation, respHeaders));
+        return Optional.of(new InternalResponse<>(compositionData, respHeaders));
     }
 
     private Optional<String> getUidFrom(Composition composition) {
