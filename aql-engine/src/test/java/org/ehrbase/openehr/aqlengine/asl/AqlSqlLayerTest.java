@@ -129,7 +129,7 @@ public class AqlSqlLayerTest {
     private AslRootQuery buildSqlQuery(String query) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(query);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         return aqlSqlLayer.buildAslRootQuery(queryWrapper);

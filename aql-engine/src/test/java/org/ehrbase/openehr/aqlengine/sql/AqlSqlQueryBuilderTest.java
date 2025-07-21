@@ -102,7 +102,7 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
 
         new AqlEhrPathPostProcessor().afterParseAql(aqlQuery, null, null);
         new AqlFromEhrOptimisationPostProcessor().afterParseAql(aqlQuery, null, null);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
@@ -138,7 +138,7 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
     void canBuildSqlQuery(String aql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
@@ -160,7 +160,7 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }
@@ -174,7 +174,7 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
         FROM EHR
         CONTAINS FOLDER f
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
@@ -199,7 +199,7 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
               c/uid/value
             FROM FOLDER CONTAINS COMPOSITION c
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
@@ -230,7 +230,7 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
             cluster/items[at0001]/value/data
         FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         PathInfo pathInfo = queryWrapper.pathInfos().entrySet().stream()
@@ -250,7 +250,7 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
     @MethodSource
     void aslGraphRegression(String name, String aql, String aslGraph) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringWhitespace(aslGraph);

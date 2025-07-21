@@ -41,7 +41,7 @@ class AslGraphTest {
                   CONTAINS COMPOSITION c1
                 """);
 
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         AslRootQuery rootQuery = new AqlSqlLayer(null, () -> "node").buildAslRootQuery(queryWrapper);
 
