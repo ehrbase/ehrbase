@@ -389,7 +389,7 @@ class AslCleanupPostProcessorTest {
             processor.afterParseAql(aqlQuery, null, null);
         }
 
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         return new AslResult(aqlQuery, queryWrapper, aslQuery);
