@@ -42,11 +42,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslCoalesceJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
@@ -67,6 +69,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
@@ -94,6 +97,27 @@ public final class AslUtils {
             Tables.EHR_.ID.getUnqualifiedName().first();
     private static final String COMP_DATA_TABLE_ROOT_CONCEPT_FIELD =
             Tables.COMP_VERSION.ROOT_CONCEPT.getUnqualifiedName().first();
+
+    static final class AliasProvider {
+        private final Map<String, Integer> aliasCounters = new HashMap<>();
+
+        public String uniqueAlias(String alias) {
+            return alias + "_" + aliasCounters.compute(alias, (k, v) -> v == null ? 0 : v + 1);
+        }
+    }
+
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_PARENT_RELATIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER,
+            AslSourceRelation.EHR);
+    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_CONDITIONS = EnumSet.of(
+            AslSourceRelation.COMPOSITION,
+            AslSourceRelation.EHR_STATUS,
+            AslSourceRelation.FOLDER // FOLDER CONTAINS FOLDER
+            );
+
+    private AslUtils() {}
 
     public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedHashMap(
             Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
@@ -139,27 +163,6 @@ public final class AslUtils {
             case null -> Stream.empty();
         };
     }
-
-    static final class AliasProvider {
-        private final Map<String, Integer> aliasCounters = new HashMap<>();
-
-        public String uniqueAlias(String alias) {
-            return alias + "_" + aliasCounters.compute(alias, (k, v) -> v == null ? 0 : v + 1);
-        }
-    }
-
-    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_PARENT_RELATIONS = EnumSet.of(
-            AslSourceRelation.COMPOSITION,
-            AslSourceRelation.EHR_STATUS,
-            AslSourceRelation.FOLDER,
-            AslSourceRelation.EHR);
-    private static final EnumSet<AslSourceRelation> SUPPORTED_DESCENDANT_CONDITIONS = EnumSet.of(
-            AslSourceRelation.COMPOSITION,
-            AslSourceRelation.EHR_STATUS,
-            AslSourceRelation.FOLDER // FOLDER CONTAINS FOLDER
-            );
-
-    private AslUtils() {}
 
     public static AslSourceRelation getTargetType(AslQuery target) {
         if (target instanceof AslStructureQuery sq) {
@@ -545,6 +548,29 @@ public final class AslUtils {
                 joinSameRootObjectConditions(left, leftOwner, right, rightOwner),
                 Stream.of(joinCItemNumCondition(leftNode, left, leftOwner, right, rightOwner)),
                 joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
+    }
+
+    public static Stream<AslCoalesceJoinCondition> sameParentAsSiblingsCondition(
+            final AslEncapsulatingQuery query,
+            final AslQuery leftProvider,
+            final AslQuery rightProvider,
+            final AslStructureQuery rightOwner) {
+        AslColumnField rightParentNumField =
+                AslUtils.findFieldForOwner(AslStructureColumn.PARENT_NUM, rightProvider.getSelect(), rightOwner);
+
+        return query.getChildren().stream()
+                .filter(jp -> jp.getRight().getLeft() == leftProvider)
+                .map(Pair::getLeft)
+                .map(q -> q.getSelect().stream()
+                        .filter(AslColumnField.class::isInstance)
+                        .map(AslColumnField.class::cast)
+                        .filter(f ->
+                                AslStructureColumn.PARENT_NUM.getFieldName().equals(f.getColumnName()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Field '%s' does not exist for query '%s'"
+                                .formatted(AslStructureColumn.PARENT_NUM.getFieldName(), q.getAlias()))))
+                .map(pnf -> new AslCoalesceJoinCondition(
+                        new AslFieldFieldQueryCondition(rightParentNumField, AslConditionOperator.EQ, pnf), true));
     }
 
     private static Stream<AslFieldFieldQueryCondition> joinSameRootObjectConditions(
