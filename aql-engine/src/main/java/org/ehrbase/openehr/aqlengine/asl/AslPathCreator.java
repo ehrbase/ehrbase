@@ -450,6 +450,7 @@ final class AslPathCreator {
         AslQuery parentProvider = parentJoinMode == PathInfo.JoinMode.ROOT ? parent.provider() : parent.owner();
         AslJoinCondition[] joinConditions = Stream.concat(
                         joinConditionsForNode(
+                                        query,
                                         pathInfo,
                                         parentNode,
                                         new OwnerProviderTuple(parent.owner(), parentProvider),
@@ -479,6 +480,7 @@ final class AslPathCreator {
         List<AslJoinCondition> childNodeJoinConditions = AslUtils.<AslJoinCondition>concatStreams(
                         parentFiltersAsJoinCondition(parent, currentNode).stream(),
                         joinConditionsForNode(
+                                        query,
                                         pathInfo,
                                         parentNode,
                                         parent,
@@ -492,6 +494,7 @@ final class AslPathCreator {
     }
 
     private static Stream<AslProvidesJoinCondition> joinConditionsForNode(
+            final AslEncapsulatingQuery query,
             PathInfo pathInfo,
             PathCohesionTreeNode parentNode,
             OwnerProviderTuple parent,
@@ -513,7 +516,8 @@ final class AslPathCreator {
                     (AslStructureQuery) parent.owner(),
                     nodeQuery.provider(),
                     (AslStructureQuery) nodeQuery.owner());
-            case SAME_PARENT_AS_SIBLINGS -> null; // TODO
+            case SAME_PARENT_AS_SIBLINGS -> AslUtils.sameParentAsSiblingsCondition(
+                    query, parent.provider(), nodeQuery.provider(), (AslStructureQuery) nodeQuery.owner());
             case SKIPPED -> throw new IllegalArgumentException("Cannot build join condition for skipped node");
         });
     }
