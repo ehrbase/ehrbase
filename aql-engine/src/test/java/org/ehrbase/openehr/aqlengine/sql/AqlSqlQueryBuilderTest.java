@@ -88,7 +88,12 @@ class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-            SELECT c/feeder_audit/original_content FROM COMPOSITION c
+            SELECT
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
+o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
+o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
+FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
         """);
 
         System.out.println("/*");
@@ -97,7 +102,7 @@ class AqlSqlQueryBuilderTest {
 
         new AqlEhrPathPostProcessor().afterParseAql(aqlQuery, null, null);
         new AqlFromEhrOptimisationPostProcessor().afterParseAql(aqlQuery, null, null);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
@@ -133,7 +138,7 @@ class AqlSqlQueryBuilderTest {
     void canBuildSqlQuery(String aql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
@@ -155,7 +160,7 @@ class AqlSqlQueryBuilderTest {
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
 
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }
@@ -169,7 +174,7 @@ class AqlSqlQueryBuilderTest {
         FROM EHR
         CONTAINS FOLDER f
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
@@ -194,7 +199,7 @@ class AqlSqlQueryBuilderTest {
               c/uid/value
             FROM FOLDER CONTAINS COMPOSITION c
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
@@ -225,7 +230,7 @@ class AqlSqlQueryBuilderTest {
             cluster/items[at0001]/value/data
         FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         PathInfo pathInfo = queryWrapper.pathInfos().entrySet().stream()
@@ -245,7 +250,7 @@ class AqlSqlQueryBuilderTest {
     @MethodSource
     void aslGraphRegression(String name, String aql, String aslGraph) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringWhitespace(aslGraph);

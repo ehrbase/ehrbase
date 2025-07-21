@@ -170,7 +170,10 @@ public final class PathInfo {
     private final Map<PathCohesionTreeNode, NodeInfo> nodeTypeInfo;
     private final Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause;
 
-    public PathInfo(PathCohesionTreeNode cohesionTreeRoot, Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause) {
+    public PathInfo(
+            PathCohesionTreeNode cohesionTreeRoot,
+            Map<IdentifiedPath, Set<QueryClause>> pathToQueryClause,
+            boolean enableNodeSkipping) {
         this.cohesionTreeRoot = cohesionTreeRoot;
         this.pathAttributeInfo = cohesionTreeRoot.getPaths().stream().collect(Collectors.toMap(ip -> ip, ip -> {
             AbstractContainmentExpression root = ip.getRoot();
@@ -188,9 +191,13 @@ public final class PathInfo {
 
         this.nodeTypeInfo = fillNodeTypeInfo(cohesionTreeRoot, -1, new HashMap<>());
         this.pathToQueryClause = pathToQueryClause;
-        Set<PathCohesionTreeNode> skippableNodesResult = new LinkedHashSet<>();
-        findSkippableNodesInPathTree(cohesionTreeRoot, false, skippableNodesResult);
-        this.skippableNodes = Collections.unmodifiableSet(skippableNodesResult);
+        if (enableNodeSkipping) {
+            Set<PathCohesionTreeNode> skippableNodesResult = new LinkedHashSet<>();
+            findSkippableNodesInPathTree(cohesionTreeRoot, false, skippableNodesResult);
+            this.skippableNodes = Collections.unmodifiableSet(skippableNodesResult);
+        } else {
+            this.skippableNodes = Collections.emptySet();
+        }
         this.nodeToJoinConditionTypes =
                 Collections.unmodifiableMap(determineJoinConditionTypes(cohesionTreeRoot, this.skippableNodes));
     }
@@ -411,7 +418,9 @@ public final class PathInfo {
     }
 
     public static Map<ContainsWrapper, PathInfo> createPathInfos(
-            AqlQuery aqlQuery, Map<AbstractContainmentExpression, ContainsWrapper> containsDescs) {
+            AqlQuery aqlQuery,
+            Map<AbstractContainmentExpression, ContainsWrapper> containsDescs,
+            boolean enableNodeSkipping) {
         Map<AbstractContainmentExpression, PathCohesionTreeNode> pathCohesion =
                 PathCohesionAnalysis.analyzePathCohesion(aqlQuery);
 
@@ -438,7 +447,7 @@ public final class PathInfo {
                         && RmConstants.EHR.equals(cce.getType())))
                 .collect(Collectors.toMap(
                         Entry::getValue,
-                        e -> new PathInfo(pathCohesion.get(e.getKey()), pathToQueryClause),
+                        e -> new PathInfo(pathCohesion.get(e.getKey()), pathToQueryClause, enableNodeSkipping),
                         (a, b) -> null,
                         LinkedHashMap::new));
     }

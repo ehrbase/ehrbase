@@ -106,9 +106,10 @@ public final class AqlQueryWrapper {
      * Provides a wrapper for the AqlQuery providing context and convenience methods.
      *
      * @param aqlQuery
+     * @param enableNodeSkipping
      * @return
      */
-    public static AqlQueryWrapper create(AqlQuery aqlQuery) {
+    public static AqlQueryWrapper create(AqlQuery aqlQuery, final boolean enableNodeSkipping) {
         Map<AbstractContainmentExpression, ContainsWrapper> containsDescs = new LinkedHashMap<>();
 
         ContainsChain fromClause;
@@ -141,7 +142,8 @@ public final class AqlQueryWrapper {
                 .map(o -> buildOrderByDescriptor(o, containsDescs))
                 .toList();
 
-        Map<ContainsWrapper, PathInfo> pathInfos = PathInfo.createPathInfos(aqlQuery, containsDescs);
+        Map<ContainsWrapper, PathInfo> pathInfos =
+                PathInfo.createPathInfos(aqlQuery, containsDescs, enableNodeSkipping);
 
         return new AqlQueryWrapper(
                 aqlQuery.getSelect().isDistinct(),
