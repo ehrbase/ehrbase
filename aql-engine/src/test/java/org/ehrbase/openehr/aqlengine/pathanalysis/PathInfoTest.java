@@ -46,7 +46,7 @@ class PathInfoTest {
     @MethodSource
     void pathSkipping(String name, String aql, String cohesionTrees) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, true);
         String actualTrees = queryWrapper.pathInfos().entrySet().stream()
                 .map(e -> e.getKey().alias() + ": "
                         + renderTree(

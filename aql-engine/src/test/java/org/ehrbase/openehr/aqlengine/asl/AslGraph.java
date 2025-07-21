@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslCoalesceJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
@@ -195,6 +196,10 @@ public class AslGraph {
                                     fieldToGraph(level, c.getLeftField()),
                                     c.getOperator(),
                                     fieldToGraph(level, c.getRightField())));
+            case AslCoalesceJoinCondition cjc -> indented(
+                    level,
+                    "COALESCE(%s, %s)"
+                            .formatted(conditionToGraph(-1, cjc.getTernaryCondition()), cjc.isDefaultValue()));
         };
     }
 
@@ -276,6 +281,9 @@ public class AslGraph {
     }
 
     private static <T> String indented(int level, String str) {
+        if (level == -1) {
+            return str;
+        }
         String prefix = StringUtils.repeat("  ", level);
         return prefix + str + "\n";
     }

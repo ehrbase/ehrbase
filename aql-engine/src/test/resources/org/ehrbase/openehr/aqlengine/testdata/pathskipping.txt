@@ -118,8 +118,8 @@ Multiple qualified paths, sibling conditions, node id anchor >>>
 SELECT
 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
-o/data[at0001]/events[at0002]/state[at0003]/items[at0008]/value,
-o/data[at0001]/events[at0002]/state[at0003]/items[at0007]/value
+o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
+o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
 FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
 
 >>>
@@ -135,7 +135,7 @@ o: OBSERVATION[openEHR-EHR-OBSERVATION.ooo.v1]: []
                 value: []
               items[at0009]: [ARCHETYPE_ANCHOR, SAME_PARENT_AS_SIBLINGS]
                 value: []
-      state[at0003]: [SKIPPED]
+      state[at0006]: [SKIPPED]
         items[at0007]: [NODE_ID_ANCHOR, SAME_PARENT_AS_SIBLINGS]
           value: []
         items[at0008]: [NODE_ID_ANCHOR, SAME_PARENT_AS_SIBLINGS]

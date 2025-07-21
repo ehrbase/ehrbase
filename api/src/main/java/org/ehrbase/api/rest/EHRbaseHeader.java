@@ -40,4 +40,9 @@ public final class EHRbaseHeader {
      * Used by the /query endpoint to provide the database query plan in the return metadata.
      */
     public static final String AQL_QUERY_PLAN = "EHRbase-AQL-Query-Plan";
+
+    /**
+     * Used by the /query endpoint to provide the database query plan in the return metadata.
+     */
+    public static final String AQL_PATH_SKIPPING = "EHRbase-AQL-Path-Skipping";
 }

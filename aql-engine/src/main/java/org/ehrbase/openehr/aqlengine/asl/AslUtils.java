@@ -554,23 +554,32 @@ public final class AslUtils {
             final AslEncapsulatingQuery query,
             final AslQuery leftProvider,
             final AslQuery rightProvider,
-            final AslStructureQuery rightOwner) {
+            final AslStructureQuery rightOwner,
+            PathCohesionTreeNode currentNode,
+            Function<PathCohesionTreeNode, OwnerProviderTuple> nodeToSq) {
         AslColumnField rightParentNumField =
                 AslUtils.findFieldForOwner(AslStructureColumn.PARENT_NUM, rightProvider.getSelect(), rightOwner);
 
-        return query.getChildren().stream()
-                .filter(jp -> jp.getRight().getLeft() == leftProvider)
-                .map(Pair::getLeft)
-                .map(q -> q.getSelect().stream()
-                        .filter(AslColumnField.class::isInstance)
-                        .map(AslColumnField.class::cast)
-                        .filter(f ->
-                                AslStructureColumn.PARENT_NUM.getFieldName().equals(f.getColumnName()))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Field '%s' does not exist for query '%s'"
-                                .formatted(AslStructureColumn.PARENT_NUM.getFieldName(), q.getAlias()))))
-                .map(pnf -> new AslCoalesceJoinCondition(
-                        new AslFieldFieldQueryCondition(rightParentNumField, AslConditionOperator.EQ, pnf), true));
+        Stream<PathCohesionTreeNode> siblings =
+                currentNode.getParent().getChildren().stream().filter(c -> c != currentNode);
+
+        return siblings.map(nodeToSq).filter(Objects::nonNull).flatMap(csq -> {
+            Stream<AslQuery> sibling = query.getChildren().stream()
+                    .skip(1)
+                    .filter(jp -> jp.getRight().getLeft() == leftProvider)
+                    .filter(jp -> jp.getLeft() == csq.provider())
+                    .map(Pair::getLeft);
+            return sibling.map(q -> q.getSelect().stream()
+                            .filter(AslColumnField.class::isInstance)
+                            .map(AslColumnField.class::cast)
+                            .filter(f ->
+                                    AslStructureColumn.PARENT_NUM.getFieldName().equals(f.getColumnName()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Field '%s' does not exist for query '%s'"
+                                    .formatted(AslStructureColumn.PARENT_NUM.getFieldName(), q.getAlias()))))
+                    .map(pnf -> new AslCoalesceJoinCondition(
+                            new AslFieldFieldQueryCondition(rightParentNumField, AslConditionOperator.EQ, pnf), true));
+        });
     }
 
     private static Stream<AslFieldFieldQueryCondition> joinSameRootObjectConditions(
