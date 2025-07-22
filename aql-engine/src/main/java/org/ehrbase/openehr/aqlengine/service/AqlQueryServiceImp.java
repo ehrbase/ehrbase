@@ -140,8 +140,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
                 // aql debug options
                 if (aqlQueryContext.showExecutedSql()) {
                     aqlQueryContext.setMetaProperty(
-                            AqlQueryContext.EhrbaseMetaProperty.EXECUTED_SQL,
-                            AqlQueryRepository.getQuerySql(preparedQuery));
+                            AqlQueryContext.EhrbaseMetaProperty.EXECUTED_SQL, preparedQuery.getQuerySql());
                 }
                 if (aqlQueryContext.showQueryPlan()) {
                     // for dry-run omit analyze
