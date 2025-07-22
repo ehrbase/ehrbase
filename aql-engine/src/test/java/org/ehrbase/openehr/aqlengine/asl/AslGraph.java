@@ -199,7 +199,7 @@ public class AslGraph {
             case AslCoalesceJoinCondition cjc -> indented(
                     level,
                     "COALESCE(%s, %s)"
-                            .formatted(conditionToGraph(-1, cjc.getTernaryCondition()), cjc.isDefaultValue()));
+                            .formatted(conditionToGraph(-1, cjc.getTernaryCondition()), cjc.getDefaultValue()));
         };
     }
 

@@ -104,7 +104,7 @@ final class ConditionUtils {
             final AslCoalesceJoinCondition delegate, final AslQueryTables aslQueryToTable) {
         return DSL.condition(DSL.coalesce(
                 fieldJoinCondition(delegate.getTernaryCondition(), aslQueryToTable),
-                DSL.condition(delegate.isDefaultValue())));
+                DSL.condition(DSL.inline(delegate.getDefaultValue()))));
     }
 
     private static Condition fieldJoinCondition(AslFieldFieldQueryCondition ic, AslQueryTables aslQueryToTable) {

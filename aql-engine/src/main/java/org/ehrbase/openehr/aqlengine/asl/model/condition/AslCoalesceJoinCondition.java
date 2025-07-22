@@ -52,7 +52,7 @@ public final class AslCoalesceJoinCondition implements AslProvidesJoinCondition 
         return ternaryCondition;
     }
 
-    public boolean isDefaultValue() {
+    public boolean getDefaultValue() {
         return defaultValue;
     }
 }
