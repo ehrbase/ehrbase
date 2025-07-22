@@ -359,7 +359,7 @@ class ValidationServiceTest {
                 .hasMessage(
                         """
                         Message at /subject/external_ref (/subject/external_ref):  Invariant Namespace_valid failed on type PARTY_REF
-                        Message at /subject/external_ref/namespace (/subject/external_ref/namespace):  Invariant namespace of class EHR_STATUS does not match pattern [[a-zA-Z][a-zA-Z0-9-_:/&+?]*]""");
+                        Message at /subject/external_ref/namespace (/subject/external_ref/namespace):  Invariant namespace of class EHR_STATUS does not match pattern [[a-zA-Z][a-zA-Z0-9_.:\/&?=+-]*]""");
     }
 
     @Test
