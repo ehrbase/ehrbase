@@ -29,6 +29,11 @@ public final class AslConstantField<T extends Constable> extends AslField {
         this.value = value;
     }
 
+    public AslConstantField(Class<T> type, T value) {
+        super(type, FieldSource.NONE, null);
+        this.value = value;
+    }
+
     public T getValue() {
         return value;
     }

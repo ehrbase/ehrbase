@@ -49,6 +49,9 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     @Value("${ehrbase.rest.aql.debugging-enabled:false}")
     boolean debuggingEnabled = false;
 
+    @Value("${ehrbase.aql.path-node-skipping:false}")
+    private boolean pathNodeSkipping = false;
+
     private final StatusService statusService;
     private final HttpServletRequest request;
 
@@ -103,6 +106,16 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     @Override
     public boolean showQueryPlan() {
         return debuggingEnabled && isHeaderTrue(EHRbaseHeader.AQL_QUERY_PLAN);
+    }
+
+    @Override
+    public boolean isPathSkipping() {
+        return debuggingEnabled
+                ? Optional.of(EHRbaseHeader.AQL_PATH_SKIPPING)
+                        .map(request::getHeader)
+                        .map(Boolean::valueOf)
+                        .orElse(pathNodeSkipping)
+                : pathNodeSkipping;
     }
 
     private boolean isHeaderTrue(String header) {
