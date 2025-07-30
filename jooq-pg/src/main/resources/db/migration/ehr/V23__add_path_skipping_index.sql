@@ -16,6 +16,12 @@
  * limitations under the License.
  */
 
+DROP INDEX comp_data_path_idx;
+CREATE INDEX comp_data_path_idx
+    ON ehr.comp_data USING btree
+        (vo_id, parent_num, entity_concept)
+    INCLUDE(rm_entity, entity_attribute, entity_name, num, num_cap, citem_num);
+
 CREATE INDEX IF NOT EXISTS comp_data_path_skip_idx
     ON comp_data USING btree (vo_id, citem_num, num)
-    INCLUDE(entity_concept, rm_entity, entity_attribute, parent_num, num_cap)
+    INCLUDE(entity_concept, rm_entity, entity_attribute, parent_num, num_cap);
