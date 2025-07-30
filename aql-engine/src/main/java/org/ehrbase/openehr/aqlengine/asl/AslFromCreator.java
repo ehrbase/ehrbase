@@ -178,7 +178,7 @@ final class AslFromCreator {
 
         final AslStructureQuery structureQuery =
                 containsSubquery(usedWrapper, requiresVersionJoin, sourceRelation, isOriginalVersion);
-        addContainsSubqueryToContainer(encapsulatingQuery, structureQuery, currentParent, useLeftJoin);
+        addContainsSubqueryToContainer(usedWrapper, encapsulatingQuery, structureQuery, currentParent, useLeftJoin);
 
         OwnerProviderTuple ownerProviderTuple = new OwnerProviderTuple(structureQuery, structureQuery);
         containsToStructureSubQuery.put(usedWrapper, ownerProviderTuple);
@@ -189,6 +189,7 @@ final class AslFromCreator {
     }
 
     private static void addContainsSubqueryToContainer(
+            RmContainsWrapper wrapper,
             AslEncapsulatingQuery container,
             AslStructureQuery toAdd,
             AslStructureQuery joinParent,
@@ -199,12 +200,18 @@ final class AslFromCreator {
             join = null;
         } else {
             JoinType joinType = asLeftJoin ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN;
-            join = new AslJoin(joinParent, joinType, toAdd, aslJoinCondition(toAdd, joinParent));
+            RmContainsWrapper parentWrapper = (wrapper.getParent() instanceof RmContainsWrapper rcw) ? rcw : null;
+            join = new AslJoin(
+                    joinParent, joinType, toAdd, aslJoinCondition(parentWrapper, wrapper, toAdd, joinParent));
         }
         container.addChild(toAdd, join);
     }
 
-    private static AslJoinCondition[] aslJoinCondition(AslStructureQuery toAdd, AslStructureQuery joinParent) {
+    private static AslJoinCondition[] aslJoinCondition(
+            RmContainsWrapper parentWrapper,
+            RmContainsWrapper childWrapper,
+            AslStructureQuery toAdd,
+            AslStructureQuery joinParent) {
 
         AslSourceRelation parentType = joinParent.getType();
         AslSourceRelation targetType = toAdd.getType();
@@ -213,7 +220,9 @@ final class AslFromCreator {
                 new AslFolderItemJoinCondition(joinParent, joinParent, targetType, toAdd, toAdd)
             };
         }
-        return AslUtils.descendantJoinConditionProviders(joinParent, joinParent, toAdd, toAdd)
+
+        return AslUtils.descendantJoinConditionProviders(
+                        joinParent, joinParent, toAdd, toAdd, parentWrapper, childWrapper)
                 .map(AslFieldFieldQueryCondition::provideJoinCondition)
                 .toArray(AslJoinCondition[]::new);
     }

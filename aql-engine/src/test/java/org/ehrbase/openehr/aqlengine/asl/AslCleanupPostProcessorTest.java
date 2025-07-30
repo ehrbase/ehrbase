@@ -194,7 +194,6 @@ class AslCleanupPostProcessorTest {
               SELECT
                 sOB_o_0.sOB_o_0_vo_id
                 sOB_o_0.sOB_o_0_num
-                sOB_o_0.sOB_o_0_num_cap
                 sOB_o_0.sOB_o_0_entity_name /* name/value */
               WHERE
                 sOB_o_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.test.v0]]
@@ -209,7 +208,7 @@ class AslCleanupPostProcessorTest {
             sE_el_0: StructureQuery
               SELECT
                 sE_el_0.sE_el_0_vo_id
-                sE_el_0.sE_el_0_num
+                sE_el_0.sE_el_0_citem_num
                 sE_el_0.sE_el_0_entity_name /* name/value */
                 sE_el_0.sE_el_0_data
               WHERE
@@ -223,10 +222,7 @@ class AslCleanupPostProcessorTest {
                       sOB_o_0.sOB_o_0_vo_id EQ sE_el_0.sE_el_0_vo_id
 
                   DelegatingJoinCondition ->
-                      sOB_o_0.sOB_o_0_num LT sE_el_0.sE_el_0_num
-
-                  DelegatingJoinCondition ->
-                      sOB_o_0.sOB_o_0_num_cap GT_EQ sE_el_0.sE_el_0_num
+                    sOB_o_0.sOB_o_0_num EQ sE_el_0.sE_el_0_citem_num
 
             p_eq_0: EncapsulatingQuery
               SELECT
