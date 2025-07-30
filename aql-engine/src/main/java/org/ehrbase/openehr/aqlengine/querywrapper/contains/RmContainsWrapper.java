@@ -17,13 +17,23 @@
  */
 package org.ehrbase.openehr.aqlengine.querywrapper.contains;
 
+import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
+
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
+import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
+import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate.PredicateComparisonOperator;
+import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 
 public final class RmContainsWrapper implements ContainsWrapper {
+    private static final String AT_CODE_PREFIX = "at";
     private final ContainmentClassExpression containment;
+    private ContainsWrapper parent;
 
     public RmContainsWrapper(ContainmentClassExpression containment) {
         this.containment = containment;
@@ -42,6 +52,38 @@ public final class RmContainsWrapper implements ContainsWrapper {
         return StructureRmType.byTypeName(containment.getType())
                 .map(StructureRmType::name)
                 .orElse(containment.getType());
+    }
+
+    @Override
+    public boolean isAtCode() {
+        Set<String> archetypeNodeIds = getNodeIdValues();
+        return archetypeNodeIds.size() == 1
+                && archetypeNodeIds.iterator().next().startsWith(AT_CODE_PREFIX);
+    }
+
+    @Override
+    public boolean isArchetype() {
+        Set<String> archetypeNodeIds = getNodeIdValues();
+        return archetypeNodeIds.size() == 1
+                && archetypeNodeIds.iterator().next().startsWith(ARCHETYPE_PREFIX);
+    }
+
+    @Override
+    public ContainsWrapper getParent() {
+        return parent;
+    }
+
+    public void setParent(ContainsWrapper parent) {
+        this.parent = parent;
+    }
+
+    private Set<String> getNodeIdValues() {
+        return AqlUtil.streamPredicates(containment.getPredicates())
+                .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
+                        && p.getOperator() == PredicateComparisonOperator.EQ
+                        && p.getValue() instanceof StringPrimitive)
+                .map(p -> ((StringPrimitive) p.getValue()).getValue())
+                .collect(Collectors.toSet());
     }
 
     @Override

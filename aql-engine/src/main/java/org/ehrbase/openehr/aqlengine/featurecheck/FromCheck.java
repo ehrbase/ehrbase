@@ -17,6 +17,8 @@
  */
 package org.ehrbase.openehr.aqlengine.featurecheck;
 
+import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
+
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -42,6 +44,7 @@ import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentNotOperator;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperator;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
+import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
@@ -72,7 +75,7 @@ final class FromCheck implements FeatureCheck {
         }
 
         // remaining CONTAINS
-        ensureContainmentSupported(currentContainment, null);
+        ensureContainmentSupported(currentContainment, null, null);
 
         // predicates in FROM
         AqlUtil.streamContainments(aqlQuery.getFrom()).forEach(this::ensureContainmentPredicateSupported);
@@ -140,22 +143,30 @@ final class FromCheck implements FeatureCheck {
                                 .collect(Collectors.joining(", "))));
     }
 
-    private void ensureContainmentSupported(Containment c, final StructureRoot parentStructure) {
+    private void ensureContainmentSupported(
+            Containment c, final StructureRoot parentStructure, ContainmentClassExpression parent) {
         switch (c) {
             case null -> {
                 /*NOOP*/
             }
             case ContainmentClassExpression cce -> {
+                if (hasAtCodePredicate(cce)) {
+                    ensureAtCodeParentSupported(parent);
+                }
+
                 var next = ensureStructureContainsSupported(cce, parentStructure);
                 StructureRoot structureRoot =
                         Optional.of(next).map(Pair::getRight).orElse(parentStructure);
-                ensureContainmentSupported(next.getLeft(), structureRoot);
+                ensureContainmentSupported(next.getLeft(), structureRoot, cce);
 
                 ensureContainmentStructureSupported(parentStructure, cce, structureRoot);
             }
-            case ContainmentVersionExpression cve -> ensureVersionContainmentSupported(cve);
+            case ContainmentVersionExpression cve -> {
+                ensureVersionContainmentSupported(cve);
+                ensureContainmentSupported(cve.getContains(), parentStructure, parent);
+            }
             case ContainmentSetOperator cso -> cso.getValues()
-                    .forEach(nc -> ensureContainmentSupported(nc, parentStructure));
+                    .forEach(nc -> ensureContainmentSupported(nc, parentStructure, parent));
             case ContainmentNotOperator __ -> throw new AqlFeatureNotImplementedException("NOT CONTAINS");
             default -> throw new IllegalAqlException(
                     "Unknown containment type: %s".formatted(c.getClass().getSimpleName()));
@@ -173,7 +184,7 @@ final class FromCheck implements FeatureCheck {
         if (nextContainment instanceof ContainmentSetOperator || nextContainment instanceof ContainmentNotOperator) {
             throw new AqlFeatureNotImplementedException("AND/OR/NOT operator as next containment after VERSION");
         }
-        ensureContainmentSupported(nextContainment, null);
+        ensureContainmentSupported(nextContainment, null, null);
     }
 
     private static void ensureContainmentStructureSupported(
@@ -248,5 +259,45 @@ final class FromCheck implements FeatureCheck {
         });
 
         return abstractType;
+    }
+
+    private void ensureAtCodeParentSupported(ContainmentClassExpression parent) {
+        if (parent == null) {
+            throw new AqlFeatureNotImplementedException("At-code CONTAINS expressions must have a parent containment");
+        }
+
+        if (!hasArchetypePredicate(parent) && !hasAtCodePredicate(parent)) {
+            throw new AqlFeatureNotImplementedException(
+                    """
+                At-code CONTAINS expressions are only supported when:
+                (1) archetype parent contains at-code child, or
+                (2) at-code parent contains at-code child.
+                Parent type: %s"""
+                            .formatted(parent.getType()));
+        }
+    }
+
+    private boolean hasAtCodePredicate(ContainmentClassExpression containment) {
+        if (!containment.hasPredicates()) {
+            return false;
+        }
+
+        return AqlUtil.streamPredicates(containment.getPredicates())
+                .filter(predicate -> predicate.getPath().equals(AslExtractedColumn.ARCHETYPE_NODE_ID.getPath()))
+                .filter(predicate -> predicate.getValue() instanceof StringPrimitive)
+                .map(predicate -> (StringPrimitive) predicate.getValue())
+                .anyMatch(sp -> sp.getValue().startsWith("at"));
+    }
+
+    private boolean hasArchetypePredicate(ContainmentClassExpression containment) {
+        if (!containment.hasPredicates()) {
+            return false;
+        }
+
+        return AqlUtil.streamPredicates(containment.getPredicates())
+                .filter(predicate -> predicate.getPath().equals(AslExtractedColumn.ARCHETYPE_NODE_ID.getPath()))
+                .filter(predicate -> predicate.getValue() instanceof StringPrimitive)
+                .map(predicate -> (StringPrimitive) predicate.getValue())
+                .anyMatch(sp -> sp.getValue().startsWith(ARCHETYPE_PREFIX));
     }
 }
