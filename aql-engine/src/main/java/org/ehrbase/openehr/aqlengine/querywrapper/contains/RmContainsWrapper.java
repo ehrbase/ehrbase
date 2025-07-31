@@ -17,6 +17,8 @@
  */
 package org.ehrbase.openehr.aqlengine.querywrapper.contains;
 
+import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,8 +29,6 @@ import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate.PredicateComparisonOperator;
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
-
-import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
 
 public final class RmContainsWrapper implements ContainsWrapper {
     private static final String AT_CODE_PREFIX = "at";
@@ -56,14 +56,14 @@ public final class RmContainsWrapper implements ContainsWrapper {
 
     @Override
     public boolean isAtCode() {
-        Set<String> archetypeNodeIds = getArchetypeNodeIdValues();
+        Set<String> archetypeNodeIds = getNodeIdValues();
         return archetypeNodeIds.size() == 1
                 && archetypeNodeIds.iterator().next().startsWith(AT_CODE_PREFIX);
     }
 
     @Override
     public boolean isArchetype() {
-        Set<String> archetypeNodeIds = getArchetypeNodeIdValues();
+        Set<String> archetypeNodeIds = getNodeIdValues();
         return archetypeNodeIds.size() == 1
                 && archetypeNodeIds.iterator().next().startsWith(ARCHETYPE_PREFIX);
     }
@@ -77,8 +77,7 @@ public final class RmContainsWrapper implements ContainsWrapper {
         this.parent = parent;
     }
 
-    //TODO: rename function
-    private Set<String> getArchetypeNodeIdValues() {
+    private Set<String> getNodeIdValues() {
         return AqlUtil.streamPredicates(containment.getPredicates())
                 .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
                         && p.getOperator() == PredicateComparisonOperator.EQ
