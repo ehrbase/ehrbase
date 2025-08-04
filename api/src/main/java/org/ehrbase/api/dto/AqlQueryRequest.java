@@ -17,10 +17,8 @@
  */
 package org.ehrbase.api.dto;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.ehrbase.api.exception.IllegalAqlException;
@@ -43,17 +41,11 @@ public record AqlQueryRequest(
         @Nullable Long fetch,
         @Nullable Long offset) {
 
-    public AqlQueryRequest(
-            @Nonnull AqlQuery aqlQuery,
-            @Nullable Map<String, Object> parameters,
-            @Nullable Long fetch,
-            @Nullable Long offset) {
-        this.aqlQuery = aqlQuery;
-        this.parameters = rewriteExplicitParameterTypes(parameters);
-        this.fetch = fetch;
-        this.offset = offset;
-    }
-
+    /**
+     * Create a new {@link AqlQueryRequest} by parsing the given AQL <code>queryString</code>.
+     *
+     * @see AqlQueryRequest
+     */
     public static AqlQueryRequest parse(
             @Nonnull String queryString,
             @Nullable Map<String, Object> parameters,
@@ -68,54 +60,5 @@ public record AqlQueryRequest(
                             + Optional.of(e).map(Throwable::getCause).orElse(e).getMessage(),
                     e);
         }
-    }
-
-    public static Map<String, Object> rewriteExplicitParameterTypes(Map<String, Object> parameters) {
-        if (parameters == null) {
-            return Map.of();
-        }
-        return parameters.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> handleExplicitParameterTypes(entry.getValue())));
-    }
-
-    /**
-     * Allows for explicit types via xml: <param type="int">1</param> in query parameters.
-     */
-    private static Object handleExplicitParameterTypes(Object paramValue) {
-        final Object result;
-        if (paramValue instanceof Map<?, ?> m) {
-            if (m.get("type") instanceof String type) {
-                result = switch (type) {
-                    case "int" -> intValue(m, "").orElse(paramValue);
-                    case "num" -> numValue(m, "").orElse(paramValue);
-                    default -> handleExplicitParameterTypes(m.get(""));};
-            } else if (m.get("") instanceof List children && !children.isEmpty()) {
-                result = children.stream()
-                        .map(AqlQueryRequest::handleExplicitParameterTypes)
-                        .toList();
-            } else {
-                result = intValue(m, "int").orElseGet(() -> numValue(m, "num").orElse(paramValue));
-            }
-        } else if (paramValue instanceof List l) {
-            for (int i = 0, s = l.size(); i < s; i++) {
-                var v = l.get(i);
-                var n = handleExplicitParameterTypes(v);
-                if (v != n) {
-                    l.set(i, n);
-                }
-            }
-            result = paramValue;
-        } else {
-            result = paramValue;
-        }
-        return result;
-    }
-
-    private static Optional<Object> intValue(Map<?, ?> paramValues, String key) {
-        return Optional.of(key).map(paramValues::get).map(Object::toString).map(Integer::parseInt);
-    }
-
-    private static Optional<Object> numValue(Map<?, ?> paramValues, String key) {
-        return Optional.of(key).map(paramValues::get).map(Object::toString).map(Double::parseDouble);
     }
 }

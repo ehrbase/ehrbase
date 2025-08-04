@@ -19,7 +19,6 @@ package org.ehrbase.api.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.ehrbase.api.exception.IllegalAqlException;
@@ -56,61 +55,5 @@ class AqlQueryRequestTest {
         assertThat(request.parameters()).isEmpty();
         assertThat(request.fetch()).isEqualTo(10L);
         assertThat(request.offset()).isEqualTo(25L);
-    }
-
-    @Test
-    void withXmlParamsAdjusted() {
-
-        AqlQueryRequest request = new AqlQueryRequest(
-                new AqlQuery(),
-                Map.of(
-                        "p_string", "some-string",
-                        "p_xml_num", Map.of("type", "num", "", 42.12),
-                        "p_xml_int", Map.of("type", "int", "", 11)
-                        // "p_list": L
-
-                        ),
-                null,
-                null);
-        assertThat(request.parameters())
-                .containsAllEntriesOf(Map.of("p_string", "some-string", "p_xml_num", 42.12, "p_xml_int", 11));
-        assertThat(request.fetch()).isNull();
-        assertThat(request.offset()).isNull();
-    }
-
-    @Test
-    void withXmlParamsWithoutTypeAdjusted() {
-
-        AqlQueryRequest request = new AqlQueryRequest(
-                new AqlQuery(),
-                Map.of(
-                        "p_xml_num", Map.of("num", 42.12),
-                        "p_xml_int", Map.of("int", 11)
-                        // "p_list": L
-
-                        ),
-                null,
-                null);
-        assertThat(request.parameters()).containsAllEntriesOf(Map.of("p_xml_num", 42.12, "p_xml_int", 11));
-        assertThat(request.fetch()).isNull();
-        assertThat(request.offset()).isNull();
-    }
-
-    @Test
-    void withXmlParamListsAdjusted() {
-
-        AqlQueryRequest request = new AqlQueryRequest(
-                new AqlQuery(),
-                Map.of(
-                        "p_xml_list", Map.of("", List.of("value_1", "value_2")),
-                        "p_xml_list_alternative", List.of("some", "other", "value")),
-                null,
-                null);
-        assertThat(request.parameters())
-                .containsAllEntriesOf(Map.of(
-                        "p_xml_list", List.of("value_1", "value_2"),
-                        "p_xml_list_alternative", List.of("some", "other", "value")));
-        assertThat(request.fetch()).isNull();
-        assertThat(request.offset()).isNull();
     }
 }
