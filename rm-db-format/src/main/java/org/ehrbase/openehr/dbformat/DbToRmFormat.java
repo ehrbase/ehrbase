@@ -154,7 +154,8 @@ public final class DbToRmFormat {
 
             for (int i = 1; i < childCount; i++) {
                 Map.Entry<String, JsonNode> child = children[i];
-                insertJsonEntry(dbRoot, remainingPath(rootPathLength, child.getKey()), standardizeObjectNode(child.getValue()));
+                insertJsonEntry(
+                        dbRoot, remainingPath(rootPathLength, child.getKey()), standardizeObjectNode(child.getValue()));
             }
         }
 
@@ -201,7 +202,8 @@ public final class DbToRmFormat {
 
         for (int i = 1; i < childCount; i++) {
             Record2<String, JsonNode> child = (Record2<String, JsonNode>) jsonObjects[i];
-            insertJsonEntry(dbRoot, remainingPath(rootPathLength, child.value1()), standardizeObjectNode(parseJsonData(child)));
+            insertJsonEntry(
+                    dbRoot, remainingPath(rootPathLength, child.value1()), standardizeObjectNode(parseJsonData(child)));
         }
 
         ObjectNode decoded = decodeKeys(dbRoot);
