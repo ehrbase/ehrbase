@@ -73,12 +73,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class EncapsulatingQueryUtils {
+
+    enum DataAggregationMode {
+        RECORD_ARRAY,
+        JSONB_OBJECT
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(EncapsulatingQueryUtils.class);
 
     private EncapsulatingQueryUtils() {}
 
     private static SelectField<?> sqlAggregatingField(
-            AslAggregatingField af, Table<?> src, AslQueryTables aslQueryToTable) {
+            AslAggregatingField af,
+            Table<?> src,
+            AslQueryTables aslQueryToTable,
+            DataAggregationMode dataAggregationMode) {
         if ((src == null || af.getBaseField() == null) && af.getFunction() != AggregateFunctionName.COUNT) {
             throw new IllegalArgumentException("only count does not require a source table");
         }
@@ -100,13 +109,17 @@ final class EncapsulatingQueryUtils {
         }
 
         Function<Field<?>, SelectField<?>> aggregateFunction = toAggregatedFieldFunction(af);
-        Field<?> field = fieldToAggregate(src, af, aslQueryToTable);
+        Field<?> field = fieldToAggregate(src, af, aslQueryToTable, dataAggregationMode);
 
         return aggregateFunction.apply(field);
     }
 
     @Nullable
-    private static Field<?> fieldToAggregate(Table<?> src, AslAggregatingField af, AslQueryTables aslQueryToTable) {
+    private static Field<?> fieldToAggregate(
+            Table<?> src,
+            AslAggregatingField af,
+            AslQueryTables aslQueryToTable,
+            DataAggregationMode dataAggregationMode) {
         return switch (af.getBaseField()) {
             case null -> null;
             case AslColumnField f -> FieldUtils.field(Objects.requireNonNull(src), f, true);
@@ -140,7 +153,7 @@ final class EncapsulatingQueryUtils {
                 };
             }
             case AslConstantField cf -> DSL.inline(cf.getValue(), cf.getType());
-            case AslSubqueryField sqfd -> subqueryField(sqfd, aslQueryToTable);
+            case AslSubqueryField sqfd -> subqueryField(sqfd, aslQueryToTable, dataAggregationMode);
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate on AslAggregatingField");
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
@@ -199,7 +212,8 @@ final class EncapsulatingQueryUtils {
         };
     }
 
-    private static Field<?> subqueryField(AslSubqueryField sqf, AslQueryTables aslQueryToTable) {
+    private static Field<?> subqueryField(
+            AslSubqueryField sqf, AslQueryTables aslQueryToTable, DataAggregationMode dataAggregationMode) {
         AslQuery baseQuery = sqf.getBaseQuery();
         if (!(baseQuery instanceof AslRmObjectDataQuery aq)) {
             throw new IllegalArgumentException("Subquery field not supported for type: " + baseQuery.getClass());
@@ -207,6 +221,7 @@ final class EncapsulatingQueryUtils {
         return AqlSqlQueryBuilder.buildDataSubquery(
                         aq,
                         aslQueryToTable,
+                        dataAggregationMode,
                         sqf.getFilterConditions().stream()
                                 .map(c -> ConditionUtils.buildCondition(c, aslQueryToTable, true))
                                 .toArray(Condition[]::new))
@@ -294,7 +309,8 @@ final class EncapsulatingQueryUtils {
         }
     }
 
-    public static SelectField<?> selectField(AslField field, AslQueryTables aslQueryToTable) {
+    public static SelectField<?> selectField(
+            AslField field, AslQueryTables aslQueryToTable, DataAggregationMode dataAggregationMode) {
         Table<?> src = Optional.of(field)
                 .map(AslField::getInternalProvider)
                 .map(aslQueryToTable::getDataTable)
@@ -304,9 +320,9 @@ final class EncapsulatingQueryUtils {
                     .as(f.getName(true));
             case AslComplexExtractedColumnField ecf -> sqlSelectFieldForExtractedColumn(
                     ecf, Objects.requireNonNull(src));
-            case AslAggregatingField af -> sqlAggregatingField(af, src, aslQueryToTable);
+            case AslAggregatingField af -> sqlAggregatingField(af, src, aslQueryToTable, dataAggregationMode);
             case AslConstantField<?> cf -> DSL.inline(cf.getValue(), cf.getType());
-            case AslSubqueryField sqf -> subqueryField(sqf, aslQueryToTable);
+            case AslSubqueryField sqf -> subqueryField(sqf, aslQueryToTable, dataAggregationMode);
             case AslFolderItemIdVirtualField fidv -> throw new IllegalArgumentException(
                     "%s is not support as select field".formatted(fidv.getExtractedColumn()));
             case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
@@ -314,7 +330,8 @@ final class EncapsulatingQueryUtils {
     }
 
     @Nonnull
-    public static Stream<Field<?>> groupByFields(AslField gb, AslQueryTables aslQueryToTable) {
+    public static Stream<Field<?>> groupByFields(
+            AslField gb, AslQueryTables aslQueryToTable, DataAggregationMode dataAggregationMode) {
         Table<?> src = aslQueryToTable.getDataTable(gb.getInternalProvider());
         return switch (gb) {
             case AslColumnField f -> Stream.of(FieldUtils.field(src, f, true));
@@ -334,7 +351,7 @@ final class EncapsulatingQueryUtils {
                             "%s is not a complex extracted column".formatted(ecf.getExtractedColumn()));
                 }
             }
-            case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
+            case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable, dataAggregationMode));
             case AslConstantField<?> __ -> Stream.empty();
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslAggregatingField");
@@ -360,7 +377,10 @@ final class EncapsulatingQueryUtils {
 
     @Nonnull
     public static Stream<SortField<?>> orderFields(
-            AslOrderByField ob, AslQueryTables aslQueryToTable, TemplateService templateService) {
+            AslOrderByField ob,
+            AslQueryTables aslQueryToTable,
+            TemplateService templateService,
+            DataAggregationMode dataAggregationMode) {
         AslField aslField = ob.field();
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
@@ -369,7 +389,7 @@ final class EncapsulatingQueryUtils {
                     case AslColumnField f -> columnOrderField(f, src, templateService);
                     case AslComplexExtractedColumnField ecf -> complexExtractedColumnOrderByFields(ecf, src);
                     case AslConstantField __ -> Stream.<Field<?>>empty();
-                    case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
+                    case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable, dataAggregationMode));
                     case AslAggregatingField __ -> throw new IllegalArgumentException(
                             "ORDER BY AslAggregatingField is not allowed");
                     case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(

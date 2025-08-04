@@ -64,6 +64,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
+import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -71,7 +72,7 @@ import org.jooq.JSONB;
 import org.jooq.JSONObjectAggNullStep;
 import org.jooq.Operator;
 import org.jooq.Record;
-import org.jooq.Record1;
+import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectField;
@@ -85,6 +86,7 @@ import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -92,6 +94,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AqlSqlQueryBuilder {
+
+    @Value("${ehrbase.experimental.dataAggregationMode:RECORD_ARRAY}")
+    private EncapsulatingQueryUtils.DataAggregationMode dataAggregationMode =
+            EncapsulatingQueryUtils.DataAggregationMode.RECORD_ARRAY;
 
     private final AqlConfigurationProperties aqlConfigurationProperties;
     private final DSLContext context;
@@ -107,6 +113,10 @@ public class AqlSqlQueryBuilder {
         this.context = context;
         this.templateService = templateService;
         this.queryPostProcessor = queryPostProcessor;
+    }
+
+    void setDataAggregationMode(EncapsulatingQueryUtils.DataAggregationMode dataAggregationMode) {
+        this.dataAggregationMode = dataAggregationMode;
     }
 
     public static String subqueryAlias(AslQuery aslQuery) {
@@ -202,7 +212,7 @@ public class AqlSqlQueryBuilder {
         SelectQuery<Record> query = from.getQuery();
         // select
         for (AslField field : aq.getSelect()) {
-            SelectField<?> sqlField = EncapsulatingQueryUtils.selectField(field, aslQueryToTable);
+            SelectField<?> sqlField = EncapsulatingQueryUtils.selectField(field, aslQueryToTable, dataAggregationMode);
             query.addSelect(sqlField);
         }
         // where
@@ -216,7 +226,7 @@ public class AqlSqlQueryBuilder {
 
         if (aq instanceof AslRootQuery rq) {
             rq.getGroupByFields().stream()
-                    .flatMap(gb -> EncapsulatingQueryUtils.groupByFields(gb, aslQueryToTable))
+                    .flatMap(gb -> EncapsulatingQueryUtils.groupByFields(gb, aslQueryToTable, dataAggregationMode))
                     .forEach(query::addGroupBy);
 
             // if the magnitude is needed for ORDER BY, it is added to the GROUP BY
@@ -229,7 +239,8 @@ public class AqlSqlQueryBuilder {
                     .forEach(query::addGroupBy);
 
             rq.getOrderByFields().stream()
-                    .flatMap(ob -> EncapsulatingQueryUtils.orderFields(ob, aslQueryToTable, templateService))
+                    .flatMap(ob -> EncapsulatingQueryUtils.orderFields(
+                            ob, aslQueryToTable, templateService, dataAggregationMode))
                     .forEach(query::addOrderBy);
         }
         return from;
@@ -242,7 +253,7 @@ public class AqlSqlQueryBuilder {
             case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable)
                     .asTable(aq.getAlias());
             case AslRmObjectDataQuery aq -> DSL.lateral(
-                    buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));
+                    buildDataSubquery(aq, aslQueryToTable, dataAggregationMode).asTable(aq.getAlias()));
             case AslFilteringQuery aq -> DSL.lateral(buildFilteringQuery(aq, aslQueryToTable.getDataTable(target))
                     .asTable(aq.getAlias()));
             case AslPathDataQuery aq -> DSL.lateral(
@@ -594,8 +605,11 @@ public class AqlSqlQueryBuilder {
      * and c2."num_cap" >= d2."num"
      * group by d2."VO_ID"
      */
-    static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
-            AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition... additionalConditions) {
+    static SelectHavingStep<?> buildDataSubquery(
+            AslRmObjectDataQuery aslData,
+            AslQueryTables aslQueryToTable,
+            EncapsulatingQueryUtils.DataAggregationMode dataAggregationMode,
+            Condition... additionalConditions) {
         AslQuery target = aslData.getBaseProvider();
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
         AslSourceRelation type = AslUtils.getTargetType(aslData.getBase());
@@ -603,9 +617,13 @@ public class AqlSqlQueryBuilder {
 
         Table<?> data = type.getDataTable().as(subqueryAlias(aslData));
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);
-        Field<JSONB> jsonbField = dataAggregation(data, type).as(DSL.name(dataFieldName));
 
-        SelectJoinStep<Record1<JSONB>> from = DSL.select(jsonbField).from(data);
+        Field<?> aggregateField =
+                switch (dataAggregationMode) {
+                    case RECORD_ARRAY -> dataArrayAggregation(data, type).as(DSL.name(dataFieldName));
+                    case JSONB_OBJECT -> dataJsonbAggregation(data, type).as(DSL.name(dataFieldName));
+                };
+        SelectJoinStep<?> from = DSL.select(aggregateField).from(data);
 
         // primary key condition
         List<Field> pKeyFields = type.getPkeyFields().stream()
@@ -635,11 +653,37 @@ public class AqlSqlQueryBuilder {
     }
 
     /**
-     * The aggregated jsonb can be processed by DbToRmFormat::reconstructFromDbFormat
+     * The aggregated data row array can be processed by DbToRmFormat::reconstructFromDbFormat
      *
      * @return
      */
-    private static JSONObjectAggNullStep<JSONB> dataAggregation(Table<?> dataTable, AslSourceRelation type) {
+    private static ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(
+            Table<?> dataTable, AslSourceRelation type) {
+
+        Field<String> keyField = dataTable.field(COMP_DATA.ENTITY_IDX);
+        Field<JSONB> dataField = dataTable.field(COMP_DATA.DATA);
+
+        Field<JSONB> valueField;
+        if (type == AslSourceRelation.FOLDER) {
+            Field<UUID[]> uuidsField = dataTable.field(EhrFolderData.EHR_FOLDER_DATA.ITEM_UUIDS);
+            valueField = DSL.case_()
+                    .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
+                    .else_(AdditionalSQLFunctions.jsonb_set(
+                            dataField,
+                            AdditionalSQLFunctions.array_to_jsonb(uuidsField),
+                            DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS));
+        } else {
+            valueField = dataField;
+        }
+        return DSL.arrayAgg(DSL.field(DSL.row(keyField, valueField)));
+    }
+
+    /**
+     * The aggregated jsonb object can be processed by DbToRmFormat::reconstructFromDbFormat
+     *
+     * @return
+     */
+    private static JSONObjectAggNullStep<JSONB> dataJsonbAggregation(Table<?> dataTable, AslSourceRelation type) {
 
         Field<String> keyField = dataTable.field(COMP_DATA.ENTITY_IDX);
         Field<JSONB> dataField = dataTable.field(COMP_DATA.DATA);
