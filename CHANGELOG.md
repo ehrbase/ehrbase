@@ -8,7 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
- ### Fixed 
+ ### Fixed
+  - Fix terminology validation URL extraction [#1507](https://github.com/ehrbase/ehrbase/pull/1507)
 
 ## [2.20.0]
  ### Added

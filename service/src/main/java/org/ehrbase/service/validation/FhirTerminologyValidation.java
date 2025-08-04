@@ -49,9 +49,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
@@ -79,7 +82,10 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     }
 
     private String extractUrl(String referenceSetUri) {
-        return StringUtils.substringAfter(referenceSetUri, "url=");
+        UriComponents uriComponents =
+                UriComponentsBuilder.fromUriString("/fhir?" + referenceSetUri).build();
+        MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
+        return queryParams.getFirst("url");
     }
 
     private WebClient buildRestClientCall(String url) {
