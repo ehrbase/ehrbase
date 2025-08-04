@@ -26,10 +26,11 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>2.18.0-SNAPSHOT</version>
+        <version>2.21.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>api</artifactId>
+    <name>EHRbase Internal API</name>
 
     <dependencies>
         <dependency>
