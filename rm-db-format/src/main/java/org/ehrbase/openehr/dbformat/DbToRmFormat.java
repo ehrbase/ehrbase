@@ -150,7 +150,7 @@ public final class DbToRmFormat {
             int rootPathLength = calcRootPathLength(childCount, fieldIt, children);
             Arrays.sort(children, Map.Entry.comparingByKey());
 
-            dbRoot = (ObjectNode) children[0].getValue();
+            dbRoot = standardizeObjectNode(children[0].getValue());
 
             for (int i = 1; i < childCount; i++) {
                 Map.Entry<String, JsonNode> child = children[i];
@@ -198,7 +198,7 @@ public final class DbToRmFormat {
         int rootPathLength = calcRootPathLength(jsonObjects, childCount);
         Arrays.sort(jsonObjects, Comparator.comparing(r -> r.value1().toString()));
 
-        ObjectNode dbRoot = (ObjectNode) parseJsonData(jsonObjects[0]);
+        ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0]));
 
         for (int i = 1; i < childCount; i++) {
             Record2<String, JsonNode> child = (Record2<String, JsonNode>) jsonObjects[i];
