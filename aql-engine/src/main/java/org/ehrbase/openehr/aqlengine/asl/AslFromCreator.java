@@ -61,7 +61,7 @@ import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
-final class AslFromCreator {
+public final class AslFromCreator {
 
     private final AliasProvider aliasProvider;
     private final KnowledgeCacheService knowledgeCacheService;
@@ -77,7 +77,7 @@ final class AslFromCreator {
     }
 
     @FunctionalInterface
-    interface ContainsToOwnerProvider {
+    public interface ContainsToOwnerProvider {
         OwnerProviderTuple get(ContainsWrapper contains);
     }
 

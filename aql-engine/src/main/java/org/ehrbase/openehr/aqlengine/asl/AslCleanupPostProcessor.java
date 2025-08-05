@@ -37,6 +37,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
@@ -163,6 +164,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
             case null -> null;
             case AslSubqueryField sf -> ((AslDataQuery) sf.getBaseQuery()).getBase();
             case AslAggregatingField af -> determineOwner(af.getBaseField());
+            case AslStringAggregationField af -> determineOwner(af.getBaseField());
             default -> f.getOwner();
         };
     }

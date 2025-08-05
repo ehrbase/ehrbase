@@ -51,6 +51,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
@@ -315,6 +316,8 @@ public class AqlSqlQueryBuilder {
                             yield Stream.of(ret.as(fieldName));
                         }
                     }
+                    case AslStringAggregationField __ -> throw new IllegalArgumentException(
+                            "Filtering queries cannot be based on AslAggregateRecordArrayField");
                 };
         return DSL.select(fields.toArray(Field[]::new));
     }

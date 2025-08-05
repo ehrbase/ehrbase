@@ -47,6 +47,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
@@ -272,6 +273,8 @@ public class AslGraph {
                     + f.getPathInJson().stream()
                             .map(PathNode::getAttribute)
                             .collect(Collectors.joining(" -> ", " -> ", ""));
+            case AslStringAggregationField f -> "string_agg(%s, %s) - %s"
+                    .formatted(fieldToGraph(0, f.getBaseField()), f.getSeparator(), f.alias());
         };
     }
 
