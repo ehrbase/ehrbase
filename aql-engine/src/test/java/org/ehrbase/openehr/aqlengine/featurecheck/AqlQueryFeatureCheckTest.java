@@ -181,7 +181,9 @@ class AqlQueryFeatureCheckTest {
                     FROM EHR e
                     WHERE e/system_id/value = 'abc'
                     ORDER BY e/system_id/value
-                """
+                """,
+                "SELECT e/value FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS EVENT [at0002] CONTAINS ELEMENT e [at0004]",
+                "SELECT e/time FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS EVENT e [at0002]",
             })
     void ensureQuerySupported(String aql) {
 
