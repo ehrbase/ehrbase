@@ -21,15 +21,12 @@ import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHET
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate.PredicateComparisonOperator;
-import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 
 public final class RmContainsWrapper implements ContainsWrapper {
     private final ContainmentClassExpression containment;
@@ -94,19 +91,18 @@ public final class RmContainsWrapper implements ContainsWrapper {
         }
 
         return predicates.stream()
-            .map(andPred -> {
-                List<String> nodeIdValues = andPred.getOperands()
-                    .stream()
-                    .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
-                                 && p.getOperator() == PredicateComparisonOperator.EQ
-                                 && p.getValue() instanceof StringPrimitive)
-                    .map(p -> ((StringPrimitive) p.getValue()).getValue())
-                    .toList();
+                .map(andPred -> {
+                    List<String> nodeIdValues = andPred.getOperands().stream()
+                            .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
+                                    && p.getOperator() == PredicateComparisonOperator.EQ
+                                    && p.getValue() instanceof StringPrimitive)
+                            .map(p -> ((StringPrimitive) p.getValue()).getValue())
+                            .toList();
 
-                return !nodeIdValues.isEmpty() && nodeIdValues.stream()
-                    .allMatch(value -> Arrays.stream(allowedPrefixes)
-                        .anyMatch(value::startsWith));
-            })
-            .reduce(true, Boolean::logicalAnd);
+                    return !nodeIdValues.isEmpty()
+                            && nodeIdValues.stream().allMatch(value -> Arrays.stream(allowedPrefixes)
+                                    .anyMatch(value::startsWith));
+                })
+                .reduce(true, Boolean::logicalAnd);
     }
 }
