@@ -486,11 +486,6 @@ public final class AslUtils {
     }
 
     public static Stream<AslFieldFieldQueryCondition> descendantJoinConditionProviders(
-            AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
-        return descendantJoinConditionProviders(left, leftOwner, right, rightOwner, null, null);
-    }
-
-    public static Stream<AslFieldFieldQueryCondition> descendantJoinConditionProviders(
             AslQuery left,
             AslStructureQuery leftOwner,
             AslQuery right,

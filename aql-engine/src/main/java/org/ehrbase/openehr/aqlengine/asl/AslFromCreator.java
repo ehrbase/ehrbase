@@ -126,8 +126,18 @@ final class AslFromCreator {
         }
 
         if (containsChain.hasTrailingSetOperation()) {
+            ContainsWrapper lastDescriptor = containsChain.chain().getLast();
+            RmContainsWrapper parentWrapper = (lastDescriptor instanceof VersionContainsWrapper vcw)
+                    ? vcw.child()
+                    : (RmContainsWrapper) lastDescriptor;
+
             addContainsChainSetOperator(
-                    encapsulatingQuery, containsChain, useLeftJoin, containsToStructureSubQuery, currentParent);
+                    encapsulatingQuery,
+                    containsChain,
+                    useLeftJoin,
+                    containsToStructureSubQuery,
+                    currentParent,
+                    parentWrapper);
         }
     }
 
@@ -232,13 +242,19 @@ final class AslFromCreator {
             ContainsChain containsChain,
             boolean asLeftJoin,
             Map<ContainsWrapper, OwnerProviderTuple> containsToStructureSubQuery,
-            AslStructureQuery currentParent) {
+            AslStructureQuery currentParent,
+            RmContainsWrapper parentWrapper) {
         ContainsSetOperationWrapper setOperator = containsChain.trailingSetOperation();
         for (ContainsChain operand : setOperator.operands()) {
             boolean requiresOrOperandSubQuery =
                     setOperator.operator() == ContainmentSetOperatorSymbol.OR && operand.size() > 1;
 
             if (requiresOrOperandSubQuery) {
+                ContainsWrapper childDescriptor = operand.chain().getFirst(); // can not be empty here
+                RmContainsWrapper childWrapper = (childDescriptor instanceof VersionContainsWrapper vcw)
+                        ? vcw.child()
+                        : (RmContainsWrapper) childDescriptor;
+
                 // OR operands with chaining inside need to be mapped to their own subquery.
                 // Else the nested contains chain would not be isolated from the parent
                 // and the outer left join would bleed into it.
@@ -252,7 +268,8 @@ final class AslFromCreator {
                                 currentParent,
                                 JoinType.LEFT_OUTER_JOIN,
                                 orSq,
-                                AslUtils.descendantJoinConditionProviders(currentParent, currentParent, orSq, child)
+                                AslUtils.descendantJoinConditionProviders(
+                                                currentParent, currentParent, orSq, child, parentWrapper, childWrapper)
                                         .map(AslFieldFieldQueryCondition::provideJoinCondition)
                                         .toArray(AslJoinCondition[]::new)));
             } else {
