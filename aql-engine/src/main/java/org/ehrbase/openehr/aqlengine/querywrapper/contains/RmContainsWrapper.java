@@ -19,6 +19,7 @@ package org.ehrbase.openehr.aqlengine.querywrapper.contains;
 
 import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,7 +32,6 @@ import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate.Predicat
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
 
 public final class RmContainsWrapper implements ContainsWrapper {
-    private static final String AT_CODE_PREFIX = "at";
     private final ContainmentClassExpression containment;
     private ContainsWrapper parent;
 
@@ -56,16 +56,12 @@ public final class RmContainsWrapper implements ContainsWrapper {
 
     @Override
     public boolean isAtCode() {
-        Set<String> archetypeNodeIds = getNodeIdValues();
-        return archetypeNodeIds.size() == 1
-                && archetypeNodeIds.iterator().next().startsWith(AT_CODE_PREFIX);
+        return hasConsistentNodeIdPrefixes("at", "id");
     }
 
     @Override
     public boolean isArchetype() {
-        Set<String> archetypeNodeIds = getNodeIdValues();
-        return archetypeNodeIds.size() == 1
-                && archetypeNodeIds.iterator().next().startsWith(ARCHETYPE_PREFIX);
+        return hasConsistentNodeIdPrefixes(ARCHETYPE_PREFIX);
     }
 
     @Override
@@ -75,15 +71,6 @@ public final class RmContainsWrapper implements ContainsWrapper {
 
     public void setParent(ContainsWrapper parent) {
         this.parent = parent;
-    }
-
-    private Set<String> getNodeIdValues() {
-        return AqlUtil.streamPredicates(containment.getPredicates())
-                .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
-                        && p.getOperator() == PredicateComparisonOperator.EQ
-                        && p.getValue() instanceof StringPrimitive)
-                .map(p -> ((StringPrimitive) p.getValue()).getValue())
-                .collect(Collectors.toSet());
     }
 
     @Override
@@ -98,5 +85,28 @@ public final class RmContainsWrapper implements ContainsWrapper {
     @Override
     public String toString() {
         return "RmContainsWrapper[" + "containment=" + containment + ']';
+    }
+
+    private boolean hasConsistentNodeIdPrefixes(String... allowedPrefixes) {
+        List<AndOperatorPredicate> predicates = containment.getPredicates();
+        if (predicates.isEmpty()) {
+            return false;
+        }
+
+        return predicates.stream()
+            .map(andPred -> {
+                List<String> nodeIdValues = andPred.getOperands()
+                    .stream()
+                    .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
+                                 && p.getOperator() == PredicateComparisonOperator.EQ
+                                 && p.getValue() instanceof StringPrimitive)
+                    .map(p -> ((StringPrimitive) p.getValue()).getValue())
+                    .toList();
+
+                return !nodeIdValues.isEmpty() && nodeIdValues.stream()
+                    .allMatch(value -> Arrays.stream(allowedPrefixes)
+                        .anyMatch(value::startsWith));
+            })
+            .reduce(true, Boolean::logicalAnd);
     }
 }
