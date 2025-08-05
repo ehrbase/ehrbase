@@ -392,7 +392,7 @@ public final class DbToRmFormat {
      * <li> "c2.j1.j0" 1st element of items of 2nd element of items of 3rd element of content<li>
      * </ul>
      */
-    protected static final class DbJsonPath {
+    public static final class DbJsonPath {
 
         public static final DbJsonPath EMPTY_PATH = new DbJsonPath("", List.of());
 
@@ -424,6 +424,10 @@ public final class DbToRmFormat {
         }
 
         public static DbJsonPath parse(CharSequence path) {
+            return parse(path, false);
+        }
+
+        public static DbJsonPath parse(CharSequence path, boolean revertAliases) {
             if (path.isEmpty()) {
                 return EMPTY_PATH;
 
@@ -442,7 +446,7 @@ public final class DbToRmFormat {
                 for (int i = 0; i < len; i++) {
                     char ch = path.charAt(i);
                     if (ch == '.') {
-                        list.add(new PathComponent(sb.toString(), nr < 0 ? null : nr));
+                        list.add(new PathComponent(revertAliases ? RmAttributeAlias.getAttribute(sb.toString()) : sb.toString(), nr < 0 ? null : nr));
                         nr = -1;
                         sb.setLength(0);
                     } else if (Character.isDigit(ch)) {
