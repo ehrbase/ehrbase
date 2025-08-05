@@ -19,4 +19,4 @@ package org.ehrbase.openehr.aqlengine.asl;
 
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
-record OwnerProviderTuple(AslQuery owner, AslQuery provider) {}
+public record OwnerProviderTuple(AslQuery owner, AslQuery provider) {}

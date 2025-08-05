@@ -50,6 +50,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
@@ -146,6 +147,8 @@ final class EncapsulatingQueryUtils {
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate on AslFolderItemIdValuesColumnField");
             case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
+            case AslStringAggregationField __ -> throw new IllegalArgumentException(
+                    "Cannot aggregate on AslAggregateRecordArrayField");
         };
     }
 
@@ -310,7 +313,18 @@ final class EncapsulatingQueryUtils {
             case AslFolderItemIdVirtualField fidv -> throw new IllegalArgumentException(
                     "%s is not support as select field".formatted(fidv.getExtractedColumn()));
             case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
+            case AslStringAggregationField f -> sqlStringAggregationField(f, aslQueryToTable);
         };
+    }
+
+    private static SelectField<?> sqlStringAggregationField(
+            final AslStringAggregationField f, final AslQueryTables aslQueryToTable) {
+        return DSL.aggregate(
+                        "string_agg",
+                        String.class,
+                        FieldUtils.field(aslQueryToTable.getDataTable(f.getInternalProvider()), f.getBaseField(), true),
+                        DSL.inline(f.getSeparator()))
+                .as(f.alias());
     }
 
     @Nonnull
@@ -341,6 +355,8 @@ final class EncapsulatingQueryUtils {
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "Cannot aggregate by AslFolderItemIdValuesColumnField");
             case AslRmPathField arpf -> Stream.of(FieldUtils.buildRmPathField(arpf, src));
+            case AslStringAggregationField __ -> throw new IllegalArgumentException(
+                    "Cannot aggregate by AslAggregateRecordArrayField");
         };
     }
 
@@ -383,6 +399,8 @@ final class EncapsulatingQueryUtils {
                             yield Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude((Field<JSONB>) f));
                         }
                     }
+                    case AslStringAggregationField __ -> throw new IllegalArgumentException(
+                            "ORDER BY AslAggregateRecordArrayField is not allowed");
                 })
                 .map(f -> f.sort(ob.direction()));
     }

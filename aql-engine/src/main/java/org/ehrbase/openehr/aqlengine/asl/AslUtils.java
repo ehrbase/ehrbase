@@ -67,6 +67,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
@@ -98,7 +99,7 @@ public final class AslUtils {
     private static final String COMP_DATA_TABLE_ROOT_CONCEPT_FIELD =
             Tables.COMP_VERSION.ROOT_CONCEPT.getUnqualifiedName().first();
 
-    static final class AliasProvider {
+    public static final class AliasProvider {
         private final Map<String, Integer> aliasCounters = new HashMap<>();
 
         public String uniqueAlias(String alias) {
@@ -161,6 +162,7 @@ public final class AslUtils {
             }
             case AslFolderItemIdVirtualField f -> Stream.of(f.getFieldName());
             case null -> Stream.empty();
+            case AslStringAggregationField f -> streamFieldNames(f.getBaseField());
         };
     }
 
