@@ -17,8 +17,6 @@
  */
 package org.ehrbase.openehr.aqlengine.featurecheck;
 
-import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
-
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -33,6 +31,7 @@ import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
+import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRoot;
@@ -44,7 +43,6 @@ import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentNotOperator;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperator;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
-import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate;
 import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
@@ -150,8 +148,9 @@ final class FromCheck implements FeatureCheck {
                 /*NOOP*/
             }
             case ContainmentClassExpression cce -> {
-                if (hasAtCodePredicate(cce)) {
-                    ensureAtCodeParentSupported(parent);
+                var childWrapper = new RmContainsWrapper(cce);
+                if (childWrapper.isAtCode()) {
+                    ensureAtCodeContainmentSupported(parent);
                 }
 
                 var next = ensureStructureContainsSupported(cce, parentStructure);
@@ -261,43 +260,17 @@ final class FromCheck implements FeatureCheck {
         return abstractType;
     }
 
-    private void ensureAtCodeParentSupported(ContainmentClassExpression parent) {
+    private void ensureAtCodeContainmentSupported(ContainmentClassExpression parent) {
         if (parent == null) {
-            throw new AqlFeatureNotImplementedException("At-code CONTAINS expressions must have a parent containment");
+            throw new AqlFeatureNotImplementedException(
+                    "CONTAINS expressions with at-code predicates must have a parent CONTAINS expression");
         }
 
-        if (!hasArchetypePredicate(parent) && !hasAtCodePredicate(parent)) {
+        var parentWrapper = new RmContainsWrapper(parent);
+        if (!parentWrapper.isArchetype() && !parentWrapper.isAtCode()) {
             throw new AqlFeatureNotImplementedException(
-                    """
-                At-code CONTAINS expressions are only supported when:
-                (1) archetype parent contains at-code child, or
-                (2) at-code parent contains at-code child.
-                Parent type: %s"""
+                    "Parent CONTAINS expression '%s' must have either an archetype predicate or at-code predicate when containing at-code expressions"
                             .formatted(parent.getType()));
         }
-    }
-
-    private boolean hasAtCodePredicate(ContainmentClassExpression containment) {
-        if (!containment.hasPredicates()) {
-            return false;
-        }
-
-        return AqlUtil.streamPredicates(containment.getPredicates())
-                .filter(predicate -> predicate.getPath().equals(AslExtractedColumn.ARCHETYPE_NODE_ID.getPath()))
-                .filter(predicate -> predicate.getValue() instanceof StringPrimitive)
-                .map(predicate -> (StringPrimitive) predicate.getValue())
-                .anyMatch(sp -> sp.getValue().startsWith("at"));
-    }
-
-    private boolean hasArchetypePredicate(ContainmentClassExpression containment) {
-        if (!containment.hasPredicates()) {
-            return false;
-        }
-
-        return AqlUtil.streamPredicates(containment.getPredicates())
-                .filter(predicate -> predicate.getPath().equals(AslExtractedColumn.ARCHETYPE_NODE_ID.getPath()))
-                .filter(predicate -> predicate.getValue() instanceof StringPrimitive)
-                .map(predicate -> (StringPrimitive) predicate.getValue())
-                .anyMatch(sp -> sp.getValue().startsWith(ARCHETYPE_PREFIX));
     }
 }

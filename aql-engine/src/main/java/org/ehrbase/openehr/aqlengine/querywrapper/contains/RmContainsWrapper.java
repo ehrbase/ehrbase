@@ -86,7 +86,7 @@ public final class RmContainsWrapper implements ContainsWrapper {
 
     private boolean hasConsistentNodeIdPrefixes(String... allowedPrefixes) {
         List<AndOperatorPredicate> predicates = containment.getPredicates();
-        if (predicates.isEmpty()) {
+        if (predicates == null || predicates.isEmpty()) {
             return false;
         }
 
