@@ -86,8 +86,8 @@ public final class DbToRmFormat {
      * @return
      */
     private static JsonNode parseJsonData(Record2<?, ?> rec) {
-        JSONB jsonb = ((JSONB) rec.value2());
-        return parseJson(jsonb.data());
+        Object v = rec.value2();
+        return parseJson(v instanceof String s ? s : ((JSONB) v).data());
     }
 
     /**

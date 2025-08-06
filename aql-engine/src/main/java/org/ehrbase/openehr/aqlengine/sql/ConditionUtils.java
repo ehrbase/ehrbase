@@ -55,6 +55,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
@@ -206,6 +207,8 @@ final class ConditionUtils {
                     fv.getOperator(), DSL.inline(f.getValue(), f.getType()), fv.getValues());
             case AslAggregatingField __ -> throw new IllegalArgumentException(
                     "AslAggregatingField cannot be used in WHERE");
+            case AslStringAggregationField __ -> throw new IllegalArgumentException(
+                    "AslStringAggregationField cannot be used in WHERE");
             case AslSubqueryField __ -> throw new IllegalArgumentException("AslSubqueryField cannot be used in WHERE");
             case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
                     "AslFolderItemIdValuesColumnField cannot be used in WHERE");
