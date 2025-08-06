@@ -90,8 +90,8 @@ public final class DbToRmFormat {
      * @return
      */
     private static JsonNode parseJsonData(Record2<?, ?> rec) {
-        JSONB jsonb = ((JSONB) rec.value2());
-        return parseJson(jsonb.data());
+        Object v = rec.value2();
+        return parseJson(v instanceof String s ? s : ((JSONB) v).data());
     }
 
     /**
@@ -192,7 +192,7 @@ public final class DbToRmFormat {
      */
     public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, Record2<?, ?>[] jsonObjects) {
 
-        ObjectNode decoded = reconstructJsonObject(jsonObjects);
+        ObjectNode decoded = reconstructJsonObject(jsonObjects, true);
 
         R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
 
@@ -206,7 +206,7 @@ public final class DbToRmFormat {
         return rmObject;
     }
 
-    public static ObjectNode reconstructJsonObject(final Record2<?, ?>[] jsonObjects) {
+    public static ObjectNode reconstructJsonObject(final Record2<?, ?>[] jsonObjects, boolean revertAliasing) {
         int childCount = jsonObjects.length;
         // Or Record2<String, JsonNode>[] dbRecords
 
@@ -221,8 +221,7 @@ public final class DbToRmFormat {
                     dbRoot, remainingPath(rootPathLength, child.value1()), standardizeObjectNode(parseJsonData(child)));
         }
 
-        ObjectNode decoded = decodeKeys(dbRoot);
-        return decoded;
+        return revertAliasing? decodeKeys(dbRoot) : dbRoot;
     }
 
     private static int calcRootPathLength(
