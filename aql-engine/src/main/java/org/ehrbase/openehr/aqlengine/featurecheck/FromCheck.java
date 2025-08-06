@@ -31,6 +31,7 @@ import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
+import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRoot;
@@ -72,7 +73,7 @@ final class FromCheck implements FeatureCheck {
         }
 
         // remaining CONTAINS
-        ensureContainmentSupported(currentContainment, null);
+        ensureContainmentSupported(currentContainment, null, null);
 
         // predicates in FROM
         AqlUtil.streamContainments(aqlQuery.getFrom()).forEach(this::ensureContainmentPredicateSupported);
@@ -140,22 +141,31 @@ final class FromCheck implements FeatureCheck {
                                 .collect(Collectors.joining(", "))));
     }
 
-    private void ensureContainmentSupported(Containment c, final StructureRoot parentStructure) {
+    private void ensureContainmentSupported(
+            Containment c, final StructureRoot parentStructure, ContainmentClassExpression parent) {
         switch (c) {
             case null -> {
                 /*NOOP*/
             }
             case ContainmentClassExpression cce -> {
+                var childWrapper = new RmContainsWrapper(cce);
+                if (childWrapper.isAtCode()) {
+                    ensureAtCodeContainmentSupported(parent);
+                }
+
                 var next = ensureStructureContainsSupported(cce, parentStructure);
                 StructureRoot structureRoot =
                         Optional.of(next).map(Pair::getRight).orElse(parentStructure);
-                ensureContainmentSupported(next.getLeft(), structureRoot);
+                ensureContainmentSupported(next.getLeft(), structureRoot, cce);
 
                 ensureContainmentStructureSupported(parentStructure, cce, structureRoot);
             }
-            case ContainmentVersionExpression cve -> ensureVersionContainmentSupported(cve);
+            case ContainmentVersionExpression cve -> {
+                ensureVersionContainmentSupported(cve);
+                ensureContainmentSupported(cve.getContains(), parentStructure, parent);
+            }
             case ContainmentSetOperator cso -> cso.getValues()
-                    .forEach(nc -> ensureContainmentSupported(nc, parentStructure));
+                    .forEach(nc -> ensureContainmentSupported(nc, parentStructure, parent));
             case ContainmentNotOperator __ -> throw new AqlFeatureNotImplementedException("NOT CONTAINS");
             default -> throw new IllegalAqlException(
                     "Unknown containment type: %s".formatted(c.getClass().getSimpleName()));
@@ -173,7 +183,7 @@ final class FromCheck implements FeatureCheck {
         if (nextContainment instanceof ContainmentSetOperator || nextContainment instanceof ContainmentNotOperator) {
             throw new AqlFeatureNotImplementedException("AND/OR/NOT operator as next containment after VERSION");
         }
-        ensureContainmentSupported(nextContainment, null);
+        ensureContainmentSupported(nextContainment, null, null);
     }
 
     private static void ensureContainmentStructureSupported(
@@ -248,5 +258,19 @@ final class FromCheck implements FeatureCheck {
         });
 
         return abstractType;
+    }
+
+    private void ensureAtCodeContainmentSupported(ContainmentClassExpression parent) {
+        if (parent == null) {
+            throw new AqlFeatureNotImplementedException(
+                    "CONTAINS expressions with at-code predicates must have a parent CONTAINS expression");
+        }
+
+        var parentWrapper = new RmContainsWrapper(parent);
+        if (!parentWrapper.isArchetype() && !parentWrapper.isAtCode()) {
+            throw new AqlFeatureNotImplementedException(
+                    "Parent CONTAINS expression '%s' must have either an archetype predicate or at-code predicate when containing at-code expressions"
+                            .formatted(parent.getType()));
+        }
     }
 }

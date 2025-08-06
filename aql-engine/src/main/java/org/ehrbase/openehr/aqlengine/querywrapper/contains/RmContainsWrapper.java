@@ -17,13 +17,20 @@
  */
 package org.ehrbase.openehr.aqlengine.querywrapper.contains;
 
+import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
+
+import java.util.Arrays;
 import java.util.List;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
+import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AndOperatorPredicate;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
+import org.ehrbase.openehr.sdk.aql.dto.path.ComparisonOperatorPredicate.PredicateComparisonOperator;
 
 public final class RmContainsWrapper implements ContainsWrapper {
     private final ContainmentClassExpression containment;
+    private ContainsWrapper parent;
 
     public RmContainsWrapper(ContainmentClassExpression containment) {
         this.containment = containment;
@@ -45,6 +52,25 @@ public final class RmContainsWrapper implements ContainsWrapper {
     }
 
     @Override
+    public boolean isAtCode() {
+        return hasConsistentNodeIdPrefixes("at", "id");
+    }
+
+    @Override
+    public boolean isArchetype() {
+        return hasConsistentNodeIdPrefixes(ARCHETYPE_PREFIX);
+    }
+
+    @Override
+    public ContainsWrapper getParent() {
+        return parent;
+    }
+
+    public void setParent(ContainsWrapper parent) {
+        this.parent = parent;
+    }
+
+    @Override
     public String alias() {
         return containment.getIdentifier();
     }
@@ -56,5 +82,27 @@ public final class RmContainsWrapper implements ContainsWrapper {
     @Override
     public String toString() {
         return "RmContainsWrapper[" + "containment=" + containment + ']';
+    }
+
+    private boolean hasConsistentNodeIdPrefixes(String... allowedPrefixes) {
+        List<AndOperatorPredicate> predicates = containment.getPredicates();
+        if (predicates == null || predicates.isEmpty()) {
+            return false;
+        }
+
+        return predicates.stream()
+                .map(andPred -> {
+                    List<String> nodeIdValues = andPred.getOperands().stream()
+                            .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
+                                    && p.getOperator() == PredicateComparisonOperator.EQ
+                                    && p.getValue() instanceof StringPrimitive)
+                            .map(p -> ((StringPrimitive) p.getValue()).getValue())
+                            .toList();
+
+                    return !nodeIdValues.isEmpty()
+                            && nodeIdValues.stream().allMatch(value -> Arrays.stream(allowedPrefixes)
+                                    .anyMatch(value::startsWith));
+                })
+                .reduce(true, Boolean::logicalAnd);
     }
 }

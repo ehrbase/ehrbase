@@ -75,6 +75,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
+import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
@@ -486,7 +487,12 @@ public final class AslUtils {
     }
 
     public static Stream<AslFieldFieldQueryCondition> descendantJoinConditionProviders(
-            AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
+            AslQuery left,
+            AslStructureQuery leftOwner,
+            AslQuery right,
+            AslStructureQuery rightOwner,
+            RmContainsWrapper parentWrapper,
+            RmContainsWrapper childWrapper) {
 
         AslSourceRelation parentRelation = leftOwner.getType();
         if (!SUPPORTED_DESCENDANT_PARENT_RELATIONS.contains(parentRelation)) {
@@ -497,27 +503,16 @@ public final class AslUtils {
             throw new IllegalArgumentException("unexpected descendant relation type %s".formatted(descendantRelation));
         }
 
-        return switch (parentRelation) {
-            case EHR -> Stream.of(new AslFieldFieldQueryCondition(
-                    findFieldForOwner(EHR_TABLE_ID_FIELD, left.getSelect(), leftOwner),
-                    AslConditionOperator.EQ,
-                    findFieldForOwner(AslStructureColumn.EHR_ID, right.getSelect(), rightOwner)));
-            case EHR_STATUS -> Stream.concat(
-                    Stream.of(joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner)),
-                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
-                // l.vo_id == r.vo_id and l.num < r.num <= l.num_cap
-            case COMPOSITION -> Stream.concat(
-                    Stream.of(joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner)),
-                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
-                // l.ehr_id == r.ehr_id and l.folder_idx == r.folder_idx and l.num < r.num <= l.num_cap
-            case FOLDER -> concatStreams(
-                    Stream.of(joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner)),
-                    Stream.of(joinColumnEqualCondition(
-                            AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner)),
-                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
-            case AUDIT_DETAILS -> throw new IllegalArgumentException(
-                    "Descendant condition not applicable to AUDIT_DETAILS");
-        };
+        Stream<AslFieldFieldQueryCondition> idConditions = parentRelation == AslSourceRelation.EHR
+                ? Stream.of(new AslFieldFieldQueryCondition(
+                        findFieldForOwner(EHR_TABLE_ID_FIELD, left.getSelect(), leftOwner),
+                        AslConditionOperator.EQ,
+                        findFieldForOwner(AslStructureColumn.EHR_ID, right.getSelect(), rightOwner)))
+                : joinSameRootObjectConditions(left, leftOwner, right, rightOwner);
+
+        return concatStreams(
+                idConditions,
+                getContainsJoinConditions(parentWrapper, childWrapper, left, leftOwner, right, rightOwner));
     }
 
     public static Stream<AslFieldFieldQueryCondition> pathChildConditions(
@@ -684,5 +679,54 @@ public final class AslUtils {
         } else {
             return joinColumnEqualCondition(AslStructureColumn.C_ITEM_NUM, left, leftOwner, right, rightOwner);
         }
+    }
+
+    private static AslFieldFieldQueryCondition archetypeParentContainsCondition(
+            AslQuery parent, AslStructureQuery parentOwner, AslQuery child, AslStructureQuery childOwner) {
+        return new AslFieldFieldQueryCondition(
+                findFieldForOwner(AslStructureColumn.NUM, parent.getSelect(), parentOwner),
+                AslConditionOperator.EQ,
+                findFieldForOwner(AslStructureColumn.C_ITEM_NUM, child.getSelect(), childOwner));
+    }
+
+    private static AslFieldFieldQueryCondition atCodeParentContainsCondition(
+            AslQuery parent, AslStructureQuery parentOwner, AslQuery child, AslStructureQuery childOwner) {
+        return joinColumnEqualCondition(AslStructureColumn.C_ITEM_NUM, parent, parentOwner, child, childOwner);
+    }
+
+    private static Stream<AslFieldFieldQueryCondition> getContainsJoinConditions(
+            RmContainsWrapper parentWrapper,
+            RmContainsWrapper childWrapper,
+            AslQuery left,
+            AslStructureQuery leftOwner,
+            AslQuery right,
+            AslStructureQuery rightOwner) {
+        // if the left owner is pointing to something unversioned (i.e. ehr)
+        if (!leftOwner.getType().getStructureRoot().isVersioned()) {
+            return Stream.empty();
+        }
+
+        if (leftOwner.getType() != rightOwner.getType()) {
+            throw new IllegalArgumentException(
+                    "Unexpected relation type between %s and %s".formatted(leftOwner.getType(), rightOwner.getType()));
+        }
+
+        // use only the num cap range condition
+        if (parentWrapper == null || !childWrapper.isAtCode()) {
+            return joinNumCapBetweenConditions(left, leftOwner, right, rightOwner);
+        }
+
+        if (parentWrapper.isArchetype()) {
+            return concatStreams(
+                    Stream.of(archetypeParentContainsCondition(left, leftOwner, right, rightOwner)),
+                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
+        }
+
+        if (parentWrapper.isAtCode()) {
+            return Stream.of(atCodeParentContainsCondition(left, leftOwner, right, rightOwner));
+        }
+
+        // would it make sense to return the joinNumCapBetween here?
+        return Stream.empty();
     }
 }

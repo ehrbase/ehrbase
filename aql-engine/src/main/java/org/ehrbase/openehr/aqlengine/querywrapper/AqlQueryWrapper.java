@@ -170,10 +170,22 @@ public final class AqlQueryWrapper {
         final List<ContainsWrapper> chain = new ArrayList<>();
         final ContainsSetOperationWrapper setOperator;
 
+        ContainsWrapper parent = null;
         Containment next = root;
         while (next instanceof AbstractContainmentExpression c) {
 
-            chain.add(containsDescs.get(next));
+            ContainsWrapper current = containsDescs.get(next);
+            chain.add(current);
+
+            // TODO: could have a setter on the contains wrapper?
+            if (current instanceof RmContainsWrapper rcw) {
+                rcw.setParent(parent);
+            } else if (current instanceof VersionContainsWrapper vcw) {
+                vcw.setParent(parent);
+            }
+
+            parent = current;
+
             if (next instanceof ContainmentVersionExpression) {
                 // Version descriptor represents itself and its child, so the child itself is not added
                 next = ((AbstractContainmentExpression) c.getContains()).getContains();
