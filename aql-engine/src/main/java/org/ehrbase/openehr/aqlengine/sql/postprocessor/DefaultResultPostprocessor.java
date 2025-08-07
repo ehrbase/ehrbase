@@ -32,7 +32,7 @@ public class DefaultResultPostprocessor implements AqlSqlResultPostprocessor {
 
         return switch (columnValue) {
             case null -> null;
-            case Record2[] rec -> DbToRmFormat.reconstructFromDbFormat(RMObject.class, rec);
+            case Record2[] rec -> DbToRmFormat.reconstructRmObject(RMObject.class, rec);
             case JSONB jsonb -> DbToRmFormat.reconstructFromDbFormat(RMObject.class, jsonb.data());
             default -> columnValue;
         };

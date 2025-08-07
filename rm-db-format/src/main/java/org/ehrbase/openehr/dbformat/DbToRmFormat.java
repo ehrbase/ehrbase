@@ -55,10 +55,6 @@ public final class DbToRmFormat {
 
     public static final String FEEDER_AUDIT_ATTRIBUTE_ALIAS = "f";
 
-    public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, Record2<?, ?>[] dbRecords) {
-        return reconstructRmObject(rmType, dbRecords);
-    }
-
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, String dbJsonStr) {
         return reconstructFromDbFormat(rmType, parseJson(dbJsonStr));
     }
