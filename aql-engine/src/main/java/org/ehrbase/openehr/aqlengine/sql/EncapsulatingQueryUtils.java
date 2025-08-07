@@ -73,6 +73,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class EncapsulatingQueryUtils {
+
     private static final Logger LOG = LoggerFactory.getLogger(EncapsulatingQueryUtils.class);
 
     private EncapsulatingQueryUtils() {}

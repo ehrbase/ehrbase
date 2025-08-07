@@ -26,15 +26,18 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.directory.Folder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.CharSequenceHelper;
+import org.jooq.JSONB;
+import org.jooq.Record2;
 
 /**
  * Reconstructs RM objects from the db format JSON.
@@ -53,8 +56,10 @@ public final class DbToRmFormat {
     public static final String FEEDER_AUDIT_ATTRIBUTE_ALIAS = "f";
 
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, String dbJsonStr) {
-        JsonNode jsonNode = parseJson(dbJsonStr);
+        return reconstructFromDbFormat(rmType, parseJson(dbJsonStr));
+    }
 
+    public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, JsonNode jsonNode) {
         return switch (jsonNode.getNodeType()) {
             case JsonNodeType.OBJECT -> reconstructRmObject(rmType, (ObjectNode) jsonNode);
             case JsonNodeType.STRING -> jsonNode.textValue();
@@ -73,6 +78,16 @@ public final class DbToRmFormat {
         } catch (JsonProcessingException e) {
             throw new InternalServerException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Second value needs to be JSONB
+     * @param rec
+     * @return
+     */
+    private static JsonNode parseJsonData(Record2<?, ?> rec) {
+        JSONB jsonb = ((JSONB) rec.value2());
+        return parseJson(jsonb.data());
     }
 
     /**
@@ -96,7 +111,7 @@ public final class DbToRmFormat {
         if (jsonNode.isObject()) {
             return reconstructRmObject(rmType, (ObjectNode) jsonNode);
         } else {
-            throw new IllegalArgumentException("Unexpected JSON root array");
+            throw new IllegalArgumentException("Unexpected JSON root type");
         }
     }
 
@@ -124,20 +139,27 @@ public final class DbToRmFormat {
             dbRoot = jsonObject;
 
         } else {
-            final int rootPathLength = calcRootPathLength(jsonObject);
-            Map<DbJsonPath, ObjectNode> entries = new LinkedHashMap<>((jsonObject.size() * 4 / 3) + 1, 0.75f);
+            int childCount = jsonObject.size();
+            Map.Entry<String, JsonNode>[] children = new Map.Entry[childCount];
+            Iterator<Map.Entry<String, JsonNode>> fieldIt = jsonObject.fields();
 
-            jsonObject
-                    .fields()
-                    .forEachRemaining(e -> entries.put(
-                            remainingPath(rootPathLength, e.getKey()), standardizeObjectNode(e.getValue())));
+            int rootPathLength = calcRootPathLength(childCount, fieldIt, children);
+            Arrays.sort(children, Map.Entry.comparingByKey());
 
-            dbRoot = entries.remove(DbJsonPath.EMPTY_PATH);
+            dbRoot = standardizeObjectNode(children[0].getValue());
 
-            entries.forEach((k, v) -> insertJsonEntry(dbRoot, k, v));
+            for (int i = 1; i < childCount; i++) {
+                Map.Entry<String, JsonNode> child = children[i];
+                insertJsonEntry(
+                        dbRoot, remainingPath(rootPathLength, child.getKey()), standardizeObjectNode(child.getValue()));
+            }
         }
 
-        ObjectNode decoded = decodeKeys(dbRoot);
+        return dbToToRmObject(rmType, dbRoot);
+    }
+
+    private static <R extends RMObject> R dbToToRmObject(Class<R> rmType, ObjectNode dbObject) {
+        ObjectNode decoded = decodeKeys(dbObject);
 
         R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
 
@@ -145,15 +167,71 @@ public final class DbToRmFormat {
         if (rmObject instanceof Folder folder && folder.getItems().isEmpty()) {
             folder.setItems(null);
         }
+        return rmObject;
+    }
+
+    /**
+     * Constructs an RM object from the JSON object obtained via
+     *
+     * <code><pre>
+     * SELECT array_agg(
+     *   (substring(d.entity_idx, (char_length(p.entity_idx) + 1)),
+     *   d.data))
+     * FROM comp_data as d
+     * WHERE (
+     *   p.vo_id = d.vo_id
+     *   AND p.num <= d.num
+     *   AND p.num_cap > d.num
+     * )
+     * GROUP BY d.vo_id
+     * </pre></code>
+     */
+    public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, Record2<?, ?>[] jsonObjects) {
+
+        int childCount = jsonObjects.length;
+        // Or Record2<String, JsonNode>[] dbRecords
+
+        int rootPathLength = calcRootPathLength(jsonObjects, childCount);
+        Arrays.sort(jsonObjects, Comparator.comparing(r -> r.value1().toString()));
+
+        ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0]));
+
+        for (int i = 1; i < childCount; i++) {
+            Record2<String, JsonNode> child = (Record2<String, JsonNode>) jsonObjects[i];
+            insertJsonEntry(
+                    dbRoot, remainingPath(rootPathLength, child.value1()), standardizeObjectNode(parseJsonData(child)));
+        }
+
+        ObjectNode decoded = decodeKeys(dbRoot);
+
+        R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
+
+        // prevent empty items array
+        if (rmObject instanceof Folder folder
+                && folder.getItems() != null
+                && folder.getItems().isEmpty()) {
+            folder.setItems(null);
+        }
 
         return rmObject;
     }
 
-    private static int calcRootPathLength(ObjectNode jsonObject) {
-        Iterator<String> it = jsonObject.fieldNames();
-        int l = it.next().length();
-        while (it.hasNext() && l != 0) {
-            l = Math.min(l, it.next().length());
+    private static int calcRootPathLength(
+            int childCount, Iterator<Map.Entry<String, JsonNode>> fieldIt, Map.Entry<String, JsonNode>[] children) {
+        int l = Integer.MAX_VALUE;
+        for (int i = 0; i < childCount; i++) {
+            Map.Entry<String, JsonNode> next = fieldIt.next();
+            children[i] = next;
+            l = Math.min(l, next.getKey().length());
+        }
+        return l;
+    }
+
+    private static int calcRootPathLength(Record2<?, ?>[] jsonObjects, int childCount) {
+        int l = Integer.MAX_VALUE;
+        for (int i = 0; i < childCount; i++) {
+            Record2<?, ?> next = jsonObjects[i];
+            l = Math.min(l, next.value1().toString().length());
         }
         return l;
     }

@@ -64,14 +64,14 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
+import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
-import org.jooq.JSONObjectAggNullStep;
 import org.jooq.Operator;
 import org.jooq.Record;
-import org.jooq.Record1;
+import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectField;
@@ -594,7 +594,7 @@ public class AqlSqlQueryBuilder {
      * and c2."num_cap" >= d2."num"
      * group by d2."VO_ID"
      */
-    static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
+    static SelectHavingStep<?> buildDataSubquery(
             AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition... additionalConditions) {
         AslQuery target = aslData.getBaseProvider();
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
@@ -603,9 +603,9 @@ public class AqlSqlQueryBuilder {
 
         Table<?> data = type.getDataTable().as(subqueryAlias(aslData));
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);
-        Field<JSONB> jsonbField = dataAggregation(data, type).as(DSL.name(dataFieldName));
 
-        SelectJoinStep<Record1<JSONB>> from = DSL.select(jsonbField).from(data);
+        Field<?> aggregateField = dataArrayAggregation(data, type).as(DSL.name(dataFieldName));
+        SelectJoinStep<?> from = DSL.select(aggregateField).from(data);
 
         // primary key condition
         List<Field> pKeyFields = type.getPkeyFields().stream()
@@ -635,11 +635,12 @@ public class AqlSqlQueryBuilder {
     }
 
     /**
-     * The aggregated jsonb can be processed by DbToRmFormat::reconstructFromDbFormat
+     * The aggregated data row array can be processed by DbToRmFormat::reconstructFromDbFormat
      *
      * @return
      */
-    private static JSONObjectAggNullStep<JSONB> dataAggregation(Table<?> dataTable, AslSourceRelation type) {
+    private static ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(
+            Table<?> dataTable, AslSourceRelation type) {
 
         Field<String> keyField = dataTable.field(COMP_DATA.ENTITY_IDX);
         Field<JSONB> dataField = dataTable.field(COMP_DATA.DATA);
@@ -656,6 +657,6 @@ public class AqlSqlQueryBuilder {
         } else {
             valueField = dataField;
         }
-        return DSL.jsonbObjectAgg(keyField, valueField);
+        return DSL.arrayAgg(DSL.field(DSL.row(keyField, valueField)));
     }
 }

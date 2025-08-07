@@ -41,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.IteratorUtils;
@@ -50,6 +51,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
+import org.jooq.JSONB;
+import org.jooq.Record2;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDSLContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -213,19 +219,48 @@ class DbToRmFormatTest {
         }
     }
 
+    private void roundtripTest(CompositionTestDataCanonicalJson example, UnaryOperator<Composition> roundtrip)
+            throws IOException {
+        Composition expectedComposition =
+                new CanonicalJson().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
+        Composition composition = roundtrip.apply(expectedComposition);
+        compareJson(composition, expectedComposition);
+    }
+
     @ParameterizedTest
     @EnumSource(
             value = CompositionTestDataCanonicalJson.class,
             mode = EnumSource.Mode.EXCLUDE,
             names = {"INVALID"})
     void roundtripTestOne(CompositionTestDataCanonicalJson example) throws IOException {
-        Composition expectedComposition =
-                new CanonicalJson().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
+        roundtripTest(example, c -> {
+            String dbJson = createDbOneJson(c);
+            return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+        });
+    }
 
-        String dbJson = createDbOneJson(expectedComposition);
-        Composition composition = DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+    @ParameterizedTest
+    @EnumSource(
+            value = CompositionTestDataCanonicalJson.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"INVALID"})
+    void roundtripTestOneNode(CompositionTestDataCanonicalJson example) throws IOException {
+        roundtripTest(example, c -> {
+            Record2<?, ?>[] dbJson = createDbOneJsonArray(c);
+            return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+        });
+    }
 
-        compareJson(composition, expectedComposition);
+    @ParameterizedTest
+    @EnumSource(
+            value = CompositionTestDataCanonicalJson.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"INVALID"})
+    void roundtripTestOneArray(CompositionTestDataCanonicalJson example) throws IOException {
+        roundtripTest(example, c -> {
+            Record2<?, ?>[] dbJson = createDbOneJsonArray(c);
+            return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+        });
     }
 
     static String createDbOneJson(Composition composition) {
@@ -234,6 +269,14 @@ class DbToRmFormatTest {
                 .filter(r -> r.getStructureRmType().isStructureEntry())
                 .map(s -> Pair.of(s.getEntityIdx(), VersionedObjectDataStructure.applyRmAliases(s.getJsonNode())));
         return aggregateJson(stream);
+    }
+
+    static Record2[] createDbOneJsonArray(Composition composition) {
+        List<StructureNode> roots = VersionedObjectDataStructure.createDataStructure(composition);
+        Stream<Pair<StructureIndex, JsonNode>> stream = roots.stream()
+                .filter(r -> r.getStructureRmType().isStructureEntry())
+                .map(s -> Pair.of(s.getEntityIdx(), VersionedObjectDataStructure.applyRmAliases(s.getJsonNode())));
+        return aggregateJsonArray(stream);
     }
 
     /**
@@ -255,6 +298,29 @@ class DbToRmFormatTest {
         });
 
         return root.toPrettyString();
+    }
+
+    /**
+     * Aggregates the json data for the "one" format like the SQL query:
+     * <code>
+     *   select array_agg((d.entity_idx, d.data)) as data
+     *   from ehr.comp_one d
+     *
+     *   where s.comp_id = '...'::uuid
+     *   group by d.comp_id;
+     * </code>
+     */
+    static Record2<?, ?>[] aggregateJsonArray(Stream<Pair<StructureIndex, JsonNode>> dataRows) {
+        DefaultDSLContext defaultDSLContext = new DefaultDSLContext(SQLDialect.POSTGRES);
+        return dataRows.map(r -> {
+                    Record2<String, JSONB> rec =
+                            defaultDSLContext.newRecord(DSL.noField(String.class), DSL.noField(JSONB.class));
+                    rec.values(
+                            r.getLeft().printIndexString(false, true),
+                            JSONB.valueOf(r.getRight().toPrettyString()));
+                    return rec;
+                })
+                .toArray(Record2<?, ?>[]::new);
     }
 
     @Test

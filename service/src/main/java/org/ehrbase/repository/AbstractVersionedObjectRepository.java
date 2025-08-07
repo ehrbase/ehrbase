@@ -56,6 +56,7 @@ import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionHistoryTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.ehrbase.service.TimeProvider;
+import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -526,13 +527,13 @@ public abstract class AbstractVersionedObjectRepository<
 
         Field<UUID> voIdField = versionTable.field(VERSION_PROTOTYPE.VO_ID);
         Field<Integer> sysVersionField = versionTable.field(VERSION_PROTOTYPE.SYS_VERSION);
-        Field<JSONB> jsonbField = jsonbDataAggregation(dataTable);
+        Field<Record2<String, JSONB>[]> dataAggregationField = dataArrayAggregation(dataTable);
 
         List<Field<?>> selectFields;
         List<Field<?>> groupByFields;
         Field<?>[] additionalFields = getAdditionalSelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
-            selectFields = List.of(voIdField, sysVersionField, jsonbField);
+            selectFields = List.of(voIdField, sysVersionField, dataAggregationField);
             groupByFields = List.of(voIdField, sysVersionField);
 
         } else {
@@ -540,7 +541,7 @@ public abstract class AbstractVersionedObjectRepository<
             groupByFields = new ArrayList<>(2 + additionalFields.length);
             selectFields.add(voIdField);
             selectFields.add(sysVersionField);
-            selectFields.add(jsonbField);
+            selectFields.add(dataAggregationField);
             Collections.addAll(selectFields, additionalFields);
             groupByFields.add(voIdField);
             groupByFields.add(sysVersionField);
@@ -553,9 +554,10 @@ public abstract class AbstractVersionedObjectRepository<
                 .getQuery();
     }
 
-    protected Field<JSONB> jsonbDataAggregation(Table<?> dataTable) {
-        return DSL.jsonbObjectAgg(dataTable.field(DATA_PROTOTYPE.ENTITY_IDX), dataTable.field(DATA_PROTOTYPE.DATA))
-                .as(DSL.name("data"));
+    protected ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(Table<?> dataTable) {
+        Field<String> keyField = dataTable.field(DATA_PROTOTYPE.ENTITY_IDX);
+        Field<JSONB> dataField = dataTable.field(DATA_PROTOTYPE.DATA);
+        return DSL.arrayAgg(DSL.field(DSL.row(keyField, dataField)));
     }
 
     protected <R extends Record> SelectOnConditionStep<R> fromJoinedVersionData(
@@ -629,12 +631,11 @@ public abstract class AbstractVersionedObjectRepository<
      * @param <L>
      */
     protected <L extends Locatable> Optional<L> toLocatable(
-            Record /*<UUID, Integer, JSONB, …>*/ jsonbRecord, Class<L> locatableClass) {
+            Record /*<UUID, Integer, Record2<String, JSONB>[], …>*/ jsonbRecord, Class<L> locatableClass) {
         if (jsonbRecord == null) {
             return Optional.empty();
         }
-        final L rmObject = DbToRmFormat.reconstructRmObject(
-                locatableClass, jsonbRecord.get(2, JSONB.class).data());
+        final L rmObject = DbToRmFormat.reconstructRmObject(locatableClass, jsonbRecord.get(2, Record2[].class));
         rmObject.setUid(
                 buildObjectVersionId(jsonbRecord.get(0, UUID.class), jsonbRecord.get(1, Integer.class), systemService));
         return Optional.of(rmObject);
