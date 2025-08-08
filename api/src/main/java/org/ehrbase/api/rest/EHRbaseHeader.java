@@ -24,8 +24,6 @@ public final class EHRbaseHeader {
 
     private EHRbaseHeader() {}
 
-    public static final String TEMPLATE_ID = "EHRBase-Template-ID";
-
     /**
      * Used by the /query endpoint to perform only a dry run query.
      */
