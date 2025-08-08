@@ -20,7 +20,8 @@ package org.ehrbase.openehr.aqlengine.asl.model.condition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 
-public sealed interface AslProvidesJoinCondition extends AslQueryCondition permits AslFieldFieldQueryCondition {
+public sealed interface AslProvidesJoinCondition extends AslQueryCondition
+        permits AslCoalesceJoinCondition, AslFieldFieldQueryCondition {
 
     AslQuery getLeftOwner();
 

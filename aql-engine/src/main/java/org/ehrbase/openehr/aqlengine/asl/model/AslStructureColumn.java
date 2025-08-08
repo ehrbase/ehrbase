@@ -35,6 +35,7 @@ public enum AslStructureColumn {
     NUM(ObjectDataTablePrototype.INSTANCE.NUM, Integer.class, false),
     NUM_CAP(ObjectDataTablePrototype.INSTANCE.NUM_CAP, Integer.class, false),
     PARENT_NUM(ObjectDataTablePrototype.INSTANCE.PARENT_NUM, Integer.class, false),
+    C_ITEM_NUM(ObjectDataTablePrototype.INSTANCE.CITEM_NUM, Integer.class, false),
     EHR_ID(ObjectVersionTablePrototype.INSTANCE.EHR_ID, UUID.class, true),
     ENTITY_IDX(ObjectDataTablePrototype.INSTANCE.ENTITY_IDX, String.class, false),
     ENTITY_IDX_LEN(ObjectDataTablePrototype.INSTANCE.ENTITY_IDX_LEN, Integer.class, false),

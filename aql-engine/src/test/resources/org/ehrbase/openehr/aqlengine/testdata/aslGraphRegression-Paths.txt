@@ -32,6 +32,7 @@ AslRootQuery
         sCO_c_0.sCO_c_0_num
         sCO_c_0.sCO_c_0_num_cap
         sCO_c_0.sCO_c_0_parent_num
+        sCO_c_0.sCO_c_0_citem_num
         sCO_c_0.sCO_c_0_ehr_id
         sCO_c_0.sCO_c_0_entity_idx
         sCO_c_0.sCO_c_0_entity_idx_len
@@ -57,6 +58,7 @@ AslRootQuery
         sOB_o_0.sOB_o_0_num
         sOB_o_0.sOB_o_0_num_cap
         sOB_o_0.sOB_o_0_parent_num
+        sOB_o_0.sOB_o_0_citem_num
         sOB_o_0.sOB_o_0_entity_idx
         sOB_o_0.sOB_o_0_entity_idx_len
         sOB_o_0.sOB_o_0_entity_concept
@@ -79,6 +81,7 @@ AslRootQuery
         p_data__0.p_data__0_num
         p_data__0.p_data__0_num_cap
         p_data__0.p_data__0_parent_num
+        p_data__0.p_data__0_citem_num
         p_data__0.p_data__0_entity_idx
         p_data__0.p_data__0_entity_idx_len
         p_data__0.p_data__0_entity_concept
@@ -90,6 +93,7 @@ AslRootQuery
         p_events__0.p_events__0_num
         p_events__0.p_events__0_num_cap
         p_events__0.p_events__0_parent_num
+        p_events__0.p_events__0_citem_num
         p_events__0.p_events__0_entity_idx
         p_events__0.p_events__0_entity_idx_len
         p_events__0.p_events__0_entity_concept
@@ -101,6 +105,7 @@ AslRootQuery
         p_data__1.p_data__1_num
         p_data__1.p_data__1_num_cap
         p_data__1.p_data__1_parent_num
+        p_data__1.p_data__1_citem_num
         p_data__1.p_data__1_entity_idx
         p_data__1.p_data__1_entity_idx_len
         p_data__1.p_data__1_entity_concept
@@ -112,6 +117,7 @@ AslRootQuery
         p_eq_1.p_items__0_num
         p_eq_1.p_items__0_num_cap
         p_eq_1.p_items__0_parent_num
+        p_eq_1.p_items__0_citem_num
         p_eq_1.p_items__0_entity_idx
         p_eq_1.p_items__0_entity_idx_len
         p_eq_1.p_items__0_entity_concept
@@ -123,6 +129,7 @@ AslRootQuery
         p_eq_2.p_items__1_num
         p_eq_2.p_items__1_num_cap
         p_eq_2.p_items__1_parent_num
+        p_eq_2.p_items__1_citem_num
         p_eq_2.p_items__1_entity_idx
         p_eq_2.p_items__1_entity_idx_len
         p_eq_2.p_items__1_entity_concept
@@ -134,6 +141,7 @@ AslRootQuery
         p_eq_3.p_items__2_num
         p_eq_3.p_items__2_num_cap
         p_eq_3.p_items__2_parent_num
+        p_eq_3.p_items__2_citem_num
         p_eq_3.p_items__2_entity_idx
         p_eq_3.p_items__2_entity_idx_len
         p_eq_3.p_items__2_entity_concept
@@ -145,6 +153,7 @@ AslRootQuery
         p_eq_4.p_items__3_num
         p_eq_4.p_items__3_num_cap
         p_eq_4.p_items__3_parent_num
+        p_eq_4.p_items__3_citem_num
         p_eq_4.p_items__3_entity_idx
         p_eq_4.p_items__3_entity_idx_len
         p_eq_4.p_items__3_entity_concept
@@ -156,6 +165,7 @@ AslRootQuery
         p_eq_5.p_items__4_num
         p_eq_5.p_items__4_num_cap
         p_eq_5.p_items__4_parent_num
+        p_eq_5.p_items__4_citem_num
         p_eq_5.p_items__4_entity_idx
         p_eq_5.p_items__4_entity_idx_len
         p_eq_5.p_items__4_entity_concept
@@ -177,6 +187,7 @@ AslRootQuery
                 p_data__0.p_data__0_num
                 p_data__0.p_data__0_num_cap
                 p_data__0.p_data__0_parent_num
+                p_data__0.p_data__0_citem_num
                 p_data__0.p_data__0_entity_idx
                 p_data__0.p_data__0_entity_idx_len
                 p_data__0.p_data__0_entity_concept
@@ -196,6 +207,7 @@ AslRootQuery
                 p_events__0.p_events__0_num
                 p_events__0.p_events__0_num_cap
                 p_events__0.p_events__0_parent_num
+                p_events__0.p_events__0_citem_num
                 p_events__0.p_events__0_entity_idx
                 p_events__0.p_events__0_entity_idx_len
                 p_events__0.p_events__0_entity_concept
@@ -223,6 +235,7 @@ AslRootQuery
                 p_data__1.p_data__1_num
                 p_data__1.p_data__1_num_cap
                 p_data__1.p_data__1_parent_num
+                p_data__1.p_data__1_citem_num
                 p_data__1.p_data__1_entity_idx
                 p_data__1.p_data__1_entity_idx_len
                 p_data__1.p_data__1_entity_concept
@@ -250,6 +263,7 @@ AslRootQuery
                 p_items__0.p_items__0_num
                 p_items__0.p_items__0_num_cap
                 p_items__0.p_items__0_parent_num
+                p_items__0.p_items__0_citem_num
                 p_items__0.p_items__0_entity_idx
                 p_items__0.p_items__0_entity_idx_len
                 p_items__0.p_items__0_entity_concept
@@ -264,6 +278,7 @@ AslRootQuery
                         p_items__0.p_items__0_num
                         p_items__0.p_items__0_num_cap
                         p_items__0.p_items__0_parent_num
+                        p_items__0.p_items__0_citem_num
                         p_items__0.p_items__0_entity_idx
                         p_items__0.p_items__0_entity_idx_len
                         p_items__0.p_items__0_entity_concept
@@ -292,6 +307,7 @@ AslRootQuery
                 p_items__1.p_items__1_num
                 p_items__1.p_items__1_num_cap
                 p_items__1.p_items__1_parent_num
+                p_items__1.p_items__1_citem_num
                 p_items__1.p_items__1_entity_idx
                 p_items__1.p_items__1_entity_idx_len
                 p_items__1.p_items__1_entity_concept
@@ -306,6 +322,7 @@ AslRootQuery
                         p_items__1.p_items__1_num
                         p_items__1.p_items__1_num_cap
                         p_items__1.p_items__1_parent_num
+                        p_items__1.p_items__1_citem_num
                         p_items__1.p_items__1_entity_idx
                         p_items__1.p_items__1_entity_idx_len
                         p_items__1.p_items__1_entity_concept
@@ -334,6 +351,7 @@ AslRootQuery
                 p_items__2.p_items__2_num
                 p_items__2.p_items__2_num_cap
                 p_items__2.p_items__2_parent_num
+                p_items__2.p_items__2_citem_num
                 p_items__2.p_items__2_entity_idx
                 p_items__2.p_items__2_entity_idx_len
                 p_items__2.p_items__2_entity_concept
@@ -348,6 +366,7 @@ AslRootQuery
                         p_items__2.p_items__2_num
                         p_items__2.p_items__2_num_cap
                         p_items__2.p_items__2_parent_num
+                        p_items__2.p_items__2_citem_num
                         p_items__2.p_items__2_entity_idx
                         p_items__2.p_items__2_entity_idx_len
                         p_items__2.p_items__2_entity_concept
@@ -376,6 +395,7 @@ AslRootQuery
                 p_items__3.p_items__3_num
                 p_items__3.p_items__3_num_cap
                 p_items__3.p_items__3_parent_num
+                p_items__3.p_items__3_citem_num
                 p_items__3.p_items__3_entity_idx
                 p_items__3.p_items__3_entity_idx_len
                 p_items__3.p_items__3_entity_concept
@@ -390,6 +410,7 @@ AslRootQuery
                         p_items__3.p_items__3_num
                         p_items__3.p_items__3_num_cap
                         p_items__3.p_items__3_parent_num
+                        p_items__3.p_items__3_citem_num
                         p_items__3.p_items__3_entity_idx
                         p_items__3.p_items__3_entity_idx_len
                         p_items__3.p_items__3_entity_concept
@@ -418,6 +439,7 @@ AslRootQuery
                 p_items__4.p_items__4_num
                 p_items__4.p_items__4_num_cap
                 p_items__4.p_items__4_parent_num
+                p_items__4.p_items__4_citem_num
                 p_items__4.p_items__4_entity_idx
                 p_items__4.p_items__4_entity_idx_len
                 p_items__4.p_items__4_entity_concept
@@ -432,6 +454,7 @@ AslRootQuery
                         p_items__4.p_items__4_num
                         p_items__4.p_items__4_num_cap
                         p_items__4.p_items__4_parent_num
+                        p_items__4.p_items__4_citem_num
                         p_items__4.p_items__4_entity_idx
                         p_items__4.p_items__4_entity_idx_len
                         p_items__4.p_items__4_entity_concept
