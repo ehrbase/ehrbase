@@ -9,8 +9,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed
-- AQL query is parsed using `AqlQueryRequest.parse` and then passed `AqlService.query` method [#1522](https://github.com/ehrbase/ehrbase/pull/1522)
- ### Fixed 
 - Fix terminology validation URL extraction [#1507](https://github.com/ehrbase/ehrbase/pull/1507)
 
 ## [2.20.0]

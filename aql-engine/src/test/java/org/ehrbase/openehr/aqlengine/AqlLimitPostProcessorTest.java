@@ -120,7 +120,7 @@ class AqlLimitPostProcessorTest {
                 fetchPrecedence)
                 .afterParseAql(
                         AqlQuery.parse(query),
-                        AqlQueryRequest.parse(
+                        AqlQueryRequest.prepare(
                             query,
                             Map.of(),
                             parseLong(paramLimit).orElse(null),

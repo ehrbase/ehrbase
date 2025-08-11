@@ -30,7 +30,7 @@ import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 /**
  * The requested AQL to be executed by {@link AqlQueryService#query(AqlQueryRequest)}.
  *
- * @param aqlQuery    the actual aql string
+ * @param aqlQuery    the actual aql query
  * @param parameters  additional query parameters
  * @param fetch       query limit to apply
  * @param offset      query offset to apply
@@ -46,7 +46,7 @@ public record AqlQueryRequest(
      *
      * @see AqlQueryRequest
      */
-    public static AqlQueryRequest parse(
+    public static AqlQueryRequest prepare(
             @Nonnull String queryString,
             @Nullable Map<String, Object> parameters,
             @Nullable Long fetch,

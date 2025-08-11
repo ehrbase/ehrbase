@@ -272,7 +272,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     AqlQueryRequest createRequest(
             @NonNull String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
 
-        return AqlQueryRequest.parse(
+        return AqlQueryRequest.prepare(
                 queryString,
                 rewriteExplicitParameterTypes(parameters), // rewrite is needed for explicit XML params
                 fetch.orElse(null),

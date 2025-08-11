@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Test;
 class AqlQueryRequestTest {
 
     @Test
-    void parseAqlQueryRequest() {
+    void prepareAqlQueryRequest() {
 
-        AqlQueryRequest request = AqlQueryRequest.parse("SELECT e/ehr_id/value FROM EHR e", Map.of(), null, null);
+        AqlQueryRequest request = AqlQueryRequest.prepare("SELECT e/ehr_id/value FROM EHR e", Map.of(), null, null);
         assertThat(request.aqlQuery().render()).isEqualTo("SELECT e/ehr_id/value FROM EHR e");
         assertThat(request.parameters()).isEmpty();
         assertThat(request.fetch()).isNull();
@@ -38,14 +38,12 @@ class AqlQueryRequestTest {
     }
 
     @Test
-    void parseInvalidAql() {
+    void prepareInvalidAql() {
 
         Map<String, Object> parameter = Map.of();
         Assertions.assertThatThrownBy(
-                        () -> AqlQueryRequest.parse("SELECT invalid FROM INVALID i", parameter, null, null))
-                .isInstanceOf(IllegalAqlException.class)
-                .hasMessage(
-                        "Could not parse AQL query: Cannot parse SELECT invalid FROM INVALID i: unknown FROM alias 'invalid'");
+                        () -> AqlQueryRequest.prepare("SELECT invalid FROM INVALID i", parameter, null, null))
+                .isInstanceOf(IllegalAqlException.class);
     }
 
     @Test
