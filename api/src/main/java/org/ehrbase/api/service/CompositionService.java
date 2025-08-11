@@ -57,9 +57,10 @@ public interface CompositionService extends VersionedObjectService<Composition, 
      *
      * @param composition Composition dto from database
      * @param format      Target format
+     * @param pretty      Pretty-Print the serialized Composition
      * @return Structured string with string of data and content format
      */
-    StructuredString serialize(CompositionDto composition, CompositionFormat format);
+    StructuredString serialize(CompositionDto composition, CompositionFormat format, boolean pretty);
 
     /**
      * Retrieve the latest version number for the given composition ID.

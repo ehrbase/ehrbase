@@ -137,7 +137,7 @@ public class TemplateServiceImp implements TemplateService {
     }
 
     @Override
-    public String findOperationalTemplate(String templateId, OperationalTemplateFormat format)
+    public String findOperationalTemplate(String templateId, OperationalTemplateFormat format, boolean prettyPrint)
             throws ObjectNotFoundException, InvalidApiParameterException, InternalServerException {
         if (format != OperationalTemplateFormat.XML) {
             throw new NotAcceptableException("Requested operational template type not supported");
@@ -150,6 +150,9 @@ public class TemplateServiceImp implements TemplateService {
                 .map(template -> {
                     XmlOptions opts = new XmlOptions();
                     opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
+                    if (prettyPrint) {
+                        opts.setSavePrettyPrint();
+                    }
                     return template.xmlText(opts);
                 })
                 .orElseThrow(

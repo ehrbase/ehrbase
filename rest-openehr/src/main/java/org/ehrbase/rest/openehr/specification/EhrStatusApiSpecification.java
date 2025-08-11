@@ -67,7 +67,8 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get"))
-    ResponseEntity<EhrStatusDto> getEhrStatusVersionByTime(UUID ehrId, String versionAtTime);
+    ResponseEntity<EhrStatusDto> getEhrStatusVersionByTime(
+            UUID ehrId, String versionAtTime, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get EHR_STATUS by version id",
@@ -91,7 +92,8 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get-1"))
-    ResponseEntity<EhrStatusDto> getEhrStatusByVersionId(UUID ehrId, String versionUid);
+    ResponseEntity<EhrStatusDto> getEhrStatusByVersionId(
+            UUID ehrId, String versionUid, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Update EHR_STATUS",
@@ -138,5 +140,10 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-put"))
-    ResponseEntity<EhrStatusDto> updateEhrStatus(UUID ehrId, String versionUid, String prefer, EhrStatusDto ehrStatus);
+    ResponseEntity<EhrStatusDto> updateEhrStatus(
+            UUID ehrId,
+            String versionUid,
+            String prefer,
+            @ApiParameter.PrettyPrint String pretty,
+            EhrStatusDto ehrStatus);
 }

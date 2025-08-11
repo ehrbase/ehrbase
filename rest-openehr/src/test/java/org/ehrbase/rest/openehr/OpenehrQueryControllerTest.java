@@ -102,7 +102,8 @@ public class OpenehrQueryControllerTest {
     @CsvSource({",", "10,0", "0,25"})
     void executeAddHocQueryUsingGET(Integer fetch, Integer offset) {
         ResponseEntity<QueryResponseData> response = controller()
-                .executeAdHocQuery(SAMPLE_QUERY, offset, fetch, SAMPLE_PARAMETER_MAP, MediaType.APPLICATION_JSON_VALUE);
+                .executeAdHocQuery(
+                        MediaType.APPLICATION_JSON_VALUE, offset, fetch, SAMPLE_PARAMETER_MAP, SAMPLE_QUERY, null);
         assertMetaData(response);
         assertAqlQueryRequest(
                 AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
@@ -123,9 +124,10 @@ public class OpenehrQueryControllerTest {
     void executeAddHocQueryUsingPOST(Object fetch, Object offset) {
         ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(
-                        sampleAqlQuery(fetch, offset),
                         MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+                        MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+                        null,
+                        sampleAqlQuery(fetch, offset));
         assertMetaData(response);
         assertAqlQueryRequest(
                 AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
@@ -154,9 +156,10 @@ public class OpenehrQueryControllerTest {
 
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
                         .executeAdHocQuery(
-                                sampleAqlQuery("invalid", null),
                                 MediaType.APPLICATION_JSON_VALUE,
-                                MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                                MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+                                null,
+                                sampleAqlQuery("invalid", null)))
                 .getMessage();
         assertEquals("invalid 'fetch' value 'invalid'", message);
     }
@@ -165,9 +168,10 @@ public class OpenehrQueryControllerTest {
     void executeAddHocQueryUsingPOSTWithOffsetInvalid() {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
                         .executeAdHocQuery(
-                                sampleAqlQuery(null, "invalid"),
                                 MediaType.APPLICATION_JSON_VALUE,
-                                MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                                MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+                                null,
+                                sampleAqlQuery(null, "invalid")))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);
     }
@@ -182,7 +186,8 @@ public class OpenehrQueryControllerTest {
                         offset,
                         fetch,
                         SAMPLE_PARAMETER_MAP,
-                        MediaType.APPLICATION_JSON_VALUE);
+                        MediaType.APPLICATION_JSON_VALUE,
+                        null);
         assertMetaData(response);
         assertAqlQueryRequest(
                 AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
@@ -204,7 +209,8 @@ public class OpenehrQueryControllerTest {
                                 null,
                                 null,
                                 SAMPLE_PARAMETER_MAP,
-                                MediaType.APPLICATION_JSON_VALUE))
+                                MediaType.APPLICATION_JSON_VALUE,
+                                null))
                 .getMessage();
         assertEquals(message, "Stored query 'does_not_exist' with version 'v1.0.0' does not exist");
     }
@@ -218,6 +224,7 @@ public class OpenehrQueryControllerTest {
                         "v1.0.0",
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
+                        null,
                         sampleAqlJson(fetch, offset));
         assertMetaData(response);
         assertAqlQueryRequest(
@@ -233,6 +240,7 @@ public class OpenehrQueryControllerTest {
                                 "v1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
+                                null,
                                 sampleAqlJson("invalid", null)))
                 .getMessage();
         assertEquals("invalid 'fetch' value 'invalid'", message);
@@ -247,6 +255,7 @@ public class OpenehrQueryControllerTest {
                                 "v1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
+                                null,
                                 sampleAqlJson(null, "invalid")))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);

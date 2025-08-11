@@ -73,6 +73,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             @RequestHeader(value = BaseController.OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = BaseController.OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody(required = false) EhrStatusDto ehrStatus) {
 
         UUID ehrId = ehrService.create(null, ehrStatus).ehrId();
@@ -84,8 +85,8 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            EhrDto ehrResponseData = ehrResponseData(ehrId);
-            return bodyBuilder.body(ehrResponseData);
+            setPrettyPrintResponse(pretty);
+            return bodyBuilder.body(ehrResponseData(ehrId));
         } else {
             return bodyBuilder.build();
         }
@@ -101,10 +102,11 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             @RequestHeader(value = BaseController.OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody(required = false) EhrStatusDto ehrStatus) {
 
         // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in response)
-        UUID newEhrId = parseUUID(ehrIdString, "EHR ID format not a UUID");
+        UUID newEhrId = parseUUID(ehrIdString);
         UUID ehrId = ehrService.create(newEhrId, ehrStatus).ehrId();
         createRestContext(ehrId);
 
@@ -113,8 +115,8 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            EhrDto ehrResponseData = ehrResponseData(ehrId);
-            return bodyBuilder.body(ehrResponseData);
+            setPrettyPrintResponse(pretty);
+            return bodyBuilder.body(ehrResponseData(ehrId));
         } else {
             return bodyBuilder.build();
         }
@@ -123,16 +125,16 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     @GetMapping(
             path = "/{ehr_id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<EhrDto> getEhrById(@PathVariable(value = "ehr_id") String ehrIdString) {
+    public ResponseEntity<EhrDto> getEhrById(
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         createRestContext(ehrId);
 
-        // load the EHR response
-        EhrDto ehrResponseData = ehrResponseData(ehrId);
-
         // Return HTTP 200 OK body builder
-        return responseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData);
+        setPrettyPrintResponse(pretty);
+        return responseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData(ehrId));
     }
 
     /**
@@ -143,7 +145,8 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<EhrDto> getEhrBySubject(
             @RequestParam(value = "subject_id") String subjectId,
-            @RequestParam(value = "subject_namespace") String subjectNamespace) {
+            @RequestParam(value = "subject_namespace") String subjectNamespace,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = ehrService
                 .findBySubject(subjectId, subjectNamespace)
@@ -151,8 +154,8 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         createRestContext(ehrId);
 
         // Return HTTP 200 OK body builder
-        EhrDto ehrResponseData = ehrResponseData(ehrId);
-        return responseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData);
+        setPrettyPrintResponse(pretty);
+        return responseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData(ehrId));
     }
 
     private EhrDto ehrResponseData(UUID ehrId) {

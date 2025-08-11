@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
@@ -57,6 +58,8 @@ public abstract class BaseController {
     public static final String RETURN_MINIMAL = "return=minimal";
 
     public static final String RETURN_REPRESENTATION = "return=representation";
+
+    public static final String PRETTY = "_pretty";
 
     // Fixed header identifiers
     public static final String CONTENT_TYPE = HttpHeaders.CONTENT_TYPE;
@@ -102,7 +105,7 @@ public abstract class BaseController {
      * @return URI for the given base URL and segments
      */
     protected URI createLocationUri(String... pathSegments) {
-        return UriComponentsBuilder.fromHttpUrl(getContextPath())
+        return UriComponentsBuilder.fromUriString(getContextPath())
                 .path(UriUtils.encodePath(apiContextPathWithVersion, "UTF-8"))
                 .pathSegment(pathSegments)
                 .build()
@@ -113,15 +116,14 @@ public abstract class BaseController {
      * Helper to parse an input UUID int string format.
      *
      * @param uuidString to parse
-     * @param error      to raise in case the given UUID string is invalid
      * @return uuid      parse from the input <code>uuidString</code>
      * @throws InvalidApiParameterException when the given <code>uuidString</code> is invalid
      */
-    protected UUID parseUUID(String uuidString, String error) {
+    protected UUID parseUUID(String uuidString) {
         try {
             return UUID.fromString(uuidString);
         } catch (IllegalArgumentException e) {
-            throw new InvalidApiParameterException(error);
+            throw new InvalidApiParameterException("EHR ID format not a UUID");
         }
     }
 
@@ -308,5 +310,21 @@ public abstract class BaseController {
                                 e);
                     }
                 });
+    }
+
+    /**
+     * Check if the given parameter enabled pretty printing.
+     */
+    protected static boolean isPretty(String pretty) {
+        return "".equals(pretty) || "true".equals(pretty);
+    }
+
+    /**
+     * Determinate to pretty print the response
+     */
+    protected static void setPrettyPrintResponse(String pretty) {
+
+        Optional.ofNullable(RequestContextHolder.getRequestAttributes())
+                .ifPresent(requestAttributes -> requestAttributes.setAttribute(PRETTY, isPretty(pretty), 0));
     }
 }

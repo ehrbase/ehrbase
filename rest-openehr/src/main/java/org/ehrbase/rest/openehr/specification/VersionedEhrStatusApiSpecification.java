@@ -36,7 +36,8 @@ public interface VersionedEhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get"))
-    ResponseEntity<VersionedEhrStatusDto> retrieveVersionedEhrStatusByEhr(String ehrIdString);
+    ResponseEntity<VersionedEhrStatusDto> retrieveVersionedEhrStatusByEhr(
+            String ehrIdString, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get versioned EHR_STATUS revision history",
@@ -44,7 +45,8 @@ public interface VersionedEhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-1"))
-    ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(String ehrIdString);
+    ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
+            String ehrIdString, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get versioned EHR_STATUS version by time",
@@ -53,7 +55,7 @@ public interface VersionedEhrStatusApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-2"))
     ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByTime(
-            String ehrIdString, String versionAtTime);
+            String ehrIdString, String versionAtTime, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get versioned EHR_STATUS version by id",
@@ -62,5 +64,5 @@ public interface VersionedEhrStatusApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-3"))
     ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByVersionUid(
-            String ehrIdString, String versionUid);
+            String ehrIdString, String versionUid, @ApiParameter.PrettyPrint String pretty);
 }

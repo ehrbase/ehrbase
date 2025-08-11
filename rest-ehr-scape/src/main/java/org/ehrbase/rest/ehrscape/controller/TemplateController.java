@@ -80,7 +80,7 @@ public class TemplateController extends BaseController {
 
         Composition composition = templateService.buildExample(templateId);
         CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
-        StructuredString serialized = compositionService.serialize(compositionDto, format);
+        StructuredString serialized = compositionService.serialize(compositionDto, format, true);
 
         MediaType contentType =
                 format == CompositionFormat.XML ? MediaType.APPLICATION_XML : MediaType.APPLICATION_JSON;

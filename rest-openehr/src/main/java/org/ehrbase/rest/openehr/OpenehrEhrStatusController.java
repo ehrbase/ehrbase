@@ -71,7 +71,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<EhrStatusDto> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
-            @RequestParam(name = "version_at_time", required = false) String versionAtTime) {
+            @RequestParam(name = "version_at_time", required = false) String versionAtTime,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         final ObjectVersionId objectVersionId;
 
@@ -85,6 +86,8 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(objectVersionId.getValue());
         int version = extractVersionFromVersionUid(objectVersionId.getValue()).orElseThrow();
 
+        setPrettyPrintResponse(pretty);
+
         OriginalVersion<EhrStatusDto> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
         return responseBuilder(HttpStatus.OK, ehrId, originalVersion).body(originalVersion.getData());
     }
@@ -94,12 +97,16 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
             path = "/{version_uid}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<EhrStatusDto> getEhrStatusByVersionId(
-            @PathVariable(name = "ehr_id") UUID ehrId, @PathVariable(name = "version_uid") String versionUid) {
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @PathVariable(name = "version_uid") String versionUid,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(versionUid);
         int version = extractVersionFromVersionUid(versionUid)
                 .orElseThrow(
                         () -> new InvalidApiParameterException("VERSION UID parameter does not contain a version"));
+
+        setPrettyPrintResponse(pretty);
 
         OriginalVersion<EhrStatusDto> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
         return responseBuilder(HttpStatus.OK, ehrId, originalVersion).body(originalVersion.getData());
@@ -113,6 +120,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
             @PathVariable("ehr_id") UUID ehrId,
             @RequestHeader(name = IF_MATCH) String versionUid,
             @RequestHeader(name = PREFER, required = false) String prefer,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody EhrStatusDto ehrStatusDto) {
 
         HttpRestContext.register(EHR_ID, ehrId);
@@ -131,6 +139,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
+            setPrettyPrintResponse(pretty);
             return responseBuilder(HttpStatus.OK, ehrId, originalVersion).body(originalVersion.getData());
         } else {
             return responseBuilder(HttpStatus.NO_CONTENT, ehrId, originalVersion)

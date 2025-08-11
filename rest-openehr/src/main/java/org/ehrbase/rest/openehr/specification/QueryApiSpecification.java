@@ -41,12 +41,12 @@ public interface QueryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/query.html#query-execute-query-get"))
     ResponseEntity<QueryResponseData> executeAdHocQuery(
-            String query,
-            // FIXME: ehr_id is missing?
+            String accept,
             Integer offset,
             Integer fetch,
             Map<String, Object> queryParameters,
-            String accept);
+            String query,
+            @ApiParameter.PrettyPrint String pretty);
 
     /**
      * Execute ad-hoc (non-stored) AQL query.
@@ -58,7 +58,10 @@ public interface QueryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/query.html#query-execute-query-post"))
     ResponseEntity<QueryResponseData> executeAdHocQuery(
-            Map<String, Object> queryRequest, String accept, String contentType);
+            String contentType,
+            String accept,
+            @ApiParameter.PrettyPrint String pretty,
+            Map<String, Object> queryRequest);
 
     /**
      * Execute stored query.
@@ -70,13 +73,13 @@ public interface QueryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/query.html#query-execute-query-get-1"))
     ResponseEntity<QueryResponseData> executeStoredQuery(
-            String qualifiedQueryName,
+            String accept,
             String version,
-            // FIXME: ehr_id is missing?
             Integer offset,
             Integer fetch,
             Map<String, Object> queryParameter,
-            String accept);
+            @ApiParameter.PrettyPrint String pretty,
+            String qualifiedQueryName);
 
     /**
      * Execute stored query.
@@ -88,9 +91,10 @@ public interface QueryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/query.html#query-execute-query-post-1"))
     ResponseEntity<QueryResponseData> executeStoredQuery(
-            String qualifiedQueryName,
-            String version,
             String accept,
             String contentType,
+            String version,
+            String qualifiedQueryName,
+            @ApiParameter.PrettyPrint String pretty,
             Map<String, Object> queryRequest);
 }

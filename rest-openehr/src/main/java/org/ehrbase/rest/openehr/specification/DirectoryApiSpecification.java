@@ -46,12 +46,13 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "404")
             })
     ResponseEntity<DirectoryResponseData> createDirectory(
-            UUID ehrId,
+            String prefer,
             String openEhrVersion,
             String openEhrAuditDetails,
             String contentType,
             String accept,
-            String prefer,
+            UUID ehrId,
+            @ApiParameter.PrettyPrint String pretty,
             Folder folder);
 
     @Operation(
@@ -68,13 +69,14 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "412")
             })
     ResponseEntity<DirectoryResponseData> updateDirectory(
-            UUID ehrId,
+            String openEhrAuditDetails,
             ObjectVersionId folderId,
             String contentType,
             String accept,
             String prefer,
             String openEhrVersion,
-            String openEhrAuditDetails,
+            UUID ehrId,
+            @ApiParameter.PrettyPrint String pretty,
             Folder folder);
 
     @Operation(
@@ -90,7 +92,12 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "412")
             })
     ResponseEntity<DirectoryResponseData> deleteDirectory(
-            UUID ehrId, String openEhrVersion, String openEhrAuditDetails, String accept, ObjectVersionId folderId);
+            String accept,
+            ObjectVersionId folderId,
+            String openEhrAuditDetails,
+            String openEhrVersion,
+            UUID ehrId,
+            @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get folder in directory version",
@@ -100,7 +107,11 @@ public interface DirectoryApiSpecification {
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#directory-directory-get"),
             responses = {@ApiResponse(responseCode = "200"), @ApiResponse(responseCode = "404")})
     ResponseEntity<DirectoryResponseData> getFolderInDirectory(
-            UUID ehrId, ObjectVersionId versionUid, String path, String accept);
+            String accept,
+            ObjectVersionId versionUid,
+            String path,
+            UUID ehrId,
+            @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get folder in directory version at time",
@@ -114,5 +125,5 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "404")
             })
     ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(
-            UUID ehrId, String versionAtTime, String path, String accept);
+            String accept, String versionAtTime, String path, UUID ehrId, @ApiParameter.PrettyPrint String pretty);
 }

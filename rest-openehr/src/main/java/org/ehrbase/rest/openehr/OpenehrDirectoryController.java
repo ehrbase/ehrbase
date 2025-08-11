@@ -75,15 +75,18 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @Override
     @PostMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> createDirectory(
-            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody Folder folder) {
 
         var createdFolder = directoryService.create(ehrId, folder);
+
+        setPrettyPrintResponse(pretty);
 
         return createDirectoryResponse(POST, prefer, accept, createdFolder, ehrId);
     }
@@ -94,19 +97,22 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @Override
     @PutMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> updateDirectory(
-            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId,
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody Folder folder) {
 
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         // Update folder and get new version
         Folder updatedFolder = directoryService.update(ehrId, folder, folderId);
+
+        setPrettyPrintResponse(pretty);
 
         return createDirectoryResponse(HttpMethod.PUT, prefer, accept, updatedFolder, ehrId);
     }
@@ -117,17 +123,20 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @Override
     @DeleteMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> deleteDirectory(
-            @PathVariable(name = "ehr_id") UUID ehrId,
-            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
-            @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
+            @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId,
+            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         folderId.setValue(unwrap(folderId.getValue(), '"'));
 
         directoryService.delete(ehrId, folderId);
 
         createRestContext(ehrId, folderId.toString());
+
+        setPrettyPrintResponse(pretty);
 
         return createDirectoryResponse(HttpMethod.DELETE, null, accept, null, ehrId);
     }
@@ -138,10 +147,11 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @Override
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
-            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @PathVariable(name = "version_uid") ObjectVersionId versionUid,
             @RequestParam(name = "path", required = false) String path,
-            @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept) {
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         validateVersionUid(versionUid);
 
@@ -155,6 +165,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
                     String.format(
                             "Folder with id %s and path %s does not exist.", versionUid, path != null ? path : "/"));
         }
+
+        setPrettyPrintResponse(pretty);
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
@@ -178,11 +190,12 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @Override
     @GetMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(
-            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestHeader(name = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE)
+                    String accept,
             @RequestParam(name = "version_at_time", required = false) String versionAtTime,
             @RequestParam(name = "path", required = false) String path,
-            @RequestHeader(name = ACCEPT, required = false, defaultValue = MediaType.APPLICATION_JSON_VALUE)
-                    String accept) {
+            @PathVariable(name = "ehr_id") UUID ehrId,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         // Check ehr exists
 
@@ -204,6 +217,8 @@ public class OpenehrDirectoryController extends BaseController implements Direct
                     "The FOLDER for ehrId %s and path %s does not exist."
                             .formatted(ehrId.toString(), path != null ? path : "/"));
         }
+
+        setPrettyPrintResponse(pretty);
 
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }

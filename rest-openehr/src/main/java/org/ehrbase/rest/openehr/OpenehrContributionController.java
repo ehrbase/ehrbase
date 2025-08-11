@@ -50,6 +50,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -80,6 +81,7 @@ public class OpenehrContributionController extends BaseController implements Con
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody String contribution) {
 
         if (!resolveContentType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)) {
@@ -106,6 +108,7 @@ public class OpenehrContributionController extends BaseController implements Con
 
         if (doReturnRepresentation) {
             // 201 with body + headers
+            setPrettyPrintResponse(pretty);
             return ResponseEntity.created(uri).headers(respData.getHeaders()).body(respData.getResponseData());
         } else {
             // 204 only with headers
@@ -120,7 +123,8 @@ public class OpenehrContributionController extends BaseController implements Con
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "contribution_uid") String contributionUidString) {
+            @PathVariable(value = "contribution_uid") String contributionUidString,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID contributionUid = getContributionVersionedObjectUidString(contributionUidString);
@@ -135,6 +139,8 @@ public class OpenehrContributionController extends BaseController implements Con
                 buildContributionResponseData(contributionUid, ehrId, accept, uri, headerList, true);
 
         createRestContext(ehrId, contributionUid);
+
+        setPrettyPrintResponse(pretty);
 
         // returns 200 with body
         return ResponseEntity.ok().headers(respData.getHeaders()).body(respData.getResponseData());

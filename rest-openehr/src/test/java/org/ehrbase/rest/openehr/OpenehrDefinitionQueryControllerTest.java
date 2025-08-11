@@ -148,6 +148,7 @@ public class OpenehrDefinitionQueryControllerTest {
                         name,
                         Optional.ofNullable(version),
                         "AQL",
+                        null,
                         payload);
         assertThat(response).satisfies(check);
     }
@@ -159,7 +160,7 @@ public class OpenehrDefinitionQueryControllerTest {
         doReturn(List.of()).when(mockStoredQueryService).retrieveStoredQueries("some-query");
 
         ResponseEntity<QueryDefinitionListResponseData> response =
-                controller().getStoredQueryList(accept, "some-query");
+                controller().getStoredQueryList(accept, "some-query", null);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto.size())
@@ -175,7 +176,7 @@ public class OpenehrDefinitionQueryControllerTest {
                 .retrieveStoredQueries("test-query");
 
         ResponseEntity<QueryDefinitionListResponseData> response =
-                controller().getStoredQueryList(accept, "test-query");
+                controller().getStoredQueryList(accept, "test-query", null);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto.size())
@@ -201,7 +202,7 @@ public class OpenehrDefinitionQueryControllerTest {
                 .retrieveStoredQuery(name, version);
 
         ResponseEntity<QueryDefinitionResponseData> response =
-                controller().getStoredQueryVersion(accept, name, Optional.ofNullable(version));
+                controller().getStoredQueryVersion(accept, name, Optional.ofNullable(version), null);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().satisfies(dto -> {

@@ -38,7 +38,11 @@ public interface TemplateApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL1.4/operation/definition_template_adl1.4_upload"))
     ResponseEntity<String> createTemplateClassic(
-            String openehrVersion, String openehrAuditDetails, String prefer, String template);
+            String openehrVersion,
+            String openehrAuditDetails,
+            String prefer,
+            @ApiParameter.PrettyPrint String pretty,
+            String template);
 
     @Operation(
             tags = "ADL 1.4 TEMPLATE",
@@ -48,7 +52,7 @@ public interface TemplateApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL1.4/operation/definition_template_adl1.4_list"))
     ResponseEntity<List<TemplateMetaDataDto>> getTemplatesClassic(
-            String openehrVersion, String openehrAuditDetails, String accept);
+            String openehrVersion, String openehrAuditDetails, String accept, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             tags = "ADL 1.4 TEMPLATE",
@@ -58,7 +62,11 @@ public interface TemplateApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL1.4/operation/definition_template_adl1.4_get"))
     ResponseEntity<Object> getTemplateClassic(
-            String openehrVersion, String openehrAuditDetails, String accept, String templateId);
+            String openehrVersion,
+            String openehrAuditDetails,
+            String accept,
+            String templateId,
+            @ApiParameter.PrettyPrint String pretty);
 
     @Operation(tags = "ADL 1.4 TEMPLATE", summary = "Get an example composition for the specified template")
     ResponseEntity<String> getTemplateExample(
@@ -70,7 +78,8 @@ public interface TemplateApiSpecification {
                                     @Schema(
                                             type = "string",
                                             allowableValues = {"JSON", "XML", "STRUCTURED", "FLAT"}))
-                    String format);
+                    String format,
+            @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             tags = "ADL 2 TEMPLATE",
@@ -86,6 +95,7 @@ public interface TemplateApiSpecification {
             String accept,
             String prefer,
             String version,
+            @ApiParameter.PrettyPrint String pretty,
             String template);
 
     @Operation(
@@ -96,7 +106,7 @@ public interface TemplateApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL2/operation/definition_template_adl2_get"))
     ResponseEntity<TemplateResponseData> getTemplatesNew(
-            String openehrVersion, String openehrAuditDetails, String accept);
+            String openehrVersion, String openehrAuditDetails, String accept, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             tags = "ADL 2 TEMPLATE",
@@ -106,7 +116,12 @@ public interface TemplateApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-get-1"))
     ResponseEntity<TemplateResponseData> getTemplateNew(
-            String openehrVersion, String openehrAuditDetails, String accept, String templateId, String versionPattern);
+            String openehrVersion,
+            String openehrAuditDetails,
+            String accept,
+            String templateId,
+            String versionPattern,
+            @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             tags = "TEMPLATE",
@@ -115,5 +130,6 @@ public interface TemplateApiSpecification {
                     "Replaced by [/rest/openehr/v1/definition/template/adl1.4/{template_id}](./index.html?urls.primaryName=1.%20openEHR%20API#/ADL%201.4%20TEMPLATE/getTemplateClassic)",
             deprecated = true)
     @Deprecated(since = "2.2.0", forRemoval = true)
-    ResponseEntity<WebTemplate> getWebTemplate(String accept, String templateId);
+    ResponseEntity<WebTemplate> getWebTemplate(
+            String accept, String templateId, @ApiParameter.PrettyPrint String pretty);
 }

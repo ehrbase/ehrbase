@@ -80,7 +80,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
     @GetMapping
     @Override
     public ResponseEntity<VersionedEhrStatusDto> retrieveVersionedEhrStatusByEhr(
-            @PathVariable(value = "ehr_id") String ehrIdString) {
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         createRestContext(ehrId, Map.of());
@@ -92,19 +93,22 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
                 DateTimeFormatter.ISO_DATE_TIME.format(
                         versionedEhrStatus.getTimeCreated().getValue()));
 
+        setPrettyPrintResponse(pretty);
         return ResponseEntity.ok().body(versionedEhrStatusDto);
     }
 
     @GetMapping(path = "/revision_history")
     @Override
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
-            @PathVariable(value = "ehr_id") String ehrIdString) {
+            @PathVariable(value = "ehr_id") String ehrIdString,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         RevisionHistory revisionHistory = ehrService.getRevisionHistoryOfVersionedEhrStatus(ehrId);
 
         createRestContext(ehrId, Map.of(), REVISION_HISTORY);
 
+        setPrettyPrintResponse(pretty);
         return ResponseEntity.ok().body(new RevisionHistoryResponseData(revisionHistory));
     }
 
@@ -112,7 +116,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
     @Override
     public ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByTime(
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
+            @RequestParam(value = "version_at_time", required = false) String versionAtTime,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         ObjectVersionId objectVersionId;
@@ -130,6 +135,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
         int version = extractVersionFromVersionUid(objectVersionId.getValue()).orElseThrow();
         UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(objectVersionId.getValue());
 
+        setPrettyPrintResponse(pretty);
         return retrieveVersionOfEhrStatus(
                 ehrId, ehrStatusId, version, versionId -> createRestContext(ehrId, contextParams, "version"));
     }
@@ -138,7 +144,8 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
     @Override
     public ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByVersionUid(
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "version_uid") String versionUid) {
+            @PathVariable(value = "version_uid") String versionUid,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
@@ -153,6 +160,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
             throw new InvalidApiParameterException("VERSION UID parameter has wrong format: " + e.getMessage());
         }
 
+        setPrettyPrintResponse(pretty);
         return retrieveVersionOfEhrStatus(
                 ehrId,
                 ehrStatusId,

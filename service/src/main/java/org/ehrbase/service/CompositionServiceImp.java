@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
@@ -54,10 +55,8 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat;
-import org.ehrbase.openehr.sdk.serialisation.flatencoding.FlatFormat;
-import org.ehrbase.openehr.sdk.serialisation.flatencoding.FlatJasonProvider;
-import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
-import org.ehrbase.openehr.sdk.serialisation.xmlencoding.CanonicalXML;
+import org.ehrbase.openehr.sdk.serialisation.RMDataFormat;
+import org.ehrbase.openehr.sdk.serialisation.RmMarshalOption;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.templateprovider.TemplateProvider;
 import org.ehrbase.repository.CompositionRepository;
@@ -320,68 +319,40 @@ public class CompositionServiceImp implements CompositionService {
      * and the desired target serialized string format. Will parse the composition dto into target
      * format either with a custom lambda expression for desired target format
      *
-     * @param composition Composition dto from database
-     * @param format      Target format
-     * @return Structured string with string of data and content format
+     * @param compositionDto Composition dto from database
+     * @param format         Target format
+     * @param pretty         Pretty-Print the serialized Composition
+     * @return Structured    string with string of data and content format
      */
     @Override
-    public StructuredString serialize(CompositionDto composition, CompositionFormat format) {
-        final StructuredString compositionString;
-        switch (format) {
-            case XML:
-                compositionString = new StructuredString(
-                        new CanonicalXML().marshal(composition.getComposition(), false), StructuredStringFormat.XML);
-                break;
-            case JSON:
-                compositionString = new StructuredString(
-                        new CanonicalJson().marshal(composition.getComposition()), StructuredStringFormat.JSON);
-                break;
-            case FLAT:
-                compositionString = new StructuredString(
-                        new FlatJasonProvider(createTemplateProvider())
-                                .buildFlatJson(FlatFormat.SIM_SDT, composition.getTemplateId())
-                                .marshal(composition.getComposition()),
-                        StructuredStringFormat.JSON);
-                break;
-            case STRUCTURED:
-                compositionString = new StructuredString(
-                        new FlatJasonProvider(createTemplateProvider())
-                                .buildFlatJson(FlatFormat.STRUCTURED, composition.getTemplateId())
-                                .marshal(composition.getComposition()),
-                        StructuredStringFormat.JSON);
-                break;
-            default:
-                throw new UnexpectedSwitchCaseException(format);
-        }
-        return compositionString;
+    public StructuredString serialize(CompositionDto compositionDto, CompositionFormat format, boolean pretty) {
+
+        String content = rmDataFormat(format, compositionDto.getTemplateId())
+                .marshal(compositionDto.getComposition(), pretty ? Set.of(RmMarshalOption.PRETTY_PRINT) : Set.of());
+        return new StructuredString(
+                content, format == CompositionFormat.XML ? StructuredStringFormat.XML : StructuredStringFormat.JSON);
     }
 
     public Composition buildComposition(String content, CompositionFormat format, String templateId) {
-        final Composition composition;
-        switch (format) {
-            case XML:
-                composition = new CanonicalXML().unmarshal(content, Composition.class);
-                break;
-            case JSON:
-                composition = new CanonicalJson().unmarshal(content, Composition.class);
-                break;
-            case FLAT:
-                composition = new FlatJasonProvider(createTemplateProvider())
-                        .buildFlatJson(FlatFormat.SIM_SDT, templateId)
-                        .unmarshal(content);
-                break;
-            case STRUCTURED:
-                composition = new FlatJasonProvider(createTemplateProvider())
-                        .buildFlatJson(FlatFormat.STRUCTURED, templateId)
-                        .unmarshal(content);
-                break;
-            default:
-                throw new UnexpectedSwitchCaseException(format);
-        }
-        return composition;
+        return rmDataFormat(format, templateId).unmarshal(content);
     }
 
     //    private
+
+    private RMDataFormat rmDataFormat(CompositionFormat format, String templateId) {
+        return switch (format) {
+            case XML:
+                yield RMDataFormat.canonicalXML();
+            case JSON:
+                yield RMDataFormat.canonicalJSON();
+            case FLAT:
+                yield RMDataFormat.sdtFlatJSON(createTemplateProvider(), templateId);
+            case STRUCTURED:
+                yield RMDataFormat.sdtStructuredJSON(createTemplateProvider(), templateId);
+            default:
+                throw new UnexpectedSwitchCaseException(format);
+        };
+    }
 
     private TemplateProvider createTemplateProvider() {
         return new TemplateProvider() {

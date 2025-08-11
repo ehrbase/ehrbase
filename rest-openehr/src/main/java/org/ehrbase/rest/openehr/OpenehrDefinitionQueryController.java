@@ -87,13 +87,16 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     @GetMapping(value = {"/{qualified_query_name}", ""})
     public ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(
             @RequestHeader(value = ACCEPT, required = false) String accept,
-            @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
+            @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         registerLocation(qualifiedQueryName, null);
         QueryDefinitionListResponseData responseData =
                 new QueryDefinitionListResponseData(storedQueryService.retrieveStoredQueries(qualifiedQueryName));
 
         HttpRestContext.register(QUERY_ID, qualifiedQueryName);
+
+        setPrettyPrintResponse(pretty);
 
         return ResponseEntity.ok(responseData);
     }
@@ -103,7 +106,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     public ResponseEntity<QueryDefinitionResponseData> getStoredQueryVersion(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
-            @PathVariable(value = "version") Optional<String> version) {
+            @PathVariable(value = "version") Optional<String> version,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         registerLocation(qualifiedQueryName, version.orElse(null));
 
@@ -111,6 +115,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                 storedQueryService.retrieveStoredQuery(qualifiedQueryName, version.orElse(null)));
 
         HttpRestContext.register(QUERY_ID, qualifiedQueryName);
+
+        setPrettyPrintResponse(pretty);
 
         return ResponseEntity.ok(queryDefinitionResponseData);
     }
@@ -126,6 +132,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(value = "version") Optional<String> version,
             @RequestParam(value = "type", required = false, defaultValue = "AQL") String type,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody String queryPayload) {
 
         if (!AQL.equalsIgnoreCase(type)) {
@@ -166,6 +173,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                 storedQueryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
 
         HttpRestContext.register(QUERY_ID, qualifiedQueryName);
+
+        setPrettyPrintResponse(pretty);
 
         return getPutDefenitionResponseEntity(mediaType, storedQuery);
     }

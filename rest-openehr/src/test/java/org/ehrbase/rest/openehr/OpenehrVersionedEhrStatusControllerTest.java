@@ -88,7 +88,7 @@ class OpenehrVersionedEhrStatusControllerTest {
     void retrieveVersionedEhrStatusByEhrErrorEhrUUID() {
 
         OpenehrVersionedEhrStatusController controller = controller();
-        assertThatThrownBy(() -> controller.retrieveVersionedEhrStatusByEhr("nopt-an-ehr-id"))
+        assertThatThrownBy(() -> controller.retrieveVersionedEhrStatusByEhr("nopt-an-ehr-id", null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("EHR not found, in fact, only UUID-type IDs are supported");
     }
@@ -103,7 +103,8 @@ class OpenehrVersionedEhrStatusControllerTest {
                 new DvDateTime(OffsetDateTime.parse("2024-07-16T15:20:00Z")));
 
         doReturn(versionedObject).when(mockEhrService).getVersionedEhrStatus(ehrId);
-        ResponseEntity<VersionedEhrStatusDto> response = controller().retrieveVersionedEhrStatusByEhr(ehrId.toString());
+        ResponseEntity<VersionedEhrStatusDto> response =
+                controller().retrieveVersionedEhrStatusByEhr(ehrId.toString(), null);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -119,7 +120,7 @@ class OpenehrVersionedEhrStatusControllerTest {
     void retrieveVersionedEhrStatusRevisionHistoryByEhrErrorEhrUUID() {
 
         OpenehrVersionedEhrStatusController controller = controller();
-        assertThatThrownBy(() -> controller.retrieveVersionedEhrStatusRevisionHistoryByEhr("nopt-an-ehr-id"))
+        assertThatThrownBy(() -> controller.retrieveVersionedEhrStatusRevisionHistoryByEhr("nopt-an-ehr-id", null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("EHR not found, in fact, only UUID-type IDs are supported");
     }
@@ -134,7 +135,7 @@ class OpenehrVersionedEhrStatusControllerTest {
 
         doReturn(revisionHistory).when(mockEhrService).getRevisionHistoryOfVersionedEhrStatus(ehrId);
         ResponseEntity<RevisionHistoryResponseData> response =
-                controller().retrieveVersionedEhrStatusRevisionHistoryByEhr(ehrId.toString());
+                controller().retrieveVersionedEhrStatusRevisionHistoryByEhr(ehrId.toString(), null);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -147,7 +148,7 @@ class OpenehrVersionedEhrStatusControllerTest {
     void retrieveVersionOfEhrStatusByTimeErrorEhrUUID() {
 
         OpenehrVersionedEhrStatusController controller = controller();
-        assertThatThrownBy(() -> controller.retrieveVersionOfEhrStatusByTime("nopt-an-ehr-id", null))
+        assertThatThrownBy(() -> controller.retrieveVersionOfEhrStatusByTime("nopt-an-ehr-id", null, null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("EHR not found, in fact, only UUID-type IDs are supported");
     }
@@ -157,7 +158,7 @@ class OpenehrVersionedEhrStatusControllerTest {
 
         OpenehrVersionedEhrStatusController controller = controller();
         runRetrieveOriginalVersionTest(
-                (ehrId, originalVersion) -> controller.retrieveVersionOfEhrStatusByTime(ehrId.toString(), null));
+                (ehrId, originalVersion) -> controller.retrieveVersionOfEhrStatusByTime(ehrId.toString(), null, null));
     }
 
     @Test
@@ -168,7 +169,8 @@ class OpenehrVersionedEhrStatusControllerTest {
             doReturn(originalVersion.getUid())
                     .when(mockEhrService)
                     .getEhrStatusVersionByTimestamp(ehrId, versionAtTime);
-            return controller().retrieveVersionOfEhrStatusByTime(ehrId.toString(), "2015-01-20T19:30:22.765+01:00");
+            return controller()
+                    .retrieveVersionOfEhrStatusByTime(ehrId.toString(), "2015-01-20T19:30:22.765+01:00", null);
         });
     }
 
@@ -176,7 +178,7 @@ class OpenehrVersionedEhrStatusControllerTest {
     void retrieveVersionOfEhrStatusByVersionUidErrorEhrUUID() {
 
         OpenehrVersionedEhrStatusController controller = controller();
-        assertThatThrownBy(() -> controller.retrieveVersionOfEhrStatusByVersionUid("nopt-an-ehr-id", null))
+        assertThatThrownBy(() -> controller.retrieveVersionOfEhrStatusByVersionUid("nopt-an-ehr-id", null, null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("EHR not found, in fact, only UUID-type IDs are supported");
     }
@@ -186,7 +188,7 @@ class OpenehrVersionedEhrStatusControllerTest {
 
         OpenehrVersionedEhrStatusController controller = controller();
         assertThatThrownBy(() -> controller.retrieveVersionOfEhrStatusByVersionUid(
-                        "efaae175-b3bd-44a1-9b99-79bc1191b200", "not-a-version-id"))
+                        "efaae175-b3bd-44a1-9b99-79bc1191b200", "not-a-version-id", null))
                 .isInstanceOf(InvalidApiParameterException.class)
                 .hasMessage("VERSION UID parameter has wrong format: Invalid UUID string: not-a-version-id");
     }
@@ -196,7 +198,7 @@ class OpenehrVersionedEhrStatusControllerTest {
 
         OpenehrVersionedEhrStatusController controller = controller();
         runRetrieveOriginalVersionTest((ehrId, originalVersion) -> controller.retrieveVersionOfEhrStatusByVersionUid(
-                ehrId.toString(), originalVersion.getUid().getValue()));
+                ehrId.toString(), originalVersion.getUid().getValue(), null));
     }
 
     private void runRetrieveOriginalVersionTest(
