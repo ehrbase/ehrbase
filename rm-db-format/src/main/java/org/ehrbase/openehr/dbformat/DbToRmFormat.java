@@ -188,6 +188,21 @@ public final class DbToRmFormat {
      */
     public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, Record2<?, ?>[] jsonObjects) {
 
+        ObjectNode decoded = decodeKeys(reconstructRmObjectTree(jsonObjects));
+
+        R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
+
+        // prevent empty items array
+        if (rmObject instanceof Folder folder
+                && folder.getItems() != null
+                && folder.getItems().isEmpty()) {
+            folder.setItems(null);
+        }
+
+        return rmObject;
+    }
+
+    public static ObjectNode reconstructRmObjectTree(final Record2<?, ?>[] jsonObjects) {
         int childCount = jsonObjects.length;
         // Or Record2<String, JsonNode>[] dbRecords
 
@@ -201,19 +216,7 @@ public final class DbToRmFormat {
             insertJsonEntry(
                     dbRoot, remainingPath(rootPathLength, child.value1()), standardizeObjectNode(parseJsonData(child)));
         }
-
-        ObjectNode decoded = decodeKeys(dbRoot);
-
-        R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
-
-        // prevent empty items array
-        if (rmObject instanceof Folder folder
-                && folder.getItems() != null
-                && folder.getItems().isEmpty()) {
-            folder.setItems(null);
-        }
-
-        return rmObject;
+        return dbRoot;
     }
 
     private static int calcRootPathLength(
@@ -333,7 +336,7 @@ public final class DbToRmFormat {
         }
     }
 
-    private static ObjectNode decodeKeys(ObjectNode dbJson) {
+    public static ObjectNode decodeKeys(ObjectNode dbJson) {
         if (dbJson.has(RmAttributeAlias.getAlias(TYPE_ATTRIBUTE))) {
             revertNodeAliasesInPlace(dbJson);
         } else {
