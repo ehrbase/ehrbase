@@ -68,5 +68,4 @@ public interface AqlQueryContext {
     void setExecutedAql(String executedAql);
 
     void setMetaProperty(MetaProperty property, Object value);
-    // TODO CDR-1960 add feature toggle
 }

@@ -54,21 +54,15 @@ public abstract class TreeNode<T extends TreeNode<T>> {
             return child;
         }
 
-        if (!child.children.isEmpty()) {
-            // check ancestors
-            var a = this.parent;
-            while (a != null) {
-                if (a == child) {
-                    throw new IllegalArgumentException("The child is an ancestor of the current node");
-                }
-                a = a.parent;
-            }
+        // check ancestors
+        if (child.streamDepthFirst().anyMatch(n -> n == this)) {
+            throw new IllegalArgumentException("The child tree already contains the current node");
         }
 
         child.removeFromParent();
 
         child.parent = (T) this;
-        child.depth = depth + 1;
+        child.streamDepthFirst().forEach(n -> n.depth = n.parent.depth + 1);
         children.add(child);
         return child;
     }

@@ -93,11 +93,10 @@ final class ConditionUtils {
 
     private static Condition delegatingJoinCondition(
             AslDelegatingJoinCondition joinCondition, AslQueryTables aslQueryToTable) {
-        if (joinCondition.getDelegate() instanceof AslFieldFieldQueryCondition ffc) {
-            return fieldJoinCondition(ffc, aslQueryToTable);
-        } else {
-            return coalesceJoinCondition((AslCoalesceJoinCondition) joinCondition.getDelegate(), aslQueryToTable);
-        }
+        return switch (joinCondition.getDelegate()) {
+            case AslFieldFieldQueryCondition ffc -> fieldJoinCondition(ffc, aslQueryToTable);
+            case AslCoalesceJoinCondition cjc -> coalesceJoinCondition(cjc, aslQueryToTable);
+        };
     }
 
     private static Condition coalesceJoinCondition(
