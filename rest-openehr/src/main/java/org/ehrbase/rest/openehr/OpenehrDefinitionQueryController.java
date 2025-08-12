@@ -125,7 +125,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(value = "version") Optional<String> version,
-            @RequestParam(value = "type", required = false, defaultValue = "AQL") String type,
+            @RequestParam(value = "query_type", required = false, defaultValue = "AQL") String type,
             @RequestBody String queryPayload) {
 
         if (!AQL.equalsIgnoreCase(type)) {
