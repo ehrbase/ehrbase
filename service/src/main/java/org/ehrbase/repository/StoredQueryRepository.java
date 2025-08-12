@@ -57,15 +57,13 @@ public class StoredQueryRepository {
         this.timeProvider = timeProvider;
     }
 
-    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
-
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, query, queryType);
         storedQueryRecord.insert();
     }
 
-    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
-
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, query, queryType);
         storedQueryRecord.update();
     }
 
@@ -187,14 +185,14 @@ public class StoredQueryRepository {
     }
 
     private StoredQueryRecord createStoredQueryRecord(
-            StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
+            StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
         StoredQueryRecord storedQueryRecord = context.newRecord(STORED_QUERY);
 
         storedQueryRecord.setReverseDomainName(storedQueryQualifiedName.reverseDomainName());
         storedQueryRecord.setSemanticId(storedQueryQualifiedName.semanticId());
         storedQueryRecord.setSemver(storedQueryQualifiedName.semVer().toVersionString());
-        storedQueryRecord.setQueryText(sourceAqlText);
-        storedQueryRecord.setType("AQL");
+        storedQueryRecord.setQueryText(query);
+        storedQueryRecord.setType(queryType);
 
         storedQueryRecord.setCreationDate(timeProvider.getNow());
         return storedQueryRecord;

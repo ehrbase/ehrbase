@@ -37,6 +37,7 @@ import org.ehrbase.util.SemVer;
 import org.ehrbase.util.SemVerUtil;
 import org.ehrbase.util.StoredQueryQualifiedName;
 import org.ehrbase.util.VersionConflictException;
+import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
@@ -45,16 +46,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class StoredQueryServiceImp implements StoredQueryService {
 
+    protected final DSLContext dslContext;
     private final StoredQueryRepository storedQueryRepository;
     private final CacheProvider cacheProvider;
 
     @Value("${ehrbase.cache.stored-query-init-on-startup:false}")
     private boolean initStoredQueryCache = false;
 
-    public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository, CacheProvider cacheProvider) {
-
+    public StoredQueryServiceImp(
+            StoredQueryRepository storedQueryRepository, CacheProvider cacheProvider, DSLContext dslContext) {
         this.storedQueryRepository = storedQueryRepository;
         this.cacheProvider = cacheProvider;
+        this.dslContext = dslContext;
     }
 
     @PostConstruct
@@ -122,17 +125,13 @@ public class StoredQueryServiceImp implements StoredQueryService {
     }
 
     @Override
-    public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
+    public QueryDefinitionResultDto createStoredQuery(
+            String qualifiedName, String version, String queryString, String type) {
 
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName queryQualifiedName = StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
 
-        // validate the query syntax
-        try {
-            AqlQueryParser.parse(queryString);
-        } catch (AqlParseException e) {
-            throw new IllegalArgumentException("Invalid query, reason:" + e, e);
-        }
+        validateQuerySyntax(queryString, type);
 
         // lookup version in db
         SemVer dbSemVer = storedQueryRepository
@@ -150,9 +149,9 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         try {
             if (isUpdate) {
-                storedQueryRepository.update(newQueryQualifiedName, queryString);
+                storedQueryRepository.update(newQueryQualifiedName, queryString, type);
             } else {
-                storedQueryRepository.store(newQueryQualifiedName, queryString);
+                storedQueryRepository.store(newQueryQualifiedName, queryString, type);
             }
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
@@ -165,6 +164,18 @@ public class StoredQueryServiceImp implements StoredQueryService {
         evictAllResolutions(newQueryQualifiedName);
 
         return retrieveStoredQueryInternal(newQueryQualifiedName);
+    }
+
+    protected void validateQuerySyntax(String query, String type) {
+        if ("AQL".equalsIgnoreCase(type)) {
+            try {
+                AqlQueryParser.parse(query);
+            } catch (AqlParseException e) {
+                throw new IllegalArgumentException("Invalid AQL query, reason: %s".formatted(e), e);
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported query type: %s.".formatted(type));
+        }
     }
 
     private static void checkVersionCombination(SemVer requestSemVer, SemVer dbSemVer) {

@@ -29,7 +29,7 @@ public interface StoredQueryService {
     QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version) throws ObjectNotFoundException;
 
     // === DEFINITION: manage stored queries
-    QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString);
+    QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString, String type);
 
     void deleteStoredQuery(String qualifiedName, String version);
 }
