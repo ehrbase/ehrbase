@@ -63,7 +63,7 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
-    private static final String AQL = "AQL";
+    protected static final String AQL_QUERY_TYPE = "AQL";
 
     private final StoredQueryService storedQueryService;
 
@@ -124,18 +124,38 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(value = "version") Optional<String> version,
-            @RequestParam(value = "type", required = false, defaultValue = "AQL") String type,
+            @RequestParam(value = "query_type", required = false, defaultValue = AQL_QUERY_TYPE) String queryType,
             @RequestBody String queryPayload) {
 
-        if (!AQL.equalsIgnoreCase(type)) {
-            throw new InvalidApiParameterException("Query type:%s not supported!".formatted(type));
+        if (!isQueryTypeSupported(queryType)) {
+            throw new InvalidApiParameterException("Query type:%s not supported!".formatted(queryType));
         }
 
         MediaType mediaType = MediaType.parseMediaType(contentType);
-        String aql;
+        String query = extractQueryFromPayload(mediaType, queryPayload);
+
+        if (isBlank(query)) {
+            throw new InvalidApiParameterException("No %s query provided.".formatted(queryType));
+        }
+
+        registerLocation(qualifiedQueryName, version.orElse(null));
+
+        QueryDefinitionResultDto storedQuery =
+                storedQueryService.createStoredQuery(qualifiedQueryName, version.orElse(null), query, queryType);
+
+        HttpRestContext.register(QUERY_ID, qualifiedQueryName);
+
+        return getPutDefenitionResponseEntity(mediaType, storedQuery);
+    }
+
+    protected boolean isQueryTypeSupported(String queryType) {
+        return AQL_QUERY_TYPE.equals(queryType);
+    }
+
+    protected String extractQueryFromPayload(MediaType mediaType, String payload) {
+        // assume same format as adhoc POST
         if (APPLICATION_JSON.isCompatibleWith(mediaType)) {
-            // assume same format as adhoc POST
-            aql = Optional.of(queryPayload)
+            return Optional.of(payload)
                     .map(p -> {
                         try {
                             return new ObjectMapper().readTree(p);
@@ -147,26 +167,13 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
                     .filter(JsonNode::isTextual)
                     .map(JsonNode::asText)
                     .orElse(null);
-
-        } else if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
-            aql = queryPayload;
-        } else {
-            throw new UnsupportedMediaTypeException(mediaType.toString());
         }
 
-        if (isBlank(aql)) {
-
-            throw new InvalidApiParameterException("no aql query provided");
+        if (TEXT_PLAIN.isCompatibleWith(mediaType)) {
+            return payload;
         }
 
-        registerLocation(qualifiedQueryName, version.orElse(null));
-
-        QueryDefinitionResultDto storedQuery =
-                storedQueryService.createStoredQuery(qualifiedQueryName, version.orElse(null), aql);
-
-        HttpRestContext.register(QUERY_ID, qualifiedQueryName);
-
-        return getPutDefenitionResponseEntity(mediaType, storedQuery);
+        throw new UnsupportedMediaTypeException(mediaType.toString());
     }
 
     private ResponseEntity<QueryDefinitionResponseData> getPutDefenitionResponseEntity(
