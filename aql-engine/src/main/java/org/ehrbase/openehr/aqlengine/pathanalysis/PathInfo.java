@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.openehr.aqlengine.AqlQueryUtils;
 import org.ehrbase.openehr.aqlengine.pathanalysis.ANode.NodeCategory;
@@ -292,24 +293,25 @@ public final class PathInfo {
             node.getChildren().forEach(child -> findSkippableNodesInPathTree(child, isArchetype, skippableNodes));
             return false;
         } else if (STRUCTURE_NODE_CATEGORIES.contains(nodeCategory)) {
-            boolean isAtCode = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "at");
+            boolean isNodeId = hasArchetypeNodeIdPredicateWithValuePrefix(attrPredicates, "at", "id");
             boolean anyChildSkipped = node.getChildren().stream()
                     .map(child -> findSkippableNodesInPathTree(
                             child,
-                            (isAtCode
+                            (isNodeId
                                     || isArchetypeNode(node)
                                     || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(node))),
                             skippableNodes))
                     .reduce(Boolean::logicalOr)
                     .orElse(false);
-            if ((isAtCode || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(node)))
+            if ((isNodeId || NON_LOCATABLE_STRUCTURE_ENTRIES.containsAll(getTargetTypes(node)))
                     && ((joinMode == JoinMode.INTERNAL_SINGLE_CHILD
                                     && hasArchetypeNodeIdPredicateWithValuePrefix(
                                             node.getChildren()
                                                     .get(0)
                                                     .getAttribute()
                                                     .getPredicateOrOperands(),
-                                            "at"))
+                                            "at",
+                                            "id"))
                             || (joinMode == JoinMode.INTERNAL_FORK && !anyChildSkipped && isSkippableFork(node)))) {
                 skippableNodes.add(node);
                 return true;
@@ -325,16 +327,16 @@ public final class PathInfo {
         return prevNode.getChildren().stream()
                 .map(PathCohesionTreeNode::getAttribute)
                 .map(PathNode::getPredicateOrOperands)
-                .allMatch(pl -> hasArchetypeNodeIdPredicateWithValuePrefix(pl, "at"));
+                .allMatch(pl -> hasArchetypeNodeIdPredicateWithValuePrefix(pl, "at", "id"));
     }
 
     public static boolean hasArchetypeNodeIdPredicateWithValuePrefix(
-            final List<AndOperatorPredicate> attrPredicates, final String prefix) {
+            final List<AndOperatorPredicate> attrPredicates, final String... prefixes) {
         return AqlUtil.streamPredicates(attrPredicates)
                 .anyMatch(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
                         && p.getOperator() == PredicateComparisonOperator.EQ
                         && p.getValue() instanceof StringPrimitive sp
-                        && sp.getValue().startsWith(prefix));
+                        && StringUtils.startsWithAny(sp.getValue(), prefixes));
     }
 
     private Map<PathCohesionTreeNode, NodeInfo> fillNodeTypeInfo(
