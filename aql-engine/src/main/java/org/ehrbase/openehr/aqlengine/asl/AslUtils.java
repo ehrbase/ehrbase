@@ -94,7 +94,7 @@ import org.jooq.TableField;
 
 public final class AslUtils {
 
-    static final class AliasProvider {
+    public static final class AliasProvider {
         private final Map<String, Integer> aliasCounters = new HashMap<>();
 
         public String uniqueAlias(String alias) {
