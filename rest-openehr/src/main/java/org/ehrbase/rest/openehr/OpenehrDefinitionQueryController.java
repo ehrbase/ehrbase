@@ -150,7 +150,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
         return getPutDefenitionResponseEntity(mediaType, storedQuery);
     }
 
-    public List<String> getSupportedQueryTypes() {
+    protected List<String> getSupportedQueryTypes() {
         return List.of(AQL);
     }
 
