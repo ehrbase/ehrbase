@@ -319,7 +319,10 @@ final class EncapsulatingQueryUtils {
         return DSL.aggregate(
                         "string_agg",
                         String.class,
-                        FieldUtils.field(aslQueryToTable.getDataTable(f.getInternalProvider()), f.getBaseField(), true),
+                        DSL.coalesce(
+                                FieldUtils.field(
+                                        aslQueryToTable.getDataTable(f.getInternalProvider()), f.getBaseField(), true),
+                                DSL.inline("-")),
                         DSL.inline(f.getSeparator()))
                 .as(f.alias());
     }

@@ -381,7 +381,7 @@ public final class DbToRmFormat {
         }
     }
 
-    record PathComponent(String attribute, Integer index) {}
+    public record PathComponent(String attribute, Integer index) {}
 
     /**
      * Path in a JSON object.
@@ -449,7 +449,9 @@ public final class DbToRmFormat {
                 for (int i = 0; i < len; i++) {
                     char ch = path.charAt(i);
                     if (ch == '.') {
-                        list.add(new PathComponent(revertAliases ? RmAttributeAlias.getAttribute(sb.toString()) : sb.toString(), nr < 0 ? null : nr));
+                        list.add(new PathComponent(
+                                revertAliases ? RmAttributeAlias.getAttribute(sb.toString()) : sb.toString(),
+                                nr < 0 ? null : nr));
                         nr = -1;
                         sb.setLength(0);
                     } else if (Character.isDigit(ch)) {
