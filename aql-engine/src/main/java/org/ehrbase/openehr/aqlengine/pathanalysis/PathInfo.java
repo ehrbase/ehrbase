@@ -137,12 +137,6 @@ public final class PathInfo {
         ARCHETYPE_ANCHOR,
         /**
          * Parent node is skipped
-         * Parent join mode == INTERNAL_FORK
-         * COALESCE(c1.parent_num=c2.parent_num, true)
-         */
-        SAME_PARENT_AS_SIBLINGS,
-        /**
-         * Parent node is skipped
          * Multivalued anchor, with join mode = INTERNAL_FORK
          * (c.citem_num=p.citem_num)
          * (c.num < p.num)
@@ -150,6 +144,12 @@ public final class PathInfo {
          *
          */
         NODE_ID_ANCHOR,
+        /**
+         * Parent node is skipped
+         * Parent join mode == INTERNAL_FORK
+         * COALESCE(c1.parent_num=c2.parent_num, true)
+         */
+        SAME_PARENT_AS_SIBLINGS,
         /**
          * The node is skipped (so the children won't have PARENT_CHILD)
          */
@@ -233,9 +233,9 @@ public final class PathInfo {
                                 boolean sameParentAsSiblings =
                                         parent.getChildren().size() > 1;
                                 if (sameParentAsSiblings) {
-                                    return Set.of(jt, PathJoinConditionType.SAME_PARENT_AS_SIBLINGS);
+                                    return EnumSet.of(jt, PathJoinConditionType.SAME_PARENT_AS_SIBLINGS);
                                 } else {
-                                    return Set.of(jt);
+                                    return EnumSet.of(jt);
                                 }
                             }
                         },
