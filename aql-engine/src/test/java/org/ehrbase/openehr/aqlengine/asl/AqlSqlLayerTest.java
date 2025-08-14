@@ -63,7 +63,8 @@ public class AqlSqlLayerTest {
         c/context/other_context[at0004]/items[at0014]/value
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
-        """, false);
+        """,
+                false);
         System.out.println(AslGraph.createAslGraph(aslQuery));
     }
 
@@ -79,7 +80,8 @@ public class AqlSqlLayerTest {
             c/context/other_context[at0004]/items[at0014]/value
             FROM EHR e CONTAINS COMPOSITION c
             WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
-        """, false);
+        """,
+                false);
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
@@ -114,7 +116,8 @@ public class AqlSqlLayerTest {
         SELECT
             cluster/items[at0001]/value/data
         FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
-        """, false);
+        """,
+                false);
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
@@ -127,7 +130,7 @@ public class AqlSqlLayerTest {
     }
 
     @Test
-    void testPathNodeSkipping(){
+    void testPathNodeSkipping() {
         AslRootQuery aslQuery = buildSqlQuery(
                 """
         SELECT
@@ -136,7 +139,8 @@ public class AqlSqlLayerTest {
             o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
             o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
         FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
-        """, true);
+        """,
+                true);
 
         String expected =
                 """
@@ -203,7 +207,7 @@ public class AqlSqlLayerTest {
                               FROM COMPOSITION
                               STRUCTURE CONDITIONS
                                 p_events__0.p_events__0_entity_attribute EQ [e]
-                
+
                           p_eq_1: EncapsulatingQuery
                               SELECT
                                 p_items__0.p_items__0_vo_id
@@ -231,7 +235,7 @@ public class AqlSqlLayerTest {
                                       FROM COMPOSITION
                                       STRUCTURE CONDITIONS
                                         p_items__0.p_items__0_entity_attribute EQ [i]
-                
+
                                   p_items__1: StructureQuery
                                       SELECT
                                         p_items__1.p_items__1_vo_id
@@ -246,11 +250,11 @@ public class AqlSqlLayerTest {
                                         on
                                           DelegatingJoinCondition ->
                                               p_items__0.p_items__0_vo_id EQ p_items__1.p_items__1_vo_id
-                
+
                                           DelegatingJoinCondition ->
                                               p_items__0.p_items__0_num EQ p_items__1.p_items__1_parent_num
-                
-                
+
+
                                   p_items__2: StructureQuery
                                       SELECT
                                         p_items__2.p_items__2_vo_id
@@ -266,11 +270,11 @@ public class AqlSqlLayerTest {
                                         on
                                           DelegatingJoinCondition ->
                                               p_items__1.p_items__1_vo_id EQ p_items__2.p_items__2_vo_id
-                
+
                                           DelegatingJoinCondition ->
                                               p_items__1.p_items__1_num EQ p_items__2.p_items__2_citem_num
-                
-                
+
+
                                   p_items__3: StructureQuery
                                       SELECT
                                         p_items__3.p_items__3_vo_id
@@ -286,29 +290,29 @@ public class AqlSqlLayerTest {
                                         on
                                           DelegatingJoinCondition ->
                                               p_items__1.p_items__1_vo_id EQ p_items__3.p_items__3_vo_id
-                
+
                                           DelegatingJoinCondition ->
                                               p_items__1.p_items__1_num EQ p_items__3.p_items__3_citem_num
-                
+
                                           DelegatingJoinCondition ->
                                               COALESCE(p_items__3.p_items__3_parent_num EQ p_items__2.p_items__2_parent_num, true)
-                
-                
+
+
                               LEFT_OUTER_JOIN p_events__0 -> p_eq_1
                                 on
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_vo_id EQ p_items__0.p_items__0_vo_id
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_citem_num EQ p_items__0.p_items__0_citem_num
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_num LT p_items__0.p_items__0_num
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_num_cap GT_EQ p_items__0.p_items__0_num
-                
-                
+
+
                           p_eq_2: EncapsulatingQuery
                               SELECT
                                 p_items__4.p_items__4_vo_id
@@ -329,22 +333,22 @@ public class AqlSqlLayerTest {
                                       FROM COMPOSITION
                                       STRUCTURE CONDITIONS
                                         p_items__4.p_items__4_entity_attribute EQ [i]
-                
+
                               LEFT_OUTER_JOIN p_events__0 -> p_eq_2
                                 on
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_vo_id EQ p_items__4.p_items__4_vo_id
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_citem_num EQ p_items__4.p_items__4_citem_num
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_num LT p_items__4.p_items__4_num
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_num_cap GT_EQ p_items__4.p_items__4_num
-                
-                
+
+
                           p_eq_3: EncapsulatingQuery
                               SELECT
                                 p_items__5.p_items__5_vo_id
@@ -365,29 +369,29 @@ public class AqlSqlLayerTest {
                                       FROM COMPOSITION
                                       STRUCTURE CONDITIONS
                                         p_items__5.p_items__5_entity_attribute EQ [i]
-                
+
                               LEFT_OUTER_JOIN p_events__0 -> p_eq_3
                                 on
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_vo_id EQ p_items__5.p_items__5_vo_id
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_citem_num EQ p_items__5.p_items__5_citem_num
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_num LT p_items__5.p_items__5_num
-                
+
                                   DelegatingJoinCondition ->
                                       p_events__0.p_events__0_num_cap GT_EQ p_items__5.p_items__5_num
-                
+
                                   DelegatingJoinCondition ->
                                       COALESCE(p_items__5.p_items__5_parent_num EQ p_items__4.p_items__4_parent_num, true)
-                
+
                       LEFT_OUTER_JOIN sOB_o_0 -> p_eq_0
                         on
                           DelegatingJoinCondition ->
                               sOB_o_0.sOB_o_0_vo_id EQ p_events__0.p_events__0_vo_id
-                
+
                           DelegatingJoinCondition ->
                               sOB_o_0.sOB_o_0_num EQ p_events__0.p_events__0_citem_num
                 """;
@@ -402,7 +406,7 @@ public class AqlSqlLayerTest {
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
         AslRootQuery aslRootQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
-        new AslCleanupPostProcessor().afterBuildAsl(aslRootQuery, aqlQuery, queryWrapper,null);
+        new AslCleanupPostProcessor().afterBuildAsl(aslRootQuery, aqlQuery, queryWrapper, null);
         return aslRootQuery;
     }
 }

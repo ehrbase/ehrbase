@@ -52,12 +52,8 @@ class PathInfoTest {
                         + renderTree(
                                 e.getValue().getCohesionTreeRoot(), e.getValue().getJoinConditionTypes()))
                 .collect(Collectors.joining("\n"));
-        try {
 
-            assertThat(actualTrees).isEqualToNormalizingNewlines(cohesionTrees);
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
+        assertThat(actualTrees).isEqualToNormalizingNewlines(cohesionTrees);
     }
 
     public static Stream<Arguments> pathSkipping() throws IOException {
