@@ -87,6 +87,9 @@ ehrbase:
     check-for-extra-nodes: true
     validate-rm-constraints: true
   aql:
+    # Improves AQL performance for paths containing consecutive at-/id-codes
+    # May produce unexpected results if the paths do not follow the archetype definitions
+    path-node-skipping: false
     pg-llj-workaround: true
     experimental:
       aql-on-folder:

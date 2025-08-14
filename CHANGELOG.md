@@ -6,7 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
- ### Added
+ ### Added 
+- Option `ehrbase.aql.path-node-skipping` to improve AQL performance for paths containing consecutive node predicates. 
+  Disabled by default, since it may produce unexpected results if the paths do not follow the archetype definitions. 
+  [#1521](https://github.com/ehrbase/ehrbase/pull/1521)
  ### Changed 
  ### Fixed
 - Fix terminology validation URL extraction [#1507](https://github.com/ehrbase/ehrbase/pull/1507)
