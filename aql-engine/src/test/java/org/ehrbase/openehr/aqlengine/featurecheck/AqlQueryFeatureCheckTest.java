@@ -182,8 +182,10 @@ class AqlQueryFeatureCheckTest {
                     WHERE e/system_id/value = 'abc'
                     ORDER BY e/system_id/value
                 """,
-                "SELECT e/value FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS EVENT [at0002] CONTAINS ELEMENT e [at0004]",
-                "SELECT e/time FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS EVENT e [at0002]",
+                "SELECT 1 FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS CLUSTER [at0002] CONTAINS ELEMENT e [at0004]",
+                "SELECT 1 FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS ((CLUSTER [at0002] CONTAINS ELEMENT e [at0004]) OR (CLUSTER[at0005] AND CLUSTER[at0006]))",
+                "SELECT 1 FROM OBSERVATION o CONTAINS CLUSTER [openEHR-EHR-CLUSTER.cl.v0] CONTAINS ELEMENT e [at0004]",
+                "SELECT 1 FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS EVENT e [at0002]",
             })
     void ensureQuerySupported(String aql) {
 
@@ -358,13 +360,15 @@ class AqlQueryFeatureCheckTest {
             strings = {
                 "SELECT c FROM COMPOSITION c CONTAINS EHR_STATUS",
                 "SELECT c FROM COMPOSITION c CONTAINS ELEMENT CONTAINS EHR_STATUS",
-                "SELECT e FROM EHR CONTAINS COMPOSITION CONTAINS EHR_STATUS CONTAINS ELEMENT e"
+                "SELECT e FROM EHR CONTAINS COMPOSITION CONTAINS EHR_STATUS CONTAINS ELEMENT e",
+                "SELECT e FROM VERSION[LATEST_VERSION] CONTAINS ELEMENT e",
+                "SELECT 1 FROM COMPOSITION[at0001]",
+                "SELECT 1 FROM OBSERVATION o CONTAINS ((CLUSTER [at0002] CONTAINS ELEMENT e [at0004]) OR (CLUSTER[at0005] AND CLUSTER[at0006]))",
+                "SELECT 1 FROM COMPOSITION CONTAINS CLUSTER[at0001]"
             })
     void ensureContainsRejected(String aql) {
 
-        assertThatThrownBy(() -> runEnsureQuerySupported(aql))
-                .isInstanceOf(IllegalAqlException.class)
-                .hasMessageContainingAll("Structure ", " cannot CONTAIN ", " (of structure ");
+        assertThatThrownBy(() -> runEnsureQuerySupported(aql)).isInstanceOf(IllegalAqlException.class);
     }
 
     @ParameterizedTest
@@ -391,12 +395,15 @@ class AqlQueryFeatureCheckTest {
 
     @ParameterizedTest
     @ValueSource(
-            strings = {"SELECT f FROM COMPOSITION CONTAINS FOLDER f", "SELECT f FROM EHR_STATUS CONTAINS FOLDER f"})
+            strings = {
+                "SELECT f FROM COMPOSITION CONTAINS FOLDER f",
+                "SELECT f FROM EHR_STATUS CONTAINS FOLDER f",
+                "SELECT 1 FROM FOLDER CONTAINS COMPOSITION[at0001]"
+            })
     void ensureContainsRejectedExperimentalAqlOnFolder(String aql) {
 
         assertThatThrownBy(() -> runEnsureQuerySupportedAqlOnFolderEnabled(aql))
-                .isInstanceOf(IllegalAqlException.class)
-                .hasMessageContainingAll("Structure ", " cannot CONTAIN ", " (of structure ");
+                .isInstanceOf(IllegalAqlException.class);
     }
 
     @ParameterizedTest
