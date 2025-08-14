@@ -19,11 +19,15 @@ package org.ehrbase.openehr.aqlengine.querywrapper.contains;
 
 public sealed interface ContainsWrapper permits RmContainsWrapper, VersionContainsWrapper {
 
-    default String getRmType() {
-        throw new UnsupportedOperationException();
-    }
+    String getRmType();
 
-    default String alias() {
-        throw new UnsupportedOperationException();
-    }
+    String alias();
+
+    boolean isAtCode();
+
+    boolean isArchetype();
+
+    ContainsWrapper getParent();
+
+    void setParent(ContainsWrapper parent);
 }

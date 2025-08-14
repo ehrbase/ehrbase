@@ -51,3 +51,20 @@ As the code for the composition category 'episodic' has changed from 435 to 451,
 For smaller systems this can be checked via AQL:
 `SELECT c/archetype_details/template_id/value, count(*) FROM COMPOSITION c WHERE c/category/code/value = '435'`.
 Please open an issue on github in case you need instructions on correcting the data.
+
+## EHRbase 2.21.0
+
+In AQL queries CONTAINS expressions with a node predicate now exclude results from nested archetypes.
+
+Example:
+```
+SELECT el
+FROM OBSERVATION[openEHR-EHR-OBSERVATION.blood_pressure.v2] CONTAINS ELEMENT el[at0004] 
+```
+will be no longer contain from ELEMENTs returned by
+```
+SELECT el
+FROM OBSERVATION[openEHR-EHR-OBSERVATION.blood_pressure.v2] CONTAINS CLUSTER c[openEHR-EHR-CLUSTER.device.v1] CONTAINS ELEMENT el[at0004] 
+```
+
+To restore the previous behaviour set `ehrbase.aql.archetype-local-node-predicates = false`

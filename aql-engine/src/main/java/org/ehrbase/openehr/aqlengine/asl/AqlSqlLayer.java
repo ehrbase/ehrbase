@@ -49,6 +49,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
@@ -100,10 +101,15 @@ public class AqlSqlLayer {
 
     private final KnowledgeCacheService knowledgeCache;
     private final SystemService systemService;
+    private final AqlConfigurationProperties aqlConfigurationProperties;
 
-    public AqlSqlLayer(KnowledgeCacheService knowledgeCache, SystemService systemService) {
+    public AqlSqlLayer(
+            KnowledgeCacheService knowledgeCache,
+            SystemService systemService,
+            final AqlConfigurationProperties aqlConfigurationProperties) {
         this.knowledgeCache = knowledgeCache;
         this.systemService = systemService;
+        this.aqlConfigurationProperties = aqlConfigurationProperties;
     }
 
     public AslRootQuery buildAslRootQuery(AqlQueryWrapper query) {
@@ -112,8 +118,9 @@ public class AqlSqlLayer {
         AslRootQuery aslQuery = new AslRootQuery();
 
         // FROM
-        AslFromCreator.ContainsToOwnerProvider containsToStructureSubquery =
-                new AslFromCreator(aliasProvider, knowledgeCache).addFromClause(aslQuery, query);
+        AslFromCreator.ContainsToOwnerProvider containsToStructureSubquery = new AslFromCreator(
+                        aliasProvider, knowledgeCache, aqlConfigurationProperties.archetypeLocalNodePredicates())
+                .addFromClause(aslQuery, query);
 
         // Paths
         final AslPathCreator.PathToField pathToField = new AslPathCreator(

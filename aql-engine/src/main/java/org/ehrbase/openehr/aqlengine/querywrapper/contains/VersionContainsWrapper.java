@@ -22,6 +22,7 @@ import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 public final class VersionContainsWrapper implements ContainsWrapper {
     private final String alias;
     private final RmContainsWrapper child;
+    private ContainsWrapper parent;
 
     public VersionContainsWrapper(String alias, RmContainsWrapper child) {
         this.alias = alias;
@@ -36,6 +37,26 @@ public final class VersionContainsWrapper implements ContainsWrapper {
     @Override
     public String alias() {
         return alias;
+    }
+
+    @Override
+    public boolean isAtCode() {
+        return false;
+    }
+
+    @Override
+    public boolean isArchetype() {
+        return false;
+    }
+
+    @Override
+    public ContainsWrapper getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(ContainsWrapper parent) {
+        this.parent = parent;
     }
 
     public RmContainsWrapper child() {

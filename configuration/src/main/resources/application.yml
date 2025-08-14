@@ -90,6 +90,8 @@ ehrbase:
     # Improves AQL performance for paths containing consecutive at-/id-codes
     # May produce unexpected results if the paths do not follow the archetype definitions
     path-node-skipping: false
+    # CONTAINS with a node predicate excludes results from nested archetypes
+    archetype-local-node-predicates: true
     pg-llj-workaround: true
     experimental:
       aql-on-folder:

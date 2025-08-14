@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.AqlEhrPathPostProcessor;
 import org.ehrbase.openehr.aqlengine.AqlFromEhrOptimisationPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
@@ -104,7 +105,8 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
         new AqlFromEhrOptimisationPostProcessor().afterParseAql(aqlQuery, null, null);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlSqlLayer aqlSqlLayer =
+                new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new AqlConfigurationProperties());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         new AslCleanupPostProcessor().afterBuildAsl(aslQuery, aqlQuery, queryWrapper, null);
 
@@ -140,7 +142,8 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlSqlLayer aqlSqlLayer =
+                new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new AqlConfigurationProperties());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
@@ -251,7 +254,8 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
     void aslGraphRegression(String name, String aql, String aslGraph) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlSqlLayer aqlSqlLayer =
+                new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new AqlConfigurationProperties());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringWhitespace(aslGraph);
     }
@@ -273,7 +277,8 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
     }
 
     private SelectQuery<Record> buildSqlQuery(AqlQueryWrapper queryWrapper) {
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlSqlLayer aqlSqlLayer =
+                new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new AqlConfigurationProperties());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 

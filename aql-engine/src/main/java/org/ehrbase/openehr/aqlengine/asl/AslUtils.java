@@ -75,6 +75,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
+import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
@@ -485,7 +486,13 @@ public final class AslUtils {
     }
 
     public static Stream<AslFieldFieldQueryCondition> descendantJoinConditionProviders(
-            AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
+            AslQuery leftQuery,
+            AslStructureQuery leftOwner,
+            RmContainsWrapper leftWrapper,
+            AslQuery rightQuery,
+            AslStructureQuery rightOwner,
+            RmContainsWrapper rightWrapper,
+            final boolean archetypeLocalNodePredicates) {
 
         AslSourceRelation parentRelation = leftOwner.getType();
         if (!SUPPORTED_DESCENDANT_PARENT_RELATIONS.contains(parentRelation)) {
@@ -496,27 +503,23 @@ public final class AslUtils {
             throw new IllegalArgumentException("unexpected descendant relation type %s".formatted(descendantRelation));
         }
 
-        return switch (parentRelation) {
-            case EHR -> Stream.of(new AslFieldFieldQueryCondition(
-                    findFieldForOwner(EHR_TABLE_ID_FIELD, left.getSelect(), leftOwner),
-                    AslConditionOperator.EQ,
-                    findFieldForOwner(AslStructureColumn.EHR_ID, right.getSelect(), rightOwner)));
-            case EHR_STATUS -> Stream.concat(
-                    Stream.of(joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner)),
-                    numCapBetweenJoinConditions(left, leftOwner, right, rightOwner));
-                // l.vo_id == r.vo_id and l.num < r.num <= l.num_cap
-            case COMPOSITION -> Stream.concat(
-                    Stream.of(joinColumnEqualCondition(AslStructureColumn.VO_ID, left, leftOwner, right, rightOwner)),
-                    numCapBetweenJoinConditions(left, leftOwner, right, rightOwner));
-                // l.ehr_id == r.ehr_id and l.folder_idx == r.folder_idx and l.num < r.num <= l.num_cap
-            case FOLDER -> concatStreams(
-                    Stream.of(joinColumnEqualCondition(AslStructureColumn.EHR_ID, left, leftOwner, right, rightOwner)),
-                    Stream.of(joinColumnEqualCondition(
-                            AslStructureColumn.EHR_FOLDER_IDX, left, leftOwner, right, rightOwner)),
-                    numCapBetweenJoinConditions(left, leftOwner, right, rightOwner));
-            case AUDIT_DETAILS -> throw new IllegalArgumentException(
-                    "Descendant condition not applicable to AUDIT_DETAILS");
-        };
+        Stream<AslFieldFieldQueryCondition> idConditions = parentRelation == AslSourceRelation.EHR
+                ? Stream.of(new AslFieldFieldQueryCondition(
+                        findFieldForOwner(EHR_TABLE_ID_FIELD, leftQuery.getSelect(), leftOwner),
+                        AslConditionOperator.EQ,
+                        findFieldForOwner(AslStructureColumn.EHR_ID, rightQuery.getSelect(), rightOwner)))
+                : sameVersionedObjectJoinConditions(leftQuery, leftOwner, rightQuery, rightOwner);
+
+        return concatStreams(
+                idConditions,
+                getContainsJoinConditions(
+                        leftQuery,
+                        leftOwner,
+                        leftWrapper,
+                        rightQuery,
+                        rightOwner,
+                        rightWrapper,
+                        archetypeLocalNodePredicates));
     }
 
     public static Stream<AslFieldFieldQueryCondition> pathChildJoinConditions(
@@ -680,5 +683,54 @@ public final class AslUtils {
             return columnEqualToColumnJoinCondition(
                     AslStructureColumn.C_ITEM_NUM, left, leftOwner, AslStructureColumn.C_ITEM_NUM, right, rightOwner);
         }
+    }
+
+    private static AslFieldFieldQueryCondition archetypeParentContainsCondition(
+            AslQuery parent, AslStructureQuery parentOwner, AslQuery child, AslStructureQuery childOwner) {
+        return new AslFieldFieldQueryCondition(
+                findFieldForOwner(AslStructureColumn.NUM, parent.getSelect(), parentOwner),
+                AslConditionOperator.EQ,
+                findFieldForOwner(AslStructureColumn.C_ITEM_NUM, child.getSelect(), childOwner));
+    }
+
+    private static AslFieldFieldQueryCondition atCodeParentContainsCondition(
+            AslQuery parent, AslStructureQuery parentOwner, AslQuery child, AslStructureQuery childOwner) {
+        return joinColumnEqualCondition(AslStructureColumn.C_ITEM_NUM, parent, parentOwner, child, childOwner);
+    }
+
+    private static Stream<AslFieldFieldQueryCondition> getContainsJoinConditions(
+            AslQuery leftQuery,
+            AslStructureQuery leftOwner,
+            RmContainsWrapper leftWrapper,
+            AslQuery rightQuery,
+            AslStructureQuery rightOwner,
+            RmContainsWrapper rightWrapper,
+            boolean archetypeLocalNodePredicates) {
+        // if the left owner is pointing to something unversioned (i.e. ehr)
+        if (!leftOwner.getType().getStructureRoot().isVersioned()) {
+            return Stream.empty();
+        }
+
+        if (leftOwner.getType() != rightOwner.getType()) {
+            throw new IllegalArgumentException(
+                    "Unexpected relation type between %s and %s".formatted(leftOwner.getType(), rightOwner.getType()));
+        }
+
+        // use only the num cap range condition
+        if (!archetypeLocalNodePredicates || leftWrapper == null || !rightWrapper.isAtCode()) {
+            return numCapBetweenJoinConditions(leftQuery, leftOwner, rightQuery, rightOwner);
+        }
+
+        if (leftWrapper.isArchetype()) {
+            return Stream.of(archetypeParentContainsCondition(leftQuery, leftOwner, rightQuery, rightOwner));
+        }
+
+        if (leftWrapper.isAtCode()) {
+            return concatStreams(
+                    Stream.of(atCodeParentContainsCondition(leftQuery, leftOwner, rightQuery, rightOwner)),
+                    numCapBetweenJoinConditions(leftQuery, leftOwner, rightQuery, rightOwner));
+        }
+
+        throw new IllegalArgumentException("Unexpected containment with node predicate without known archetype");
     }
 }
