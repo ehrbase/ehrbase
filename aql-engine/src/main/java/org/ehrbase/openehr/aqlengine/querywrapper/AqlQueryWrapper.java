@@ -18,7 +18,7 @@
 package org.ehrbase.openehr.aqlengine.querywrapper;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -114,7 +114,7 @@ public final class AqlQueryWrapper {
      * @return
      */
     public static AqlQueryWrapper create(AqlQuery aqlQuery, final boolean enableNodeSkipping) {
-        Map<AbstractContainmentExpression, ContainsWrapper> containsDescs = new LinkedHashMap<>();
+        Map<AbstractContainmentExpression, ContainsWrapper> containsDescs = new IdentityHashMap<>();
 
         ContainsChain fromClause;
         {
