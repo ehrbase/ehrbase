@@ -151,7 +151,9 @@ final class FromCheck implements FeatureCheck {
                 var next = ensureStructureContainsSupported(cce, parentStructure);
                 StructureRoot structureRoot =
                         Optional.of(next).map(Pair::getRight).orElse(parentStructure);
-                ensureNodePredicateContainmentSupported(parentStructure, parent, cce, structureRoot);
+                if (aqlConfiguration.archetypeLocalNodePredicates()) {
+                    ensureNodePredicateContainmentSupported(parentStructure, parent, cce, structureRoot);
+                }
                 ensureContainmentSupported(next.getLeft(), structureRoot, cce);
 
                 ensureContainmentStructureSupported(parentStructure, cce, structureRoot);

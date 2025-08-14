@@ -54,6 +54,7 @@ public final class VersionContainsWrapper implements ContainsWrapper {
         return parent;
     }
 
+    @Override
     public void setParent(ContainsWrapper parent) {
         this.parent = parent;
     }

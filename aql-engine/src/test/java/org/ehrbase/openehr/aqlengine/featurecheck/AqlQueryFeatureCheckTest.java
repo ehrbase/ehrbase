@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties.Experimental;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties.Experimental.AqlOnFolder;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
@@ -606,9 +608,8 @@ class AqlQueryFeatureCheckTest {
     }
 
     private AqlConfigurationProperties propertiesWithAqlOnFolderEnabled(boolean aqlOnFolderEnabled) {
-        return new AqlConfigurationProperties(
-                false,
-                new AqlConfigurationProperties.Experimental(
-                        new AqlConfigurationProperties.Experimental.AqlOnFolder(aqlOnFolderEnabled)));
+        AqlConfigurationProperties aqlConfigurationProperties = new AqlConfigurationProperties();
+        aqlConfigurationProperties.setExperimental(new Experimental(new AqlOnFolder(aqlOnFolderEnabled)));
+        return aqlConfigurationProperties;
     }
 }

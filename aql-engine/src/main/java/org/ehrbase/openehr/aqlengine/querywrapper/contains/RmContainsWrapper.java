@@ -19,8 +19,9 @@ package org.ehrbase.openehr.aqlengine.querywrapper.contains;
 
 import static org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept.ARCHETYPE_PREFIX;
 
-import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
@@ -66,6 +67,7 @@ public final class RmContainsWrapper implements ContainsWrapper {
         return parent;
     }
 
+    @Override
     public void setParent(ContainsWrapper parent) {
         this.parent = parent;
     }
@@ -86,23 +88,19 @@ public final class RmContainsWrapper implements ContainsWrapper {
 
     private boolean hasConsistentNodeIdPrefixes(String... allowedPrefixes) {
         List<AndOperatorPredicate> predicates = containment.getPredicates();
-        if (predicates == null || predicates.isEmpty()) {
+        if (CollectionUtils.isEmpty(predicates)) {
             return false;
         }
 
         return predicates.stream()
-                .map(andPred -> {
-                    List<String> nodeIdValues = andPred.getOperands().stream()
-                            .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
-                                    && p.getOperator() == PredicateComparisonOperator.EQ
-                                    && p.getValue() instanceof StringPrimitive)
-                            .map(p -> ((StringPrimitive) p.getValue()).getValue())
-                            .toList();
-
-                    return !nodeIdValues.isEmpty()
-                            && nodeIdValues.stream().allMatch(value -> Arrays.stream(allowedPrefixes)
-                                    .anyMatch(value::startsWith));
-                })
+                .map(andPred -> andPred.getOperands().stream()
+                        .filter(p -> AqlObjectPathUtil.ARCHETYPE_NODE_ID.equals(p.getPath())
+                                && p.getOperator() == PredicateComparisonOperator.EQ
+                                && p.getValue() instanceof StringPrimitive)
+                        .map(p -> ((StringPrimitive) p.getValue()).getValue())
+                        .map(v -> StringUtils.startsWithAny(v, allowedPrefixes))
+                        .reduce(Boolean::logicalAnd)
+                        .orElse(false))
                 .reduce(true, Boolean::logicalAnd);
     }
 }

@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
@@ -404,7 +405,8 @@ public class AqlSqlLayerTest {
         AqlQuery aqlQuery = AqlQueryParser.parse(query);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, pathSkipping);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlSqlLayer aqlSqlLayer =
+                new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new AqlConfigurationProperties());
         AslRootQuery aslRootQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         new AslCleanupPostProcessor().afterBuildAsl(aslRootQuery, aqlQuery, queryWrapper, null);
         return aslRootQuery;

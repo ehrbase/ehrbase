@@ -28,4 +28,6 @@ public sealed interface ContainsWrapper permits RmContainsWrapper, VersionContai
     boolean isArchetype();
 
     ContainsWrapper getParent();
+
+    void setParent(ContainsWrapper parent);
 }
