@@ -507,7 +507,7 @@ public final class AslUtils {
                         findFieldForOwner(EHR_TABLE_ID_FIELD, left.getSelect(), leftOwner),
                         AslConditionOperator.EQ,
                         findFieldForOwner(AslStructureColumn.EHR_ID, right.getSelect(), rightOwner)))
-                : joinSameRootObjectConditions(left, leftOwner, right, rightOwner);
+                : sameVersionedObjectJoinConditions(left, leftOwner, right, rightOwner);
 
         return concatStreams(
                 idConditions,
@@ -709,13 +709,13 @@ public final class AslUtils {
 
         // use only the num cap range condition
         if (parentWrapper == null || !childWrapper.isAtCode()) {
-            return joinNumCapBetweenConditions(left, leftOwner, right, rightOwner);
+            return numCapBetweenJoinConditions(left, leftOwner, right, rightOwner);
         }
 
         if (parentWrapper.isArchetype()) {
             return concatStreams(
                     Stream.of(archetypeParentContainsCondition(left, leftOwner, right, rightOwner)),
-                    joinNumCapBetweenConditions(left, leftOwner, right, rightOwner));
+                    numCapBetweenJoinConditions(left, leftOwner, right, rightOwner));
         }
 
         if (parentWrapper.isAtCode()) {
