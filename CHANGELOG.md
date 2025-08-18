@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [2.21.0]
  ### Added 
 - Option `ehrbase.aql.path-node-skipping` to improve AQL performance for paths containing consecutive node predicates. 
   Disabled by default, since it may produce unexpected results if the paths do not follow the archetype definitions. 
@@ -202,4 +202,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.18.0]: https://github.com/ehrbase/ehrbase/compare/v2.17.0...v2.18.0
 [2.19.0]: https://github.com/ehrbase/ehrbase/compare/v2.18.0...v2.19.0
 [2.20.0]: https://github.com/ehrbase/ehrbase/compare/v2.19.0...v2.20.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.20.0...HEAD
+[2.21.0]: https://github.com/ehrbase/ehrbase/compare/v2.20.0...v2.21.0
