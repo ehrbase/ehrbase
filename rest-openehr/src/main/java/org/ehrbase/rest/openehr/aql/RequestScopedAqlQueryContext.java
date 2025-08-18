@@ -52,7 +52,7 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     @Value("${ehrbase.aql.path-node-skipping:false}")
     private boolean pathNodeSkipping = false;
 
-    @Value("${ehrbase.aql.archetype-local-node-predicates:false}")
+    @Value("${ehrbase.aql.archetype-local-node-predicates:true}")
     private boolean archetypeLocalNodePredicates = true;
 
     private final StatusService statusService;
