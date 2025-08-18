@@ -30,7 +30,10 @@ public final class AqlQueryFeatureCheck implements AqlQueryParsingPostProcessor 
 
     private final FeatureCheck[] featureChecks;
 
-    public AqlQueryFeatureCheck(SystemService systemService, AqlConfigurationProperties aqlConfigurationProperties, AqlQueryContext aqlQueryContext) {
+    public AqlQueryFeatureCheck(
+            SystemService systemService,
+            AqlConfigurationProperties aqlConfigurationProperties,
+            AqlQueryContext aqlQueryContext) {
         this.featureChecks = new FeatureCheck[] {
             new FromCheck(systemService, aqlConfigurationProperties, aqlQueryContext),
             new SelectCheck(systemService),
