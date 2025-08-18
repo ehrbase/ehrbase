@@ -17,7 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.asl;
 
-import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
+import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
@@ -45,7 +45,7 @@ class AslGraphTest {
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         AslRootQuery rootQuery =
-                new AqlSqlLayer(null, () -> "node", new AqlConfigurationProperties()).buildAslRootQuery(queryWrapper);
+                new AqlSqlLayer(null, () -> "node", new TestAqlQueryContext()).buildAslRootQuery(queryWrapper);
 
         System.out.println(AslGraph.createAslGraph(rootQuery));
     }

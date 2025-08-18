@@ -30,10 +30,10 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
-import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.AqlEhrPathPostProcessor;
 import org.ehrbase.openehr.aqlengine.AqlFromEhrOptimisationPostProcessor;
 import org.ehrbase.openehr.aqlengine.AqlQueryParsingPostProcessor;
+import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.aqlengine.sql.AqlSqlQueryBuilder;
@@ -387,8 +387,7 @@ class AslCleanupPostProcessorTest {
         }
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
-        AqlSqlLayer aqlSqlLayer =
-                new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new AqlConfigurationProperties());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         return new AslResult(aqlQuery, queryWrapper, aslQuery);
     }

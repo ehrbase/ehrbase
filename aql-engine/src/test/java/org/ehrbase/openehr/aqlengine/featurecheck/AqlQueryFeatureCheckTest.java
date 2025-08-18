@@ -26,6 +26,7 @@ import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties.Experimental;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties.Experimental.AqlOnFolder;
+import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.dbformat.StructureRmType;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
@@ -603,7 +604,8 @@ class AqlQueryFeatureCheckTest {
     private void runEnsureQuerySupported(AqlConfigurationProperties aqlFeature, String aql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryFeatureCheck aqlQueryFeatureCheck = new AqlQueryFeatureCheck(() -> "node", aqlFeature);
+        AqlQueryFeatureCheck aqlQueryFeatureCheck =
+                new AqlQueryFeatureCheck(() -> "node", aqlFeature, new TestAqlQueryContext());
         aqlQueryFeatureCheck.ensureQuerySupported(aqlQuery);
     }
 
