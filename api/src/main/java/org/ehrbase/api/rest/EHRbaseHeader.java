@@ -42,7 +42,12 @@ public final class EHRbaseHeader {
     public static final String AQL_QUERY_PLAN = "EHRbase-AQL-Query-Plan";
 
     /**
-     * Used by the /query endpoint to provide the database query plan in the return metadata.
+     * In AQL queries with paths containing consecutive node predicates: Skip nodes implied by the archetype definitions
      */
     public static final String AQL_PATH_SKIPPING = "EHRbase-AQL-Path-Skipping";
+
+    /**
+     * In AQL queries CONTAINS expressions with a node predicate: Exclude results from nested archetypes
+     */
+    public static final String AQL_ARCHETYPE_LOCAL_NODE_PREDICATES = "EHRbase-AQL-Archetype-Local-Node-Predicates";
 }

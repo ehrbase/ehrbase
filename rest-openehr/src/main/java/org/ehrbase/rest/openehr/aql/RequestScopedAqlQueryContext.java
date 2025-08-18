@@ -52,6 +52,9 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     @Value("${ehrbase.aql.path-node-skipping:false}")
     private boolean pathNodeSkipping = false;
 
+    @Value("${ehrbase.aql.archetype-local-node-predicates:false}")
+    private boolean archetypeLocalNodePredicates = true;
+
     private final StatusService statusService;
     private final HttpServletRequest request;
 
@@ -116,6 +119,16 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
                         .map(Boolean::valueOf)
                         .orElse(pathNodeSkipping)
                 : pathNodeSkipping;
+    }
+
+    @Override
+    public boolean isArchetypeLocalNodePredicates() {
+        return debuggingEnabled
+                ? Optional.of(EHRbaseHeader.AQL_ARCHETYPE_LOCAL_NODE_PREDICATES)
+                        .map(request::getHeader)
+                        .map(Boolean::valueOf)
+                        .orElse(archetypeLocalNodePredicates)
+                : archetypeLocalNodePredicates;
     }
 
     private boolean isHeaderTrue(String header) {

@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.SystemService;
@@ -55,9 +56,13 @@ final class FromCheck implements FeatureCheck {
 
     private final AqlConfigurationProperties aqlConfiguration;
 
-    public FromCheck(SystemService systemService, AqlConfigurationProperties aqlConfiguration) {
+    private final AqlQueryContext aqlQueryContext;
+
+    public FromCheck(
+            SystemService systemService, AqlConfigurationProperties aqlConfiguration, AqlQueryContext aqlQueryContext) {
         this.systemService = systemService;
         this.aqlConfiguration = aqlConfiguration;
+        this.aqlQueryContext = aqlQueryContext;
     }
 
     @Override
@@ -151,7 +156,7 @@ final class FromCheck implements FeatureCheck {
                 var next = ensureStructureContainsSupported(cce, parentStructure);
                 StructureRoot structureRoot =
                         Optional.of(next).map(Pair::getRight).orElse(parentStructure);
-                if (aqlConfiguration.archetypeLocalNodePredicates()) {
+                if (aqlQueryContext.isArchetypeLocalNodePredicates()) {
                     ensureNodePredicateContainmentSupported(parentStructure, parent, cce, structureRoot);
                 }
                 ensureContainmentSupported(next.getLeft(), structureRoot, cce);

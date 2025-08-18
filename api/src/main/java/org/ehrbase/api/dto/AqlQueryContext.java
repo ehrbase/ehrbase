@@ -65,6 +65,8 @@ public interface AqlQueryContext {
 
     boolean isPathSkipping();
 
+    boolean isArchetypeLocalNodePredicates();
+
     void setExecutedAql(String executedAql);
 
     void setMetaProperty(MetaProperty property, Object value);
