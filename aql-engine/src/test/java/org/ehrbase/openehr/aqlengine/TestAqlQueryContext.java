@@ -59,6 +59,11 @@ public class TestAqlQueryContext implements AqlQueryContext {
     }
 
     @Override
+    public boolean isArchetypeLocalNodePredicates() {
+        return true;
+    }
+
+    @Override
     public void setExecutedAql(final String executedAql) {
         metaProperties.put("executedAql", executedAql);
     }
