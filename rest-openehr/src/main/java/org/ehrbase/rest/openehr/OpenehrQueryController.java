@@ -24,9 +24,11 @@ import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
@@ -267,10 +269,14 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         return createRequest(queryString, queryParameters, fetch, offset);
     }
 
-    private AqlQueryRequest createRequest(
+    AqlQueryRequest createRequest(
             @NonNull String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
 
-        return new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null));
+        return AqlQueryRequest.prepare(
+                queryString,
+                rewriteExplicitParameterTypes(parameters), // rewrite is needed for explicit XML params
+                fetch.orElse(null),
+                offset.orElse(null));
     }
 
     protected QueryResponseData createQueryResponse(
@@ -289,6 +295,14 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
     }
 
+    private static Map<String, Object> rewriteExplicitParameterTypes(Map<String, Object> parameters) {
+        if (parameters == null) {
+            return Map.of();
+        }
+        return parameters.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> handleExplicitParameterTypes(entry.getValue())));
+    }
+
     private static Optional<Long> optionalLong(String name, Map<String, Object> params) {
         return Optional.of(name).map(params::get).map(o -> switch (o) {
             case Integer i -> i.longValue();
@@ -302,5 +316,49 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             }
             default -> throw new InvalidApiParameterException("invalid '%s' value '%s'".formatted(name, o));
         });
+    }
+
+    /**
+     * Allows for explicit types via xml: <param type="int">1</param> in query parameters.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static Object handleExplicitParameterTypes(Object paramValue) {
+        return switch (paramValue) {
+            case Map<?, ?> map -> {
+                if (map.get("type") instanceof String type) {
+                    yield switch (type) {
+                        case "int" -> intValue(map, "").orElse(paramValue);
+                        case "num" -> numValue(map, "").orElse(paramValue);
+                        default -> handleExplicitParameterTypes(map.get(""));
+                    };
+                } else if (map.get("") instanceof List children && !children.isEmpty()) {
+                    yield children.stream()
+                            .map(OpenehrQueryController::handleExplicitParameterTypes)
+                            .toList();
+                } else {
+                    yield intValue(map, "int")
+                            .orElseGet(() -> numValue(map, "num").orElse(paramValue));
+                }
+            }
+            case List list -> {
+                for (int i = 0, s = list.size(); i < s; i++) {
+                    var value = list.get(i);
+                    var normalized = handleExplicitParameterTypes(value);
+                    if (value != normalized) {
+                        list.set(i, normalized);
+                    }
+                }
+                yield paramValue;
+            }
+            default -> paramValue;
+        };
+    }
+
+    private static Optional<Object> intValue(Map<?, ?> paramValues, String key) {
+        return Optional.of(key).map(paramValues::get).map(Object::toString).map(Integer::parseInt);
+    }
+
+    private static Optional<Object> numValue(Map<?, ?> paramValues, String key) {
+        return Optional.of(key).map(paramValues::get).map(Object::toString).map(Double::parseDouble);
     }
 }

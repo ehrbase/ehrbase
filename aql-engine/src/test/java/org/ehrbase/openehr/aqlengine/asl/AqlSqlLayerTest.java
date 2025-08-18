@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
@@ -63,7 +64,8 @@ public class AqlSqlLayerTest {
         c/context/other_context[at0004]/items[at0014]/value
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
-        """);
+        """,
+                false);
         System.out.println(AslGraph.createAslGraph(aslQuery));
     }
 
@@ -79,7 +81,8 @@ public class AqlSqlLayerTest {
             c/context/other_context[at0004]/items[at0014]/value
             FROM EHR e CONTAINS COMPOSITION c
             WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
-        """);
+        """,
+                false);
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
@@ -114,7 +117,8 @@ public class AqlSqlLayerTest {
         SELECT
             cluster/items[at0001]/value/data
         FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
-        """);
+        """,
+                false);
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
@@ -126,12 +130,645 @@ public class AqlSqlLayerTest {
         assertThat(aslQuery.getSelect().getFirst()).isInstanceOf(AslRmPathField.class);
     }
 
-    private AslRootQuery buildSqlQuery(String query) {
+    @Test
+    void testPathNodeSkipping() {
+        AslRootQuery aslQuery = buildSqlQuery(
+                """
+        SELECT
+            o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
+            o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
+            o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
+            o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
+        FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+        """,
+                true);
+
+        String expected =
+                """
+                AslRootQuery
+                  SELECT
+                    p_eq_0.p_items__2_data -> value
+                    p_eq_0.p_items__3_data -> value
+                    p_eq_0.p_items__4_data -> value
+                    p_eq_0.p_items__5_data -> value
+                  FROM
+                    sOB_o_0: StructureQuery
+                      SELECT
+                        sOB_o_0.sOB_o_0_vo_id
+                        sOB_o_0.sOB_o_0_num
+                      WHERE
+                        sOB_o_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.ooo.v1]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sOB_o_0.sOB_o_0_rm_entity IN [OB]
+                    p_eq_0: EncapsulatingQuery
+                      SELECT
+                        p_events__0.p_events__0_vo_id
+                        p_events__0.p_events__0_num
+                        p_events__0.p_events__0_num_cap
+                        p_events__0.p_events__0_citem_num
+                        p_eq_1.p_items__0_vo_id
+                        p_eq_1.p_items__0_num
+                        p_eq_1.p_items__0_citem_num
+                        p_eq_1.p_items__1_vo_id
+                        p_eq_1.p_items__1_num
+                        p_eq_1.p_items__1_parent_num
+                        p_eq_1.p_items__2_vo_id
+                        p_eq_1.p_items__2_parent_num
+                        p_eq_1.p_items__2_citem_num
+                        p_eq_1.p_items__2_data
+                        p_eq_1.p_items__3_vo_id
+                        p_eq_1.p_items__3_parent_num
+                        p_eq_1.p_items__3_citem_num
+                        p_eq_1.p_items__3_data
+                        p_eq_2.p_items__4_vo_id
+                        p_eq_2.p_items__4_num
+                        p_eq_2.p_items__4_parent_num
+                        p_eq_2.p_items__4_citem_num
+                        p_eq_2.p_items__4_data
+                        p_eq_3.p_items__5_vo_id
+                        p_eq_3.p_items__5_num
+                        p_eq_3.p_items__5_parent_num
+                        p_eq_3.p_items__5_citem_num
+                        p_eq_3.p_items__5_data
+                      WHERE
+                        OR
+                          NOT_NULL p_items__0.p_items__0_vo_id
+                          NOT_NULL p_items__4.p_items__4_vo_id
+                          NOT_NULL p_items__5.p_items__5_vo_id
+                        FROM
+                          p_events__0: StructureQuery
+                              SELECT
+                                p_events__0.p_events__0_vo_id
+                                p_events__0.p_events__0_num
+                                p_events__0.p_events__0_num_cap
+                                p_events__0.p_events__0_citem_num
+                              WHERE
+                                p_events__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                              FROM COMPOSITION
+                              STRUCTURE CONDITIONS
+                                p_events__0.p_events__0_entity_attribute EQ [e]
+
+                          p_eq_1: EncapsulatingQuery
+                              SELECT
+                                p_items__0.p_items__0_vo_id
+                                p_items__0.p_items__0_num
+                                p_items__0.p_items__0_citem_num
+                                p_items__1.p_items__1_vo_id
+                                p_items__1.p_items__1_num
+                                p_items__1.p_items__1_parent_num
+                                p_items__2.p_items__2_vo_id
+                                p_items__2.p_items__2_parent_num
+                                p_items__2.p_items__2_citem_num
+                                p_items__2.p_items__2_data
+                                p_items__3.p_items__3_vo_id
+                                p_items__3.p_items__3_parent_num
+                                p_items__3.p_items__3_citem_num
+                                p_items__3.p_items__3_data
+                                FROM
+                                  p_items__0: StructureQuery
+                                      SELECT
+                                        p_items__0.p_items__0_vo_id
+                                        p_items__0.p_items__0_num
+                                        p_items__0.p_items__0_citem_num
+                                      WHERE
+                                        p_items__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0004]]
+                                      FROM COMPOSITION
+                                      STRUCTURE CONDITIONS
+                                        p_items__0.p_items__0_entity_attribute EQ [i]
+
+                                  p_items__1: StructureQuery
+                                      SELECT
+                                        p_items__1.p_items__1_vo_id
+                                        p_items__1.p_items__1_num
+                                        p_items__1.p_items__1_parent_num
+                                      WHERE
+                                        p_items__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=CL, concept=.cl.v0]]
+                                      FROM COMPOSITION
+                                      STRUCTURE CONDITIONS
+                                        p_items__1.p_items__1_entity_attribute EQ [i]
+                                      JOIN p_items__0 -> p_items__1
+                                        on
+                                          DelegatingJoinCondition ->
+                                              p_items__0.p_items__0_vo_id EQ p_items__1.p_items__1_vo_id
+
+                                          DelegatingJoinCondition ->
+                                              p_items__0.p_items__0_num EQ p_items__1.p_items__1_parent_num
+
+
+                                  p_items__2: StructureQuery
+                                      SELECT
+                                        p_items__2.p_items__2_vo_id
+                                        p_items__2.p_items__2_parent_num
+                                        p_items__2.p_items__2_citem_num
+                                        p_items__2.p_items__2_data
+                                      WHERE
+                                        p_items__2.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0006]]
+                                      FROM COMPOSITION
+                                      STRUCTURE CONDITIONS
+                                        p_items__2.p_items__2_entity_attribute EQ [i]
+                                      JOIN p_items__1 -> p_items__2
+                                        on
+                                          DelegatingJoinCondition ->
+                                              p_items__1.p_items__1_vo_id EQ p_items__2.p_items__2_vo_id
+
+                                          DelegatingJoinCondition ->
+                                              p_items__1.p_items__1_num EQ p_items__2.p_items__2_citem_num
+
+
+                                  p_items__3: StructureQuery
+                                      SELECT
+                                        p_items__3.p_items__3_vo_id
+                                        p_items__3.p_items__3_parent_num
+                                        p_items__3.p_items__3_citem_num
+                                        p_items__3.p_items__3_data
+                                      WHERE
+                                        p_items__3.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0009]]
+                                      FROM COMPOSITION
+                                      STRUCTURE CONDITIONS
+                                        p_items__3.p_items__3_entity_attribute EQ [i]
+                                      JOIN p_items__1 -> p_items__3
+                                        on
+                                          DelegatingJoinCondition ->
+                                              p_items__1.p_items__1_vo_id EQ p_items__3.p_items__3_vo_id
+
+                                          DelegatingJoinCondition ->
+                                              p_items__1.p_items__1_num EQ p_items__3.p_items__3_citem_num
+
+                                          DelegatingJoinCondition ->
+                                              COALESCE(p_items__3.p_items__3_parent_num EQ p_items__2.p_items__2_parent_num, true)
+
+
+                              LEFT_OUTER_JOIN p_events__0 -> p_eq_1
+                                on
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_vo_id EQ p_items__0.p_items__0_vo_id
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_citem_num EQ p_items__0.p_items__0_citem_num
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_num LT p_items__0.p_items__0_num
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_num_cap GT_EQ p_items__0.p_items__0_num
+
+
+                          p_eq_2: EncapsulatingQuery
+                              SELECT
+                                p_items__4.p_items__4_vo_id
+                                p_items__4.p_items__4_num
+                                p_items__4.p_items__4_parent_num
+                                p_items__4.p_items__4_citem_num
+                                p_items__4.p_items__4_data
+                                FROM
+                                  p_items__4: StructureQuery
+                                      SELECT
+                                        p_items__4.p_items__4_vo_id
+                                        p_items__4.p_items__4_num
+                                        p_items__4.p_items__4_parent_num
+                                        p_items__4.p_items__4_citem_num
+                                        p_items__4.p_items__4_data
+                                      WHERE
+                                        p_items__4.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0008]]
+                                      FROM COMPOSITION
+                                      STRUCTURE CONDITIONS
+                                        p_items__4.p_items__4_entity_attribute EQ [i]
+
+                              LEFT_OUTER_JOIN p_events__0 -> p_eq_2
+                                on
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_vo_id EQ p_items__4.p_items__4_vo_id
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_citem_num EQ p_items__4.p_items__4_citem_num
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_num LT p_items__4.p_items__4_num
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_num_cap GT_EQ p_items__4.p_items__4_num
+
+
+                          p_eq_3: EncapsulatingQuery
+                              SELECT
+                                p_items__5.p_items__5_vo_id
+                                p_items__5.p_items__5_num
+                                p_items__5.p_items__5_parent_num
+                                p_items__5.p_items__5_citem_num
+                                p_items__5.p_items__5_data
+                                FROM
+                                  p_items__5: StructureQuery
+                                      SELECT
+                                        p_items__5.p_items__5_vo_id
+                                        p_items__5.p_items__5_num
+                                        p_items__5.p_items__5_parent_num
+                                        p_items__5.p_items__5_citem_num
+                                        p_items__5.p_items__5_data
+                                      WHERE
+                                        p_items__5.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0007]]
+                                      FROM COMPOSITION
+                                      STRUCTURE CONDITIONS
+                                        p_items__5.p_items__5_entity_attribute EQ [i]
+
+                              LEFT_OUTER_JOIN p_events__0 -> p_eq_3
+                                on
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_vo_id EQ p_items__5.p_items__5_vo_id
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_citem_num EQ p_items__5.p_items__5_citem_num
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_num LT p_items__5.p_items__5_num
+
+                                  DelegatingJoinCondition ->
+                                      p_events__0.p_events__0_num_cap GT_EQ p_items__5.p_items__5_num
+
+                                  DelegatingJoinCondition ->
+                                      COALESCE(p_items__5.p_items__5_parent_num EQ p_items__4.p_items__4_parent_num, true)
+
+                      LEFT_OUTER_JOIN sOB_o_0 -> p_eq_0
+                        on
+                          DelegatingJoinCondition ->
+                              sOB_o_0.sOB_o_0_vo_id EQ p_events__0.p_events__0_vo_id
+
+                          DelegatingJoinCondition ->
+                              sOB_o_0.sOB_o_0_num EQ p_events__0.p_events__0_citem_num
+                """;
+
+        assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringNewLines(expected);
+    }
+
+    @Test
+    void testSimpleNodePredicateContainment() {
+        AslRootQuery aslQuery = buildSqlQuery(
+                """
+        SELECT
+            e/ehr_id/value
+        FROM EHR e CONTAINS OBSERVATION [openEHR-EHR-OBSERVATION.o1o1o1.v1] CONTAINS CLUSTER[at0001] CONTAINS ELEMENT[at0002]
+        """,
+                false);
+
+        String expected =
+                """
+                AslRootQuery
+                  SELECT
+                    sEHR_e_0.sEHR_e_0_id /* ehr_id/value */
+                  FROM
+                    sEHR_e_0: StructureQuery
+                      SELECT
+                        sEHR_e_0.sEHR_e_0_id /* ehr_id/value */
+                      FROM EHR
+                    sOB_0: StructureQuery
+                      SELECT
+                        sOB_0.sOB_0_vo_id
+                        sOB_0.sOB_0_num
+                        sOB_0.sOB_0_ehr_id
+                      WHERE
+                        sOB_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.o1o1o1.v1]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sOB_0.sOB_0_rm_entity IN [OB]
+                      JOIN sEHR_e_0 -> sOB_0
+                        on
+                          DelegatingJoinCondition ->
+                              sEHR_e_0.sEHR_e_0_id /* ehr_id/value */ EQ sOB_0.sOB_0_ehr_id
+
+                    sCL_0: StructureQuery
+                      SELECT
+                        sCL_0.sCL_0_vo_id
+                        sCL_0.sCL_0_num
+                        sCL_0.sCL_0_num_cap
+                        sCL_0.sCL_0_citem_num
+                      WHERE
+                        sCL_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sCL_0.sCL_0_rm_entity IN [CL]
+                      JOIN sOB_0 -> sCL_0
+                        on
+                          DelegatingJoinCondition ->
+                              sOB_0.sOB_0_vo_id EQ sCL_0.sCL_0_vo_id
+
+                          DelegatingJoinCondition ->
+                              sOB_0.sOB_0_num EQ sCL_0.sCL_0_citem_num
+
+                    sE_0: StructureQuery
+                      SELECT
+                        sE_0.sE_0_vo_id
+                        sE_0.sE_0_num
+                        sE_0.sE_0_citem_num
+                      WHERE
+                        sE_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sE_0.sE_0_rm_entity IN [E]
+                      JOIN sCL_0 -> sE_0
+                        on
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_vo_id EQ sE_0.sE_0_vo_id
+
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_citem_num EQ sE_0.sE_0_citem_num
+
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_num LT sE_0.sE_0_num
+
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_num_cap GT_EQ sE_0.sE_0_num
+                """;
+
+        assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringNewLines(expected);
+    }
+
+    @Test
+    void testNodePredicateContainment() {
+        AslRootQuery aslQuery = buildSqlQuery(
+                """
+        SELECT
+            e/ehr_id/value
+        FROM EHR e CONTAINS
+        (
+            (OBSERVATION [openEHR-EHR-OBSERVATION.o1o1o1.v1] CONTAINS CLUSTER[at0001] CONTAINS ELEMENT[at0002])
+            AND
+            (
+                OBSERVATION [openEHR-EHR-OBSERVATION.o2o2o2.v1] CONTAINS
+                (
+                    (CLUSTER[at0001] CONTAINS ELEMENT[at0002])
+                    OR(
+                        ELEMENT[at0003]
+                        AND
+                        (CLUSTER[at0001] CONTAINS ELEMENT[at0002])
+                        AND
+                        (CLUSTER[openEHR-EHR-CLUSTER.cl.v1] CONTAINS ELEMENT[at0002])
+                    )
+                )
+            )
+        )
+        """,
+                false);
+
+        String expected =
+                """
+                AslRootQuery
+                  SELECT
+                    sEHR_e_0.sEHR_e_0_id /* ehr_id/value */
+                  FROM
+                    sEHR_e_0: StructureQuery
+                      SELECT
+                        sEHR_e_0.sEHR_e_0_id /* ehr_id/value */
+                      FROM EHR
+                    sOB_0: StructureQuery
+                      SELECT
+                        sOB_0.sOB_0_vo_id
+                        sOB_0.sOB_0_num
+                        sOB_0.sOB_0_ehr_id
+                      WHERE
+                        sOB_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.o1o1o1.v1]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sOB_0.sOB_0_rm_entity IN [OB]
+                      JOIN sEHR_e_0 -> sOB_0
+                        on
+                          DelegatingJoinCondition ->
+                              sEHR_e_0.sEHR_e_0_id /* ehr_id/value */ EQ sOB_0.sOB_0_ehr_id
+
+                    sCL_0: StructureQuery
+                      SELECT
+                        sCL_0.sCL_0_vo_id
+                        sCL_0.sCL_0_num
+                        sCL_0.sCL_0_num_cap
+                        sCL_0.sCL_0_citem_num
+                      WHERE
+                        sCL_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sCL_0.sCL_0_rm_entity IN [CL]
+                      JOIN sOB_0 -> sCL_0
+                        on
+                          DelegatingJoinCondition ->
+                              sOB_0.sOB_0_vo_id EQ sCL_0.sCL_0_vo_id
+
+                          DelegatingJoinCondition ->
+                              sOB_0.sOB_0_num EQ sCL_0.sCL_0_citem_num
+
+                    sE_0: StructureQuery
+                      SELECT
+                        sE_0.sE_0_vo_id
+                        sE_0.sE_0_num
+                        sE_0.sE_0_citem_num
+                      WHERE
+                        sE_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sE_0.sE_0_rm_entity IN [E]
+                      JOIN sCL_0 -> sE_0
+                        on
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_vo_id EQ sE_0.sE_0_vo_id
+
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_citem_num EQ sE_0.sE_0_citem_num
+
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_num LT sE_0.sE_0_num
+
+                          DelegatingJoinCondition ->
+                              sCL_0.sCL_0_num_cap GT_EQ sE_0.sE_0_num
+
+                    sOB_1: StructureQuery
+                      SELECT
+                        sOB_1.sOB_1_vo_id
+                        sOB_1.sOB_1_num
+                        sOB_1.sOB_1_num_cap
+                        sOB_1.sOB_1_ehr_id
+                      WHERE
+                        sOB_1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.o2o2o2.v1]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sOB_1.sOB_1_rm_entity IN [OB]
+                      JOIN sEHR_e_0 -> sOB_1
+                        on
+                          DelegatingJoinCondition ->
+                              sEHR_e_0.sEHR_e_0_id /* ehr_id/value */ EQ sOB_1.sOB_1_ehr_id
+
+                    or_sq_0: EncapsulatingQuery
+                      SELECT
+                        sCL_1.sCL_1_vo_id
+                        sCL_1.sCL_1_num
+                        sCL_1.sCL_1_num_cap
+                        sCL_1.sCL_1_citem_num
+                        sE_1.sE_1_vo_id
+                        sE_1.sE_1_num
+                        sE_1.sE_1_citem_num
+                        FROM
+                          sCL_1: StructureQuery
+                              SELECT
+                                sCL_1.sCL_1_vo_id
+                                sCL_1.sCL_1_num
+                                sCL_1.sCL_1_num_cap
+                                sCL_1.sCL_1_citem_num
+                              WHERE
+                                sCL_1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
+                              FROM COMPOSITION
+                              STRUCTURE CONDITIONS
+                                sCL_1.sCL_1_rm_entity IN [CL]
+
+                          sE_1: StructureQuery
+                              SELECT
+                                sE_1.sE_1_vo_id
+                                sE_1.sE_1_num
+                                sE_1.sE_1_citem_num
+                              WHERE
+                                sE_1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                              FROM COMPOSITION
+                              STRUCTURE CONDITIONS
+                                sE_1.sE_1_rm_entity IN [E]
+                              JOIN sCL_1 -> sE_1
+                                on
+                                  DelegatingJoinCondition ->
+                                      sCL_1.sCL_1_vo_id EQ sE_1.sE_1_vo_id
+
+                                  DelegatingJoinCondition ->
+                                      sCL_1.sCL_1_citem_num EQ sE_1.sE_1_citem_num
+
+                                  DelegatingJoinCondition ->
+                                      sCL_1.sCL_1_num LT sE_1.sE_1_num
+
+                                  DelegatingJoinCondition ->
+                                      sCL_1.sCL_1_num_cap GT_EQ sE_1.sE_1_num
+
+
+                      LEFT_OUTER_JOIN sOB_1 -> or_sq_0
+                        on
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_vo_id EQ sCL_1.sCL_1_vo_id
+
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_num EQ sCL_1.sCL_1_citem_num
+
+                    sE_2: StructureQuery
+                      SELECT
+                        sE_2.sE_2_vo_id
+                        sE_2.sE_2_citem_num
+                      WHERE
+                        sE_2.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sE_2.sE_2_rm_entity IN [E]
+                      LEFT_OUTER_JOIN sOB_1 -> sE_2
+                        on
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_vo_id EQ sE_2.sE_2_vo_id
+
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_num EQ sE_2.sE_2_citem_num
+
+                    sCL_2: StructureQuery
+                      SELECT
+                        sCL_2.sCL_2_vo_id
+                        sCL_2.sCL_2_num
+                        sCL_2.sCL_2_num_cap
+                        sCL_2.sCL_2_citem_num
+                      WHERE
+                        sCL_2.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sCL_2.sCL_2_rm_entity IN [CL]
+                      LEFT_OUTER_JOIN sOB_1 -> sCL_2
+                        on
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_vo_id EQ sCL_2.sCL_2_vo_id
+
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_num EQ sCL_2.sCL_2_citem_num
+
+                    sE_3: StructureQuery
+                      SELECT
+                        sE_3.sE_3_vo_id
+                        sE_3.sE_3_num
+                        sE_3.sE_3_citem_num
+                      WHERE
+                        sE_3.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sE_3.sE_3_rm_entity IN [E]
+                      LEFT_OUTER_JOIN sCL_2 -> sE_3
+                        on
+                          DelegatingJoinCondition ->
+                              sCL_2.sCL_2_vo_id EQ sE_3.sE_3_vo_id
+
+                          DelegatingJoinCondition ->
+                              sCL_2.sCL_2_citem_num EQ sE_3.sE_3_citem_num
+
+                          DelegatingJoinCondition ->
+                              sCL_2.sCL_2_num LT sE_3.sE_3_num
+
+                          DelegatingJoinCondition ->
+                              sCL_2.sCL_2_num_cap GT_EQ sE_3.sE_3_num
+
+                    sCL_3: StructureQuery
+                      SELECT
+                        sCL_3.sCL_3_vo_id
+                        sCL_3.sCL_3_num
+                      WHERE
+                        sCL_3.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=CL, concept=.cl.v1]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sCL_3.sCL_3_rm_entity IN [CL]
+                      LEFT_OUTER_JOIN sOB_1 -> sCL_3
+                        on
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_vo_id EQ sCL_3.sCL_3_vo_id
+
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_num LT sCL_3.sCL_3_num
+
+                          DelegatingJoinCondition ->
+                              sOB_1.sOB_1_num_cap GT_EQ sCL_3.sCL_3_num
+
+                    sE_4: StructureQuery
+                      SELECT
+                        sE_4.sE_4_vo_id
+                        sE_4.sE_4_citem_num
+                      WHERE
+                        sE_4.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
+                      FROM COMPOSITION
+                      STRUCTURE CONDITIONS
+                        sE_4.sE_4_rm_entity IN [E]
+                      LEFT_OUTER_JOIN sCL_3 -> sE_4
+                        on
+                          DelegatingJoinCondition ->
+                              sCL_3.sCL_3_vo_id EQ sE_4.sE_4_vo_id
+
+                          DelegatingJoinCondition ->
+                              sCL_3.sCL_3_num EQ sE_4.sE_4_citem_num
+
+                  WHERE
+                    OR
+                      NOT_NULL sCL_1.sCL_1_vo_id
+                      AND
+                        NOT_NULL sE_2.sE_2_vo_id
+                        AND
+                          NOT_NULL sCL_2.sCL_2_vo_id
+                          NOT_NULL sE_3.sE_3_vo_id
+                        AND
+                          NOT_NULL sCL_3.sCL_3_vo_id
+                          NOT_NULL sE_4.sE_4_vo_id
+                """;
+
+        assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringNewLines(expected);
+    }
+
+    private AslRootQuery buildSqlQuery(String query, final boolean pathSkipping) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(query);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, pathSkipping);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
-        return aqlSqlLayer.buildAslRootQuery(queryWrapper);
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
+        AslRootQuery aslRootQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
+        new AslCleanupPostProcessor().afterBuildAsl(aslRootQuery, aqlQuery, queryWrapper, null);
+        return aslRootQuery;
     }
 }

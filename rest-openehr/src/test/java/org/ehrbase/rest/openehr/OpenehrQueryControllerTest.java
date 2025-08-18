@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -30,7 +31,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -101,7 +104,8 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(SAMPLE_QUERY, offset, fetch, SAMPLE_PARAMETER_MAP, MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     private Long toLong(Object obj) {
@@ -123,7 +127,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     private static Map<String, Object> sampleAqlQuery(Object fetch, Object offset) {
@@ -179,7 +184,8 @@ public class OpenehrQueryControllerTest {
                         SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -214,7 +220,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         sampleAqlJson(fetch, offset));
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -243,6 +250,64 @@ public class OpenehrQueryControllerTest {
                                 sampleAqlJson(null, "invalid")))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);
+    }
+
+    @Test
+    void createRequestWithXmlParamsAdjusted() {
+
+        AqlQueryRequest request = controller()
+                .createRequest(
+                        "SELECT e FROM EHR e",
+                        Map.of(
+                                "p_string", "some-string",
+                                "p_xml_num", Map.of("type", "num", "", 42.12),
+                                "p_xml_int", Map.of("type", "int", "", 11)
+                                // "p_list": L
+                                ),
+                        Optional.empty(),
+                        Optional.empty());
+        assertThat(request.parameters())
+                .containsAllEntriesOf(Map.of("p_string", "some-string", "p_xml_num", 42.12, "p_xml_int", 11));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
+    }
+
+    @Test
+    void createRequestWithXmlParamsWithoutTypeAdjusted() {
+
+        AqlQueryRequest request = controller()
+                .createRequest(
+                        "SELECT c FROM COMPOSITION c",
+                        Map.of(
+                                "p_xml_num", Map.of("num", 42.12),
+                                "p_xml_int", Map.of("int", 11)
+                                // "p_list": L
+
+                                ),
+                        Optional.empty(),
+                        Optional.empty());
+        assertThat(request.parameters()).containsAllEntriesOf(Map.of("p_xml_num", 42.12, "p_xml_int", 11));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
+    }
+
+    @Test
+    void createRequestWithXmlParamListsAdjusted() {
+
+        AqlQueryRequest request = controller()
+                .createRequest(
+                        "SELECT e, c FROM EHR e CONTAINS COMPOSITION c",
+                        Map.of(
+                                "p_xml_list", Map.of("", List.of("value_1", "value_2")),
+                                "p_xml_list_alternative", List.of("some", "other", "value")),
+                        Optional.empty(),
+                        Optional.empty());
+        assertThat(request.parameters())
+                .containsAllEntriesOf(Map.of(
+                        "p_xml_list", List.of("value_1", "value_2"),
+                        "p_xml_list_alternative", List.of("some", "other", "value")));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
     }
 
     private void assertAqlQueryRequest(AqlQueryRequest aqlQueryRequest) {

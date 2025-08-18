@@ -120,14 +120,12 @@ class AqlLimitPostProcessorTest {
                 fetchPrecedence)
                 .afterParseAql(
                         AqlQuery.parse(query),
-                        new AqlQueryRequest(
-                        query,
-                        Map.of(),
-                        parseLong(paramLimit).orElse(null),
-                        Optional.ofNullable(paramOffset)
-                                .filter(s -> !s.isEmpty())
-                                .map(Long::parseLong)
-                                .orElse(null)),
+                        AqlQueryRequest.prepare(
+                            query,
+                            Map.of(),
+                            parseLong(paramLimit).orElse(null),
+                            Optional.ofNullable(paramOffset).filter(s -> !s.isEmpty()).map(Long::parseLong).orElse(null)
+                        ),
                         new TestAqlQueryContext());
         // @format:on
     }

@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.pathanalysis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,15 +90,22 @@ public final class PathCohesionAnalysis {
 
         Map<AbstractContainmentExpression, List<IdentifiedPath>> roots = AqlQueryUtils.allIdentifiedPaths(query)
                 .distinct()
-                .collect(Collectors.groupingBy(IdentifiedPath::getRoot));
+                .collect(Collectors.groupingBy(IdentifiedPath::getRoot, IdentityHashMap::new, Collectors.toList()));
 
-        return roots.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> {
-            PathNode rootNode = createRootNode(e);
+        return roots.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> {
+                            PathNode rootNode = createRootNode(e);
 
-            PathCohesionTreeNode joinTree = PathCohesionTreeNode.root(rootNode, e.getValue());
-            fillJoinTree(joinTree, 0);
-            return joinTree;
-        }));
+                            PathCohesionTreeNode joinTree = PathCohesionTreeNode.root(rootNode, e.getValue());
+                            fillJoinTree(joinTree, 0);
+                            return joinTree;
+                        },
+                        (a, b) -> {
+                            throw new UnsupportedOperationException();
+                        },
+                        IdentityHashMap::new));
     }
 
     private static PathNode createRootNode(Map.Entry<AbstractContainmentExpression, List<IdentifiedPath>> e) {
@@ -346,6 +354,15 @@ public final class PathCohesionAnalysis {
 
         public boolean isRoot() {
             return root;
+        }
+
+        @Override
+        public String toString() {
+            return "PathCohesionTreeNode{" + "attribute="
+                    + attribute + ", paths="
+                    + paths + ", pathsEndingAtNode="
+                    + pathsEndingAtNode + ", root="
+                    + root + '}';
         }
     }
 }
