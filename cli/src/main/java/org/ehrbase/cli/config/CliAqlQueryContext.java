@@ -57,6 +57,16 @@ public class CliAqlQueryContext implements AqlQueryContext {
     }
 
     @Override
+    public boolean isPathSkipping() {
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
+    }
+
+    @Override
+    public boolean isArchetypeLocalNodePredicates() {
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
+    }
+
+    @Override
     public void setExecutedAql(String executedAql) {
         throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }

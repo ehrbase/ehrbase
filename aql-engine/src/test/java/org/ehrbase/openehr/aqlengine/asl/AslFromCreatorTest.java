@@ -49,9 +49,9 @@ class AslFromCreatorTest {
         var aslQuery = new AslRootQuery();
 
         var aqlQuery = AqlQueryParser.parse(aql);
-        var queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        var queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        var aslFromCreator = new AslFromCreator(aliasProvider, mockKnowledgeCacheService);
+        var aslFromCreator = new AslFromCreator(aliasProvider, mockKnowledgeCacheService, true);
         aslFromCreator.addFromClause(aslQuery, queryWrapper);
 
         return aslQuery;

@@ -17,6 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.asl;
 
+import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
@@ -27,7 +28,7 @@ import org.junit.jupiter.api.Test;
 class AslGraphTest {
 
     @Test
-    @Disabled("What is this testing - there is no assert?")
+    @Disabled
     void printDataQueryGraph() {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(
@@ -41,9 +42,10 @@ class AslGraphTest {
                   CONTAINS COMPOSITION c1
                 """);
 
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AslRootQuery rootQuery = new AqlSqlLayer(null, () -> "node").buildAslRootQuery(queryWrapper);
+        AslRootQuery rootQuery =
+                new AqlSqlLayer(null, () -> "node", new TestAqlQueryContext()).buildAslRootQuery(queryWrapper);
 
         System.out.println(AslGraph.createAslGraph(rootQuery));
     }

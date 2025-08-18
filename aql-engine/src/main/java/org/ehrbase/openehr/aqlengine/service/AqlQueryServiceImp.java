@@ -103,7 +103,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
                     logger.trace(objectMapper.writeValueAsString(aqlQuery));
                 }
 
-                AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+                AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, aqlQueryContext.isPathSkipping());
 
                 AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
                 aslPostProcessors.forEach(p -> p.afterBuildAsl(aslQuery, aqlQuery, queryWrapper, aqlQueryRequest));

@@ -6,8 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
- ### Added
+ ### Added 
+- Option `ehrbase.aql.path-node-skipping` to improve AQL performance for paths containing consecutive node predicates. 
+  Disabled by default, since it may produce unexpected results if the paths do not follow the archetype definitions. 
+  [#1521](https://github.com/ehrbase/ehrbase/pull/1521)
  ### Changed 
+- AQL: CONTAINS with a node predicate now excludes results from nested archetypes.
+  To restore the previous behaviour set `ehrbase.aql.archetype-local-node-predicates = false`[#1524](https://github.com/ehrbase/ehrbase/pull/1524)
  ### Fixed
 - Fix terminology validation URL extraction [#1507](https://github.com/ehrbase/ehrbase/pull/1507)
 

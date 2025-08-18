@@ -21,6 +21,7 @@ AslRootQuery
         sCO_c_0.sCO_c_0_num
         sCO_c_0.sCO_c_0_num_cap
         sCO_c_0.sCO_c_0_parent_num
+        sCO_c_0.sCO_c_0_citem_num
         sCO_c_0.sCO_c_0_ehr_id
         sCO_c_0.sCO_c_0_entity_idx
         sCO_c_0.sCO_c_0_entity_idx_len
@@ -41,6 +42,7 @@ AslRootQuery
         sENTRY_en_0.sENTRY_en_0_num
         sENTRY_en_0.sENTRY_en_0_num_cap
         sENTRY_en_0.sENTRY_en_0_parent_num
+        sENTRY_en_0.sENTRY_en_0_citem_num
         sENTRY_en_0.sENTRY_en_0_entity_idx
         sENTRY_en_0.sENTRY_en_0_entity_idx_len
         sENTRY_en_0.sENTRY_en_0_entity_concept

@@ -38,6 +38,7 @@ import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslCoalesceJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDvOrderedValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
@@ -92,7 +93,17 @@ final class ConditionUtils {
 
     private static Condition delegatingJoinCondition(
             AslDelegatingJoinCondition joinCondition, AslQueryTables aslQueryToTable) {
-        return fieldJoinCondition((AslFieldFieldQueryCondition) joinCondition.getDelegate(), aslQueryToTable);
+        return switch (joinCondition.getDelegate()) {
+            case AslFieldFieldQueryCondition ffc -> fieldJoinCondition(ffc, aslQueryToTable);
+            case AslCoalesceJoinCondition cjc -> coalesceJoinCondition(cjc, aslQueryToTable);
+        };
+    }
+
+    private static Condition coalesceJoinCondition(
+            final AslCoalesceJoinCondition delegate, final AslQueryTables aslQueryToTable) {
+        return DSL.condition(DSL.coalesce(
+                fieldJoinCondition(delegate.getTernaryCondition(), aslQueryToTable),
+                DSL.condition(DSL.inline(delegate.getDefaultValue()))));
     }
 
     private static Condition fieldJoinCondition(AslFieldFieldQueryCondition ic, AslQueryTables aslQueryToTable) {
@@ -139,8 +150,10 @@ final class ConditionUtils {
             case AslTrueQueryCondition __ -> DSL.trueCondition();
             case AslNotNullQueryCondition nn -> notNullCondition(tables, useAliases, nn);
             case AslFieldValueQueryCondition fv -> buildFieldValueCondition(tables, useAliases, fv);
-            case AslFieldFieldQueryCondition ic -> throw new IllegalArgumentException(
+            case AslFieldFieldQueryCondition __ -> throw new IllegalArgumentException(
                     "AslFieldConditions are not supported in WHERE clauses");
+            case AslCoalesceJoinCondition __ -> throw new IllegalArgumentException(
+                    "AslCoalesceJoinConditions are not supported in WHERE clauses");
         };
     }
 
