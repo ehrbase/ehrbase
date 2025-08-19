@@ -84,14 +84,15 @@ public class ItemTagRepository {
                 .map(tag -> new AbstractMap.SimpleImmutableEntry<>(tag.getId(), tag))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        List<EhrItemTagRecord> existingTags =
-                context.selectFrom(EHR_ITEM_TAG).where(EHR_ITEM_TAG.ID.in(existingTagsById.keySet())).stream()
-                        .map(dbRecord -> {
+        List<EhrItemTagRecord> existingTags = context.selectFrom(EHR_ITEM_TAG)
+                .where(EHR_ITEM_TAG.ID.in(existingTagsById.keySet()))
+                .collect(Collectors.mapping(
+                        dbRecord -> {
                             ItemTagDto itemTag = existingTagsById.remove(dbRecord.getId());
                             mapItemTag(itemTag, dbRecord);
                             return dbRecord;
-                        })
-                        .toList();
+                        },
+                        Collectors.toList()));
 
         if (!existingTagsById.isEmpty()) {
             throw new ObjectNotFoundException(

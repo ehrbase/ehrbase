@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -93,10 +92,7 @@ public class AqlQueryRepository {
      */
     @Transactional(readOnly = true)
     public List<List<Object>> executeQuery(PreparedQuery preparedQuery) {
-        try (Stream<Record> stream = preparedQuery.selectQuery.stream()) {
-            return stream.map(r -> postProcessDbRecord(r, preparedQuery.postProcessors))
-                    .toList();
-        }
+        return preparedQuery.selectQuery.fetch(r -> postProcessDbRecord(r, preparedQuery.postProcessors));
     }
 
     /**
