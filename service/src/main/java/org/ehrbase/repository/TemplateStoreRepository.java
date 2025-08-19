@@ -89,7 +89,8 @@ public class TemplateStoreRepository {
     }
 
     public Map<UUID, String> findAllTemplateIds() {
-        return context.select(TEMPLATE_STORE.ID, TEMPLATE_STORE.TEMPLATE_ID).from(TEMPLATE_STORE).stream()
+        return context.select(TEMPLATE_STORE.ID, TEMPLATE_STORE.TEMPLATE_ID)
+                .from(TEMPLATE_STORE)
                 .collect(Collectors.toMap(Record2::value1, Record2::value2));
     }
 
