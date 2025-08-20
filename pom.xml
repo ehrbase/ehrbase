@@ -137,6 +137,12 @@
           <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
           <argLine>@{surefireArgLine}</argLine>
           <skipTests>${skipTests}</skipTests>
+            <!-- Ensure tests have a stable local to prevent localized
+            XML parsing error messages -->
+            <systemPropertyVariables>
+                <user.language>en</user.language>
+                <user.region>US</user.region>
+            </systemPropertyVariables>
           <includes>
             <include>**/*Test.java</include>
           </includes>
@@ -210,7 +216,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin-version}</version>
+        <version>${maven-compiler-plugin.version}</version>
         <configuration>
           <compilerArgs>
             <arg>-parameters</arg>
@@ -286,6 +292,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
+              <version>${maven-gpg-plugin.version}</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
