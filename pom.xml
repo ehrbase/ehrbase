@@ -135,12 +135,12 @@
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
-          <argLine>${surefireArgLine}</argLine>
-              <skipTests>${skipTests}</skipTests>
-              <includes>
-                <include>**/*Test.java</include>
-              </includes>
-            </configuration>
+          <argLine>@{surefireArgLine}</argLine>
+          <skipTests>${skipTests}</skipTests>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+        </configuration>
       </plugin>
       <plugin>
         <!-- HANDLES JUNIT INTEGRATION TESTS -->
@@ -154,7 +154,7 @@
             <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
           </additionalClasspathElements>
           <!-- SETS THE VM ARGUMENT LINE USED WHEN INTEGRATION TESTS ARE RUN. -->
-          <argLine>${failsafeArgLine}</argLine>
+          <argLine>@{failsafeArgLine}</argLine>
           <includes>
             <include>**/*IT.java</include>
           </includes>
