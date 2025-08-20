@@ -131,7 +131,7 @@ public class CompositionController extends BaseController {
         if (compositionDto.isPresent()) {
 
             // Serialize onto target format
-            StructuredString serialize = compositionService.serialize(compositionDto.get(), format);
+            StructuredString serialize = compositionService.serialize(compositionDto.get(), format, false);
 
             CompositionResponseData responseDto = new CompositionResponseData();
             responseDto.setComposition(serialize);

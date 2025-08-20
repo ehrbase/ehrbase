@@ -87,6 +87,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false) String prefer,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody String template) {
 
         // create template
@@ -104,8 +105,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            String responseTemplate =
-                    templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
+            String responseTemplate = templateService.findOperationalTemplate(
+                    templateId, OperationalTemplateFormat.XML, isPretty(pretty));
             return bodyBuilder.body(responseTemplate);
         } else {
             return bodyBuilder.build();
@@ -120,12 +121,15 @@ public class OpenehrTemplateController extends BaseController implements Templat
     public ResponseEntity<List<TemplateMetaDataDto>> getTemplatesClassic(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = ACCEPT, required = false) String accept) {
+            @RequestHeader(value = ACCEPT, required = false) String accept,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4);
         MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML);
 
         List<TemplateMetaDataDto> templates = templateService.getAllTemplates();
+
+        setPrettyPrintResponse(pretty);
 
         // returns 200 with all templates
         return ResponseEntity.ok().location(uri).contentType(mediaType).body(templates);
@@ -145,7 +149,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @PathVariable(value = "template_id") String templateId) {
+            @PathVariable(value = "template_id") String templateId,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         // parse and set accepted format. with XML as fallback for empty header and error for unsupported header
         MediaType mediaType = resolveContentType(
@@ -158,7 +163,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return the original XML based OPT format (if called with the Accept: application/xml request header),
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            String operationalTemplate = templateService.findOperationalTemplate(templateId, format);
+            String operationalTemplate = templateService.findOperationalTemplate(templateId, format, isPretty(pretty));
             return bodyBuilder.body(operationalTemplate);
         }
         // return simplified JSON-based “web template” format (if called with the Accept: application/json or
@@ -180,17 +185,20 @@ public class OpenehrTemplateController extends BaseController implements Templat
     public ResponseEntity<String> getTemplateExample(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId,
-            @RequestParam(value = "format", required = false) String format) {
+            @RequestParam(value = "format", required = false) String format,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         CompositionRepresentation representation = extractCompositionRepresentation(accept, format);
         Composition composition = templateService.buildExample(templateId);
         CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
 
+        setPrettyPrintResponse(pretty);
+
         return ResponseEntity.ok()
                 .location(createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId, "example"))
                 .contentType(representation.mediaType)
                 .body(compositionService
-                        .serialize(compositionDto, representation.format)
+                        .serialize(compositionDto, representation.format, isPretty(pretty))
                         .getValue());
     }
 
@@ -200,7 +208,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
     @SuppressWarnings({"removal", "UastIncorrectHttpHeaderInspection"})
     public ResponseEntity<WebTemplate> getWebTemplate(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-            @PathVariable(value = "template_id") String templateId) {
+            @PathVariable(value = "template_id") String templateId,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         final MediaType mediaType =
                 resolveContentType(accept, OpenEHRMediaType.APPLICATION_WT_JSON, MediaType.APPLICATION_JSON);
@@ -208,6 +217,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // @format:off
         final String linkPrefix = "%s/%s".formatted(getContextPath(), "swagger-ui/index.html?urls.primaryName=1.%20openEHR%20API#");
+
+        setPrettyPrintResponse(pretty);
 
         return ResponseEntity.ok()
                 .location(createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId, "webtemplate"))
@@ -238,6 +249,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @RequestParam(value = "version", required = false) String version,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody String template) {
 
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
@@ -249,7 +261,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
     public ResponseEntity<TemplateResponseData> getTemplatesNew(
             @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
@@ -266,7 +279,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id", required = false) String templateId,
-            @PathVariable(value = "version_pattern", required = false) String versionPattern) {
+            @PathVariable(value = "version_pattern", required = false) String versionPattern,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }

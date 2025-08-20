@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.ehrbase.rest.openehr.specification.ApiParameter.PrettyPrint;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "COMPOSITION")
@@ -49,6 +50,7 @@ public interface CompositionApiSpecification {
                                             type = "string",
                                             allowableValues = {"JSON", "XML", "STRUCTURED", "FLAT"}))
                     String format,
+            @PrettyPrint String pretty,
             String composition);
 
     @Operation(
@@ -74,6 +76,7 @@ public interface CompositionApiSpecification {
                                             type = "string",
                                             allowableValues = {"JSON", "XML", "STRUCTURED", "FLAT"}))
                     String format,
+            @PrettyPrint String pretty,
             String composition);
 
     @Operation(
@@ -102,5 +105,6 @@ public interface CompositionApiSpecification {
                                             type = "string",
                                             allowableValues = {"JSON", "XML", "STRUCTURED", "FLAT"}))
                     String format,
+            @PrettyPrint String pretty,
             String versionAtTime);
 }

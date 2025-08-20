@@ -93,7 +93,8 @@ public class OpenehrVersionedCompositionController extends BaseController
     public ResponseEntity<VersionedCompositionDto> retrieveVersionedCompositionByVersionedObjectUid(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "versioned_object_uid") String versionedObjectUid) {
+            @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -119,6 +120,8 @@ public class OpenehrVersionedCompositionController extends BaseController
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        setPrettyPrintResponse(pretty);
+
         return ResponseEntity.ok().headers(respHeaders).body(versionedCompositionDto);
     }
 
@@ -127,7 +130,8 @@ public class OpenehrVersionedCompositionController extends BaseController
     public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @PathVariable(value = "versioned_object_uid") String versionedObjectUid) {
+            @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -149,6 +153,8 @@ public class OpenehrVersionedCompositionController extends BaseController
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
+        setPrettyPrintResponse(pretty);
+
         return ResponseEntity.ok().headers(respHeaders).body(response);
     }
 
@@ -158,7 +164,8 @@ public class OpenehrVersionedCompositionController extends BaseController
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-            @PathVariable(value = "version_uid") String versionUid) {
+            @PathVariable(value = "version_uid") String versionUid,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -189,6 +196,8 @@ public class OpenehrVersionedCompositionController extends BaseController
         createRestContext(ehrId, versionedCompoUid, auditLocation);
 
         try {
+            setPrettyPrintResponse(pretty);
+
             return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedObjectId, version);
         } catch (ObjectNotFoundException e) {
             // revise exception
@@ -203,7 +212,8 @@ public class OpenehrVersionedCompositionController extends BaseController
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
-            @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
+            @RequestParam(value = "version_at_time", required = false) String versionAtTime,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         UUID versionedCompoUid = getCompositionVersionedObjectUidString(versionedObjectUid);
@@ -221,6 +231,8 @@ public class OpenehrVersionedCompositionController extends BaseController
 
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, version, "version");
         createRestContext(ehrId, versionedCompoUid, auditLocation);
+
+        setPrettyPrintResponse(pretty);
 
         return getOriginalVersionResponseDataResponseEntity(accept, ehrId, versionedCompoUid, version);
     }

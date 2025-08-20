@@ -20,6 +20,7 @@ package org.ehrbase.rest.openehr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -72,7 +73,7 @@ class OpenehrTemplateControllerTest {
 
     private OpenehrTemplateController controller() {
         doReturn(SAMPLE_ID).when(mockTemplateService).create(any());
-        doReturn(SAMPLE_OPT).when(mockTemplateService).findOperationalTemplate(any(), any());
+        doReturn(SAMPLE_OPT).when(mockTemplateService).findOperationalTemplate(any(), any(), eq(false));
         doReturn(SAMPLE_WEB_TEMPLATE).when(mockTemplateService).findWebTemplate(SAMPLE_ID);
         return spyController;
     }
@@ -86,7 +87,7 @@ class OpenehrTemplateControllerTest {
 
         doReturn(List.of(metaDataDto)).when(mockTemplateService).getAllTemplates();
 
-        var response = controller().getTemplatesClassic("1.0.3", null, accept);
+        var response = controller().getTemplatesClassic("1.0.3", null, accept, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
         assertThat(response.getHeaders())
@@ -98,7 +99,7 @@ class OpenehrTemplateControllerTest {
     @ValueSource(strings = {"", "return=minimal", "return=representation"})
     void createTemplateADL1_4(String prefer) {
 
-        var response = controller().createTemplateClassic("1.0.3", null, prefer, SAMPLE_OPT);
+        var response = controller().createTemplateClassic("1.0.3", null, prefer, null, SAMPLE_OPT);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getHeaders())
                 .containsEntry(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_XML_VALUE));
@@ -117,7 +118,7 @@ class OpenehrTemplateControllerTest {
     void createTemplateADL1_4_OPTInvalidError() {
 
         OpenehrTemplateController controller = controller();
-        assertThatThrownBy(() -> controller.createTemplateClassic("1.0.3", null, null, "not a xml"))
+        assertThatThrownBy(() -> controller.createTemplateClassic("1.0.3", null, null, null, "not a xml"))
                 .isInstanceOf(InvalidApiParameterException.class)
                 .hasMessage("error: Content is not allowed in prolog.");
     }
@@ -126,7 +127,7 @@ class OpenehrTemplateControllerTest {
     void getTemplateADL1_4_OPT() {
 
         ResponseEntity<?> response =
-                controller().getTemplateClassic("1.0.3", null, MediaType.APPLICATION_XML_VALUE, SAMPLE_ID);
+                controller().getTemplateClassic("1.0.3", null, MediaType.APPLICATION_XML_VALUE, SAMPLE_ID, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of("application/xml"));
         assertThat(response.getHeaders())
@@ -139,7 +140,7 @@ class OpenehrTemplateControllerTest {
     @CsvSource({"application/json", "application/openehr.wt+json"})
     void getTemplateADL1_4_WebTemplate(String accept) {
 
-        ResponseEntity<?> response = controller().getTemplateClassic("1.0.3", null, accept, SAMPLE_ID);
+        ResponseEntity<?> response = controller().getTemplateClassic("1.0.3", null, accept, SAMPLE_ID, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
         assertThat(response.getHeaders())
@@ -161,9 +162,9 @@ class OpenehrTemplateControllerTest {
         StructuredString structuredString = new StructuredString("\"string\"", StructuredStringFormat.JSON);
 
         doReturn(composition).when(mockTemplateService).buildExample(SAMPLE_ID);
-        doReturn(structuredString).when(mockCompositionService).serialize(any(), any());
+        doReturn(structuredString).when(mockCompositionService).serialize(any(), any(), eq(false));
 
-        ResponseEntity<?> response = controller().getTemplateExample(accept, SAMPLE_ID, null);
+        ResponseEntity<?> response = controller().getTemplateExample(accept, SAMPLE_ID, null, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
         assertThat(response.getHeaders())
@@ -177,7 +178,7 @@ class OpenehrTemplateControllerTest {
     @CsvSource({"application/json", "application/openehr.wt+json"})
     void getWebTemplate(String accept) {
 
-        ResponseEntity<?> response = controller().getWebTemplate(accept, SAMPLE_ID);
+        ResponseEntity<?> response = controller().getWebTemplate(accept, SAMPLE_ID, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
         assertThat(response.getHeaders())
@@ -193,11 +194,13 @@ class OpenehrTemplateControllerTest {
     void templateADL2NotImplemented() {
 
         OpenehrTemplateController controller = controller();
-        assertThat(controller.getTemplatesNew(null, null, null).getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
+        assertThat(controller.getTemplatesNew(null, null, null, null).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_IMPLEMENTED);
         assertThat(controller
-                        .createTemplateNew(null, null, null, null, null, null, null)
+                        .createTemplateNew(null, null, null, null, null, null, null, null)
                         .getStatusCode())
                 .isEqualTo(HttpStatus.NOT_IMPLEMENTED);
-        assertThat(controller.getTemplatesNew(null, null, null).getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
+        assertThat(controller.getTemplatesNew(null, null, null, null).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_IMPLEMENTED);
     }
 }

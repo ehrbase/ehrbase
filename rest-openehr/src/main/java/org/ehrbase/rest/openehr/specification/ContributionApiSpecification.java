@@ -39,6 +39,7 @@ public interface ContributionApiSpecification {
             String accept,
             String prefer,
             String ehrIdString,
+            @ApiParameter.PrettyPrint String pretty,
             String contribution);
 
     @Operation(
@@ -52,5 +53,6 @@ public interface ContributionApiSpecification {
             String openehrAuditDetails,
             String accept,
             String ehrIdString,
-            String contributionUidString);
+            String contributionUidString,
+            @ApiParameter.PrettyPrint String pretty);
 }

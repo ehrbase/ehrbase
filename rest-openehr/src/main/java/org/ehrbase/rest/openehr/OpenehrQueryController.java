@@ -93,11 +93,12 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @Override
     @GetMapping(path = "/aql")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @RequestParam(name = Q_PARAM) String queryString,
+            @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestParam(name = OFFSET_PARAM, required = false) Integer offset,
             @RequestParam(name = FETCH_PARAM, required = false) Integer fetch,
             @RequestParam(name = QUERY_PARAMETERS, required = false) Map<String, Object> queryParameters,
-            @RequestHeader(name = ACCEPT, required = false) String accept) {
+            @RequestParam(name = Q_PARAM) String queryString,
+            @RequestParam(value = PRETTY, required = false) String pretty) {
 
         // Enriches request attributes with aql for later audit processing
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
@@ -114,6 +115,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         QueryResponseData queryResponseData =
                 createQueryResponse(aqlQueryResult, queryString, createLocationUri("query", "aql"));
 
+        setPrettyPrintResponse(pretty);
+
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -125,9 +128,10 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             path = "/aql",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @RequestBody Map<String, Object> queryRequest,
+            @RequestHeader(name = CONTENT_TYPE) String contentType,
             @RequestHeader(name = ACCEPT, required = false) String accept,
-            @RequestHeader(name = CONTENT_TYPE) String contentType) {
+            @RequestParam(value = PRETTY, required = false) String pretty,
+            @RequestBody Map<String, Object> queryRequest) {
 
         logger.debug("Got following input: {}", queryRequest);
 
@@ -151,6 +155,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         // create and return response
         QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryString, null);
 
+        setPrettyPrintResponse(pretty);
+
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -160,12 +166,13 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @Override
     @GetMapping(path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"})
     public ResponseEntity<QueryResponseData> executeStoredQuery(
-            @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
+            @RequestHeader(name = ACCEPT, required = false) String accept,
             @PathVariable(name = "version", required = false) String version,
             @RequestParam(name = OFFSET_PARAM, required = false) Integer offset,
             @RequestParam(name = FETCH_PARAM, required = false) Integer fetch,
             @RequestParam(name = QUERY_PARAMETERS, required = false) Map<String, Object> queryParameters,
-            @RequestHeader(name = ACCEPT, required = false) String accept) {
+            @RequestParam(value = PRETTY, required = false) String pretty,
+            @PathVariable(name = "qualified_query_name") String qualifiedQueryName) {
 
         logger.trace(
                 "getStoredQuery with the following input: {} - {} - {} - {} - {}",
@@ -201,6 +208,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
 
+        setPrettyPrintResponse(pretty);
+
         return ResponseEntity.ok(queryResponseData);
     }
 
@@ -212,10 +221,11 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             path = {"/{qualified_query_name}", "/{qualified_query_name}/{version}"},
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<QueryResponseData> executeStoredQuery(
-            @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
-            @PathVariable(name = "version", required = false) String version,
             @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestHeader(name = CONTENT_TYPE) String contentType,
+            @PathVariable(name = "version", required = false) String version,
+            @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody(required = false) Map<String, Object> queryRequest) {
 
         logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
@@ -241,6 +251,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
+
+        setPrettyPrintResponse(pretty);
 
         return ResponseEntity.ok(queryResponseData);
     }

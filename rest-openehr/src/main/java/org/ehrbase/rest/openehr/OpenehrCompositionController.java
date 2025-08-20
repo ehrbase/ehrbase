@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -112,6 +111,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             @PathVariable(value = "ehr_id") String ehrIdString,
             @RequestParam(value = "templateId", required = false) String templateId,
             @RequestParam(value = "format", required = false) String format,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody String composition) {
 
         var ehrId = getEhrUuid(ehrIdString);
@@ -133,9 +133,10 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 compositionUuid,
                 1,
                 responseRepresentation,
+                isPretty(pretty),
                 uri,
                 headerList,
-                RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null);
+                RETURN_REPRESENTATION.equals(prefer) ? new CompositionResponseData(null, null) : null);
 
         // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData())
@@ -171,6 +172,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             @PathVariable(value = "versioned_object_uid") String versionedObjectUidString,
             @RequestParam(value = "templateId", required = false) String templateId,
             @RequestParam(value = "format", required = false) String format,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestBody String composition) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -215,9 +217,10 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     compositionId,
                     nextVersion,
                     responseRepresentation,
+                    isPretty(pretty),
                     uri,
                     headerList,
-                    RETURN_REPRESENTATION.equals(prefer) ? () -> new CompositionResponseData(null, null) : () -> null);
+                    RETURN_REPRESENTATION.equals(prefer) ? new CompositionResponseData(null, null) : null);
 
         } catch (ObjectNotFoundException e) { // composition not found
             return ResponseEntity.notFound().build();
@@ -264,7 +267,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .toEpochMilli());
 
             UUID compositionUid = UUID.fromString(targetObjId.getObjectId().getValue());
-            Integer version = Integer.parseInt(targetObjId.getVersionTreeId().getValue());
+            int version = Integer.parseInt(targetObjId.getVersionTreeId().getValue());
 
             HttpRestContext.register(
                     EHR_ID,
@@ -306,6 +309,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestParam(value = "format", required = false) String format,
+            @RequestParam(value = PRETTY, required = false) String pretty,
             @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -342,9 +346,10 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 compositionUid,
                 version,
                 responseRepresentation,
+                isPretty(pretty),
                 uri,
                 headerList,
-                () -> new CompositionResponseData(null, null));
+                new CompositionResponseData(null, null));
 
         // returns 200 with body + headers, 204 only with headers or 500 error depending on what processing above yields
         return respData.map(i -> Optional.ofNullable(i.getResponseData().getValue())
@@ -377,12 +382,10 @@ public class OpenehrCompositionController extends BaseController implements Comp
             UUID compositionId,
             int version,
             CompositionRepresentation responseRepresentation,
+            boolean pretty,
             URI uri,
             List<String> headerList,
-            Supplier<T> factory) {
-        // create either CompositionResponseData or null (means no body, only headers incl. link to resource), via
-        // lambda request
-        T minimalOrRepresentation = factory.get();
+            T minimalOrRepresentation) {
 
         // do minimal scope steps
         // create and supplement headers with data depending on which headers are requested
@@ -423,7 +426,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
             templateId = compositionDto.getTemplateId();
 
-            StructuredString ss = compositionService.serialize(compositionDto, responseRepresentation.format);
+            StructuredString ss = compositionService.serialize(compositionDto, responseRepresentation.format, pretty);
             objByReference.setValue(ss.getValue());
             objByReference.setFormat(ss.getFormat());
 

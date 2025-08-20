@@ -100,7 +100,7 @@ class OpenehrEhrControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatusDto(), prefer, () -> {
             when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
-            return controller().createEhr("1.0.3", null, prefer, null);
+            return controller().createEhr("1.0.3", null, prefer, null, null);
         });
     }
 
@@ -112,7 +112,7 @@ class OpenehrEhrControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
             when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
-            return controller().createEhr("1.0.3", null, prefer, ehrStatus);
+            return controller().createEhr("1.0.3", null, prefer, null, ehrStatus);
         });
     }
 
@@ -123,7 +123,7 @@ class OpenehrEhrControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatusDto(), prefer, () -> {
             when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
-            return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), null);
+            return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), null, null);
         });
     }
 
@@ -135,7 +135,7 @@ class OpenehrEhrControllerTest {
         var ehrStatus = ehrStatusDto();
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
             when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
-            return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), ehrStatus);
+            return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), null, ehrStatus);
         });
     }
 
@@ -143,7 +143,7 @@ class OpenehrEhrControllerTest {
     void createEhrWithIdInvalidUUID() {
 
         OpenehrEhrController controller = controller();
-        assertThatThrownBy(() -> controller.createEhrWithId("1.0.3", null, null, "invalid", null))
+        assertThatThrownBy(() -> controller.createEhrWithId("1.0.3", null, null, "invalid", null, null))
                 .isInstanceOf(InvalidApiParameterException.class)
                 .hasMessage("EHR ID format not a UUID");
     }
@@ -171,7 +171,7 @@ class OpenehrEhrControllerTest {
     void getEhrByIdInvalidUUID() {
 
         OpenehrEhrController controller = controller();
-        assertThatThrownBy(() -> controller.getEhrById("not a uui"))
+        assertThatThrownBy(() -> controller.getEhrById("not a uui", null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("EHR not found, in fact, only UUID-type IDs are supported");
     }
@@ -184,7 +184,7 @@ class OpenehrEhrControllerTest {
                         "ehr", "No EHR found with given ID: 46e8518f-e9b7-45de-b214-1588466d71d6"));
 
         OpenehrEhrController controller = controller();
-        assertThatThrownBy(() -> controller.getEhrById("46e8518f-e9b7-45de-b214-1588466d71d6"))
+        assertThatThrownBy(() -> controller.getEhrById("46e8518f-e9b7-45de-b214-1588466d71d6", null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("No EHR found with given ID: 46e8518f-e9b7-45de-b214-1588466d71d6");
     }
@@ -197,7 +197,7 @@ class OpenehrEhrControllerTest {
 
         when(mockEhrService.getEhrStatus(ehrId)).thenReturn(new EhrService.EhrResult(ehrId, null, ehrStatus));
 
-        var response = controller().getEhrById(ehrId.toString());
+        var response = controller().getEhrById(ehrId.toString(), null);
         assertEhrResponseData(response, ehrId, ehrStatus);
     }
 
@@ -207,7 +207,7 @@ class OpenehrEhrControllerTest {
         when(mockEhrService.findBySubject(any(), any())).thenReturn(Optional.empty());
 
         OpenehrEhrController controller = controller();
-        assertThatThrownBy(() -> controller.getEhrBySubject("test_subject", "some:external:id"))
+        assertThatThrownBy(() -> controller.getEhrBySubject("test_subject", "some:external:id", null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("No EHR with supplied subject parameters found");
     }
@@ -221,7 +221,7 @@ class OpenehrEhrControllerTest {
         when(mockEhrService.findBySubject("test_subject", "some:external:id")).thenReturn(Optional.of(ehrId));
         when(mockEhrService.getEhrStatus(ehrId)).thenReturn(new EhrService.EhrResult(ehrId, null, ehrStatus));
 
-        var response = controller().getEhrBySubject("test_subject", "some:external:id");
+        var response = controller().getEhrBySubject("test_subject", "some:external:id", null);
         assertEhrResponseData(response, ehrId, ehrStatus);
     }
 

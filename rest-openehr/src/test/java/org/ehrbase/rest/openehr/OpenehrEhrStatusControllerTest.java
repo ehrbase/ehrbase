@@ -119,7 +119,7 @@ class OpenehrEhrStatusControllerTest {
         UUID ehrId = UUID.fromString("d83a16ae-2644-4706-8911-282772c10137");
         OpenehrEhrStatusController controller = controller();
         assertThatThrownBy(() -> controller.getEhrStatusByVersionId(
-                        ehrId, "13a82993-a489-421a-ac88-5cec001bd58c::local-system::42"))
+                        ehrId, "13a82993-a489-421a-ac88-5cec001bd58c::local-system::42", null))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("Could not find EhrStatus[id=13a82993-a489-421a-ac88-5cec001bd58c, version=42]");
     }
@@ -130,7 +130,7 @@ class OpenehrEhrStatusControllerTest {
         OpenehrEhrStatusController controller = controller();
         runTestWithMockResult((ehrId, ehrStatusDto) -> {
             doReturn(ehrStatusDto.uid()).when(mockEhrService).getLatestVersionUidOfStatus(ehrId);
-            return controller.getEhrStatusVersionByTime(ehrId, null);
+            return controller.getEhrStatusVersionByTime(ehrId, null, null);
         });
     }
 
@@ -142,7 +142,7 @@ class OpenehrEhrStatusControllerTest {
             doReturn(ehrStatusDto.uid())
                     .when(mockEhrService)
                     .getEhrStatusVersionByTimestamp(ehrId, OffsetDateTime.parse("2024-07-16T08:30:00Z"));
-            return controller.getEhrStatusVersionByTime(ehrId, "2024-07-16T08:30:00Z");
+            return controller.getEhrStatusVersionByTime(ehrId, "2024-07-16T08:30:00Z", null);
         });
     }
 
@@ -152,7 +152,8 @@ class OpenehrEhrStatusControllerTest {
         UUID ehrId = UUID.fromString("d83a16ae-2644-4706-8911-282772c10137");
         OpenehrEhrStatusController controller = controller();
 
-        assertThatThrownBy(() -> controller.getEhrStatusByVersionId(ehrId, "13a82993-a489-421a-ac88-5cec001bd58c"))
+        assertThatThrownBy(
+                        () -> controller.getEhrStatusByVersionId(ehrId, "13a82993-a489-421a-ac88-5cec001bd58c", null))
                 .isInstanceOf(InvalidApiParameterException.class)
                 .hasMessage("VERSION UID parameter does not contain a version");
     }
@@ -170,7 +171,7 @@ class OpenehrEhrStatusControllerTest {
         doReturn(Optional.of(originalVersion(versionId, null, lastModified, ehrStatus)))
                 .when(mockEhrService)
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 42);
-        ResponseEntity<EhrStatusDto> response = controller().getEhrStatusByVersionId(ehrId, versionId.getValue());
+        ResponseEntity<EhrStatusDto> response = controller().getEhrStatusByVersionId(ehrId, versionId.getValue(), null);
 
         assertEhrStatusResponseData(response, ehrStatus, ehrId, versionId, "Tue, 16 Jul 2024 13:15:00 GMT");
     }
@@ -195,7 +196,7 @@ class OpenehrEhrStatusControllerTest {
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);
 
         ResponseEntity<EhrStatusDto> response =
-                controller().updateEhrStatus(ehrId, currentVersionId.getValue(), prefer, ehrStatus);
+                controller().updateEhrStatus(ehrId, currentVersionId.getValue(), prefer, null, ehrStatus);
 
         var body = response.getBody();
         if (prefer.equals(BaseController.RETURN_REPRESENTATION)) {

@@ -35,7 +35,8 @@ public interface DefinitionQueryApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-get"))
-    ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(String accept, String qualifiedQueryName);
+    ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(
+            String accept, String qualifiedQueryName, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Store a query",
@@ -51,6 +52,7 @@ public interface DefinitionQueryApiSpecification {
             String qualifiedQueryName,
             Optional<String> version,
             String type,
+            @ApiParameter.PrettyPrint String pretty,
             String queryPayload);
 
     @Operation(
@@ -60,5 +62,8 @@ public interface DefinitionQueryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-get-1"))
     ResponseEntity<QueryDefinitionResponseData> getStoredQueryVersion(
-            String accept, String qualifiedQueryName, Optional<String> version);
+            String accept,
+            String qualifiedQueryName,
+            Optional<String> version,
+            @ApiParameter.PrettyPrint String pretty);
 }

@@ -44,7 +44,8 @@ public interface TemplateService {
      * @throws RuntimeException When the template couldn't be found, the format isn't support or in
      *     case of another error.
      */
-    String findOperationalTemplate(String templateId, OperationalTemplateFormat format) throws RuntimeException;
+    String findOperationalTemplate(String templateId, OperationalTemplateFormat format, boolean prettyPrint)
+            throws RuntimeException;
 
     String create(OPERATIONALTEMPLATE content);
 

@@ -37,7 +37,7 @@ public interface VersionedCompositionApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-versioned_composition-get"))
     ResponseEntity<VersionedCompositionDto> retrieveVersionedCompositionByVersionedObjectUid(
-            String accept, String ehrIdString, String versionedObjectUid);
+            String accept, String ehrIdString, String versionedObjectUid, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get versioned composition revision history",
@@ -46,7 +46,7 @@ public interface VersionedCompositionApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-versioned_composition-get-1"))
     ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
-            String accept, String ehrIdString, String versionedObjectUid);
+            String accept, String ehrIdString, String versionedObjectUid, @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get versioned composition version by id",
@@ -55,7 +55,11 @@ public interface VersionedCompositionApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-versioned_composition-get-2"))
     ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByVersionUid(
-            String accept, String ehrIdString, String versionedObjectUid, String versionUid);
+            String accept,
+            String ehrIdString,
+            String versionedObjectUid,
+            String versionUid,
+            @ApiParameter.PrettyPrint String pretty);
 
     @Operation(
             summary = "Get versioned composition version at time",
@@ -64,5 +68,9 @@ public interface VersionedCompositionApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-3"))
     ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByTime(
-            String accept, String ehrIdString, String versionedObjectUid, String versionAtTime);
+            String accept,
+            String ehrIdString,
+            String versionedObjectUid,
+            String versionAtTime,
+            @ApiParameter.PrettyPrint String pretty);
 }
