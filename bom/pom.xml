@@ -57,7 +57,7 @@
     <!-- antlr4 and archie versions should be sync with sdk antlr4 and archie versions  -->
     <archie.version>3.13.0</archie.version>
     <commons-io.version>2.18.0</commons-io.version>
-    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
     <ehrbase.openehr.sdk.version>2.23.0</ehrbase.openehr.sdk.version>
     <flyway.version>11.1.1</flyway.version>
     <jackson-bom.version>2.18.1</jackson-bom.version>
