@@ -213,6 +213,14 @@
         <artifactId>aql-engine</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.ehrbase.openehr</groupId>
+        <artifactId>aql-engine</artifactId>
+        <classifier>tests</classifier>
+        <type>test-jar</type>
+        <scope>test</scope>
+        <version>${project.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.springframework.boot</groupId>
