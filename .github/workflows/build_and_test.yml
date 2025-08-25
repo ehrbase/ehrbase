@@ -106,7 +106,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download - Jar
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ehrbase-jar
           path: ./application/target/
@@ -211,7 +211,7 @@ jobs:
             docker-compose.yml
 
       - name: Download - Test Image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ehrbase-image-test
           path: ${{ runner.temp }}
@@ -316,7 +316,7 @@ jobs:
             docker-compose.yml
 
       - name: Download - Build Image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ehrbase-image-build
           path: ${{ runner.temp }}
@@ -431,14 +431,14 @@ jobs:
       pull-requests: write
     steps:
       - name: Download - JMeter results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: jmeter-result-*
           path: ./tests/jmeter-results/
 
       - name: Download - JMeter reports
         if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: jmeter-report-*
           path: ./tests/jmeter-reports/
@@ -479,7 +479,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Download - Robot results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: robot-result-*
           path: ./tests/results/
@@ -519,13 +519,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download - Class files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: java-class-files
           path: ./
 
       - name: Download - Robot results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: jacoco-coverage-partial-*
           path: ./tests/coverage
