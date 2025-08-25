@@ -34,6 +34,10 @@
   <packaging>jar</packaging>
   <name>EHRbase Application</name>
 
+  <properties>
+    <ehrbase.spring-boot-plugin.skip>false</ehrbase.spring-boot-plugin.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
@@ -68,7 +72,7 @@
         </executions>
         <configuration>
           <mainClass>org.ehrbase.application.EhrBase</mainClass>
-          <skip>false</skip>
+          <skip>${ehrbase.spring-boot-plugin.skip}</skip>
         </configuration>
       </plugin>
     </plugins>
