@@ -192,7 +192,7 @@ public class StoredQueryRepository {
         storedQueryRecord.setSemanticId(storedQueryQualifiedName.semanticId());
         storedQueryRecord.setSemver(storedQueryQualifiedName.semVer().toVersionString());
         storedQueryRecord.setQueryText(query);
-        storedQueryRecord.setType(queryType);
+        storedQueryRecord.setType(queryType.toUpperCase());
 
         storedQueryRecord.setCreationDate(timeProvider.getNow());
         return storedQueryRecord;
