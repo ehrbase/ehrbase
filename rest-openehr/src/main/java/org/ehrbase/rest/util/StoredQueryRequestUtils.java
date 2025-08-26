@@ -47,6 +47,9 @@ public final class StoredQueryRequestUtils {
     }
 
     public static Optional<Long> optionalLong(String name, Map<String, Object> params) {
+        if (params == null || params.isEmpty()) {
+            return Optional.empty();
+        }
         return Optional.of(name).map(params::get).map(o -> switch (o) {
             case Integer i -> i.longValue();
             case Long l -> l;
