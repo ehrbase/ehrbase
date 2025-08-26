@@ -67,7 +67,7 @@ public final class AslFromCreator {
     private final KnowledgeCacheService knowledgeCacheService;
     private final boolean archetypeLocalNodePredicates;
 
-    AslFromCreator(
+    public AslFromCreator(
             AliasProvider aliasProvider,
             KnowledgeCacheService knowledgeCacheService,
             final boolean archetypeLocalNodePredicates1) {
