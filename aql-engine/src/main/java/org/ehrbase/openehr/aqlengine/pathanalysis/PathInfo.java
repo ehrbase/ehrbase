@@ -441,7 +441,7 @@ public final class PathInfo {
 
     public static Map<ContainsWrapper, PathInfo> createPathInfos(
             AqlQuery aqlQuery,
-            Map<AbstractContainmentExpression, ContainsWrapper> containsDescs,
+            Stream<Entry<AbstractContainmentExpression, ContainsWrapper>> containsDescs,
             boolean enableNodeSkipping) {
         Map<AbstractContainmentExpression, PathCohesionTreeNode> pathCohesion =
                 PathCohesionAnalysis.analyzePathCohesion(aqlQuery);
@@ -463,7 +463,7 @@ public final class PathInfo {
                         LinkedHashMap::new,
                         Collectors.mapping(Pair::getRight, Collectors.toUnmodifiableSet()))));
 
-        return containsDescs.entrySet().stream()
+        return containsDescs
                 .filter(e -> pathCohesion.containsKey(e.getKey()))
                 .filter(e -> !(e.getKey() instanceof ContainmentClassExpression cce
                         && RmConstants.EHR.equals(cce.getType())))

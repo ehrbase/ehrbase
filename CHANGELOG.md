@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+- AQL: deterministic SQL generation [#1534](https://github.com/ehrbase/ehrbase/pull/1534)
 
 ## [2.21.1]
  ### Added
