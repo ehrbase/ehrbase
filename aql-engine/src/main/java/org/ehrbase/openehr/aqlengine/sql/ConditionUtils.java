@@ -419,7 +419,7 @@ final class ConditionUtils {
             if (isJsonbField) {
                 likePattern = escapeAsJsonString(likePattern);
             }
-            return field.cast(String.class).like(likePattern);
+            return field.cast(String.class).like(DSL.inline(likePattern));
         } else if (operator == AslConditionOperator.IS_NULL) {
             return field.isNull();
         } else if (operator == AslConditionOperator.IS_NOT_NULL) {
