@@ -85,29 +85,6 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         this.aqlQueryContext = aqlQueryContext;
     }
 
-    protected record QueryExecutionMetadata(
-            Map<String, Object> queryParameters, @Nullable Long offset, @Nullable Long fetch) {
-        static QueryExecutionMetadata of(
-                Map<String, Object> queryParameters, @Nullable Integer offset, @Nullable Integer fetch) {
-            return new QueryExecutionMetadata(
-                    queryParameters,
-                    Optional.ofNullable(offset).map(Integer::longValue).orElse(null),
-                    Optional.ofNullable(fetch).map(Integer::longValue).orElse(null));
-        }
-
-        static QueryExecutionMetadata fromRequestBody(Map<String, Object> requestBody) {
-            Map<String, Object> queryParameters =
-                    StoredQueryRequestUtils.getQueryParametersFromBody(QUERY_PARAMETERS, requestBody);
-
-            return new QueryExecutionMetadata(
-                    queryParameters,
-                    StoredQueryRequestUtils.optionalLong(OFFSET_PARAM, requestBody)
-                            .orElse(null),
-                    StoredQueryRequestUtils.optionalLong(FETCH_PARAM, requestBody)
-                            .orElse(null));
-        }
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -128,15 +105,20 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             throw new InvalidApiParameterException("No query provided.");
         }
 
-        // execute
-        QueryResultDto aqlQueryResult =
-                executeQuery(queryText, QueryExecutionMetadata.of(queryParameters, offset, fetch));
+        // prepare query
+        AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
+                queryText,
+                StoredQueryRequestUtils.rewriteExplicitParameterTypes(queryParameters),
+                Optional.ofNullable(offset).map(Integer::longValue).orElse(null),
+                Optional.ofNullable(fetch).map(Integer::longValue).orElse(null));
+
+        // execute query
+        QueryResultDto aqlQueryResult = aqlQueryService.query(queryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData =
-                createQueryResponse(aqlQueryResult, queryText, createLocationUri("query", "aql"));
+        QueryResponseData response = createQueryResponse(aqlQueryResult, queryText, createLocationUri("query", "aql"));
 
-        return ResponseEntity.ok(queryResponseData);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -170,8 +152,17 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         // Enriches request attributes with aql for later audit processing
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
 
-        // execute
-        QueryResultDto aqlQueryResult = executeQuery(queryText, QueryExecutionMetadata.fromRequestBody(requestBody));
+        Map<String, Object> params = StoredQueryRequestUtils.getQueryParametersFromBody(QUERY_PARAMETERS, requestBody);
+
+        // prepare query
+        AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
+                queryText,
+                StoredQueryRequestUtils.rewriteExplicitParameterTypes(params),
+                StoredQueryRequestUtils.optionalLong(OFFSET_PARAM, requestBody).orElse(null),
+                StoredQueryRequestUtils.optionalLong(FETCH_PARAM, requestBody).orElse(null));
+
+        // execute query
+        QueryResultDto aqlQueryResult = aqlQueryService.query(queryRequest);
 
         // create and return response
         QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryText, null);
@@ -210,7 +201,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // execute
         QueryResultDto aqlQueryResult =
-                executeQuery(queryDefinition, QueryExecutionMetadata.of(queryParameters, offset, fetch));
+                executeStoredQuery(queryDefinition, QueryExecutionMetadata.of(queryParameters, offset, fetch));
 
         // use the fully qualified metadata location
         Stream<String> pathSegments =
@@ -254,7 +245,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // execute query
         QueryResultDto aqlQueryResult =
-                executeQuery(queryDefinition, QueryExecutionMetadata.fromRequestBody(requestBody));
+                executeStoredQuery(queryDefinition, QueryExecutionMetadata.fromRequestBody(requestBody));
 
         // create and return response
         QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryDefinition.getQueryText(), null);
@@ -265,19 +256,16 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         return ResponseEntity.ok(queryResponseData);
     }
 
-    protected QueryResultDto executeQuery(String queryText, QueryExecutionMetadata executionMetadata) {
+    protected QueryResultDto executeStoredQuery(
+            QueryDefinitionResultDto queryDefinition, QueryExecutionMetadata executionMetadata) {
+
         AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
-                queryText,
+                queryDefinition.getQueryText(),
                 StoredQueryRequestUtils.rewriteExplicitParameterTypes(executionMetadata.queryParameters()),
                 executionMetadata.fetch(),
                 executionMetadata.offset());
 
         return aqlQueryService.query(queryRequest);
-    }
-
-    protected QueryResultDto executeQuery(
-            QueryDefinitionResultDto queryDefinition, QueryExecutionMetadata executionMetadata) {
-        return executeQuery(queryDefinition.getQueryText(), executionMetadata);
     }
 
     protected QueryResponseData createQueryResponse(
@@ -286,6 +274,29 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         queryResponseData.setQuery(queryString);
         queryResponseData.setMeta(aqlQueryContext.createMetaData(location));
         return queryResponseData;
+    }
+
+    protected record QueryExecutionMetadata(
+            Map<String, Object> queryParameters, @Nullable Long offset, @Nullable Long fetch) {
+        static QueryExecutionMetadata of(
+                Map<String, Object> queryParameters, @Nullable Integer offset, @Nullable Integer fetch) {
+            return new QueryExecutionMetadata(
+                    queryParameters,
+                    Optional.ofNullable(offset).map(Integer::longValue).orElse(null),
+                    Optional.ofNullable(fetch).map(Integer::longValue).orElse(null));
+        }
+
+        static QueryExecutionMetadata fromRequestBody(Map<String, Object> requestBody) {
+            Map<String, Object> queryParameters =
+                    StoredQueryRequestUtils.getQueryParametersFromBody(QUERY_PARAMETERS, requestBody);
+
+            return new QueryExecutionMetadata(
+                    queryParameters,
+                    StoredQueryRequestUtils.optionalLong(OFFSET_PARAM, requestBody)
+                            .orElse(null),
+                    StoredQueryRequestUtils.optionalLong(FETCH_PARAM, requestBody)
+                            .orElse(null));
+        }
     }
 
     private void createRestContext(String qualifiedName, @Nullable String version) {
