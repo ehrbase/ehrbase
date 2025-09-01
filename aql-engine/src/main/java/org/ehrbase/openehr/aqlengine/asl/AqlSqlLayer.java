@@ -369,7 +369,7 @@ public class AqlSqlLayer {
      * @param values
      * @return &lt;Set&lt;DvOrdered type&gt;, Set&lt;magnitude value&gt;&gt;
      */
-    private static List<Pair<Set<String>, Set<Object>>> determinePossibleDvOrderedTypesAndValues(
+    public static List<Pair<Set<String>, Set<Object>>> determinePossibleDvOrderedTypesAndValues(
             Set<String> allowedTypes, ComparisonConditionOperator operator, Collection<Primitive> values) {
         // non-numeric DvOrdered cannot be handled together
         HashMap<String, Set<Object>> nonNumericDvOrderedTypeToValues = new HashMap<>();
