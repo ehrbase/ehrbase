@@ -9,6 +9,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+
+## [2.22.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
 - AQL: deterministic SQL generation [#1534](https://github.com/ehrbase/ehrbase/pull/1534)
 
 ## [2.21.1]
@@ -215,4 +220,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.20.0]: https://github.com/ehrbase/ehrbase/compare/v2.19.0...v2.20.0
 [2.21.0]: https://github.com/ehrbase/ehrbase/compare/v2.20.0...v2.21.0
 [2.21.1]: https://github.com/ehrbase/ehrbase/compare/v2.21.0...v2.21.1
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...HEAD
+[2.22.0]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...v2.22.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.22.0...HEAD
