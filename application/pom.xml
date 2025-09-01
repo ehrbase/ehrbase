@@ -27,12 +27,16 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.21.1</version>
+    <version>2.22.0</version>
   </parent>
 
   <artifactId>application</artifactId>
   <packaging>jar</packaging>
   <name>EHRbase Application</name>
+
+  <properties>
+    <ehrbase.spring-boot-plugin.skip>false</ehrbase.spring-boot-plugin.skip>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -68,7 +72,7 @@
         </executions>
         <configuration>
           <mainClass>org.ehrbase.application.EhrBase</mainClass>
-          <skip>false</skip>
+          <skip>${ehrbase.spring-boot-plugin.skip}</skip>
         </configuration>
       </plugin>
     </plugins>

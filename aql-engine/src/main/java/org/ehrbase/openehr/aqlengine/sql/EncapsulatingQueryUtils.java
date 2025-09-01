@@ -399,7 +399,8 @@ final class EncapsulatingQueryUtils {
             case AD_CHANGE_TYPE_CODE_STRING -> DSL.case_((Field<ContributionChangeType>) field)
                     .mapValues(JOOQ_CHANGE_TYPE_TO_CODE);
             case null -> field;
-            default -> field;};
+            default -> field;
+        };
         return Stream.of(field);
     }
 }
