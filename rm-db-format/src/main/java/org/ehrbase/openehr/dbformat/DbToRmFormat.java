@@ -19,6 +19,7 @@ package org.ehrbase.openehr.dbformat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -56,7 +57,7 @@ public final class DbToRmFormat {
     public static final String FEEDER_AUDIT_ATTRIBUTE_ALIAS = "f";
 
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, String dbJsonStr) {
-        return reconstructFromDbFormat(rmType, parseJson(dbJsonStr));
+        return reconstructFromDbFormat(rmType, parseJson(dbJsonStr, RmDbJson.MARSHAL_OM));
     }
 
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, JsonNode jsonNode) {
@@ -72,9 +73,9 @@ public final class DbToRmFormat {
         };
     }
 
-    private static JsonNode parseJson(String dbJsonStr) {
+    private static JsonNode parseJson(String dbJsonStr, ObjectMapper objectMapper) {
         try {
-            return RmDbJson.MARSHAL_OM.readTree(dbJsonStr);
+            return objectMapper.readTree(dbJsonStr);
         } catch (JsonProcessingException e) {
             throw new InternalServerException(e.getMessage(), e);
         }
@@ -85,9 +86,9 @@ public final class DbToRmFormat {
      * @param rec
      * @return
      */
-    private static JsonNode parseJsonData(Record2<?, ?> rec) {
+    private static JsonNode parseJsonData(Record2<?, ?> rec, ObjectMapper objectMapper) {
         Object v = rec.value2();
-        return parseJson(v instanceof String s ? s : ((JSONB) v).data());
+        return parseJson(v instanceof String s ? s : ((JSONB) v).data(), objectMapper);
     }
 
     /**
@@ -107,7 +108,7 @@ public final class DbToRmFormat {
      * </pre></code>
      */
     public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, String dbJsonStr) {
-        JsonNode jsonNode = DbToRmFormat.parseJson(dbJsonStr);
+        JsonNode jsonNode = DbToRmFormat.parseJson(dbJsonStr, RmDbJson.MARSHAL_OM);
         if (jsonNode.isObject()) {
             return reconstructRmObject(rmType, (ObjectNode) jsonNode);
         } else {
@@ -188,7 +189,7 @@ public final class DbToRmFormat {
      */
     public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, Record2<?, ?>[] jsonObjects) {
 
-        ObjectNode decoded = decodeKeys(reconstructRmObjectTree(jsonObjects));
+        ObjectNode decoded = decodeKeys(reconstructRmObjectTree(jsonObjects, RmDbJson.MARSHAL_OM));
 
         R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
 
@@ -202,19 +203,21 @@ public final class DbToRmFormat {
         return rmObject;
     }
 
-    public static ObjectNode reconstructRmObjectTree(final Record2<?, ?>[] jsonObjects) {
+    public static ObjectNode reconstructRmObjectTree(final Record2<?, ?>[] jsonObjects, ObjectMapper objectMapper) {
         int childCount = jsonObjects.length;
         // Or Record2<String, JsonNode>[] dbRecords
 
         int rootPathLength = calcRootPathLength(jsonObjects, childCount);
         Arrays.sort(jsonObjects, Comparator.comparing(r -> r.value1().toString()));
 
-        ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0]));
+        ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0], objectMapper));
 
         for (int i = 1; i < childCount; i++) {
             Record2<String, JsonNode> child = (Record2<String, JsonNode>) jsonObjects[i];
             insertJsonEntry(
-                    dbRoot, remainingPath(rootPathLength, child.value1()), standardizeObjectNode(parseJsonData(child)));
+                    dbRoot,
+                    remainingPath(rootPathLength, child.value1()),
+                    standardizeObjectNode(parseJsonData(child, objectMapper)));
         }
         return dbRoot;
     }
