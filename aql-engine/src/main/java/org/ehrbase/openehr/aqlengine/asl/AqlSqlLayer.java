@@ -351,7 +351,7 @@ public class AqlSqlLayer {
         if (operator == ComparisonConditionOperator.EXISTS || operator == ComparisonConditionOperator.LIKE) {
             throw new IllegalArgumentException("LIKE/EXISTS on DV_ORDERED is not supported");
         }
-        List<Pair<Set<String>, Set<Object>>> typeToValues =
+        List<Pair<Set<String>, Set<Number>>> typeToValues =
                 determinePossibleDvOrderedTypesAndValues(dvOrderedTypes, operator, values);
         if (typeToValues.isEmpty()) {
             return Optional.of(new AslFalseQueryCondition());
@@ -369,12 +369,12 @@ public class AqlSqlLayer {
      * @param values
      * @return &lt;Set&lt;DvOrdered type&gt;, Set&lt;magnitude value&gt;&gt;
      */
-    public static List<Pair<Set<String>, Set<Object>>> determinePossibleDvOrderedTypesAndValues(
+    public static List<Pair<Set<String>, Set<Number>>> determinePossibleDvOrderedTypesAndValues(
             Set<String> allowedTypes, ComparisonConditionOperator operator, Collection<Primitive> values) {
         // non-numeric DvOrdered cannot be handled together
-        HashMap<String, Set<Object>> nonNumericDvOrderedTypeToValues = new HashMap<>();
+        HashMap<String, Set<Number>> nonNumericDvOrderedTypeToValues = new HashMap<>();
         boolean hasNumericDvOrdered = CollectionUtils.containsAny(allowedTypes, NUMERIC_DV_ORDERED_TYPES);
-        Set<Object> numericValues = new HashSet<>();
+        Set<Number> numericValues = new HashSet<>();
         boolean isEqualsOp =
                 operator == ComparisonConditionOperator.EQ || operator == ComparisonConditionOperator.MATCHES;
         for (Primitive value : values) {
@@ -384,11 +384,11 @@ public class AqlSqlLayer {
             } else if (value instanceof StringPrimitive p) {
                 handleStringPrimitiveForDvOrdered(allowedTypes, p, isEqualsOp, nonNumericDvOrderedTypeToValues);
             } else if (value instanceof DoublePrimitive || value instanceof LongPrimitive) {
-                if (hasNumericDvOrdered) numericValues.add(value.getValue());
+                if (hasNumericDvOrdered) numericValues.add((Number) value.getValue());
             }
         }
 
-        List<Pair<Set<String>, Set<Object>>> result = new ArrayList<>();
+        List<Pair<Set<String>, Set<Number>>> result = new ArrayList<>();
         if (!numericValues.isEmpty()) {
             Set<String> numericDvOrderedTypes = SetUtils.intersection(allowedTypes, NUMERIC_DV_ORDERED_TYPES);
             result.add(Pair.of(numericDvOrderedTypes, numericValues));
@@ -401,7 +401,7 @@ public class AqlSqlLayer {
     }
 
     private static void handleStringPrimitiveForDvOrdered(
-            Set<String> allowedTypes, StringPrimitive p, boolean isEqualsOp, HashMap<String, Set<Object>> result) {
+            Set<String> allowedTypes, StringPrimitive p, boolean isEqualsOp, HashMap<String, Set<Number>> result) {
         /*
         DATE_TIME/TIME strings with fractional seconds, where the precision is not 10^-3,
         or DURATION strings will not be parsed as TemporalPrimitive by the AQL parser.
@@ -428,7 +428,7 @@ public class AqlSqlLayer {
     }
 
     private static void handleTemporalPrimitiveForDvOrdered(
-            Set<String> allowedTypes, TemporalAccessor p, boolean isEqualsOp, HashMap<String, Set<Object>> result) {
+            Set<String> allowedTypes, TemporalAccessor p, boolean isEqualsOp, HashMap<String, Set<Number>> result) {
         boolean hasDate = p.isSupported(ChronoField.YEAR);
         boolean hasTime = p.isSupported(ChronoField.HOUR_OF_DAY);
         if (hasDate) {
