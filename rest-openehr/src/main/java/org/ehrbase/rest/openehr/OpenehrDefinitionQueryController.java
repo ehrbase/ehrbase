@@ -65,8 +65,6 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
-    protected static final String AQL = "AQL";
-
     private final StoredQueryService storedQueryService;
 
     @Autowired
@@ -151,7 +149,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     }
 
     protected List<String> getSupportedQueryTypes() {
-        return List.of(AQL);
+        return List.of("AQL");
     }
 
     protected String extractQueryFromPayload(MediaType mediaType, String payload) {

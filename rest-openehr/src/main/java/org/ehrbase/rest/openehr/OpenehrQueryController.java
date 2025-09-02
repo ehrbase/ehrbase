@@ -109,8 +109,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
                 queryText,
                 StoredQueryRequestUtils.rewriteExplicitParameterTypes(queryParameters),
-                Optional.ofNullable(offset).map(Integer::longValue).orElse(null),
-                Optional.ofNullable(fetch).map(Integer::longValue).orElse(null));
+                Optional.ofNullable(fetch).map(Integer::longValue).orElse(null),
+                Optional.ofNullable(offset).map(Integer::longValue).orElse(null));
 
         // execute query
         QueryResultDto aqlQueryResult = aqlQueryService.query(queryRequest);
@@ -158,8 +158,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
                 queryText,
                 StoredQueryRequestUtils.rewriteExplicitParameterTypes(params),
-                StoredQueryRequestUtils.optionalLong(OFFSET_PARAM, requestBody).orElse(null),
-                StoredQueryRequestUtils.optionalLong(FETCH_PARAM, requestBody).orElse(null));
+                StoredQueryRequestUtils.optionalLong(FETCH_PARAM, requestBody).orElse(null),
+                StoredQueryRequestUtils.optionalLong(OFFSET_PARAM, requestBody).orElse(null));
 
         // execute query
         QueryResultDto aqlQueryResult = aqlQueryService.query(queryRequest);
