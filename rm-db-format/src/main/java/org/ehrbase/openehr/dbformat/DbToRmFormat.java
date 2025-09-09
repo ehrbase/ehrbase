@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
@@ -86,8 +87,8 @@ public final class DbToRmFormat {
      * @param rec
      * @return
      */
-    private static JsonNode parseJsonData(Record2<?, ?> rec, ObjectMapper objectMapper) {
-        Object v = rec.value2();
+    private static <T> JsonNode parseJsonData(T rec, Function<T, Object> jsonExtractor, ObjectMapper objectMapper) {
+        Object v = jsonExtractor.apply(rec);
         return parseJson(v instanceof String s ? s : ((JSONB) v).data(), objectMapper);
     }
 
@@ -204,20 +205,28 @@ public final class DbToRmFormat {
     }
 
     public static ObjectNode reconstructRmObjectTree(final Record2<?, ?>[] jsonObjects, ObjectMapper objectMapper) {
+        return reconstructRmObjectTree(jsonObjects, Record2::value1, Record2::value2, objectMapper);
+    }
+
+    public static <T> ObjectNode reconstructRmObjectTree(
+            final T[] jsonObjects,
+            Function<T, Object> idxExtractor,
+            Function<T, Object> jsonExtractor,
+            ObjectMapper objectMapper) {
         int childCount = jsonObjects.length;
         // Or Record2<String, JsonNode>[] dbRecords
 
-        int rootPathLength = calcRootPathLength(jsonObjects, childCount);
-        Arrays.sort(jsonObjects, Comparator.comparing(r -> r.value1().toString()));
+        int rootPathLength = calcRootPathLength(jsonObjects, idxExtractor, childCount);
+        Arrays.sort(jsonObjects, Comparator.comparing(r -> idxExtractor.apply(r).toString()));
 
-        ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0], objectMapper));
+        ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0], jsonExtractor, objectMapper));
 
         for (int i = 1; i < childCount; i++) {
-            Record2<String, JsonNode> child = (Record2<String, JsonNode>) jsonObjects[i];
+            T child = jsonObjects[i];
             insertJsonEntry(
                     dbRoot,
-                    remainingPath(rootPathLength, child.value1()),
-                    standardizeObjectNode(parseJsonData(child, objectMapper)));
+                    remainingPath(rootPathLength, idxExtractor.apply(child).toString()),
+                    standardizeObjectNode(parseJsonData(child, jsonExtractor, objectMapper)));
         }
         return dbRoot;
     }
@@ -233,11 +242,11 @@ public final class DbToRmFormat {
         return l;
     }
 
-    private static int calcRootPathLength(Record2<?, ?>[] jsonObjects, int childCount) {
+    private static <T> int calcRootPathLength(T[] jsonObjects, Function<T, Object> idxExtractor, int childCount) {
         int l = Integer.MAX_VALUE;
         for (int i = 0; i < childCount; i++) {
-            Record2<?, ?> next = jsonObjects[i];
-            l = Math.min(l, next.value1().toString().length());
+            T next = jsonObjects[i];
+            l = Math.min(l, idxExtractor.apply(next).toString().length());
         }
         return l;
     }
