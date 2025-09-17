@@ -54,10 +54,10 @@ public class ValidationConfiguration {
     public ValidationConfiguration(
             ExternalValidationProperties properties,
             CacheProvider cacheProvider,
-            OAuth2AuthorizedClientManager authorizedClientManager) {
+            Optional<OAuth2AuthorizedClientManager> authorizedClientManager) {
         this.properties = properties;
         this.cacheProvider = cacheProvider;
-        this.authorizedClientManager = authorizedClientManager;
+        this.authorizedClientManager = authorizedClientManager.orElse(null);
     }
 
     @Bean
