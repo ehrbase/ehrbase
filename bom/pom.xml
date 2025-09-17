@@ -71,6 +71,7 @@
         <junit.version>5.10.2</junit.version>
 
         <!-- jooq -->
+        <slf4j.version>2.0.17</slf4j.version>
         <jooq.version>3.19.15</jooq.version>
         <postgresql.version>42.7.4</postgresql.version>
 
@@ -109,6 +110,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- SDK pulls in slf4j 1.7.x, but Spring needs 2.0.x -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-bom</artifactId>
+                <version>${slf4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.ehrbase.openehr.sdk</groupId>
                 <artifactId>bom</artifactId>
