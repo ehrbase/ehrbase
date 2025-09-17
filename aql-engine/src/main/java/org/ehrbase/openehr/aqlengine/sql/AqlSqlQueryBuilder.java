@@ -36,7 +36,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.TemplateService;
@@ -172,7 +171,6 @@ public class AqlSqlQueryBuilder {
         }
     }
 
-    @Nonnull
     private SelectJoinStep<Record> buildEncapsulatingQuery(
             AslEncapsulatingQuery aq, Supplier<SelectSelectStep<Record>> creator, AslQueryTables aslQueryToTable) {
         Iterator<Pair<AslQuery, AslJoin>> childIt = aq.getChildren().iterator();
@@ -278,7 +276,6 @@ public class AqlSqlQueryBuilder {
                 .toList());
     }
 
-    @Nonnull
     private static Field pathDataField(
             AslPathDataQuery aslData, AslColumnField f, Function<String, Field<JSONB>> dataFieldProvider) {
         Field<JSONB> dataField = dataFieldProvider.apply(f.getColumnName());
@@ -322,7 +319,6 @@ public class AqlSqlQueryBuilder {
         return DSL.select(fields.toArray(Field[]::new));
     }
 
-    @Nonnull
     private static SelectConditionStep<Record> buildStructureQuery(
             AslStructureQuery aq, AslQueryTables aslQueryToTable) {
 
@@ -366,7 +362,6 @@ public class AqlSqlQueryBuilder {
         return where;
     }
 
-    @Nonnull
     private static SelectJoinStep<Record> structureQueryBase(
             AslStructureQuery aq, Table<?> primaryTable, Table<?> dataTable, boolean hasVersionTable) {
 
@@ -454,7 +449,6 @@ public class AqlSqlQueryBuilder {
         return Pair.of(joinTable, selectFields);
     }
 
-    @Nonnull
     private static SelectJoinStep<Record> structureQueryBaseVersionToDataTable(
             AslStructureQuery aq,
             Table<?> primaryTable,
@@ -520,7 +514,6 @@ public class AqlSqlQueryBuilder {
         }
     }
 
-    @Nonnull
     private static SelectJoinStep<Record> structureQueryBaseUsingDataTable(
             AslStructureQuery aq,
             Table<?> primaryTable,

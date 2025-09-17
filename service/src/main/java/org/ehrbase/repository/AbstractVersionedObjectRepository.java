@@ -38,7 +38,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -268,12 +267,7 @@ public abstract class AbstractVersionedObjectRepository<
     }
 
     protected void delete(
-            UUID ehrId,
-            Condition condition,
-            int version,
-            @Nullable UUID contributionId,
-            @Nullable UUID auditId,
-            String notfoundMessage) {
+            UUID ehrId, Condition condition, int version, UUID contributionId, UUID auditId, String notfoundMessage) {
 
         Result<VH> versionHeads = findVersionHeadRecords(condition);
 
@@ -385,8 +379,8 @@ public abstract class AbstractVersionedObjectRepository<
     protected void commitHead(
             UUID ehrId,
             Locatable versionDataObject,
-            @Nullable UUID contributionId,
-            @Nullable UUID auditId,
+            UUID contributionId,
+            UUID auditId,
             ContributionChangeType changeType,
             Consumer<VR> addVersionFieldsFunction,
             BiConsumer<StructureNode, DR> addDataFieldsFunction) {
@@ -427,8 +421,8 @@ public abstract class AbstractVersionedObjectRepository<
             O versionedObject,
             Condition condition,
             Condition historyCondition,
-            @Nullable UUID contributionId,
-            @Nullable UUID auditId,
+            UUID contributionId,
+            UUID auditId,
             Consumer<VR> addVersionFieldsFunction,
             BiConsumer<StructureNode, DR> addDataFieldsFunction,
             String notFoundErrorMessage) {

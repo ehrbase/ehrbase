@@ -25,7 +25,6 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -53,7 +52,7 @@ public interface EhrService {
      * @throws StateConflictException  when an EHR with the given id already exist
      * @throws ValidationException when given status is invalid, e.g. not a valid openEHR RM object
      */
-    EhrResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status);
+    EhrResult create(UUID ehrId, EhrStatusDto status);
 
     /**
      * Update the EHR_STATUS linked to the given EHR

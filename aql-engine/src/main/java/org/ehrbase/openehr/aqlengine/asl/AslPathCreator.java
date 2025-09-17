@@ -36,7 +36,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
@@ -110,7 +109,6 @@ final class AslPathCreator {
         this.systemId = systemId;
     }
 
-    @Nonnull
     public PathToField addPathQueries(
             AqlQueryWrapper query, ContainsToOwnerProvider containsToStructureSubQuery, AslRootQuery rootQuery) {
         Map<IdentifiedPath, AslField> pathToField = new LinkedHashMap<>();
@@ -331,7 +329,6 @@ final class AslPathCreator {
         };
     }
 
-    @Nonnull
     private static AslColumnField findExtractedColumnField(AslExtractedColumn ec, FieldSource fieldSource) {
         AslColumnField field = AslUtils.findFieldForOwner(
                         ec.getColumns().getFirst(),
@@ -476,7 +473,6 @@ final class AslPathCreator {
         };
     }
 
-    @Nonnull
     private AslEncapsulatingQuery addEncapsulatingQueryWithPathNode(
             AslEncapsulatingQuery query,
             PathCohesionTreeNode parentNode,
@@ -514,7 +510,6 @@ final class AslPathCreator {
         return currentQuery;
     }
 
-    @Nonnull
     private static AslEncapsulatingQuery addInternalPathNode(
             PathInfo pathInfo,
             AslEncapsulatingQuery query,
@@ -808,7 +803,6 @@ final class AslPathCreator {
         return aslStructureQuery;
     }
 
-    @Nonnull
     private static AslFieldValueQueryCondition<?> pathStructurePredicateCondition(
             ComparisonOperatorPredicate cp, AslStructureQuery aslStructureQuery) {
         String value = ((StringPrimitive) cp.getValue()).getValue();

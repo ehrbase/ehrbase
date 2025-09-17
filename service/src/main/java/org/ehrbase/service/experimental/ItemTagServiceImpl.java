@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
@@ -54,11 +53,7 @@ public class ItemTagServiceImpl implements ItemTagService {
         this.ehrService = ehrService;
     }
 
-    public List<UUID> bulkUpsert(
-            @Nonnull UUID ownerId,
-            @Nonnull UUID targetId,
-            @Nonnull ItemTagRMType targetType,
-            @Nonnull List<ItemTagDto> itemTags) {
+    public List<UUID> bulkUpsert(UUID ownerId, UUID targetId, ItemTagRMType targetType, List<ItemTagDto> itemTags) {
 
         if (itemTags.isEmpty()) {
             return List.of();
@@ -75,11 +70,7 @@ public class ItemTagServiceImpl implements ItemTagService {
 
     @Override
     public List<ItemTagDto> findItemTag(
-            @Nonnull UUID ownerId,
-            @Nonnull UUID targetVoId,
-            @Nonnull ItemTagRMType targetType,
-            @Nonnull Collection<UUID> ids,
-            @Nonnull Collection<String> keys) {
+            UUID ownerId, UUID targetVoId, ItemTagRMType targetType, Collection<UUID> ids, Collection<String> keys) {
 
         // sanity check for existing EHR version
         ehrService.checkEhrExists(ownerId);
@@ -90,11 +81,7 @@ public class ItemTagServiceImpl implements ItemTagService {
     }
 
     @Override
-    public void bulkDelete(
-            @Nonnull UUID ownerId,
-            @Nonnull UUID targetVoId,
-            @Nonnull ItemTagRMType targetType,
-            @Nonnull Collection<UUID> ids) {
+    public void bulkDelete(UUID ownerId, UUID targetVoId, ItemTagRMType targetType, Collection<UUID> ids) {
 
         if (ids.isEmpty()) {
             return;

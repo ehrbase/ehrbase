@@ -32,7 +32,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -74,7 +73,7 @@ public class RestModuleConfiguration implements WebMvcConfigurer {
 
         // x=1&ehrId=b907e17a-0dc0-49ef-b126-95b9abb4f906
         @Override
-        public Map<String, Object> convert(@NonNull String source) {
+        public Map<String, Object> convert(String source) {
 
             StringTokenizer tokenizer = new StringTokenizer(source, PARAM_DELIM);
             Spliterator<Object> spliterator = Spliterators.spliterator(tokenizer.asIterator(), 1, Spliterator.ORDERED);

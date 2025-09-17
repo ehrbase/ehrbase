@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.UnprocessableEntityException;
@@ -35,7 +34,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -191,8 +189,8 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
             String versionedObjectUid,
             ItemTagRMType itemTagType,
             String locationPart,
-            @Nullable List<String> ids,
-            @Nullable List<String> keys) {
+            List<String> ids,
+            List<String> keys) {
 
         // obtain path parameter
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -210,10 +208,7 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
 
     @VisibleForTesting
     ResponseEntity<Void> deleteTags(
-            String ehrIdString,
-            String versionedObjectUid,
-            ItemTagRMType itemTagType,
-            @Nonnull List<Object> itemTagsOrUUIDs) {
+            String ehrIdString, String versionedObjectUid, ItemTagRMType itemTagType, List<Object> itemTagsOrUUIDs) {
 
         if (itemTagsOrUUIDs.isEmpty()) {
             throw new UnprocessableEntityException("ItemTags are empty");

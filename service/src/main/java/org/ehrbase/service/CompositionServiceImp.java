@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -156,7 +155,7 @@ public class CompositionServiceImp implements CompositionService {
         return compositionId;
     }
 
-    private ObjectVersionId checkOrConstructObjectVersionId(@Nullable UIDBasedId uid) {
+    private ObjectVersionId checkOrConstructObjectVersionId(UIDBasedId uid) {
         if (uid == null) {
             return buildObjectVersionId(UuidGenerator.randomUUID(), 1, systemService);
 
