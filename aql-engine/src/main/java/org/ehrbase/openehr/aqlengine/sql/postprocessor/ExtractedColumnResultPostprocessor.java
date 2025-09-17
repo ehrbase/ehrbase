@@ -25,7 +25,6 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.time.temporal.TemporalAccessor;
 import java.util.UUID;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
@@ -105,7 +104,6 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
         return id + "::" + nodeName + "::" + srcRow.get(1);
     }
 
-    @Nonnull
     private static DvCodedText contributionChangeTypeAsDvCodedText(ContributionChangeType changeType) {
         return new DvCodedText(
                 changeType.getLiteral().toLowerCase(),

@@ -19,8 +19,6 @@ package org.ehrbase.api.dto;
 
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
@@ -35,22 +33,14 @@ import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
  * @param fetch       query limit to apply
  * @param offset      query offset to apply
  */
-public record AqlQueryRequest(
-        @Nonnull AqlQuery aqlQuery,
-        @Nullable Map<String, Object> parameters,
-        @Nullable Long fetch,
-        @Nullable Long offset) {
+public record AqlQueryRequest(AqlQuery aqlQuery, Map<String, Object> parameters, Long fetch, Long offset) {
 
     /**
      * Create a new {@link AqlQueryRequest} by parsing the given AQL <code>queryString</code>.
      *
      * @see AqlQueryRequest
      */
-    public static AqlQueryRequest prepare(
-            @Nonnull String queryString,
-            @Nullable Map<String, Object> parameters,
-            @Nullable Long fetch,
-            @Nullable Long offset) {
+    public static AqlQueryRequest prepare(String queryString, Map<String, Object> parameters, Long fetch, Long offset) {
         try {
             AqlQuery aqlQuery = AqlQueryParser.parse(queryString);
             return new AqlQueryRequest(aqlQuery, parameters, fetch, offset);

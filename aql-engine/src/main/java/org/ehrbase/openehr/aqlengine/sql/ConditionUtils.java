@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
@@ -157,7 +156,6 @@ final class ConditionUtils {
         };
     }
 
-    @Nonnull
     private static Condition notNullCondition(AslQueryTables tables, boolean useAliases, AslNotNullQueryCondition nn) {
         AslField field = nn.getField();
         if (field.getExtractedColumn() != null) {
@@ -224,7 +222,6 @@ final class ConditionUtils {
         };
     }
 
-    @Nonnull
     static Condition complexExtractedColumnCondition(
             boolean useAliases,
             AslFieldValueQueryCondition<?> fv,
@@ -287,7 +284,6 @@ final class ConditionUtils {
                 .reduce(DSL.noCondition(), op == AslConditionOperator.NEQ ? DSL::or : DSL::and);
     }
 
-    @Nonnull
     private static Condition voIdInCondition(
             Table<?> versionTable,
             boolean aliasedNames,
@@ -352,7 +348,6 @@ final class ConditionUtils {
         }
     }
 
-    @Nonnull
     private static Condition voIdCondition(
             Table<?> versionTable,
             boolean aliasedNames,

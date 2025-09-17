@@ -22,7 +22,6 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 public interface DirectoryService {
 
@@ -36,7 +35,7 @@ public interface DirectoryService {
      * @param path     optional return folder at <code>path</code>
      * @return
      */
-    Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path);
+    Optional<Folder> get(UUID ehrId, ObjectVersionId folderId, String path);
 
     /**
      * Get the Folder for Ehr with id equal <code>ehrId</code> for a specific point in time;
@@ -46,7 +45,7 @@ public interface DirectoryService {
      * @param path  optional return folder at <code>path</code>
      * @return
      */
-    Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, @Nullable String path);
+    Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, String path);
 
     /**
      * Create a new folder for Ehr with id equal <code>ehrId</code>

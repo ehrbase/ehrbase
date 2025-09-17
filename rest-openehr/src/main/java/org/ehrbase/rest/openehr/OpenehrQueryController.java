@@ -47,8 +47,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -245,7 +243,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         return ResponseEntity.ok(queryResponseData);
     }
 
-    private void createRestContext(String qualifiedName, @Nullable String version) {
+    private void createRestContext(String qualifiedName, String version) {
         HttpRestContext.register(
                 QUERY_EXECUTE_ENDPOINT,
                 Boolean.TRUE,
@@ -257,7 +255,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     }
 
     @SuppressWarnings("unchecked")
-    private AqlQueryRequest createRequest(@NonNull String queryString, Map<String, Object> requestBody) {
+    private AqlQueryRequest createRequest(String queryString, Map<String, Object> requestBody) {
 
         requestBody = Optional.ofNullable(requestBody).orElseGet(Map::of);
         Map<String, Object> queryParameters = Optional.ofNullable(requestBody.get(QUERY_PARAMETERS))
@@ -270,7 +268,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     }
 
     AqlQueryRequest createRequest(
-            @NonNull String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
+            String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
 
         return AqlQueryRequest.prepare(
                 queryString,
@@ -279,8 +277,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 offset.orElse(null));
     }
 
-    protected QueryResponseData createQueryResponse(
-            QueryResultDto aqlQueryResult, String queryString, @Nullable URI location) {
+    protected QueryResponseData createQueryResponse(QueryResultDto aqlQueryResult, String queryString, URI location) {
         final QueryResponseData queryResponseData = new QueryResponseData(aqlQueryResult);
         queryResponseData.setQuery(queryString);
         queryResponseData.setMeta(aqlQueryContext.createMetaData(location));

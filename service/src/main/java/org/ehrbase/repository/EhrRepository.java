@@ -34,7 +34,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
@@ -96,7 +95,7 @@ public class EhrRepository
     }
 
     @Transactional
-    public void commit(UUID ehrId, EhrStatus status, @Nullable UUID contributionId, @Nullable UUID auditId) {
+    public void commit(UUID ehrId, EhrStatus status, UUID contributionId, UUID auditId) {
 
         EhrRecord ehrRecord = context.newRecord(Ehr.EHR_);
 
@@ -206,7 +205,7 @@ public class EhrRepository
     }
 
     @Transactional
-    public void update(UUID ehrId, EhrStatus ehrStatus, @Nullable UUID contributionId, @Nullable UUID auditId) {
+    public void update(UUID ehrId, EhrStatus ehrStatus, UUID contributionId, UUID auditId) {
 
         update(
                 ehrId,

@@ -21,7 +21,6 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.generic.AuditDetails;
 import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
@@ -93,7 +92,6 @@ public interface ContributionService {
      * @param ehrId          ID of EHR
      * @param contributionId ID of contribution
      */
-    @Nonnull
     ContributionDto getContribution(UUID ehrId, UUID contributionId);
 
     /**

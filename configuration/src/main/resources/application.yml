@@ -149,7 +149,6 @@ admin-api:
 # Logging Properties
 logging:
   level:
-    org.ehcache: info
     org.jooq: info
     org.jooq.Constants: warn
     org.springframework: info

@@ -64,9 +64,8 @@
         <archie.version>3.13.0</archie.version>
         <commons-io.version>2.18.0</commons-io.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
-        <ehrbase.openehr.sdk.version>2.23.0</ehrbase.openehr.sdk.version>
+        <ehrbase.openehr.sdk.version>2.25.0</ehrbase.openehr.sdk.version>
         <flyway.version>11.1.1</flyway.version>
-        <jackson-bom.version>2.18.1</jackson-bom.version>
         <javamelody.version>1.99.1</javamelody.version>
         <json-path.version>2.9.0</json-path.version>
         <junit.version>5.10.2</junit.version>
@@ -111,9 +110,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson-bom.version}</version>
+                <groupId>org.ehrbase.openehr.sdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${ehrbase.openehr.sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -123,24 +122,6 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${ehrbase.openehr.sdk.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr.sdk</groupId>
-                <artifactId>serialisation</artifactId>
-                <version>${ehrbase.openehr.sdk.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.ehrbase.openehr.sdk</groupId>

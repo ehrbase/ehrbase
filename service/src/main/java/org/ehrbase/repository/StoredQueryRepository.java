@@ -43,7 +43,6 @@ import org.jooq.SelectWhereStep;
 import org.jooq.SortOrder;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -146,7 +145,7 @@ public class StoredQueryRepository {
         return dto;
     }
 
-    private static @NonNull Condition versionConstraint(SemVer semVer) {
+    private static Condition versionConstraint(SemVer semVer) {
         if (semVer.isRelease() || semVer.isPreRelease()) {
             return STORED_QUERY.SEMVER.eq(semVer.toVersionString());
         }

@@ -40,7 +40,6 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.jooq.pg.Tables;
@@ -377,7 +376,6 @@ public final class AslUtils {
         return condition;
     }
 
-    @Nonnull
     static List<AslRmTypeAndConcept> archetypeNodeIdConditionValues(
             List<Primitive> comparison, ComparisonConditionOperator operator) {
         return conditionValue(comparison, operator, String.class).stream()
@@ -386,7 +384,6 @@ public final class AslUtils {
                 .toList();
     }
 
-    @Nonnull
     static List<UUID> templateIdConditionValues(
             List<Primitive> operands,
             ComparisonConditionOperator operator,

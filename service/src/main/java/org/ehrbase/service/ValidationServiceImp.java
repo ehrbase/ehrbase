@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
@@ -188,7 +187,7 @@ public class ValidationServiceImp implements ValidationService {
     }
 
     @Override
-    public void check(@Nonnull EhrStatusDto ehrStatus) {
+    public void check(EhrStatusDto ehrStatus) {
 
         // second, additional specific checks and other mandatory attributes
         RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();

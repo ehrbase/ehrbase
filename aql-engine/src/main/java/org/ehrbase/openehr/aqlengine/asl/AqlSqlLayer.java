@@ -41,7 +41,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -273,7 +272,6 @@ public class AqlSqlLayer {
         };
     }
 
-    @Nonnull
     private static Optional<AslQueryCondition> logicalOperatorCondition(
             LogicalOperatorConditionWrapper condition,
             Function<ConditionWrapper, Optional<AslQueryCondition>> conditionBuilder) {
@@ -288,7 +286,6 @@ public class AqlSqlLayer {
         }
     }
 
-    @Nonnull
     private Optional<AslQueryCondition> fieldValueQueryCondition(
             AslField aslField, ComparisonOperatorConditionWrapper comparison) {
         ComparisonConditionOperator operator = comparison.operator();
