@@ -31,9 +31,10 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.openehr.aqlengine.AqlEhrPathPostProcessor;
-import org.ehrbase.openehr.aqlengine.AqlFromEhrOptimisationPostProcessor;
 import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
+import org.ehrbase.openehr.aqlengine.aql.AqlConditionAsPredicatePostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlEhrPathPostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlFromEhrOptimisationPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslCleanupPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AslGraph;
@@ -94,7 +95,13 @@ o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUST
 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
 o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
 o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
-FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+FROM EHR e
+CONTAINS COMPOSITION c
+CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+WHERE e/ehr_id/value matches {'e6fad8ba-fb4f-46a2-bf82-66edb43f142f','e5fad8ba-fb4f-46a2-bf82-66edb43f142f'}
+AND c/archetype_details/template_id/value matches {'abc.v0','abc.v1'}
+AND c/uid/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142a'
+AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
         """);
 
         System.out.println("/*");
@@ -103,6 +110,13 @@ FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
 
         new AqlEhrPathPostProcessor().afterParseAql(aqlQuery, null, null);
         new AqlFromEhrOptimisationPostProcessor().afterParseAql(aqlQuery, null, null);
+        new AqlConditionAsPredicatePostProcessor().afterParseAql(aqlQuery, null, null);
+
+
+        System.out.println("/*");
+        System.out.println(aqlQuery.render());
+        System.out.println("*/");
+
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());

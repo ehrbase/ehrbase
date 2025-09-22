@@ -309,11 +309,15 @@ public final class AslUtils {
                         candidateTypes.iterator().next(), predicate.getPath())
                 .filter(ec -> ec.getAllowedRmTypes().containsAll(candidateTypes))
                 .orElseThrow();
+        FieldSource ownerSource = FieldSource.withOwner(query);
+        List<Primitive> value = predicate.getValue() instanceof ListPredicateOperand lpo
+                ? lpo.getValues()
+                : List.of(((Primitive) predicate.getValue()));
         ComparisonConditionOperator operator =
                 ComparisonConditionOperator.valueOf(predicate.getOperator().name());
-        final AslConditionOperator aslOperator = operator.getAslOperator();
-        FieldSource ownerSource = FieldSource.withOwner(query);
-        List<Primitive> value = List.of(((Primitive) predicate.getValue()));
+        final AslConditionOperator aslOperator = value.size() > 1 && operator == ComparisonConditionOperator.EQ
+                ? AslConditionOperator.IN
+                : operator.getAslOperator();
         AslFieldValueQueryCondition<?> condition =
                 switch (extractedColumn) {
                     case NAME_VALUE ->
