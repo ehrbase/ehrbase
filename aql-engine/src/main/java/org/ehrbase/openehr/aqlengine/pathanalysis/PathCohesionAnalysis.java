@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.ehrbase.openehr.aqlengine.AqlQueryUtils;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryUtils;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;

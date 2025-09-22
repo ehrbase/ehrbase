@@ -236,16 +236,17 @@ public class AqlSqlQueryBuilder {
 
     private Table<?> buildQuery(AslQuery aslQuery, AslQuery target, AslQueryTables aslQueryToTable) {
         return switch (aslQuery) {
-            case AslStructureQuery aq -> buildStructureQuery(aq, aslQueryToTable)
-                    .asTable(aq.getAlias());
-            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable)
-                    .asTable(aq.getAlias());
-            case AslRmObjectDataQuery aq -> DSL.lateral(
-                    buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));
-            case AslFilteringQuery aq -> DSL.lateral(buildFilteringQuery(aq, aslQueryToTable.getDataTable(target))
-                    .asTable(aq.getAlias()));
-            case AslPathDataQuery aq -> DSL.lateral(
-                    buildPathDataQuery(aq, target, aslQueryToTable).asTable(aq.getAlias()));
+            case AslStructureQuery aq ->
+                buildStructureQuery(aq, aslQueryToTable).asTable(aq.getAlias());
+            case AslEncapsulatingQuery aq ->
+                buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable).asTable(aq.getAlias());
+            case AslRmObjectDataQuery aq ->
+                DSL.lateral(buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));
+            case AslFilteringQuery aq ->
+                DSL.lateral(buildFilteringQuery(aq, aslQueryToTable.getDataTable(target))
+                        .asTable(aq.getAlias()));
+            case AslPathDataQuery aq ->
+                DSL.lateral(buildPathDataQuery(aq, target, aslQueryToTable).asTable(aq.getAlias()));
         };
     }
 
@@ -295,17 +296,19 @@ public class AqlSqlQueryBuilder {
         final String fieldName = ((AslColumnField) aq.getSelect().getFirst()).getAliasedName();
         Stream<Field> fields =
                 switch (aq.getSourceField()) {
-                    case AslColumnField src -> Stream.of(
-                            FieldUtils.field(target, src, true).as(fieldName));
-                    case AslComplexExtractedColumnField src -> src.getExtractedColumn().getColumns().stream()
-                            .map(fn -> FieldUtils.field(target, src, fn, true).as(src.aliasedName(fn)));
+                    case AslColumnField src ->
+                        Stream.of(FieldUtils.field(target, src, true).as(fieldName));
+                    case AslComplexExtractedColumnField src ->
+                        src.getExtractedColumn().getColumns().stream().map(fn -> FieldUtils.field(target, src, fn, true)
+                                .as(src.aliasedName(fn)));
                     case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
-                    case AslAggregatingField __ -> throw new IllegalArgumentException(
-                            "Filtering queries cannot be based on AslAggregatingField");
-                    case AslSubqueryField __ -> throw new IllegalArgumentException(
-                            "Filtering queries cannot be based on AslSubqueryField");
-                    case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
-                            "Filtering queries cannot be based on AslFolderItemIdValuesColumnField");
+                    case AslAggregatingField __ ->
+                        throw new IllegalArgumentException("Filtering queries cannot be based on AslAggregatingField");
+                    case AslSubqueryField __ ->
+                        throw new IllegalArgumentException("Filtering queries cannot be based on AslSubqueryField");
+                    case AslFolderItemIdVirtualField __ ->
+                        throw new IllegalArgumentException(
+                                "Filtering queries cannot be based on AslFolderItemIdValuesColumnField");
                     case AslRmPathField arpf -> {
                         Field<JSONB> srcField = FieldUtils.field(target, arpf.getSrcField(), JSONB.class, true);
                         Field<JSONB> ret = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
@@ -316,8 +319,9 @@ public class AqlSqlQueryBuilder {
                             yield Stream.of(ret.as(fieldName));
                         }
                     }
-                    case AslStringAggregationField __ -> throw new IllegalArgumentException(
-                            "Filtering queries cannot be based on AslAggregateRecordArrayField");
+                    case AslStringAggregationField __ ->
+                        throw new IllegalArgumentException(
+                                "Filtering queries cannot be based on AslAggregateRecordArrayField");
                 };
         return DSL.select(fields.toArray(Field[]::new));
     }
@@ -459,12 +463,14 @@ public class AqlSqlQueryBuilder {
             Stream<Field<?>> columnFields,
             Stream<AslFolderItemIdVirtualField> folderFields) {
         return switch (aq.getType()) {
-            case EHR_STATUS -> structureQueryBaseUsingVersionAndDataTable(
-                    columnFields, primaryTable, dataTable, EHR_STATUS_VERSION.EHR_ID, EHR_STATUS_DATA.EHR_ID);
-            case COMPOSITION -> structureQueryBaseUsingVersionAndDataTable(
-                    columnFields, primaryTable, dataTable, COMP_VERSION.VO_ID, COMP_DATA.VO_ID);
-            case FOLDER -> folderStructureQueryBaseUsingVersionAndData(
-                    primaryTable, dataTable, folderFields, columnFields);
+            case EHR_STATUS ->
+                structureQueryBaseUsingVersionAndDataTable(
+                        columnFields, primaryTable, dataTable, EHR_STATUS_VERSION.EHR_ID, EHR_STATUS_DATA.EHR_ID);
+            case COMPOSITION ->
+                structureQueryBaseUsingVersionAndDataTable(
+                        columnFields, primaryTable, dataTable, COMP_VERSION.VO_ID, COMP_DATA.VO_ID);
+            case FOLDER ->
+                folderStructureQueryBaseUsingVersionAndData(primaryTable, dataTable, folderFields, columnFields);
             default -> throw new IllegalArgumentException("%s has no version table".formatted(aq.getType()));
         };
     }

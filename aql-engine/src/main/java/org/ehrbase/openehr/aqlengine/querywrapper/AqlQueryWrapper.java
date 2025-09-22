@@ -259,30 +259,36 @@ public final class AqlQueryWrapper {
     private static ConditionWrapper buildWhereDescriptor(
             WhereCondition where, ContainsWrappers containsWrappers, boolean negate) {
         return switch (where) {
-            case ComparisonOperatorCondition c -> new ComparisonOperatorConditionWrapper(
-                    new IdentifiedPathWrapper(
-                            containsWrappers.getWrapper(((IdentifiedPath) c.getStatement()).getRoot()),
-                            (IdentifiedPath) c.getStatement()),
-                    ComparisonConditionOperator.valueOf(c.getSymbol().name(), negate),
-                    (Primitive) c.getValue());
-            case MatchesCondition c -> negate
-                    ? new LogicalOperatorConditionWrapper(
-                            LogicalConditionOperator.AND,
-                            c.getValues().stream()
-                                    .map(Primitive.class::cast)
-                                    .map(v -> (ConditionWrapper) new ComparisonOperatorConditionWrapper(
-                                            new IdentifiedPathWrapper(
-                                                    containsWrappers.getWrapper(
-                                                            c.getStatement().getRoot()),
-                                                    c.getStatement()),
-                                            ComparisonConditionOperator.NEQ,
-                                            v))
-                                    .toList())
-                    : new ComparisonOperatorConditionWrapper(
-                            new IdentifiedPathWrapper(
-                                    containsWrappers.getWrapper(c.getStatement().getRoot()), c.getStatement()),
-                            ComparisonConditionOperator.MATCHES,
-                            c.getValues().stream().map(Primitive.class::cast).toList());
+            case ComparisonOperatorCondition c ->
+                new ComparisonOperatorConditionWrapper(
+                        new IdentifiedPathWrapper(
+                                containsWrappers.getWrapper(((IdentifiedPath) c.getStatement()).getRoot()),
+                                (IdentifiedPath) c.getStatement()),
+                        ComparisonConditionOperator.valueOf(c.getSymbol().name(), negate),
+                        (Primitive) c.getValue());
+            case MatchesCondition c ->
+                negate
+                        ? new LogicalOperatorConditionWrapper(
+                                LogicalConditionOperator.AND,
+                                c.getValues().stream()
+                                        .map(Primitive.class::cast)
+                                        .map(v -> (ConditionWrapper) new ComparisonOperatorConditionWrapper(
+                                                new IdentifiedPathWrapper(
+                                                        containsWrappers.getWrapper(
+                                                                c.getStatement().getRoot()),
+                                                        c.getStatement()),
+                                                ComparisonConditionOperator.NEQ,
+                                                v))
+                                        .toList())
+                        : new ComparisonOperatorConditionWrapper(
+                                new IdentifiedPathWrapper(
+                                        containsWrappers.getWrapper(
+                                                c.getStatement().getRoot()),
+                                        c.getStatement()),
+                                ComparisonConditionOperator.MATCHES,
+                                c.getValues().stream()
+                                        .map(Primitive.class::cast)
+                                        .toList());
             case LikeCondition c -> {
                 ComparisonOperatorConditionWrapper condition = new ComparisonOperatorConditionWrapper(
                         new IdentifiedPathWrapper(
@@ -305,19 +311,20 @@ public final class AqlQueryWrapper {
                                 LogicalConditionOperator.NOT, List.of(comparisonOperatorConditionDescriptor))
                         : comparisonOperatorConditionDescriptor;
             }
-            case LogicalOperatorCondition c -> new LogicalOperatorConditionWrapper(
-                    switch (c.getSymbol()) {
-                        case OR -> negate ? LogicalConditionOperator.AND : LogicalConditionOperator.OR;
-                        case AND -> negate ? LogicalConditionOperator.OR : LogicalConditionOperator.AND;
-                    },
-                    c.getValues().stream()
-                            .map(w -> buildWhereDescriptor(w, containsWrappers, negate))
-                            .toList());
+            case LogicalOperatorCondition c ->
+                new LogicalOperatorConditionWrapper(
+                        switch (c.getSymbol()) {
+                            case OR -> negate ? LogicalConditionOperator.AND : LogicalConditionOperator.OR;
+                            case AND -> negate ? LogicalConditionOperator.OR : LogicalConditionOperator.AND;
+                        },
+                        c.getValues().stream()
+                                .map(w -> buildWhereDescriptor(w, containsWrappers, negate))
+                                .toList());
             case NotCondition c -> buildWhereDescriptor(c.getConditionDto(), containsWrappers, !negate);
-            case null -> throw new IllegalArgumentException(
-                    "Encountered null reference instead of WhereCondition object");
-            default -> throw new IllegalArgumentException(
-                    "Unknown WhereCondition class: %s".formatted(where.getClass()));
+            case null ->
+                throw new IllegalArgumentException("Encountered null reference instead of WhereCondition object");
+            default ->
+                throw new IllegalArgumentException("Unknown WhereCondition class: %s".formatted(where.getClass()));
         };
     }
 

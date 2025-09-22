@@ -93,9 +93,10 @@ public final class AslRootQuery extends AslEncapsulatingQuery {
             if (usesAggregateFunctionOrDistinct && !getGroupByFields().contains(f)) {
                 (switch (f) {
                             case AslDvOrderedColumnField __ -> getGroupByDvOrderedMagnitudeFields();
-                            case AslRmPathField arpf -> arpf.getDvOrderedTypes().isEmpty()
-                                    ? getGroupByFields()
-                                    : getGroupByDvOrderedMagnitudeFields();
+                            case AslRmPathField arpf ->
+                                arpf.getDvOrderedTypes().isEmpty()
+                                        ? getGroupByFields()
+                                        : getGroupByDvOrderedMagnitudeFields();
                             default -> getGroupByFields();
                         })
                         .add(f);

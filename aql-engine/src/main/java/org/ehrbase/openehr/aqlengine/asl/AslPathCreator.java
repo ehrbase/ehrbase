@@ -321,10 +321,10 @@ final class AslPathCreator {
                     AD_DESCRIPTION_DV,
                     EHR_TIME_CREATED,
                     EHR_TIME_CREATED_DV -> findExtractedColumnField(ec, fieldSource);
-            case AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE -> new AslConstantField<>(
-                    String.class, "openehr", fieldSource, ec);
-            case AD_SYSTEM_ID, EHR_SYSTEM_ID, EHR_SYSTEM_ID_DV -> new AslConstantField<>(
-                    String.class, systemId, fieldSource, ec);
+            case AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE ->
+                new AslConstantField<>(String.class, "openehr", fieldSource, ec);
+            case AD_SYSTEM_ID, EHR_SYSTEM_ID, EHR_SYSTEM_ID_DV ->
+                new AslConstantField<>(String.class, systemId, fieldSource, ec);
             case VO_ID, ARCHETYPE_NODE_ID -> new AslComplexExtractedColumnField(ec, fieldSource);
         };
     }
@@ -454,22 +454,23 @@ final class AslPathCreator {
 
         NodeCategory nodeCategory = pathInfo.getNodeCategory(childNode);
         return switch (nodeCategory) {
-            case STRUCTURE -> joinPathStructureNode(
-                    currentQuery,
-                    currentNodeSubQuery,
-                    skipCurrentNode ? parentNode : currentNode,
-                    skipCurrentNode ? parentJoinMode : currentJoinMode,
-                    sourceRelation,
-                    childNode,
-                    pathInfo,
-                    rootProviderSubQuery,
-                    nodeToSq,
-                    structureLevel + 1);
+            case STRUCTURE ->
+                joinPathStructureNode(
+                        currentQuery,
+                        currentNodeSubQuery,
+                        skipCurrentNode ? parentNode : currentNode,
+                        skipCurrentNode ? parentJoinMode : currentJoinMode,
+                        sourceRelation,
+                        childNode,
+                        pathInfo,
+                        rootProviderSubQuery,
+                        nodeToSq,
+                        structureLevel + 1);
             case STRUCTURE_INTERMEDIATE, FOUNDATION_EXTENDED -> throw new IllegalArgumentException();
-            case RM_TYPE -> joinRmTypeNode(
-                    childNode, currentQuery, currentNodeSubQuery, rootProviderSubQuery, pathInfo, 1);
-            case FOUNDATION -> joinFoundationNode(
-                    childNode, currentQuery, currentNodeSubQuery, rootProviderSubQuery, pathInfo, 1);
+            case RM_TYPE ->
+                joinRmTypeNode(childNode, currentQuery, currentNodeSubQuery, rootProviderSubQuery, pathInfo, 1);
+            case FOUNDATION ->
+                joinFoundationNode(childNode, currentQuery, currentNodeSubQuery, rootProviderSubQuery, pathInfo, 1);
         };
     }
 
@@ -549,14 +550,17 @@ final class AslPathCreator {
             final AslQuery currentProvider = currentNodeSubQuery.provider();
             final AslStructureQuery currentOwner = (AslStructureQuery) currentNodeSubQuery.owner();
             return switch (jct) {
-                case PARENT_CHILD -> AslUtils.pathChildJoinConditions(
-                        parentProvider, parentOwner, currentProvider, currentOwner);
-                case ARCHETYPE_ANCHOR -> AslUtils.archetypeAnchorJoinConditions(
-                        parentNode, parentProvider, parentOwner, currentProvider, currentOwner);
-                case NODE_ID_ANCHOR -> AslUtils.nodeIdAnchorJoinConditions(
-                        parentNode, parentProvider, parentOwner, currentProvider, currentOwner);
-                case SAME_PARENT_AS_SIBLINGS -> AslUtils.sameParentAsSiblingsJoinCondition(
-                        query, parentProvider, currentProvider, currentOwner, currentNode, nodeToSq);
+                case PARENT_CHILD ->
+                    AslUtils.pathChildJoinConditions(parentProvider, parentOwner, currentProvider, currentOwner);
+                case ARCHETYPE_ANCHOR ->
+                    AslUtils.archetypeAnchorJoinConditions(
+                            parentNode, parentProvider, parentOwner, currentProvider, currentOwner);
+                case NODE_ID_ANCHOR ->
+                    AslUtils.nodeIdAnchorJoinConditions(
+                            parentNode, parentProvider, parentOwner, currentProvider, currentOwner);
+                case SAME_PARENT_AS_SIBLINGS ->
+                    AslUtils.sameParentAsSiblingsJoinCondition(
+                            query, parentProvider, currentProvider, currentOwner, currentNode, nodeToSq);
                 case SKIPPED -> throw new IllegalArgumentException("Cannot build join condition for skipped node");
             };
         });
@@ -728,10 +732,10 @@ final class AslPathCreator {
             NodeCategory nodeCategory = pathInfo.getNodeCategory(child);
             return switch (nodeCategory) {
                 case STRUCTURE, STRUCTURE_INTERMEDIATE -> throw new IllegalArgumentException();
-                case RM_TYPE, FOUNDATION_EXTENDED -> joinRmTypeNode(
-                        child, query, parent, rootProviderQuery, pathInfo, nextLevelInJson);
-                case FOUNDATION -> joinFoundationNode(
-                        child, query, parent, rootProviderQuery, pathInfo, nextLevelInJson);
+                case RM_TYPE, FOUNDATION_EXTENDED ->
+                    joinRmTypeNode(child, query, parent, rootProviderQuery, pathInfo, nextLevelInJson);
+                case FOUNDATION ->
+                    joinFoundationNode(child, query, parent, rootProviderQuery, pathInfo, nextLevelInJson);
             };
         });
 

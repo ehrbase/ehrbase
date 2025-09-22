@@ -33,7 +33,7 @@ import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.AqlQueryService;
-import org.ehrbase.openehr.aqlengine.AqlQueryParsingPostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryParsingPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;

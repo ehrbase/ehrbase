@@ -113,8 +113,9 @@ public class OpenehrQueryControllerTest {
             case null -> null;
             case Integer i -> i.longValue();
             case String s -> Long.parseLong(s);
-            default -> throw new IllegalArgumentException(
-                    "unexpected type " + obj.getClass().getName());
+            default ->
+                throw new IllegalArgumentException(
+                        "unexpected type " + obj.getClass().getName());
         };
     }
 

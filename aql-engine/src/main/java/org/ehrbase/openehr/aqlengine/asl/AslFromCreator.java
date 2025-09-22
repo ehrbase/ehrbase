@@ -401,11 +401,11 @@ public final class AslFromCreator {
             if (RmConstants.FOLDER.equals(currentDesc.getRmType())) {
                 boolean mustAddItemsField =
                         switch (currentDesc.containment().getContains()) {
-                            case ContainmentClassExpression cce -> Objects.equals(
-                                    cce.getType(), RmConstants.COMPOSITION);
-                            case ContainmentVersionExpression cve -> cve.getContains()
-                                            instanceof ContainmentClassExpression cce
-                                    && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentClassExpression cce ->
+                                Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentVersionExpression cve ->
+                                cve.getContains() instanceof ContainmentClassExpression cce
+                                        && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
                             case null -> false;
                             default -> false;
                         };

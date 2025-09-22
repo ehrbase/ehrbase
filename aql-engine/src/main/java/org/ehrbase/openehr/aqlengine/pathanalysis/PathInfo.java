@@ -17,7 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.pathanalysis;
 
-import static org.ehrbase.openehr.aqlengine.AqlQueryUtils.streamWhereConditions;
+import static org.ehrbase.openehr.aqlengine.aql.AqlQueryUtils.streamWhereConditions;
 
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdered;
@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.openehr.aqlengine.AqlQueryUtils;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryUtils;
 import org.ehrbase.openehr.aqlengine.pathanalysis.ANode.NodeCategory;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathAnalysis.AttInfo;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
@@ -391,11 +391,11 @@ public final class PathInfo {
 
         // takes advantage of c0 < c1
         return switch (c0) {
-            case STRUCTURE, STRUCTURE_INTERMEDIATE -> throw new IllegalArgumentException(
-                    "Incompatible node types: %s, %s".formatted(a, b));
+            case STRUCTURE, STRUCTURE_INTERMEDIATE ->
+                throw new IllegalArgumentException("Incompatible node types: %s, %s".formatted(a, b));
             case RM_TYPE, FOUNDATION -> NodeCategory.FOUNDATION_EXTENDED;
-            case FOUNDATION_EXTENDED -> throw new IllegalArgumentException(
-                    "Inconsistent node types: %s, %s".formatted(a, b));
+            case FOUNDATION_EXTENDED ->
+                throw new IllegalArgumentException("Inconsistent node types: %s, %s".formatted(a, b));
         };
     }
 

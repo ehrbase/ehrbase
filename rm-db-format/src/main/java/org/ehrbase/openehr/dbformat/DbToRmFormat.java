@@ -69,8 +69,8 @@ public final class DbToRmFormat {
             case JsonNodeType.BOOLEAN -> jsonNode.booleanValue();
             case JsonNodeType.NULL -> null;
             case JsonNodeType.ARRAY -> throw new IllegalArgumentException("Unexpected JSON root array");
-            case JsonNodeType.BINARY, JsonNodeType.MISSING, JsonNodeType.POJO -> throw new IllegalArgumentException(
-                    "Unexpected JSON node type %s".formatted(jsonNode.getNodeType()));
+            case JsonNodeType.BINARY, JsonNodeType.MISSING, JsonNodeType.POJO ->
+                throw new IllegalArgumentException("Unexpected JSON node type %s".formatted(jsonNode.getNodeType()));
         };
     }
 

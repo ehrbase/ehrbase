@@ -105,28 +105,33 @@ public final class VersionedObjectDataStructure {
     private static void addMagnitudeAttribute(String type, ObjectNode object) {
         try {
             switch (type) {
-                case "DV_DATE_TIME" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                RmDbJson.MARSHAL_OM.treeToValue(object, DvDateTime.class)));
-                case "DV_DATE" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                RmDbJson.MARSHAL_OM.treeToValue(object, DvDate.class)));
-                case "DV_TIME" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                RmDbJson.MARSHAL_OM.treeToValue(object, DvTime.class)));
-                case "DV_DURATION" -> object.put(
-                        MAGNITUDE_FIELD,
-                        RmDbJson.MARSHAL_OM
-                                .treeToValue(object, DvDuration.class)
-                                .getMagnitude());
-                case "DV_PROPORTION" -> object.put(
-                        MAGNITUDE_FIELD,
-                        RmDbJson.MARSHAL_OM
-                                .treeToValue(object, DvProportion.class)
-                                .getMagnitude());
+                case "DV_DATE_TIME" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvDateTime.class)));
+                case "DV_DATE" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvDate.class)));
+                case "DV_TIME" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvTime.class)));
+                case "DV_DURATION" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            RmDbJson.MARSHAL_OM
+                                    .treeToValue(object, DvDuration.class)
+                                    .getMagnitude());
+                case "DV_PROPORTION" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            RmDbJson.MARSHAL_OM
+                                    .treeToValue(object, DvProportion.class)
+                                    .getMagnitude());
                 default -> {
                     /* do not add magnitude */
                 }

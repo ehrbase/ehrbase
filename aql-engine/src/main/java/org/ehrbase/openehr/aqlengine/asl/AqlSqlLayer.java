@@ -171,11 +171,12 @@ public class AqlSqlLayer {
                 .map(select -> switch (select.type()) {
                     case PATH -> pathToField.getField(select.getIdentifiedPath().orElseThrow());
 
-                    case AGGREGATE_FUNCTION -> new AslAggregatingField(
-                            select.getAggregateFunctionName(),
-                            // identified path is null for COUNT(*)
-                            pathToField.getField(select.getIdentifiedPath().orElse(null)),
-                            select.isCountDistinct());
+                    case AGGREGATE_FUNCTION ->
+                        new AslAggregatingField(
+                                select.getAggregateFunctionName(),
+                                // identified path is null for COUNT(*)
+                                pathToField.getField(select.getIdentifiedPath().orElse(null)),
+                                select.isCountDistinct());
                     case PRIMITIVE, FUNCTION -> throw new IllegalArgumentException();
                 })
                 .forEach(rootQuery.getSelect()::add);
@@ -238,8 +239,8 @@ public class AqlSqlLayer {
             ConditionWrapper condition, AslPathCreator.PathToField pathToField) {
 
         return switch (condition) {
-            case LogicalOperatorConditionWrapper lcd -> logicalOperatorCondition(
-                    lcd, c -> buildWhereCondition(c, pathToField));
+            case LogicalOperatorConditionWrapper lcd ->
+                logicalOperatorCondition(lcd, c -> buildWhereCondition(c, pathToField));
             case ComparisonOperatorConditionWrapper comparison -> {
                 AslField aslField =
                         pathToField.getField(comparison.leftComparisonOperand().path());
@@ -291,19 +292,20 @@ public class AqlSqlLayer {
         ComparisonConditionOperator operator = comparison.operator();
         return Optional.of(
                 switch (operator) {
-                    case EXISTS -> aslField.getExtractedColumn() != null
-                            ? new AslTrueQueryCondition()
-                            : new AslNotNullQueryCondition(aslField);
+                    case EXISTS ->
+                        aslField.getExtractedColumn() != null
+                                ? new AslTrueQueryCondition()
+                                : new AslNotNullQueryCondition(aslField);
                     case LIKE, MATCHES, EQ, GT_EQ, GT, LT_EQ, LT, NEQ -> {
                         List<?> values = whereConditionValues(aslField, comparison, operator);
                         if (values.isEmpty()) {
                             yield switch (operator.getAslOperator()) {
-                                case AslConditionOperator.IN,
-                                        AslConditionOperator.EQ,
-                                        AslConditionOperator.LIKE -> new AslFalseQueryCondition();
+                                case AslConditionOperator.IN, AslConditionOperator.EQ, AslConditionOperator.LIKE ->
+                                    new AslFalseQueryCondition();
                                 case AslConditionOperator.NEQ -> new AslTrueQueryCondition();
-                                default -> throw new IllegalArgumentException(
-                                        "Unexpected operator %s".formatted(operator.getAslOperator()));
+                                default ->
+                                    throw new IllegalArgumentException(
+                                            "Unexpected operator %s".formatted(operator.getAslOperator()));
                             };
                         } else {
                             yield new AslFieldValueQueryCondition<>(aslField, operator.getAslOperator(), values);
@@ -315,32 +317,36 @@ public class AqlSqlLayer {
     private List<?> whereConditionValues(
             AslField aslField, ComparisonOperatorConditionWrapper comparison, ComparisonConditionOperator operator) {
         return switch (aslField.getExtractedColumn()) {
-            case TEMPLATE_ID -> AslUtils.templateIdConditionValues(
-                    comparison.rightComparisonOperands(), operator, knowledgeCache::findUuidByTemplateId);
-            case ARCHETYPE_NODE_ID -> AslUtils.archetypeNodeIdConditionValues(
-                    comparison.rightComparisonOperands(), operator);
-            case ROOT_CONCEPT -> AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator)
-                    .stream()
-                    // archetype must be for COMPOSITION
-                    .filter(tc -> StructureRmType.COMPOSITION.getAlias().equals(tc.aliasedRmType()))
-                    .map(AslRmTypeAndConcept::concept)
-                    .toList();
-            case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> AslUtils.streamStringPrimitives(comparison)
-                    .map(AslUtils::toOffsetDateTime)
-                    .filter(Objects::nonNull)
-                    .toList();
-            case AD_CHANGE_TYPE_CODE_STRING -> AslUtils.streamStringPrimitives(comparison)
-                    .map(StringPrimitive::getValue)
-                    .map(ChangeTypeUtils::getJooqChangeTypeByCode)
-                    .filter(Objects::nonNull)
-                    .toList();
-            case AD_CHANGE_TYPE_PREFERRED_TERM, AD_CHANGE_TYPE_VALUE -> AslUtils.streamStringPrimitives(comparison)
-                    .map(StringPrimitive::getValue)
-                    .map(v -> "unknown".equals(v)
-                            ? ContributionChangeType.Unknown
-                            : ContributionChangeType.lookupLiteral(v))
-                    .filter(Objects::nonNull)
-                    .toList();
+            case TEMPLATE_ID ->
+                AslUtils.templateIdConditionValues(
+                        comparison.rightComparisonOperands(), operator, knowledgeCache::findUuidByTemplateId);
+            case ARCHETYPE_NODE_ID ->
+                AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator);
+            case ROOT_CONCEPT ->
+                AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator).stream()
+                        // archetype must be for COMPOSITION
+                        .filter(tc -> StructureRmType.COMPOSITION.getAlias().equals(tc.aliasedRmType()))
+                        .map(AslRmTypeAndConcept::concept)
+                        .toList();
+            case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV ->
+                AslUtils.streamStringPrimitives(comparison)
+                        .map(AslUtils::toOffsetDateTime)
+                        .filter(Objects::nonNull)
+                        .toList();
+            case AD_CHANGE_TYPE_CODE_STRING ->
+                AslUtils.streamStringPrimitives(comparison)
+                        .map(StringPrimitive::getValue)
+                        .map(ChangeTypeUtils::getJooqChangeTypeByCode)
+                        .filter(Objects::nonNull)
+                        .toList();
+            case AD_CHANGE_TYPE_PREFERRED_TERM, AD_CHANGE_TYPE_VALUE ->
+                AslUtils.streamStringPrimitives(comparison)
+                        .map(StringPrimitive::getValue)
+                        .map(v -> "unknown".equals(v)
+                                ? ContributionChangeType.Unknown
+                                : ContributionChangeType.lookupLiteral(v))
+                        .filter(Objects::nonNull)
+                        .toList();
             case null -> AslUtils.conditionValue(comparison.rightComparisonOperands(), operator, aslField.getType());
             default -> AslUtils.conditionValue(comparison.rightComparisonOperands(), operator, aslField.getType());
         };
