@@ -145,8 +145,8 @@ public final class DbToRmFormat {
             Map.Entry<String, JsonNode>[] children = new Map.Entry[childCount];
             Iterator<Map.Entry<String, JsonNode>> fieldIt = jsonObject.fields();
 
-            int rootPathLength = calcRootPathLength(childCount, fieldIt, children);
             Arrays.sort(children, Map.Entry.comparingByKey());
+            int rootPathLength = calcRootPathLength(childCount, fieldIt, children);
 
             dbRoot = standardizeObjectNode(children[0].getValue());
 
@@ -216,8 +216,8 @@ public final class DbToRmFormat {
         int childCount = jsonObjects.length;
         // Or Record2<String, JsonNode>[] dbRecords
 
-        int rootPathLength = calcRootPathLength(jsonObjects, idxExtractor, childCount);
         Arrays.sort(jsonObjects, Comparator.comparing(r -> idxExtractor.apply(r).toString()));
+        int rootPathLength = calcRootPathLength(jsonObjects, idxExtractor, childCount);
 
         ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0], jsonExtractor, objectMapper));
 
@@ -234,7 +234,7 @@ public final class DbToRmFormat {
     private static int calcRootPathLength(
             int childCount, Iterator<Map.Entry<String, JsonNode>> fieldIt, Map.Entry<String, JsonNode>[] children) {
         int l = Integer.MAX_VALUE;
-        for (int i = 0; i < childCount; i++) {
+        for (int i = 0; i < childCount && l > 0; i++) {
             Map.Entry<String, JsonNode> next = fieldIt.next();
             children[i] = next;
             l = Math.min(l, next.getKey().length());
@@ -244,7 +244,7 @@ public final class DbToRmFormat {
 
     private static <T> int calcRootPathLength(T[] jsonObjects, Function<T, Object> idxExtractor, int childCount) {
         int l = Integer.MAX_VALUE;
-        for (int i = 0; i < childCount; i++) {
+        for (int i = 0; i < childCount && l > 0; i++) {
             T next = jsonObjects[i];
             l = Math.min(l, idxExtractor.apply(next).toString().length());
         }
