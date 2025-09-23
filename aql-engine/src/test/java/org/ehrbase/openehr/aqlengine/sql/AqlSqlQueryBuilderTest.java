@@ -112,7 +112,6 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
         new AqlFromEhrOptimisationPostProcessor().afterParseAql(aqlQuery, null, null);
         new AqlConditionAsPredicatePostProcessor().afterParseAql(aqlQuery, null, null);
 
-
         System.out.println("/*");
         System.out.println(aqlQuery.render());
         System.out.println("*/");
