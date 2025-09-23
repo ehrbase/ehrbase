@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
@@ -145,8 +146,13 @@ public final class DbToRmFormat {
             Map.Entry<String, JsonNode>[] children = new Map.Entry[childCount];
             Iterator<Map.Entry<String, JsonNode>> fieldIt = jsonObject.fields();
 
+            int rootPathLength = Integer.MAX_VALUE;
+            for (int i = 0; i < childCount; i++) {
+                Entry<String, JsonNode> next = fieldIt.next();
+                children[i] = next;
+                rootPathLength = Math.min(rootPathLength, next.getKey().length());
+            }
             Arrays.sort(children, Map.Entry.comparingByKey());
-            int rootPathLength = calcRootPathLength(childCount, fieldIt, children);
 
             dbRoot = standardizeObjectNode(children[0].getValue());
 
@@ -229,17 +235,6 @@ public final class DbToRmFormat {
                     standardizeObjectNode(parseJsonData(child, jsonExtractor, objectMapper)));
         }
         return dbRoot;
-    }
-
-    private static int calcRootPathLength(
-            int childCount, Iterator<Map.Entry<String, JsonNode>> fieldIt, Map.Entry<String, JsonNode>[] children) {
-        int l = Integer.MAX_VALUE;
-        for (int i = 0; i < childCount && l > 0; i++) {
-            Map.Entry<String, JsonNode> next = fieldIt.next();
-            children[i] = next;
-            l = Math.min(l, next.getKey().length());
-        }
-        return l;
     }
 
     private static <T> int calcRootPathLength(T[] jsonObjects, Function<T, Object> idxExtractor, int childCount) {
