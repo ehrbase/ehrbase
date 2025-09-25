@@ -436,7 +436,7 @@ public final class DbToRmFormat {
                     expectedCount = StringUtils.countMatches(path, '.');
                 }
                 List<PathComponent> list = new ArrayList<>(expectedCount);
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder(20);
                 int nr = -1;
                 // requires trailing '.'
                 for (int i = 0; i < len; i++) {
