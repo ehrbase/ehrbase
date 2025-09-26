@@ -61,7 +61,6 @@ final class OrderByCheck implements FeatureCheck {
         FeatureCheckUtils.PathDetails pathWithType = FeatureCheckUtils.findSupportedIdentifiedPath(
                 ip, false, ClauseType.ORDER_BY, systemService.getSystemId());
         if (EnumSet.of(
-                        AslExtractedColumn.OV_TIME_COMMITTED,
                         AslExtractedColumn.AD_SYSTEM_ID,
                         AslExtractedColumn.AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE)
                 .contains(pathWithType.extractedColumn())) {

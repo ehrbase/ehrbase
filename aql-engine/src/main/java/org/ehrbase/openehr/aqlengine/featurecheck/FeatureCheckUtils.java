@@ -78,7 +78,8 @@ final class FeatureCheckUtils {
                     Pair.of(
                             "commit_audit/time_committed",
                             Set.of(ClauseType.SELECT, ClauseType.WHERE, ClauseType.ORDER_BY)),
-                    Pair.of("commit_audit/time_committed/value", Set.of(ClauseType.SELECT)),
+                    Pair.of("commit_audit/time_committed/value",
+                            Set.of(ClauseType.SELECT, ClauseType.WHERE, ClauseType.ORDER_BY)),
                     Pair.of("commit_audit/system_id", Set.of(ClauseType.SELECT, ClauseType.WHERE)),
                     Pair.of("commit_audit/description", Set.of(ClauseType.SELECT)),
                     Pair.of(
@@ -211,7 +212,7 @@ final class FeatureCheckUtils {
             }
 
             return AslExtractedColumn.find(containmentType, path)
-                    .filter(ec -> !EnumSet.of(AslExtractedColumn.EHR_TIME_CREATED, AslExtractedColumn.EHR_SYSTEM_ID_DV)
+                    .filter(ec -> !EnumSet.of(AslExtractedColumn.EHR_SYSTEM_ID_DV)
                                     .contains(ec)
                             || clauseType == ClauseType.SELECT)
                     .map(ec -> new PathDetails(ec, Set.of("String")))
