@@ -574,7 +574,7 @@ public final class AslUtils {
                 AslUtils.findFieldForOwner(AslStructureColumn.PARENT_NUM, rightProvider.getSelect(), rightOwner);
 
         Stream<PathCohesionTreeNode> siblings =
-                currentNode.getParent().getChildren().stream().filter(c -> c != currentNode);
+                currentNode.getParent().streamChildren().filter(c -> c != currentNode);
 
         return siblings.map(nodeToSq).filter(Objects::nonNull).flatMap(csq -> {
             Stream<AslQuery> sibling = query.getChildren().stream()

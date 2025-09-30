@@ -339,7 +339,7 @@ public final class PathInfo {
     }
 
     private static boolean allChildrenHaveNodeIdAttribute(final PathCohesionTreeNode node) {
-        return node.getChildren().stream().allMatch(PathInfo::hasNodeIdAttribute);
+        return node.streamChildren().allMatch(PathInfo::hasNodeIdAttribute);
     }
 
     public static boolean hasNodeIdAttribute(PathCohesionTreeNode node) {
@@ -556,7 +556,7 @@ public final class PathInfo {
             return JoinMode.ROOT;
         }
         boolean hasData = !node.getPathsEndingAtNode().isEmpty()
-                || node.getChildren().stream().anyMatch(c -> isData(getNodeCategory(c)));
+                || node.streamChildren().anyMatch(c -> isData(getNodeCategory(c)));
         if (hasData) {
             return JoinMode.DATA;
         }

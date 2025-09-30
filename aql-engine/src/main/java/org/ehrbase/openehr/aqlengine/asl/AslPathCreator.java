@@ -402,7 +402,7 @@ final class AslPathCreator {
             addFiltersToPathNodeSubquery(currentNode, structureLevel, sq);
         }
 
-        Stream<DataNodeInfo> dataNodeInfoStream = currentNode.getChildren().stream()
+        Stream<DataNodeInfo> dataNodeInfoStream = currentNode.streamChildren()
                 .flatMap(child -> handlePathStructureNodeChild(
                         parentNode,
                         parentJoinMode,
@@ -682,7 +682,7 @@ final class AslPathCreator {
     }
 
     private static Stream<PathCohesionTreeNode> streamCohesionTreeNodes(PathCohesionTreeNode node) {
-        return Stream.of(Stream.of(node), node.getChildren().stream().flatMap(AslPathCreator::streamCohesionTreeNodes))
+        return Stream.of(Stream.of(node), node.streamChildren().flatMap(AslPathCreator::streamCohesionTreeNodes))
                 .flatMap(Function.identity());
     }
 
@@ -728,7 +728,7 @@ final class AslPathCreator {
         boolean multipleValued = pathInfo.isMultipleValued(currentNode);
         int nextLevelInJson = multipleValued ? 1 : (levelInJson + 1);
         OwnerProviderTuple parent = multipleValued ? null : parentStructureQuery;
-        Stream<DataNodeInfo> childNodes = currentNode.getChildren().stream().flatMap(child -> {
+        Stream<DataNodeInfo> childNodes = currentNode.streamChildren().flatMap(child -> {
             NodeCategory nodeCategory = pathInfo.getNodeCategory(child);
             return switch (nodeCategory) {
                 case STRUCTURE, STRUCTURE_INTERMEDIATE -> throw new IllegalArgumentException();

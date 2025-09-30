@@ -32,6 +32,7 @@ public abstract class TreeNode<T extends TreeNode<T>> {
 
     protected T parent;
     final List<T> children = new ArrayList<>();
+    final List<T> childrenView = Collections.unmodifiableList(children);
     protected int depth = 0;
 
     public T getParent() {
@@ -72,7 +73,11 @@ public abstract class TreeNode<T extends TreeNode<T>> {
     }
 
     public List<T> getChildren() {
-        return Collections.unmodifiableList(children);
+        return childrenView;
+    }
+
+    public Stream<T> streamChildren() {
+        return children.stream();
     }
 
     public void sortChildren(Comparator<T> comparator) {
@@ -87,7 +92,7 @@ public abstract class TreeNode<T extends TreeNode<T>> {
     }
 
     public Stream<T> streamDepthFirst() {
-        return Stream.of(Stream.of((T) this), getChildren().stream().flatMap(TreeNode::streamDepthFirst))
+        return Stream.of(Stream.of((T) this), children.stream().flatMap(TreeNode::streamDepthFirst))
                 .flatMap(s -> s);
     }
 }

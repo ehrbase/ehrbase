@@ -62,7 +62,7 @@ public class TreeUtils {
         } else {
             sb.append(nodeStr);
         }
-        Stream<T> childStream = node.getChildren().stream();
+        Stream<T> childStream = node.streamChildren();
         if (childOrder != null) {
             childStream = childStream.sorted(childOrder);
         }

@@ -315,12 +315,14 @@ public final class PathCohesionAnalysis {
         private PathNode attribute;
         private final List<IdentifiedPath> paths;
         private final List<IdentifiedPath> pathsEndingAtNode;
+        private final List<IdentifiedPath> pathsEndingAtNodeView;
         private final boolean root;
 
         private PathCohesionTreeNode(PathNode attribute, List<IdentifiedPath> paths, boolean root) {
             this.attribute = attribute;
             this.paths = paths;
             this.pathsEndingAtNode = new ArrayList<>(paths);
+            this.pathsEndingAtNodeView = Collections.unmodifiableList(this.pathsEndingAtNode);
             this.root = root;
         }
 
@@ -349,7 +351,7 @@ public final class PathCohesionAnalysis {
         }
 
         public List<IdentifiedPath> getPathsEndingAtNode() {
-            return Collections.unmodifiableList(pathsEndingAtNode);
+            return pathsEndingAtNodeView;
         }
 
         public boolean isRoot() {
