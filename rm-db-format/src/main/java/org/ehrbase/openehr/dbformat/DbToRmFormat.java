@@ -291,55 +291,73 @@ public final class DbToRmFormat {
         }
     }
 
-    private static void insertJsonEntry(ObjectNode dbRoot, DbJsonPath path, ObjectNode v) {
-        // create target path
+    private static void insertJsonEntry(ObjectNode dbRoot, DbJsonPath path, ObjectNode childToAdd) {
         ObjectNode parentObject = dbRoot;
 
-        PathComponent leaf = path.components.get(path.components.size() - 1);
-
-        for (var p : path.components) {
-            boolean isLeaf = p == leaf;
-            ObjectNode child = v;
-            String fieldName = p.attribute();
-            JsonNode ch = parentObject.get(fieldName);
+        List<PathComponent> components = path.components;
+        int leafIdx = components.size() - 1;
+        for (int i = 0; i <= leafIdx; i++) {
+            var p = components.get(i);
             if (p.index() == null) {
-                ObjectNode existing = (ObjectNode) ch;
-                if (isLeaf) {
-                    /* In VersionedObjectDataStructure::handleSubObject a copy of FEEDER_AUDIT
-                     * is stored in ELEMENT, so we can treat ELEMENT as leaf.
-                     * ELEMENT/feeder_audit is replaced because it would be more complicated to skip all possible descendants
-                     */
-                    if (existing != null && !FEEDER_AUDIT_ATTRIBUTE_ALIAS.equals(fieldName)) {
-                        throw new IllegalArgumentException(
-                                "parent already has child %s (%s)".formatted(fieldName, path));
-                    }
-                    parentObject.set(fieldName, child);
-                    parentObject = child;
-                } else if (existing == null) {
-                    throw new IllegalArgumentException("missing ancestor %s (%s)".formatted(fieldName, path));
-                } else {
-                    parentObject = (ObjectNode) parentObject.get(fieldName);
-                }
+                parentObject = insertJsonEntryIntoObject(parentObject, p, childToAdd, i == leafIdx, path);
 
             } else {
-                ArrayNode arrayNode = (ArrayNode) ch;
-                if (arrayNode == null) {
-                    arrayNode = parentObject.arrayNode();
-                    parentObject.set(fieldName, arrayNode);
-                }
-                if (arrayNode.size() <= p.index()) {
-                    while (p.index() > arrayNode.size()) {
-                        arrayNode.add((JsonNode) null);
-                    }
-                    parentObject = null;
-                    arrayNode.add(child);
-                } else if (arrayNode.get(p.index()).isNull()) {
-                    parentObject = null;
-                    arrayNode.set(p.index(), child);
-                } else {
-                    parentObject = (ObjectNode) arrayNode.get(p.index());
-                }
+                parentObject = insertJsonEntryIntoArray(parentObject, p, childToAdd, i == leafIdx, path);
             }
+        }
+    }
+
+    private static ObjectNode insertJsonEntryIntoObject(ObjectNode parentObject, PathComponent pc, ObjectNode childToAdd, boolean isLeaf, DbJsonPath path) {
+        String fieldName = pc.attribute();
+        ObjectNode objectNode = (ObjectNode) parentObject.get(fieldName);
+        if (isLeaf) {
+            /* In VersionedObjectDataStructure::handleSubObject a copy of FEEDER_AUDIT
+             * is stored in ELEMENT, so we can treat ELEMENT as leaf.
+             * ELEMENT/feeder_audit is replaced because it would be more complicated to skip all possible descendants
+             */
+            if (objectNode != null && !FEEDER_AUDIT_ATTRIBUTE_ALIAS.equals(fieldName)) {
+                throw new IllegalArgumentException(
+                        "parent already has child %s (%s)".formatted(fieldName, path));
+            }
+            parentObject.set(fieldName, childToAdd);
+            return childToAdd;
+        } else if (objectNode == null) {
+            throw new IllegalArgumentException("missing ancestor %s (%s)".formatted(fieldName, path));
+        } else {
+            return objectNode;
+        }
+    }
+
+    private static ObjectNode insertJsonEntryIntoArray(ObjectNode parentObject, PathComponent pc, ObjectNode childToAdd, boolean isLeaf, DbJsonPath path) {
+        String fieldName = pc.attribute();
+        ArrayNode arrayNode = (ArrayNode) parentObject.get(fieldName);
+
+        if (isLeaf) {
+            if (arrayNode == null) {
+                arrayNode = parentObject.arrayNode();
+                parentObject.set(fieldName, arrayNode);
+            }
+
+            int arraySize = arrayNode.size();
+            int arrayIdx = pc.index();
+            if (arraySize == arrayIdx) {
+                arrayNode.add(childToAdd);
+                return null;
+            } else if (arraySize < arrayIdx) {
+                for (int j = arraySize; j < arrayIdx; j++) {
+                    arrayNode.add((JsonNode) null);
+                }
+                arrayNode.add(childToAdd);
+                return null;
+            } else {
+                JsonNode oldEntry = arrayNode.set(arrayIdx, childToAdd);
+                if (!oldEntry.isNull()) {
+                    throw new IllegalArgumentException("duplicate entry for %s".formatted(path));
+                }
+                return null;
+            }
+        } else {
+            return (ObjectNode) arrayNode.get(pc.index());
         }
     }
 
