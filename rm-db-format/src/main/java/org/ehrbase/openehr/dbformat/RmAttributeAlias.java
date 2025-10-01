@@ -251,6 +251,6 @@ public record RmAttributeAlias(String attribute, String alias) {
     }
 
     public static boolean isAlias(String toCheck) {
-        return alias2attribute.keySet().contains(toCheck);
+        return alias2attribute.containsKey(toCheck);
     }
 }

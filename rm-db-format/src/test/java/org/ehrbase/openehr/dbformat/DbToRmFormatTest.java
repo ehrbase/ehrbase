@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.dbformat;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -246,7 +247,7 @@ class DbToRmFormatTest {
             names = {"INVALID"})
     void roundtripTestOneNode(CompositionTestDataCanonicalJson example) throws IOException {
         roundtripTest(example, c -> {
-            Record2<?, ?>[] dbJson = createDbOneJsonArray(c);
+            Record2<String, ?>[] dbJson = createDbOneJsonArray(c);
             return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
         });
     }
@@ -258,7 +259,7 @@ class DbToRmFormatTest {
             names = {"INVALID"})
     void roundtripTestOneArray(CompositionTestDataCanonicalJson example) throws IOException {
         roundtripTest(example, c -> {
-            Record2<?, ?>[] dbJson = createDbOneJsonArray(c);
+            Record2<String, ?>[] dbJson = createDbOneJsonArray(c);
             return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
         });
     }
@@ -271,7 +272,7 @@ class DbToRmFormatTest {
         return aggregateJson(stream);
     }
 
-    static Record2[] createDbOneJsonArray(Composition composition) {
+    static Record2<String, ?>[] createDbOneJsonArray(Composition composition) {
         List<StructureNode> roots = VersionedObjectDataStructure.createDataStructure(composition);
         Stream<Pair<StructureIndex, JsonNode>> stream = roots.stream()
                 .filter(r -> r.getStructureRmType().isStructureEntry())
@@ -310,7 +311,7 @@ class DbToRmFormatTest {
      *   group by d.comp_id;
      * </code>
      */
-    static Record2<?, ?>[] aggregateJsonArray(Stream<Pair<StructureIndex, JsonNode>> dataRows) {
+    static Record2<String, ?>[] aggregateJsonArray(Stream<Pair<StructureIndex, JsonNode>> dataRows) {
         DefaultDSLContext defaultDSLContext = new DefaultDSLContext(SQLDialect.POSTGRES);
         return dataRows.map(r -> {
                     Record2<String, JSONB> rec =
@@ -320,17 +321,17 @@ class DbToRmFormatTest {
                             JSONB.valueOf(r.getRight().toPrettyString()));
                     return rec;
                 })
-                .toArray(Record2<?, ?>[]::new);
+                .toArray(l -> (Record2<String, ?>[]) new Record2[l]);
     }
 
     @Test
     void testRemovePrefix() {
-        assertThat(DbToRmFormat.remainingPath("abc.123".length(), "abc.12345"))
+        assertThat(DbToRmFormat.remainingPath("ab.123".length(), "ab.12345"))
                 .isEqualTo(DbToRmFormat.DbJsonPath.parse("45"));
-        assertThat(DbToRmFormat.remainingPath("abc.123".length(), "abc.123.45"))
+        assertThat(DbToRmFormat.remainingPath("ab.123".length(), "ab.123.45"))
                 .isEqualTo(DbToRmFormat.DbJsonPath.parse("45"));
 
-        assertThat(DbToRmFormat.remainingPath(0, "abc.12345")).isEqualTo(DbToRmFormat.DbJsonPath.parse("abc.12345"));
+        assertThat(DbToRmFormat.remainingPath(0, "ab.12345")).isEqualTo(DbToRmFormat.DbJsonPath.parse("ab.12345"));
         assertThat(DbToRmFormat.remainingPath(0, ".12345")).isEqualTo(DbToRmFormat.DbJsonPath.parse("12345"));
 
         assertThat(DbToRmFormat.remainingPath("12345".length(), "12345")).isEqualTo(DbToRmFormat.DbJsonPath.EMPTY_PATH);
@@ -342,14 +343,14 @@ class DbToRmFormatTest {
     void testDbJsonPath() {
         assertThat(DbToRmFormat.DbJsonPath.parse("").components()).isEmpty();
 
-        assertThat(DbToRmFormat.DbJsonPath.parse("abc.").components())
-                .containsExactly(new DbToRmFormat.PathComponent("abc", null));
-        assertThat(DbToRmFormat.DbJsonPath.parse("abc1234.").components())
-                .containsExactly(new DbToRmFormat.PathComponent("abc", 1234));
-        assertThat(DbToRmFormat.DbJsonPath.parse("abc123456.def6.gh.ij0.").components())
+        assertThat(DbToRmFormat.DbJsonPath.parse("ab.").components())
+                .containsExactly(new DbToRmFormat.PathComponent("ab", null));
+        assertThat(DbToRmFormat.DbJsonPath.parse("ab1234.").components())
+                .containsExactly(new DbToRmFormat.PathComponent("ab", 1234));
+        assertThat(DbToRmFormat.DbJsonPath.parse("ab123456.de6.gh.ij0.").components())
                 .containsExactly(
-                        new DbToRmFormat.PathComponent("abc", 123456),
-                        new DbToRmFormat.PathComponent("def", 6),
+                        new DbToRmFormat.PathComponent("ab", 123456),
+                        new DbToRmFormat.PathComponent("de", 6),
                         new DbToRmFormat.PathComponent("gh", null),
                         new DbToRmFormat.PathComponent("ij", 0));
     }

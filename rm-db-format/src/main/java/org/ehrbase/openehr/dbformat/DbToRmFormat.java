@@ -26,15 +26,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.directory.Folder;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import org.apache.commons.io.input.CharSequenceReader;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
@@ -57,6 +59,25 @@ public final class DbToRmFormat {
     public static final String FOLDER_ITEMS_UUID_ARRAY_ALIAS = "IA";
 
     public static final String FEEDER_AUDIT_ATTRIBUTE_ALIAS = "f";
+
+    private static final Comparator<CharSequence> SIMPLE_CHAR_SEQUENCE_COMPARATOR = (cs1, cs2)  -> {
+        if (cs1 instanceof String s1 && cs2 instanceof String s2) {
+            return s1.compareTo(s2);
+        }
+
+        int len1 = cs1.length();
+        int len2 = cs2.length();
+        int lim = Math.min(len1, len2);
+
+        for (int k = 0; k < lim; k++) {
+            char c1 = cs1.charAt(k);
+            char c2 = cs2.charAt(k);
+            if (c1 != c2) {
+                return c1 - c2;
+            }
+        }
+        return len1 - len2;
+    };
 
     public static Object reconstructFromDbFormat(Class<? extends RMObject> rmType, String dbJsonStr) {
         return reconstructFromDbFormat(rmType, parseJson(dbJsonStr, RmDbJson.MARSHAL_OM));
@@ -83,14 +104,29 @@ public final class DbToRmFormat {
         }
     }
 
+    private static JsonNode parseJson(Reader dbJsonReader, ObjectMapper objectMapper) {
+        try {
+            return objectMapper.readTree(dbJsonReader);
+        } catch (IOException e) {
+            throw new InternalServerException(e.getMessage(), e);
+        }
+    }
+
     /**
      * Second value needs to be JSONB
      * @param rec
      * @return
      */
-    private static <T> JsonNode parseJsonData(T rec, Function<T, Object> jsonExtractor, ObjectMapper objectMapper) {
+    private static <T> JsonNode parseJsonData(T rec, Function<T, ?> jsonExtractor, ObjectMapper objectMapper) {
         Object v = jsonExtractor.apply(rec);
-        return parseJson(v instanceof String s ? s : ((JSONB) v).data(), objectMapper);
+        return switch (v) {
+            case String s  -> parseJson(s, objectMapper);
+            case JSONB j  -> parseJson(j.data(), objectMapper);
+            case CharSequence cs  -> parseJson(new CharSequenceReader(cs), objectMapper);
+            default -> {
+                    throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
+                    }
+            };
     }
 
     /**
@@ -143,8 +179,8 @@ public final class DbToRmFormat {
 
         } else {
             int childCount = jsonObject.size();
-            Map.Entry<String, JsonNode>[] children = new Map.Entry[childCount];
-            Iterator<Map.Entry<String, JsonNode>> fieldIt = jsonObject.fields();
+            Entry<String, JsonNode>[] children = new Entry[childCount];
+            Iterator<Entry<String, JsonNode>> fieldIt = jsonObject.fields();
 
             int rootPathLength = Integer.MAX_VALUE;
             for (int i = 0; i < childCount; i++) {
@@ -152,12 +188,12 @@ public final class DbToRmFormat {
                 children[i] = next;
                 rootPathLength = Math.min(rootPathLength, next.getKey().length());
             }
-            Arrays.sort(children, Map.Entry.comparingByKey());
+            Arrays.sort(children, Entry.comparingByKey());
 
             dbRoot = standardizeObjectNode(children[0].getValue());
 
             for (int i = 1; i < childCount; i++) {
-                Map.Entry<String, JsonNode> child = children[i];
+                Entry<String, JsonNode> child = children[i];
                 insertJsonEntry(
                         dbRoot, remainingPath(rootPathLength, child.getKey()), standardizeObjectNode(child.getValue()));
             }
@@ -194,7 +230,7 @@ public final class DbToRmFormat {
      * GROUP BY d.vo_id
      * </pre></code>
      */
-    public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, Record2<?, ?>[] jsonObjects) {
+    public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, Record2<String, ?>[] jsonObjects) {
 
         ObjectNode decoded = decodeKeys(reconstructRmObjectTree(jsonObjects, RmDbJson.MARSHAL_OM));
 
@@ -210,19 +246,19 @@ public final class DbToRmFormat {
         return rmObject;
     }
 
-    public static ObjectNode reconstructRmObjectTree(final Record2<?, ?>[] jsonObjects, ObjectMapper objectMapper) {
+    public static ObjectNode reconstructRmObjectTree(final Record2<String, ?>[] jsonObjects, ObjectMapper objectMapper) {
         return reconstructRmObjectTree(jsonObjects, Record2::value1, Record2::value2, objectMapper);
     }
 
     public static <T> ObjectNode reconstructRmObjectTree(
             final T[] jsonObjects,
-            Function<T, Object> idxExtractor,
+            Function<T, ? extends CharSequence> idxExtractor,
             Function<T, Object> jsonExtractor,
             ObjectMapper objectMapper) {
         int childCount = jsonObjects.length;
         // Or Record2<String, JsonNode>[] dbRecords
 
-        Arrays.sort(jsonObjects, Comparator.comparing(r -> idxExtractor.apply(r).toString()));
+        Arrays.sort(jsonObjects, Comparator.comparing(idxExtractor, SIMPLE_CHAR_SEQUENCE_COMPARATOR));
         int rootPathLength = calcRootPathLength(jsonObjects, idxExtractor, childCount);
 
         ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0], jsonExtractor, objectMapper));
@@ -231,13 +267,13 @@ public final class DbToRmFormat {
             T child = jsonObjects[i];
             insertJsonEntry(
                     dbRoot,
-                    remainingPath(rootPathLength, idxExtractor.apply(child).toString()),
+                    remainingPath(rootPathLength, idxExtractor.apply(child)),
                     standardizeObjectNode(parseJsonData(child, jsonExtractor, objectMapper)));
         }
         return dbRoot;
     }
 
-    private static <T> int calcRootPathLength(T[] jsonObjects, Function<T, Object> idxExtractor, int childCount) {
+    private static <T> int calcRootPathLength(T[] jsonObjects, Function<T, ?> idxExtractor, int childCount) {
         int l = Integer.MAX_VALUE;
         for (int i = 0; i < childCount && l > 0; i++) {
             T next = jsonObjects[i];
@@ -277,7 +313,7 @@ public final class DbToRmFormat {
         folderItemsNode.set(idx, dstNode);
     }
 
-    static DbJsonPath remainingPath(int prefixLen, String fullPathStr) {
+    static DbJsonPath remainingPath(int prefixLen, CharSequence fullPathStr) {
         int pos;
         if (fullPathStr.length() > prefixLen && fullPathStr.charAt(prefixLen) == '.') {
             pos = prefixLen + 1;
@@ -375,12 +411,12 @@ public final class DbToRmFormat {
             case JsonNodeType.OBJECT -> {
                 ObjectNode dbObject = (ObjectNode) dbJson;
 
-                List<Map.Entry<String, JsonNode>> nodes = new ArrayList<>(dbObject.size());
+                List<Entry<String, JsonNode>> nodes = new ArrayList<>(dbObject.size());
                 dbObject.fields().forEachRemaining(nodes::add);
                 dbObject.removeAll();
 
                 // replace attribute aliases
-                for (Map.Entry<String, JsonNode> property : nodes) {
+                for (Entry<String, JsonNode> property : nodes) {
                     String alias = property.getKey();
                     String attribute = RmAttributeAlias.getAttribute(alias);
                     JsonNode value;
@@ -405,6 +441,7 @@ public final class DbToRmFormat {
             }
         }
     }
+
 
     public record PathComponent(String attribute, Integer index) {}
 
@@ -452,10 +489,6 @@ public final class DbToRmFormat {
         }
 
         public static DbJsonPath parse(CharSequence path) {
-            return parse(path, false);
-        }
-
-        public static DbJsonPath parse(CharSequence path, boolean revertAliases) {
             if (path.isEmpty()) {
                 return EMPTY_PATH;
 
@@ -468,30 +501,54 @@ public final class DbToRmFormat {
                     expectedCount = StringUtils.countMatches(path, '.');
                 }
                 List<PathComponent> list = new ArrayList<>(expectedCount);
-                StringBuilder sb = new StringBuilder();
+                char ch0 = 0;
+                char ch1 = 0;
                 int nr = -1;
                 // requires trailing '.'
                 for (int i = 0; i < len; i++) {
-                    char ch = path.charAt(i);
-                    if (ch == '.') {
-                        list.add(new PathComponent(
-                                revertAliases ? RmAttributeAlias.getAttribute(sb.toString()) : sb.toString(),
-                                nr < 0 ? null : nr));
-                        nr = -1;
-                        sb.setLength(0);
-                    } else if (Character.isDigit(ch)) {
-                        int d = Character.digit(ch, 10);
-                        if (nr < 0) {
-                            nr = d;
-                        } else {
-                            nr = 10 * nr + d;
+                    final char ch = path.charAt(i);
+                    
+                    switch (ch) {
+                        case '.' -> {
+                            list.add(new PathComponent(
+                                    ch1 == 0 ? Character.toString(ch0) : "" + ch0 + ch1,
+                                    nr < 0 ? null : nr));
+                            ch0 = ch1 = 0;
+                            nr = -1;
                         }
-                    } else {
-                        sb.append(ch);
+                        case '1' -> nr = pushNr(nr, 1);
+                        case '2' -> nr = pushNr(nr, 2);
+                        case '3' -> nr = pushNr(nr, 3);
+                        case '4' -> nr = pushNr(nr, 4);
+                        case '5' -> nr = pushNr(nr, 5);
+                        case '6' -> nr = pushNr(nr, 6);
+                        case '7' -> nr = pushNr(nr, 7);
+                        case '8' -> nr = pushNr(nr, 8);
+                        case '9' -> nr = pushNr(nr, 9);
+                        case '0' -> nr = pushNr(nr, 0);
+                        default -> {
+                            if (ch0 == 0) {
+                                ch0 = ch;
+                            } else if (ch1 == 0) {
+                                ch1 = ch;
+                            } else {
+                                throw new IllegalArgumentException("Attribute alias too long: %s".formatted(path));
+                            }
+                        }
                     }
                 }
+
                 return new DbJsonPath(path, Collections.unmodifiableList(list));
             }
+        }
+
+        private static int pushNr(int nr, int d) {
+            if (nr <= 0) {
+                nr = d;
+            } else {
+                nr = 10 * nr + d;
+            }
+            return nr;
         }
     }
 }
