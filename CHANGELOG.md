@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 - Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
+- Renaming the query type parameter when storing queries to match the specification [#1536](https://github.com/ehrbase/ehrbase/pull/1536)
 
 ## [2.22.0]
  ### Added
