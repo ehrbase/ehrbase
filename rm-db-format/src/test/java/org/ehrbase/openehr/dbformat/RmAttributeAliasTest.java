@@ -85,4 +85,15 @@ class RmAttributeAliasTest {
         assertThat(RmAttributeAlias.rmToJsonPathParts("subject/external_ref/id/value"))
                 .isEqualTo(new String[] {"su", "er", "X", "V"});
     }
+
+    @Test
+    void aliasByAliasChar() {
+        RmAttributeAlias.VALUES.stream().filter(a -> a.alias().length() == 1).forEach(a -> {
+            //System.out.println("case '%s' -> \"%s\";".formatted(a.alias(), a.alias()));
+            char aliasChar = a.alias().charAt(0);
+            String resolvedAlias = RmAttributeAlias.aliasByAliasChar(aliasChar);
+            assertThat(resolvedAlias).withFailMessage("alias mismatch for %s: %s vs. %s", a,
+             a.alias(), resolvedAlias).isEqualTo(a.alias());
+        });
+    }
 }

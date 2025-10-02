@@ -68,7 +68,7 @@ public record RmAttributeAlias(String attribute, String alias) {
             alias("alternate_text", "at"),
             alias("archetype_details", "ad"),
             alias("archetype_id", "aX"),
-            alias("archetype_node_id", "A"),
+            alias("archetype_node_id", 'A'),
             alias("assigner", "as"),
             alias("attestations", "att"),
             alias("attested_view", "atv"),
@@ -117,10 +117,10 @@ public record RmAttributeAlias(String attribute, String alias) {
             alias("lifecycle_state", "ls"),
             alias("links", "lk"),
             alias("location", "lc"),
-            alias("lower", "l"),
+            alias("lower", 'l'),
             alias("lower_included", "li"),
             alias("lower_unbounded", "lu"),
-            alias("magnitude", "m"),
+            alias("magnitude", 'm'),
             alias("magnitude_status", "ms"),
             alias("mappings", "mp"),
             alias("match", "ma"),
@@ -252,5 +252,43 @@ public record RmAttributeAlias(String attribute, String alias) {
 
     public static boolean isAlias(String toCheck) {
         return alias2attribute.containsKey(toCheck);
+    }
+
+    /**
+     * For aliases consisting of only one character
+     * @param ch
+     * @return
+     */
+    public static String aliasByAliasChar(char ch) {
+        return switch (ch) {
+            case 'a' -> "a";
+            case 'c' -> "c";
+            case 'x' -> "x";
+            case 'd' -> "d";
+            case 't' -> "t";
+            case 'e' -> "e";
+            case 'n' -> "n";
+            case 'j' -> "j";
+            case 'i' -> "i";
+            case 'o' -> "o";
+            case 'p' -> "p";
+            case 'r' -> "r";
+            case 's' -> "s";
+            case 'y' -> "y";
+            case 'w' -> "w";
+            case 'f' -> "f";
+            case 'A' -> "A";
+            case 'X' -> "X";
+            case 'l' -> "l";
+            case 'm' -> "m";
+            case 'N' -> "N";
+            case 'U' -> "U";
+            case 'u' -> "u";
+            case 'V' -> "V";
+            case 'I' -> "I";
+            case 'M' -> "M";
+            case 'T' -> "T";
+                default -> throw new IllegalArgumentException("Unknown alias %s".formatted(ch));
+            };
     }
 }

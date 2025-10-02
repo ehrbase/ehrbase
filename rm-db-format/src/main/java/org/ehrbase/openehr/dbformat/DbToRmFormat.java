@@ -60,11 +60,10 @@ public final class DbToRmFormat {
 
     public static final String FEEDER_AUDIT_ATTRIBUTE_ALIAS = "f";
 
-    private static final Comparator<CharSequence> SIMPLE_CHAR_SEQUENCE_COMPARATOR = (cs1, cs2)  -> {
+    private static final Comparator<CharSequence> SIMPLE_CHAR_SEQUENCE_COMPARATOR = (cs1, cs2) -> {
         if (cs1 instanceof String s1 && cs2 instanceof String s2) {
             return s1.compareTo(s2);
         }
-
         int len1 = cs1.length();
         int len2 = cs2.length();
         int lim = Math.min(len1, len2);
@@ -511,7 +510,7 @@ public final class DbToRmFormat {
                     switch (ch) {
                         case '.' -> {
                             list.add(new PathComponent(
-                                    ch1 == 0 ? Character.toString(ch0) : "" + ch0 + ch1,
+                                    ch1 == 0 ? /*Character.toString(ch0)*/RmAttributeAlias.aliasByAliasChar(ch0) : "" + ch0 + ch1,
                                     nr < 0 ? null : nr));
                             ch0 = ch1 = 0;
                             nr = -1;
