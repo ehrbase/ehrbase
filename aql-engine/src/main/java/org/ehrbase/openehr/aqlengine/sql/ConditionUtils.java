@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
@@ -426,11 +427,14 @@ final class ConditionUtils {
         boolean isJsonbField = JSONB.class.isAssignableFrom(sqlFieldType);
         boolean isUuidField = !isJsonbField && UUID.class.isAssignableFrom(sqlFieldType);
         if (operator == AslConditionOperator.LIKE) {
-            String likePattern = (String) values.iterator().next();
+            String aslLikePattern = (String) values.stream().findFirst().orElseThrow();
+            String aqlLikePattern;
             if (isJsonbField) {
-                likePattern = escapeAsJsonString(likePattern);
+                aqlLikePattern = translateAqlLikePatternToJsonSql(aslLikePattern);
+            } else {
+                aqlLikePattern = translateAqlLikePatternToSql(aslLikePattern);
             }
-            return field.cast(String.class).like(DSL.inline(likePattern));
+            return field.cast(String.class).like(DSL.inline(aqlLikePattern));
         } else if (operator == AslConditionOperator.IS_NULL) {
             return field.isNull();
         } else if (operator == AslConditionOperator.IS_NOT_NULL) {
@@ -509,6 +513,113 @@ final class ConditionUtils {
                     default -> throw new IllegalStateException("Unexpected value: " + operator);
                 };
         };
+    }
+
+    /**
+     *
+     * <pre>
+     * a -> a
+     * a* -> a%
+     * a? -> a_
+     * a\* -> a*
+     * a\? -> a?
+     * a\\ -> a\\
+     * </pre>
+     * @param aqlLike
+     * @return
+     */
+    public static String translateAqlLikePatternToSql(String aqlLike) {
+        StringBuilder sb = new StringBuilder(aqlLike.length());
+
+        for (int pos = 0, l = aqlLike.length(); pos < l; pos++) {
+            char c = aqlLike.charAt(pos);
+            switch (c) {
+                    // sql reserved
+                case '%', '_' -> sb.append('\\').append(c);
+                    // escape char
+                case '\\' -> {
+                    pos++;
+                    if (pos >= l) {
+                        throw new IllegalAqlException("Invalid LIKE pattern: %s".formatted(aqlLike));
+                    }
+
+                    char next = aqlLike.charAt(pos);
+                    switch (next) {
+                        case '*', '?' -> sb.append(next);
+                        case '\\' -> sb.append("\\\\");
+                        default -> throw new IllegalAqlException("Invalid LIKE pattern: %s".formatted(aqlLike));
+                    }
+                }
+                    // replace by sql
+                case '?' -> sb.append('_');
+                case '*' -> sb.append('%');
+                default -> sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * <pre>
+     * a -> "a_
+     * a* -> "a%_
+     * a? -> "a__
+     * a\* -> "a*_
+     * a\? -> "a?_
+     * a\\ -> "a\\_
+     * </pre>
+     *
+     * @param aqlLike
+     * @return
+     */
+    public static String translateAqlLikePatternToJsonSql(String aqlLike) {
+
+        String jsonLike = escapeAsJsonString(aqlLike);
+
+        StringBuilder sb = new StringBuilder(jsonLike.length());
+        sb.append('"');
+
+        for (int pos = 1, l = jsonLike.length() - 1; pos < l; pos++) {
+            char c0 = jsonLike.charAt(pos);
+            switch (c0) {
+                    // sql reserved
+                case '%', '_' -> sb.append("\\").append(c0);
+                    // escape char
+                case '\\' -> {
+                    if (++pos >= l) {
+                        throw new IllegalAqlException("Invalid LIKE pattern: %s".formatted(aqlLike));
+                    }
+                    char c1 = jsonLike.charAt(pos);
+                    if (c1 != '\\') {
+                        // json string escaping
+                        sb.append("\\\\").append(c1);
+                    } else {
+                        // like pattern escaping
+                        char c2 = jsonLike.charAt(++pos);
+                        switch (c2) {
+                            case '*', '?' -> sb.append(c2);
+                            case '\\' -> {
+                                // matching backslash requires four backslashes
+                                if (++pos >= l || jsonLike.charAt(pos) != '\\') {
+                                    throw new IllegalAqlException("Invalid LIKE pattern: %s".formatted(aqlLike));
+                                }
+                                sb.append("\\\\\\\\");
+                            }
+                            default -> throw new IllegalAqlException("Invalid LIKE pattern: %s".formatted(aqlLike));
+                        }
+                        // e.g. \t
+                    }
+                }
+                    // replace by sql
+                case '?' -> sb.append('_');
+                case '*' -> sb.append('%');
+                default -> sb.append(c0);
+            }
+        }
+
+        sb.append('_');
+
+        return sb.toString();
     }
 
     /**
