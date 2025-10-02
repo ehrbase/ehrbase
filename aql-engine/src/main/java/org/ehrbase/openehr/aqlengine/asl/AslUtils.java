@@ -200,37 +200,6 @@ public final class AslUtils {
         }
     }
 
-    public static String translateAqlLikePatternToSql(String aqlLike) {
-        StringBuilder sb = new StringBuilder(aqlLike.length());
-
-        for (int pos = 0, l = aqlLike.length(); pos < l; pos++) {
-            char c = aqlLike.charAt(pos);
-            switch (c) {
-                // sql reserved
-                case '%', '_' -> sb.append('\\').append(c);
-                // escape char
-                case '\\' -> {
-                    pos++;
-                    if (pos >= l) {
-                        throw new IllegalArgumentException("Invalid LIKE pattern: %s".formatted(aqlLike));
-                    }
-
-                    char next = aqlLike.charAt(pos);
-                    switch (next) {
-                        case '*', '?' -> sb.append(next);
-                        case '\\' -> sb.append("\\\\");
-                        default -> throw new IllegalArgumentException("Invalid LIKE pattern: %s".formatted(aqlLike));
-                    }
-                }
-                // replace by sql
-                case '?' -> sb.append('_');
-                case '*' -> sb.append('%');
-                default -> sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
     public static OffsetDateTime toOffsetDateTime(StringPrimitive sp) {
         final TemporalAccessor temporal;
         if (sp instanceof TemporalPrimitive tp) {
@@ -468,22 +437,20 @@ public final class AslUtils {
         boolean isJsonbField = JSONB.class.isAssignableFrom(type);
         return switch (operator) {
             case EXISTS -> Collections.emptyList();
-            case MATCHES, EQ, NEQ ->
-                values.stream()
-                        .map(Primitive::getValue)
-                        .filter(p -> isJsonbField
-                                || type.isInstance(p)
-                                || UUID.class.isAssignableFrom(type) && p instanceof String)
-                        .toList();
-            case LT, GT_EQ, GT, LT_EQ ->
-                values.stream().map(Primitive::getValue).toList();
-            case LIKE ->
-                values.stream()
-                        .map(Primitive::getValue)
-                        .map(String.class::cast)
-                        .map(AslUtils::translateAqlLikePatternToSql)
-                        .filter(p -> isJsonbField || type.isInstance(p) || UUID.class.isAssignableFrom(type))
-                        .toList();
+            case MATCHES, EQ, NEQ -> values.stream()
+                    .map(Primitive::getValue)
+                    .filter(p -> isJsonbField
+                            || type.isInstance(p)
+                            || UUID.class.isAssignableFrom(type) && p instanceof String)
+                    .toList();
+            case LT, GT_EQ, GT, LT_EQ -> values.stream()
+                    .map(Primitive::getValue)
+                    .toList();
+            case LIKE -> values.stream()
+                    .map(Primitive::getValue)
+                    .map(String.class::cast)
+                    .filter(p -> isJsonbField || type.isInstance(p) || UUID.class.isAssignableFrom(type))
+                    .toList();
         };
     }
 

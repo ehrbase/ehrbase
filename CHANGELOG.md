@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+- Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
 
 ## [2.23.0]
  ### Added
