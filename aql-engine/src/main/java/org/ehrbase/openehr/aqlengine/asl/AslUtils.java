@@ -40,7 +40,6 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.jooq.pg.Tables;
@@ -198,37 +197,6 @@ public final class AslUtils {
         }
     }
 
-    public static String translateAqlLikePatternToSql(String aqlLike) {
-        StringBuilder sb = new StringBuilder(aqlLike.length());
-
-        for (int pos = 0, l = aqlLike.length(); pos < l; pos++) {
-            char c = aqlLike.charAt(pos);
-            switch (c) {
-                    // sql reserved
-                case '%', '_' -> sb.append('\\').append(c);
-                    // escape char
-                case '\\' -> {
-                    pos++;
-                    if (pos >= l) {
-                        throw new IllegalArgumentException("Invalid LIKE pattern: %s".formatted(aqlLike));
-                    }
-
-                    char next = aqlLike.charAt(pos);
-                    switch (next) {
-                        case '*', '?' -> sb.append(next);
-                        case '\\' -> sb.append("\\\\");
-                        default -> throw new IllegalArgumentException("Invalid LIKE pattern: %s".formatted(aqlLike));
-                    }
-                }
-                    // replace by sql
-                case '?' -> sb.append('_');
-                case '*' -> sb.append('%');
-                default -> sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
     public static OffsetDateTime toOffsetDateTime(StringPrimitive sp) {
         final TemporalAccessor temporal;
         if (sp instanceof TemporalPrimitive tp) {
@@ -377,7 +345,6 @@ public final class AslUtils {
         return condition;
     }
 
-    @Nonnull
     static List<AslRmTypeAndConcept> archetypeNodeIdConditionValues(
             List<Primitive> comparison, ComparisonConditionOperator operator) {
         return conditionValue(comparison, operator, String.class).stream()
@@ -386,7 +353,6 @@ public final class AslUtils {
                 .toList();
     }
 
-    @Nonnull
     static List<UUID> templateIdConditionValues(
             List<Primitive> operands,
             ComparisonConditionOperator operator,
@@ -470,7 +436,6 @@ public final class AslUtils {
             case LIKE -> values.stream()
                     .map(Primitive::getValue)
                     .map(String.class::cast)
-                    .map(AslUtils::translateAqlLikePatternToSql)
                     .filter(p -> isJsonbField || type.isInstance(p) || UUID.class.isAssignableFrom(type))
                     .toList();
         };

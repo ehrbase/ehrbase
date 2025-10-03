@@ -30,7 +30,6 @@ import com.nedap.archie.rminfo.RMTypeInfo;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
@@ -115,7 +114,6 @@ public class ContributionServiceImp implements ContributionService {
      * @throws ObjectNotFoundException if EHR or CONTRIBUTION is not found
      */
     @Override
-    @Nonnull
     public ContributionDto getContribution(UUID ehrId, UUID contributionId) {
         // also checks for valid ehr and contribution ID
         AuditDetails auditDetails = retrieveAuditDetails(ehrId, contributionId);

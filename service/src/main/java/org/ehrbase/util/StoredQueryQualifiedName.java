@@ -18,8 +18,6 @@
 package org.ehrbase.util;
 
 import java.util.Optional;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 /**
  * Represents a stored <code>AQL</code> Query, as described in
@@ -38,10 +36,9 @@ import org.springframework.lang.Nullable;
  * @see <a href="https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_service">openEHR Platform Service Model: 8. Query Service</a>
  * @see <a href="https://semver.org">semver.org</a>
  */
-public record StoredQueryQualifiedName(
-        @NonNull String reverseDomainName, @NonNull String semanticId, @NonNull SemVer semVer) {
+public record StoredQueryQualifiedName(String reverseDomainName, String semanticId, SemVer semVer) {
 
-    public static StoredQueryQualifiedName create(@NonNull String qualifiedName, @Nullable SemVer version) {
+    public static StoredQueryQualifiedName create(String qualifiedName, SemVer version) {
 
         String[] nameParts = qualifiedName.split("::");
 

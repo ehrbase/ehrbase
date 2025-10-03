@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.assertj.core.api.ThrowingConsumer;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
@@ -33,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.ThrowingConsumer;
 
 class AslFromCreatorTest {
 

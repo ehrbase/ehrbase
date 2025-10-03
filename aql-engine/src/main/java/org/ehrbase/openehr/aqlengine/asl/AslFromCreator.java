@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
@@ -365,7 +364,6 @@ final class AslFromCreator {
         return aslStructureQuery;
     }
 
-    @Nonnull
     private static List<AslField> fieldsForContainsSubquery(
             RmContainsWrapper currentDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         final List<AslField> fields = new ArrayList<>();

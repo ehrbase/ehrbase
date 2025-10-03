@@ -35,8 +35,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
@@ -106,7 +104,6 @@ final class EncapsulatingQueryUtils {
         return aggregateFunction.apply(field);
     }
 
-    @Nullable
     private static Field<?> fieldToAggregate(Table<?> src, AslAggregatingField af, AslQueryTables aslQueryToTable) {
         return switch (af.getBaseField()) {
             case null -> null;
@@ -150,7 +147,6 @@ final class EncapsulatingQueryUtils {
         };
     }
 
-    @Nonnull
     private static Function<Field<?>, SelectField<?>> toAggregatedFieldFunction(AslAggregatingField af) {
         return switch (af.getFunction()) {
             case COUNT -> f -> AdditionalSQLFunctions.count(af.isDistinct(), f);
@@ -314,7 +310,6 @@ final class EncapsulatingQueryUtils {
         };
     }
 
-    @Nonnull
     public static Stream<Field<?>> groupByFields(AslField gb, AslQueryTables aslQueryToTable) {
         Table<?> src = aslQueryToTable.getDataTable(gb.getInternalProvider());
         return switch (gb) {
@@ -359,7 +354,6 @@ final class EncapsulatingQueryUtils {
         };
     }
 
-    @Nonnull
     public static Stream<SortField<?>> orderFields(
             AslOrderByField ob, AslQueryTables aslQueryToTable, TemplateService templateService) {
         AslField aslField = ob.field();
@@ -388,7 +382,6 @@ final class EncapsulatingQueryUtils {
                 .map(f -> f.sort(ob.direction()));
     }
 
-    @Nonnull
     private static Stream<Field<?>> columnOrderField(AslColumnField f, Table<?> src, TemplateService templateService) {
         Field<?> field = FieldUtils.field(src, f, true);
 

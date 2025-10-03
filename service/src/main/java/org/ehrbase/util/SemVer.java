@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.NonNull;
 
 public record SemVer(Integer major, Integer minor, Integer patch, String suffix) {
 
@@ -67,7 +66,7 @@ public record SemVer(Integer major, Integer minor, Integer patch, String suffix)
 
     public static final SemVer NO_VERSION = new SemVer(null, null, null, null);
 
-    public static @NonNull SemVer parse(String semVerStr) throws InvalidVersionFormatException {
+    public static SemVer parse(String semVerStr) throws InvalidVersionFormatException {
         if (StringUtils.isBlank(semVerStr) || "LATEST".equalsIgnoreCase(semVerStr)) {
             return NO_VERSION;
         }

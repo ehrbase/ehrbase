@@ -20,21 +20,18 @@ package org.ehrbase.service;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ApplicationContextProvider implements ApplicationContextAware {
 
-    @Nullable
     private static ApplicationContext applicationContext;
 
     @Override
-    public void setApplicationContext(@Nullable ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         ApplicationContextProvider.applicationContext = applicationContext;
     }
 
-    @Nullable
     public static ApplicationContext getApplicationContext() {
         return applicationContext;
     }

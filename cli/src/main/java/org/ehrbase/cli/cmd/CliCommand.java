@@ -19,7 +19,6 @@ package org.ehrbase.cli.cmd;
 
 import java.util.Iterator;
 import java.util.List;
-import javax.annotation.Nullable;
 import org.ehrbase.cli.util.ExceptionFriendlyFunction;
 
 @SuppressWarnings("java:S5803")
@@ -31,7 +30,7 @@ public abstract class CliCommand {
      * @param key   argument key=
      * @param value argument =value
      */
-    public record CliArgument(String arg, String key, @Nullable String value) {}
+    public record CliArgument(String arg, String key, String value) {}
 
     /**
      * Represents the Result of a {@link CliArgument} execution

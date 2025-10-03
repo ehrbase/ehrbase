@@ -31,10 +31,9 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
 
 /**
- * {@link Configuration} for EhCache using JCache.
+ * {@link Configuration} for JCache.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CacheProperties.class)
@@ -126,7 +125,6 @@ public class CacheConfiguration {
         }
 
         @Override
-        @Nullable
         public Cache getCache(String name) {
             Cache targetCache = this.targetCacheManager.getCache(name);
             return (targetCache != null ? new EnhancedTransactionAwareCacheDecorator(targetCache, true, false) : null);

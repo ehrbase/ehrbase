@@ -20,8 +20,6 @@ package org.ehrbase.api.dto.experimental;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public final class ItemTagDto {
     private UUID id;
@@ -62,69 +60,62 @@ public final class ItemTagDto {
         this.value = value;
     }
 
-    @Nullable
     public UUID getId() {
         return id;
     }
 
-    public void setId(@Nullable final UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
     @JsonProperty(value = "owner_id")
-    @Nullable
     public UUID getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(@Nullable final UUID ownerId) {
+    public void setOwnerId(final UUID ownerId) {
         this.ownerId = ownerId;
     }
 
-    @Nullable
     public UUID getTarget() {
         return target;
     }
 
-    public void setTarget(@Nullable final UUID target) {
+    public void setTarget(final UUID target) {
         this.target = target;
     }
 
     @JsonProperty(value = "target_type")
-    @Nullable
     public ItemTagRMType getTargetType() {
         return targetType;
     }
 
-    public void setTargetType(@Nullable final ItemTagRMType targetType) {
+    public void setTargetType(final ItemTagRMType targetType) {
         this.targetType = targetType;
     }
 
     @JsonProperty(value = "target_path")
-    @Nullable
     public String getTargetPath() {
         return targetPath;
     }
 
-    public void setTargetPath(@Nullable final String targetPath) {
+    public void setTargetPath(final String targetPath) {
         this.targetPath = targetPath;
     }
 
-    @Nonnull
     public String getKey() {
         return key;
     }
 
-    public void setKey(@Nonnull final String key) {
+    public void setKey(final String key) {
         this.key = key;
     }
 
-    @Nullable
     public String getValue() {
         return value;
     }
 
-    public void setValue(@Nullable final String value) {
+    public void setValue(final String value) {
         this.value = value;
     }
 

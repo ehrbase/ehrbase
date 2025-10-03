@@ -19,7 +19,6 @@ package org.ehrbase.plugin.dto;
 
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.lang.Nullable;
 
 /**
  * Wrapper for an Aql String <code>query</code> with optional <code>parameters</code>
@@ -29,7 +28,7 @@ public class QueryWithParameters {
     private final String query;
     private final Map<String, Object> parameters;
 
-    public QueryWithParameters(String query, @Nullable Map<String, Object> parameters) {
+    public QueryWithParameters(String query, Map<String, Object> parameters) {
         this.query = query;
         this.parameters = parameters;
     }
