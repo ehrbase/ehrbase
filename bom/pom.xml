@@ -59,7 +59,7 @@
         The root pom from the encapsulating project needs override this property with the version used for defining this pom as parent.
         -->
         <ehrbase.version>${project.version}</ehrbase.version>
-       <ehrbase.openehr.sdk.version>2.26.0-SNAPSHOT</ehrbase.openehr.sdk.version>
+       <ehrbase.openehr.sdk.version>2.26.0</ehrbase.openehr.sdk.version>
         <!-- archie version should be in sync with sdk -->
         <!-- XXX: maybe this bom should use the SDK bom as parent to inherit this property -->
         <archie.version>3.13.0</archie.version>
