@@ -325,10 +325,12 @@ public class AqlSqlLayer {
                     .filter(tc -> StructureRmType.COMPOSITION.getAlias().equals(tc.aliasedRmType()))
                     .map(AslRmTypeAndConcept::concept)
                     .toList();
-            case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> AslUtils.streamStringPrimitives(comparison)
-                    .map(AslUtils::toOffsetDateTime)
-                    .filter(Objects::nonNull)
-                    .toList();
+            case OV_TIME_COMMITTED, OV_TIME_COMMITTED_DV, 
+                    EHR_TIME_CREATED, EHR_TIME_CREATED_DV ->
+                AslUtils.streamStringPrimitives(comparison)
+                        .map(AslUtils::toOffsetDateTime)
+                        .filter(Objects::nonNull)
+                        .toList();
             case AD_CHANGE_TYPE_CODE_STRING -> AslUtils.streamStringPrimitives(comparison)
                     .map(StringPrimitive::getValue)
                     .map(ChangeTypeUtils::getJooqChangeTypeByCode)

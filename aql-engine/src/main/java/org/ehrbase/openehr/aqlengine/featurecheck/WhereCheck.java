@@ -76,10 +76,6 @@ final class WhereCheck implements FeatureCheck {
                 throw new AqlFeatureNotImplementedException(
                         "Conditions on 'archetype_details/template_id/value' only support =,!= and MATCHES");
             }
-            if (pathWithType.extractedColumn() == AslExtractedColumn.OV_TIME_COMMITTED) {
-                throw new AqlFeatureNotImplementedException("Conditions on %s of VERSION"
-                        .formatted(conditionField.getPath().render()));
-            }
             if (EnumSet.of(
                                     AslExtractedColumn.AD_CHANGE_TYPE_VALUE,
                                     AslExtractedColumn.AD_CHANGE_TYPE_CODE_STRING,

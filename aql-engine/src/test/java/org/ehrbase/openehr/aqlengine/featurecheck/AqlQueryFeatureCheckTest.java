@@ -176,6 +176,8 @@ class AqlQueryFeatureCheckTest {
                 "SELECT c FROM COMPOSITION c WHERE c/uid/value = 'b037bf7c-0ecb-40fb-aada-fc7d559815ea::::1'",
                 "SELECT c[openEHR-EHR-COMPOSITION.sample_blood_pressure.v1,'Blood pressure (Training sample)'] FROM COMPOSITION c",
                 "SELECT e/ehr_id/value, e/time_created, e/time_created/value FROM EHR e WHERE e/time_created > '2021-01-02T12:13:14+01:00' ORDER BY e/time_created",
+                "SELECT e/ehr_id/value FROM EHR e WHERE e/time_created/value > '2021-01-02T12:13:14+01:00'",
+                "SELECT e/ehr_id/value, e/time_created/value FROM EHR e ORDER BY e/time_created/value",
                 """
                     SELECT
                      e/ehr_id/value,
@@ -306,7 +308,6 @@ class AqlQueryFeatureCheckTest {
                    SELECT e/ehr_id/value, SUM(c/uid/value)
                    FROM EHR e CONTAINS COMPOSITION c
                 """,
-                "SELECT e/ehr_id/value FROM EHR e WHERE e/time_created/value > '2021-01-02T12:13:14+01:00'",
                 "SELECT e/ehr_id/value FROM EHR e ORDER BY e/time_created/value"
             })
     void ensureQueryNotSupported(String aql) {
