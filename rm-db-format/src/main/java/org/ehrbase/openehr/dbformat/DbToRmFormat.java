@@ -41,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.CharSequenceHelper;
+import org.ehrbase.openehr.sdk.util.StringSegment;
 import org.jooq.JSONB;
 import org.jooq.Record2;
 
@@ -111,6 +112,8 @@ public final class DbToRmFormat {
         }
     }
 
+    public static final boolean PREFER_CHAR_SEQUENCE_READER = false;
+
     /**
      * Second value needs to be JSONB
      * @param rec
@@ -121,6 +124,7 @@ public final class DbToRmFormat {
         return switch (v) {
             case String s  -> parseJson(s, objectMapper);
             case JSONB j  -> parseJson(j.data(), objectMapper);
+            case StringSegment cs  -> parseJson(  PREFER_CHAR_SEQUENCE_READER ? new CharSequenceReader(cs) : cs.reader(), objectMapper);
             case CharSequence cs  -> parseJson(new CharSequenceReader(cs), objectMapper);
             default -> {
                     throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
@@ -333,7 +337,7 @@ public final class DbToRmFormat {
         int leafIdx = components.size() - 1;
         for (int i = 0; i <= leafIdx; i++) {
             var p = components.get(i);
-            if (p.index() == null) {
+            if (p.index() == -1) {
                 parentObject = insertJsonEntryIntoObject(parentObject, p, childToAdd, i == leafIdx, path);
 
             } else {
@@ -442,7 +446,7 @@ public final class DbToRmFormat {
     }
 
 
-    public record PathComponent(String attribute, Integer index) {}
+    public record PathComponent(String attribute, int index) {}
 
     /**
      * Path in a JSON object.
@@ -506,12 +510,11 @@ public final class DbToRmFormat {
                 // requires trailing '.'
                 for (int i = 0; i < len; i++) {
                     final char ch = path.charAt(i);
-                    
                     switch (ch) {
                         case '.' -> {
                             list.add(new PathComponent(
-                                    ch1 == 0 ? /*Character.toString(ch0)*/RmAttributeAlias.aliasByAliasChar(ch0) : "" + ch0 + ch1,
-                                    nr < 0 ? null : nr));
+                                    ch1 == 0 ? RmAttributeAlias.aliasByAliasChar(ch0) : "" + ch0 + ch1,
+                                    nr));
                             ch0 = ch1 = 0;
                             nr = -1;
                         }

@@ -201,17 +201,6 @@ public record RmAttributeAlias(String attribute, String alias) {
             alias("_magnitude", "M"),
             alias(TYPE_ATTRIBUTE, "T"));
 
-    private static Map<String, String> attribute2alias;
-
-    private static Map<String, String> alias2attribute;
-
-    static {
-        attribute2alias =
-                VALUES.stream().collect(Collectors.toMap(RmAttributeAlias::attribute, RmAttributeAlias::alias));
-        alias2attribute =
-                VALUES.stream().collect(Collectors.toMap(RmAttributeAlias::alias, RmAttributeAlias::attribute));
-    }
-
     /**
      * Entries that are usually used for StructureNode.entityIdx
      * @param attribute
@@ -231,11 +220,164 @@ public record RmAttributeAlias(String attribute, String alias) {
     }
 
     public static String getAlias(String attribute) {
-        String alias = attribute2alias.get(attribute);
-        if (alias == null) {
-            throw new IllegalArgumentException("Missing alias for attribute " + attribute);
-        }
-        return alias;
+        return switch (attribute) {
+        case "activities" -> "a";
+        case "content" -> "c";
+        case "context" -> "x";
+        case "data" -> "d";
+        case "description" -> "t";
+        case "events" -> "e";
+        case "instruction_details" -> "n";
+        case "item" -> "j";
+        case "items" -> "i";
+        case "other_context" -> "o";
+        case "protocol" -> "p";
+        case "rows" -> "r";
+        case "state" -> "s";
+        case "summary" -> "y";
+        case "wf_details" -> "w";
+        case "feeder_audit" -> "f";
+        case "accuracy" -> "ay";
+        case "accuracy_is_percent" -> "ayp";
+        case "action_archetype_id" -> "aa";
+        case "activity_id" -> "ac";
+        case "alternate_text" -> "at";
+        case "archetype_details" -> "ad";
+        case "archetype_id" -> "aX";
+        case "archetype_node_id" -> "A";
+        case "assigner" -> "as";
+        case "attestations" -> "att";
+        case "attested_view" -> "atv";
+        case "careflow_step" -> "cf";
+        case "category" -> "ca";
+        case "change_type" -> "ct";
+        case "charset" -> "ch";
+        case "code_string" -> "cd";
+        case "committer" -> "co";
+        case "commit_audit" -> "cau";
+        case "composer" -> "cp";
+        case "compression_algorithm" -> "calg";
+        case "contribution" -> "con";
+        case "current_state" -> "cu";
+        case "defining_code" -> "df";
+        case "denominator" -> "de";
+        case "details" -> "dt";
+        case "domain_concept" -> "dc";
+        case "duration" -> "du";
+        case "encoding" -> "ec";
+        case "end_time" -> "et";
+        case "expiry_time" -> "ex";
+        case "external_ref" -> "er";
+        case "feeder_system_audit" -> "fs";
+        case "feeder_system_item_ids" -> "fX";
+        case "folders" -> "fo";
+        case "formalism" -> "fm";
+        case "formatting" -> "fr";
+        case "function" -> "fu";
+        case "guideline_id" -> "gX";
+        case "health_care_facility" -> "hc";
+        case "hyperlink" -> "hy";
+        case "id" -> "X";
+        case "identifiers" -> "Xs";
+        case "instruction_id" -> "iX";
+        case "integrity_check" -> "ic";
+        case "integrity_check_algorithm" -> "ica";
+        case "interval" -> "in";
+        case "ism_transition" -> "it";
+        case "issuer" -> "is";
+        case "is_modifiable" -> "im";
+        case "is_pending" -> "ip";
+        case "is_queryable" -> "iq";
+        case "is_terminal" -> "il";
+        case "language" -> "la";
+        case "lifecycle_state" -> "ls";
+        case "links" -> "lk";
+        case "location" -> "lc";
+        case "lower" -> "l";
+        case "lower_included" -> "li";
+        case "lower_unbounded" -> "lu";
+        case "magnitude" -> "m";
+        case "magnitude_status" -> "ms";
+        case "mappings" -> "mp";
+        case "match" -> "ma";
+        case "math_function" -> "mf";
+        case "meaning" -> "me";
+        case "media_type" -> "mt";
+        case "mode" -> "mo";
+        case "name" -> "N";
+        case "namespace" -> "ns";
+        case "narrative" -> "nv";
+        case "normal_range" -> "nr";
+        case "normal_status" -> "nt";
+        case "null_flavour" -> "nf";
+        case "null_reason" -> "nl";
+        case "numerator" -> "nu";
+        case "origin" -> "og";
+        case "original_content" -> "oc";
+        case "originating_system_audit" -> "oa";
+        case "originating_system_item_ids" -> "os";
+        case "other_details" -> "od";
+        case "other_input_version_uids" -> "oX";
+        case "other_participations" -> "op";
+        case "other_reference_ranges" -> "or";
+        case "participations" -> "pp";
+        case "path" -> "pa";
+        case "performer" -> "pf";
+        case "period" -> "pe";
+        case "preceding_version_uid" -> "pX";
+        case "precision" -> "pc";
+        case "preferred_term" -> "pt";
+        case "proof" -> "prf";
+        case "property" -> "pr";
+        case "provider" -> "pv";
+        case "purpose" -> "pu";
+        case "qualified_rm_entity" -> "qr";
+        case "range" -> "ra";
+        case "reason" -> "re";
+        case "relationship" -> "rs";
+        case "rm_entity" -> "rm";
+        case "rm_name" -> "rn";
+        case "rm_originator" -> "ro";
+        case "rm_version" -> "rv";
+        case "sample_count" -> "sn";
+        case "scheme" -> "sc";
+        case "setting" -> "se";
+        case "signature" -> "sig";
+        case "size" -> "si";
+        case "specialisation" -> "sp";
+        case "start_time" -> "st";
+        case "subject" -> "su";
+        case "symbol" -> "sy";
+        case "system_id" -> "sX";
+        case "target" -> "ta";
+        case "template_id" -> "tm";
+        case "terminology_id" -> "te";
+        case "territory" -> "ty";
+        case "thumbnail" -> "th";
+        case "time" -> "ti";
+        case "time_asserted" -> "ts";
+        case "time_committed" -> "tc";
+        case "timing" -> "tg";
+        case "transition" -> "tr";
+        case "type" -> "tp";
+        case "uid" -> "U";
+        case "units" -> "un";
+        case "units_display_name" -> "ud";
+        case "units_system" -> "us";
+        case "upper" -> "u";
+        case "upper_included" -> "ui";
+        case "upper_unbounded" -> "uu";
+        case "uri" -> "ur";
+        case "value" -> "V";
+        case "version_id" -> "vX";
+        case "wf_definition" -> "wd";
+        case "width" -> "wi";
+        case "workflow_id" -> "wX";
+        case "_index" -> "I";
+        case "_magnitude" -> "M";
+        case TYPE_ATTRIBUTE -> "T";
+        default -> throw new IllegalArgumentException("Missing alias for attribute " + attribute);
+        };
     }
 
     public static String[] rmToJsonPathParts(String rmPath) {
@@ -243,15 +385,164 @@ public record RmAttributeAlias(String attribute, String alias) {
     }
 
     public static String getAttribute(String alias) {
-        String attribute = alias2attribute.get(alias);
-        if (attribute == null) {
-            throw new IllegalArgumentException("Missing attribute for alias " + alias);
-        }
-        return attribute;
-    }
-
-    public static boolean isAlias(String toCheck) {
-        return alias2attribute.containsKey(toCheck);
+        return switch (alias) {
+            case "a" -> "activities";
+            case "c" -> "content";
+            case "x" -> "context";
+            case "d" -> "data";
+            case "t" -> "description";
+            case "e" -> "events";
+            case "n" -> "instruction_details";
+            case "j" -> "item";
+            case "i" -> "items";
+            case "o" -> "other_context";
+            case "p" -> "protocol";
+            case "r" -> "rows";
+            case "s" -> "state";
+            case "y" -> "summary";
+            case "w" -> "wf_details";
+            case "f" -> "feeder_audit";
+            case "ay" -> "accuracy";
+            case "ayp" -> "accuracy_is_percent";
+            case "aa" -> "action_archetype_id";
+            case "ac" -> "activity_id";
+            case "at" -> "alternate_text";
+            case "ad" -> "archetype_details";
+            case "aX" -> "archetype_id";
+            case "A" -> "archetype_node_id";
+            case "as" -> "assigner";
+            case "att" -> "attestations";
+            case "atv" -> "attested_view";
+            case "cf" -> "careflow_step";
+            case "ca" -> "category";
+            case "ct" -> "change_type";
+            case "ch" -> "charset";
+            case "cd" -> "code_string";
+            case "co" -> "committer";
+            case "cau" -> "commit_audit";
+            case "cp" -> "composer";
+            case "calg" -> "compression_algorithm";
+            case "con" -> "contribution";
+            case "cu" -> "current_state";
+            case "df" -> "defining_code";
+            case "de" -> "denominator";
+            case "dt" -> "details";
+            case "dc" -> "domain_concept";
+            case "du" -> "duration";
+            case "ec" -> "encoding";
+            case "et" -> "end_time";
+            case "ex" -> "expiry_time";
+            case "er" -> "external_ref";
+            case "fs" -> "feeder_system_audit";
+            case "fX" -> "feeder_system_item_ids";
+            case "fo" -> "folders";
+            case "fm" -> "formalism";
+            case "fr" -> "formatting";
+            case "fu" -> "function";
+            case "gX" -> "guideline_id";
+            case "hc" -> "health_care_facility";
+            case "hy" -> "hyperlink";
+            case "X" -> "id";
+            case "Xs" -> "identifiers";
+            case "iX" -> "instruction_id";
+            case "ic" -> "integrity_check";
+            case "ica" -> "integrity_check_algorithm";
+            case "in" -> "interval";
+            case "it" -> "ism_transition";
+            case "is" -> "issuer";
+            case "im" -> "is_modifiable";
+            case "ip" -> "is_pending";
+            case "iq" -> "is_queryable";
+            case "il" -> "is_terminal";
+            case "la" -> "language";
+            case "ls" -> "lifecycle_state";
+            case "lk" -> "links";
+            case "lc" -> "location";
+            case "l" -> "lower";
+            case "li" -> "lower_included";
+            case "lu" -> "lower_unbounded";
+            case "m" -> "magnitude";
+            case "ms" -> "magnitude_status";
+            case "mp" -> "mappings";
+            case "ma" -> "match";
+            case "mf" -> "math_function";
+            case "me" -> "meaning";
+            case "mt" -> "media_type";
+            case "mo" -> "mode";
+            case "N" -> "name";
+            case "ns" -> "namespace";
+            case "nv" -> "narrative";
+            case "nr" -> "normal_range";
+            case "nt" -> "normal_status";
+            case "nf" -> "null_flavour";
+            case "nl" -> "null_reason";
+            case "nu" -> "numerator";
+            case "og" -> "origin";
+            case "oc" -> "original_content";
+            case "oa" -> "originating_system_audit";
+            case "os" -> "originating_system_item_ids";
+            case "od" -> "other_details";
+            case "oX" -> "other_input_version_uids";
+            case "op" -> "other_participations";
+            case "or" -> "other_reference_ranges";
+            case "pp" -> "participations";
+            case "pa" -> "path";
+            case "pf" -> "performer";
+            case "pe" -> "period";
+            case "pX" -> "preceding_version_uid";
+            case "pc" -> "precision";
+            case "pt" -> "preferred_term";
+            case "prf" -> "proof";
+            case "pr" -> "property";
+            case "pv" -> "provider";
+            case "pu" -> "purpose";
+            case "qr" -> "qualified_rm_entity";
+            case "ra" -> "range";
+            case "re" -> "reason";
+            case "rs" -> "relationship";
+            case "rm" -> "rm_entity";
+            case "rn" -> "rm_name";
+            case "ro" -> "rm_originator";
+            case "rv" -> "rm_version";
+            case "sn" -> "sample_count";
+            case "sc" -> "scheme";
+            case "se" -> "setting";
+            case "sig" -> "signature";
+            case "si" -> "size";
+            case "sp" -> "specialisation";
+            case "st" -> "start_time";
+            case "su" -> "subject";
+            case "sy" -> "symbol";
+            case "sX" -> "system_id";
+            case "ta" -> "target";
+            case "tm" -> "template_id";
+            case "te" -> "terminology_id";
+            case "ty" -> "territory";
+            case "th" -> "thumbnail";
+            case "ti" -> "time";
+            case "ts" -> "time_asserted";
+            case "tc" -> "time_committed";
+            case "tg" -> "timing";
+            case "tr" -> "transition";
+            case "tp" -> "type";
+            case "U" -> "uid";
+            case "un" -> "units";
+            case "ud" -> "units_display_name";
+            case "us" -> "units_system";
+            case "u" -> "upper";
+            case "ui" -> "upper_included";
+            case "uu" -> "upper_unbounded";
+            case "ur" -> "uri";
+            case "V" -> "value";
+            case "vX" -> "version_id";
+            case "wd" -> "wf_definition";
+            case "wi" -> "width";
+            case "wX" -> "workflow_id";
+            case "I" -> "_index";
+            case "M" -> "_magnitude";
+            case "T" -> TYPE_ATTRIBUTE;
+            default -> throw new IllegalArgumentException("Missing attribute for alias " + alias);
+        };
     }
 
     /**

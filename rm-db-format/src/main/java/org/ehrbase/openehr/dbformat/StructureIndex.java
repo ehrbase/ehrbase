@@ -39,14 +39,14 @@ public final class StructureIndex {
 
     public static final class Node {
         final String attribute;
-        final Integer idx;
+        final int idx;
 
-        private Node(String attribute, Integer idx) {
+        private Node(String attribute, int idx) {
             this.attribute = attribute;
             this.idx = idx;
         }
 
-        public static Node of(String attribute, Integer idx) {
+        public static Node of(String attribute, int idx) {
             return new Node(attribute, idx);
         }
 
@@ -54,7 +54,7 @@ public final class StructureIndex {
             return attribute;
         }
 
-        public Integer getIdx() {
+        public int getIdx() {
             return idx;
         }
 
@@ -66,15 +66,12 @@ public final class StructureIndex {
 
             Node that = (Node) o;
 
-            return new EqualsBuilder()
-                    .append(idx, that.idx)
-                    .append(attribute, that.attribute)
-                    .isEquals();
+            return idx == that.idx && attribute.equals(that.attribute);
         }
 
         @Override
         public int hashCode() {
-            return new HashCodeBuilder(17, 37).append(attribute).append(idx).toHashCode();
+            return 17 + 31 * Integer.hashCode(idx) + attribute.hashCode();
         }
 
         @Override
@@ -110,7 +107,7 @@ public final class StructureIndex {
         return new StructureIndex(index);
     }
 
-    public static StructureIndex of(String attribute, Integer index) {
+    public static StructureIndex of(String attribute, int index) {
         return new StructureIndex(new Node(attribute, index));
     }
 
@@ -164,7 +161,7 @@ public final class StructureIndex {
 
     private static String getNodeString(Node node, boolean withIndex) {
         String att = RmAttributeAlias.getAlias(node.attribute);
-        return (withIndex && Objects.nonNull(node.idx)) ? (att + node.idx) : att;
+        return (withIndex && node.idx >= 0) ? (att + node.idx) : att;
     }
 
     @Override

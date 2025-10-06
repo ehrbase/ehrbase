@@ -344,14 +344,14 @@ class DbToRmFormatTest {
         assertThat(DbToRmFormat.DbJsonPath.parse("").components()).isEmpty();
 
         assertThat(DbToRmFormat.DbJsonPath.parse("ab.").components())
-                .containsExactly(new DbToRmFormat.PathComponent("ab", null));
+                .containsExactly(new DbToRmFormat.PathComponent("ab", -1));
         assertThat(DbToRmFormat.DbJsonPath.parse("ab1234.").components())
                 .containsExactly(new DbToRmFormat.PathComponent("ab", 1234));
         assertThat(DbToRmFormat.DbJsonPath.parse("ab123456.de6.gh.ij0.").components())
                 .containsExactly(
                         new DbToRmFormat.PathComponent("ab", 123456),
                         new DbToRmFormat.PathComponent("de", 6),
-                        new DbToRmFormat.PathComponent("gh", null),
+                        new DbToRmFormat.PathComponent("gh", -1),
                         new DbToRmFormat.PathComponent("ij", 0));
     }
 

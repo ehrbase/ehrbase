@@ -212,7 +212,7 @@ public final class VersionedObjectDataStructure {
                             fieldIt.remove();
                         }
                         StructureNode newRoot = createStructureDto(
-                                root, child, structureRmType, StructureIndex.Node.of(attribute, null));
+                                root, child, structureRmType, StructureIndex.Node.of(attribute, -1));
                         roots.add(newRoot);
                         return newRoot;
                     });
