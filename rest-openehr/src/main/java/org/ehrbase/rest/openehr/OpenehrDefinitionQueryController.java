@@ -63,8 +63,6 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
 public class OpenehrDefinitionQueryController extends BaseController implements DefinitionQueryApiSpecification {
 
-    protected static final String AQL_QUERY_TYPE = "AQL";
-
     private final StoredQueryService storedQueryService;
 
     @Autowired
@@ -124,7 +122,8 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(value = "version") Optional<String> version,
-            @RequestParam(value = "query_type", required = false, defaultValue = AQL_QUERY_TYPE) String queryType,
+            @RequestParam(value = "query_type", required = false, defaultValue = StoredQueryService.AQL_QUERY_TYPE)
+                    String queryType,
             @RequestBody String queryPayload) {
 
         if (!isQueryTypeSupported(queryType)) {
@@ -149,7 +148,7 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
     }
 
     protected boolean isQueryTypeSupported(String queryType) {
-        return AQL_QUERY_TYPE.equals(queryType);
+        return StoredQueryService.AQL_QUERY_TYPE.equals(queryType);
     }
 
     protected String extractQueryFromPayload(MediaType mediaType, String payload) {

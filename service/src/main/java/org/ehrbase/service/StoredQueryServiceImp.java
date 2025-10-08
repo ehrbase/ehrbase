@@ -44,8 +44,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class StoredQueryServiceImp implements StoredQueryService {
-
-    private static final String AQL_QUERY_TYPE = "AQL";
     private final StoredQueryRepository storedQueryRepository;
     private final CacheProvider cacheProvider;
 

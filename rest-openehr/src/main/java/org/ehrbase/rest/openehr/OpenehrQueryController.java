@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.StoredQueryService;
@@ -40,7 +39,7 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
-import org.ehrbase.rest.util.StoredQueryRequestUtils;
+import org.ehrbase.rest.util.OpenEhrQueryRequestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -107,7 +106,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         // prepare query
         AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
                 queryText,
-                StoredQueryRequestUtils.rewriteExplicitParameterTypes(queryParameters),
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(queryParameters),
                 Optional.ofNullable(fetch).map(Integer::longValue).orElse(null),
                 Optional.ofNullable(offset).map(Integer::longValue).orElse(null));
 
@@ -151,15 +150,15 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         // Enriches request attributes with aql for later audit processing
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
 
-        Map<String, Object> params = StoredQueryRequestUtils.getSubMap(requestBody, QUERY_PARAMETERS);
+        Map<String, Object> params = OpenEhrQueryRequestUtils.getSubMap(requestBody, QUERY_PARAMETERS);
 
         // prepare query
         AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
                 queryText,
-                StoredQueryRequestUtils.rewriteExplicitParameterTypes(params),
-                StoredQueryRequestUtils.getOptionalLong(requestBody, FETCH_PARAM)
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(params),
+                OpenEhrQueryRequestUtils.getOptionalLong(requestBody, FETCH_PARAM)
                         .orElse(null),
-                StoredQueryRequestUtils.getOptionalLong(requestBody, OFFSET_PARAM)
+                OpenEhrQueryRequestUtils.getOptionalLong(requestBody, OFFSET_PARAM)
                         .orElse(null));
 
         // execute query
@@ -196,9 +195,6 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
-
-        // validate query text
-        requireQueryText(queryDefinition);
 
         // execute
         QueryResultDto aqlQueryResult =
@@ -238,13 +234,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         // Enriches request attributes with aql for later audit processing
         createRestContext(qualifiedQueryName, version);
 
-        // obtain the stored query
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
-
-        // validate query content
-        requireQueryText(queryDefinition);
-
-        // execute query
         QueryResultDto aqlQueryResult =
                 executeStoredQuery(queryDefinition, QueryExecutionMetadata.fromRequestBody(requestBody));
 
@@ -262,7 +252,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
                 queryDefinition.getQueryText(),
-                StoredQueryRequestUtils.rewriteExplicitParameterTypes(executionMetadata.queryParameters()),
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(executionMetadata.queryParameters()),
                 executionMetadata.fetch(),
                 executionMetadata.offset());
 
@@ -285,13 +275,13 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         }
 
         static QueryExecutionMetadata fromRequestBody(Map<String, Object> requestBody) {
-            Map<String, Object> queryParameters = StoredQueryRequestUtils.getSubMap(requestBody, QUERY_PARAMETERS);
+            Map<String, Object> queryParameters = OpenEhrQueryRequestUtils.getSubMap(requestBody, QUERY_PARAMETERS);
 
             return new QueryExecutionMetadata(
                     queryParameters,
-                    StoredQueryRequestUtils.getOptionalLong(requestBody, OFFSET_PARAM)
+                    OpenEhrQueryRequestUtils.getOptionalLong(requestBody, OFFSET_PARAM)
                             .orElse(null),
-                    StoredQueryRequestUtils.getOptionalLong(requestBody, FETCH_PARAM)
+                    OpenEhrQueryRequestUtils.getOptionalLong(requestBody, FETCH_PARAM)
                             .orElse(null));
         }
     }
@@ -311,18 +301,5 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             QueryDefinitionResultDto queryDefinitionResultDto, QueryResponseData queryResponseData) {
         queryResponseData.setName(
                 queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
-    }
-
-    private static void requireQueryText(QueryDefinitionResultDto queryDefinition) {
-        String queryText = queryDefinition.getQueryText();
-        if (queryText == null) {
-            throw new ObjectNotFoundException(
-                    queryDefinition.getType(),
-                    "Could not retrieve %s %s/%s"
-                            .formatted(
-                                    queryDefinition.getType(),
-                                    queryDefinition.getQualifiedName(),
-                                    queryDefinition.getVersion()));
-        }
     }
 }

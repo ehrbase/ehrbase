@@ -23,6 +23,8 @@ import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 
 public interface StoredQueryService {
 
+    String AQL_QUERY_TYPE = "AQL";
+
     // === DEFINITION: manage stored queries
     List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);
 

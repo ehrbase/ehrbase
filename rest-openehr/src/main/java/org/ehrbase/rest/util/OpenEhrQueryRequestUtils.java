@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 
-public final class StoredQueryRequestUtils {
+public final class OpenEhrQueryRequestUtils {
 
-    private StoredQueryRequestUtils() {}
+    private OpenEhrQueryRequestUtils() {}
 
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getSubMap(Map<String, Object> map, String key) {
@@ -79,7 +79,7 @@ public final class StoredQueryRequestUtils {
                     };
                 } else if (map.get("") instanceof List children && !children.isEmpty()) {
                     yield children.stream()
-                            .map(StoredQueryRequestUtils::handleExplicitParameterTypes)
+                            .map(OpenEhrQueryRequestUtils::handleExplicitParameterTypes)
                             .toList();
                 } else {
                     yield intValue(map, "int")
