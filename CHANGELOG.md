@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- do not include query in stored query response [#1563](https://github.com/ehrbase/ehrbase/pull/1536)
  ### Fixed 
 
 ## [2.23.0]

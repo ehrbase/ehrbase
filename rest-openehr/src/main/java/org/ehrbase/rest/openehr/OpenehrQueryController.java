@@ -207,7 +207,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         // create and return response
         QueryResponseData queryResponseData =
-                createQueryResponse(aqlQueryResult, queryDefinition.getQueryText(), locationUri);
+                createQueryResponse(aqlQueryResult, null, locationUri);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
@@ -239,7 +239,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
                 executeStoredQuery(queryDefinition, QueryExecutionMetadata.fromRequestBody(requestBody));
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryDefinition.getQueryText(), null);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, null, null);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
