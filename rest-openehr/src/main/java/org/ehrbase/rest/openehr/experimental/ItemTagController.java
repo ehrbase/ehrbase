@@ -221,12 +221,13 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
         List<UUID> tagIDs = itemTagsOrUUIDs.stream()
                 .map(entry -> switch (entry) {
                     case String s -> s;
-                    case Map<?, ?> map -> Optional.ofNullable(map.get("id"))
-                            .map(Object::toString)
-                            .orElseThrow(() ->
-                                    new UnprocessableEntityException("Expected ItemTag entry to contain an 'id'"));
-                    default -> throw new UnprocessableEntityException(
-                            "Expected array entry to be ItemTag or UUID String");
+                    case Map<?, ?> map ->
+                        Optional.ofNullable(map.get("id"))
+                                .map(Object::toString)
+                                .orElseThrow(() ->
+                                        new UnprocessableEntityException("Expected ItemTag entry to contain an 'id'"));
+                    default ->
+                        throw new UnprocessableEntityException("Expected array entry to be ItemTag or UUID String");
                 })
                 .map(UUID::fromString)
                 .toList();

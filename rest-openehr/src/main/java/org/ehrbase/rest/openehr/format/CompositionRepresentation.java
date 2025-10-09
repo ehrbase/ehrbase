@@ -103,8 +103,8 @@ public enum CompositionRepresentation {
             case FLAT, STRUCTURED, XML, JSON -> {
                 /* supported format */
             }
-            case RAW, EXPANDED, ECISFLAT -> throw new InvalidApiParameterException(
-                    String.format("Format %s not supported", format));
+            case RAW, EXPANDED, ECISFLAT ->
+                throw new InvalidApiParameterException(String.format("Format %s not supported", format));
         }
     }
 
@@ -125,9 +125,10 @@ public enum CompositionRepresentation {
             case CompositionFormat.JSON -> CompositionRepresentation.JSON;
             case CompositionFormat.FLAT -> CompositionRepresentation.JSON_FLAT;
             case CompositionFormat.STRUCTURED -> CompositionRepresentation.JSON_STRUCTURED;
-            default -> throw new NotAcceptableException(
-                    "Only compositions formats [JSON, FLAT, STRUCTURED] are supported at the moment for [%s]"
-                            .formatted(mediaType));
+            default ->
+                throw new NotAcceptableException(
+                        "Only compositions formats [JSON, FLAT, STRUCTURED] are supported at the moment for [%s]"
+                                .formatted(mediaType));
         };
     }
 }

@@ -82,8 +82,8 @@ public sealed interface ConditionWrapper permits ComparisonOperatorConditionWrap
 
         public ComparisonConditionOperator negate() {
             return switch (this) {
-                case EXISTS, MATCHES, LIKE -> throw new UnsupportedOperationException(
-                        "No operator known to  represent negated " + this);
+                case EXISTS, MATCHES, LIKE ->
+                    throw new UnsupportedOperationException("No operator known to  represent negated " + this);
                 case EQ -> NEQ;
                 case NEQ -> EQ;
                 case GT_EQ -> LT;

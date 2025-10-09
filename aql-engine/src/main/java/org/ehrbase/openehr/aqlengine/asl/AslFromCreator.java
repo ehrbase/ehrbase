@@ -61,13 +61,13 @@ import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
-final class AslFromCreator {
+public final class AslFromCreator {
 
     private final AliasProvider aliasProvider;
     private final KnowledgeCacheService knowledgeCacheService;
     private final boolean archetypeLocalNodePredicates;
 
-    AslFromCreator(
+    public AslFromCreator(
             AliasProvider aliasProvider,
             KnowledgeCacheService knowledgeCacheService,
             final boolean archetypeLocalNodePredicates1) {
@@ -77,7 +77,7 @@ final class AslFromCreator {
     }
 
     @FunctionalInterface
-    interface ContainsToOwnerProvider {
+    public interface ContainsToOwnerProvider {
         OwnerProviderTuple get(ContainsWrapper contains);
     }
 
@@ -401,11 +401,11 @@ final class AslFromCreator {
             if (RmConstants.FOLDER.equals(currentDesc.getRmType())) {
                 boolean mustAddItemsField =
                         switch (currentDesc.containment().getContains()) {
-                            case ContainmentClassExpression cce -> Objects.equals(
-                                    cce.getType(), RmConstants.COMPOSITION);
-                            case ContainmentVersionExpression cve -> cve.getContains()
-                                            instanceof ContainmentClassExpression cce
-                                    && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentClassExpression cce ->
+                                Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentVersionExpression cve ->
+                                cve.getContains() instanceof ContainmentClassExpression cce
+                                        && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
                             case null -> false;
                             default -> false;
                         };

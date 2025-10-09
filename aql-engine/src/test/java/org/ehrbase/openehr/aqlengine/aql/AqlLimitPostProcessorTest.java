@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine;
+package org.ehrbase.openehr.aqlengine.aql;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -24,7 +24,8 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.openehr.aqlengine.AqlLimitPostProcessor.FetchPrecedence;
+import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
+import org.ehrbase.openehr.aqlengine.aql.AqlLimitPostProcessor.FetchPrecedence;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

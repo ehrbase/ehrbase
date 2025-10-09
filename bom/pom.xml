@@ -59,7 +59,7 @@
         The root pom from the encapsulating project needs override this property with the version used for defining this pom as parent.
         -->
         <ehrbase.version>${project.version}</ehrbase.version>
-       <ehrbase.openehr.sdk.version>2.26.0</ehrbase.openehr.sdk.version>
+        <ehrbase.openehr.sdk.version>2.27.0-SNAPSHOT</ehrbase.openehr.sdk.version>
         <!-- archie version should be in sync with sdk -->
         <!-- XXX: maybe this bom should use the SDK bom as parent to inherit this property -->
         <archie.version>3.13.0</archie.version>
@@ -98,8 +98,8 @@
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
         <maven-jacoco-plugin.version>0.8.13</maven-jacoco-plugin.version>
-        <maven-spotless-maven-plugin.version>2.43.0</maven-spotless-maven-plugin.version>
-        <palantir-format.version>2.43.0</palantir-format.version>
+        <maven-spotless-maven-plugin.version>2.46.1</maven-spotless-maven-plugin.version>
+        <palantir-format.version>2.74.0</palantir-format.version>
         <maven-central-publishing-plugin.version>0.8.0</maven-central-publishing-plugin.version>
         <maven-versions-maven-plugin.version>2.17.1</maven-versions-maven-plugin.version>
         <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>

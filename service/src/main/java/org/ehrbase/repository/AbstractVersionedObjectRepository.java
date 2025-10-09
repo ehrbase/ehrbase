@@ -629,10 +629,11 @@ public abstract class AbstractVersionedObjectRepository<
         if (jsonbRecord == null) {
             return Optional.empty();
         }
-        final L rmObject = DbToRmFormat.reconstructRmObject(locatableClass, jsonbRecord.get(2, Record2[].class));
+        Record2<String, ?>[] jsonObjects = jsonbRecord.get(2, Record2[].class);
+        final Locatable rmObject = DbToRmFormat.reconstructRmObject(locatableClass, jsonObjects);
         rmObject.setUid(
                 buildObjectVersionId(jsonbRecord.get(0, UUID.class), jsonbRecord.get(1, Integer.class), systemService));
-        return Optional.of(rmObject);
+        return Optional.of((L) rmObject);
     }
 
     protected void copyHeadToHistory(VH versionRecord, OffsetDateTime now) {
