@@ -437,20 +437,21 @@ public final class AslUtils {
         boolean isJsonbField = JSONB.class.isAssignableFrom(type);
         return switch (operator) {
             case EXISTS -> Collections.emptyList();
-            case MATCHES, EQ, NEQ -> values.stream()
-                    .map(Primitive::getValue)
-                    .filter(p -> isJsonbField
-                            || type.isInstance(p)
-                            || UUID.class.isAssignableFrom(type) && p instanceof String)
-                    .toList();
-            case LT, GT_EQ, GT, LT_EQ -> values.stream()
-                    .map(Primitive::getValue)
-                    .toList();
-            case LIKE -> values.stream()
-                    .map(Primitive::getValue)
-                    .map(String.class::cast)
-                    .filter(p -> isJsonbField || type.isInstance(p) || UUID.class.isAssignableFrom(type))
-                    .toList();
+            case MATCHES, EQ, NEQ ->
+                values.stream()
+                        .map(Primitive::getValue)
+                        .filter(p -> isJsonbField
+                                || type.isInstance(p)
+                                || UUID.class.isAssignableFrom(type) && p instanceof String)
+                        .toList();
+            case LT, GT_EQ, GT, LT_EQ ->
+                values.stream().map(Primitive::getValue).toList();
+            case LIKE ->
+                values.stream()
+                        .map(Primitive::getValue)
+                        .map(String.class::cast)
+                        .filter(p -> isJsonbField || type.isInstance(p) || UUID.class.isAssignableFrom(type))
+                        .toList();
         };
     }
 
