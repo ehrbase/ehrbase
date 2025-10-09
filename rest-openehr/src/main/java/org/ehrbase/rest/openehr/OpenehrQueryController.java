@@ -206,8 +206,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         URI locationUri = createLocationUri(pathSegments.toArray(String[]::new));
 
         // create and return response
-        QueryResponseData queryResponseData =
-                createQueryResponse(aqlQueryResult, null, locationUri);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, null, locationUri);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
