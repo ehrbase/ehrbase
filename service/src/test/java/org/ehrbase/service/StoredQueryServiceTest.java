@@ -51,6 +51,7 @@ import org.springframework.cache.support.SimpleCacheManager;
 
 public class StoredQueryServiceTest {
 
+    private static final String DEFAULT_QUERY_TYPE = "AQL";
     private final StoredQueryRepository mockStoredQueryRepository = mock("Mock Repository");
     private SimpleCacheManager cacheManager;
 
@@ -88,7 +89,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record))); // #2 call final result
 
         QueryDefinitionResultDto result =
-                service().createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es");
+                service().createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertEquals("test::crate::id", result.getQualifiedName());
         assertEquals("0.5.0", result.getVersion());
         assertEquals("test", result.getType());
@@ -108,7 +109,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
 
         StateConflictException reason = assertThrows(StateConflictException.class, () -> service()
-                .createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es"));
+                .createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
         assertEquals("Version already exists", reason.getMessage());
     }
 
@@ -122,7 +123,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
 
         IllegalStateException reason = assertThrows(IllegalStateException.class, () -> service()
-                .createStoredQuery("test::name", "0.3.0", "SELECT es FROM EHR_STATUS es"));
+                .createStoredQuery("test::name", "0.3.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
         assertEquals("The database contains stored queries with partial versions", reason.getMessage());
     }
 
@@ -233,7 +234,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.empty()) // #1 call nothing stored
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record))); // #2 call find
 
-        result = service.createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es");
+        result = service.createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertThat(result.getVersion()).isEqualTo("0.5.0");
 
         // Access using partial version
@@ -250,7 +251,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.empty()) // #1 call nothing stored
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record2))); // #2 call find
 
-        result = service.createStoredQuery("test::name", "0.5.1", "SELECT es FROM EHR_STATUS es");
+        result = service.createStoredQuery("test::name", "0.5.1", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertThat(result.getVersion()).isEqualTo("0.5.1");
 
         when(mockStoredQueryRepository.retrieveQualified(any()))

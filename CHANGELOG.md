@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- do not include query in stored query response [#1563](https://github.com/ehrbase/ehrbase/pull/1536)
  ### Fixed 
 - Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
 
@@ -17,6 +18,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Upgrade openEHR_SDK to version 2.26.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
  ### Fixed 
 - Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
+- Renaming the query type parameter when storing queries to match the specification [#1536](https://github.com/ehrbase/ehrbase/pull/1536)
 
 ## [2.22.0]
  ### Added
