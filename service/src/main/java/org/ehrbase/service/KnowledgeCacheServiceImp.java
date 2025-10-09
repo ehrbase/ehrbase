@@ -278,7 +278,7 @@ public class KnowledgeCacheServiceImp implements KnowledgeCacheService {
     private static <T> Optional<T> handleCacheMismatch(Cache.ValueRetrievalException ex) {
         Throwable cause = ex.getCause();
         return switch (cause) {
-                // No template with that UUID exists
+            // No template with that UUID exists
             case NoSuchElementException __ -> Optional.empty();
             case RuntimeException re -> throw re;
             default -> throw ex;

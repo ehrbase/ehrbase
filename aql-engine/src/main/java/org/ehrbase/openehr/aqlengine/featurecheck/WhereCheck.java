@@ -21,7 +21,7 @@ import java.util.EnumSet;
 import org.ehrbase.api.exception.AqlFeatureNotImplementedException;
 import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.service.SystemService;
-import org.ehrbase.openehr.aqlengine.AqlQueryUtils;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.condition.ComparisonOperatorCondition;

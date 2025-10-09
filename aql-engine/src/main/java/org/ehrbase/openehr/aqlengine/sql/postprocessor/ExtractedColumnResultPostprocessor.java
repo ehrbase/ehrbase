@@ -58,21 +58,19 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
         }
 
         return switch (extractedColumn) {
-            case TEMPLATE_ID -> knowledgeCache
-                    .findTemplateIdByUuid((UUID) columnValue)
-                    .orElse(null);
+            case TEMPLATE_ID ->
+                knowledgeCache.findTemplateIdByUuid((UUID) columnValue).orElse(null);
             case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> new DvDateTime((TemporalAccessor) columnValue);
-            case OV_TIME_COMMITTED, EHR_TIME_CREATED -> OpenEHRDateTimeSerializationUtils.formatDateTime(
-                    (TemporalAccessor) columnValue);
+            case OV_TIME_COMMITTED, EHR_TIME_CREATED ->
+                OpenEHRDateTimeSerializationUtils.formatDateTime((TemporalAccessor) columnValue);
             case AD_DESCRIPTION_DV -> new DvText((String) columnValue);
             case AD_CHANGE_TYPE_DV -> contributionChangeTypeAsDvCodedText((ContributionChangeType) columnValue);
-            case AD_CHANGE_TYPE_VALUE, AD_CHANGE_TYPE_PREFERRED_TERM -> ((ContributionChangeType) columnValue)
-                    .getLiteral()
-                    .toLowerCase();
-            case AD_CHANGE_TYPE_CODE_STRING -> ChangeTypeUtils.getCodeByJooqChangeType(
-                    (ContributionChangeType) columnValue);
+            case AD_CHANGE_TYPE_VALUE, AD_CHANGE_TYPE_PREFERRED_TERM ->
+                ((ContributionChangeType) columnValue).getLiteral().toLowerCase();
+            case AD_CHANGE_TYPE_CODE_STRING ->
+                ChangeTypeUtils.getCodeByJooqChangeType((ContributionChangeType) columnValue);
             case VO_ID -> restoreVoId((Record) columnValue, nodeName);
-                // the root is always archetyped
+            // the root is always archetyped
             case ROOT_CONCEPT -> AslRmTypeAndConcept.ARCHETYPE_PREFIX + RmConstants.COMPOSITION + columnValue;
             case ARCHETYPE_NODE_ID -> restoreArchetypeNodeId((Record) columnValue);
             case EHR_SYSTEM_ID_DV -> new HierObjectId((String) columnValue);
