@@ -22,11 +22,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.api.dto.AqlQueryContext;
+import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
 
 public class TestAqlQueryContext implements AqlQueryContext {
 
     private final Map<String, Object> metaProperties = new LinkedHashMap<>();
+    private AqlQueryRequest aqlQueryRequest;
 
     @Override
     public MetaData createMetaData(final URI location) {
@@ -61,6 +63,16 @@ public class TestAqlQueryContext implements AqlQueryContext {
     @Override
     public boolean isArchetypeLocalNodePredicates() {
         return true;
+    }
+
+    @Override
+    public void setAqlQueryRequest(AqlQueryRequest aqlQueryRequest) {
+        this.aqlQueryRequest = aqlQueryRequest;
+    }
+
+    @Override
+    public AqlQueryRequest getAqlQueryRequest() {
+        return aqlQueryRequest;
     }
 
     @Override

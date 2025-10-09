@@ -67,6 +67,9 @@ public interface AqlQueryContext {
 
     boolean isArchetypeLocalNodePredicates();
 
+    void setAqlQueryRequest(AqlQueryRequest aqlQueryRequest);
+    AqlQueryRequest getAqlQueryRequest();
+
     void setExecutedAql(String executedAql);
 
     void setMetaProperty(MetaProperty property, Object value);

@@ -87,6 +87,8 @@ public class AqlQueryServiceImp implements AqlQueryService {
     @Override
     public QueryResultDto query(AqlQueryRequest aqlQueryRequest) {
 
+        aqlQueryContext.setAqlQueryRequest(aqlQueryRequest);
+
         // TODO: check that select aliases are not duplicated
         try {
             AqlQuery aqlQuery = aqlQueryRequest.aqlQuery();

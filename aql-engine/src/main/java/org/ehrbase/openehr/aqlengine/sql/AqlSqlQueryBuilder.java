@@ -73,6 +73,7 @@ import org.jooq.Operator;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.ResultQuery;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectField;
 import org.jooq.SelectFieldOrAsterisk;
@@ -164,7 +165,7 @@ public class AqlSqlQueryBuilder {
         return query;
     }
 
-    public Result<Record> explain(boolean analyze, SelectQuery<Record> selectQuery) {
+    public Result<Record> explain(boolean analyze, ResultQuery<Record> selectQuery) {
         if (analyze) {
             return context.fetch("EXPLAIN (SUMMARY, COSTS, VERBOSE, FORMAT JSON, ANALYZE, TIMING) {0}", selectQuery);
         } else {
