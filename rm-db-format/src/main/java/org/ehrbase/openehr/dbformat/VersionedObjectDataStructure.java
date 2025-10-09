@@ -211,8 +211,8 @@ public final class VersionedObjectDataStructure {
                                                 structureRmType))) { // structureRmType.isDataRoot()) {
                             fieldIt.remove();
                         }
-                        StructureNode newRoot = createStructureDto(
-                                root, child, structureRmType, StructureIndex.Node.of(attribute, -1));
+                        StructureNode newRoot =
+                                createStructureDto(root, child, structureRmType, StructureIndex.Node.of(attribute, -1));
                         roots.add(newRoot);
                         return newRoot;
                     });

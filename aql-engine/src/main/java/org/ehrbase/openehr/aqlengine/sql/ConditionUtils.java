@@ -534,9 +534,9 @@ final class ConditionUtils {
         for (int pos = 0, l = aqlLike.length(); pos < l; pos++) {
             char c = aqlLike.charAt(pos);
             switch (c) {
-                    // sql reserved
+                // sql reserved
                 case '%', '_' -> sb.append('\\').append(c);
-                    // escape char
+                // escape char
                 case '\\' -> {
                     pos++;
                     if (pos >= l) {
@@ -550,7 +550,7 @@ final class ConditionUtils {
                         default -> throw new IllegalAqlException("Invalid LIKE pattern: %s".formatted(aqlLike));
                     }
                 }
-                    // replace by sql
+                // replace by sql
                 case '?' -> sb.append('_');
                 case '*' -> sb.append('%');
                 default -> sb.append(c);
@@ -582,9 +582,9 @@ final class ConditionUtils {
         for (int pos = 1, l = jsonLike.length() - 1; pos < l; pos++) {
             char c0 = jsonLike.charAt(pos);
             switch (c0) {
-                    // sql reserved
+                // sql reserved
                 case '%', '_' -> sb.append("\\").append(c0);
-                    // escape char
+                // escape char
                 case '\\' -> {
                     if (++pos >= l) {
                         throw new IllegalAqlException("Invalid LIKE pattern: %s".formatted(aqlLike));
@@ -610,7 +610,7 @@ final class ConditionUtils {
                         // e.g. \t
                     }
                 }
-                    // replace by sql
+                // replace by sql
                 case '?' -> sb.append('_');
                 case '*' -> sb.append('%');
                 default -> sb.append(c0);

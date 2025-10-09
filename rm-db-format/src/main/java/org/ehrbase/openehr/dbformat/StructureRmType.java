@@ -325,33 +325,34 @@ public enum StructureRmType {
     }
 
     public static Optional<StructureRmType> byTypeName(String rmTypeName) {
-        return Optional.ofNullable(switch (rmTypeName) {
-            case "COMPOSITION" -> COMPOSITION;
-            case "FOLDER" -> FOLDER;
-            case "EHR_STATUS" -> EHR_STATUS;
-            case "EVENT_CONTEXT" -> EVENT_CONTEXT;
-            case "SECTION" -> SECTION;
-            case "GENERIC_ENTRY" -> GENERIC_ENTRY;
-            case "ADMIN_ENTRY" -> ADMIN_ENTRY;
-            case "OBSERVATION" -> OBSERVATION;
-            case "INSTRUCTION" -> INSTRUCTION;
-            case "ACTION" -> ACTION;
-            case "EVALUATION" -> EVALUATION;
-            case "INSTRUCTION_DETAILS" -> INSTRUCTION_DETAILS;
-            case "ACTIVITY" -> ACTIVITY;
-            case "HISTORY" -> HISTORY;
-            case "POINT_EVENT" -> POINT_EVENT;
-            case "INTERVAL_EVENT" -> INTERVAL_EVENT;
-            case "FEEDER_AUDIT" -> FEEDER_AUDIT;
-            case "FEEDER_AUDIT_DETAILS" -> FEEDER_AUDIT_DETAILS;
-            case "ITEM_LIST" -> ITEM_LIST;
-            case "ITEM_SINGLE" -> ITEM_SINGLE;
-            case "ITEM_TABLE" -> ITEM_TABLE;
-            case "ITEM_TREE" -> ITEM_TREE;
-            case "CLUSTER" -> CLUSTER;
-            case "ELEMENT" -> ELEMENT;
-            default -> null;
-        });
+        return Optional.ofNullable(
+                switch (rmTypeName) {
+                    case "COMPOSITION" -> COMPOSITION;
+                    case "FOLDER" -> FOLDER;
+                    case "EHR_STATUS" -> EHR_STATUS;
+                    case "EVENT_CONTEXT" -> EVENT_CONTEXT;
+                    case "SECTION" -> SECTION;
+                    case "GENERIC_ENTRY" -> GENERIC_ENTRY;
+                    case "ADMIN_ENTRY" -> ADMIN_ENTRY;
+                    case "OBSERVATION" -> OBSERVATION;
+                    case "INSTRUCTION" -> INSTRUCTION;
+                    case "ACTION" -> ACTION;
+                    case "EVALUATION" -> EVALUATION;
+                    case "INSTRUCTION_DETAILS" -> INSTRUCTION_DETAILS;
+                    case "ACTIVITY" -> ACTIVITY;
+                    case "HISTORY" -> HISTORY;
+                    case "POINT_EVENT" -> POINT_EVENT;
+                    case "INTERVAL_EVENT" -> INTERVAL_EVENT;
+                    case "FEEDER_AUDIT" -> FEEDER_AUDIT;
+                    case "FEEDER_AUDIT_DETAILS" -> FEEDER_AUDIT_DETAILS;
+                    case "ITEM_LIST" -> ITEM_LIST;
+                    case "ITEM_SINGLE" -> ITEM_SINGLE;
+                    case "ITEM_TABLE" -> ITEM_TABLE;
+                    case "ITEM_TREE" -> ITEM_TREE;
+                    case "CLUSTER" -> CLUSTER;
+                    case "ELEMENT" -> ELEMENT;
+                    default -> null;
+                });
     }
 
     public Set<StructureRmType> getParents() {

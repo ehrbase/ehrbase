@@ -33,7 +33,8 @@ import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
  * @param fetch       query limit to apply
  * @param offset      query offset to apply
  */
-public record AqlQueryRequest(String aqlString, AqlQuery aqlQuery, Map<String, Object> parameters, Long fetch, Long offset) {
+public record AqlQueryRequest(
+        String aqlString, AqlQuery aqlQuery, Map<String, Object> parameters, Long fetch, Long offset) {
 
     /**
      * Create a new {@link AqlQueryRequest} by parsing the given AQL <code>queryString</code>.

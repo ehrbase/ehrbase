@@ -122,14 +122,15 @@ public final class DbToRmFormat {
     private static <T> JsonNode parseJsonData(T rec, Function<T, ?> jsonExtractor, ObjectMapper objectMapper) {
         Object v = jsonExtractor.apply(rec);
         return switch (v) {
-            case String s  -> parseJson(s, objectMapper);
-            case JSONB j  -> parseJson(j.data(), objectMapper);
-            case StringSegment cs  -> parseJson(  PREFER_CHAR_SEQUENCE_READER ? new CharSequenceReader(cs) : cs.reader(), objectMapper);
-            case CharSequence cs  -> parseJson(new CharSequenceReader(cs), objectMapper);
+            case String s -> parseJson(s, objectMapper);
+            case JSONB j -> parseJson(j.data(), objectMapper);
+            case StringSegment cs ->
+                parseJson(PREFER_CHAR_SEQUENCE_READER ? new CharSequenceReader(cs) : cs.reader(), objectMapper);
+            case CharSequence cs -> parseJson(new CharSequenceReader(cs), objectMapper);
             default -> {
-                    throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
-                    }
-            };
+                throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
+            }
+        };
     }
 
     /**
@@ -249,7 +250,8 @@ public final class DbToRmFormat {
         return rmObject;
     }
 
-    public static ObjectNode reconstructRmObjectTree(final Record2<String, ?>[] jsonObjects, ObjectMapper objectMapper) {
+    public static ObjectNode reconstructRmObjectTree(
+            final Record2<String, ?>[] jsonObjects, ObjectMapper objectMapper) {
         return reconstructRmObjectTree(jsonObjects, Record2::value1, Record2::value2, objectMapper);
     }
 
@@ -346,7 +348,8 @@ public final class DbToRmFormat {
         }
     }
 
-    private static ObjectNode insertJsonEntryIntoObject(ObjectNode parentObject, PathComponent pc, ObjectNode childToAdd, boolean isLeaf, DbJsonPath path) {
+    private static ObjectNode insertJsonEntryIntoObject(
+            ObjectNode parentObject, PathComponent pc, ObjectNode childToAdd, boolean isLeaf, DbJsonPath path) {
         String fieldName = pc.attribute();
         ObjectNode objectNode = (ObjectNode) parentObject.get(fieldName);
         if (isLeaf) {
@@ -355,8 +358,7 @@ public final class DbToRmFormat {
              * ELEMENT/feeder_audit is replaced because it would be more complicated to skip all possible descendants
              */
             if (objectNode != null && !FEEDER_AUDIT_ATTRIBUTE_ALIAS.equals(fieldName)) {
-                throw new IllegalArgumentException(
-                        "parent already has child %s (%s)".formatted(fieldName, path));
+                throw new IllegalArgumentException("parent already has child %s (%s)".formatted(fieldName, path));
             }
             parentObject.set(fieldName, childToAdd);
             return childToAdd;
@@ -367,7 +369,8 @@ public final class DbToRmFormat {
         }
     }
 
-    private static ObjectNode insertJsonEntryIntoArray(ObjectNode parentObject, PathComponent pc, ObjectNode childToAdd, boolean isLeaf, DbJsonPath path) {
+    private static ObjectNode insertJsonEntryIntoArray(
+            ObjectNode parentObject, PathComponent pc, ObjectNode childToAdd, boolean isLeaf, DbJsonPath path) {
         String fieldName = pc.attribute();
         ArrayNode arrayNode = (ArrayNode) parentObject.get(fieldName);
 
@@ -445,7 +448,6 @@ public final class DbToRmFormat {
         }
     }
 
-
     public record PathComponent(String attribute, int index) {}
 
     /**
@@ -513,8 +515,7 @@ public final class DbToRmFormat {
                     switch (ch) {
                         case '.' -> {
                             list.add(new PathComponent(
-                                    ch1 == 0 ? RmAttributeAlias.aliasByAliasChar(ch0) : "" + ch0 + ch1,
-                                    nr));
+                                    ch1 == 0 ? RmAttributeAlias.aliasByAliasChar(ch0) : "" + ch0 + ch1, nr));
                             ch0 = ch1 = 0;
                             nr = -1;
                         }

@@ -402,7 +402,8 @@ final class AslPathCreator {
             addFiltersToPathNodeSubquery(currentNode, structureLevel, sq);
         }
 
-        Stream<DataNodeInfo> dataNodeInfoStream = currentNode.streamChildren()
+        Stream<DataNodeInfo> dataNodeInfoStream = currentNode
+                .streamChildren()
                 .flatMap(child -> handlePathStructureNodeChild(
                         parentNode,
                         parentJoinMode,

@@ -192,7 +192,7 @@ public final class PathCohesionAnalysis {
                         if (this == NODE) {
                             // remove name/value for nodeId entries
                             boolean isNodeId = archetypeNodeId
-                                    .map(p -> (String)((Primitive<?,?>)p.getValue()).getValue())
+                                    .map(p -> (String) ((Primitive<?, ?>) p.getValue()).getValue())
                                     .filter(v -> !v.startsWith("openEHR-"))
                                     .isPresent();
                             if (isNodeId) {
