@@ -165,7 +165,11 @@ public class AqlSqlQueryBuilder {
         return query;
     }
 
-    public Result<Record> explain(boolean analyze, ResultQuery<Record> selectQuery) {
+    public Result<Record> explain(boolean analyze, ResultQuery<?> selectQuery) {
+        return explain(context, analyze, selectQuery);
+    }
+
+    public static Result<Record> explain(DSLContext context, boolean analyze, ResultQuery<?> selectQuery) {
         if (analyze) {
             return context.fetch("EXPLAIN (SUMMARY, COSTS, VERBOSE, FORMAT JSON, ANALYZE, TIMING) {0}", selectQuery);
         } else {
