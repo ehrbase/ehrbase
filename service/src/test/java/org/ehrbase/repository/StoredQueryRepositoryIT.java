@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 @ServiceIntegrationTest
 class StoredQueryRepositoryIT {
 
+    private static final String DEFAULT_QUERY_TYPE = "AQL";
+
     @Autowired
     StoredQueryRepository storedQueryRepository;
 
@@ -37,24 +39,34 @@ class StoredQueryRepositoryIT {
     void retrieveAllLatest() {
 
         storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.2::QueryA", new SemVer(1, 2, 3, null)), "SELECT h FROM EHR h");
+                StoredQueryQualifiedName.create("dom.2::QueryA", new SemVer(1, 2, 3, null)),
+                "SELECT h FROM EHR h",
+                DEFAULT_QUERY_TYPE);
 
         storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(1, 2, 3, null)), "SELECT e FROM EHR e");
+                StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(1, 2, 3, null)),
+                "SELECT e FROM EHR e",
+                DEFAULT_QUERY_TYPE);
         // SNAPSHOT ignored
         storedQueryRepository.store(
                 StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(3, 2, 3, "SNAPSHOT")),
-                "SELECT g FROM EHR g");
+                "SELECT g FROM EHR g",
+                DEFAULT_QUERY_TYPE);
         storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(2, 2, 3, null)), "SELECT f FROM EHR f");
+                StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(2, 2, 3, null)),
+                "SELECT f FROM EHR f",
+                DEFAULT_QUERY_TYPE);
 
         storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.1::QueryX", new SemVer(2, 2, 3, null)), "SELECT x FROM EHR x");
+                StoredQueryQualifiedName.create("dom.1::QueryX", new SemVer(2, 2, 3, null)),
+                "SELECT x FROM EHR x",
+                DEFAULT_QUERY_TYPE);
 
         // SNAPSHOT ignored
         storedQueryRepository.store(
                 StoredQueryQualifiedName.create("dom.3::QueryC", new SemVer(3, 2, 3, "SNAPSHOT")),
-                "SELECT i FROM EHR i");
+                "SELECT i FROM EHR i",
+                DEFAULT_QUERY_TYPE);
 
         List<QueryDefinitionResultDto> results = storedQueryRepository.retrieveAllLatest();
         assertThat(results.stream().map(QueryDefinitionResultDto::getQueryText))

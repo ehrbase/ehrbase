@@ -22,13 +22,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.ehrbase.openehr.aqlengine.AqlQueryUtils;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryUtils;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.containment.AbstractContainmentExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
@@ -191,10 +192,7 @@ public final class PathCohesionAnalysis {
                         if (this == NODE) {
                             // remove name/value for nodeId entries
                             boolean isNodeId = archetypeNodeId
-                                    .map(ComparisonOperatorPredicate::getValue)
-                                    .map(Primitive.class::cast)
-                                    .map(Primitive::getValue)
-                                    .map(String.class::cast)
+                                    .map(p -> (String) ((Primitive<?, ?>) p.getValue()).getValue())
                                     .filter(v -> !v.startsWith("openEHR-"))
                                     .isPresent();
                             if (isNodeId) {
@@ -220,7 +218,7 @@ public final class PathCohesionAnalysis {
         private static String getStringValue(AndOperatorPredicate and, AqlObjectPath archetypeNodeId) {
             return getOperand(and, archetypeNodeId)
                     .findFirst()
-                    .map(p -> (String) ((Primitive) p.getValue()).getValue())
+                    .map(p -> (String) ((Primitive<?, ?>) p.getValue()).getValue())
                     .orElse(null);
         }
 
@@ -315,12 +313,14 @@ public final class PathCohesionAnalysis {
         private PathNode attribute;
         private final List<IdentifiedPath> paths;
         private final List<IdentifiedPath> pathsEndingAtNode;
+        private final List<IdentifiedPath> pathsEndingAtNodeView;
         private final boolean root;
 
         private PathCohesionTreeNode(PathNode attribute, List<IdentifiedPath> paths, boolean root) {
             this.attribute = attribute;
             this.paths = paths;
-            this.pathsEndingAtNode = new ArrayList<>(paths);
+            this.pathsEndingAtNode = new LinkedList<>(paths);
+            this.pathsEndingAtNodeView = Collections.unmodifiableList(this.pathsEndingAtNode);
             this.root = root;
         }
 
@@ -349,7 +349,7 @@ public final class PathCohesionAnalysis {
         }
 
         public List<IdentifiedPath> getPathsEndingAtNode() {
-            return Collections.unmodifiableList(pathsEndingAtNode);
+            return pathsEndingAtNodeView;
         }
 
         public boolean isRoot() {

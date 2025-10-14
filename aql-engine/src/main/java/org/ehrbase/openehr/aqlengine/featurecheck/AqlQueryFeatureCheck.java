@@ -21,7 +21,7 @@ import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
-import org.ehrbase.openehr.aqlengine.AqlQueryParsingPostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryParsingPostProcessor;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.springframework.stereotype.Component;
 

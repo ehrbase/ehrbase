@@ -43,6 +43,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.jooq.pg.Tables;
+import org.ehrbase.openehr.aqlengine.aql.model.ListPredicateOperand;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
@@ -66,6 +67,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
@@ -93,7 +95,7 @@ import org.jooq.TableField;
 
 public final class AslUtils {
 
-    static final class AliasProvider {
+    public static final class AliasProvider {
         private final Map<String, Integer> aliasCounters = new HashMap<>();
 
         public String uniqueAlias(String alias) {
@@ -160,6 +162,7 @@ public final class AslUtils {
             }
             case AslFolderItemIdVirtualField f -> Stream.of(f.getFieldName());
             case null -> Stream.empty();
+            case AslStringAggregationField f -> streamFieldNames(f.getBaseField());
         };
     }
 
@@ -275,39 +278,48 @@ public final class AslUtils {
                         candidateTypes.iterator().next(), predicate.getPath())
                 .filter(ec -> ec.getAllowedRmTypes().containsAll(candidateTypes))
                 .orElseThrow();
+        FieldSource ownerSource = FieldSource.withOwner(query);
+        List<Primitive> value = predicate.getValue() instanceof ListPredicateOperand lpo
+                ? lpo.getValues()
+                : List.of(((Primitive) predicate.getValue()));
         ComparisonConditionOperator operator =
                 ComparisonConditionOperator.valueOf(predicate.getOperator().name());
-        final AslConditionOperator aslOperator = operator.getAslOperator();
-        FieldSource ownerSource = FieldSource.withOwner(query);
-        List<Primitive> value = List.of(((Primitive) predicate.getValue()));
+        final AslConditionOperator aslOperator = value.size() > 1 && operator == ComparisonConditionOperator.EQ
+                ? AslConditionOperator.IN
+                : operator.getAslOperator();
         AslFieldValueQueryCondition<?> condition =
                 switch (extractedColumn) {
-                    case NAME_VALUE -> new AslFieldValueQueryCondition<>(
-                            findFieldForOwner(AslStructureColumn.ENTITY_NAME, query.getSelect(), query),
-                            aslOperator,
-                            conditionValue(value, operator, String.class));
-                    case VO_ID -> new AslFieldValueQueryCondition<>(
-                            AslComplexExtractedColumnField.voIdField(ownerSource),
-                            aslOperator,
-                            conditionValue(value, operator, String.class));
-                    case EHR_ID -> new AslFieldValueQueryCondition<>(
-                            findFieldForOwner(EHR_TABLE_ID_FIELD, query.getSelect(), query),
-                            aslOperator,
-                            conditionValue(value, operator, String.class));
-                    case ARCHETYPE_NODE_ID -> new AslFieldValueQueryCondition<>(
-                            AslComplexExtractedColumnField.archetypeNodeIdField(ownerSource),
-                            aslOperator,
-                            archetypeNodeIdConditionValues(value, operator));
-                    case ROOT_CONCEPT -> new AslFieldValueQueryCondition<>(
-                            findFieldForOwner(COMP_DATA_TABLE_ROOT_CONCEPT_FIELD, query.getSelect(), query),
-                            aslOperator,
-                            archetypeNodeIdConditionValues(value, operator).stream()
-                                    // archetype must be for COMPOSITION
-                                    .filter(tc -> StructureRmType.COMPOSITION
-                                            .getAlias()
-                                            .equals(tc.aliasedRmType()))
-                                    .map(AslRmTypeAndConcept::concept)
-                                    .toList());
+                    case NAME_VALUE ->
+                        new AslFieldValueQueryCondition<>(
+                                findFieldForOwner(AslStructureColumn.ENTITY_NAME, query.getSelect(), query),
+                                aslOperator,
+                                conditionValue(value, operator, String.class));
+                    case VO_ID ->
+                        new AslFieldValueQueryCondition<>(
+                                AslComplexExtractedColumnField.voIdField(ownerSource),
+                                aslOperator,
+                                conditionValue(value, operator, String.class));
+                    case EHR_ID ->
+                        new AslFieldValueQueryCondition<>(
+                                findFieldForOwner(EHR_TABLE_ID_FIELD, query.getSelect(), query),
+                                aslOperator,
+                                conditionValue(value, operator, String.class));
+                    case ARCHETYPE_NODE_ID ->
+                        new AslFieldValueQueryCondition<>(
+                                AslComplexExtractedColumnField.archetypeNodeIdField(ownerSource),
+                                aslOperator,
+                                archetypeNodeIdConditionValues(value, operator));
+                    case ROOT_CONCEPT ->
+                        new AslFieldValueQueryCondition<>(
+                                findFieldForOwner(COMP_DATA_TABLE_ROOT_CONCEPT_FIELD, query.getSelect(), query),
+                                aslOperator,
+                                archetypeNodeIdConditionValues(value, operator).stream()
+                                        // archetype must be for COMPOSITION
+                                        .filter(tc -> StructureRmType.COMPOSITION
+                                                .getAlias()
+                                                .equals(tc.aliasedRmType()))
+                                        .map(AslRmTypeAndConcept::concept)
+                                        .toList());
                     case TEMPLATE_ID -> {
                         // Template id is handled separately since the extracted column stores the internal uuid
                         List<UUID> templateUuids = templateIdConditionValues(value, operator, templateUuidLookupFunc);
@@ -330,15 +342,16 @@ public final class AslUtils {
                             EHR_TIME_CREATED,
                             EHR_TIME_CREATED_DV,
                             EHR_SYSTEM_ID,
-                            EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
-                            "Unexpected structure predicate on %s".formatted(extractedColumn));
+                            EHR_SYSTEM_ID_DV ->
+                        throw new IllegalArgumentException(
+                                "Unexpected structure predicate on %s".formatted(extractedColumn));
                 };
         if (condition.getValues().isEmpty()) {
             return switch (condition.getOperator()) {
                 case IN, EQ, LIKE -> new AslFalseQueryCondition();
                 case NEQ -> new AslTrueQueryCondition();
-                default -> throw new IllegalArgumentException(
-                        "Unexpected operator %s".formatted(condition.getOperator()));
+                default ->
+                    throw new IllegalArgumentException("Unexpected operator %s".formatted(condition.getOperator()));
             };
         }
 
@@ -424,20 +437,21 @@ public final class AslUtils {
         boolean isJsonbField = JSONB.class.isAssignableFrom(type);
         return switch (operator) {
             case EXISTS -> Collections.emptyList();
-            case MATCHES, EQ, NEQ -> values.stream()
-                    .map(Primitive::getValue)
-                    .filter(p -> isJsonbField
-                            || type.isInstance(p)
-                            || UUID.class.isAssignableFrom(type) && p instanceof String)
-                    .toList();
-            case LT, GT_EQ, GT, LT_EQ -> values.stream()
-                    .map(Primitive::getValue)
-                    .toList();
-            case LIKE -> values.stream()
-                    .map(Primitive::getValue)
-                    .map(String.class::cast)
-                    .filter(p -> isJsonbField || type.isInstance(p) || UUID.class.isAssignableFrom(type))
-                    .toList();
+            case MATCHES, EQ, NEQ ->
+                values.stream()
+                        .map(Primitive::getValue)
+                        .filter(p -> isJsonbField
+                                || type.isInstance(p)
+                                || UUID.class.isAssignableFrom(type) && p instanceof String)
+                        .toList();
+            case LT, GT_EQ, GT, LT_EQ ->
+                values.stream().map(Primitive::getValue).toList();
+            case LIKE ->
+                values.stream()
+                        .map(Primitive::getValue)
+                        .map(String.class::cast)
+                        .filter(p -> isJsonbField || type.isInstance(p) || UUID.class.isAssignableFrom(type))
+                        .toList();
         };
     }
 
@@ -528,7 +542,7 @@ public final class AslUtils {
                 AslUtils.findFieldForOwner(AslStructureColumn.PARENT_NUM, rightProvider.getSelect(), rightOwner);
 
         Stream<PathCohesionTreeNode> siblings =
-                currentNode.getParent().getChildren().stream().filter(c -> c != currentNode);
+                currentNode.getParent().streamChildren().filter(c -> c != currentNode);
 
         return siblings.map(nodeToSq).filter(Objects::nonNull).flatMap(csq -> {
             Stream<AslQuery> sibling = query.getChildren().stream()
@@ -563,12 +577,12 @@ public final class AslUtils {
         }
         return (switch (parentRelation) {
                     case EHR_STATUS -> Stream.of(AslStructureColumn.EHR_ID);
-                        // l.vo_id == r.vo_id
+                    // l.vo_id == r.vo_id
                     case COMPOSITION -> Stream.of(AslStructureColumn.VO_ID);
-                        // l.ehr_id == r.ehr_id and l.folder_idx = r.folder_idx
+                    // l.ehr_id == r.ehr_id and l.folder_idx = r.folder_idx
                     case FOLDER -> Stream.of(AslStructureColumn.EHR_ID, AslStructureColumn.EHR_FOLDER_IDX);
-                    case AUDIT_DETAILS -> throw new IllegalArgumentException(
-                            "Path child condition not applicable to AUDIT_DETAILS");
+                    case AUDIT_DETAILS ->
+                        throw new IllegalArgumentException("Path child condition not applicable to AUDIT_DETAILS");
                     case EHR -> throw new IllegalArgumentException("Path child condition not applicable to EHR");
                 })
                 .map(sc -> columnEqualToColumnJoinCondition(sc, left, leftOwner, sc, right, rightOwner));

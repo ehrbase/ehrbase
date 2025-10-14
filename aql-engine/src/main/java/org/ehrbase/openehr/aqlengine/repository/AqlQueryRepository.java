@@ -119,19 +119,16 @@ public class AqlQueryRepository {
         // extracted column by full path
         return AslExtractedColumn.find(select.root(), selectPath.orElse(null))
                 // OR extracted column by archetype_node_id suffix
-                .or(() -> Optional.of(AslExtractedColumn.ARCHETYPE_NODE_ID)
-                        .filter(e ->
-                                selectPath.filter(p -> p.endsWith(e.getPath())).isPresent()))
+                .or(() -> selectPath
+                        .filter(p -> p.endsWith(AslExtractedColumn.ARCHETYPE_NODE_ID.getPath()))
+                        .map(__ -> AslExtractedColumn.ARCHETYPE_NODE_ID))
                 // OR extracted column ORIGINAL_VERSION.commit_audit
                 .or(() -> AslExtractedColumn.find(
                                 RmConstants.AUDIT_DETAILS,
                                 new AqlObjectPath(nodes.stream().skip(1).toList()))
                         .filter(e -> RmConstants.ORIGINAL_VERSION.equals(
                                 select.root().getRmType()))
-                        .filter(e -> nodes.stream()
-                                .limit(1)
-                                .map(PathNode::getAttribute)
-                                .allMatch("commit_audit"::equals)))
+                        .filter(e -> "commit_audit".equals(nodes.getFirst().getAttribute())))
                 .<AqlSqlResultPostprocessor>map(
                         ec -> new ExtractedColumnResultPostprocessor(ec, knowledgeCache, systemService.getSystemId()))
                 .orElseGet(DefaultResultPostprocessor::new);

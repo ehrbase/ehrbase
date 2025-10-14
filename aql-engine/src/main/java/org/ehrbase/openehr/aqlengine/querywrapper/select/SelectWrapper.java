@@ -57,8 +57,8 @@ public final class SelectWrapper {
                         switch (type) {
                             case PATH -> selectExpression.getColumnExpression();
                             case PRIMITIVE -> null;
-                            case AGGREGATE_FUNCTION -> ((AggregateFunction) selectExpression.getColumnExpression())
-                                    .getIdentifiedPath();
+                            case AGGREGATE_FUNCTION ->
+                                ((AggregateFunction) selectExpression.getColumnExpression()).getIdentifiedPath();
                             case FUNCTION -> throw new UnsupportedOperationException("Not implemented");
                         })
                 .map(IdentifiedPath.class::cast);

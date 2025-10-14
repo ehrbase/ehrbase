@@ -68,13 +68,13 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
         logger.debug("Management endpoints base path {}", managementEndpointsAccessType);
 
         return switch (managementEndpointsAccessType) {
-                // management endpoints are locked behind an authorization
-                // and are only available for users with the admin role
+            // management endpoints are locked behind an authorization
+            // and are only available for users with the admin role
             case AccessType.ADMIN_ONLY -> managementAuthorizedUrl.hasRole(adminRoleSupplier);
-                // management endpoints are locked behind an authorization, but are available to any role
-            case AccessType.PRIVATE -> managementAuthorizedUrl.hasAnyRole(
-                    privateRolesSupplier.toArray(new String[] {}));
-                // management endpoints can be accessed without an authorization
+            // management endpoints are locked behind an authorization, but are available to any role
+            case AccessType.PRIVATE ->
+                managementAuthorizedUrl.hasAnyRole(privateRolesSupplier.toArray(new String[] {}));
+            // management endpoints can be accessed without an authorization
             case AccessType.PUBLIC -> managementAuthorizedUrl.permitAll();
         };
     }
