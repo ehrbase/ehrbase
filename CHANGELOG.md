@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [2.24.0]
  ### Added
  ### Changed 
 - When executing a stored query, the response no longer includes the variable `q` with the query definition [#1563](https://github.com/ehrbase/ehrbase/pull/1536)
@@ -232,4 +232,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.21.1]: https://github.com/ehrbase/ehrbase/compare/v2.21.0...v2.21.1
 [2.22.0]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...v2.22.0
 [2.23.0]: https://github.com/ehrbase/ehrbase/compare/v2.22.0...v2.23.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.23.0...HEAD
+[2.24.0]: https://github.com/ehrbase/ehrbase/compare/v2.23.0...v2.24.0
