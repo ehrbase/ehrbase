@@ -8,7 +8,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
-- do not include query in stored query response [#1563](https://github.com/ehrbase/ehrbase/pull/1536)
+ ### Fixed 
+
+## [2.24.0]
+ ### Added
+ ### Changed 
+- When executing a stored query, the response no longer includes the variable `q` with the query definition [#1563](https://github.com/ehrbase/ehrbase/pull/1536)
  ### Fixed 
 - Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
 
@@ -232,4 +237,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.21.1]: https://github.com/ehrbase/ehrbase/compare/v2.21.0...v2.21.1
 [2.22.0]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...v2.22.0
 [2.23.0]: https://github.com/ehrbase/ehrbase/compare/v2.22.0...v2.23.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.23.0...HEAD
+[2.24.0]: https://github.com/ehrbase/ehrbase/compare/v2.23.0...v2.24.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.24.0...HEAD
