@@ -66,7 +66,7 @@
         <commons-io.version>2.18.0</commons-io.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <flyway.version>11.1.1</flyway.version>
-        <javamelody.version>1.99.1</javamelody.version>
+        <javamelody.version>2.5.1</javamelody.version>
         <json-path.version>2.9.0</json-path.version>
         <junit.version>5.10.2</junit.version>
 
