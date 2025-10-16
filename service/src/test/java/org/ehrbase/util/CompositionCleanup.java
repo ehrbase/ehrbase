@@ -97,8 +97,8 @@ public final class CompositionCleanup {
                                 "math_function",
                                 "uid",
                                 "width" -> it.remove();
-                        case "name", "template_id", "archetype_id" -> f.setValue(
-                                f.getValue().get("value"));
+                        case "name", "template_id", "archetype_id" ->
+                            f.setValue(f.getValue().get("value"));
 
                         case "data", "state", "description", "wfDetails" -> {
                             if (removeStructureNodes) {

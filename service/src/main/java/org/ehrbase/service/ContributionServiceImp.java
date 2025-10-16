@@ -30,7 +30,6 @@ import com.nedap.archie.rminfo.RMTypeInfo;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
@@ -115,7 +114,6 @@ public class ContributionServiceImp implements ContributionService {
      * @throws ObjectNotFoundException if EHR or CONTRIBUTION is not found
      */
     @Override
-    @Nonnull
     public ContributionDto getContribution(UUID ehrId, UUID contributionId) {
         // also checks for valid ehr and contribution ID
         AuditDetails auditDetails = retrieveAuditDetails(ehrId, contributionId);
@@ -187,12 +185,12 @@ public class ContributionServiceImp implements ContributionService {
 
                     processMetadataVersion(ehrId, contributionId, version);
                 }
-                default -> throw new ValidationException(ERR_VER_INVALID.formatted(Optional.of(
-                                versionRmObject.getClass())
-                        .map(ArchieRMInfoLookup.getInstance()::getTypeInfo)
-                        .map(RMTypeInfo::getRmName)
-                        .orElseGet(
-                                () -> versionRmObject.getClass().getSimpleName().toUpperCase())));
+                default ->
+                    throw new ValidationException(ERR_VER_INVALID.formatted(Optional.of(versionRmObject.getClass())
+                            .map(ArchieRMInfoLookup.getInstance()::getTypeInfo)
+                            .map(RMTypeInfo::getRmName)
+                            .orElseGet(() ->
+                                    versionRmObject.getClass().getSimpleName().toUpperCase())));
             }
         });
 
@@ -222,19 +220,19 @@ public class ContributionServiceImp implements ContributionService {
 
         switch (changeType) {
             case CREATION ->
-            // call creation of a new status with given input is not possible as it is linked to and created through
-            // an EHR object
-            throw new ValidationException("Invalid change type. EHR_STATUS cannot be manually created.");
-                // triggers the same processing as modification
-                // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
-            case AMENDMENT, MODIFICATION -> ehrService.updateStatus(
-                    ehrId, ehrStatus, version.getPrecedingVersionUid(), contributionId, audit);
+                // call creation of a new status with given input is not possible as it is linked to and created through
+                // an EHR object
+                throw new ValidationException("Invalid change type. EHR_STATUS cannot be manually created.");
+            // triggers the same processing as modification
+            // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
+            case AMENDMENT, MODIFICATION ->
+                ehrService.updateStatus(ehrId, ehrStatus, version.getPrecedingVersionUid(), contributionId, audit);
             case DELETED ->
-            // deleting a STATUS versioned object is invalid
-            throw new ValidationException("Invalid change type. EHR_STATUS cannot be deleted.");
+                // deleting a STATUS versioned object is invalid
+                throw new ValidationException("Invalid change type. EHR_STATUS cannot be deleted.");
             case SYNTHESIS, UNKNOWN ->
-            // valid change type is done in checkContributionRules
-            throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
+                // valid change type is done in checkContributionRules
+                throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
         }
     }
 
@@ -259,18 +257,18 @@ public class ContributionServiceImp implements ContributionService {
 
         switch (changeType) {
             case CREATION ->
-            // call creation of a new composition with given input
-            compositionService.create(ehrId, composition, contributionId, audit);
+                // call creation of a new composition with given input
+                compositionService.create(ehrId, composition, contributionId, audit);
             case AMENDMENT,
                     // triggers the same processing as modification
                     // :TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
                     MODIFICATION ->
-            // call modification of the given composition
-            compositionService.update(ehrId, version.getPrecedingVersionUid(), composition, contributionId, audit);
+                // call modification of the given composition
+                compositionService.update(ehrId, version.getPrecedingVersionUid(), composition, contributionId, audit);
             case DELETED ->
-            // case of deletion change type, but request also has payload
-            // :TODO: should that be even allowed? specification-wise it's not forbidden)
-            compositionService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
+                // case of deletion change type, but request also has payload
+                // :TODO: should that be even allowed? specification-wise it's not forbidden)
+                compositionService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
             case SYNTHESIS, UNKNOWN -> throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
         }
     }
@@ -286,23 +284,23 @@ public class ContributionServiceImp implements ContributionService {
 
         switch (changeType) {
             case CREATION ->
-            // call creation of a new folder version with given input
-            folderService.create(ehrId, folder, contributionId, audit);
+                // call creation of a new folder version with given input
+                folderService.create(ehrId, folder, contributionId, audit);
 
-                // triggers the same processing as modification
-                // :TODO-396: so far so good, but should use the type"AMENDMENT" for audit in access layer
+            // triggers the same processing as modification
+            // :TODO-396: so far so good, but should use the type"AMENDMENT" for audit in access layer
             case AMENDMENT, MODIFICATION ->
-            // preceding_version_uid check call
-            // modification of the given folder
-            folderService.update(ehrId, folder, version.getPrecedingVersionUid(), contributionId, audit);
+                // preceding_version_uid check call
+                // modification of the given folder
+                folderService.update(ehrId, folder, version.getPrecedingVersionUid(), contributionId, audit);
             case DELETED ->
-            // case of deletion change type, but request
-            // also has payload
-            // TODO: should that be even allowed? specification-wise it's not forbidden
-            folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
+                // case of deletion change type, but request
+                // also has payload
+                // TODO: should that be even allowed? specification-wise it's not forbidden
+                folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId, audit);
             case SYNTHESIS, UNKNOWN ->
-            // of valid change type is done in checkContributionRules
-            throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
+                // of valid change type is done in checkContributionRules
+                throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
         }
     }
 
@@ -332,7 +330,7 @@ public class ContributionServiceImp implements ContributionService {
                 if (version.getPrecedingVersionUid() == null)
                     throw new ValidationException(ERR_MISSING_PRECEDING_UID.formatted(changeType));
             }
-                // block of valid change types, without any rules to apply (yet)
+            // block of valid change types, without any rules to apply (yet)
             case DELETED, SYNTHESIS, UNKNOWN -> {}
             default -> throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
         }

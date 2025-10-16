@@ -40,8 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -98,7 +96,7 @@ public class EhrServiceImp implements EhrService {
     }
 
     @Override
-    public EhrResult create(@Nullable UUID ehrId, @Nullable EhrStatusDto status) {
+    public EhrResult create(UUID ehrId, EhrStatusDto status) {
         if (ehrId == null) {
             ehrId = UuidGenerator.randomUUID();
         }
@@ -192,7 +190,7 @@ public class EhrServiceImp implements EhrService {
         }
     }
 
-    private void validateEhrStatus(@Nonnull EhrStatusDto status) {
+    private void validateEhrStatus(EhrStatusDto status) {
         try {
             validationService.check(status);
         } catch (UnprocessableEntityException | ValidationException | InternalServerException e) {

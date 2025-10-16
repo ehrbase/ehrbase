@@ -10,6 +10,27 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 
+## [2.24.0]
+ ### Added
+ ### Changed 
+- When executing a stored query, the response no longer includes the variable `q` with the query definition [#1563](https://github.com/ehrbase/ehrbase/pull/1536)
+ ### Fixed 
+- Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
+
+## [2.23.0]
+ ### Added
+ ### Changed 
+- Upgrade openEHR_SDK to version 2.26.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ ### Fixed 
+- Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
+- Renaming the query type parameter when storing queries to match the specification [#1536](https://github.com/ehrbase/ehrbase/pull/1536)
+
+## [2.22.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+- AQL: deterministic SQL generation [#1534](https://github.com/ehrbase/ehrbase/pull/1534)
+
 ## [2.21.1]
  ### Added
  ### Changed 
@@ -214,4 +235,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.20.0]: https://github.com/ehrbase/ehrbase/compare/v2.19.0...v2.20.0
 [2.21.0]: https://github.com/ehrbase/ehrbase/compare/v2.20.0...v2.21.0
 [2.21.1]: https://github.com/ehrbase/ehrbase/compare/v2.21.0...v2.21.1
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...HEAD
+[2.22.0]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...v2.22.0
+[2.23.0]: https://github.com/ehrbase/ehrbase/compare/v2.22.0...v2.23.0
+[2.24.0]: https://github.com/ehrbase/ehrbase/compare/v2.23.0...v2.24.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.24.0...HEAD

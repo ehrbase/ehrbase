@@ -16,10 +16,12 @@
  * limitations under the License.
  */
 
+DROP INDEX IF EXISTS comp_data_leaf_idx;
+
 DROP INDEX IF EXISTS comp_data_path_idx;
 ALTER INDEX IF EXISTS mig_comp_data_path_idx RENAME TO comp_data_path_idx;
 CREATE INDEX IF NOT EXISTS comp_data_path_idx
-    ON ehr.comp_data USING btree
+    ON comp_data USING btree
         (vo_id, parent_num, entity_concept)
     INCLUDE(rm_entity, entity_attribute, entity_name, num, num_cap, citem_num, entity_idx);
 
