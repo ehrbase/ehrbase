@@ -39,4 +39,12 @@ class RmTypeAliasTest {
                 .withFailMessage(() -> "Alias name clashes with an existing type: " + t)
                 .isInstanceOf(IllegalArgumentException.class));
     }
+
+    @Test
+    void checkSwitchCompleteness() {
+        RmTypeAlias.values.forEach(rta -> {
+            assertThat(RmTypeAlias.getAlias(rta.type())).isEqualTo(rta.alias());
+            assertThat(RmTypeAlias.getRmType(rta.alias())).isEqualTo(rta.type());
+        });
+    }
 }

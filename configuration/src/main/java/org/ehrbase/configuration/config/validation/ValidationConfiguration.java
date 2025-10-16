@@ -32,7 +32,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cache.Cache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -55,10 +54,10 @@ public class ValidationConfiguration {
     public ValidationConfiguration(
             ExternalValidationProperties properties,
             CacheProvider cacheProvider,
-            @Nullable OAuth2AuthorizedClientManager authorizedClientManager) {
+            Optional<OAuth2AuthorizedClientManager> authorizedClientManager) {
         this.properties = properties;
         this.cacheProvider = cacheProvider;
-        this.authorizedClientManager = authorizedClientManager;
+        this.authorizedClientManager = authorizedClientManager.orElse(null);
     }
 
     @Bean

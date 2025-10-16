@@ -24,7 +24,6 @@ import com.nedap.archie.rm.generic.RevisionHistory;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
@@ -102,7 +101,7 @@ public interface CompositionService extends VersionedObjectService<Composition, 
      * @param version           Version to delete, option uses head as default
      * @return True if deleted, false if not
      */
-    boolean isDeleted(UUID ehrId, UUID versionedObjectId, @Nullable Integer version);
+    boolean isDeleted(UUID ehrId, UUID versionedObjectId, Integer version);
 
     /**
      * Admin method to delete a Composition from the DB. See EHRbase Admin API specification for details.

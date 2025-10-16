@@ -30,10 +30,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -44,6 +44,7 @@ import org.ehrbase.openehr.sdk.response.dto.MetaData;
 import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
+import org.ehrbase.rest.util.OpenEhrQueryRequestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -113,8 +114,9 @@ public class OpenehrQueryControllerTest {
             case null -> null;
             case Integer i -> i.longValue();
             case String s -> Long.parseLong(s);
-            default -> throw new IllegalArgumentException(
-                    "unexpected type " + obj.getClass().getName());
+            default ->
+                throw new IllegalArgumentException(
+                        "unexpected type " + obj.getClass().getName());
         };
     }
 
@@ -255,17 +257,16 @@ public class OpenehrQueryControllerTest {
     @Test
     void createRequestWithXmlParamsAdjusted() {
 
-        AqlQueryRequest request = controller()
-                .createRequest(
-                        "SELECT e FROM EHR e",
-                        Map.of(
-                                "p_string", "some-string",
-                                "p_xml_num", Map.of("type", "num", "", 42.12),
-                                "p_xml_int", Map.of("type", "int", "", 11)
-                                // "p_list": L
-                                ),
-                        Optional.empty(),
-                        Optional.empty());
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT e FROM EHR e",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_string", "some-string",
+                        "p_xml_num", Map.of("type", "num", "", 42.12),
+                        "p_xml_int", Map.of("type", "int", "", 11)
+                        // "p_list": L
+                        ))),
+                null,
+                null);
         assertThat(request.parameters())
                 .containsAllEntriesOf(Map.of("p_string", "some-string", "p_xml_num", 42.12, "p_xml_int", 11));
         assertThat(request.fetch()).isNull();
@@ -274,18 +275,15 @@ public class OpenehrQueryControllerTest {
 
     @Test
     void createRequestWithXmlParamsWithoutTypeAdjusted() {
-
-        AqlQueryRequest request = controller()
-                .createRequest(
-                        "SELECT c FROM COMPOSITION c",
-                        Map.of(
-                                "p_xml_num", Map.of("num", 42.12),
-                                "p_xml_int", Map.of("int", 11)
-                                // "p_list": L
-
-                                ),
-                        Optional.empty(),
-                        Optional.empty());
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT c FROM COMPOSITION c",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_xml_num", Map.of("num", 42.12),
+                        "p_xml_int", Map.of("int", 11)
+                        // "p_list": L
+                        ))),
+                null,
+                null);
         assertThat(request.parameters()).containsAllEntriesOf(Map.of("p_xml_num", 42.12, "p_xml_int", 11));
         assertThat(request.fetch()).isNull();
         assertThat(request.offset()).isNull();
@@ -294,14 +292,13 @@ public class OpenehrQueryControllerTest {
     @Test
     void createRequestWithXmlParamListsAdjusted() {
 
-        AqlQueryRequest request = controller()
-                .createRequest(
-                        "SELECT e, c FROM EHR e CONTAINS COMPOSITION c",
-                        Map.of(
-                                "p_xml_list", Map.of("", List.of("value_1", "value_2")),
-                                "p_xml_list_alternative", List.of("some", "other", "value")),
-                        Optional.empty(),
-                        Optional.empty());
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT e, c FROM EHR e CONTAINS COMPOSITION c",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_xml_list", Map.of("", List.of("value_1", "value_2")),
+                        "p_xml_list_alternative", List.of("some", "other", "value")))),
+                null,
+                null);
         assertThat(request.parameters())
                 .containsAllEntriesOf(Map.of(
                         "p_xml_list", List.of("value_1", "value_2"),

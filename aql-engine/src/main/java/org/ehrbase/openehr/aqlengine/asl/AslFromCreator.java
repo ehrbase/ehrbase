@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
@@ -62,13 +61,13 @@ import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
-final class AslFromCreator {
+public final class AslFromCreator {
 
     private final AliasProvider aliasProvider;
     private final KnowledgeCacheService knowledgeCacheService;
     private final boolean archetypeLocalNodePredicates;
 
-    AslFromCreator(
+    public AslFromCreator(
             AliasProvider aliasProvider,
             KnowledgeCacheService knowledgeCacheService,
             final boolean archetypeLocalNodePredicates1) {
@@ -78,7 +77,7 @@ final class AslFromCreator {
     }
 
     @FunctionalInterface
-    interface ContainsToOwnerProvider {
+    public interface ContainsToOwnerProvider {
         OwnerProviderTuple get(ContainsWrapper contains);
     }
 
@@ -365,7 +364,6 @@ final class AslFromCreator {
         return aslStructureQuery;
     }
 
-    @Nonnull
     private static List<AslField> fieldsForContainsSubquery(
             RmContainsWrapper currentDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         final List<AslField> fields = new ArrayList<>();
@@ -403,11 +401,11 @@ final class AslFromCreator {
             if (RmConstants.FOLDER.equals(currentDesc.getRmType())) {
                 boolean mustAddItemsField =
                         switch (currentDesc.containment().getContains()) {
-                            case ContainmentClassExpression cce -> Objects.equals(
-                                    cce.getType(), RmConstants.COMPOSITION);
-                            case ContainmentVersionExpression cve -> cve.getContains()
-                                            instanceof ContainmentClassExpression cce
-                                    && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentClassExpression cce ->
+                                Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentVersionExpression cve ->
+                                cve.getContains() instanceof ContainmentClassExpression cce
+                                        && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
                             case null -> false;
                             default -> false;
                         };
