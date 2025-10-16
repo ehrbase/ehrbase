@@ -19,7 +19,6 @@ package org.ehrbase.plugin.dto;
 
 import java.util.Objects;
 import java.util.UUID;
-import org.springframework.lang.Nullable;
 
 /**
  * Wrapper to Identifier a composition by <code>compositionId</code> {@link UUID} , in version
@@ -31,7 +30,7 @@ public class CompositionIdWithVersionAndEhrId {
     private final UUID compositionId;
     private final Integer version;
 
-    public CompositionIdWithVersionAndEhrId(UUID ehrId, UUID compositionId, @Nullable Integer version) {
+    public CompositionIdWithVersionAndEhrId(UUID ehrId, UUID compositionId, Integer version) {
         this.ehrId = ehrId;
         this.compositionId = compositionId;
         this.version = version;

@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.api.dto.AqlQueryContext;
+import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.rest.EHRbaseHeader;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
@@ -59,6 +60,7 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     private final HttpServletRequest request;
 
     private String executedAql;
+    private AqlQueryRequest aqlQueryRequest;
 
     private final Map<String, Object> metaProperties = new LinkedHashMap<>();
 
@@ -129,6 +131,16 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
                         .map(Boolean::valueOf)
                         .orElse(archetypeLocalNodePredicates)
                 : archetypeLocalNodePredicates;
+    }
+
+    @Override
+    public void setAqlQueryRequest(AqlQueryRequest aqlQueryRequest) {
+        this.aqlQueryRequest = aqlQueryRequest;
+    }
+
+    @Override
+    public AqlQueryRequest getAqlQueryRequest() {
+        return aqlQueryRequest;
     }
 
     private boolean isHeaderTrue(String header) {

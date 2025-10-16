@@ -81,8 +81,8 @@ class StructureRmTypeTest {
     @EnumSource(StructureRmType.class)
     void structureEntry(StructureRmType type) {
         switch (type) {
-            case EVENT_CONTEXT, FEEDER_AUDIT -> assertThat(type.isStructureEntry())
-                    .isTrue();
+            case EVENT_CONTEXT, FEEDER_AUDIT ->
+                assertThat(type.isStructureEntry()).isTrue();
             default -> assertThat(type.isStructureEntry()).isEqualTo(Locatable.class.isAssignableFrom(type.type));
         }
     }

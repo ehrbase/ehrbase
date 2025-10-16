@@ -44,7 +44,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class StoredQueryServiceImp implements StoredQueryService {
-
     private final StoredQueryRepository storedQueryRepository;
     private final CacheProvider cacheProvider;
 
@@ -52,7 +51,6 @@ public class StoredQueryServiceImp implements StoredQueryService {
     private boolean initStoredQueryCache = false;
 
     public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository, CacheProvider cacheProvider) {
-
         this.storedQueryRepository = storedQueryRepository;
         this.cacheProvider = cacheProvider;
     }
@@ -122,17 +120,13 @@ public class StoredQueryServiceImp implements StoredQueryService {
     }
 
     @Override
-    public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
+    public QueryDefinitionResultDto createStoredQuery(
+            String qualifiedName, String version, String queryString, String type) {
 
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName queryQualifiedName = StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
 
-        // validate the query syntax
-        try {
-            AqlQueryParser.parse(queryString);
-        } catch (AqlParseException e) {
-            throw new IllegalArgumentException("Invalid query, reason:" + e, e);
-        }
+        validateQuerySyntax(queryString, type);
 
         // lookup version in db
         SemVer dbSemVer = storedQueryRepository
@@ -150,9 +144,9 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         try {
             if (isUpdate) {
-                storedQueryRepository.update(newQueryQualifiedName, queryString);
+                storedQueryRepository.update(newQueryQualifiedName, queryString, type);
             } else {
-                storedQueryRepository.store(newQueryQualifiedName, queryString);
+                storedQueryRepository.store(newQueryQualifiedName, queryString, type);
             }
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
@@ -165,6 +159,18 @@ public class StoredQueryServiceImp implements StoredQueryService {
         evictAllResolutions(newQueryQualifiedName);
 
         return retrieveStoredQueryInternal(newQueryQualifiedName);
+    }
+
+    protected void validateQuerySyntax(String query, String type) {
+        if (!AQL_QUERY_TYPE.equals(type)) {
+            throw new IllegalArgumentException("Unsupported query type: %s".formatted(type));
+        }
+
+        try {
+            AqlQueryParser.parse(query);
+        } catch (AqlParseException e) {
+            throw new IllegalArgumentException("Invalid AQL query, reason: %s".formatted(e.getMessage()), e);
+        }
     }
 
     private static void checkVersionCombination(SemVer requestSemVer, SemVer dbSemVer) {

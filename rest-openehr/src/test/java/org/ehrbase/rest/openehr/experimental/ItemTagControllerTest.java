@@ -52,7 +52,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 
 class ItemTagControllerTest {
 
@@ -192,7 +191,7 @@ class ItemTagControllerTest {
     // --- GET ---
 
     private ResponseEntity<List<ItemTagDto>> getItemTags(
-            String targetId, ItemTagRMType type, @Nullable List<String> ids, @Nullable List<String> keys) {
+            String targetId, ItemTagRMType type, List<String> ids, List<String> keys) {
 
         return controller()
                 .getItemTag(SAMPLE_EHR_ID, targetId, type, type.name().toLowerCase(), ids, keys);

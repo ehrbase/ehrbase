@@ -20,7 +20,6 @@ package org.ehrbase.api.service.experimental;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 
@@ -42,11 +41,7 @@ public interface ItemTagService {
      * @param itemTagsDto Content of the <code>ItemTag</code> containing the <code>key, value</code> parameter.
      * @return tagUUIDs     of the update/create <code>ItemTag</code>s
      */
-    List<UUID> bulkUpsert(
-            @Nonnull UUID ownerId,
-            @Nonnull UUID targetId,
-            @Nonnull ItemTagRMType targetType,
-            @Nonnull List<ItemTagDto> itemTagsDto);
+    List<UUID> bulkUpsert(UUID ownerId, UUID targetId, ItemTagRMType targetType, List<ItemTagDto> itemTagsDto);
 
     /**
      * Performs a <code>bulk</code> get operation for the given <code>ItemTag</code> <code>IDs</code> and/or
@@ -60,11 +55,7 @@ public interface ItemTagService {
      * @return tags         Matching the <code>ownerId, targetId</code> and optional <code>ids, keys</code>
      */
     List<ItemTagDto> findItemTag(
-            @Nonnull UUID ownerId,
-            @Nonnull UUID targetId,
-            @Nonnull ItemTagRMType targetType,
-            @Nonnull Collection<UUID> ids,
-            @Nonnull Collection<String> keys);
+            UUID ownerId, UUID targetId, ItemTagRMType targetType, Collection<UUID> ids, Collection<String> keys);
 
     /**
      * Performs a <code>bulk</code> delete operation for the given <code>ItemTag</code> <code>ids</code>. This method
@@ -75,9 +66,5 @@ public interface ItemTagService {
      * @param targetType    Type of the target object.
      * @param ids           Identifier <code>ItemTag</code> to delete.
      */
-    void bulkDelete(
-            @Nonnull UUID ownerId,
-            @Nonnull UUID targetId,
-            @Nonnull ItemTagRMType targetType,
-            @Nonnull Collection<UUID> ids);
+    void bulkDelete(UUID ownerId, UUID targetId, ItemTagRMType targetType, Collection<UUID> ids);
 }

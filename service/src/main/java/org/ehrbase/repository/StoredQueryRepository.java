@@ -43,7 +43,6 @@ import org.jooq.SelectWhereStep;
 import org.jooq.SortOrder;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -57,15 +56,13 @@ public class StoredQueryRepository {
         this.timeProvider = timeProvider;
     }
 
-    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
-
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, query, queryType);
         storedQueryRecord.insert();
     }
 
-    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
-
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, query, queryType);
         storedQueryRecord.update();
     }
 
@@ -146,7 +143,7 @@ public class StoredQueryRepository {
         return dto;
     }
 
-    private static @NonNull Condition versionConstraint(SemVer semVer) {
+    private static Condition versionConstraint(SemVer semVer) {
         if (semVer.isRelease() || semVer.isPreRelease()) {
             return STORED_QUERY.SEMVER.eq(semVer.toVersionString());
         }
@@ -187,14 +184,14 @@ public class StoredQueryRepository {
     }
 
     private StoredQueryRecord createStoredQueryRecord(
-            StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
+            StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
         StoredQueryRecord storedQueryRecord = context.newRecord(STORED_QUERY);
 
         storedQueryRecord.setReverseDomainName(storedQueryQualifiedName.reverseDomainName());
         storedQueryRecord.setSemanticId(storedQueryQualifiedName.semanticId());
         storedQueryRecord.setSemver(storedQueryQualifiedName.semVer().toVersionString());
-        storedQueryRecord.setQueryText(sourceAqlText);
-        storedQueryRecord.setType("AQL");
+        storedQueryRecord.setQueryText(query);
+        storedQueryRecord.setType(queryType);
 
         storedQueryRecord.setCreationDate(timeProvider.getNow());
         return storedQueryRecord;

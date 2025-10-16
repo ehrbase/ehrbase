@@ -50,7 +50,7 @@ jobs:
             deps-
 
       - name: Maven - Verify and Package
-        run: mvn --batch-mode --update-snapshots --activate-profiles full verify package
+        run: mvn --batch-mode --update-snapshots --activate-profiles full verify
 
       - name: Maven - Get Version
         id: "get_version"

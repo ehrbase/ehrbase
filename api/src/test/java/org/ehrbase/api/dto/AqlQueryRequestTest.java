@@ -49,7 +49,7 @@ class AqlQueryRequestTest {
     @Test
     void withLimitAndFetch() {
 
-        AqlQueryRequest request = new AqlQueryRequest(new AqlQuery(), Map.of(), 10L, 25L);
+        AqlQueryRequest request = new AqlQueryRequest(null, new AqlQuery(), Map.of(), 10L, 25L);
         assertThat(request.parameters()).isEmpty();
         assertThat(request.fetch()).isEqualTo(10L);
         assertThat(request.offset()).isEqualTo(25L);
