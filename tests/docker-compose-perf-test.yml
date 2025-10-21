@@ -38,12 +38,12 @@ services:
     container_name: "EHRbase-PG"
     networks:
       - ehrbase-net
-    
+
   #
   # jmeter docker service will be ready after ehrbase is healthy.
   #
   jmeter:
-    image: justb4/jmeter:latest
+    image: justb4/jmeter:5.5
     ports:
       - "8082:8080"
     container_name: JMeter
