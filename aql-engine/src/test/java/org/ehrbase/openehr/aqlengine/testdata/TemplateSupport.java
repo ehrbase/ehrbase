@@ -19,6 +19,7 @@ package org.ehrbase.openehr.aqlengine.testdata;
 
 import com.nedap.archie.rm.composition.Composition;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
@@ -39,11 +40,10 @@ public class TemplateSupport {
         endpoint = () -> new DefaultRestTemplateEndpoint(new DefaultRestClient(cfg, new TemplateProvider() {
             @Override
             public Optional<OPERATIONALTEMPLATE> find(String templateId) {
-                try {
-                    OPERATIONALTEMPLATE template = TemplateDocument.Factory.parse(
-                                    OperationalTemplateTestData.findByTemplateId(templateId)
-                                            .getStream())
-                            .getTemplate();
+                try (InputStream in =
+                        OperationalTemplateTestData.findByTemplateId(templateId).getStream()) {
+                    OPERATIONALTEMPLATE template =
+                            TemplateDocument.Factory.parse(in).getTemplate();
                     return Optional.of(template);
                 } catch (XmlException | IOException e) {
                     throw new RuntimeException(e);

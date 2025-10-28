@@ -20,7 +20,6 @@ package org.ehrbase.repository;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.tables.TemplateStore.TEMPLATE_STORE;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +31,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
@@ -142,11 +142,9 @@ public class TemplateStoreRepository {
     }
 
     private static OPERATIONALTEMPLATE buildOperationalTemplate(String content) {
-        InputStream inputStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
-
         org.openehr.schemas.v1.TemplateDocument document;
-        try {
-            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(inputStream);
+        try (InputStream in = IOUtils.toInputStream(content, StandardCharsets.UTF_8)) {
+            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
         } catch (XmlException | IOException e) {
             throw new InternalServerException(e.getMessage());
         }
