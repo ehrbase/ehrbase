@@ -290,6 +290,7 @@ public final class DbToRmFormat {
         JsonNode srcNode = folderItemsNode.get(idx);
 
         ObjectNode dstNode = folderItemsNode.objectNode();
+        dstNode.put(TYPE_ALIAS, RmTypeAlias.getAlias("OBJECT_REF"));
         dstNode.put(RmAttributeAlias.getAlias("namespace"), "local");
         dstNode.put(RmAttributeAlias.getAlias("type"), "VERSIONED_COMPOSITION");
         ObjectNode idNode = dstNode.putObject(RmAttributeAlias.getAlias("id"));
