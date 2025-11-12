@@ -270,7 +270,7 @@ public final class VersionedObjectDataStructure {
     public static ObjectNode applyRmAliases(ObjectNode jsonNode) {
         ObjectNode newNode = jsonNode.objectNode();
 
-        jsonNode.fields().forEachRemaining(e -> {
+        jsonNode.properties().forEach(e -> {
             String alias = RmAttributeAlias.getAlias(e.getKey());
             JsonNode child = e.getValue();
             if (child.isObject()) {
