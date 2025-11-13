@@ -330,24 +330,25 @@ final class AslPathCreator {
     }
 
     private static AslColumnField findExtractedColumnField(AslExtractedColumn ec, FieldSource fieldSource) {
-        AslColumnField field = AslUtils.findFieldForOwner(
+        final AslColumnField field = AslUtils.findFieldForOwner(
                         ec.getColumns().getFirst(),
                         fieldSource.internalProvider().getSelect(),
                         fieldSource.owner())
                 .withProvider(fieldSource.provider());
-        if (field.getExtractedColumn() == null) {
+        if (field.getExtractedColumn() != null) {
+            return field;
+        } else {
             /*
             Some extracted columns refer to fields representing multiple extracted columns.
             The field is copied, so the field represents exactly one extracted column.
             */
-            field = new AslColumnField(
+            return new AslColumnField(
                     field.getType(),
                     field.getColumnName(),
                     new FieldSource(field.getOwner(), field.getInternalProvider(), field.getProvider()),
                     field.isVersionTableField(),
                     ec);
         }
-        return field;
     }
 
     private Stream<DataNodeInfo> joinPathStructureNode(
