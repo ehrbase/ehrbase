@@ -394,7 +394,11 @@ public final class DbToRmFormat {
             dbObject.remove(MAGNITUDE_ALIAS);
         }
 
-        var t = dbObject.remove(TYPE_ALIAS).textValue();
+        JsonNode type = dbObject.remove(TYPE_ALIAS);
+        if (type == null) {
+            return;
+        }
+        var t = type.textValue();
 
         Entry<String, JsonNode>[] nodes = dbObject.properties().toArray(Entry[]::new);
         dbObject.removeAll();
