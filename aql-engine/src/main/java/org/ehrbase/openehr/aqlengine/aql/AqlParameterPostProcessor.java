@@ -113,6 +113,10 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
 
     public static void replaceIdentifiedPathParameters(
             IdentifiedPath identifiedPath, Map<String, Object> parameterMap) {
+        if (identifiedPath == null) {
+            // identified path can be null for COUNT(*) and some SingleRowFunctions
+            return;
+        }
         // revise root predicates in-place
         Optional.of(identifiedPath).map(IdentifiedPath::getRootPredicate).stream()
                 .flatMap(List::stream)
