@@ -17,6 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine.sql.postprocessor;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nedap.archie.rm.RMObject;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.jooq.JSONB;
@@ -32,7 +33,11 @@ public class DefaultResultPostprocessor implements AqlSqlResultPostprocessor {
 
         return switch (columnValue) {
             case null -> null;
-            case Record2[] rec -> DbToRmFormat.reconstructRmObject(RMObject.class, rec);
+            case Record2[] rec -> {
+                ObjectNode dbObject = DbToRmFormat.reconstructRmObjectTree(rec);
+                DbToRmFormat.revertDbInPlace(dbObject, true, true, true);
+                yield dbObject;
+            }
             case JSONB jsonb -> DbToRmFormat.reconstructFromDbFormat(RMObject.class, jsonb.data());
             default -> columnValue;
         };

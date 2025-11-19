@@ -36,18 +36,19 @@ public class TemplateFixture {
 
     public static TestTemplate fixtureTemplate(
             OperationalTemplateTestData operationalTemplateTestData, UUID internalUUID) {
+        TemplateDocument templateDocument;
         try (var in = operationalTemplateTestData.getStream()) {
-            OPERATIONALTEMPLATE template = TemplateDocument.Factory.parse(in).getTemplate();
-
-            TemplateMetaData metaData = new TemplateMetaData();
-            metaData.setOperationalTemplate(template);
-            metaData.setInternalId(internalUUID);
-            metaData.setCreatedOn(OffsetDateTime.parse("2020-10-10T12:00:00Z"));
-
-            return new TestTemplate(operationalTemplateTestData.getTemplateId(), template, metaData);
-
+            templateDocument = TemplateDocument.Factory.parse(in);
         } catch (XmlException | IOException e) {
             throw new RuntimeException(e);
         }
+
+        OPERATIONALTEMPLATE template = templateDocument.getTemplate();
+        TemplateMetaData metaData = new TemplateMetaData();
+        metaData.setOperationalTemplate(template);
+        metaData.setInternalId(internalUUID);
+        metaData.setCreatedOn(OffsetDateTime.parse("2020-10-10T12:00:00Z"));
+
+        return new TestTemplate(operationalTemplateTestData.getTemplateId(), template, metaData);
     }
 }

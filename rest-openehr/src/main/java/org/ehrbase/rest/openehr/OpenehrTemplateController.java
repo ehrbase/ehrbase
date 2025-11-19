@@ -18,12 +18,12 @@
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -91,8 +91,8 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // create template
         String templateId;
-        try (var input = new ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8))) {
-            TemplateDocument document = TemplateDocument.Factory.parse(input);
+        try (var in = IOUtils.toInputStream(template, StandardCharsets.UTF_8)) {
+            TemplateDocument document = TemplateDocument.Factory.parse(in);
             templateId = templateService.create(document.getTemplate());
         } catch (XmlException | IOException e) {
             throw new InvalidApiParameterException(e.getMessage());
