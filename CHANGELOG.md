@@ -9,6 +9,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+
+## [2.25.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
 - Fixed an error during AQL parameter replacement, when using COUNT(*) [#1564](https://github.com/ehrbase/ehrbase/pull/1564)
 
 ## [2.24.0]
@@ -239,4 +244,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.22.0]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...v2.22.0
 [2.23.0]: https://github.com/ehrbase/ehrbase/compare/v2.22.0...v2.23.0
 [2.24.0]: https://github.com/ehrbase/ehrbase/compare/v2.23.0...v2.24.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.24.0...HEAD
+[2.25.0]: https://github.com/ehrbase/ehrbase/compare/v2.24.0...v2.25.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.25.0...HEAD
