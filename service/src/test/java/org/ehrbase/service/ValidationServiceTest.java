@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
@@ -510,13 +511,14 @@ class ValidationServiceTest {
 
     private static WebTemplate loadWebTemplate(OperationalTemplateTestData data) {
         return webTemplates.computeIfAbsent(data, d -> {
+            TemplateDocument document;
             try (var in = d.getStream()) {
-                TemplateDocument document = TemplateDocument.Factory.parse(in);
-                OPERATIONALTEMPLATE template = document.getTemplate();
-                return new OPTParser(template).parse();
-            } catch (Exception e) {
+                document = TemplateDocument.Factory.parse(in);
+            } catch (IOException | XmlException e) {
                 throw new RuntimeException(e);
             }
+            OPERATIONALTEMPLATE template = document.getTemplate();
+            return new OPTParser(template).parse();
         });
     }
 }

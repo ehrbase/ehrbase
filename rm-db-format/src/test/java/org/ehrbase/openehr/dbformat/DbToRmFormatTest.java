@@ -35,11 +35,15 @@ import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rm.datavalues.quantity.DvCount;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.support.identification.TerminologyId;
+import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import com.nedap.archie.rminfo.RMAttributeInfo;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -48,7 +52,11 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.assertj.core.api.SoftAssertions;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
+import org.ehrbase.openehr.sdk.serialisation.RMDataFormat;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
 import org.jooq.JSONB;
@@ -96,6 +104,34 @@ class DbToRmFormatTest {
         compareJson(composition, expectedComposition);
     }
 
+    /**
+     * Compare archie RMObject serialization with ObjectNode serialization
+     * @param example
+     * @throws IOException
+     */
+    @ParameterizedTest
+    @EnumSource(
+            value = CompositionTestDataCanonicalJson.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"INVALID"})
+    void rmObjectNodeCompatibilityTest(CompositionTestDataCanonicalJson example) throws IOException {
+        Composition expectedComposition =
+                RMDataFormat.canonicalJSON().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
+        String data = createDbOneJson(expectedComposition);
+        Composition composition = DbToRmFormat.reconstructRmObject(Composition.class, data);
+        JsonNode expectedNode = RmDbJson.MARSHAL_OM.readTree(CanonicalJson.MARSHAL_OM.writeValueAsString(composition));
+
+        ObjectNode compositionNode =
+                DbToRmFormat.reconstructRmObjectTree((ObjectNode) DbToRmFormat.parseJson(data, RmDbJson.MARSHAL_OM));
+        DbToRmFormat.revertDbInPlace(compositionNode, true, true, true);
+
+        List<String> issues = new ArrayList<>();
+        compareJsonNode(compositionNode, expectedNode, AqlPath.ROOT_PATH, issues);
+        if (!issues.isEmpty()) {
+            fail(issues.stream().collect(Collectors.joining("\n")));
+        }
+    }
+
     @Test
     void toCompositionFromTestAllTypes() throws IOException {
         String data = loadDbOneJson("all_types_no_multimedia");
@@ -104,7 +140,7 @@ class DbToRmFormatTest {
         assertThat(composition.getArchetypeDetails()).isNotNull();
         assertThat(composition.getArchetypeDetails().getTemplateId().getValue()).isEqualTo("test_all_types.en.v1");
 
-        Composition expectedComposition = new CanonicalJson()
+        Composition expectedComposition = RMDataFormat.canonicalJSON()
                 .unmarshal(IOUtils.toString(
                         CompositionTestDataCanonicalJson.ALL_TYPES.getStream(), StandardCharsets.UTF_8));
 
@@ -133,7 +169,7 @@ class DbToRmFormatTest {
 
         assertThat(actual.getArchetypeNodeId()).isNotNull();
 
-        Composition sourceComposition = new CanonicalJson()
+        Composition sourceComposition = RMDataFormat.canonicalJSON()
                 .unmarshal(IOUtils.toString(
                         CompositionTestDataCanonicalJson.ALL_TYPES.getStream(), StandardCharsets.UTF_8));
 
@@ -222,7 +258,7 @@ class DbToRmFormatTest {
     private void roundtripTest(CompositionTestDataCanonicalJson example, UnaryOperator<Composition> roundtrip)
             throws IOException {
         Composition expectedComposition =
-                new CanonicalJson().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
+                RMDataFormat.canonicalJSON().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
         Composition composition = roundtrip.apply(expectedComposition);
         compareJson(composition, expectedComposition);
     }
@@ -366,5 +402,67 @@ class DbToRmFormatTest {
                 .isEqualTo(new CodePhrase(new TerminologyId("IANA_media-types"), "application/pdf"));
         assertThat(rmObject.getSize()).isEqualTo(8);
         assertThat(rmObject.getData()).containsExactly("TestData".getBytes());
+    }
+
+    @Test
+    void isTypeRequired() {
+
+        ArchieRMInfoLookup rmInfos = ArchieRMInfoLookup.getInstance();
+
+        Map<Boolean, List<Triple<RmTypeAlias, RmAttributeAlias, Boolean>>> typeRequiredness =
+                RmTypeAlias.values.stream()
+                        .flatMap(ta -> {
+                            var pt = rmInfos.getTypeInfo(ta.type());
+
+                            return RmAttributeAlias.VALUES.stream()
+                                    .flatMap(att -> Optional.of(att.attribute())
+                                            .map(pt::getAttribute)
+                                            .map(RMAttributeInfo::getTypeNameInCollection)
+                                            .map(rmInfos::getTypeInfo)
+                                            .map(attType -> {
+                                                boolean typeIsRequired = !attType.getDirectDescendantClasses()
+                                                        .isEmpty();
+                                                return Triple.of(ta, att, typeIsRequired);
+                                            })
+                                            .stream());
+                        })
+                        // remove correctly handled entries
+                        .filter(tr -> tr.getRight()
+                                != DbToRmFormat.isTypeRequired(
+                                        tr.getLeft().alias(), tr.getMiddle().alias()))
+                        .collect(Collectors.partitioningBy(Triple::getRight));
+
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions
+                .assertThat(typeRequiredness.get(true))
+                .withFailMessage(() -> typeRequiredness.get(true).stream()
+                        .map(r -> "%s.%s"
+                                .formatted(r.getLeft().alias(), r.getMiddle().alias()))
+                        .collect(Collectors.joining(", ", "To be removed from switch statements: ", "")))
+                .isEmpty();
+        softAssertions
+                .assertThat(typeRequiredness.get(false))
+                .withFailMessage(() -> {
+                    Map<String, List<String>> t2a = typeRequiredness.get(false).stream()
+                            .collect(Collectors.groupingBy(
+                                    t -> t.getLeft().alias(),
+                                    Collectors.mapping(t -> t.getMiddle().alias(), Collectors.toList())));
+
+                    return "Missing in switch statements:\nreturn switch (typeAlias) {\n"
+                            + t2a.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByKey())
+                                    .map(e -> "case \"%s\" -> switch(attributeAlias) { case %s default -> true;\n};"
+                                            .formatted(
+                                                    e.getKey(),
+                                                    e.getValue().stream()
+                                                            .sorted()
+                                                            .collect(Collectors.joining(
+                                                                    "\", \"", "\"", "\" -> false;\n"))))
+                                    .collect(Collectors.joining("\n"))
+                            + "\ncase null, default -> true\n};";
+                })
+                .isEmpty();
+
+        softAssertions.assertAll();
     }
 }

@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -56,6 +55,8 @@ public final class DbToRmFormat {
     public static final String TYPE_ALIAS = "T";
 
     public static final String TYPE_ATTRIBUTE = "_type";
+
+    public static final String MAGNITUDE_ALIAS = "M";
 
     public static final String FOLDER_ITEMS_UUID_ARRAY_ALIAS = "IA";
 
@@ -96,7 +97,7 @@ public final class DbToRmFormat {
         };
     }
 
-    private static JsonNode parseJson(String dbJsonStr, ObjectMapper objectMapper) {
+    static JsonNode parseJson(String dbJsonStr, ObjectMapper objectMapper) {
         try {
             return objectMapper.readTree(dbJsonStr);
         } catch (JsonProcessingException e) {
@@ -175,44 +176,24 @@ public final class DbToRmFormat {
      * </pre></code>
      */
     public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, ObjectNode jsonObject) {
-
         ObjectNode dbRoot;
         if (jsonObject.has(TYPE_ALIAS)) {
             // plain object
             dbRoot = jsonObject;
-
         } else {
-            int childCount = jsonObject.size();
-            Entry<String, JsonNode>[] children = new Entry[childCount];
-            Iterator<Entry<String, JsonNode>> fieldIt = jsonObject.fields();
-
-            int rootPathLength = Integer.MAX_VALUE;
-            for (int i = 0; i < childCount; i++) {
-                Entry<String, JsonNode> next = fieldIt.next();
-                children[i] = next;
-                rootPathLength = Math.min(rootPathLength, next.getKey().length());
-            }
-            Arrays.sort(children, Entry.comparingByKey());
-
-            dbRoot = standardizeObjectNode(children[0].getValue());
-
-            for (int i = 1; i < childCount; i++) {
-                Entry<String, JsonNode> child = children[i];
-                insertJsonEntry(
-                        dbRoot, remainingPath(rootPathLength, child.getKey()), standardizeObjectNode(child.getValue()));
-            }
+            dbRoot = reconstructRmObjectTree(jsonObject);
         }
-
         return dbToToRmObject(rmType, dbRoot);
     }
 
     private static <R extends RMObject> R dbToToRmObject(Class<R> rmType, ObjectNode dbObject) {
-        ObjectNode decoded = decodeKeys(dbObject);
-
-        R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
+        revertDbInPlace(dbObject, false, true, true);
+        R rmObject = RmDbJson.MARSHAL_OM.convertValue(dbObject, rmType);
 
         // prevent empty items array
-        if (rmObject instanceof Folder folder && folder.getItems().isEmpty()) {
+        if (rmObject instanceof Folder folder
+                && folder.getItems() != null
+                && folder.getItems().isEmpty()) {
             folder.setItems(null);
         }
         return rmObject;
@@ -235,24 +216,11 @@ public final class DbToRmFormat {
      * </pre></code>
      */
     public static <R extends RMObject> R reconstructRmObject(Class<R> rmType, Record2<String, ?>[] jsonObjects) {
-
-        ObjectNode decoded = decodeKeys(reconstructRmObjectTree(jsonObjects, RmDbJson.MARSHAL_OM));
-
-        R rmObject = RmDbJson.MARSHAL_OM.convertValue(decoded, rmType);
-
-        // prevent empty items array
-        if (rmObject instanceof Folder folder
-                && folder.getItems() != null
-                && folder.getItems().isEmpty()) {
-            folder.setItems(null);
-        }
-
-        return rmObject;
+        return dbToToRmObject(rmType, reconstructRmObjectTree(jsonObjects));
     }
 
-    public static ObjectNode reconstructRmObjectTree(
-            final Record2<String, ?>[] jsonObjects, ObjectMapper objectMapper) {
-        return reconstructRmObjectTree(jsonObjects, Record2::value1, Record2::value2, objectMapper);
+    public static ObjectNode reconstructRmObjectTree(final Record2<String, ?>[] jsonObjects) {
+        return reconstructRmObjectTree(jsonObjects, Record2::value1, Record2::value2, RmDbJson.MARSHAL_OM);
     }
 
     public static <T> ObjectNode reconstructRmObjectTree(
@@ -260,22 +228,39 @@ public final class DbToRmFormat {
             Function<T, ? extends CharSequence> idxExtractor,
             Function<T, Object> jsonExtractor,
             ObjectMapper objectMapper) {
-        int childCount = jsonObjects.length;
-        // Or Record2<String, JsonNode>[] dbRecords
+        return reconstructRmObjectTree(
+                jsonObjects, idxExtractor, v -> (ObjectNode) parseJsonData(v, jsonExtractor, objectMapper));
+    }
 
+    public static <T> ObjectNode reconstructRmObjectTree(
+            final T[] jsonObjects,
+            Function<T, ? extends CharSequence> idxExtractor,
+            Function<T, ObjectNode> jsonNodeExtractor) {
+
+        int childCount = jsonObjects.length;
         Arrays.sort(jsonObjects, Comparator.comparing(idxExtractor, SIMPLE_CHAR_SEQUENCE_COMPARATOR));
         int rootPathLength = calcRootPathLength(jsonObjects, idxExtractor, childCount);
 
-        ObjectNode dbRoot = standardizeObjectNode(parseJsonData(jsonObjects[0], jsonExtractor, objectMapper));
+        ObjectNode dbRoot = jsonNodeExtractor.apply(jsonObjects[0]);
+        standardizeObjectNode(dbRoot);
 
         for (int i = 1; i < childCount; i++) {
             T child = jsonObjects[i];
-            insertJsonEntry(
-                    dbRoot,
-                    remainingPath(rootPathLength, idxExtractor.apply(child)),
-                    standardizeObjectNode(parseJsonData(child, jsonExtractor, objectMapper)));
+            CharSequence idx = idxExtractor.apply(child);
+            ObjectNode node = jsonNodeExtractor.apply(child);
+            standardizeObjectNode(node);
+            insertJsonEntry(dbRoot, remainingPath(rootPathLength, idx), node);
         }
         return dbRoot;
+    }
+
+    static ObjectNode reconstructRmObjectTree(ObjectNode jsonObject) {
+        Entry<String, JsonNode>[] children = new Entry[jsonObject.size()];
+        int i = 0;
+        for (Entry<String, JsonNode> field : jsonObject.properties()) {
+            children[i++] = field;
+        }
+        return reconstructRmObjectTree(children, Entry::getKey, e -> (ObjectNode) e.getValue());
     }
 
     private static <T> int calcRootPathLength(T[] jsonObjects, Function<T, ?> idxExtractor, int childCount) {
@@ -287,9 +272,7 @@ public final class DbToRmFormat {
         return l;
     }
 
-    private static ObjectNode standardizeObjectNode(JsonNode node) {
-        ObjectNode objectNode = (ObjectNode) node;
-
+    private static void standardizeObjectNode(ObjectNode objectNode) {
         // revert folder items magic; folderItemsNode is reused
         ArrayNode folderItemsNode = (ArrayNode) objectNode.remove(FOLDER_ITEMS_UUID_ARRAY_ALIAS);
         if (folderItemsNode != null) {
@@ -301,14 +284,13 @@ public final class DbToRmFormat {
                 objectNode.set(RmAttributeAlias.getAlias("items"), folderItemsNode);
             }
         }
-
-        return objectNode;
     }
 
     private static void restoreFolderItemObject(ArrayNode folderItemsNode, int idx) {
         JsonNode srcNode = folderItemsNode.get(idx);
 
         ObjectNode dstNode = folderItemsNode.objectNode();
+        dstNode.put(TYPE_ALIAS, RmTypeAlias.getAlias("OBJECT_REF"));
         dstNode.put(RmAttributeAlias.getAlias("namespace"), "local");
         dstNode.put(RmAttributeAlias.getAlias("type"), "VERSIONED_COMPOSITION");
         ObjectNode idNode = dstNode.putObject(RmAttributeAlias.getAlias("id"));
@@ -403,49 +385,331 @@ public final class DbToRmFormat {
         }
     }
 
-    public static ObjectNode decodeKeys(ObjectNode dbJson) {
-        if (dbJson.has(RmAttributeAlias.getAlias(TYPE_ATTRIBUTE))) {
-            revertNodeAliasesInPlace(dbJson);
-        } else {
-            dbJson.forEach(DbToRmFormat::revertNodeAliasesInPlace);
+    public static void revertDbInPlace(
+            ObjectNode dbObject, boolean typeCleanup, boolean typeRequired, boolean removeSyntheticAttributes) {
+
+        // TODO type cleanup strategies
+        boolean typeCleanupByAttribute = false;
+        if (removeSyntheticAttributes) {
+            dbObject.remove(MAGNITUDE_ALIAS);
         }
-        return dbJson;
+
+        JsonNode type = dbObject.remove(TYPE_ALIAS);
+        if (type == null) {
+            return;
+        }
+        var t = type.textValue();
+
+        Entry<String, JsonNode>[] nodes = dbObject.properties().toArray(Entry[]::new);
+        dbObject.removeAll();
+
+        // revert type aliases
+        if (typeRequired || !typeCleanup || (!typeCleanupByAttribute && isTypeRequired(t))) {
+            String rmType = RmTypeAlias.getRmType(t);
+            dbObject.set(TYPE_ATTRIBUTE, TextNode.valueOf(rmType));
+        }
+
+        // replace attribute aliases
+        for (Entry<String, JsonNode> property : nodes) {
+            String alias = property.getKey();
+            JsonNode value = property.getValue();
+            if (value.isObject()) {
+                revertDbInPlace(
+                        ((ObjectNode) value),
+                        typeCleanup,
+                        !typeCleanup || (typeCleanupByAttribute && isTypeRequired(t, alias)),
+                        removeSyntheticAttributes);
+            } else if (value.isArray()) {
+                value.elements().forEachRemaining(n -> {
+                    if (n.isObject()) {
+                        revertDbInPlace(
+                                (ObjectNode) n,
+                                typeCleanup,
+                                typeRequired && typeCleanupByAttribute,
+                                removeSyntheticAttributes);
+                    }
+                });
+            }
+            dbObject.set(RmAttributeAlias.getAttribute(alias), value);
+        }
     }
 
-    private static void revertNodeAliasesInPlace(JsonNode dbJson) {
-        switch (dbJson.getNodeType()) {
-            case JsonNodeType.OBJECT -> {
-                ObjectNode dbObject = (ObjectNode) dbJson;
+    /**
+     * see CanonicalJson.CJArchieTypeResolverBuilder::useForType
+     * @param typeAlias
+     * @return
+     */
+    static boolean isTypeRequired(String typeAlias) {
+        return switch (typeAlias) {
+            case "AX", // ArchetypeID
+                    "TP", // TemplateId
+                    "AR", // Archetyped
+                    "LK", // Link
+                    "HI" // History
+            -> false;
+            case null, default -> true;
+        };
+    }
 
-                List<Entry<String, JsonNode>> nodes = new ArrayList<>(dbObject.size());
-                dbObject.fields().forEachRemaining(nodes::add);
-                dbObject.removeAll();
-
-                // replace attribute aliases
-                for (Entry<String, JsonNode> property : nodes) {
-                    String alias = property.getKey();
-                    String attribute = RmAttributeAlias.getAttribute(alias);
-                    JsonNode value;
-                    if (TYPE_ATTRIBUTE.equals(attribute)) {
-                        // revert type aliases
-                        String rmType =
-                                RmTypeAlias.getRmType(property.getValue().textValue());
-                        value = TextNode.valueOf(rmType);
-                    } else {
-                        value = property.getValue();
-                        revertNodeAliasesInPlace(value);
-                    }
-                    dbObject.set(attribute, value);
-                }
-            }
-            case JsonNodeType.ARRAY -> {
-                ArrayNode dbArray = (ArrayNode) dbJson;
-                dbArray.elements().forEachRemaining(DbToRmFormat::revertNodeAliasesInPlace);
-            }
-            default -> {
-                /*NOOP*/
-            }
-        }
+    static boolean isTypeRequired(String typeAlias, String attributeAlias) {
+        return switch (typeAlias) {
+            case "AD" ->
+                switch (attributeAlias) {
+                    case "ct", "tc" -> false;
+                    default -> true;
+                };
+            case "AE" ->
+                switch (attributeAlias) {
+                    case "ad", "ec", "f", "la", "lk", "op" -> false;
+                    default -> true;
+                };
+            case "AN" ->
+                switch (attributeAlias) {
+                    case "ad", "ec", "f", "it", "la", "lk", "n", "op", "ti" -> false;
+                    default -> true;
+                };
+            case "AR" ->
+                switch (attributeAlias) {
+                    case "aX", "tm" -> false;
+                    default -> true;
+                };
+            case "AT" ->
+                switch (attributeAlias) {
+                    case "atv", "ct", "i", "tc" -> false;
+                    default -> true;
+                };
+            case "AY" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk", "tg" -> false;
+                    default -> true;
+                };
+            case "C" ->
+                switch (attributeAlias) {
+                    case "te" -> false;
+                    default -> true;
+                };
+            case "CL" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk" -> false;
+                    default -> true;
+                };
+            case "CO" ->
+                switch (attributeAlias) {
+                    case "ad", "ca", "f", "la", "lk", "ty", "x" -> false;
+                    default -> true;
+                };
+            case "E" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk", "nf" -> false;
+                    default -> true;
+                };
+            case "EC" ->
+                switch (attributeAlias) {
+                    case "et", "pp", "se", "st" -> false;
+                    default -> true;
+                };
+            case "ES" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk", "su" -> false;
+                    default -> true;
+                };
+            case "EV" ->
+                switch (attributeAlias) {
+                    case "ad", "ec", "f", "la", "lk", "op", "ts" -> false;
+                    default -> true;
+                };
+            case "F" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "fo", "lk" -> false;
+                    default -> true;
+                };
+            case "FA" ->
+                switch (attributeAlias) {
+                    case "fX", "fs", "oa", "os" -> false;
+                    default -> true;
+                };
+            case "FD" ->
+                switch (attributeAlias) {
+                    case "ti" -> false;
+                    default -> true;
+                };
+            case "GE" ->
+                switch (attributeAlias) {
+                    case "ad", "d", "f", "lk" -> false;
+                    default -> true;
+                };
+            case "HI" ->
+                switch (attributeAlias) {
+                    case "ad", "du", "f", "lk", "og", "pe" -> false;
+                    default -> true;
+                };
+            case "ID" ->
+                switch (attributeAlias) {
+                    case "iX" -> false;
+                    default -> true;
+                };
+            case "IE" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk", "mf", "ti", "wi" -> false;
+                    default -> true;
+                };
+            case "IL" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "i", "lk" -> false;
+                    default -> true;
+                };
+            case "IN" ->
+                switch (attributeAlias) {
+                    case "a", "ad", "ec", "ex", "f", "la", "lk", "op", "wd" -> false;
+                    default -> true;
+                };
+            case "IS" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "j", "lk" -> false;
+                    default -> true;
+                };
+            case "IT" ->
+                switch (attributeAlias) {
+                    case "cf", "cu", "tr" -> false;
+                    default -> true;
+                };
+            case "LK" ->
+                switch (attributeAlias) {
+                    case "ta" -> false;
+                    default -> true;
+                };
+            case "OB" ->
+                switch (attributeAlias) {
+                    case "ad", "d", "ec", "f", "la", "lk", "op", "s" -> false;
+                    default -> true;
+                };
+            case "PA" ->
+                switch (attributeAlias) {
+                    case "mo", "ti" -> false;
+                    default -> true;
+                };
+            case "PE" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk", "ti" -> false;
+                    default -> true;
+                };
+            case "PI" ->
+                switch (attributeAlias) {
+                    case "Xs", "er" -> false;
+                    default -> true;
+                };
+            case "PR" ->
+                switch (attributeAlias) {
+                    case "Xs", "er", "rs" -> false;
+                    default -> true;
+                };
+            case "PS" ->
+                switch (attributeAlias) {
+                    case "er" -> false;
+                    default -> true;
+                };
+            case "RR" ->
+                switch (attributeAlias) {
+                    case "ra" -> false;
+                    default -> true;
+                };
+            case "SE" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk" -> false;
+                    default -> true;
+                };
+            case "TA" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk", "r" -> false;
+                    default -> true;
+                };
+            case "TM" ->
+                switch (attributeAlias) {
+                    case "pu", "ta" -> false;
+                    default -> true;
+                };
+            case "TR" ->
+                switch (attributeAlias) {
+                    case "ad", "f", "lk" -> false;
+                    default -> true;
+                };
+            case "c" ->
+                switch (attributeAlias) {
+                    case "df", "ec", "la", "mp" -> false;
+                    default -> true;
+                };
+            case "co" ->
+                switch (attributeAlias) {
+                    case "nr", "nt", "or" -> false;
+                    default -> true;
+                };
+            case "d" ->
+                switch (attributeAlias) {
+                    case "ay", "nr", "nt", "or" -> false;
+                    default -> true;
+                };
+            case "dt" ->
+                switch (attributeAlias) {
+                    case "ay", "nr", "nt", "or" -> false;
+                    default -> true;
+                };
+            case "du" ->
+                switch (attributeAlias) {
+                    case "nr", "nt", "or" -> false;
+                    default -> true;
+                };
+            case "iv" ->
+                switch (attributeAlias) {
+                    case "in" -> false;
+                    default -> true;
+                };
+            case "mu" ->
+                switch (attributeAlias) {
+                    case "calg", "ch", "ica", "la", "mt", "th" -> false;
+                    default -> true;
+                };
+            case "o" ->
+                switch (attributeAlias) {
+                    case "nr", "nt", "or", "sy" -> false;
+                    default -> true;
+                };
+            case "pa" ->
+                switch (attributeAlias) {
+                    case "ch", "la" -> false;
+                    default -> true;
+                };
+            case "pr" ->
+                switch (attributeAlias) {
+                    case "nr", "nt", "or" -> false;
+                    default -> true;
+                };
+            case "q" ->
+                switch (attributeAlias) {
+                    case "nr", "nt", "or", "pr" -> false;
+                    default -> true;
+                };
+            case "sc" ->
+                switch (attributeAlias) {
+                    case "nr", "nt", "or", "sy" -> false;
+                    default -> true;
+                };
+            case "st" ->
+                switch (attributeAlias) {
+                    case "V" -> false;
+                    default -> true;
+                };
+            case "t" ->
+                switch (attributeAlias) {
+                    case "ay", "nr", "nt", "or" -> false;
+                    default -> true;
+                };
+            case "x" ->
+                switch (attributeAlias) {
+                    case "ec", "la", "mp" -> false;
+                    default -> true;
+                };
+            case null, default -> true;
+        };
     }
 
     public record PathComponent(String attribute, int index) {}
@@ -480,7 +744,7 @@ public final class DbToRmFormat {
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof DbJsonPath && components.equals(((DbJsonPath) obj).components);
+            return obj instanceof DbJsonPath p && components.equals(p.components);
         }
 
         @Override
@@ -496,21 +760,15 @@ public final class DbToRmFormat {
         public static DbJsonPath parse(CharSequence path) {
             if (path.isEmpty()) {
                 return EMPTY_PATH;
-
             } else {
-                int len = path.length();
-                // for short paths: at least one character element + '.'
-                int expectedCount = len / 2;
-                if (expectedCount > 10) {
-                    // For larger paths: calculate exact count
-                    expectedCount = StringUtils.countMatches(path, '.');
-                }
-                List<PathComponent> list = new ArrayList<>(expectedCount);
+                int pathLength = path.length();
+                List<PathComponent> list = new ArrayList<>(estimatePathComponentCount(path, pathLength));
+
                 char ch0 = 0;
                 char ch1 = 0;
                 int nr = -1;
                 // requires trailing '.'
-                for (int i = 0; i < len; i++) {
+                for (int i = 0; i < pathLength; i++) {
                     final char ch = path.charAt(i);
                     switch (ch) {
                         case '.' -> {
@@ -540,18 +798,26 @@ public final class DbToRmFormat {
                         }
                     }
                 }
-
                 return new DbJsonPath(path, Collections.unmodifiableList(list));
             }
         }
 
-        private static int pushNr(int nr, int d) {
-            if (nr <= 0) {
-                nr = d;
+        static int estimatePathComponentCount(CharSequence path, int len) {
+            // for short paths: at least one character element + '.'
+            int expectedCount = len / 2;
+            if (expectedCount <= 10) {
+                return expectedCount;
             } else {
-                nr = 10 * nr + d;
+                // For larger paths: calculate exact count
+                return StringUtils.countMatches(path, '.');
             }
-            return nr;
+        }
+
+        private static int pushNr(int nr, int d) {
+            return switch (nr) {
+                case 0, -1 -> d;
+                default -> 10 * nr + d;
+            };
         }
     }
 }
