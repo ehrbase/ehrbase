@@ -53,7 +53,7 @@ jobs:
 
       # Download jacoco overall coverage from build & test output
       - name: Download - Jacoco Overall Coverage
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow
