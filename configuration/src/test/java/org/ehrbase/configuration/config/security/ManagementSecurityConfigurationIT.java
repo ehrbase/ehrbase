@@ -44,8 +44,8 @@ public class ManagementSecurityConfigurationIT {
 
         @ParameterizedTest
         @ValueSource(strings = {"env", "health", "info", "metrics", "prometheus", "loggers"})
-        void GET_endpoint_disabled() throws Exception {
-            mockMvc.perform(get("/management/env")).andExpect(status().isNotFound());
+        void GET_endpoint_disabled(String endpoint) throws Exception {
+            mockMvc.perform(get("/management/" + endpoint)).andExpect(status().isNotFound());
         }
     }
 
