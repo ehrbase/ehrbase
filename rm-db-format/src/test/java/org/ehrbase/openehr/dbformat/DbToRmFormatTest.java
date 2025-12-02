@@ -59,6 +59,7 @@ import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
 import org.ehrbase.openehr.sdk.serialisation.RMDataFormat;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
+import org.ehrbase.openehr.sdk.util.StringSegment;
 import org.jooq.JSONB;
 import org.jooq.Record2;
 import org.jooq.SQLDialect;
@@ -464,5 +465,12 @@ class DbToRmFormatTest {
                 .isEmpty();
 
         softAssertions.assertAll();
+    }
+
+    @Test
+    void parseDbObjectAggregateString(){
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("{\"a\": 1}")).containsExactly(Pair.of(StringSegment.wrap(""), StringSegment.wrap("{\"a\": 1}")));
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("x.{\"a\": 1}")).containsExactly(Pair.of(StringSegment.wrap("x."), StringSegment.wrap("{\"a\": 2}")));
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("{\"a\": 1}\nx.{\"a\": 2}")).containsExactly(Pair.of(StringSegment.wrap(""), StringSegment.wrap("{\"a\": 1}")),Pair.of(StringSegment.wrap("x."), StringSegment.wrap("{\"a\": 2}")));
     }
 }
