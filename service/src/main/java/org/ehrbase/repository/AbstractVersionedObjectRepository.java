@@ -288,7 +288,8 @@ public abstract class AbstractVersionedObjectRepository<
             throw new StateConflictException(NOT_MATCH_LATEST_VERSION);
         }
 
-        copyHeadToHistory(versionHead, createCurrentTime(firstRecord.get(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER)));
+        OffsetDateTime now = createCurrentTime(firstRecord.get(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER));
+        copyHeadToHistory(versionHead, now);
 
         deleteHead(condition, version, StateConflictException::new);
 
@@ -304,6 +305,7 @@ public abstract class AbstractVersionedObjectRepository<
         firstRecord.set(VERSION_HISTORY_PROTOTYPE.SYS_VERSION, version + 1);
         firstRecord.set(VERSION_HISTORY_PROTOTYPE.AUDIT_ID, finalAuditId);
         firstRecord.set(VERSION_HISTORY_PROTOTYPE.CONTRIBUTION_ID, finalContributionId);
+        firstRecord.set(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER, now);
 
         firstRecord.changed(true);
 
@@ -721,7 +723,7 @@ public abstract class AbstractVersionedObjectRepository<
 
     protected void checkIsNextHeadVoId(UUID headVoid, int headVersion, UIDBasedId uid) {
 
-        // uuid missmatch
+        // uuid mismatch
         if (!Objects.equals(headVoid, extractUid(uid))) {
             throw new PreconditionFailedException(NOT_MATCH_UID);
         }
