@@ -470,7 +470,7 @@ class DbToRmFormatTest {
     @Test
     void parseDbObjectAggregateString(){
         assertThat(DbToRmFormat.parseDbObjectAggregateString("{\"a\": 1}")).containsExactly(Pair.of(StringSegment.wrap(""), StringSegment.wrap("{\"a\": 1}")));
-        assertThat(DbToRmFormat.parseDbObjectAggregateString("x.{\"a\": 1}")).containsExactly(Pair.of(StringSegment.wrap("x."), StringSegment.wrap("{\"a\": 2}")));
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("x.{\"a\": 1}")).containsExactly(Pair.of(StringSegment.wrap("x."), StringSegment.wrap("{\"a\": 1}")));
         assertThat(DbToRmFormat.parseDbObjectAggregateString("{\"a\": 1}\nx.{\"a\": 2}")).containsExactly(Pair.of(StringSegment.wrap(""), StringSegment.wrap("{\"a\": 1}")),Pair.of(StringSegment.wrap("x."), StringSegment.wrap("{\"a\": 2}")));
     }
 }
