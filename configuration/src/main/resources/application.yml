@@ -217,6 +217,9 @@ management:
     metrics:
       export:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
   # turn of redis per default, shall be enabled in case spring.cache.type: REDIS is used
   health:
     redis:
