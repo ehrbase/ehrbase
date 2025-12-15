@@ -35,7 +35,7 @@ jobs:
       # Download report separately because the dorny/test-reporter is not compatible with
       # actions/[upload/download]-artifact@v4 https://github.com/dorny/test-reporter/issues/363
       - name: Download - Unit Reports
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow

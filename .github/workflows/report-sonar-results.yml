@@ -34,7 +34,7 @@ jobs:
           cache: 'maven'
 
       - name: Restore - Dependency Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ~/.m2/repository
           key: deps-${{ runner.os }}-m2-${{ github.event.workflow_run.pull_requests[0].head.ref }}-${{ hashFiles('**/pom.xml') }}
@@ -45,7 +45,7 @@ jobs:
             deps-
 
       - name: Setup - SonarCloud Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.sonar/cache
           key: sonar-${{ runner.os }}
@@ -53,7 +53,7 @@ jobs:
 
       # Download jacoco overall coverage from build & test output
       - name: Download - Jacoco Overall Coverage
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow
