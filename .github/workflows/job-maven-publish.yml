@@ -40,7 +40,7 @@ jobs:
           gpg-passphrase: GPG_PASSPHRASE
 
       - name: Restore - Dependency Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ~/.m2/repository
           key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
