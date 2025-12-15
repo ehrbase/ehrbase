@@ -39,7 +39,7 @@ jobs:
           cache: 'maven'
 
       - name: Setup - Dependency Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
