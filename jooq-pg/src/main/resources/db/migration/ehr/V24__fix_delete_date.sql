@@ -20,12 +20,14 @@ UPDATE comp_version_history d
 SET sys_period_lower = pred.sys_period_upper
 FROM comp_version_history pred
 WHERE d.sys_deleted = true
-and pred.sys_version + 1 = d.sys_version
-and sys_period_lower != pred.sys_period_upper;
+AND pred.vo_id = d.vo_id
+AND pred.sys_version + 1 = d.sys_version
+AND d.sys_period_lower != pred.sys_period_upper;
 
 UPDATE ehr_folder_version_history d
 SET sys_period_lower = pred.sys_period_upper
-    FROM ehr_folder_version_history pred
+FROM ehr_folder_version_history pred
 WHERE d.sys_deleted = true
-  and pred.sys_version + 1 = d.sys_version
-  and sys_period_lower != pred.sys_period_upper;
+AND pred.ehr_id = d.ehr_id AND pred.ehr_folders_idx = d.ehr_folders_idx
+AND pred.sys_version + 1 = d.sys_version
+AND d.sys_period_lower != pred.sys_period_upper;
