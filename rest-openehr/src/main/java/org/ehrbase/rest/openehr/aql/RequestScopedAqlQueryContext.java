@@ -38,8 +38,10 @@ import org.springframework.web.context.annotation.RequestScope;
  * Note: it is expected that per request no more than one AQL query is executed
  */
 @RequestScope
-@Component(AqlQueryContext.BEAN_NAME)
+@Component(RequestScopedAqlQueryContext.BEAN_NAME)
 public class RequestScopedAqlQueryContext implements AqlQueryContext {
+
+    public static final String BEAN_NAME = "requestScopedAqlQueryContext";
 
     @Value("${ehrbase.rest.aql.response.generator-details-enabled:false}")
     boolean generatorDetailsEnabled = false;
