@@ -103,7 +103,7 @@
         <maven-versions-maven-plugin.version>2.19.1</maven-versions-maven-plugin.version>
         <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
         <maven-sonar.scanner.version>5.2.0.4988</maven-sonar.scanner.version>
-        <docker-maven-plugin.version>0.46.0</docker-maven-plugin.version>
+        <docker-maven-plugin.version>0.48.0</docker-maven-plugin.version>
 
     </properties>
 
