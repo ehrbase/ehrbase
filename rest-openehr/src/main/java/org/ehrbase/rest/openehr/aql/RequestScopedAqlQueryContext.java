@@ -18,16 +18,10 @@
 package org.ehrbase.rest.openehr.aql;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
-import org.ehrbase.api.dto.AqlQueryContext;
-import org.ehrbase.api.dto.AqlQueryRequest;
+import org.ehrbase.api.dto.AbstractAqlQueryContext;
 import org.ehrbase.api.rest.EHRbaseHeader;
 import org.ehrbase.api.service.StatusService;
-import org.ehrbase.openehr.sdk.response.dto.MetaData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
@@ -39,7 +33,7 @@ import org.springframework.web.context.annotation.RequestScope;
  */
 @RequestScope
 @Component(RequestScopedAqlQueryContext.BEAN_NAME)
-public class RequestScopedAqlQueryContext implements AqlQueryContext {
+public class RequestScopedAqlQueryContext extends AbstractAqlQueryContext {
 
     public static final String BEAN_NAME = "requestScopedAqlQueryContext";
 
@@ -52,47 +46,15 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
     @Value("${ehrbase.rest.aql.debugging-enabled:false}")
     boolean debuggingEnabled = false;
 
-    @Value("${ehrbase.aql.path-node-skipping:false}")
-    private boolean pathNodeSkipping = false;
-
-    @Value("${ehrbase.aql.archetype-local-node-predicates:true}")
-    private boolean archetypeLocalNodePredicates = true;
-
-    private final StatusService statusService;
     private final HttpServletRequest request;
 
-    private String executedAql;
-    private AqlQueryRequest aqlQueryRequest;
-
-    private final Map<String, Object> metaProperties = new LinkedHashMap<>();
-
-    public RequestScopedAqlQueryContext(StatusService statusService, HttpServletRequest request) {
-        this.statusService = statusService;
+    public RequestScopedAqlQueryContext(
+            StatusService statusService,
+            HttpServletRequest request,
+            @Value("${ehrbase.aql.path-node-skipping:false}") boolean pathNodeSkipping,
+            @Value("${ehrbase.aql.archetype-local-node-predicates:true}") boolean archetypeLocalNodePredicates) {
+        super(statusService, pathNodeSkipping, archetypeLocalNodePredicates);
         this.request = request;
-    }
-
-    @Override
-    public MetaData createMetaData(URI location) {
-        MetaData metaData = new MetaData();
-        metaData.setCreated(OffsetDateTime.now());
-        metaData.setSchemaVersion(OPENEHR_REST_API_VERSION);
-        metaData.setType(MetaData.RESULTSET);
-
-        metaData.setHref(Optional.ofNullable(location).map(URI::toASCIIString).orElse(null));
-
-        if (generatorDetailsEnabled) {
-            metaData.setGenerator("EHRBase/%s".formatted(statusService.getEhrbaseVersion()));
-        }
-
-        metaData.setExecutedAql(this.executedAql);
-
-        if (isDryRun()) {
-            setMetaProperty(EhrbaseMetaProperty.DRY_RUN, true);
-        }
-
-        metaProperties.forEach(metaData::setAdditionalProperty);
-
-        return metaData;
     }
 
     @Override
@@ -115,14 +77,23 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
         return debuggingEnabled && isHeaderTrue(EHRbaseHeader.AQL_QUERY_PLAN);
     }
 
+    private boolean isHeaderTrue(String header) {
+        return Optional.of(header).map(request::getHeader).map(Boolean::valueOf).orElse(false);
+    }
+
+    @Override
+    public boolean isGeneratorDetailsEnabled() {
+        return generatorDetailsEnabled;
+    }
+
     @Override
     public boolean isPathSkipping() {
         return debuggingEnabled
                 ? Optional.of(EHRbaseHeader.AQL_PATH_SKIPPING)
                         .map(request::getHeader)
                         .map(Boolean::valueOf)
-                        .orElse(pathNodeSkipping)
-                : pathNodeSkipping;
+                        .orElseGet(super::isPathSkipping)
+                : super.isPathSkipping();
     }
 
     @Override
@@ -131,36 +102,7 @@ public class RequestScopedAqlQueryContext implements AqlQueryContext {
                 ? Optional.of(EHRbaseHeader.AQL_ARCHETYPE_LOCAL_NODE_PREDICATES)
                         .map(request::getHeader)
                         .map(Boolean::valueOf)
-                        .orElse(archetypeLocalNodePredicates)
-                : archetypeLocalNodePredicates;
-    }
-
-    @Override
-    public void setAqlQueryRequest(AqlQueryRequest aqlQueryRequest) {
-        this.aqlQueryRequest = aqlQueryRequest;
-    }
-
-    @Override
-    public AqlQueryRequest getAqlQueryRequest() {
-        return aqlQueryRequest;
-    }
-
-    private boolean isHeaderTrue(String header) {
-        return Optional.of(header).map(request::getHeader).map(Boolean::valueOf).orElse(false);
-    }
-
-    @Override
-    public void setExecutedAql(String executedAql) {
-        this.executedAql = executedAql;
-    }
-
-    @Override
-    public void setMetaProperty(MetaProperty property, Object value) {
-        String name = property.propertyName();
-        if (value == null) {
-            metaProperties.remove(name);
-        } else {
-            metaProperties.put(name, value);
-        }
+                        .orElseGet(super::isArchetypeLocalNodePredicates)
+                : super.isArchetypeLocalNodePredicates();
     }
 }

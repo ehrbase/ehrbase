@@ -87,4 +87,14 @@ public class CliAqlQueryContext implements AqlQueryContext {
     public void setMetaProperty(MetaProperty property, Object value) {
         throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
+
+    @Override
+    public void setProperty(String key, Object value) {
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
+    }
+
+    @Override
+    public <T> T getProperty(String key) {
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
+    }
 }

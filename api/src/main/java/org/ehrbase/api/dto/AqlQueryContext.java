@@ -72,4 +72,8 @@ public interface AqlQueryContext {
     void setExecutedAql(String executedAql);
 
     void setMetaProperty(MetaProperty property, Object value);
+
+    void setProperty(String key, Object value);
+
+    <T> T getProperty(String key);
 }
