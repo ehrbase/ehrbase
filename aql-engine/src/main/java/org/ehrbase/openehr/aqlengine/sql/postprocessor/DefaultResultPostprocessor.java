@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nedap.archie.rm.RMObject;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.jooq.JSONB;
+import org.jooq.Record;
 import org.jooq.Record2;
 
 /**
@@ -34,6 +35,11 @@ public class DefaultResultPostprocessor implements AqlSqlResultPostprocessor {
         return switch (columnValue) {
             case null -> null;
             case Record2[] rec -> {
+                ObjectNode dbObject = DbToRmFormat.reconstructRmObjectTree(rec);
+                DbToRmFormat.revertDbInPlace(dbObject, true, true, true);
+                yield dbObject;
+            }
+            case Record[] rec -> {
                 ObjectNode dbObject = DbToRmFormat.reconstructRmObjectTree(rec);
                 DbToRmFormat.revertDbInPlace(dbObject, true, true, true);
                 yield dbObject;

@@ -44,6 +44,7 @@ import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.CharSequenceHelper;
 import org.ehrbase.openehr.sdk.util.StringSegment;
 import org.jooq.JSONB;
+import org.jooq.Record;
 import org.jooq.Record2;
 
 /**
@@ -239,6 +240,11 @@ public final class DbToRmFormat {
 
     public static ObjectNode reconstructRmObjectTree(final Record2<String, ?>[] jsonObjects) {
         return reconstructRmObjectTree(jsonObjects, Record2::value1, Record2::value2, RmDbJson.MARSHAL_OM);
+    }
+
+    public static ObjectNode reconstructRmObjectTree(final Record[] jsonObjects) {
+        return reconstructRmObjectTree(
+                jsonObjects, r -> r.getValue(0, String.class), r -> r.getValue(1), RmDbJson.MARSHAL_OM);
     }
 
     public static <T> ObjectNode reconstructRmObjectTree(
