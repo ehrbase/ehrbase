@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -92,10 +93,16 @@ public class OpenehrQueryControllerTest {
     }
 
     private OpenehrQueryController controllerStoredQuery() {
-        QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
-        queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
-        queryDefinitionResultDto.setQualifiedName("test_query");
-        doReturn(queryDefinitionResultDto).when(mockStoredQueryService).retrieveStoredQuery(any(), any());
+        doAnswer(inv -> {
+                    String qName = inv.getArgument(0, String.class);
+                    QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
+                    queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
+                    queryDefinitionResultDto.setQualifiedName(qName);
+                    return queryDefinitionResultDto;
+                })
+                .when(mockStoredQueryService)
+                .retrieveStoredQuery(any(), any());
+
         return controller();
     }
 
@@ -186,8 +193,8 @@ public class OpenehrQueryControllerTest {
                         SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(
-                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -222,8 +229,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         sampleAqlJson(fetch, offset));
         assertMetaData(response);
-        assertAqlQueryRequest(
-                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
