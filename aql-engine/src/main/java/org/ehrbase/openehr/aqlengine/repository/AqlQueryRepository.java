@@ -107,7 +107,12 @@ public class AqlQueryRepository {
                 .map(l -> l.stream()
                         .map(AqlQueryRepository::escapeSqlComment)
                         .collect(Collectors.joining("*/\n/*", "/*", "*/")))
-                .map(comments -> (ResultQuery<R>) DSL.resultQuery("{0}\n{1}", DSL.raw(comments), selectQuery))
+                .map(comments -> {
+                    ResultQuery<R> query = (ResultQuery<R>) DSL.resultQuery("{0}\n{1}", DSL.raw(comments), selectQuery);
+                    // reattach the query, in case callers created the query attached
+                    query.attach(selectQuery.configuration());
+                    return query;
+                })
                 .orElse(selectQuery);
     }
 
