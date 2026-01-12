@@ -44,7 +44,6 @@ import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.CharSequenceHelper;
 import org.ehrbase.openehr.sdk.util.StringSegment;
 import org.jooq.JSONB;
-import org.jooq.Record;
 import org.jooq.Record2;
 
 /**
