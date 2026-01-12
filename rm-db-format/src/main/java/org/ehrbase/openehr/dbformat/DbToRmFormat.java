@@ -131,9 +131,7 @@ public final class DbToRmFormat {
             case StringSegment cs ->
                 parseJson(PREFER_CHAR_SEQUENCE_READER ? new CharSequenceReader(cs) : cs.reader(), objectMapper);
             case CharSequence cs -> parseJson(new CharSequenceReader(cs), objectMapper);
-            default -> {
-                throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
-            }
+            default -> throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
         };
     }
 
@@ -240,11 +238,6 @@ public final class DbToRmFormat {
 
     public static ObjectNode reconstructRmObjectTree(final Record2<String, ?>[] jsonObjects) {
         return reconstructRmObjectTree(jsonObjects, Record2::value1, Record2::value2, RmDbJson.MARSHAL_OM);
-    }
-
-    public static ObjectNode reconstructRmObjectTree(final Record[] jsonObjects) {
-        return reconstructRmObjectTree(
-                jsonObjects, r -> r.getValue(0, String.class), r -> r.getValue(1), RmDbJson.MARSHAL_OM);
     }
 
     public static <T> ObjectNode reconstructRmObjectTree(

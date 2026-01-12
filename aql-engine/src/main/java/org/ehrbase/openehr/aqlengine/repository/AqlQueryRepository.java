@@ -109,6 +109,7 @@ public class AqlQueryRepository {
                         .collect(Collectors.joining("*/\n/*", "/*", "*/")))
                 .map(comments -> {
                     ResultQuery<R> query = (ResultQuery<R>) DSL.resultQuery("{0}\n{1}", DSL.raw(comments), selectQuery);
+                    query.coerce(selectQuery.fields());
                     // reattach the query, in case callers created the query attached
                     query.attach(selectQuery.configuration());
                     return query;

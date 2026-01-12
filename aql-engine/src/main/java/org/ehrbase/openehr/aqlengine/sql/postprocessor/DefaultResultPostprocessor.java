@@ -43,11 +43,6 @@ public class DefaultResultPostprocessor implements AqlSqlResultPostprocessor {
                 DbToRmFormat.revertDbInPlace(dbObject, true, true, true);
                 yield dbObject;
             }
-            case Record[] rec -> {
-                ObjectNode dbObject = DbToRmFormat.reconstructRmObjectTree(rec);
-                DbToRmFormat.revertDbInPlace(dbObject, true, true, true);
-                yield dbObject;
-            }
             case JSONB jsonb -> DbToRmFormat.reconstructFromDbFormat(RMObject.class, jsonb.data());
             default -> columnValue;
         };
