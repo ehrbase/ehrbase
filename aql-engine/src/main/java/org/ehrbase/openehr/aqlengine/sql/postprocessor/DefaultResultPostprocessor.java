@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nedap.archie.rm.RMObject;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.jooq.JSONB;
-import org.jooq.Record;
 import org.jooq.Record2;
 
 /**
@@ -29,6 +28,11 @@ import org.jooq.Record2;
  * JSONB will be passed to {@link DbToRmFormat}. Everything else will not be altered.
  */
 public class DefaultResultPostprocessor implements AqlSqlResultPostprocessor {
+
+    public static final DefaultResultPostprocessor INSTANCE = new DefaultResultPostprocessor();
+
+    private DefaultResultPostprocessor() {}
+
     @Override
     public Object postProcessColumn(Object columnValue) {
 

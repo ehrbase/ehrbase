@@ -166,8 +166,8 @@ public class AqlQueryRepository {
                                 select.root().getRmType()))
                         .filter(e -> "commit_audit".equals(nodes.getFirst().getAttribute())))
                 .<AqlSqlResultPostprocessor>map(
-                        ec -> new ExtractedColumnResultPostprocessor(ec, knowledgeCache, systemService.getSystemId()))
-                .orElseGet(DefaultResultPostprocessor::new);
+                        ec -> ExtractedColumnResultPostprocessor.get(ec, knowledgeCache, systemService.getSystemId()))
+                .orElse(DefaultResultPostprocessor.INSTANCE);
     }
 
     private static List<Object> postProcessDbRecord(Record r, AqlSqlResultPostprocessor[] postProcessors) {
