@@ -97,6 +97,7 @@ public class OpenehrQueryControllerTest {
                     String qName = inv.getArgument(0, String.class);
                     QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
                     queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
+                    queryDefinitionResultDto.setVersion(inv.getArgument(1));
                     queryDefinitionResultDto.setQualifiedName(qName);
                     return queryDefinitionResultDto;
                 })
@@ -187,14 +188,14 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
+                        "1.0.0",
                         offset,
                         fetch,
                         SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
         assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
-                SAMPLE_QUERY, "my_qualified_query", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -202,20 +203,20 @@ public class OpenehrQueryControllerTest {
 
         OpenehrQueryController openehrQueryController = controllerStoredQuery();
         doThrow(new ObjectNotFoundException(
-                        "QUERY", "Stored query 'does_not_exist' with version 'v1.0.0' does not exist"))
+                        "QUERY", "Stored query 'does_not_exist' with version '1.0.0' does not exist"))
                 .when(mockStoredQueryService)
                 .retrieveStoredQuery(any(), any());
         String message = assertThrows(
                         ObjectNotFoundException.class,
                         () -> openehrQueryController.executeStoredQuery(
                                 "does_not_exist",
-                                "v1.0.0",
+                                "1.0.0",
                                 null,
                                 null,
                                 SAMPLE_PARAMETER_MAP,
                                 MediaType.APPLICATION_JSON_VALUE))
                 .getMessage();
-        assertEquals(message, "Stored query 'does_not_exist' with version 'v1.0.0' does not exist");
+        assertEquals(message, "Stored query 'does_not_exist' with version '1.0.0' does not exist");
     }
 
     @ParameterizedTest
@@ -224,13 +225,13 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
+                        "1.0.0",
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         sampleAqlJson(fetch, offset));
         assertMetaData(response);
         assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
-                SAMPLE_QUERY, "my_qualified_query", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -239,7 +240,7 @@ public class OpenehrQueryControllerTest {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
                                 sampleAqlJson("invalid", null)))
@@ -253,7 +254,7 @@ public class OpenehrQueryControllerTest {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
                                 sampleAqlJson(null, "invalid")))

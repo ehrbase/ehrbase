@@ -251,7 +251,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
 
         AqlQueryRequest queryRequest = AqlQueryRequest.prepareNamed(
                 queryDefinition.getQueryText(),
-                queryDefinition.getQualifiedName(),
+                queryDefinition.getQualifiedName() + "/" + queryDefinition.getVersion(),
                 OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(executionMetadata.queryParameters()),
                 executionMetadata.fetch(),
                 executionMetadata.offset());
