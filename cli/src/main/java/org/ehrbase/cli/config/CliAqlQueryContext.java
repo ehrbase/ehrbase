@@ -21,13 +21,14 @@ import java.net.URI;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
+import org.ehrbase.rest.openehr.aql.RequestScopedAqlQueryContext;
 import org.springframework.stereotype.Component;
 
 /**
  * AQL query context implementation used for EHRbase CLI that can be configured using
  * <code>-aql-mode=default|dry_run|show_executed_aql|show_executed_sql|show_query_plane</code> params.
  */
-@Component(AqlQueryContext.BEAN_NAME)
+@Component(RequestScopedAqlQueryContext.BEAN_NAME)
 public class CliAqlQueryContext implements AqlQueryContext {
 
     private static final String UNSUPPORTED_MSG = "AQL is not supported on CLI";
@@ -84,6 +85,16 @@ public class CliAqlQueryContext implements AqlQueryContext {
 
     @Override
     public void setMetaProperty(MetaProperty property, Object value) {
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
+    }
+
+    @Override
+    public void setProperty(String key, Object value) {
+        throw new UnsupportedOperationException(UNSUPPORTED_MSG);
+    }
+
+    @Override
+    public <T> T getProperty(String key) {
         throw new UnsupportedOperationException(UNSUPPORTED_MSG);
     }
 }

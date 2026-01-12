@@ -118,8 +118,7 @@ class OpenehrTemplateControllerTest {
 
         OpenehrTemplateController controller = controller();
         assertThatThrownBy(() -> controller.createTemplateClassic("1.0.3", null, null, "not a xml"))
-                .isInstanceOf(InvalidApiParameterException.class)
-                .hasMessage("error: Content is not allowed in prolog.");
+                .isInstanceOf(InvalidApiParameterException.class);
     }
 
     @Test

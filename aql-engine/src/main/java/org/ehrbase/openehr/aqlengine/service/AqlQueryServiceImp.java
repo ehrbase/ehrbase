@@ -88,6 +88,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
     public QueryResultDto query(AqlQueryRequest aqlQueryRequest) {
 
         aqlQueryContext.setAqlQueryRequest(aqlQueryRequest);
+        AqlQueryService.addQueryNameComment(aqlQueryContext);
 
         // TODO: check that select aliases are not duplicated
         try {

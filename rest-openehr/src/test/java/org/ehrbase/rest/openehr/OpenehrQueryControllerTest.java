@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -92,10 +93,17 @@ public class OpenehrQueryControllerTest {
     }
 
     private OpenehrQueryController controllerStoredQuery() {
-        QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
-        queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
-        queryDefinitionResultDto.setQualifiedName("test_query");
-        doReturn(queryDefinitionResultDto).when(mockStoredQueryService).retrieveStoredQuery(any(), any());
+        doAnswer(inv -> {
+                    String qName = inv.getArgument(0, String.class);
+                    QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
+                    queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
+                    queryDefinitionResultDto.setVersion(inv.getArgument(1));
+                    queryDefinitionResultDto.setQualifiedName(qName);
+                    return queryDefinitionResultDto;
+                })
+                .when(mockStoredQueryService)
+                .retrieveStoredQuery(any(), any());
+
         return controller();
     }
 
@@ -180,14 +188,14 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
+                        "1.0.0",
                         offset,
                         fetch,
                         SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(
-                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -195,20 +203,20 @@ public class OpenehrQueryControllerTest {
 
         OpenehrQueryController openehrQueryController = controllerStoredQuery();
         doThrow(new ObjectNotFoundException(
-                        "QUERY", "Stored query 'does_not_exist' with version 'v1.0.0' does not exist"))
+                        "QUERY", "Stored query 'does_not_exist' with version '1.0.0' does not exist"))
                 .when(mockStoredQueryService)
                 .retrieveStoredQuery(any(), any());
         String message = assertThrows(
                         ObjectNotFoundException.class,
                         () -> openehrQueryController.executeStoredQuery(
                                 "does_not_exist",
-                                "v1.0.0",
+                                "1.0.0",
                                 null,
                                 null,
                                 SAMPLE_PARAMETER_MAP,
                                 MediaType.APPLICATION_JSON_VALUE))
                 .getMessage();
-        assertEquals(message, "Stored query 'does_not_exist' with version 'v1.0.0' does not exist");
+        assertEquals(message, "Stored query 'does_not_exist' with version '1.0.0' does not exist");
     }
 
     @ParameterizedTest
@@ -217,13 +225,13 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
+                        "1.0.0",
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         sampleAqlJson(fetch, offset));
         assertMetaData(response);
-        assertAqlQueryRequest(
-                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -232,7 +240,7 @@ public class OpenehrQueryControllerTest {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
                                 sampleAqlJson("invalid", null)))
@@ -246,7 +254,7 @@ public class OpenehrQueryControllerTest {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
                                 sampleAqlJson(null, "invalid")))

@@ -130,9 +130,7 @@ public final class DbToRmFormat {
             case StringSegment cs ->
                 parseJson(PREFER_CHAR_SEQUENCE_READER ? new CharSequenceReader(cs) : cs.reader(), objectMapper);
             case CharSequence cs -> parseJson(new CharSequenceReader(cs), objectMapper);
-            default -> {
-                throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
-            }
+            default -> throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
         };
     }
 

@@ -28,6 +28,11 @@ import org.jooq.Record2;
  * JSONB will be passed to {@link DbToRmFormat}. Everything else will not be altered.
  */
 public class DefaultResultPostprocessor implements AqlSqlResultPostprocessor {
+
+    public static final DefaultResultPostprocessor INSTANCE = new DefaultResultPostprocessor();
+
+    private DefaultResultPostprocessor() {}
+
     @Override
     public Object postProcessColumn(Object columnValue) {
 

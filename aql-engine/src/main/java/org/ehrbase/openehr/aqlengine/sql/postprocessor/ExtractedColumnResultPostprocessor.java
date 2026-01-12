@@ -25,6 +25,7 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.time.temporal.TemporalAccessor;
 import java.util.UUID;
+import java.util.function.Function;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
@@ -40,15 +41,61 @@ import org.jooq.Record;
  */
 public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostprocessor {
 
-    private final AslExtractedColumn extractedColumn;
-    private final KnowledgeCacheService knowledgeCache;
-    private final String nodeName;
+    private static final ExtractedColumnResultPostprocessor OV_DATETIME_DV_PP =
+            create(columnValue -> new DvDateTime((TemporalAccessor) columnValue));
+    private static final ExtractedColumnResultPostprocessor OV_DATETIME_VALUE_PP =
+            create(columnValue -> OpenEHRDateTimeSerializationUtils.formatDateTime((TemporalAccessor) columnValue));
+    private static final ExtractedColumnResultPostprocessor DV_TEXT_PP =
+            create(columnValue -> new DvText((String) columnValue));
+    private static final ExtractedColumnResultPostprocessor CHANGE_TYPE_PP = new ExtractedColumnResultPostprocessor(
+            columnValue -> contributionChangeTypeAsDvCodedText((ContributionChangeType) columnValue));
+    private static final ExtractedColumnResultPostprocessor CHANGE_TYPE_VALUE_PP = create(
+            columnValue -> ((ContributionChangeType) columnValue).getLiteral().toLowerCase());
+    private static final ExtractedColumnResultPostprocessor CHANGE_TYPE_CS_PP = new ExtractedColumnResultPostprocessor(
+            columnValue -> ChangeTypeUtils.getCodeByJooqChangeType((ContributionChangeType) columnValue));
+    private static final ExtractedColumnResultPostprocessor ROOT_CONCEPT_PP = new ExtractedColumnResultPostprocessor(
+            columnValue -> AslRmTypeAndConcept.ARCHETYPE_PREFIX + RmConstants.COMPOSITION + columnValue);
+    private static final ExtractedColumnResultPostprocessor ARCHETYPE_NODE_ID_PP =
+            create(columnValue -> restoreArchetypeNodeId((Record) columnValue));
+    private static final ExtractedColumnResultPostprocessor SYSTEM_ID_PP =
+            create(columnValue -> new HierObjectId((String) columnValue));
+    private static final ExtractedColumnResultPostprocessor NOOP_PP = create(columnValue -> columnValue);
 
-    public ExtractedColumnResultPostprocessor(
+    private final Function<Object, Object> processorOp;
+
+    private ExtractedColumnResultPostprocessor(Function<Object, Object> processorOp) {
+        this.processorOp = processorOp;
+    }
+
+    private static ExtractedColumnResultPostprocessor create(Function<Object, Object> processorOp) {
+        return new ExtractedColumnResultPostprocessor(processorOp);
+    }
+
+    public static ExtractedColumnResultPostprocessor get(
             AslExtractedColumn extractedColumn, KnowledgeCacheService knowledgeCache, String nodeName) {
-        this.extractedColumn = extractedColumn;
-        this.knowledgeCache = knowledgeCache;
-        this.nodeName = nodeName;
+        return switch (extractedColumn) {
+            case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> OV_DATETIME_DV_PP;
+            case OV_TIME_COMMITTED, EHR_TIME_CREATED -> OV_DATETIME_VALUE_PP;
+            case AD_DESCRIPTION_DV -> DV_TEXT_PP;
+            case AD_CHANGE_TYPE_DV -> CHANGE_TYPE_PP;
+            case AD_CHANGE_TYPE_VALUE, AD_CHANGE_TYPE_PREFERRED_TERM -> CHANGE_TYPE_VALUE_PP;
+            case AD_CHANGE_TYPE_CODE_STRING -> CHANGE_TYPE_CS_PP;
+            // the root is always archetyped
+            case ROOT_CONCEPT -> ROOT_CONCEPT_PP;
+            case ARCHETYPE_NODE_ID -> ARCHETYPE_NODE_ID_PP;
+            case EHR_SYSTEM_ID_DV -> SYSTEM_ID_PP;
+            case NAME_VALUE,
+                    EHR_ID,
+                    OV_CONTRIBUTION_ID,
+                    AD_SYSTEM_ID,
+                    AD_DESCRIPTION_VALUE,
+                    AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE,
+                    EHR_SYSTEM_ID -> NOOP_PP;
+            case TEMPLATE_ID ->
+                create(columnValue ->
+                        knowledgeCache.findTemplateIdByUuid((UUID) columnValue).orElse(null));
+            case VO_ID -> create(columnValue -> restoreVoId((Record) columnValue, nodeName));
+        };
     }
 
     @Override
@@ -56,32 +103,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
         if (columnValue == null) {
             return null;
         }
-
-        return switch (extractedColumn) {
-            case TEMPLATE_ID ->
-                knowledgeCache.findTemplateIdByUuid((UUID) columnValue).orElse(null);
-            case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> new DvDateTime((TemporalAccessor) columnValue);
-            case OV_TIME_COMMITTED, EHR_TIME_CREATED ->
-                OpenEHRDateTimeSerializationUtils.formatDateTime((TemporalAccessor) columnValue);
-            case AD_DESCRIPTION_DV -> new DvText((String) columnValue);
-            case AD_CHANGE_TYPE_DV -> contributionChangeTypeAsDvCodedText((ContributionChangeType) columnValue);
-            case AD_CHANGE_TYPE_VALUE, AD_CHANGE_TYPE_PREFERRED_TERM ->
-                ((ContributionChangeType) columnValue).getLiteral().toLowerCase();
-            case AD_CHANGE_TYPE_CODE_STRING ->
-                ChangeTypeUtils.getCodeByJooqChangeType((ContributionChangeType) columnValue);
-            case VO_ID -> restoreVoId((Record) columnValue, nodeName);
-            // the root is always archetyped
-            case ROOT_CONCEPT -> AslRmTypeAndConcept.ARCHETYPE_PREFIX + RmConstants.COMPOSITION + columnValue;
-            case ARCHETYPE_NODE_ID -> restoreArchetypeNodeId((Record) columnValue);
-            case EHR_SYSTEM_ID_DV -> new HierObjectId((String) columnValue);
-            case NAME_VALUE,
-                    EHR_ID,
-                    OV_CONTRIBUTION_ID,
-                    AD_SYSTEM_ID,
-                    AD_DESCRIPTION_VALUE,
-                    AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE,
-                    EHR_SYSTEM_ID -> columnValue;
-        };
+        return processorOp.apply(columnValue);
     }
 
     private static String restoreArchetypeNodeId(Record srcRow) {

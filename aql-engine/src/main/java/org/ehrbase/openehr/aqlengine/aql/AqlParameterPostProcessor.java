@@ -172,9 +172,7 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
             case Number nr -> new DoublePrimitive(nr.doubleValue());
             case String str -> Utils.stringToPrimitive(str);
             case Boolean b -> new BooleanPrimitive(b);
-            default -> {
-                throw new IllegalArgumentException("Type of parameter '%s' is not supported".formatted(name));
-            }
+            default -> throw new IllegalArgumentException("Type of parameter '%s' is not supported".formatted(name));
         };
     }
 
