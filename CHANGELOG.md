@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+ - Fixed an error where the deletion date of versioned objects was set to the creation date of the previous version  [#1573](https://github.com/ehrbase/ehrbase/pull/1573)
 
 ## [2.26.0]
  ### Added
