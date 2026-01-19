@@ -17,10 +17,16 @@
  */
 package org.ehrbase.api.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 
 public interface AqlQueryService {
+
+    String SQL_COMMENTS_KEY = "SQL_COMMENTS";
 
     /**
      * simple query where the full json expression contains both query (key = 'q') and optional
@@ -30,4 +36,16 @@ public interface AqlQueryService {
      * @return aqlQueryResult
      */
     QueryResultDto query(AqlQueryRequest aqlQueryRequest);
+
+    static void addQueryNameComment(AqlQueryContext aqlQueryContext) {
+        AqlQueryRequest aqlQueryRequest = aqlQueryContext.getAqlQueryRequest();
+        Optional.ofNullable(aqlQueryRequest).map(AqlQueryRequest::queryName).ifPresent(n -> {
+            List<String> comments = aqlQueryContext.getProperty(SQL_COMMENTS_KEY);
+            if (comments == null) {
+                comments = new ArrayList<>();
+                aqlQueryContext.setProperty(SQL_COMMENTS_KEY, comments);
+            }
+            comments.add("Stored Query: " + n);
+        });
+    }
 }

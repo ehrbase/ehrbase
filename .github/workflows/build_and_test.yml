@@ -29,7 +29,7 @@ jobs:
       ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup - Java 21
         uses: actions/setup-java@v5
@@ -39,7 +39,7 @@ jobs:
           cache: 'maven'
 
       - name: Setup - Dependency Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
@@ -61,7 +61,7 @@ jobs:
           echo "ehrbase-version=${version}" >> $GITHUB_OUTPUT  
 
       - name: Upload - Jar
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ehrbase-jar
           path: ./application/target/ehrbase.jar
@@ -71,7 +71,7 @@ jobs:
       # Upload created class files that are needed for the merged jacoco coverage in a later step
       - name: Upload - Class Files
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: java-class-files
           path: "**/target/classes/**/*.class"
@@ -79,14 +79,14 @@ jobs:
 
       - name: Upload - Jacoco Coverage
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: jacoco-coverage-partial-build-maven
           path: "**/target/jacoco*.exec"
           if-no-files-found: error
 
       - name: Upload - Junit reports
-        uses: actions/upload-artifact@v5  # upload test results
+        uses: actions/upload-artifact@v6  # upload test results
         if: success() || failure()        # run this step even if previous step failed
         with:
           name: junit-test-results
@@ -103,10 +103,10 @@ jobs:
     ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download - Jar
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ehrbase-jar
           path: ./application/target/
@@ -132,7 +132,7 @@ jobs:
           docker save --output ${{ runner.temp }}/ehrbase-build.tar ehrbase/ehrbase:build
 
       - name: Upload - Test Image
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ehrbase-image-test
           path: ${{ runner.temp }}/ehrbase-test.tar
@@ -140,7 +140,7 @@ jobs:
           retention-days: 1
 
       - name: Upload - Build Image
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ehrbase-image-build
           path: ${{ runner.temp }}/ehrbase-build.tar
@@ -203,7 +203,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             tests
@@ -211,7 +211,7 @@ jobs:
             docker-compose.yml
 
       - name: Download - Test Image
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ehrbase-image-test
           path: ${{ runner.temp }}
@@ -274,7 +274,7 @@ jobs:
 
       - name: Upload - Jacoco Coverage
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: jacoco-coverage-partial-robot-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}
           path: ./tests/coverage/jacoco*.exec
@@ -282,7 +282,7 @@ jobs:
 
       - name: Upload - Robot results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: robot-result-${{ matrix.test-suite.name }}
           path: ./tests/results/${{ matrix.test-suite.name }}/output.xml
@@ -308,7 +308,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             tests
@@ -316,7 +316,7 @@ jobs:
             docker-compose.yml
 
       - name: Download - Build Image
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ehrbase-image-build
           path: ${{ runner.temp }}
@@ -382,7 +382,7 @@ jobs:
           -Djava.awt.headless=true
 
       - name: Upload Results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: jmeter-result-${{ matrix.test-plan.name }}
           path: ./reports/${{ matrix.test-plan.name }}/result.jtl
@@ -390,7 +390,7 @@ jobs:
 
       - name: Upload HTML Reports
         if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: jmeter-report-${{ matrix.test-plan.name }}
           path: reports/${{ matrix.test-plan.name }}/html
@@ -431,28 +431,28 @@ jobs:
       pull-requests: write
     steps:
       - name: Download - JMeter results
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: jmeter-result-*
           path: ./tests/jmeter-results/
 
       - name: Download - JMeter reports
         if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: jmeter-report-*
           path: ./tests/jmeter-reports/
 
       - name: Archive and Upload - JMeter results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: jmeter-results-final
           path: ./tests/jmeter-results
 
       - name: Archive and Upload - JMeter reports
         if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: jmeter-reports-final
           path: ./tests/jmeter-reports
@@ -479,7 +479,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Download - Robot results
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: robot-result-*
           path: ./tests/results/
@@ -493,7 +493,7 @@ jobs:
 
       - name: Archive - Robot Report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: robot-report-final
           path: ./tests/report
@@ -516,16 +516,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download - Class files
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: java-class-files
           path: ./
 
       - name: Download - Robot results
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: jacoco-coverage-partial-*
           path: ./tests/coverage
@@ -564,7 +564,7 @@ jobs:
 
       - name: Archive - Jacoco Report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: jacoco-report-final
           path: ./tests/coverage/jacoco-report-final

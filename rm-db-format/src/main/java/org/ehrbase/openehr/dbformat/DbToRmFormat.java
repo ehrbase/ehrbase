@@ -35,8 +35,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import org.apache.commons.io.input.CharSequenceReader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.CharSequenceHelper;
@@ -128,10 +130,24 @@ public final class DbToRmFormat {
             case StringSegment cs ->
                 parseJson(PREFER_CHAR_SEQUENCE_READER ? new CharSequenceReader(cs) : cs.reader(), objectMapper);
             case CharSequence cs -> parseJson(new CharSequenceReader(cs), objectMapper);
-            default -> {
-                throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
-            }
+            default -> throw new IllegalArgumentException("Unexpected JSON data type %s".formatted(v.getClass()));
         };
+    }
+
+    public static Pair<CharSequence, CharSequence>[] parseDbObjectAggregateString(final String databaseObject) {
+        Stream.Builder<Pair<CharSequence, CharSequence>> builder = Stream.builder();
+        int pos = 0;
+        int length = databaseObject.length();
+        while (pos < length) {
+            int jsonbStart = databaseObject.indexOf('{', pos);
+            int nextNewline = databaseObject.indexOf('\n', jsonbStart);
+            int jsonbEnd = nextNewline < 0 ? length : nextNewline;
+            CharSequence idx = StringSegment.subSequence(databaseObject, pos, jsonbStart);
+            CharSequence jsonb = StringSegment.subSequence(databaseObject, jsonbStart, jsonbEnd);
+            builder.accept(Pair.of(idx, jsonb));
+            pos = jsonbEnd + 1;
+        }
+        return builder.build().toArray(Pair[]::new);
     }
 
     /**

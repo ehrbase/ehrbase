@@ -22,7 +22,11 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
+import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
@@ -38,7 +42,10 @@ import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.Record;
+import org.jooq.ResultQuery;
+import org.jooq.Select;
 import org.jooq.SelectQuery;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,12 +59,17 @@ public class AqlQueryRepository {
     private final SystemService systemService;
     private final KnowledgeCacheService knowledgeCache;
     private final AqlSqlQueryBuilder queryBuilder;
+    private final AqlQueryContext queryContext;
 
     public AqlQueryRepository(
-            SystemService systemService, KnowledgeCacheService knowledgeCache, AqlSqlQueryBuilder queryBuilder) {
-        this.queryBuilder = queryBuilder;
+            SystemService systemService,
+            KnowledgeCacheService knowledgeCache,
+            AqlSqlQueryBuilder queryBuilder,
+            AqlQueryContext queryContext) {
         this.systemService = systemService;
         this.knowledgeCache = knowledgeCache;
+        this.queryBuilder = queryBuilder;
+        this.queryContext = queryContext;
     }
 
     /**
@@ -81,7 +93,32 @@ public class AqlQueryRepository {
         } else {
             postProcessors = selects.stream().map(this::getPostProcessor).toArray(AqlSqlResultPostprocessor[]::new);
         }
-        return new PreparedQuery(selectQuery, postProcessors);
+
+        ResultQuery<Record> resultQuery = prependSqlComments(selectQuery, queryContext);
+
+        return new PreparedQuery(resultQuery, postProcessors);
+    }
+
+    public static <R extends Record> ResultQuery<R> prependSqlComments(
+            Select<R> selectQuery, AqlQueryContext queryContext) {
+        return Optional.of(AqlQueryService.SQL_COMMENTS_KEY)
+                .map(queryContext::<List<String>>getProperty)
+                .filter(CollectionUtils::isNotEmpty)
+                .map(l -> l.stream()
+                        .map(AqlQueryRepository::escapeSqlComment)
+                        .collect(Collectors.joining("*/\n/*", "/*", "*/")))
+                .map(comments -> {
+                    ResultQuery<R> query = (ResultQuery<R>) DSL.resultQuery("{0}\n{1}", DSL.raw(comments), selectQuery);
+                    query.coerce(selectQuery.fields());
+                    // reattach the query, in case callers created the query attached
+                    query.attach(selectQuery.configuration());
+                    return query;
+                })
+                .orElse(selectQuery);
+    }
+
+    private static String escapeSqlComment(String s) {
+        return s.replace("*/", "*|").replace("/*", "|*");
     }
 
     /**
@@ -130,8 +167,8 @@ public class AqlQueryRepository {
                                 select.root().getRmType()))
                         .filter(e -> "commit_audit".equals(nodes.getFirst().getAttribute())))
                 .<AqlSqlResultPostprocessor>map(
-                        ec -> new ExtractedColumnResultPostprocessor(ec, knowledgeCache, systemService.getSystemId()))
-                .orElseGet(DefaultResultPostprocessor::new);
+                        ec -> ExtractedColumnResultPostprocessor.get(ec, knowledgeCache, systemService.getSystemId()))
+                .orElse(DefaultResultPostprocessor.INSTANCE);
     }
 
     private static List<Object> postProcessDbRecord(Record r, AqlSqlResultPostprocessor[] postProcessors) {

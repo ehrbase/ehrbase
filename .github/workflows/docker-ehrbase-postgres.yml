@@ -32,7 +32,7 @@ jobs:
           echo "POSTGRES_VERSION=${{ inputs.postgres-version }}" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Docker registry login
       - name: Login into registry ${{ env.REGISTRY }}

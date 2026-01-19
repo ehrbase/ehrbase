@@ -49,7 +49,7 @@ class ExtractedColumnResultPostprocessorTest {
     private final Record dbRecord = mock(Record.class);
 
     private ExtractedColumnResultPostprocessor processor(AslExtractedColumn extractedColumn) {
-        return new ExtractedColumnResultPostprocessor(extractedColumn, knowledgeCacheService, "test-node");
+        return ExtractedColumnResultPostprocessor.get(extractedColumn, knowledgeCacheService, "test-node");
     }
 
     @BeforeEach
