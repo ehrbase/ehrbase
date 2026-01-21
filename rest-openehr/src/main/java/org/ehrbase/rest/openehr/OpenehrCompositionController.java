@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
@@ -390,12 +389,13 @@ public class OpenehrCompositionController extends BaseController implements Comp
         for (String header : headerList) {
             switch (header) {
                 case LOCATION -> respHeaders.setLocation(uri);
-                case ETAG -> respHeaders.setETag(
-                        "\"" + compositionId + "::" + systemService.getSystemId() + "::" + version + "\"");
+                case ETAG ->
+                    respHeaders.setETag(
+                            "\"" + compositionId + "::" + systemService.getSystemId() + "::" + version + "\"");
                 case LAST_MODIFIED ->
-                // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for
-                // now
-                respHeaders.setLastModified(123124442);
+                    // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for
+                    // now
+                    respHeaders.setLastModified(123124442);
                 default -> {} // Ignore header
             }
         }
