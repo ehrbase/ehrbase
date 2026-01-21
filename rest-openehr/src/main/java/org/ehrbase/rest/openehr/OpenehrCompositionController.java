@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.ehrbase.api.rest.HttpRestContext.TEMPLATE_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
@@ -30,8 +29,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -124,15 +121,12 @@ public class OpenehrCompositionController extends BaseController implements Comp
                 .orElseThrow(() -> new InternalServerException("Failed to create composition"));
         URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionUuid.toString());
 
-        // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so handled separately
-        List<String> headerList = Arrays.asList(LOCATION, ETAG, LAST_MODIFIED);
         var respData = buildCompositionResponseData(
                 ehrId,
                 compositionUuid,
                 1,
                 responseRepresentation,
                 uri,
-                headerList,
                 RETURN_REPRESENTATION.equals(prefer) ? new CompositionResponseData(null, null) : null,
                 compoObj.getArchetypeDetails().getTemplateId().getValue());
 
@@ -204,9 +198,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
             URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionVersionUid);
 
-            // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled separately
-            List<String> headerList = Arrays.asList(LOCATION, ETAG, LAST_MODIFIED);
-
             UUID compositionId = extractVersionedObjectUidFromVersionUid(compositionVersionUid);
             int nextVersion = Integer.parseInt(ifMatchId.getVersionTreeId().getValue()) + 1;
             respData = buildCompositionResponseData(
@@ -215,7 +206,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     nextVersion,
                     responseRepresentation,
                     uri,
-                    headerList,
                     RETURN_REPRESENTATION.equals(prefer) ? new CompositionResponseData(null, null) : null,
                     compoObj.getArchetypeDetails().getTemplateId().getValue());
         } catch (ObjectNotFoundException e) { // composition not found
@@ -330,19 +320,12 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
         URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, versionedObjectUid);
 
-        List<String> headerList = Arrays.asList(
-                LOCATION,
-                ETAG,
-                LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE only needed for 200, so handled
-        // separately
-
         Optional<InternalResponse<CompositionResponseData>> respData = buildCompositionResponseData(
                 ehrId,
                 compositionUid,
                 version,
                 responseRepresentation,
                 uri,
-                headerList,
                 new CompositionResponseData(null, null),
                 null);
 
@@ -368,7 +351,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
      * @param responseRepresentation Response Content-Type and {@link org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat}
      *                               the response should be delivered in, as given by request
      * @param uri                    Location of resource
-     * @param headerList             List of headers to be set for response
      * @param compositionData        The composition data (can be null)
      * @param contextTemplateId      The template id of the composition, if available a priori in the caller context
      * @return A response containing the headers and, if not null, the composition data (the body of the response)
@@ -379,34 +361,22 @@ public class OpenehrCompositionController extends BaseController implements Comp
             int version,
             CompositionRepresentation responseRepresentation,
             URI uri,
-            List<String> headerList,
             @Nullable T compositionData,
             @Nullable String contextTemplateId) {
 
-        // do minimal scope steps
-        // create and supplement headers with data depending on which headers are requested
         HttpHeaders respHeaders = new HttpHeaders();
-        for (String header : headerList) {
-            switch (header) {
-                case LOCATION -> respHeaders.setLocation(uri);
-                case ETAG ->
-                    respHeaders.setETag(
-                            "\"" + compositionId + "::" + systemService.getSystemId() + "::" + version + "\"");
-                case LAST_MODIFIED ->
-                    // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for
-                    // now
-                    respHeaders.setLastModified(123124442);
-                default -> {} // Ignore header
-            }
-        }
+        respHeaders.setLocation(uri);
+        respHeaders.setETag("\"" + compositionId + "::" + systemService.getSystemId() + "::" + version + "\"");
+        // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
+        respHeaders.setLastModified(123124442);
 
-        String templateId = null;
+        String templateId;
 
-        // if response data objects was created as "representation" do all task from wider scope, too
-        // if (minimalOrRepresentation.getClass().equals(CompositionResponseData.class)) {     // TODO make
-        // Optional.ofNull....
-        if (compositionData != null) {
-            // when this "if" is true the following casting can be executed and data manipulated by reference (handled
+        if (compositionData == null) {
+            templateId = contextTemplateId;
+        } else {
+            // if a representation is retuned, the following casting can be executed and data manipulated by reference
+            // (handled
             // by temporary variable)
 
             CompositionDto compositionDto = compositionService
@@ -422,10 +392,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
 
             // finally set last header
             respHeaders.setContentType(responseRepresentation.mediaType);
-        } // else continue with returning but without additional data from above, e.g. body
-
-        if (isBlank(templateId) && !isBlank(contextTemplateId)) {
-            templateId = contextTemplateId;
         }
 
         HttpRestContext.register(
