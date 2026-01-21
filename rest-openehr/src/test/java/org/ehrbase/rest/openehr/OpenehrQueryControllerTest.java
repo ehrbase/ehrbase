@@ -17,19 +17,23 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
@@ -41,6 +45,7 @@ import org.ehrbase.openehr.sdk.response.dto.MetaData;
 import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
+import org.ehrbase.rest.util.OpenEhrQueryRequestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,10 +93,17 @@ public class OpenehrQueryControllerTest {
     }
 
     private OpenehrQueryController controllerStoredQuery() {
-        QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
-        queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
-        queryDefinitionResultDto.setQualifiedName("test_query");
-        doReturn(queryDefinitionResultDto).when(mockStoredQueryService).retrieveStoredQuery(any(), any());
+        doAnswer(inv -> {
+                    String qName = inv.getArgument(0, String.class);
+                    QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
+                    queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
+                    queryDefinitionResultDto.setVersion(inv.getArgument(1));
+                    queryDefinitionResultDto.setQualifiedName(qName);
+                    return queryDefinitionResultDto;
+                })
+                .when(mockStoredQueryService)
+                .retrieveStoredQuery(any(), any());
+
         return controller();
     }
 
@@ -101,7 +113,8 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(SAMPLE_QUERY, offset, fetch, SAMPLE_PARAMETER_MAP, MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     private Long toLong(Object obj) {
@@ -109,8 +122,9 @@ public class OpenehrQueryControllerTest {
             case null -> null;
             case Integer i -> i.longValue();
             case String s -> Long.parseLong(s);
-            default -> throw new IllegalArgumentException(
-                    "unexpected type " + obj.getClass().getName());
+            default ->
+                throw new IllegalArgumentException(
+                        "unexpected type " + obj.getClass().getName());
         };
     }
 
@@ -123,7 +137,8 @@ public class OpenehrQueryControllerTest {
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     private static Map<String, Object> sampleAqlQuery(Object fetch, Object offset) {
@@ -173,13 +188,14 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
+                        "1.0.0",
                         offset,
                         fetch,
                         SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -187,20 +203,20 @@ public class OpenehrQueryControllerTest {
 
         OpenehrQueryController openehrQueryController = controllerStoredQuery();
         doThrow(new ObjectNotFoundException(
-                        "QUERY", "Stored query 'does_not_exist' with version 'v1.0.0' does not exist"))
+                        "QUERY", "Stored query 'does_not_exist' with version '1.0.0' does not exist"))
                 .when(mockStoredQueryService)
                 .retrieveStoredQuery(any(), any());
         String message = assertThrows(
                         ObjectNotFoundException.class,
                         () -> openehrQueryController.executeStoredQuery(
                                 "does_not_exist",
-                                "v1.0.0",
+                                "1.0.0",
                                 null,
                                 null,
                                 SAMPLE_PARAMETER_MAP,
                                 MediaType.APPLICATION_JSON_VALUE))
                 .getMessage();
-        assertEquals(message, "Stored query 'does_not_exist' with version 'v1.0.0' does not exist");
+        assertEquals(message, "Stored query 'does_not_exist' with version '1.0.0' does not exist");
     }
 
     @ParameterizedTest
@@ -209,12 +225,13 @@ public class OpenehrQueryControllerTest {
         ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
+                        "1.0.0",
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
                         sampleAqlJson(fetch, offset));
         assertMetaData(response);
-        assertAqlQueryRequest(new AqlQueryRequest(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
@@ -223,7 +240,7 @@ public class OpenehrQueryControllerTest {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
                                 sampleAqlJson("invalid", null)))
@@ -237,12 +254,65 @@ public class OpenehrQueryControllerTest {
         String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
                                 sampleAqlJson(null, "invalid")))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);
+    }
+
+    @Test
+    void createRequestWithXmlParamsAdjusted() {
+
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT e FROM EHR e",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_string", "some-string",
+                        "p_xml_num", Map.of("type", "num", "", 42.12),
+                        "p_xml_int", Map.of("type", "int", "", 11)
+                        // "p_list": L
+                        ))),
+                null,
+                null);
+        assertThat(request.parameters())
+                .containsAllEntriesOf(Map.of("p_string", "some-string", "p_xml_num", 42.12, "p_xml_int", 11));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
+    }
+
+    @Test
+    void createRequestWithXmlParamsWithoutTypeAdjusted() {
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT c FROM COMPOSITION c",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_xml_num", Map.of("num", 42.12),
+                        "p_xml_int", Map.of("int", 11)
+                        // "p_list": L
+                        ))),
+                null,
+                null);
+        assertThat(request.parameters()).containsAllEntriesOf(Map.of("p_xml_num", 42.12, "p_xml_int", 11));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
+    }
+
+    @Test
+    void createRequestWithXmlParamListsAdjusted() {
+
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT e, c FROM EHR e CONTAINS COMPOSITION c",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_xml_list", Map.of("", List.of("value_1", "value_2")),
+                        "p_xml_list_alternative", List.of("some", "other", "value")))),
+                null,
+                null);
+        assertThat(request.parameters())
+                .containsAllEntriesOf(Map.of(
+                        "p_xml_list", List.of("value_1", "value_2"),
+                        "p_xml_list_alternative", List.of("some", "other", "value")));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
     }
 
     private void assertAqlQueryRequest(AqlQueryRequest aqlQueryRequest) {

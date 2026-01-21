@@ -20,11 +20,11 @@ package org.ehrbase.service;
 import static org.ehrbase.util.Lazy.lazy;
 
 import java.lang.management.ManagementFactory;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.ehrbase.api.service.StatusService;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,22 +32,41 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class StatusServiceImp implements StatusService {
 
-    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-    @Autowired
-    private BuildProperties buildProperties;
+    public static final String UNKNOWN = "<unknown>";
+    private final Supplier<String> operatingSystemInformation;
+    private final Supplier<String> javaVMInformation;
+    private final Supplier<String> ehrbaseVersion;
+    private final Supplier<String> databaseInformation;
+    private final Supplier<String> archieVersion;
+    private final Supplier<String> ehrbaseSdkVersion;
 
-    private final DSLContext dslContext;
+    public StatusServiceImp(DSLContext dslContext, Optional<BuildProperties> buildProperties) {
 
-    public StatusServiceImp(DSLContext dslContext) {
+        this.operatingSystemInformation = lazy(() -> String.format(
+                "%s %s %s",
+                ManagementFactory.getOperatingSystemMXBean().getName(),
+                ManagementFactory.getOperatingSystemMXBean().getArch(),
+                ManagementFactory.getOperatingSystemMXBean().getVersion()));
 
-        this.dslContext = dslContext;
+        this.javaVMInformation = lazy(() -> String.format(
+                "%s %s",
+                ManagementFactory.getRuntimeMXBean().getVmVendor(),
+                ManagementFactory.getRuntimeMXBean().getSystemProperties().get("java.runtime.version")));
+
+        this.ehrbaseVersion =
+                lazy(() -> buildProperties.map(BuildProperties::getVersion).orElse(UNKNOWN));
+
+        this.databaseInformation = lazy(() -> dslContext
+                .select(DSL.function("VERSION", String.class))
+                .fetchOne()
+                .value1());
+
+        this.archieVersion =
+                lazy(() -> buildProperties.map(p -> p.get("archie.version")).orElse(UNKNOWN));
+
+        this.ehrbaseSdkVersion = lazy(
+                () -> buildProperties.map(p -> p.get("openEHR_SDK.version")).orElse(UNKNOWN));
     }
-
-    private final Supplier<String> operatingSystemInformation = lazy(() -> String.format(
-            "%s %s %s",
-            ManagementFactory.getOperatingSystemMXBean().getName(),
-            ManagementFactory.getOperatingSystemMXBean().getArch(),
-            ManagementFactory.getOperatingSystemMXBean().getVersion()));
 
     /**
      * {@inheritDoc}
@@ -57,11 +76,6 @@ public class StatusServiceImp implements StatusService {
         return operatingSystemInformation.get();
     }
 
-    private final Supplier<String> javaVMInformation = lazy(() -> String.format(
-            "%s %s",
-            ManagementFactory.getRuntimeMXBean().getVmVendor(),
-            ManagementFactory.getRuntimeMXBean().getSystemProperties().get("java.runtime.version")));
-
     /**
      * {@inheritDoc}
      */
@@ -69,11 +83,6 @@ public class StatusServiceImp implements StatusService {
     public String getJavaVMInformation() {
         return javaVMInformation.get();
     }
-
-    private final Supplier<String> databaseInformation = lazy(() -> getDSLContext()
-            .select(DSL.function("VERSION", String.class))
-            .fetchOne()
-            .value1());
 
     /**
      * {@inheritDoc}
@@ -84,9 +93,6 @@ public class StatusServiceImp implements StatusService {
         return databaseInformation.get();
     }
 
-    private final Supplier<String> ehrbaseVersion =
-            lazy(() -> getBuildProperties().getVersion());
-
     /**
      * {@inheritDoc}
      */
@@ -94,9 +100,6 @@ public class StatusServiceImp implements StatusService {
     public String getEhrbaseVersion() {
         return ehrbaseVersion.get();
     }
-
-    private final Supplier<String> archieVersion =
-            lazy(() -> getBuildProperties().get("archie.version"));
 
     /**
      * {@inheritDoc}
@@ -106,22 +109,11 @@ public class StatusServiceImp implements StatusService {
         return archieVersion.get();
     }
 
-    private final Supplier<String> ehrbaseSdkVersion =
-            lazy(() -> getBuildProperties().get("openEHR_SDK.version"));
-
     /**
      * {@inheritDoc}
      */
     @Override
     public String getOpenEHR_SDK_Version() {
         return ehrbaseSdkVersion.get();
-    }
-
-    private BuildProperties getBuildProperties() {
-        return buildProperties;
-    }
-
-    private DSLContext getDSLContext() {
-        return dslContext;
     }
 }

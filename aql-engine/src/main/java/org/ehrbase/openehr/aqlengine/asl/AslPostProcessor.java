@@ -17,7 +17,6 @@
  */
 package org.ehrbase.openehr.aqlengine.asl;
 
-import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
@@ -44,7 +43,6 @@ public interface AslPostProcessor extends Ordered {
      * @param aqlQueryWrapper the AqlQueryWrapper created from aqlQuery
      * @param aqlQueryRequest the AqlQueryRequest provided to the service
      */
-    @Nonnull
     void afterBuildAsl(
             AslRootQuery aslRootQuery,
             AqlQuery aqlQuery,

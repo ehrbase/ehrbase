@@ -22,8 +22,6 @@ import org.ehrbase.openehr.sdk.response.dto.MetaData;
 
 public interface AqlQueryContext {
 
-    String BEAN_NAME = "scopedAqlQueryContext";
-
     interface MetaProperty {
         String propertyName();
     }
@@ -63,7 +61,19 @@ public interface AqlQueryContext {
 
     boolean showQueryPlan();
 
+    boolean isPathSkipping();
+
+    boolean isArchetypeLocalNodePredicates();
+
+    void setAqlQueryRequest(AqlQueryRequest aqlQueryRequest);
+
+    AqlQueryRequest getAqlQueryRequest();
+
     void setExecutedAql(String executedAql);
 
     void setMetaProperty(MetaProperty property, Object value);
+
+    void setProperty(String key, Object value);
+
+    <T> T getProperty(String key);
 }

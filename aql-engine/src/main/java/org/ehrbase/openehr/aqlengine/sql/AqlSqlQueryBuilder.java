@@ -36,7 +36,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.TemplateService;
@@ -52,6 +51,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
@@ -64,15 +64,16 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.sql.postprocessor.AqlSqlQueryPostProcessor;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
+import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
-import org.jooq.JSONObjectAggNullStep;
 import org.jooq.Operator;
 import org.jooq.Record;
-import org.jooq.Record1;
+import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.ResultQuery;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectField;
 import org.jooq.SelectFieldOrAsterisk;
@@ -164,7 +165,11 @@ public class AqlSqlQueryBuilder {
         return query;
     }
 
-    public Result<Record> explain(boolean analyze, SelectQuery<Record> selectQuery) {
+    public Result<Record> explain(boolean analyze, ResultQuery<?> selectQuery) {
+        return explain(context, analyze, selectQuery);
+    }
+
+    public static Result<Record> explain(DSLContext context, boolean analyze, ResultQuery<?> selectQuery) {
         if (analyze) {
             return context.fetch("EXPLAIN (SUMMARY, COSTS, VERBOSE, FORMAT JSON, ANALYZE, TIMING) {0}", selectQuery);
         } else {
@@ -172,7 +177,6 @@ public class AqlSqlQueryBuilder {
         }
     }
 
-    @Nonnull
     private SelectJoinStep<Record> buildEncapsulatingQuery(
             AslEncapsulatingQuery aq, Supplier<SelectSelectStep<Record>> creator, AslQueryTables aslQueryToTable) {
         Iterator<Pair<AslQuery, AslJoin>> childIt = aq.getChildren().iterator();
@@ -237,16 +241,17 @@ public class AqlSqlQueryBuilder {
 
     private Table<?> buildQuery(AslQuery aslQuery, AslQuery target, AslQueryTables aslQueryToTable) {
         return switch (aslQuery) {
-            case AslStructureQuery aq -> buildStructureQuery(aq, aslQueryToTable)
-                    .asTable(aq.getAlias());
-            case AslEncapsulatingQuery aq -> buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable)
-                    .asTable(aq.getAlias());
-            case AslRmObjectDataQuery aq -> DSL.lateral(
-                    buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));
-            case AslFilteringQuery aq -> DSL.lateral(buildFilteringQuery(aq, aslQueryToTable.getDataTable(target))
-                    .asTable(aq.getAlias()));
-            case AslPathDataQuery aq -> DSL.lateral(
-                    buildPathDataQuery(aq, target, aslQueryToTable).asTable(aq.getAlias()));
+            case AslStructureQuery aq ->
+                buildStructureQuery(aq, aslQueryToTable).asTable(aq.getAlias());
+            case AslEncapsulatingQuery aq ->
+                buildEncapsulatingQuery(aq, DSL::select, aslQueryToTable).asTable(aq.getAlias());
+            case AslRmObjectDataQuery aq ->
+                DSL.lateral(buildDataSubquery(aq, aslQueryToTable).asTable(aq.getAlias()));
+            case AslFilteringQuery aq ->
+                DSL.lateral(buildFilteringQuery(aq, aslQueryToTable.getDataTable(target))
+                        .asTable(aq.getAlias()));
+            case AslPathDataQuery aq ->
+                DSL.lateral(buildPathDataQuery(aq, target, aslQueryToTable).asTable(aq.getAlias()));
         };
     }
 
@@ -278,7 +283,6 @@ public class AqlSqlQueryBuilder {
                 .toList());
     }
 
-    @Nonnull
     private static Field pathDataField(
             AslPathDataQuery aslData, AslColumnField f, Function<String, Field<JSONB>> dataFieldProvider) {
         Field<JSONB> dataField = dataFieldProvider.apply(f.getColumnName());
@@ -297,17 +301,19 @@ public class AqlSqlQueryBuilder {
         final String fieldName = ((AslColumnField) aq.getSelect().getFirst()).getAliasedName();
         Stream<Field> fields =
                 switch (aq.getSourceField()) {
-                    case AslColumnField src -> Stream.of(
-                            FieldUtils.field(target, src, true).as(fieldName));
-                    case AslComplexExtractedColumnField src -> src.getExtractedColumn().getColumns().stream()
-                            .map(fn -> FieldUtils.field(target, src, fn, true).as(src.aliasedName(fn)));
+                    case AslColumnField src ->
+                        Stream.of(FieldUtils.field(target, src, true).as(fieldName));
+                    case AslComplexExtractedColumnField src ->
+                        src.getExtractedColumn().getColumns().stream().map(fn -> FieldUtils.field(target, src, fn, true)
+                                .as(src.aliasedName(fn)));
                     case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
-                    case AslAggregatingField __ -> throw new IllegalArgumentException(
-                            "Filtering queries cannot be based on AslAggregatingField");
-                    case AslSubqueryField __ -> throw new IllegalArgumentException(
-                            "Filtering queries cannot be based on AslSubqueryField");
-                    case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
-                            "Filtering queries cannot be based on AslFolderItemIdValuesColumnField");
+                    case AslAggregatingField __ ->
+                        throw new IllegalArgumentException("Filtering queries cannot be based on AslAggregatingField");
+                    case AslSubqueryField __ ->
+                        throw new IllegalArgumentException("Filtering queries cannot be based on AslSubqueryField");
+                    case AslFolderItemIdVirtualField __ ->
+                        throw new IllegalArgumentException(
+                                "Filtering queries cannot be based on AslFolderItemIdValuesColumnField");
                     case AslRmPathField arpf -> {
                         Field<JSONB> srcField = FieldUtils.field(target, arpf.getSrcField(), JSONB.class, true);
                         Field<JSONB> ret = FieldUtils.buildJsonbPathField(arpf.getPathInJson(), false, srcField);
@@ -318,11 +324,13 @@ public class AqlSqlQueryBuilder {
                             yield Stream.of(ret.as(fieldName));
                         }
                     }
+                    case AslStringAggregationField __ ->
+                        throw new IllegalArgumentException(
+                                "Filtering queries cannot be based on AslAggregateRecordArrayField");
                 };
         return DSL.select(fields.toArray(Field[]::new));
     }
 
-    @Nonnull
     private static SelectConditionStep<Record> buildStructureQuery(
             AslStructureQuery aq, AslQueryTables aslQueryToTable) {
 
@@ -366,7 +374,6 @@ public class AqlSqlQueryBuilder {
         return where;
     }
 
-    @Nonnull
     private static SelectJoinStep<Record> structureQueryBase(
             AslStructureQuery aq, Table<?> primaryTable, Table<?> dataTable, boolean hasVersionTable) {
 
@@ -454,7 +461,6 @@ public class AqlSqlQueryBuilder {
         return Pair.of(joinTable, selectFields);
     }
 
-    @Nonnull
     private static SelectJoinStep<Record> structureQueryBaseVersionToDataTable(
             AslStructureQuery aq,
             Table<?> primaryTable,
@@ -462,12 +468,14 @@ public class AqlSqlQueryBuilder {
             Stream<Field<?>> columnFields,
             Stream<AslFolderItemIdVirtualField> folderFields) {
         return switch (aq.getType()) {
-            case EHR_STATUS -> structureQueryBaseUsingVersionAndDataTable(
-                    columnFields, primaryTable, dataTable, EHR_STATUS_VERSION.EHR_ID, EHR_STATUS_DATA.EHR_ID);
-            case COMPOSITION -> structureQueryBaseUsingVersionAndDataTable(
-                    columnFields, primaryTable, dataTable, COMP_VERSION.VO_ID, COMP_DATA.VO_ID);
-            case FOLDER -> folderStructureQueryBaseUsingVersionAndData(
-                    primaryTable, dataTable, folderFields, columnFields);
+            case EHR_STATUS ->
+                structureQueryBaseUsingVersionAndDataTable(
+                        columnFields, primaryTable, dataTable, EHR_STATUS_VERSION.EHR_ID, EHR_STATUS_DATA.EHR_ID);
+            case COMPOSITION ->
+                structureQueryBaseUsingVersionAndDataTable(
+                        columnFields, primaryTable, dataTable, COMP_VERSION.VO_ID, COMP_DATA.VO_ID);
+            case FOLDER ->
+                folderStructureQueryBaseUsingVersionAndData(primaryTable, dataTable, folderFields, columnFields);
             default -> throw new IllegalArgumentException("%s has no version table".formatted(aq.getType()));
         };
     }
@@ -520,7 +528,6 @@ public class AqlSqlQueryBuilder {
         }
     }
 
-    @Nonnull
     private static SelectJoinStep<Record> structureQueryBaseUsingDataTable(
             AslStructureQuery aq,
             Table<?> primaryTable,
@@ -594,7 +601,7 @@ public class AqlSqlQueryBuilder {
      * and c2."num_cap" >= d2."num"
      * group by d2."VO_ID"
      */
-    static SelectHavingStep<Record1<JSONB>> buildDataSubquery(
+    static SelectHavingStep<?> buildDataSubquery(
             AslRmObjectDataQuery aslData, AslQueryTables aslQueryToTable, Condition... additionalConditions) {
         AslQuery target = aslData.getBaseProvider();
         Table<?> targetTable = aslQueryToTable.getDataTable(target);
@@ -603,9 +610,9 @@ public class AqlSqlQueryBuilder {
 
         Table<?> data = type.getDataTable().as(subqueryAlias(aslData));
         String dataFieldName = ((AslColumnField) aslData.getSelect().getFirst()).getName(true);
-        Field<JSONB> jsonbField = dataAggregation(data, type).as(DSL.name(dataFieldName));
 
-        SelectJoinStep<Record1<JSONB>> from = DSL.select(jsonbField).from(data);
+        Field<?> aggregateField = dataArrayAggregation(data, type).as(DSL.name(dataFieldName));
+        SelectJoinStep<?> from = DSL.select(aggregateField).from(data);
 
         // primary key condition
         List<Field> pKeyFields = type.getPkeyFields().stream()
@@ -635,11 +642,12 @@ public class AqlSqlQueryBuilder {
     }
 
     /**
-     * The aggregated jsonb can be processed by DbToRmFormat::reconstructFromDbFormat
+     * The aggregated data row array can be processed by DbToRmFormat::reconstructFromDbFormat
      *
      * @return
      */
-    private static JSONObjectAggNullStep<JSONB> dataAggregation(Table<?> dataTable, AslSourceRelation type) {
+    private static ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(
+            Table<?> dataTable, AslSourceRelation type) {
 
         Field<String> keyField = dataTable.field(COMP_DATA.ENTITY_IDX);
         Field<JSONB> dataField = dataTable.field(COMP_DATA.DATA);
@@ -656,6 +664,6 @@ public class AqlSqlQueryBuilder {
         } else {
             valueField = dataField;
         }
-        return DSL.jsonbObjectAgg(keyField, valueField);
+        return DSL.arrayAgg(DSL.field(DSL.row(keyField, valueField)));
     }
 }

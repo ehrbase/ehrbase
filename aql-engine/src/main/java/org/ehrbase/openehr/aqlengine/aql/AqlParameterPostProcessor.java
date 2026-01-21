@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine;
+package org.ehrbase.openehr.aqlengine.aql;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -113,6 +113,10 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
 
     public static void replaceIdentifiedPathParameters(
             IdentifiedPath identifiedPath, Map<String, Object> parameterMap) {
+        if (identifiedPath == null) {
+            // identified path can be null for COUNT(*) and some SingleRowFunctions
+            return;
+        }
         // revise root predicates in-place
         Optional.of(identifiedPath).map(IdentifiedPath::getRootPredicate).stream()
                 .flatMap(List::stream)
@@ -168,9 +172,7 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
             case Number nr -> new DoublePrimitive(nr.doubleValue());
             case String str -> Utils.stringToPrimitive(str);
             case Boolean b -> new BooleanPrimitive(b);
-            default -> {
-                throw new IllegalArgumentException("Type of parameter '%s' is not supported".formatted(name));
-            }
+            default -> throw new IllegalArgumentException("Type of parameter '%s' is not supported".formatted(name));
         };
     }
 
@@ -195,10 +197,10 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
                     .forEach(ce -> {
                         switch (ce) {
                             case SingleRowFunction func -> replaceFunctionParameters(func, parameterMap);
-                            case AggregateFunction aFunc -> replaceIdentifiedPathParameters(
-                                    aFunc.getIdentifiedPath(), parameterMap);
-                            case IdentifiedPath identifiedPath -> replaceIdentifiedPathParameters(
-                                    identifiedPath, parameterMap);
+                            case AggregateFunction aFunc ->
+                                replaceIdentifiedPathParameters(aFunc.getIdentifiedPath(), parameterMap);
+                            case IdentifiedPath identifiedPath ->
+                                replaceIdentifiedPathParameters(identifiedPath, parameterMap);
                             case Primitive<?, ?> __ -> {
                                 /* No parameters */
                             }
@@ -221,10 +223,10 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
                     ensureSingleElement(replaceOperandParameters(c.getValue(), parameterMap), c::setValue);
                 }
                 case NotCondition c -> replaceParameters(c.getConditionDto(), parameterMap);
-                case MatchesCondition c -> Utils.reviseList(
-                        c.getValues(), o -> replaceMatchesParameters(o, parameterMap));
-                case LikeCondition c -> replaceLikeOperandParameters(c.getValue(), parameterMap)
-                        .ifPresent(c::setValue);
+                case MatchesCondition c ->
+                    Utils.reviseList(c.getValues(), o -> replaceMatchesParameters(o, parameterMap));
+                case LikeCondition c ->
+                    replaceLikeOperandParameters(c.getValue(), parameterMap).ifPresent(c::setValue);
                 case LogicalOperatorCondition c -> c.getValues().forEach(v -> replaceParameters(v, parameterMap));
                 case ExistsCondition __ -> {
                     /* NOOP */
@@ -276,8 +278,8 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
                 case ContainmentSetOperator cso -> cso.getValues().forEach(c -> replaceParameters(c, parameterMap));
                 case ContainmentNotOperator cno -> replaceParameters(cno.getContainmentExpression(), parameterMap);
                 case ContainmentClassExpression cce -> replaceContainmentClassExpressionParameters(cce, parameterMap);
-                case ContainmentVersionExpression cve -> replaceContainmentVersionExpressionParameters(
-                        cve, parameterMap);
+                case ContainmentVersionExpression cve ->
+                    replaceContainmentVersionExpressionParameters(cve, parameterMap);
             }
         }
 
@@ -334,11 +336,12 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
 
             Optional<PathPredicateOperand> replacedValue =
                     switch (n.getValue()) {
-                        case QueryParameter qp -> Optional.of((PathPredicateOperand) ensureSingleElement(
-                                resolveParameters(qp, parameterMap), p -> validateParameterSyntax(n.getPath(), p)));
+                        case QueryParameter qp ->
+                            Optional.of((PathPredicateOperand) ensureSingleElement(
+                                    resolveParameters(qp, parameterMap), p -> validateParameterSyntax(n.getPath(), p)));
                         case Primitive __ -> Optional.empty();
-                        case AqlObjectPath p -> replaceParameters(p, parameterMap)
-                                .map(PathPredicateOperand.class::cast);
+                        case AqlObjectPath p ->
+                            replaceParameters(p, parameterMap).map(PathPredicateOperand.class::cast);
                         default -> throw new IllegalStateException("Unexpected value: " + n.getValue());
                     };
 
@@ -410,14 +413,17 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
 
             Object newValue =
                     switch (op.getValue()) {
-                        case null -> throw new NullPointerException(
-                                "Missing value for path " + op.getPath().render());
-                        case QueryParameter qp -> ensureSingleElement(
-                                resolveParameters(qp, parameterMap), p -> validateParameterSyntax(op.getPath(), p));
+                        case null ->
+                            throw new NullPointerException(
+                                    "Missing value for path " + op.getPath().render());
+                        case QueryParameter qp ->
+                            ensureSingleElement(
+                                    resolveParameters(qp, parameterMap), p -> validateParameterSyntax(op.getPath(), p));
                         case Primitive<?, ?> __ -> null;
                         case AqlObjectPath path -> replaceParameters(path, parameterMap);
-                        default -> throw new IllegalArgumentException("Unexpected type of value: "
-                                + op.getValue().getClass().getSimpleName());
+                        default ->
+                            throw new IllegalArgumentException("Unexpected type of value: "
+                                    + op.getValue().getClass().getSimpleName());
                     };
 
             newPath.ifPresent(op::setPath);

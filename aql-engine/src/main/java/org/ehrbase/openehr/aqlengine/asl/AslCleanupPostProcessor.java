@@ -29,12 +29,15 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslCoalesceJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslAggregatingField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslField.FieldSource;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
@@ -139,8 +142,8 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
                         .forEach(f -> usedFields.addFieldNames(determineOwner(f), f));
                 eq.getChildren().stream().map(Pair::getLeft).forEach(cq -> findUsedFields(cq, usedFields));
             }
-            case AslFilteringQuery fq -> usedFields.addFieldNames(
-                    fq.getSourceField().getOwner(), fq.getSourceField());
+            case AslFilteringQuery fq ->
+                usedFields.addFieldNames(fq.getSourceField().getOwner(), fq.getSourceField());
             case AslStructureQuery sq -> {
                 usedFields.addFieldNames(
                         sq,
@@ -161,6 +164,7 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
             case null -> null;
             case AslSubqueryField sf -> ((AslDataQuery) sf.getBaseQuery()).getBase();
             case AslAggregatingField af -> determineOwner(af.getBaseField());
+            case AslStringAggregationField af -> determineOwner(af.getBaseField());
             default -> f.getOwner();
         };
     }
@@ -173,12 +177,18 @@ public class AslCleanupPostProcessor implements AslPostProcessor {
     private static Stream<AslField> streamJoinConditionFields(AslJoinCondition joinCondition) {
         return switch (joinCondition) {
             case AslPathFilterJoinCondition pfjc -> AslUtils.streamConditionFields(pfjc.getCondition());
-            case AslDelegatingJoinCondition adjc -> switch (adjc.getDelegate()) {
-                case AslFieldFieldQueryCondition fjc -> Stream.of(fjc.getLeftField(), fjc.getRightField());
-            };
-            case AslFolderItemJoinCondition fijc -> Stream.of(
-                    AslStructureColumn.VO_ID.fieldWithOwner(fijc.getRightOwner()),
-                    new AslFolderItemIdVirtualField(AslField.FieldSource.withOwner(fijc.getLeftOwner())));
+            case AslDelegatingJoinCondition adjc ->
+                switch (adjc.getDelegate()) {
+                    case AslFieldFieldQueryCondition fjc -> Stream.of(fjc.getLeftField(), fjc.getRightField());
+                    case AslCoalesceJoinCondition cjc ->
+                        Stream.of(
+                                cjc.getTernaryCondition().getLeftField(),
+                                cjc.getTernaryCondition().getRightField());
+                };
+            case AslFolderItemJoinCondition fijc ->
+                Stream.of(
+                        AslStructureColumn.VO_ID.fieldWithOwner(fijc.getRightOwner()),
+                        new AslFolderItemIdVirtualField(FieldSource.withOwner(fijc.getLeftOwner())));
         };
     }
 

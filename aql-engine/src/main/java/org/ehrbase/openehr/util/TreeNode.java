@@ -32,6 +32,8 @@ public abstract class TreeNode<T extends TreeNode<T>> {
 
     protected T parent;
     final List<T> children = new ArrayList<>();
+    final List<T> childrenView = Collections.unmodifiableList(children);
+    protected int depth = 0;
 
     public T getParent() {
         return parent;
@@ -53,26 +55,29 @@ public abstract class TreeNode<T extends TreeNode<T>> {
             return child;
         }
 
-        if (!child.children.isEmpty()) {
-            // check ancestors
-            var a = this.parent;
-            while (a != null) {
-                if (a == child) {
-                    throw new IllegalArgumentException("The child is an ancestor of the current node");
-                }
-                a = a.parent;
-            }
+        // check ancestors
+        if (child.streamDepthFirst().anyMatch(n -> n == this)) {
+            throw new IllegalArgumentException("The child tree already contains the current node");
         }
 
         child.removeFromParent();
 
         child.parent = (T) this;
+        child.streamDepthFirst().forEach(n -> n.depth = n.parent.depth + 1);
         children.add(child);
         return child;
     }
 
+    public int getDepth() {
+        return depth;
+    }
+
     public List<T> getChildren() {
-        return Collections.unmodifiableList(children);
+        return childrenView;
+    }
+
+    public Stream<T> streamChildren() {
+        return children.stream();
     }
 
     public void sortChildren(Comparator<T> comparator) {
@@ -87,7 +92,7 @@ public abstract class TreeNode<T extends TreeNode<T>> {
     }
 
     public Stream<T> streamDepthFirst() {
-        return Stream.of(Stream.of((T) this), getChildren().stream().flatMap(TreeNode::streamDepthFirst))
+        return Stream.of(Stream.of((T) this), children.stream().flatMap(TreeNode::streamDepthFirst))
                 .flatMap(s -> s);
     }
 }

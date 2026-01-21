@@ -31,22 +31,18 @@ import java.util.stream.LongStream;
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.BadGatewayException;
-import org.ehrbase.api.exception.IllegalAqlException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.AqlQueryService;
-import org.ehrbase.openehr.aqlengine.AqlQueryParsingPostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryParsingPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
-import org.ehrbase.openehr.aqlengine.featurecheck.AqlQueryFeatureCheck;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
 import org.ehrbase.openehr.aqlengine.repository.AqlQueryRepository;
 import org.ehrbase.openehr.aqlengine.repository.PreparedQuery;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
-import org.ehrbase.openehr.sdk.aql.parser.AqlParseException;
-import org.ehrbase.openehr.sdk.aql.parser.AqlQueryParser;
 import org.ehrbase.openehr.sdk.aql.render.AqlRenderer;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.query.ResultHolder;
@@ -58,25 +54,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-@Service
+@Service("aqlQueryService")
 public class AqlQueryServiceImp implements AqlQueryService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final AqlQueryRepository aqlQueryRepository;
-    private final ExternalTerminologyValidation tsAdapter;
-    private final AqlSqlLayer aqlSqlLayer;
-    private final AqlQueryFeatureCheck aqlQueryFeatureCheck;
-    private final ObjectMapper objectMapper;
-    private final AqlQueryContext aqlQueryContext;
-    private final List<AqlQueryParsingPostProcessor> aqlPostProcessors;
-    private final List<AslPostProcessor> aslPostProcessors;
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final AqlQueryRepository aqlQueryRepository;
+    protected final ExternalTerminologyValidation tsAdapter;
+    protected final AqlSqlLayer aqlSqlLayer;
+    protected final ObjectMapper objectMapper;
+    protected final AqlQueryContext aqlQueryContext;
+    protected final List<AqlQueryParsingPostProcessor> aqlPostProcessors;
+    protected final List<AslPostProcessor> aslPostProcessors;
 
     @Autowired
     public AqlQueryServiceImp(
             AqlQueryRepository aqlQueryRepository,
             ExternalTerminologyValidation tsAdapter,
             AqlSqlLayer aqlSqlLayer,
-            AqlQueryFeatureCheck aqlQueryFeatureCheck,
             ObjectMapper objectMapper,
             AqlQueryContext aqlQueryContext,
             List<AqlQueryParsingPostProcessor> aqlPostProcessors,
@@ -84,7 +78,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
         this.aqlQueryRepository = aqlQueryRepository;
         this.tsAdapter = tsAdapter;
         this.aqlSqlLayer = aqlSqlLayer;
-        this.aqlQueryFeatureCheck = aqlQueryFeatureCheck;
         this.objectMapper = objectMapper;
         this.aqlQueryContext = aqlQueryContext;
         this.aqlPostProcessors = aqlPostProcessors;
@@ -92,15 +85,14 @@ public class AqlQueryServiceImp implements AqlQueryService {
     }
 
     @Override
-    public QueryResultDto query(AqlQueryRequest aqlQuery) {
-        return queryAql(aqlQuery);
-    }
+    public QueryResultDto query(AqlQueryRequest aqlQueryRequest) {
 
-    private QueryResultDto queryAql(AqlQueryRequest aqlQueryRequest) {
+        aqlQueryContext.setAqlQueryRequest(aqlQueryRequest);
+        AqlQueryService.addQueryNameComment(aqlQueryContext);
 
         // TODO: check that select aliases are not duplicated
         try {
-            AqlQuery aqlQuery = AqlQueryParser.parse(aqlQueryRequest.queryString());
+            AqlQuery aqlQuery = aqlQueryRequest.aqlQuery();
 
             // apply AQL postprocessors
             aqlPostProcessors.forEach(p -> p.afterParseAql(aqlQuery, aqlQueryRequest, aqlQueryContext));
@@ -110,7 +102,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
                     logger.trace(objectMapper.writeValueAsString(aqlQuery));
                 }
 
-                AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+                AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, aqlQueryContext.isPathSkipping());
 
                 AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
                 aslPostProcessors.forEach(p -> p.afterBuildAsl(aslQuery, aqlQuery, queryWrapper, aqlQueryRequest));
@@ -169,8 +161,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
             throw new BadGatewayException(errorMessage("Bad gateway", e), e);
         } catch (DataAccessException e) {
             throw new InternalServerException(errorMessage("Data Access Error", e), e);
-        } catch (AqlParseException e) {
-            throw new IllegalAqlException(errorMessage("Could not parse AQL query", e), e);
         }
     }
 
@@ -201,7 +191,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
         return resultData;
     }
 
-    private QueryResultDto formatResult(List<SelectWrapper> selectFields, List<List<Object>> resultData) {
+    protected QueryResultDto formatResult(List<SelectWrapper> selectFields, List<List<Object>> resultData) {
 
         String[] columnNames = new String[selectFields.size()];
         Map<String, String> columns = new LinkedHashMap<>();
@@ -227,7 +217,7 @@ public class AqlQueryServiceImp implements AqlQueryService {
         return dto;
     }
 
-    private static String errorMessage(String prefix, Exception e) {
+    protected static String errorMessage(String prefix, Exception e) {
         return prefix + ": " + Optional.of(e).map(Throwable::getCause).orElse(e).getMessage();
     }
 }

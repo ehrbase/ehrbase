@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.dto.experimental.ItemTagDto;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -40,7 +39,6 @@ import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +66,7 @@ public class ItemTagRepository {
      * @return tagIDs   Sored {@link ItemTagDto#getId()}s.
      */
     @Transactional
-    public List<UUID> bulkStore(@NonNull List<ItemTagDto> itemTags) {
+    public List<UUID> bulkStore(List<ItemTagDto> itemTags) {
 
         if (itemTags.isEmpty()) {
             return List.of();
@@ -84,14 +82,15 @@ public class ItemTagRepository {
                 .map(tag -> new AbstractMap.SimpleImmutableEntry<>(tag.getId(), tag))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        List<EhrItemTagRecord> existingTags =
-                context.selectFrom(EHR_ITEM_TAG).where(EHR_ITEM_TAG.ID.in(existingTagsById.keySet())).stream()
-                        .map(dbRecord -> {
+        List<EhrItemTagRecord> existingTags = context.selectFrom(EHR_ITEM_TAG)
+                .where(EHR_ITEM_TAG.ID.in(existingTagsById.keySet()))
+                .collect(Collectors.mapping(
+                        dbRecord -> {
                             ItemTagDto itemTag = existingTagsById.remove(dbRecord.getId());
                             mapItemTag(itemTag, dbRecord);
                             return dbRecord;
-                        })
-                        .toList();
+                        },
+                        Collectors.toList()));
 
         if (!existingTagsById.isEmpty()) {
             throw new ObjectNotFoundException(
@@ -122,11 +121,7 @@ public class ItemTagRepository {
      */
     @Transactional
     public Collection<ItemTagDto> findForOwnerAndTarget(
-            @NonNull UUID ownerId,
-            @NonNull UUID targetVoId,
-            @NonNull ItemTagRMType targetType,
-            @NonNull Collection<UUID> ids,
-            @NonNull Collection<String> keys) {
+            UUID ownerId, UUID targetVoId, ItemTagRMType targetType, Collection<UUID> ids, Collection<String> keys) {
 
         SelectConditionStep<Record1<EhrItemTagRecord>> query = context.select(EHR_ITEM_TAG)
                 .from(EHR_ITEM_TAG)
@@ -149,11 +144,7 @@ public class ItemTagRepository {
      * @param ids  Identifier of <code>ItemTag</code> to delete.
      */
     @Transactional
-    public int bulkDelete(
-            @NonNull UUID ownerId,
-            @NonNull UUID targetVoId,
-            @NonNull ItemTagRMType targetType,
-            @NonNull Collection<UUID> ids) {
+    public int bulkDelete(UUID ownerId, UUID targetVoId, ItemTagRMType targetType, Collection<UUID> ids) {
 
         if (ids.isEmpty()) {
             return 0;
@@ -225,7 +216,7 @@ public class ItemTagRepository {
                 itemTagRecord.getValue());
     }
 
-    private static @Nonnull ItemTagRMType dbEnumToTargetType(final EhrItemTagTargetType dbEnum) {
+    private static ItemTagRMType dbEnumToTargetType(final EhrItemTagTargetType dbEnum) {
         return switch (dbEnum) {
             case ehr_status -> ItemTagRMType.EHR_STATUS;
             case composition -> ItemTagRMType.COMPOSITION;

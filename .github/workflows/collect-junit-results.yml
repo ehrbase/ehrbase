@@ -27,7 +27,7 @@ jobs:
 
       # checkout because dorny/test-reporter needs to read tracked files
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
@@ -35,7 +35,7 @@ jobs:
       # Download report separately because the dorny/test-reporter is not compatible with
       # actions/[upload/download]-artifact@v4 https://github.com/dorny/test-reporter/issues/363
       - name: Download - Unit Reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow

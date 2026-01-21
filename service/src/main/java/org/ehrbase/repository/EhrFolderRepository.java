@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -45,11 +44,13 @@ import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.openehr.dbformat.StructureNode;
 import org.ehrbase.openehr.dbformat.VersionedObjectDataStructure;
 import org.ehrbase.service.TimeProvider;
+import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.Record2;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
@@ -96,19 +97,20 @@ public class EhrFolderRepository
      * but then the whole objects would need to be transferred.
      */
     @Override
-    protected Field<JSONB> jsonbDataAggregation(Table<?> dataTable) {
+    protected ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(Table<?> dataTable) {
+        Field<String> keyField = dataTable.field(DATA_PROTOTYPE.ENTITY_IDX);
         Field<JSONB> dataField = dataTable.field(DATA_PROTOTYPE.DATA);
         Field<UUID[]> uuidsField = dataTable.field(EhrFolderData.EHR_FOLDER_DATA.ITEM_UUIDS);
-        return DSL.jsonbObjectAgg(
-                        dataTable.field(DATA_PROTOTYPE.ENTITY_IDX),
-                        DSL.case_()
-                                .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
-                                .else_(AdditionalSQLFunctions.jsonb_set(
-                                        dataField,
-                                        AdditionalSQLFunctions.array_to_jsonb(uuidsField),
-                                        DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS)))
-                .as(DSL.name("data"));
+        Field<JSONB> valueField = DSL.case_()
+                .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
+                .else_(AdditionalSQLFunctions.jsonb_set(
+                        dataField,
+                        AdditionalSQLFunctions.array_to_jsonb(uuidsField),
+                        DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS));
+
+        return DSL.arrayAgg(DSL.field(DSL.row(keyField, valueField)));
     }
+
     /**
      * Create a new Folder in the DB
      *
@@ -118,8 +120,7 @@ public class EhrFolderRepository
      * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
-    public void commit(
-            UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId, int ehrFoldersIdx) {
+    public void commit(UUID ehrId, Folder folder, UUID contributionId, UUID auditId, int ehrFoldersIdx) {
         commitHead(
                 ehrId,
                 folder,
@@ -175,8 +176,7 @@ public class EhrFolderRepository
      * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
      */
     @Transactional
-    public void update(
-            UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId, int ehrFoldersIdx) {
+    public void update(UUID ehrId, Folder folder, UUID contributionId, UUID auditId, int ehrFoldersIdx) {
 
         update(
                 ehrId,

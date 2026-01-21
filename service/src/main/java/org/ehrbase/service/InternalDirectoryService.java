@@ -20,7 +20,6 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -37,7 +36,7 @@ public interface InternalDirectoryService extends DirectoryService {
      * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
      * @return
      */
-    Folder create(UUID ehrId, Folder folder, @Nullable UUID contributionId, @Nullable UUID auditId);
+    Folder create(UUID ehrId, Folder folder, UUID contributionId, UUID auditId);
 
     /**
      * Update the folder for Ehr with id equal <code>ehrId</code>
@@ -49,12 +48,7 @@ public interface InternalDirectoryService extends DirectoryService {
      * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
      * @return
      */
-    Folder update(
-            UUID ehrId,
-            Folder folder,
-            ObjectVersionId ifMatches,
-            @Nullable UUID contributionId,
-            @Nullable UUID auditId);
+    Folder update(UUID ehrId, Folder folder, ObjectVersionId ifMatches, UUID contributionId, UUID auditId);
 
     /**
      * delete the folder for Ehr with id equal <code>ehrId</code>
@@ -64,5 +58,5 @@ public interface InternalDirectoryService extends DirectoryService {
      * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
      * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType)}
      */
-    void delete(UUID ehrId, ObjectVersionId ifMatches, @Nullable UUID contributionId, @Nullable UUID auditId);
+    void delete(UUID ehrId, ObjectVersionId ifMatches, UUID contributionId, UUID auditId);
 }

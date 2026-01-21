@@ -28,12 +28,12 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>bom</artifactId>
-    <version>2.20.0-SNAPSHOT</version>
+    <version>2.28.0-SNAPSHOT</version>
     <relativePath>/bom/pom.xml</relativePath>
   </parent>
 
   <artifactId>server</artifactId>
-  <version>2.20.0-SNAPSHOT</version>
+  <version>2.28.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>EHRbase server</name>
   <description>EHRbase openEHR server</description>
@@ -81,7 +81,10 @@
     <database.name>ehrbase</database.name>
     <database.timeout>120000</database.timeout>
     <database.external>false</database.external>
-    <test.profile>unit</test.profile>
+    <skipTests>false</skipTests>
+    <skipITs>false</skipITs>
+    <failsafeArgLine/>
+    <surefireArgLine/>
   </properties>
 
   <build>
@@ -129,62 +132,50 @@
         <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
         <configuration>
-          <skipTests>true</skipTests>
           <!-- SETS THE VM ARGUMENT LINE USED WHEN UNIT TESTS ARE RUN. -->
-          <argLine>${surefireArgLine}</argLine>
+          <argLine>@{surefireArgLine}</argLine>
+          <skipTests>${skipTests}</skipTests>
+            <!-- Ensure tests have a stable local to prevent localized
+            XML parsing error messages -->
+            <systemPropertyVariables>
+                <user.language>en</user.language>
+                <user.region>US</user.region>
+            </systemPropertyVariables>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
         </configuration>
-        <executions>
-          <execution>
-            <id>${test.profile} tests</id>
-            <phase>test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <skipTests>${skipTests}</skipTests>
-              <includes>
-                <include>${include.tests}</include>
-              </includes>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <!-- HANDLES JUNIT INTEGRATION TESTS -->
         <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-failsafe-plugin -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven-failsafe-plugin.version}</version>
         <configuration>
-          <skipITs>${skipTests}</skipITs>
+          <skipITs>${skipITs}</skipITs>
           <additionalClasspathElements>
             <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
           </additionalClasspathElements>
+          <!-- SETS THE VM ARGUMENT LINE USED WHEN INTEGRATION TESTS ARE RUN. -->
+          <argLine>@{failsafeArgLine}</argLine>
+          <includes>
+            <include>**/*IT.java</include>
+          </includes>
         </configuration>
         <executions>
           <execution>
-            <id>integration-test</id>
-            <phase>verify</phase>
             <goals>
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
-            <configuration>
-              <!-- SETS THE VM ARGUMENT LINE USED WHEN INTEGRATION TESTS ARE RUN. -->
-              <argLine>${failsafeArgLine}</argLine>
-              <includes>
-                <include>**/*IT.java</include>
-              </includes>
-            </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.2</version>
         <configuration>
           <rules>
             <bannedDependencies>
@@ -223,12 +214,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin-version}</version>
-        <configuration>
-          <compilerArgs>
-            <arg>-parameters</arg>
-          </compilerArgs>
-        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -238,8 +223,8 @@
     <profile>
       <id>fast</id>
       <properties>
-        <include.tests>**/*Test.java</include.tests>
-        <test.profile>unit</test.profile>
+        <skipTests>false</skipTests>
+        <skipITs>true</skipITs>
       </properties>
     </profile>
 
@@ -247,8 +232,8 @@
     <profile>
       <id>slow</id>
       <properties>
-        <include.tests>**/*IT.java</include.tests>
-        <test.profile>integration</test.profile>
+        <skipTests>true</skipTests>
+        <skipITs>false</skipITs>
       </properties>
     </profile>
 
@@ -256,13 +241,17 @@
     <profile>
       <id>full</id>
       <properties>
-        <include.tests>**/*</include.tests>
-        <test.profile>all</test.profile>
+        <skipTests>false</skipTests>
+        <skipITs>false</skipITs>
       </properties>
     </profile>
 
     <profile>
       <id>release</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <skipITs>true</skipITs>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -295,6 +284,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
+              <version>${maven-gpg-plugin.version}</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>

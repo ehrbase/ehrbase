@@ -22,9 +22,6 @@ import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
 public class TestConfig {
 
     public static AqlConfigurationProperties aqlConfigurationProperties() {
-        return new AqlConfigurationProperties(
-                false,
-                new AqlConfigurationProperties.Experimental(
-                        new AqlConfigurationProperties.Experimental.AqlOnFolder(false)));
+        return new AqlConfigurationProperties();
     }
 }

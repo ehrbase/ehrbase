@@ -10,6 +10,65 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 
+## [2.27.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+ - Fixed an error where the deletion date of versioned objects was set to the creation date of the previous version  [#1573](https://github.com/ehrbase/ehrbase/pull/1573)
+
+## [2.26.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
+## [2.25.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+- Fixed an error during AQL parameter replacement, when using COUNT(*) [#1564](https://github.com/ehrbase/ehrbase/pull/1564)
+
+## [2.24.0]
+ ### Added
+ ### Changed 
+- When executing a stored query, the response no longer includes the variable `q` with the query definition [#1563](https://github.com/ehrbase/ehrbase/pull/1536)
+ ### Fixed 
+- Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
+
+## [2.23.0]
+ ### Added
+ ### Changed 
+- Upgrade openEHR_SDK to version 2.26.0 see https://github.com/ehrbase/openEHR_SDK/blob/develop/CHANGELOG.md
+ ### Fixed 
+- Proper escaping of AQL LIKE operands [#1542](https://github.com/ehrbase/ehrbase/pull/1542)
+- Renaming the query type parameter when storing queries to match the specification [#1536](https://github.com/ehrbase/ehrbase/pull/1536)
+
+## [2.22.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+- AQL: deterministic SQL generation [#1534](https://github.com/ehrbase/ehrbase/pull/1534)
+
+## [2.21.1]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
+## [2.21.0]
+ ### Added 
+- Option `ehrbase.aql.path-node-skipping` to improve AQL performance for paths containing consecutive node predicates. 
+  Disabled by default, since it may produce unexpected results if the paths do not follow the archetype definitions. 
+  [#1521](https://github.com/ehrbase/ehrbase/pull/1521)
+ ### Changed 
+- AQL: CONTAINS with a node predicate now excludes results from nested archetypes.
+  To restore the previous behaviour set `ehrbase.aql.archetype-local-node-predicates = false`[#1524](https://github.com/ehrbase/ehrbase/pull/1524)
+ ### Fixed
+- Fix terminology validation URL extraction [#1507](https://github.com/ehrbase/ehrbase/pull/1507)
+
+## [2.20.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [2.19.0]
  ### Added
  ### Changed 
@@ -190,4 +249,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.17.0]: https://github.com/ehrbase/ehrbase/compare/v2.16.0...v2.17.0
 [2.18.0]: https://github.com/ehrbase/ehrbase/compare/v2.17.0...v2.18.0
 [2.19.0]: https://github.com/ehrbase/ehrbase/compare/v2.18.0...v2.19.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.19.0...HEAD
+[2.20.0]: https://github.com/ehrbase/ehrbase/compare/v2.19.0...v2.20.0
+[2.21.0]: https://github.com/ehrbase/ehrbase/compare/v2.20.0...v2.21.0
+[2.21.1]: https://github.com/ehrbase/ehrbase/compare/v2.21.0...v2.21.1
+[2.22.0]: https://github.com/ehrbase/ehrbase/compare/v2.21.1...v2.22.0
+[2.23.0]: https://github.com/ehrbase/ehrbase/compare/v2.22.0...v2.23.0
+[2.24.0]: https://github.com/ehrbase/ehrbase/compare/v2.23.0...v2.24.0
+[2.25.0]: https://github.com/ehrbase/ehrbase/compare/v2.24.0...v2.25.0
+[2.26.0]: https://github.com/ehrbase/ehrbase/compare/v2.25.0...v2.26.0
+[2.27.0]: https://github.com/ehrbase/ehrbase/compare/v2.26.0...v2.27.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.27.0...HEAD

@@ -35,21 +35,36 @@ import com.nedap.archie.rm.datavalues.encapsulated.DvMultimedia;
 import com.nedap.archie.rm.datavalues.quantity.DvCount;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.support.identification.TerminologyId;
+import com.nedap.archie.rminfo.ArchieRMInfoLookup;
+import com.nedap.archie.rminfo.RMAttributeInfo;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.assertj.core.api.SoftAssertions;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.aql.webtemplatepath.AqlPath;
+import org.ehrbase.openehr.sdk.serialisation.RMDataFormat;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
+import org.ehrbase.openehr.sdk.util.StringSegment;
+import org.jooq.JSONB;
+import org.jooq.Record2;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDSLContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -90,6 +105,34 @@ class DbToRmFormatTest {
         compareJson(composition, expectedComposition);
     }
 
+    /**
+     * Compare archie RMObject serialization with ObjectNode serialization
+     * @param example
+     * @throws IOException
+     */
+    @ParameterizedTest
+    @EnumSource(
+            value = CompositionTestDataCanonicalJson.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"INVALID"})
+    void rmObjectNodeCompatibilityTest(CompositionTestDataCanonicalJson example) throws IOException {
+        Composition expectedComposition =
+                RMDataFormat.canonicalJSON().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
+        String data = createDbOneJson(expectedComposition);
+        Composition composition = DbToRmFormat.reconstructRmObject(Composition.class, data);
+        JsonNode expectedNode = RmDbJson.MARSHAL_OM.readTree(CanonicalJson.MARSHAL_OM.writeValueAsString(composition));
+
+        ObjectNode compositionNode =
+                DbToRmFormat.reconstructRmObjectTree((ObjectNode) DbToRmFormat.parseJson(data, RmDbJson.MARSHAL_OM));
+        DbToRmFormat.revertDbInPlace(compositionNode, true, true, true);
+
+        List<String> issues = new ArrayList<>();
+        compareJsonNode(compositionNode, expectedNode, AqlPath.ROOT_PATH, issues);
+        if (!issues.isEmpty()) {
+            fail(issues.stream().collect(Collectors.joining("\n")));
+        }
+    }
+
     @Test
     void toCompositionFromTestAllTypes() throws IOException {
         String data = loadDbOneJson("all_types_no_multimedia");
@@ -98,7 +141,7 @@ class DbToRmFormatTest {
         assertThat(composition.getArchetypeDetails()).isNotNull();
         assertThat(composition.getArchetypeDetails().getTemplateId().getValue()).isEqualTo("test_all_types.en.v1");
 
-        Composition expectedComposition = new CanonicalJson()
+        Composition expectedComposition = RMDataFormat.canonicalJSON()
                 .unmarshal(IOUtils.toString(
                         CompositionTestDataCanonicalJson.ALL_TYPES.getStream(), StandardCharsets.UTF_8));
 
@@ -127,7 +170,7 @@ class DbToRmFormatTest {
 
         assertThat(actual.getArchetypeNodeId()).isNotNull();
 
-        Composition sourceComposition = new CanonicalJson()
+        Composition sourceComposition = RMDataFormat.canonicalJSON()
                 .unmarshal(IOUtils.toString(
                         CompositionTestDataCanonicalJson.ALL_TYPES.getStream(), StandardCharsets.UTF_8));
 
@@ -213,19 +256,48 @@ class DbToRmFormatTest {
         }
     }
 
+    private void roundtripTest(CompositionTestDataCanonicalJson example, UnaryOperator<Composition> roundtrip)
+            throws IOException {
+        Composition expectedComposition =
+                RMDataFormat.canonicalJSON().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
+        Composition composition = roundtrip.apply(expectedComposition);
+        compareJson(composition, expectedComposition);
+    }
+
     @ParameterizedTest
     @EnumSource(
             value = CompositionTestDataCanonicalJson.class,
             mode = EnumSource.Mode.EXCLUDE,
             names = {"INVALID"})
     void roundtripTestOne(CompositionTestDataCanonicalJson example) throws IOException {
-        Composition expectedComposition =
-                new CanonicalJson().unmarshal(IOUtils.toString(example.getStream(), StandardCharsets.UTF_8));
+        roundtripTest(example, c -> {
+            String dbJson = createDbOneJson(c);
+            return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+        });
+    }
 
-        String dbJson = createDbOneJson(expectedComposition);
-        Composition composition = DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+    @ParameterizedTest
+    @EnumSource(
+            value = CompositionTestDataCanonicalJson.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"INVALID"})
+    void roundtripTestOneNode(CompositionTestDataCanonicalJson example) throws IOException {
+        roundtripTest(example, c -> {
+            Record2<String, ?>[] dbJson = createDbOneJsonArray(c);
+            return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+        });
+    }
 
-        compareJson(composition, expectedComposition);
+    @ParameterizedTest
+    @EnumSource(
+            value = CompositionTestDataCanonicalJson.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"INVALID"})
+    void roundtripTestOneArray(CompositionTestDataCanonicalJson example) throws IOException {
+        roundtripTest(example, c -> {
+            Record2<String, ?>[] dbJson = createDbOneJsonArray(c);
+            return DbToRmFormat.reconstructRmObject(Composition.class, dbJson);
+        });
     }
 
     static String createDbOneJson(Composition composition) {
@@ -234,6 +306,14 @@ class DbToRmFormatTest {
                 .filter(r -> r.getStructureRmType().isStructureEntry())
                 .map(s -> Pair.of(s.getEntityIdx(), VersionedObjectDataStructure.applyRmAliases(s.getJsonNode())));
         return aggregateJson(stream);
+    }
+
+    static Record2<String, ?>[] createDbOneJsonArray(Composition composition) {
+        List<StructureNode> roots = VersionedObjectDataStructure.createDataStructure(composition);
+        Stream<Pair<StructureIndex, JsonNode>> stream = roots.stream()
+                .filter(r -> r.getStructureRmType().isStructureEntry())
+                .map(s -> Pair.of(s.getEntityIdx(), VersionedObjectDataStructure.applyRmAliases(s.getJsonNode())));
+        return aggregateJsonArray(stream);
     }
 
     /**
@@ -257,14 +337,37 @@ class DbToRmFormatTest {
         return root.toPrettyString();
     }
 
+    /**
+     * Aggregates the json data for the "one" format like the SQL query:
+     * <code>
+     *   select array_agg((d.entity_idx, d.data)) as data
+     *   from ehr.comp_one d
+     *
+     *   where s.comp_id = '...'::uuid
+     *   group by d.comp_id;
+     * </code>
+     */
+    static Record2<String, ?>[] aggregateJsonArray(Stream<Pair<StructureIndex, JsonNode>> dataRows) {
+        DefaultDSLContext defaultDSLContext = new DefaultDSLContext(SQLDialect.POSTGRES);
+        return dataRows.map(r -> {
+                    Record2<String, JSONB> rec =
+                            defaultDSLContext.newRecord(DSL.noField(String.class), DSL.noField(JSONB.class));
+                    rec.values(
+                            r.getLeft().printIndexString(false, true),
+                            JSONB.valueOf(r.getRight().toPrettyString()));
+                    return rec;
+                })
+                .toArray(l -> (Record2<String, ?>[]) new Record2[l]);
+    }
+
     @Test
     void testRemovePrefix() {
-        assertThat(DbToRmFormat.remainingPath("abc.123".length(), "abc.12345"))
+        assertThat(DbToRmFormat.remainingPath("ab.123".length(), "ab.12345"))
                 .isEqualTo(DbToRmFormat.DbJsonPath.parse("45"));
-        assertThat(DbToRmFormat.remainingPath("abc.123".length(), "abc.123.45"))
+        assertThat(DbToRmFormat.remainingPath("ab.123".length(), "ab.123.45"))
                 .isEqualTo(DbToRmFormat.DbJsonPath.parse("45"));
 
-        assertThat(DbToRmFormat.remainingPath(0, "abc.12345")).isEqualTo(DbToRmFormat.DbJsonPath.parse("abc.12345"));
+        assertThat(DbToRmFormat.remainingPath(0, "ab.12345")).isEqualTo(DbToRmFormat.DbJsonPath.parse("ab.12345"));
         assertThat(DbToRmFormat.remainingPath(0, ".12345")).isEqualTo(DbToRmFormat.DbJsonPath.parse("12345"));
 
         assertThat(DbToRmFormat.remainingPath("12345".length(), "12345")).isEqualTo(DbToRmFormat.DbJsonPath.EMPTY_PATH);
@@ -276,15 +379,15 @@ class DbToRmFormatTest {
     void testDbJsonPath() {
         assertThat(DbToRmFormat.DbJsonPath.parse("").components()).isEmpty();
 
-        assertThat(DbToRmFormat.DbJsonPath.parse("abc.").components())
-                .containsExactly(new DbToRmFormat.PathComponent("abc", null));
-        assertThat(DbToRmFormat.DbJsonPath.parse("abc1234.").components())
-                .containsExactly(new DbToRmFormat.PathComponent("abc", 1234));
-        assertThat(DbToRmFormat.DbJsonPath.parse("abc123456.def6.gh.ij0.").components())
+        assertThat(DbToRmFormat.DbJsonPath.parse("ab.").components())
+                .containsExactly(new DbToRmFormat.PathComponent("ab", -1));
+        assertThat(DbToRmFormat.DbJsonPath.parse("ab1234.").components())
+                .containsExactly(new DbToRmFormat.PathComponent("ab", 1234));
+        assertThat(DbToRmFormat.DbJsonPath.parse("ab123456.de6.gh.ij0.").components())
                 .containsExactly(
-                        new DbToRmFormat.PathComponent("abc", 123456),
-                        new DbToRmFormat.PathComponent("def", 6),
-                        new DbToRmFormat.PathComponent("gh", null),
+                        new DbToRmFormat.PathComponent("ab", 123456),
+                        new DbToRmFormat.PathComponent("de", 6),
+                        new DbToRmFormat.PathComponent("gh", -1),
                         new DbToRmFormat.PathComponent("ij", 0));
     }
 
@@ -300,5 +403,82 @@ class DbToRmFormatTest {
                 .isEqualTo(new CodePhrase(new TerminologyId("IANA_media-types"), "application/pdf"));
         assertThat(rmObject.getSize()).isEqualTo(8);
         assertThat(rmObject.getData()).containsExactly("TestData".getBytes());
+    }
+
+    @Test
+    void isTypeRequired() {
+
+        ArchieRMInfoLookup rmInfos = ArchieRMInfoLookup.getInstance();
+
+        Map<Boolean, List<Triple<RmTypeAlias, RmAttributeAlias, Boolean>>> typeRequiredness =
+                RmTypeAlias.values.stream()
+                        .flatMap(ta -> {
+                            var pt = rmInfos.getTypeInfo(ta.type());
+
+                            return RmAttributeAlias.VALUES.stream()
+                                    .flatMap(att -> Optional.of(att.attribute())
+                                            .map(pt::getAttribute)
+                                            .map(RMAttributeInfo::getTypeNameInCollection)
+                                            .map(rmInfos::getTypeInfo)
+                                            .map(attType -> {
+                                                boolean typeIsRequired = !attType.getDirectDescendantClasses()
+                                                        .isEmpty();
+                                                return Triple.of(ta, att, typeIsRequired);
+                                            })
+                                            .stream());
+                        })
+                        // remove correctly handled entries
+                        .filter(tr -> tr.getRight()
+                                != DbToRmFormat.isTypeRequired(
+                                        tr.getLeft().alias(), tr.getMiddle().alias()))
+                        .collect(Collectors.partitioningBy(Triple::getRight));
+
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions
+                .assertThat(typeRequiredness.get(true))
+                .withFailMessage(() -> typeRequiredness.get(true).stream()
+                        .map(r -> "%s.%s"
+                                .formatted(r.getLeft().alias(), r.getMiddle().alias()))
+                        .collect(Collectors.joining(", ", "To be removed from switch statements: ", "")))
+                .isEmpty();
+        softAssertions
+                .assertThat(typeRequiredness.get(false))
+                .withFailMessage(() -> {
+                    Map<String, List<String>> t2a = typeRequiredness.get(false).stream()
+                            .collect(Collectors.groupingBy(
+                                    t -> t.getLeft().alias(),
+                                    Collectors.mapping(t -> t.getMiddle().alias(), Collectors.toList())));
+
+                    return "Missing in switch statements:\nreturn switch (typeAlias) {\n"
+                            + t2a.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByKey())
+                                    .map(e -> "case \"%s\" -> switch(attributeAlias) { case %s default -> true;\n};"
+                                            .formatted(
+                                                    e.getKey(),
+                                                    e.getValue().stream()
+                                                            .sorted()
+                                                            .collect(Collectors.joining(
+                                                                    "\", \"", "\"", "\" -> false;\n"))))
+                                    .collect(Collectors.joining("\n"))
+                            + "\ncase null, default -> true\n};";
+                })
+                .isEmpty();
+
+        softAssertions.assertAll();
+    }
+
+    @Test
+    void parseDbObjectAggregateString() {
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("{\"a\": 1}"))
+                .containsExactly(Pair.of(StringSegment.wrap(""), StringSegment.wrap("{\"a\": 1}")));
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("x.{\"a\": 1}"))
+                .containsExactly(Pair.of(StringSegment.wrap("x."), StringSegment.wrap("{\"a\": 1}")));
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("x{\"a\": 1}"))
+                .containsExactly(Pair.of(StringSegment.wrap("x"), StringSegment.wrap("{\"a\": 1}")));
+        assertThat(DbToRmFormat.parseDbObjectAggregateString("{\"a\": 1}\nx.{\"a\": 2}\ny{\"a\": 3}"))
+                .containsExactly(
+                        Pair.of(StringSegment.wrap(""), StringSegment.wrap("{\"a\": 1}")),
+                        Pair.of(StringSegment.wrap("x."), StringSegment.wrap("{\"a\": 2}")),
+                        Pair.of(StringSegment.wrap("y"), StringSegment.wrap("{\"a\": 3}")));
     }
 }

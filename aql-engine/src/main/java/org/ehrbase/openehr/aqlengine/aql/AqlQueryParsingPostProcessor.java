@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.openehr.aqlengine;
+package org.ehrbase.openehr.aqlengine.aql;
 
 import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
@@ -36,6 +36,7 @@ public interface AqlQueryParsingPostProcessor extends Ordered {
     int EHR_PATH_PRECEDENCE = -1000;
     int FEATURE_CHECK_PRECEDENCE = 0;
     int FROM_EHR_OPTIMISATION_PRECEDENCE = 1000;
+    int PKEY_CONDITION_AS_PREDICATE_PRECEDENCE = 2000;
 
     /**
      * Invoked after parsing the raw AQL string.

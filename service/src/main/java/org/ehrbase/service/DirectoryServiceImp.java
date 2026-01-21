@@ -29,7 +29,6 @@ import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -63,7 +62,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
     }
 
     @Override
-    public Optional<Folder> get(UUID ehrId, @Nullable ObjectVersionId folderId, @Nullable String path) {
+    public Optional<Folder> get(UUID ehrId, ObjectVersionId folderId, String path) {
 
         final Optional<Folder> root;
         if (folderId == null) {
@@ -101,7 +100,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
     }
 
     @Override
-    public Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, @Nullable String path) {
+    public Optional<Folder> getByTime(UUID ehrId, OffsetDateTime time, String path) {
 
         Optional<ObjectVersionId> versionByTime = ehrFolderRepository.findVersionByTime(ehrId, 1, time);
 

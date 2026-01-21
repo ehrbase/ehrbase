@@ -17,20 +17,51 @@
  */
 package org.ehrbase.openehr.aqlengine;
 
-import java.net.URI;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import org.ehrbase.api.dto.AqlQueryContext;
-import org.ehrbase.openehr.sdk.response.dto.MetaData;
+import org.ehrbase.api.dto.AbstractAqlQueryContext;
+import org.ehrbase.api.service.StatusService;
 
-public class TestAqlQueryContext implements AqlQueryContext {
+public class TestAqlQueryContext extends AbstractAqlQueryContext {
 
-    private final Map<String, Object> metaProperties = new LinkedHashMap<>();
+    private static final StatusService STATUS_SERVICE = new StatusService() {
+
+        @Override
+        public String getOperatingSystemInformation() {
+            return "";
+        }
+
+        @Override
+        public String getJavaVMInformation() {
+            return "";
+        }
+
+        @Override
+        public String getDatabaseInformation() {
+            return "";
+        }
+
+        @Override
+        public String getEhrbaseVersion() {
+            return "";
+        }
+
+        @Override
+        public String getArchieVersion() {
+            return "";
+        }
+
+        @Override
+        public String getOpenEHR_SDK_Version() {
+            return "";
+        }
+    };
+
+    public TestAqlQueryContext() {
+        super(STATUS_SERVICE, true, true);
+    }
 
     @Override
-    public MetaData createMetaData(final URI location) {
-        return null;
+    protected boolean isGeneratorDetailsEnabled() {
+        return false;
     }
 
     @Override
@@ -51,27 +82,5 @@ public class TestAqlQueryContext implements AqlQueryContext {
     @Override
     public boolean showQueryPlan() {
         return false;
-    }
-
-    @Override
-    public void setExecutedAql(final String executedAql) {
-        metaProperties.put("executedAql", executedAql);
-    }
-
-    @Override
-    public void setMetaProperty(final MetaProperty property, final Object value) {
-        String name = property.propertyName();
-        if (value == null) {
-            metaProperties.remove(name);
-        } else {
-            metaProperties.put(name, value);
-        }
-    }
-
-    public Object getMetaProperty(MetaProperty property) {
-        return Optional.of(property)
-                .map(MetaProperty::propertyName)
-                .map(metaProperties::get)
-                .orElse(null);
     }
 }

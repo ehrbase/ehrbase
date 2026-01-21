@@ -31,8 +31,10 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.openehr.aqlengine.AqlEhrPathPostProcessor;
-import org.ehrbase.openehr.aqlengine.AqlFromEhrOptimisationPostProcessor;
+import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
+import org.ehrbase.openehr.aqlengine.aql.AqlConditionAsPredicatePostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlEhrPathPostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlFromEhrOptimisationPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AqlSqlLayer;
 import org.ehrbase.openehr.aqlengine.asl.AslCleanupPostProcessor;
 import org.ehrbase.openehr.aqlengine.asl.AslGraph;
@@ -88,7 +90,18 @@ class AqlSqlQueryBuilderTest {
     void printSqlQuery() {
         AqlQuery aqlQuery = AqlQueryParser.parse(
                 """
-            SELECT c/feeder_audit/original_content FROM COMPOSITION c
+            SELECT
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
+o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
+o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
+o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
+FROM EHR e
+CONTAINS COMPOSITION c
+CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
+WHERE e/ehr_id/value matches {'e6fad8ba-fb4f-46a2-bf82-66edb43f142f','e5fad8ba-fb4f-46a2-bf82-66edb43f142f'}
+AND c/archetype_details/template_id/value matches {'abc.v0','abc.v1'}
+AND c/uid/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142a'
+AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
         """);
 
         System.out.println("/*");
@@ -97,9 +110,15 @@ class AqlSqlQueryBuilderTest {
 
         new AqlEhrPathPostProcessor().afterParseAql(aqlQuery, null, null);
         new AqlFromEhrOptimisationPostProcessor().afterParseAql(aqlQuery, null, null);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        new AqlConditionAsPredicatePostProcessor().afterParseAql(aqlQuery, null, null);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        System.out.println("/*");
+        System.out.println(aqlQuery.render());
+        System.out.println("*/");
+
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
+
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         new AslCleanupPostProcessor().afterBuildAsl(aslQuery, aqlQuery, queryWrapper, null);
 
@@ -133,9 +152,9 @@ class AqlSqlQueryBuilderTest {
     void canBuildSqlQuery(String aql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
@@ -155,7 +174,7 @@ class AqlSqlQueryBuilderTest {
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertDoesNotThrow(() -> buildSqlQuery(queryWrapper));
     }
@@ -169,7 +188,7 @@ class AqlSqlQueryBuilderTest {
         FROM EHR
         CONTAINS FOLDER f
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
@@ -194,7 +213,7 @@ class AqlSqlQueryBuilderTest {
               c/uid/value
             FROM FOLDER CONTAINS COMPOSITION c
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         assertThat(queryWrapper.selects()).singleElement().satisfies(select -> {
@@ -225,7 +244,7 @@ class AqlSqlQueryBuilderTest {
             cluster/items[at0001]/value/data
         FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
         """);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
         assertThat(queryWrapper.pathInfos()).hasSize(1);
         PathInfo pathInfo = queryWrapper.pathInfos().entrySet().stream()
@@ -245,8 +264,8 @@ class AqlSqlQueryBuilderTest {
     @MethodSource
     void aslGraphRegression(String name, String aql, String aslGraph) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
-        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery);
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringWhitespace(aslGraph);
     }
@@ -268,7 +287,7 @@ class AqlSqlQueryBuilderTest {
     }
 
     private SelectQuery<Record> buildSqlQuery(AqlQueryWrapper queryWrapper) {
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node");
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 

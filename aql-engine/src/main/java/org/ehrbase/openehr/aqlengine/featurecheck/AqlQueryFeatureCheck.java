@@ -21,7 +21,7 @@ import org.ehrbase.api.dto.AqlQueryContext;
 import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
-import org.ehrbase.openehr.aqlengine.AqlQueryParsingPostProcessor;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryParsingPostProcessor;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.springframework.stereotype.Component;
 
@@ -30,9 +30,12 @@ public final class AqlQueryFeatureCheck implements AqlQueryParsingPostProcessor 
 
     private final FeatureCheck[] featureChecks;
 
-    public AqlQueryFeatureCheck(SystemService systemService, AqlConfigurationProperties aqlConfigurationProperties) {
+    public AqlQueryFeatureCheck(
+            SystemService systemService,
+            AqlConfigurationProperties aqlConfigurationProperties,
+            AqlQueryContext aqlQueryContext) {
         this.featureChecks = new FeatureCheck[] {
-            new FromCheck(systemService, aqlConfigurationProperties),
+            new FromCheck(systemService, aqlConfigurationProperties, aqlQueryContext),
             new SelectCheck(systemService),
             new WhereCheck(systemService),
             new OrderByCheck(systemService)

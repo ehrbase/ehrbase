@@ -87,6 +87,11 @@ ehrbase:
     check-for-extra-nodes: true
     validate-rm-constraints: true
   aql:
+    # Improves AQL performance for paths containing consecutive at-/id-codes
+    # May produce unexpected results if the paths do not follow the archetype definitions
+    path-node-skipping: false
+    # CONTAINS with a node predicate excludes results from nested archetypes
+    archetype-local-node-predicates: true
     pg-llj-workaround: true
     experimental:
       aql-on-folder:
@@ -144,7 +149,6 @@ admin-api:
 # Logging Properties
 logging:
   level:
-    org.ehcache: info
     org.jooq: info
     org.jooq.Constants: warn
     org.springframework: info
@@ -213,6 +217,9 @@ management:
     metrics:
       export:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
   # turn of redis per default, shall be enabled in case spring.cache.type: REDIS is used
   health:
     redis:

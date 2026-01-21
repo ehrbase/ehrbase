@@ -48,8 +48,9 @@ final class SelectCheck implements FeatureCheck {
                 case Primitive __ -> {
                     // Primitives are allowed
                 }
-                default -> throw new AqlFeatureNotImplementedException("%s is not supported in SELECT"
-                        .formatted(selectExp.getClass().getSimpleName()));
+                default ->
+                    throw new AqlFeatureNotImplementedException("%s is not supported in SELECT"
+                            .formatted(selectExp.getClass().getSimpleName()));
             }
         });
     }

@@ -105,28 +105,33 @@ public final class VersionedObjectDataStructure {
     private static void addMagnitudeAttribute(String type, ObjectNode object) {
         try {
             switch (type) {
-                case "DV_DATE_TIME" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                RmDbJson.MARSHAL_OM.treeToValue(object, DvDateTime.class)));
-                case "DV_DATE" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                RmDbJson.MARSHAL_OM.treeToValue(object, DvDate.class)));
-                case "DV_TIME" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                RmDbJson.MARSHAL_OM.treeToValue(object, DvTime.class)));
-                case "DV_DURATION" -> object.put(
-                        MAGNITUDE_FIELD,
-                        RmDbJson.MARSHAL_OM
-                                .treeToValue(object, DvDuration.class)
-                                .getMagnitude());
-                case "DV_PROPORTION" -> object.put(
-                        MAGNITUDE_FIELD,
-                        RmDbJson.MARSHAL_OM
-                                .treeToValue(object, DvProportion.class)
-                                .getMagnitude());
+                case "DV_DATE_TIME" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvDateTime.class)));
+                case "DV_DATE" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvDate.class)));
+                case "DV_TIME" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvTime.class)));
+                case "DV_DURATION" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            RmDbJson.MARSHAL_OM
+                                    .treeToValue(object, DvDuration.class)
+                                    .getMagnitude());
+                case "DV_PROPORTION" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            RmDbJson.MARSHAL_OM
+                                    .treeToValue(object, DvProportion.class)
+                                    .getMagnitude());
                 default -> {
                     /* do not add magnitude */
                 }
@@ -206,8 +211,8 @@ public final class VersionedObjectDataStructure {
                                                 structureRmType))) { // structureRmType.isDataRoot()) {
                             fieldIt.remove();
                         }
-                        StructureNode newRoot = createStructureDto(
-                                root, child, structureRmType, StructureIndex.Node.of(attribute, null));
+                        StructureNode newRoot =
+                                createStructureDto(root, child, structureRmType, StructureIndex.Node.of(attribute, -1));
                         roots.add(newRoot);
                         return newRoot;
                     });
@@ -265,7 +270,7 @@ public final class VersionedObjectDataStructure {
     public static ObjectNode applyRmAliases(ObjectNode jsonNode) {
         ObjectNode newNode = jsonNode.objectNode();
 
-        jsonNode.fields().forEachRemaining(e -> {
+        jsonNode.properties().forEach(e -> {
             String alias = RmAttributeAlias.getAlias(e.getKey());
             JsonNode child = e.getValue();
             if (child.isObject()) {

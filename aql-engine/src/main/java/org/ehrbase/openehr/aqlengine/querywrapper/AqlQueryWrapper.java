@@ -18,7 +18,7 @@
 package org.ehrbase.openehr.aqlengine.querywrapper;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,8 +33,12 @@ import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.VersionContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.orderby.OrderByWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper.IdentifiedPathWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
+import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.LogicalOperatorConditionWrapper;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.dto.condition.ComparisonOperatorCondition;
@@ -60,6 +64,37 @@ import org.ehrbase.openehr.sdk.aql.util.AqlUtil;
  * A wrapper for the AqlQuery providing context and convenience methods.
  */
 public final class AqlQueryWrapper {
+
+    /**
+     * Holds ContainsWrappers for Containments.
+     * The Containments are compared via identity.
+     */
+    private static final class ContainsWrappers {
+
+        private final Map<Containment, ContainsWrapper> byContainment = new IdentityHashMap<>();
+        private final List<Map.Entry<AbstractContainmentExpression, ContainsWrapper>> wrapperList = new ArrayList<>();
+
+        void addWrapper(AbstractContainmentExpression containment, ContainsWrapper wrapper) {
+            if (null == byContainment.put(containment, wrapper)) {
+                wrapperList.add(Pair.of(containment, wrapper));
+            } else {
+                throw new IllegalStateException("Duplicate containment %s ".formatted(containment));
+            }
+        }
+
+        public ContainsWrapper getWrapper(Containment contains) {
+            return byContainment.get(contains);
+        }
+
+        /**
+         * Streams the entries in order of insertion
+         * @return
+         */
+        public Stream<Map.Entry<AbstractContainmentExpression, ContainsWrapper>> stream() {
+            return wrapperList.stream();
+        }
+    }
+
     private final boolean distinct;
     private final List<SelectWrapper> selects;
     private final ContainsChain containsChain;
@@ -99,17 +134,18 @@ public final class AqlQueryWrapper {
     }
 
     public Stream<SelectWrapper> nonPrimitiveSelects() {
-        return selects.stream().filter(sd -> sd.type() != SelectWrapper.SelectType.PRIMITIVE);
+        return selects.stream().filter(sd -> sd.type() != SelectType.PRIMITIVE);
     }
 
     /**
      * Provides a wrapper for the AqlQuery providing context and convenience methods.
      *
      * @param aqlQuery
+     * @param enableNodeSkipping
      * @return
      */
-    public static AqlQueryWrapper create(AqlQuery aqlQuery) {
-        Map<AbstractContainmentExpression, ContainsWrapper> containsDescs = new LinkedHashMap<>();
+    public static AqlQueryWrapper create(AqlQuery aqlQuery, final boolean enableNodeSkipping) {
+        ContainsWrappers containsWrappers = new ContainsWrappers();
 
         ContainsChain fromClause;
         {
@@ -117,31 +153,33 @@ public final class AqlQueryWrapper {
             AqlUtil.streamContainments(fromRoot)
                     .filter(ContainmentClassExpression.class::isInstance)
                     .map(ContainmentClassExpression.class::cast)
-                    .forEach(c -> containsDescs.put(c, new RmContainsWrapper(c)));
+                    .forEach(c -> containsWrappers.addWrapper(c, new RmContainsWrapper(c)));
             // Version descriptors require the descriptor of the child
             AqlUtil.streamContainments(fromRoot)
                     .filter(ContainmentVersionExpression.class::isInstance)
                     .map(ContainmentVersionExpression.class::cast)
-                    .forEach(c -> containsDescs.put(c, new VersionContainsWrapper(c.getIdentifier(), (RmContainsWrapper)
-                            containsDescs.get(c.getContains()))));
+                    .forEach(c -> containsWrappers.addWrapper(
+                            c, new VersionContainsWrapper(c.getIdentifier(), (RmContainsWrapper)
+                                    containsWrappers.getWrapper(c.getContains()))));
 
-            fromClause = buildContainsChain(fromRoot, containsDescs);
+            fromClause = buildContainsChain(fromRoot, containsWrappers, null);
         }
 
         List<SelectWrapper> selects = aqlQuery.getSelect().getStatement().stream()
-                .map(s -> buildSelectDescriptor(containsDescs, s))
+                .map(s -> buildSelectDescriptor(containsWrappers, s))
                 .toList();
 
         ConditionWrapper where = Optional.of(aqlQuery)
                 .map(AqlQuery::getWhere)
-                .map(w -> buildWhereDescriptor(w, containsDescs, false))
+                .map(w -> buildWhereDescriptor(w, containsWrappers, false))
                 .orElse(null);
 
         List<OrderByWrapper> orderBy = CollectionUtils.emptyIfNull(aqlQuery.getOrderBy()).stream()
-                .map(o -> buildOrderByDescriptor(o, containsDescs))
+                .map(o -> buildOrderByDescriptor(o, containsWrappers))
                 .toList();
 
-        Map<ContainsWrapper, PathInfo> pathInfos = PathInfo.createPathInfos(aqlQuery, containsDescs);
+        Map<ContainsWrapper, PathInfo> pathInfos =
+                PathInfo.createPathInfos(aqlQuery, containsWrappers.stream(), enableNodeSkipping);
 
         return new AqlQueryWrapper(
                 aqlQuery.getSelect().isDistinct(),
@@ -155,23 +193,29 @@ public final class AqlQueryWrapper {
     }
 
     private static OrderByWrapper buildOrderByDescriptor(
-            OrderByExpression expression, Map<AbstractContainmentExpression, ContainsWrapper> containsDescs) {
+            OrderByExpression expression, ContainsWrappers containsWrappers) {
         // TODO: expression.statement.rootPredicate once we support them
         return new OrderByWrapper(
                 expression.getStatement(),
                 expression.getSymbol(),
-                containsDescs.get(expression.getStatement().getRoot()));
+                containsWrappers.getWrapper(expression.getStatement().getRoot()));
     }
 
     private static ContainsChain buildContainsChain(
-            Containment root, Map<AbstractContainmentExpression, ContainsWrapper> containsDescs) {
+            Containment root, ContainsWrappers containsWrappers, ContainsWrapper parent) {
         final List<ContainsWrapper> chain = new ArrayList<>();
         final ContainsSetOperationWrapper setOperator;
 
+        ContainsWrapper currentParent = parent;
         Containment next = root;
         while (next instanceof AbstractContainmentExpression c) {
 
-            chain.add(containsDescs.get(next));
+            ContainsWrapper current = containsWrappers.getWrapper(next);
+            chain.add(current);
+            current.setParent(currentParent);
+
+            currentParent = current;
+
             if (next instanceof ContainmentVersionExpression) {
                 // Version descriptor represents itself and its child, so the child itself is not added
                 next = ((AbstractContainmentExpression) c.getContains()).getContains();
@@ -181,10 +225,11 @@ public final class AqlQueryWrapper {
         }
 
         if (next instanceof ContainmentSetOperator o) {
+            final ContainsWrapper finalCurrentParent = currentParent;
             setOperator = new ContainsSetOperationWrapper(
                     o.getSymbol(),
                     o.getValues().stream()
-                            .map(c -> buildContainsChain(c, containsDescs))
+                            .map(c -> buildContainsChain(c, containsWrappers, finalCurrentParent))
                             .toList());
         } else {
             setOperator = null;
@@ -193,14 +238,12 @@ public final class AqlQueryWrapper {
         return new ContainsChain(chain, setOperator);
     }
 
-    private static SelectWrapper buildSelectDescriptor(
-            Map<AbstractContainmentExpression, ContainsWrapper> containsDescs, SelectExpression s) {
-        Pair<SelectWrapper.SelectType, IdentifiedPath> typeAndPath =
+    private static SelectWrapper buildSelectDescriptor(ContainsWrappers containsWrappers, SelectExpression s) {
+        Pair<SelectType, IdentifiedPath> typeAndPath =
                 switch (s.getColumnExpression()) {
-                    case IdentifiedPath i -> Pair.of(SelectWrapper.SelectType.PATH, i);
-                    case AggregateFunction af -> Pair.of(
-                            SelectWrapper.SelectType.AGGREGATE_FUNCTION, af.getIdentifiedPath());
-                    case Primitive __ -> Pair.of(SelectWrapper.SelectType.PRIMITIVE, null);
+                    case IdentifiedPath i -> Pair.of(SelectType.PATH, i);
+                    case AggregateFunction af -> Pair.of(SelectType.AGGREGATE_FUNCTION, af.getIdentifiedPath());
+                    case Primitive __ -> Pair.of(SelectType.PRIMITIVE, null);
                     default -> throw new IllegalArgumentException("Unknown ColumnExpression type in SELECT");
                 };
         return new SelectWrapper(
@@ -209,79 +252,79 @@ public final class AqlQueryWrapper {
                 Optional.of(typeAndPath)
                         .map(Pair::getRight)
                         .map(IdentifiedPath::getRoot)
-                        .map(containsDescs::get)
+                        .map(containsWrappers::getWrapper)
                         .orElse(null));
     }
 
     private static ConditionWrapper buildWhereDescriptor(
-            WhereCondition where, Map<AbstractContainmentExpression, ContainsWrapper> containsDescs, boolean negate) {
+            WhereCondition where, ContainsWrappers containsWrappers, boolean negate) {
         return switch (where) {
-            case ComparisonOperatorCondition c -> new ComparisonOperatorConditionWrapper(
-                    new ComparisonOperatorConditionWrapper.IdentifiedPathWrapper(
-                            containsDescs.get(((IdentifiedPath) c.getStatement()).getRoot()),
-                            (IdentifiedPath) c.getStatement()),
-                    ConditionWrapper.ComparisonConditionOperator.valueOf(
-                            c.getSymbol().name(), negate),
-                    (Primitive) c.getValue());
-            case MatchesCondition c -> negate
-                    ? new LogicalOperatorConditionWrapper(
-                            ConditionWrapper.LogicalConditionOperator.AND,
-                            c.getValues().stream()
-                                    .map(Primitive.class::cast)
-                                    .map(v -> (ConditionWrapper) new ComparisonOperatorConditionWrapper(
-                                            new ComparisonOperatorConditionWrapper.IdentifiedPathWrapper(
-                                                    containsDescs.get(
-                                                            c.getStatement().getRoot()),
-                                                    c.getStatement()),
-                                            ConditionWrapper.ComparisonConditionOperator.NEQ,
-                                            v))
-                                    .toList())
-                    : new ComparisonOperatorConditionWrapper(
-                            new ComparisonOperatorConditionWrapper.IdentifiedPathWrapper(
-                                    containsDescs.get(c.getStatement().getRoot()), c.getStatement()),
-                            ConditionWrapper.ComparisonConditionOperator.MATCHES,
-                            c.getValues().stream().map(Primitive.class::cast).toList());
+            case ComparisonOperatorCondition c ->
+                new ComparisonOperatorConditionWrapper(
+                        new IdentifiedPathWrapper(
+                                containsWrappers.getWrapper(((IdentifiedPath) c.getStatement()).getRoot()),
+                                (IdentifiedPath) c.getStatement()),
+                        ComparisonConditionOperator.valueOf(c.getSymbol().name(), negate),
+                        (Primitive) c.getValue());
+            case MatchesCondition c ->
+                negate
+                        ? new LogicalOperatorConditionWrapper(
+                                LogicalConditionOperator.AND,
+                                c.getValues().stream()
+                                        .map(Primitive.class::cast)
+                                        .map(v -> (ConditionWrapper) new ComparisonOperatorConditionWrapper(
+                                                new IdentifiedPathWrapper(
+                                                        containsWrappers.getWrapper(
+                                                                c.getStatement().getRoot()),
+                                                        c.getStatement()),
+                                                ComparisonConditionOperator.NEQ,
+                                                v))
+                                        .toList())
+                        : new ComparisonOperatorConditionWrapper(
+                                new IdentifiedPathWrapper(
+                                        containsWrappers.getWrapper(
+                                                c.getStatement().getRoot()),
+                                        c.getStatement()),
+                                ComparisonConditionOperator.MATCHES,
+                                c.getValues().stream()
+                                        .map(Primitive.class::cast)
+                                        .toList());
             case LikeCondition c -> {
                 ComparisonOperatorConditionWrapper condition = new ComparisonOperatorConditionWrapper(
-                        new ComparisonOperatorConditionWrapper.IdentifiedPathWrapper(
-                                containsDescs.get(c.getStatement().getRoot()), c.getStatement()),
-                        ConditionWrapper.ComparisonConditionOperator.LIKE,
+                        new IdentifiedPathWrapper(
+                                containsWrappers.getWrapper(c.getStatement().getRoot()), c.getStatement()),
+                        ComparisonConditionOperator.LIKE,
                         (Primitive) c.getValue());
                 yield negate
-                        ? new LogicalOperatorConditionWrapper(
-                                ConditionWrapper.LogicalConditionOperator.NOT, List.of(condition))
+                        ? new LogicalOperatorConditionWrapper(LogicalConditionOperator.NOT, List.of(condition))
                         : condition;
             }
             case ExistsCondition c -> {
                 ComparisonOperatorConditionWrapper comparisonOperatorConditionDescriptor =
                         new ComparisonOperatorConditionWrapper(
-                                new ComparisonOperatorConditionWrapper.IdentifiedPathWrapper(
-                                        containsDescs.get(c.getValue().getRoot()), c.getValue()),
-                                ConditionWrapper.ComparisonConditionOperator.EXISTS,
+                                new IdentifiedPathWrapper(
+                                        containsWrappers.getWrapper(c.getValue().getRoot()), c.getValue()),
+                                ComparisonConditionOperator.EXISTS,
                                 List.of());
                 yield negate
                         ? new LogicalOperatorConditionWrapper(
-                                ConditionWrapper.LogicalConditionOperator.NOT,
-                                List.of(comparisonOperatorConditionDescriptor))
+                                LogicalConditionOperator.NOT, List.of(comparisonOperatorConditionDescriptor))
                         : comparisonOperatorConditionDescriptor;
             }
-            case LogicalOperatorCondition c -> new LogicalOperatorConditionWrapper(
-                    switch (c.getSymbol()) {
-                        case OR -> negate
-                                ? ConditionWrapper.LogicalConditionOperator.AND
-                                : ConditionWrapper.LogicalConditionOperator.OR;
-                        case AND -> negate
-                                ? ConditionWrapper.LogicalConditionOperator.OR
-                                : ConditionWrapper.LogicalConditionOperator.AND;
-                    },
-                    c.getValues().stream()
-                            .map(w -> buildWhereDescriptor(w, containsDescs, negate))
-                            .toList());
-            case NotCondition c -> buildWhereDescriptor(c.getConditionDto(), containsDescs, !negate);
-            case null -> throw new IllegalArgumentException(
-                    "Encountered null reference instead of WhereCondition object");
-            default -> throw new IllegalArgumentException(
-                    "Unknown WhereCondition class: %s".formatted(where.getClass()));
+            case LogicalOperatorCondition c ->
+                new LogicalOperatorConditionWrapper(
+                        switch (c.getSymbol()) {
+                            case OR -> negate ? LogicalConditionOperator.AND : LogicalConditionOperator.OR;
+                            case AND -> negate ? LogicalConditionOperator.OR : LogicalConditionOperator.AND;
+                        },
+                        c.getValues().stream()
+                                .map(w -> buildWhereDescriptor(w, containsWrappers, negate))
+                                .toList());
+            case NotCondition c -> buildWhereDescriptor(c.getConditionDto(), containsWrappers, !negate);
+            case null ->
+                throw new IllegalArgumentException("Encountered null reference instead of WhereCondition object");
+            default ->
+                throw new IllegalArgumentException("Unknown WhereCondition class: %s".formatted(where.getClass()));
         };
     }
 

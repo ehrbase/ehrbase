@@ -35,8 +35,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
@@ -50,6 +48,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
@@ -73,6 +72,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class EncapsulatingQueryUtils {
+
     private static final Logger LOG = LoggerFactory.getLogger(EncapsulatingQueryUtils.class);
 
     private EncapsulatingQueryUtils() {}
@@ -105,7 +105,6 @@ final class EncapsulatingQueryUtils {
         return aggregateFunction.apply(field);
     }
 
-    @Nullable
     private static Field<?> fieldToAggregate(Table<?> src, AslAggregatingField af, AslQueryTables aslQueryToTable) {
         return switch (af.getBaseField()) {
             case null -> null;
@@ -114,9 +113,10 @@ final class EncapsulatingQueryUtils {
                 Objects.requireNonNull(src);
                 yield switch (ecf.getExtractedColumn()) {
                     case VO_ID -> FieldUtils.field(src, ecf, COMP_DATA.VO_ID.getName(), true);
-                    case ARCHETYPE_NODE_ID -> DSL.field(DSL.row(
-                            FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true),
-                            FieldUtils.field(src, ecf, COMP_DATA.ENTITY_CONCEPT.getName(), true)));
+                    case ARCHETYPE_NODE_ID ->
+                        DSL.field(DSL.row(
+                                FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true),
+                                FieldUtils.field(src, ecf, COMP_DATA.ENTITY_CONCEPT.getName(), true)));
                     case NAME_VALUE,
                             EHR_ID,
                             TEMPLATE_ID,
@@ -135,34 +135,38 @@ final class EncapsulatingQueryUtils {
                             EHR_TIME_CREATED_DV,
                             EHR_TIME_CREATED,
                             EHR_SYSTEM_ID,
-                            EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
-                            "%s is not a complex extracted column".formatted(ecf.getExtractedColumn()));
+                            EHR_SYSTEM_ID_DV ->
+                        throw new IllegalArgumentException(
+                                "%s is not a complex extracted column".formatted(ecf.getExtractedColumn()));
                 };
             }
             case AslConstantField cf -> DSL.inline(cf.getValue(), cf.getType());
             case AslSubqueryField sqfd -> subqueryField(sqfd, aslQueryToTable);
-            case AslAggregatingField __ -> throw new IllegalArgumentException(
-                    "Cannot aggregate on AslAggregatingField");
-            case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
-                    "Cannot aggregate on AslFolderItemIdValuesColumnField");
+            case AslAggregatingField __ ->
+                throw new IllegalArgumentException("Cannot aggregate on AslAggregatingField");
+            case AslFolderItemIdVirtualField __ ->
+                throw new IllegalArgumentException("Cannot aggregate on AslFolderItemIdValuesColumnField");
             case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
+            case AslStringAggregationField __ ->
+                throw new IllegalArgumentException("Cannot aggregate on AslAggregateRecordArrayField");
         };
     }
 
-    @Nonnull
     private static Function<Field<?>, SelectField<?>> toAggregatedFieldFunction(AslAggregatingField af) {
         return switch (af.getFunction()) {
             case COUNT -> f -> AdditionalSQLFunctions.count(af.isDistinct(), f);
-            case MIN -> f -> af.getBaseField() instanceof AslDvOrderedColumnField
-                            || (af.getBaseField() instanceof AslRmPathField pf
-                                    && !pf.getDvOrderedTypes().isEmpty())
-                    ? AdditionalSQLFunctions.min_dv_ordered(f)
-                    : DSL.min(f);
-            case MAX -> f -> af.getBaseField() instanceof AslDvOrderedColumnField
-                            || (af.getBaseField() instanceof AslRmPathField pf
-                                    && !pf.getDvOrderedTypes().isEmpty())
-                    ? AdditionalSQLFunctions.max_dv_ordered(f)
-                    : DSL.max(f);
+            case MIN ->
+                f -> af.getBaseField() instanceof AslDvOrderedColumnField
+                                || (af.getBaseField() instanceof AslRmPathField pf
+                                        && !pf.getDvOrderedTypes().isEmpty())
+                        ? AdditionalSQLFunctions.min_dv_ordered(f)
+                        : DSL.min(f);
+            case MAX ->
+                f -> af.getBaseField() instanceof AslDvOrderedColumnField
+                                || (af.getBaseField() instanceof AslRmPathField pf
+                                        && !pf.getDvOrderedTypes().isEmpty())
+                        ? AdditionalSQLFunctions.max_dv_ordered(f)
+                        : DSL.max(f);
             case SUM -> f -> DSL.aggregate("sum", SQLDataType.NUMERIC, f);
             case AVG -> f -> DSL.aggregate("avg", SQLDataType.NUMERIC, f);
         };
@@ -170,12 +174,14 @@ final class EncapsulatingQueryUtils {
 
     static SelectField<?> sqlSelectFieldForExtractedColumn(AslComplexExtractedColumnField ecf, Table<?> src) {
         return switch (ecf.getExtractedColumn()) {
-            case VO_ID -> DSL.row(
-                    FieldUtils.field(src, ecf, COMP_DATA.VO_ID.getName(), true),
-                    FieldUtils.field(src, ecf, COMP_VERSION.SYS_VERSION.getName(), true));
-            case ARCHETYPE_NODE_ID -> DSL.row(
-                    FieldUtils.field(src, ecf, COMP_DATA.ENTITY_CONCEPT.getName(), true),
-                    FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true));
+            case VO_ID ->
+                DSL.row(
+                        FieldUtils.field(src, ecf, COMP_DATA.VO_ID.getName(), true),
+                        FieldUtils.field(src, ecf, COMP_VERSION.SYS_VERSION.getName(), true));
+            case ARCHETYPE_NODE_ID ->
+                DSL.row(
+                        FieldUtils.field(src, ecf, COMP_DATA.ENTITY_CONCEPT.getName(), true),
+                        FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true));
             case TEMPLATE_ID,
                     NAME_VALUE,
                     EHR_ID,
@@ -194,8 +200,9 @@ final class EncapsulatingQueryUtils {
                     EHR_TIME_CREATED_DV,
                     EHR_TIME_CREATED,
                     EHR_SYSTEM_ID,
-                    EHR_SYSTEM_ID_DV -> throw new IllegalArgumentException(
-                    "Extracted column %s is not complex".formatted(ecf.getExtractedColumn()));
+                    EHR_SYSTEM_ID_DV ->
+                throw new IllegalArgumentException(
+                        "Extracted column %s is not complex".formatted(ecf.getExtractedColumn()));
         };
     }
 
@@ -300,20 +307,34 @@ final class EncapsulatingQueryUtils {
                 .map(aslQueryToTable::getDataTable)
                 .orElse(null);
         return switch (field) {
-            case AslColumnField f -> FieldUtils.field(Objects.requireNonNull(src), f, true)
-                    .as(f.getName(true));
-            case AslComplexExtractedColumnField ecf -> sqlSelectFieldForExtractedColumn(
-                    ecf, Objects.requireNonNull(src));
+            case AslColumnField f ->
+                FieldUtils.field(Objects.requireNonNull(src), f, true).as(f.getName(true));
+            case AslComplexExtractedColumnField ecf ->
+                sqlSelectFieldForExtractedColumn(ecf, Objects.requireNonNull(src));
             case AslAggregatingField af -> sqlAggregatingField(af, src, aslQueryToTable);
             case AslConstantField<?> cf -> DSL.inline(cf.getValue(), cf.getType());
             case AslSubqueryField sqf -> subqueryField(sqf, aslQueryToTable);
-            case AslFolderItemIdVirtualField fidv -> throw new IllegalArgumentException(
-                    "%s is not support as select field".formatted(fidv.getExtractedColumn()));
+            case AslFolderItemIdVirtualField fidv ->
+                throw new IllegalArgumentException(
+                        "%s is not support as select field".formatted(fidv.getExtractedColumn()));
             case AslRmPathField arpf -> FieldUtils.buildRmPathField(arpf, src);
+            case AslStringAggregationField f -> sqlStringAggregationField(f, aslQueryToTable);
         };
     }
 
-    @Nonnull
+    private static SelectField<?> sqlStringAggregationField(
+            final AslStringAggregationField f, final AslQueryTables aslQueryToTable) {
+        return DSL.aggregate(
+                        "string_agg",
+                        String.class,
+                        DSL.coalesce(
+                                FieldUtils.field(
+                                        aslQueryToTable.getDataTable(f.getInternalProvider()), f.getBaseField(), true),
+                                DSL.inline("-")),
+                        DSL.inline(f.getSeparator()))
+                .as(f.alias());
+    }
+
     public static Stream<Field<?>> groupByFields(AslField gb, AslQueryTables aslQueryToTable) {
         Table<?> src = aslQueryToTable.getDataTable(gb.getInternalProvider());
         return switch (gb) {
@@ -330,17 +351,20 @@ final class EncapsulatingQueryUtils {
                         Field<?> typeField = FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true);
                         yield Stream.of(typeField, conceptField);
                     }
-                    default -> throw new IllegalArgumentException(
-                            "%s is not a complex extracted column".formatted(ecf.getExtractedColumn()));
+                    default ->
+                        throw new IllegalArgumentException(
+                                "%s is not a complex extracted column".formatted(ecf.getExtractedColumn()));
                 }
             }
             case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
             case AslConstantField<?> __ -> Stream.empty();
-            case AslAggregatingField __ -> throw new IllegalArgumentException(
-                    "Cannot aggregate by AslAggregatingField");
-            case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
-                    "Cannot aggregate by AslFolderItemIdValuesColumnField");
+            case AslAggregatingField __ ->
+                throw new IllegalArgumentException("Cannot aggregate by AslAggregatingField");
+            case AslFolderItemIdVirtualField __ ->
+                throw new IllegalArgumentException("Cannot aggregate by AslFolderItemIdValuesColumnField");
             case AslRmPathField arpf -> Stream.of(FieldUtils.buildRmPathField(arpf, src));
+            case AslStringAggregationField __ ->
+                throw new IllegalArgumentException("Cannot aggregate by AslAggregateRecordArrayField");
         };
     }
 
@@ -353,27 +377,27 @@ final class EncapsulatingQueryUtils {
                 Field<?> typeField = FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true);
                 yield archetypeNodeIdOrderFields(conceptField, typeField);
             }
-            default -> throw new IllegalArgumentException(
-                    "Order by %s is not supported".formatted(ecf.getExtractedColumn()));
+            default ->
+                throw new IllegalArgumentException("Order by %s is not supported".formatted(ecf.getExtractedColumn()));
         };
     }
 
-    @Nonnull
     public static Stream<SortField<?>> orderFields(
             AslOrderByField ob, AslQueryTables aslQueryToTable, TemplateService templateService) {
         AslField aslField = ob.field();
         Table<?> src = aslQueryToTable.getDataTable(aslField.getInternalProvider());
         return (switch (aslField) {
-                    case AslDvOrderedColumnField f -> Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(
-                            (Field<JSONB>) FieldUtils.field(src, f, true)));
+                    case AslDvOrderedColumnField f ->
+                        Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude(
+                                (Field<JSONB>) FieldUtils.field(src, f, true)));
                     case AslColumnField f -> columnOrderField(f, src, templateService);
                     case AslComplexExtractedColumnField ecf -> complexExtractedColumnOrderByFields(ecf, src);
                     case AslConstantField __ -> Stream.<Field<?>>empty();
                     case AslSubqueryField sqf -> Stream.of(subqueryField(sqf, aslQueryToTable));
-                    case AslAggregatingField __ -> throw new IllegalArgumentException(
-                            "ORDER BY AslAggregatingField is not allowed");
-                    case AslFolderItemIdVirtualField __ -> throw new IllegalArgumentException(
-                            "ORDER BY AslFolderItemIdValuesColumnField is not allowed");
+                    case AslAggregatingField __ ->
+                        throw new IllegalArgumentException("ORDER BY AslAggregatingField is not allowed");
+                    case AslFolderItemIdVirtualField __ ->
+                        throw new IllegalArgumentException("ORDER BY AslFolderItemIdValuesColumnField is not allowed");
                     case AslRmPathField arpf -> {
                         var f = FieldUtils.buildRmPathField(arpf, src);
                         if (arpf.getType() == String.class
@@ -383,22 +407,24 @@ final class EncapsulatingQueryUtils {
                             yield Stream.of(AdditionalSQLFunctions.jsonb_dv_ordered_magnitude((Field<JSONB>) f));
                         }
                     }
+                    case AslStringAggregationField __ ->
+                        throw new IllegalArgumentException("ORDER BY AslAggregateRecordArrayField is not allowed");
                 })
                 .map(f -> f.sort(ob.direction()));
     }
 
-    @Nonnull
     private static Stream<Field<?>> columnOrderField(AslColumnField f, Table<?> src, TemplateService templateService) {
         Field<?> field = FieldUtils.field(src, f, true);
 
         field = switch (f.getExtractedColumn()) {
-                // ensure order by name, not internal ID
+            // ensure order by name, not internal ID
             case TEMPLATE_ID -> templateIdOrderField(field, templateService);
             case AD_CHANGE_TYPE_VALUE, AD_CHANGE_TYPE_PREFERRED_TERM -> DSL.lower(field.cast(String.class));
-            case AD_CHANGE_TYPE_CODE_STRING -> DSL.case_((Field<ContributionChangeType>) field)
-                    .mapValues(JOOQ_CHANGE_TYPE_TO_CODE);
+            case AD_CHANGE_TYPE_CODE_STRING ->
+                DSL.case_((Field<ContributionChangeType>) field).mapValues(JOOQ_CHANGE_TYPE_TO_CODE);
             case null -> field;
-            default -> field;};
+            default -> field;
+        };
         return Stream.of(field);
     }
 }

@@ -47,6 +47,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 public class OpenehrDefinitionQueryControllerTest {
     public static final String SAMPLE_QUERY = "SELECT e/ehr_id/vale FROM EHR e";
     private static final String CONTEXT_PATH = "https://test.definitions.controller/ehrbase/rest";
+    private static final String DEFAULT_QUERY_TYPE = "AQL";
 
     private final StoredQueryService mockStoredQueryService = mock();
     private final OpenehrDefinitionQueryController spyController =
@@ -88,7 +89,7 @@ public class OpenehrDefinitionQueryControllerTest {
         assertThatThrownBy(() ->
                         testStoreQuery(MediaType.APPLICATION_JSON_VALUE, "some-name", "", "", null, response -> {}))
                 .isInstanceOf(InvalidApiParameterException.class)
-                .hasMessage("no aql query provided");
+                .hasMessage("No AQL query provided.");
     }
 
     @ParameterizedTest
@@ -139,7 +140,7 @@ public class OpenehrDefinitionQueryControllerTest {
 
         QueryDefinitionResultDto resultDto = resultDto(name, version, query);
 
-        doReturn(resultDto).when(mockStoredQueryService).createStoredQuery(name, version, query);
+        doReturn(resultDto).when(mockStoredQueryService).createStoredQuery(name, version, query, DEFAULT_QUERY_TYPE);
 
         ResponseEntity<QueryDefinitionResponseData> response = controller()
                 .putStoredQuery(

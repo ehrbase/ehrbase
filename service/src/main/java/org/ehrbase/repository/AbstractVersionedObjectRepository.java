@@ -38,7 +38,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -56,6 +55,7 @@ import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionHistoryTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.ehrbase.service.TimeProvider;
+import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -267,12 +267,7 @@ public abstract class AbstractVersionedObjectRepository<
     }
 
     protected void delete(
-            UUID ehrId,
-            Condition condition,
-            int version,
-            @Nullable UUID contributionId,
-            @Nullable UUID auditId,
-            String notfoundMessage) {
+            UUID ehrId, Condition condition, int version, UUID contributionId, UUID auditId, String notfoundMessage) {
 
         Result<VH> versionHeads = findVersionHeadRecords(condition);
 
@@ -293,7 +288,8 @@ public abstract class AbstractVersionedObjectRepository<
             throw new StateConflictException(NOT_MATCH_LATEST_VERSION);
         }
 
-        copyHeadToHistory(versionHead, createCurrentTime(firstRecord.get(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER)));
+        OffsetDateTime now = createCurrentTime(firstRecord.get(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER));
+        copyHeadToHistory(versionHead, now);
 
         deleteHead(condition, version, StateConflictException::new);
 
@@ -309,6 +305,7 @@ public abstract class AbstractVersionedObjectRepository<
         firstRecord.set(VERSION_HISTORY_PROTOTYPE.SYS_VERSION, version + 1);
         firstRecord.set(VERSION_HISTORY_PROTOTYPE.AUDIT_ID, finalAuditId);
         firstRecord.set(VERSION_HISTORY_PROTOTYPE.CONTRIBUTION_ID, finalContributionId);
+        firstRecord.set(VERSION_HISTORY_PROTOTYPE.SYS_PERIOD_LOWER, now);
 
         firstRecord.changed(true);
 
@@ -384,8 +381,8 @@ public abstract class AbstractVersionedObjectRepository<
     protected void commitHead(
             UUID ehrId,
             Locatable versionDataObject,
-            @Nullable UUID contributionId,
-            @Nullable UUID auditId,
+            UUID contributionId,
+            UUID auditId,
             ContributionChangeType changeType,
             Consumer<VR> addVersionFieldsFunction,
             BiConsumer<StructureNode, DR> addDataFieldsFunction) {
@@ -426,8 +423,8 @@ public abstract class AbstractVersionedObjectRepository<
             O versionedObject,
             Condition condition,
             Condition historyCondition,
-            @Nullable UUID contributionId,
-            @Nullable UUID auditId,
+            UUID contributionId,
+            UUID auditId,
             Consumer<VR> addVersionFieldsFunction,
             BiConsumer<StructureNode, DR> addDataFieldsFunction,
             String notFoundErrorMessage) {
@@ -526,13 +523,13 @@ public abstract class AbstractVersionedObjectRepository<
 
         Field<UUID> voIdField = versionTable.field(VERSION_PROTOTYPE.VO_ID);
         Field<Integer> sysVersionField = versionTable.field(VERSION_PROTOTYPE.SYS_VERSION);
-        Field<JSONB> jsonbField = jsonbDataAggregation(dataTable);
+        Field<Record2<String, JSONB>[]> dataAggregationField = dataArrayAggregation(dataTable);
 
         List<Field<?>> selectFields;
         List<Field<?>> groupByFields;
         Field<?>[] additionalFields = getAdditionalSelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
-            selectFields = List.of(voIdField, sysVersionField, jsonbField);
+            selectFields = List.of(voIdField, sysVersionField, dataAggregationField);
             groupByFields = List.of(voIdField, sysVersionField);
 
         } else {
@@ -540,7 +537,7 @@ public abstract class AbstractVersionedObjectRepository<
             groupByFields = new ArrayList<>(2 + additionalFields.length);
             selectFields.add(voIdField);
             selectFields.add(sysVersionField);
-            selectFields.add(jsonbField);
+            selectFields.add(dataAggregationField);
             Collections.addAll(selectFields, additionalFields);
             groupByFields.add(voIdField);
             groupByFields.add(sysVersionField);
@@ -553,9 +550,10 @@ public abstract class AbstractVersionedObjectRepository<
                 .getQuery();
     }
 
-    protected Field<JSONB> jsonbDataAggregation(Table<?> dataTable) {
-        return DSL.jsonbObjectAgg(dataTable.field(DATA_PROTOTYPE.ENTITY_IDX), dataTable.field(DATA_PROTOTYPE.DATA))
-                .as(DSL.name("data"));
+    protected ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(Table<?> dataTable) {
+        Field<String> keyField = dataTable.field(DATA_PROTOTYPE.ENTITY_IDX);
+        Field<JSONB> dataField = dataTable.field(DATA_PROTOTYPE.DATA);
+        return DSL.arrayAgg(DSL.field(DSL.row(keyField, dataField)));
     }
 
     protected <R extends Record> SelectOnConditionStep<R> fromJoinedVersionData(
@@ -629,15 +627,15 @@ public abstract class AbstractVersionedObjectRepository<
      * @param <L>
      */
     protected <L extends Locatable> Optional<L> toLocatable(
-            Record /*<UUID, Integer, JSONB, …>*/ jsonbRecord, Class<L> locatableClass) {
+            Record /*<UUID, Integer, Record2<String, JSONB>[], …>*/ jsonbRecord, Class<L> locatableClass) {
         if (jsonbRecord == null) {
             return Optional.empty();
         }
-        final L rmObject = DbToRmFormat.reconstructRmObject(
-                locatableClass, jsonbRecord.get(2, JSONB.class).data());
+        Record2<String, ?>[] jsonObjects = jsonbRecord.get(2, Record2[].class);
+        final Locatable rmObject = DbToRmFormat.reconstructRmObject(locatableClass, jsonObjects);
         rmObject.setUid(
                 buildObjectVersionId(jsonbRecord.get(0, UUID.class), jsonbRecord.get(1, Integer.class), systemService));
-        return Optional.of(rmObject);
+        return Optional.of((L) rmObject);
     }
 
     protected void copyHeadToHistory(VH versionRecord, OffsetDateTime now) {
@@ -725,7 +723,7 @@ public abstract class AbstractVersionedObjectRepository<
 
     protected void checkIsNextHeadVoId(UUID headVoid, int headVersion, UIDBasedId uid) {
 
-        // uuid missmatch
+        // uuid mismatch
         if (!Objects.equals(headVoid, extractUid(uid))) {
             throw new PreconditionFailedException(NOT_MATCH_UID);
         }

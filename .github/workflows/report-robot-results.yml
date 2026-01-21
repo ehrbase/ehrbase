@@ -26,7 +26,7 @@ jobs:
     steps:
       # Download jacoco overall coverage from build & test output
       - name: Download - Robot Results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow

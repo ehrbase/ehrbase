@@ -17,7 +17,7 @@
  */
 package org.ehrbase.openehr.aqlengine;
 
-import java.util.Optional;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties.Experimental.AqlOnFolder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -29,12 +29,51 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * </ul>
  */
 @ConfigurationProperties(prefix = "ehrbase.aql")
-public record AqlConfigurationProperties(boolean pgLljWorkaround, Experimental experimental) {
+public final class AqlConfigurationProperties {
+    private boolean pgLljWorkaround;
+    private boolean archetypeLocalNodePredicates = true;
+    private boolean pathNodeSkipping;
+    private Experimental experimental = new Experimental(new AqlOnFolder(false));
 
-    public AqlConfigurationProperties(boolean pgLljWorkaround, Experimental experimental) {
+    public boolean pgLljWorkaround() {
+        return pgLljWorkaround;
+    }
+
+    public boolean archetypeLocalNodePredicates() {
+        return archetypeLocalNodePredicates;
+    }
+
+    public boolean pathNodeSkipping() {
+        return pathNodeSkipping;
+    }
+
+    public Experimental experimental() {
+        return experimental;
+    }
+
+    public void setPgLljWorkaround(final boolean pgLljWorkaround) {
         this.pgLljWorkaround = pgLljWorkaround;
-        this.experimental = Optional.ofNullable(experimental)
-                .orElseGet(() -> new Experimental(new Experimental.AqlOnFolder(false)));
+    }
+
+    public void setArchetypeLocalNodePredicates(final boolean archetypeLocalNodePredicates) {
+        this.archetypeLocalNodePredicates = archetypeLocalNodePredicates;
+    }
+
+    public void setPathNodeSkipping(final boolean pathNodeSkipping) {
+        this.pathNodeSkipping = pathNodeSkipping;
+    }
+
+    public void setExperimental(final Experimental experimental) {
+        this.experimental = experimental;
+    }
+
+    @Override
+    public String toString() {
+        return "AqlConfigurationProperties[" + "pgLljWorkaround="
+                + pgLljWorkaround + ", " + "archetypeLocalNodePredicates="
+                + archetypeLocalNodePredicates + ", " + "pathNodeSkipping="
+                + pathNodeSkipping + ", " + "experimental="
+                + experimental + ']';
     }
 
     public record Experimental(AqlOnFolder aqlOnFolder) {
