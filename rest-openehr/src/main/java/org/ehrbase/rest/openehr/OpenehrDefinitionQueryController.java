@@ -29,6 +29,7 @@ import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
@@ -37,7 +38,6 @@ import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.StoredQueryService;
-import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionListResponseData;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.rest.BaseController;
@@ -82,13 +82,15 @@ public class OpenehrDefinitionQueryController extends BaseController implements 
      */
     @Override
     @GetMapping(value = {"/{qualified_query_name}", ""})
-    public ResponseEntity<QueryDefinitionListResponseData> getStoredQueryList(
+    public ResponseEntity<List<QueryDefinitionResponseData>> getStoredQueryList(
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @PathVariable(value = "qualified_query_name", required = false) String qualifiedQueryName) {
 
         registerLocation(qualifiedQueryName, null);
-        QueryDefinitionListResponseData responseData =
-                new QueryDefinitionListResponseData(storedQueryService.retrieveStoredQueries(qualifiedQueryName));
+        List<QueryDefinitionResponseData> responseData =
+                storedQueryService.retrieveStoredQueries(qualifiedQueryName).stream()
+                        .map(QueryDefinitionResponseData::new)
+                        .toList();
 
         HttpRestContext.register(QUERY_ID, qualifiedQueryName);
 

@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+* Refactor getStoredQueryList to comply with openEHR REST API specs ([#1456](https://github.com/ehrbase/ehrbase/pull/1456))
 
 ## [2.27.0]
  ### Added
