@@ -65,7 +65,7 @@
         <archie.version>3.13.0</archie.version>
         <commons-io.version>2.21.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <flyway.version>11.15.0</flyway.version>
+        <flyway.version>11.20.2</flyway.version>
         <javamelody.version>2.6.0</javamelody.version>
         <json-path.version>2.9.0</json-path.version>
         <junit.version>5.10.2</junit.version>
@@ -73,7 +73,7 @@
         <!-- jooq -->
         <slf4j.version>2.0.17</slf4j.version>
         <jooq.version>3.20.10</jooq.version>
-        <postgresql.version>42.7.8</postgresql.version>
+        <postgresql.version>42.7.9</postgresql.version>
 
         <!-- spring -->
         <spring-boot.version>3.5.9</spring-boot.version>
@@ -99,8 +99,8 @@
         <maven-jacoco-plugin.version>0.8.14</maven-jacoco-plugin.version>
         <maven-spotless-maven-plugin.version>2.46.1</maven-spotless-maven-plugin.version>
         <palantir-format.version>2.74.0</palantir-format.version>
-        <maven-central-publishing-plugin.version>0.9.0</maven-central-publishing-plugin.version>
-        <maven-versions-maven-plugin.version>2.20.1</maven-versions-maven-plugin.version>
+        <maven-central-publishing-plugin.version>0.10.0</maven-central-publishing-plugin.version>
+        <maven-versions-maven-plugin.version>2.21.0</maven-versions-maven-plugin.version>
         <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
         <maven-sonar.scanner.version>5.5.0.6356</maven-sonar.scanner.version>
         <docker-maven-plugin.version>0.48.0</docker-maven-plugin.version>
