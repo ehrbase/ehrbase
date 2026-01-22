@@ -187,3 +187,8 @@ EHRbase uses the [Apache License, Version 2.0](https://www.apache.org/licenses/L
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/ehrbase/ehrbase.svg)](https://starchart.cc/ehrbase/ehrbase)
+
+## Build notes
+- Requires Java 17 LTS or 21 LTS.
+- Build with Maven 3.8+.
+- Quickstart: https://ehrbase.org/download
