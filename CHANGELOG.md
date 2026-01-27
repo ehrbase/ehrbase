@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+- AQL: COMPOSITION CONTAINS COMPOSITION and EHR_STATUS CONTAINS EHR_STATUS no longer wrongly return results [#1580](https://github.com/ehrbase/ehrbase/pull/1580)
 
 ## [2.27.0]
  ### Added
