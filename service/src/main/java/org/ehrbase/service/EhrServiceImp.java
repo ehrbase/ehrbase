@@ -338,34 +338,27 @@ public class EhrServiceImp implements EhrService {
     public UUID deleteEhr(UUID ehrId) {
         checkEhrExistsAndIsModifiable(ehrId);
 
-        UUID auditId = contributionRepository.createDefaultAudit(
-            ContributionChangeType.deleted,
-            AuditDetailsTargetType.EHR_STATUS
-        );
-
-        //todo: fails because for ehr status it expects a modification cct
-        // maybe can use 2 contribution ids? one for ehr modification/one for cascaded deletes
-        UUID ehrStatusContributionId = contributionRepository.createDefault(
-            ehrId,
-            ContributionDataType.ehr,
-            ContributionChangeType.modification
-        );
-
         UUID contributionId = contributionRepository.createDefault(
             ehrId,
             ContributionDataType.ehr,
-            ContributionChangeType.deleted
-        );
+            ContributionChangeType.deleted);
 
-        compositionRepository.findAllHeadVersionsForEhr(ehrId).forEach(pair -> {
-            compositionRepository.delete(ehrId, pair.value1(), pair.value2(), contributionId, auditId);
+        compositionRepository.findAllHeadVersionsForEhr(ehrId).forEach(c -> {
+            UUID deleteAuditId = contributionRepository.createDefaultAudit(
+                ContributionChangeType.deleted,
+                AuditDetailsTargetType.COMPOSITION);
+            compositionRepository.delete(ehrId, c.value1(), c.value2(), contributionId, deleteAuditId);
         });
 
         ehrFolderRepository.findHead(ehrId, 1).ifPresent(folder -> {
+            UUID deleteAuditId = contributionRepository.createDefaultAudit(
+                ContributionChangeType.deleted,
+                AuditDetailsTargetType.EHR_FOLDER);
+
             ObjectVersionId versionId = (ObjectVersionId) folder.getUid();
             UUID folderId = UUID.fromString(versionId.getRoot().getValue());
             int folderVersion = extractVersion(versionId);
-            ehrFolderRepository.delete(ehrId, folderId, folderVersion, 1, contributionId, auditId);
+            ehrFolderRepository.delete(ehrId, folderId, folderVersion, 1, contributionId, deleteAuditId);
         });
 
         EhrStatus currentStatus = ehrRepository
@@ -376,14 +369,17 @@ public class EhrServiceImp implements EhrService {
         ObjectVersionId nextVersionId = buildObjectVersionId(
             UUID.fromString(statusVersionId.getObjectId().getValue()),
             Integer.parseInt(statusVersionId.getVersionTreeId().getValue()) + 1,
-            systemService
-        );
+            systemService);
 
         currentStatus.setUid(nextVersionId);
         currentStatus.setQueryable(false);
         currentStatus.setModifiable(false);
 
-        ehrRepository.update(ehrId, currentStatus, contributionId, auditId);
+        UUID ehrStatusModificationAuditId = contributionRepository.createDefaultAudit(
+            ContributionChangeType.modification,
+            AuditDetailsTargetType.EHR_STATUS);
+
+        ehrRepository.update(ehrId, currentStatus, contributionId, ehrStatusModificationAuditId);
 
         return contributionId;
     }
