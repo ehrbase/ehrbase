@@ -158,6 +158,16 @@ public interface EhrService {
     void adminDeleteEhr(UUID ehrId);
 
     /**
+     * Soft deletion of an EHR. It will also soft delete its compositions and folders.
+     * This method will set is_queryable and is_modifiable to false on the EHR status.
+     * All operations are performed within a single contribution.
+     *
+     * @param ehrId EHR ID to soft delete
+     * @return UUID of the contribution created for this operation
+     */
+    UUID deleteEhr(UUID ehrId);
+
+    /**
      * Helper to directly get the external subject reference form the linked subject to given EHR.
      *
      * @param ehrId Given EHR ID

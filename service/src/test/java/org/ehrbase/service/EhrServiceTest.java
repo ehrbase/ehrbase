@@ -47,6 +47,7 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.repository.CompositionRepository;
+import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
@@ -66,6 +67,7 @@ class EhrServiceTest {
     private final ValidationService validationService = mock("Mock Validation Service");
     private final EhrFolderRepository ehrFolderRepository = mock("Mock Repository");
     private final CompositionRepository compositionRepository = mock("Mock Composition Repository");
+    private final ContributionRepository contributionRepository = mock("Mock Contribution Repository");
 
     private final EhrRepository ehrRepository = mock("Mock Ehr Repository");
     private final ItemTagRepository itemTagRepository = mock("Mock Item Tag Repository");
@@ -75,6 +77,7 @@ class EhrServiceTest {
             systemService,
             ehrFolderRepository,
             compositionRepository,
+            contributionRepository,
             ehrRepository,
             itemTagRepository));
 

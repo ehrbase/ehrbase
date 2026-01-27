@@ -46,6 +46,7 @@ import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
+import org.jooq.Record2;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
@@ -208,6 +209,13 @@ public class CompositionRepository
                 .orderBy(COMP_VERSION.SYS_VERSION.desc())
                 .limit(1)
                 .fetchOptional(Record1::value1);
+    }
+
+    public List<Record2<UUID, Integer>> findAllHeadVersionsForEhr(UUID ehrId) {
+        return context.select(COMP_VERSION.VO_ID, COMP_VERSION.SYS_VERSION)
+                .from(COMP_VERSION)
+                .where(COMP_VERSION.EHR_ID.eq(ehrId))
+                .fetch();
     }
 
     public boolean isDeleted(UUID ehrId, UUID compId, Integer version) {
