@@ -80,7 +80,8 @@ class EhrServiceTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(validationService, ehrFolderRepository, compositionRepository, ehrRepository);
+        Mockito.reset(
+            validationService, ehrFolderRepository, compositionRepository, ehrRepository);
     }
 
     private EhrService service() {
